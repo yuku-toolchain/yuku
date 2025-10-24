@@ -4,11 +4,9 @@ const Lexer = @import("lexer.zig").Lexer;
 pub fn main() !void {
     var timer = try std.time.Timer.start();
 
-    const source: []const u8 = "10+++";
+    const source: []const u8 = "1.23s+10 Hello";
 
     var lexer = Lexer.init(source);
-
-    _ = try lexer.nextToken();
 
     const token = try lexer.nextToken();
 

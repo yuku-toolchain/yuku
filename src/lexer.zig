@@ -24,9 +24,25 @@ pub const Lexer = struct {
 
         return switch (current_char) {
             '+' => self.scanPlus(),
+            '.' => self.scanDot(),
             '0'...'9' => self.scanNumber(),
             else => self.consumeSingleCharToken(TokenType.Invalid),
         };
+    }
+
+    fn scanDot(self: *Lexer) Token {
+        const next1 = self.peekAhead(1);
+        const next2 = self.peekAhead(2);
+
+        if(std.ascii.isDigit(next1)){
+            return self.scanNumber();
+        }
+
+        if(next1 == '.' and next2 == '.'){
+            return self.consumeMultiCharToken(TokenType.Spread, 3);
+        }
+
+        return self.consumeSingleCharToken(.Dot);
     }
 
     fn scanPlus(self: *Lexer) Token {
@@ -41,10 +57,31 @@ pub const Lexer = struct {
 
     fn scanNumber(self: *Lexer) Token {
         const start = self.position;
+        var token_type: TokenType = .NumericLiteral;
 
-        self.consumeWhile(std.ascii.isDigit);
+        if (self.currentChar() == '0' and !self.isAtEndWithOffset(1)) {
+            const next = std.ascii.toLower(self.peekAhead(1));
+            if (next == 'x') {
+                token_type = .HexLiteral;
+                self.advanceBy(2);
+                self.consumeWhile(std.ascii.isHex);
+            } else if (next == 'o') {
+                token_type = .OctalLiteral;
+                self.advanceBy(2);
+                self.consumeWhileOctal();
+            } else if (next == 'b') {
+                token_type = .BinaryLiteral;
+                self.advanceBy(2);
+                self.consumeWhileBinary();
+            } else {
+                self.consumeWhile(std.ascii.isDigit);
+            }
+        } else {
+            self.consumeWhile(std.ascii.isDigit);
+        }
 
-        if (self.currentChar() == '.' and
+        if (token_type == .NumericLiteral and
+            self.currentChar() == '.' and
             !self.isAtEndWithOffset(1) and
             std.ascii.isDigit(self.peekAhead(1)))
         {
@@ -52,15 +89,73 @@ pub const Lexer = struct {
             self.consumeWhile(std.ascii.isDigit);
         }
 
+        if (token_type == .NumericLiteral) {
+            const cur = std.ascii.toLower(self.currentChar());
+            if (cur == 'e') {
+                const next = self.peekAhead(1);
+                if (std.ascii.isDigit(next) or
+                    ((next == '+' or next == '-') and
+                     !self.isAtEndWithOffset(2) and
+                     std.ascii.isDigit(self.peekAhead(2))))
+                {
+                    self.advanceBy(1);
+                    if (self.currentChar() == '+' or self.currentChar() == '-') {
+                        self.advanceBy(1);
+                    }
+                    self.consumeWhile(std.ascii.isDigit);
+                }
+            }
+        }
+
+        if (self.currentChar() == '_') {
+            self.advanceBy(1);
+            while (!self.isAtEnd()) {
+                if (std.ascii.isAlphanumeric(self.currentChar())) {
+                    self.advanceBy(1);
+                } else if (self.currentChar() == '_') {
+                    self.advanceBy(1);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (self.currentChar() == 'n') {
+            self.advanceBy(1);
+            token_type = .BigIntLiteral;
+        }
+
         const end = self.position;
-        return self.createToken(.NumericLiteral, self.source[start..end], start, end);
+        return self.createToken(token_type, self.source[start..end], start, end);
+    }
+
+    fn consumeWhileOctal(self: *Lexer) void {
+        while (!self.isAtEnd()) {
+            const c = self.currentChar();
+            if (c >= '0' and c <= '7') {
+                self.advanceBy(1);
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn consumeWhileBinary(self: *Lexer) void {
+        while (!self.isAtEnd()) {
+            const c = self.currentChar();
+            if (c == '0' or c == '1') {
+                self.advanceBy(1);
+            } else {
+                break;
+            }
+        }
     }
 
     fn skipWhitespace(self: *Lexer) void {
         while (!self.isAtEnd()) {
             const current_char = self.currentChar();
             switch (current_char) {
-                ' ', '\t', '\r' => self.advanceBy(1),
+                ' ', '\t', '\r', '\n' => self.advanceBy(1),
                 else => break,
             }
         }

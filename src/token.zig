@@ -1,19 +1,22 @@
 pub const TokenType = enum {
-    NumericLiteral,     // 123, 3.14, 1e5
-    HexLiteral,         // 0xFF, 0x123
-    OctalLiteral,       // 0o777, 0O123
-    BinaryLiteral,      // 0b1010, 0B1111
-    BigIntLiteral,      // 123n, 0xFFn
+    NumericLiteral,     // 123, 3.14, 1e5  (done)
+    HexLiteral,         // 0xFF, 0x123     (done)
+    OctalLiteral,       // 0o777, 0O123    (done)
+    BinaryLiteral,      // 0b1010, 0B1111  (done)
+    BigIntLiteral,      // 123n, 0xFFn     (done)
 
     StringLiteral,      // "hello", 'world'
-    TemplateLiteral,    // `hello ${name}`
     RegexLiteral,       // /pattern/flags
+
+    NoSubstitutionTemplate, // `hello world`
+    TemplateHead,           // `hello ${
+    TemplateMiddle,         // } world ${
+    TemplateTail,           // } end`
 
     BooleanLiteral,     // true, false
     NullLiteral,        // null
-    UndefinedLiteral,   // undefined
 
-    Plus,               // +
+    Plus,               // + (done)
     Minus,              // -
     Star,               // *
     Slash,              // /
@@ -21,14 +24,14 @@ pub const TokenType = enum {
     Exponent,           // **
 
     Assign,             // =
-    PlusAssign,         // +=
+    PlusAssign,         // += (done)
     MinusAssign,        // -=
     StarAssign,         // *=
     SlashAssign,        // /=
     PercentAssign,      // %=
     ExponentAssign,     // **=
 
-    Increment,          // ++
+    Increment,          // ++ (done)
     Decrement,          // --
 
     Equal,              // ==
@@ -73,8 +76,8 @@ pub const TokenType = enum {
     RightBracket,       // ]
     Semicolon,          // ;
     Comma,              // ,
-    Dot,                // .
-    Spread,             // ...
+    Dot,                // .   (done)
+    Spread,             // ... (done)
     Arrow,              // =>
     Question,           // ?
     Colon,              // :
@@ -82,13 +85,13 @@ pub const TokenType = enum {
     If, Else, Switch, Case, Default,
     For, While, Do, Break, Continue,
 
-    Function, Return, Async, Await,
+    Function, Return, Async, Await, Yield,
 
     Var, Let, Const,
 
-    Class, Extends, Super, Static,
+    Class, Extends, Super, Static, Enum,
 
-    Import, Export, From,
+    Import, Export, From, As,
 
     Try, Catch, Finally, Throw,
 
@@ -97,11 +100,8 @@ pub const TokenType = enum {
 
     Identifier,         // variableName, $$, _, $$variable
     PrivateIdentifier,  // #privateField
-    Comment,            // // or /* */
-    Whitespace,         // spaces, tabs
-    Newline,            // \n
-    EOF,                // End of file
-    Invalid,            // Error token
+    EOF,                // End of file (done)
+    Invalid,            // Error token (done)
 };
 
 pub const Span = struct {
