@@ -23,7 +23,7 @@ pub const TokenType = enum {
     Percent,            // % (done)
     Exponent,           // ** (done)
 
-    Assign,             // =
+    Assign,             // = (done)
     PlusAssign,         // += (done)
     MinusAssign,        // -= (done)
     StarAssign,         // *= (done)
@@ -34,33 +34,33 @@ pub const TokenType = enum {
     Increment,          // ++ (done)
     Decrement,          // -- (done)
 
-    Equal,              // ==
-    NotEqual,           // !=
-    StrictEqual,        // ===
-    StrictNotEqual,     // !==
-    LessThan,           // <
-    GreaterThan,        // >
-    LessThanEqual,      // <=
-    GreaterThanEqual,   // >=
+    Equal,              // == (done)
+    NotEqual,           // != (done)
+    StrictEqual,        // === (done)
+    StrictNotEqual,     // !== (done)
+    LessThan,           // < (done)
+    GreaterThan,        // > (done)
+    LessThanEqual,      // <= (done)
+    GreaterThanEqual,   // >= (done)
 
     LogicalAnd,         // &&
     LogicalOr,          // ||
-    LogicalNot,         // !
+    LogicalNot,         // ! (done)
 
     BitwiseAnd,         // &
     BitwiseOr,          // |
     BitwiseXor,         // ^
     BitwiseNot,         // ~
-    LeftShift,          // <<
-    RightShift,         // >>
-    UnsignedRightShift, // >>>
+    LeftShift,          // << (done)
+    RightShift,         // >> (done)
+    UnsignedRightShift, // >>> (done)
 
     BitwiseAndAssign,   // &=
     BitwiseOrAssign,    // |=
     BitwiseXorAssign,   // ^=
-    LeftShiftAssign,    // <<=
-    RightShiftAssign,   // >>=
-    UnsignedRightShiftAssign, // >>>=
+    LeftShiftAssign,    // <<= (done)
+    RightShiftAssign,   // >>= (done)
+    UnsignedRightShiftAssign, // >>>= (done)
 
     NullishCoalescing,  // ??
     NullishAssign,      // ??=
@@ -78,7 +78,7 @@ pub const TokenType = enum {
     Comma,              // ,
     Dot,                // .   (done)
     Spread,             // ... (done)
-    Arrow,              // =>
+    Arrow,              // => (done)
     Question,           // ?
     Colon,              // :
 

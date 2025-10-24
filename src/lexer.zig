@@ -27,11 +27,83 @@ pub const Lexer = struct {
             '*' => self.scanStar(),
             '-' => self.scanMinus(),
             '.' => self.scanDot(),
+            '!' => self.scanExclamation(),
+            '<' => self.scanLessThan(),
+            '>' => self.scanGreaterThan(),
+            '=' => self.scanAssignOrEqualOrArrow(),
             '%' => self.scanPercent(),
             '0'...'9' => self.scanNumber(),
             '"', '\'' => self.scanString(),
             '/' => self.scanSlashOrRegex(),
             else => self.consumeSingleCharToken(TokenType.Invalid),
+        };
+    }
+
+    fn scanGreaterThan(self: *Lexer) Token {
+        const next_1 = self.peekAhead(1);
+        const next_2 = self.peekAhead(2);
+        const next_3 = self.peekAhead(3);
+
+        if (next_1 == '>' and next_2 == '=') {
+            return self.consumeMultiCharToken(.RightShiftAssign, 3);
+        }
+
+        if (next_1 == '>' and next_2 == '>') {
+            if(next_3 == '='){
+                return self.consumeMultiCharToken(.UnsignedRightShiftAssign, 4);
+            } else {
+                return self.consumeMultiCharToken(.UnsignedRightShift, 3);
+            }
+        }
+
+        return switch (next_1) {
+            '>' => self.consumeMultiCharToken(.RightShift, 2),
+            '=' => self.consumeMultiCharToken(.GreaterThanEqual, 2),
+            else => self.consumeSingleCharToken(.GreaterThan),
+        };
+    }
+
+    fn scanLessThan(self: *Lexer) Token {
+        const next_1 = self.peekAhead(1);
+        const next_2 = self.peekAhead(2);
+
+        if (next_1 == '<' and next_2 == '=') {
+            return self.consumeMultiCharToken(.LeftShiftAssign, 3);
+        }
+
+        return switch (next_1) {
+            '<' => self.consumeMultiCharToken(.LeftShift, 2),
+            '=' => self.consumeMultiCharToken(.LessThanEqual, 2),
+            else => self.consumeSingleCharToken(.LessThan),
+        };
+    }
+
+    fn scanExclamation(self: *Lexer) Token {
+        const next_1 = self.peekAhead(1);
+        const next_2 = self.peekAhead(2);
+
+        if (next_1 == '=' and next_2 == '=') {
+            return self.consumeMultiCharToken(.StrictNotEqual, 3);
+        }
+
+        return switch (next_1) {
+            '=' => self.consumeMultiCharToken(.NotEqual, 2),
+            else => self.consumeSingleCharToken(.LogicalNot),
+        };
+    }
+
+    fn scanAssignOrEqualOrArrow(self: *Lexer) Token {
+        const next_1 = self.peekAhead(1);
+        const next_2 = self.peekAhead(2);
+
+        if (next_1 == '=' and next_2 == '=') {
+            return self.consumeMultiCharToken(.StrictEqual, 3);
+        }
+
+        return switch (next_1) {
+            '=' => self.consumeMultiCharToken(.Equal, 2),
+            '>' => self.consumeMultiCharToken(.Arrow, 2),
+            else => self.consumeSingleCharToken(.Assign),
         };
     }
 

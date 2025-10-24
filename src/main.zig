@@ -4,7 +4,7 @@ const Lexer = @import("lexer.zig").Lexer;
 pub fn main() !void {
     var timer = try std.time.Timer.start();
 
-    const source: []const u8 = "**";
+    const source: []const u8 = "==>";
 
     var lexer = Lexer.init(source);
 
