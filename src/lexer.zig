@@ -76,6 +76,7 @@ pub const Lexer = struct {
         const start = self.position;
         const next = self.peekAhead(1);
 
+        // /=
         if (next == '=') {
             return self.consumeMultiCharToken(.SlashAssign, 2);
         }
@@ -83,6 +84,7 @@ pub const Lexer = struct {
         self.advanceBy(1);
         var in_class = false;
 
+        // try regex first
         while (!self.isAtEnd()) {
             const c = self.currentChar();
 
@@ -125,6 +127,7 @@ pub const Lexer = struct {
             self.advanceBy(1);
         }
 
+        // if it's not a valid regex, reset the position, it's a pure slash
         self.position = start;
 
         return self.consumeSingleCharToken(.Slash);
