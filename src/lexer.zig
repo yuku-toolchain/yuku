@@ -26,6 +26,7 @@ pub const Lexer = struct {
 
         return switch (c) {
             '+' => self.singleCharToken(TokenType.Plus),
+            '(' => self.singleCharToken(TokenType.LeftParen),
             ')' => self.singleCharToken(TokenType.RightParen),
             '{' => self.singleCharToken(TokenType.LeftBrace),
             '}' => self.singleCharToken(TokenType.RightBrace),
@@ -36,8 +37,9 @@ pub const Lexer = struct {
             '/' => self.singleCharToken(TokenType.Slash),
             '<' => self.singleCharToken(TokenType.LessThan),
             '>' => self.singleCharToken(TokenType.GreaterThan),
+            '=' => self.singleCharToken(TokenType.Assign),
              '0'...'9' => self.scanNumber(),
-            else => self.emptyToken(TokenType.Invalid)
+            else => self.singleCharToken(TokenType.Invalid)
         };
     }
 
