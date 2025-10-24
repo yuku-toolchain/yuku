@@ -44,11 +44,15 @@ pub const Lexer = struct {
     fn scanNumber(self: *Lexer) Token {
         const start = self.position;
 
-        while (!self.isAtEnd()) {
-            if(std.ascii.isDigit(self.peek())){
+        while (!self.isAtEnd() and std.ascii.isDigit(self.peek())) {
+            _ = self.advance();
+        }
+
+        while (!self.isAtEndOffset(1) and self.peek() == '.' and std.ascii.isDigit(self.peekNext())) {
+            _ = self.advance();
+
+            while (!self.isAtEnd() and std.ascii.isDigit(self.peek())) {
                 _ = self.advance();
-            } else {
-                break;
             }
         }
 
@@ -97,6 +101,10 @@ pub const Lexer = struct {
 
     fn isAtEnd(self: *Lexer) bool {
         return self.position >= self.source.len;
+    }
+
+    fn isAtEndOffset(self: *Lexer, offset: u8) bool {
+        return (self.position + offset) >= self.source.len;
     }
 
     fn makeToken(toke_type: TokenType, lexeme: []const u8, start: usize, end: usize) Token {

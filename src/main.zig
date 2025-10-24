@@ -7,7 +7,7 @@ pub fn main() !void {
 
     const allocator = arena.allocator();
 
-    const source: []const u8 = "*10";
+    const source: []const u8 = "*10.10";
 
     var lexer = Lexer.init(allocator, source);
 
