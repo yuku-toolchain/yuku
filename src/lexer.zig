@@ -1,7 +1,19 @@
 const std = @import("std");
+
 const Token = @import("token.zig").Token;
 const TokenType = @import("token.zig").TokenType;
-const KeywordMap = @import("token.zig").KeywordMap;
+
+const LexError = error{
+    UnterminatedString,
+    UnterminatedRegex,
+    NonTerminatedTemplateLiteral,
+    UnterminatedRegexLiteral,
+    InvalidRegexLineTerminator,
+    InvalidRegex,
+    IncompletePrivateIdentifier,
+    InvalidPrivateIdentifierStart,
+    UnexpectedCharacter
+};
 
 pub const Lexer = struct {
     source: []const u8,
@@ -16,11 +28,11 @@ pub const Lexer = struct {
         };
     }
 
-    pub fn nextToken(self: *Lexer) !Token {
+    pub fn nextToken(self: *Lexer) LexError!Token {
         self.skipWhitespace();
 
         if (self.isAtEnd()) {
-            return self.createEmptyToken(TokenType.EOF);
+            return self.createToken(.EOF, "", self.position, self.position);
         }
 
         const current_char = self.currentChar();
@@ -40,7 +52,7 @@ pub const Lexer = struct {
             '%' => self.scanPercent(),
             '0'...'9' => self.scanNumber(),
             '"', '\'' => self.scanString(),
-            '/' => self.scanSlashOrRegex(),
+            '/' => self.scanSlash(),
             '?' => self.scanQuestionMark(),
             '`' => self.scanTemplateLiteral(),
             '~' => self.consumeSingleCharToken(TokenType.BitwiseNot),
@@ -55,7 +67,7 @@ pub const Lexer = struct {
             ':' => self.consumeSingleCharToken(TokenType.Colon),
             '#' => self.scanPrivateIdentifier(),
             'a'...'z', 'A'...'Z', '_', '$' => self.scanIdentifierOrKeyword(),
-            else => self.consumeSingleCharToken(TokenType.Invalid),
+            else => error.UnexpectedCharacter,
         };
     }
 
@@ -215,7 +227,7 @@ pub const Lexer = struct {
         };
     }
 
-    fn scanString(self: *Lexer) Token {
+    fn scanString(self: *Lexer) LexError!Token {
         const start = self.position;
         const quote = self.currentChar();
         self.advanceBy(1);
@@ -236,6 +248,7 @@ pub const Lexer = struct {
                 if (self.isAtEnd()) {
                     break;
                 }
+
 
                 const next = self.currentChar();
 
@@ -259,11 +272,10 @@ pub const Lexer = struct {
             self.advanceBy(1);
         }
 
-        const end = self.position;
-        return self.createToken(.Invalid, self.source[start..end], start, end);
+        return error.UnterminatedString;
     }
 
-    fn scanTemplateLiteral(self: *Lexer) Token {
+    fn scanTemplateLiteral(self: *Lexer) LexError!Token {
         const start = self.position;
         self.advanceBy(1);
 
@@ -294,11 +306,10 @@ pub const Lexer = struct {
             self.advanceBy(1);
         }
 
-        const end = self.position;
-        return self.createToken(.Invalid, self.source[start..end], start, end);
+        return error.NonTerminatedTemplateLiteral;
     }
 
-    fn scanTemplateMiddleOrTail(self: *Lexer) Token {
+    fn scanTemplateMiddleOrTail(self: *Lexer) LexError!Token {
         const start = self.position;
         self.advanceBy(1); // consume closing brace
 
@@ -331,11 +342,10 @@ pub const Lexer = struct {
             self.advanceBy(1);
         }
 
-        const end = self.position;
-        return self.createToken(.Invalid, self.source[start..end], start, end);
+        return error.NonTerminatedTemplateLiteral;
     }
 
-    fn handleRightBrace(self: *Lexer) Token {
+    fn handleRightBrace(self: *Lexer) LexError!Token {
         // if we're inside a template substitution, scan template middle/tail
         if (self.template_depth > 0) {
             return self.scanTemplateMiddleOrTail();
@@ -344,65 +354,75 @@ pub const Lexer = struct {
         return self.consumeSingleCharToken(TokenType.RightBrace);
     }
 
-    fn scanSlashOrRegex(self: *Lexer) Token {
-        const start = self.position;
+    fn scanSlash(self: *Lexer) Token {
         const next = self.peekAhead(1);
 
-        // /=
         if (next == '=') {
             return self.consumeMultiCharToken(.SlashAssign, 2);
         }
 
-        self.advanceBy(1);
+        return self.consumeSingleCharToken(.Slash);
+    }
+
+    pub fn reScanAsRegex(self: *Lexer, slash_token: Token) Token {
+        self.position = slash_token.span.start;
+
+        return self.scanRegex();
+    }
+
+    fn scanRegex(self: *Lexer) LexError!Token {
+        const start = self.position;
+        self.position += 1; // consume '/'
+
         var in_class = false;
 
-        // try regex first
-        while (!self.isAtEnd()) {
-            const c = self.currentChar();
+        while (self.position < self.source.len) {
+            const c = self.source[self.position];
 
             if (c == '\\') {
-                self.advanceBy(1);
-                if (!self.isAtEnd()) {
-                    self.advanceBy(1);
+                self.position += 1; // skip backslash
+                if (self.position < self.source.len) {
+                    self.position += 1; // skip escaped char
                 }
                 continue;
             }
 
             if (c == '[') {
                 in_class = true;
-                self.advanceBy(1);
+                self.position += 1;
                 continue;
             }
 
-            if (c == ']') {
+            if (c == ']' and in_class) {
                 in_class = false;
-                self.advanceBy(1);
+                self.position += 1;
                 continue;
             }
 
             if (c == '/' and !in_class) {
-                self.advanceBy(1);
+                self.position += 1;
 
-                while (!self.isAtEnd()) {
-                    const flag = self.currentChar();
-                    if (std.ascii.isAlphabetic(flag)) {
-                        self.advanceBy(1);
-                    } else {
-                        break;
-                    }
+                while (self.position < self.source.len and
+                       std.ascii.isAlphabetic(self.source[self.position])) {
+                    self.position += 1;
                 }
 
-                const end = self.position;
-                return self.createToken(.RegexLiteral, self.source[start..end], start, end);
+                return self.createToken(
+                    .RegexLiteral,
+                    self.source[start..self.position],
+                    start,
+                    self.position
+                );
             }
 
-            self.advanceBy(1);
+            if (c == '\n' or c == '\r') {
+                return error.InvalidRegexLineTerminator;
+            }
+
+            self.position += 1;
         }
 
-        // if it's not a valid regex, reset the position, it's a pure slash
-        self.position = start;
-
-        return self.consumeSingleCharToken(.Slash);
+        return error.UnterminatedRegexLiteral;
     }
 
     fn scanDot(self: *Lexer) Token {
@@ -435,7 +455,6 @@ pub const Lexer = struct {
 
         self.advanceBy(1);
 
-        // consume remaining identifier characters
         while (!self.isAtEnd()) {
             const c = self.currentChar();
             if (std.ascii.isAlphanumeric(c) or c == '_' or c == '$') {
@@ -453,19 +472,19 @@ pub const Lexer = struct {
         return self.createToken(token_type, lexeme, start, end);
     }
 
-    fn scanPrivateIdentifier(self: *Lexer) Token {
+    fn scanPrivateIdentifier(self: *Lexer) LexError!Token {
         const start = self.position;
 
         self.advanceBy(1);
 
         // must have at least one valid identifier character after #
         if (self.isAtEnd()) {
-            return self.createToken(.Invalid, self.source[start..self.position], start, self.position);
+            return error.IncompletePrivateIdentifier;
         }
 
         const first = self.currentChar();
         if (!std.ascii.isAlphabetic(first) and first != '_' and first != '$') {
-            return self.createToken(.Invalid, self.source[start..self.position], start, self.position);
+            return error.InvalidPrivateIdentifierStart;
         }
 
         while (!self.isAtEnd()) {
@@ -749,16 +768,12 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..end], start, end);
     }
 
-    fn createEmptyToken(self: *Lexer, comptime token_type: TokenType) Token {
-        return self.createToken(token_type, "", self.position, self.position);
-    }
-
     fn createToken(self: *Lexer, token_type: TokenType, lexeme: []const u8, start: usize, end: usize) Token {
         _ = self;
         return Token{
             .type = token_type,
             .lexeme = lexeme,
-            .span = .{ .start = start, .end = end },
+            .span = .{ .start = start, .end = end }
         };
     }
 
