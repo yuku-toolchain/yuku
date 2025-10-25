@@ -1,107 +1,168 @@
 pub const TokenType = enum {
-    NumericLiteral,     // 123, 3.14, 1e5  (done)
-    HexLiteral,         // 0xFF, 0x123     (done)
-    OctalLiteral,       // 0o777, 0O123    (done)
-    BinaryLiteral,      // 0b1010, 0B1111  (done)
-    BigIntLiteral,      // 123n, 0xFFn     (done)
+    // Numeric literals
+    NumericLiteral,              // 123, 3.14, 1e5
+    HexLiteral,                  // 0xFF, 0x123
+    OctalLiteral,                // 0o777, 0O123
+    BinaryLiteral,               // 0b1010, 0B1111
+    BigIntLiteral,               // 123n, 0xFFn
 
-    StringLiteral,      // "hello", 'world'  (done)
-    RegexLiteral,       // /pattern/flags    (done)
+    // String and regex literals
+    StringLiteral,               // "hello", 'world'
+    RegexLiteral,                // /pattern/flags
 
-    NoSubstitutionTemplate, // `hello world`
-    TemplateHead,           // `hello ${
-    TemplateMiddle,         // } world ${
-    TemplateTail,           // } end`
+    // Template literals
+    NoSubstitutionTemplate,      // `hello world`
+    TemplateHead,                // `hello ${
+    TemplateMiddle,              // } world ${
+    TemplateTail,                // } end`
 
-    BooleanLiteral,     // true, false
-    NullLiteral,        // null
+    // Boolean and null literals
+    True,                        // true
+    False,                       // false
+    NullLiteral,                 // null
 
-    Plus,               // + (done)
-    Minus,              // - (done)
-    Star,               // * (done)
-    Slash,              // / (done)
-    Percent,            // % (done)
-    Exponent,           // ** (done)
+    // Arithmetic operators
+    Plus,                        // +
+    Minus,                       // -
+    Star,                        // *
+    Slash,                       // /
+    Percent,                     // %
+    Exponent,                    // **
 
-    Assign,             // = (done)
-    PlusAssign,         // += (done)
-    MinusAssign,        // -= (done)
-    StarAssign,         // *= (done)
-    SlashAssign,        // /= (done)
-    PercentAssign,      // %= (done)
-    ExponentAssign,     // **= (done)
+    // Assignment operators
+    Assign,                      // =
+    PlusAssign,                  // +=
+    MinusAssign,                 // -=
+    StarAssign,                  // *=
+    SlashAssign,                 // /=
+    PercentAssign,               // %=
+    ExponentAssign,              // **=
 
-    Increment,          // ++ (done)
-    Decrement,          // -- (done)
+    // Increment/decrement operators
+    Increment,                   // ++
+    Decrement,                   // --
 
-    Equal,              // == (done)
-    NotEqual,           // != (done)
-    StrictEqual,        // === (done)
-    StrictNotEqual,     // !== (done)
-    LessThan,           // < (done)
-    GreaterThan,        // > (done)
-    LessThanEqual,      // <= (done)
-    GreaterThanEqual,   // >= (done)
+    // Comparison operators
+    Equal,                       // ==
+    NotEqual,                    // !=
+    StrictEqual,                 // ===
+    StrictNotEqual,              // !==
+    LessThan,                    // <
+    GreaterThan,                 // >
+    LessThanEqual,               // <=
+    GreaterThanEqual,            // >=
 
-    LogicalAnd,         // && (done)
-    LogicalOr,          // || (done)
-    LogicalNot,         // ! (done)
+    // Logical operators
+    LogicalAnd,                  // &&
+    LogicalOr,                   // ||
+    LogicalNot,                  // !
 
-    BitwiseAnd,         // & (done)
-    BitwiseOr,          // | (done)
-    BitwiseXor,         // ^ (done)
-    BitwiseNot,         // ~ (done)
-    LeftShift,          // << (done)
-    RightShift,         // >> (done)
-    UnsignedRightShift, // >>> (done)
+    // Bitwise operators
+    BitwiseAnd,                  // &
+    BitwiseOr,                   // |
+    BitwiseXor,                  // ^
+    BitwiseNot,                  // ~
+    LeftShift,                   // <<
+    RightShift,                  // >>
+    UnsignedRightShift,          // >>>
 
-    BitwiseAndAssign,   // &= (done)
-    BitwiseOrAssign,    // |= (done)
-    BitwiseXorAssign,   // ^= (done)
-    LeftShiftAssign,    // <<= (done)
-    RightShiftAssign,   // >>= (done)
-    UnsignedRightShiftAssign, // >>>= (done)
+    // Bitwise assignment operators
+    BitwiseAndAssign,            // &=
+    BitwiseOrAssign,             // |=
+    BitwiseXorAssign,            // ^=
+    LeftShiftAssign,             // <<=
+    RightShiftAssign,            // >>=
+    UnsignedRightShiftAssign,    // >>>=
 
-    NullishCoalescing,  // ?? (done)
-    NullishAssign,      // ??= (done)
-    LogicalAndAssign,   // &&= (done)
-    LogicalOrAssign,    // ||= (done)
-    OptionalChaining,   // ?. (done)
+    // Modern operators
+    NullishCoalescing,           // ??
+    NullishAssign,               // ??=
+    LogicalAndAssign,            // &&=
+    LogicalOrAssign,             // ||=
+    OptionalChaining,            // ?.
 
-    LeftParen,          // ( (done)
-    RightParen,         // ) (done)
-    LeftBrace,          // { (done)
-    RightBrace,         // } (done)
-    LeftBracket,        // [ (done)
-    RightBracket,       // ] (done)
-    Semicolon,          // ; (done)
-    Comma,              // , (done)
-    Dot,                // .   (done)
-    Spread,             // ... (done)
-    Arrow,              // => (done)
-    Question,           // ? (done)
-    Colon,              // : (done)
+    // Delimiters
+    LeftParen,                   // (
+    RightParen,                  // )
+    LeftBrace,                   // {
+    RightBrace,                  // }
+    LeftBracket,                 // [
+    RightBracket,                // ]
+    Semicolon,                   // ;
+    Comma,                       // ,
+    Dot,                         // .
+    Spread,                      // ...
+    Arrow,                       // =>
+    Question,                    // ?
+    Colon,                       // :
 
-    If, Else, Switch, Case, Default,
-    For, While, Do, Break, Continue,
+    // Control flow keywords
+    If,
+    Else,
+    Switch,
+    Case,
+    Default,
+    For,
+    While,
+    Do,
+    Break,
+    Continue,
 
-    Function, Return, Async, Await, Yield,
+    // Function keywords
+    Function,
+    Return,
+    Async,
+    Await,
+    Yield,
 
-    Var, Let, Const,
+    // Variable declaration keywords
+    Var,
+    Let,
+    Const,
 
-    Class, Extends, Super, Static, Enum,
+    // Class and OOP keywords
+    Class,
+    Extends,
+    Super,
+    Static,
+    Enum,
+    Public,
+    Private,
+    Protected,
+    Interface,
+    Implements,
 
-    Import, Export, From, As,
+    // Module keywords
+    Import,
+    Export,
+    From,
+    As,
 
-    Try, Catch, Finally, Throw,
+    // Exception handling keywords
+    Try,
+    Catch,
+    Finally,
+    Throw,
 
-    New, This, Typeof, Instanceof, In, Of,
-    Delete, Void, With, Debugger,
+    // Other keywords
+    New,
+    This,
+    Typeof,
+    Instanceof,
+    In,
+    Of,
+    Delete,
+    Void,
+    With,
+    Debugger,
 
-    Identifier,         // variableName, $$, _, $$variable
-    PrivateIdentifier,  // #privateField
-    EOF,                // End of file (done)
-    Invalid,            // Error token (done)
+    // Identifiers
+    Identifier,                  // variableName, $$, _, $$variable
+    PrivateIdentifier,           // #privateField
+
+    // Special tokens
+    EOF,                         // End of file
+    Invalid,                     // Error token
 };
 
 pub const Span = struct {
