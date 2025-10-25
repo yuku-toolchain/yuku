@@ -31,12 +31,55 @@ pub const Lexer = struct {
             '<' => self.scanLessThan(),
             '>' => self.scanGreaterThan(),
             '=' => self.scanAssignOrEqualOrArrow(),
+            '|' => self.scanOr(),
             '&' => self.scanAnd(),
+            '^' => self.scanCaret(),
             '%' => self.scanPercent(),
             '0'...'9' => self.scanNumber(),
             '"', '\'' => self.scanString(),
             '/' => self.scanSlashOrRegex(),
+            '?' => self.scanQuestionMark(),
+            '~' => self.consumeSingleCharToken(TokenType.BitwiseNot),
             else => self.consumeSingleCharToken(TokenType.Invalid),
+        };
+    }
+
+    fn scanQuestionMark(self: *Lexer) Token {
+        const next_1 = self.peekAhead(1);
+        const next_2 = self.peekAhead(2);
+
+        if (next_1 == '?' and next_2 == '=') {
+            return self.consumeMultiCharToken(.NullishAssign, 3);
+        }
+
+        return switch (next_1) {
+            '?' => self.consumeMultiCharToken(.NullishCoalescing, 2),
+            '.' => self.consumeMultiCharToken(.OptionalChaining, 2),
+            else => self.consumeSingleCharToken(.Question),
+        };
+    }
+
+    fn scanCaret(self: *Lexer) Token {
+        const next_char = self.peekAhead(1);
+
+        return switch (next_char) {
+            '=' => self.consumeMultiCharToken(.BitwiseXorAssign, 2),
+            else => self.consumeSingleCharToken(.BitwiseXor),
+        };
+    }
+
+    fn scanOr(self: *Lexer) Token {
+        const next_1 = self.peekAhead(1);
+        const next_2 = self.peekAhead(2);
+
+        if (next_1 == '|' and next_2 == '=') {
+            return self.consumeMultiCharToken(.LogicalOrAssign, 3);
+        }
+
+        return switch (next_1) {
+            '|' => self.consumeMultiCharToken(.LogicalOr, 2),
+            '=' => self.consumeMultiCharToken(.BitwiseOrAssign, 2),
+            else => self.consumeSingleCharToken(.BitwiseOr),
         };
     }
 

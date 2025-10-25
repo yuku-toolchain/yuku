@@ -44,29 +44,29 @@ pub const TokenType = enum {
     GreaterThanEqual,   // >= (done)
 
     LogicalAnd,         // && (done)
-    LogicalOr,          // ||
+    LogicalOr,          // || (done)
     LogicalNot,         // ! (done)
 
     BitwiseAnd,         // & (done)
-    BitwiseOr,          // |
-    BitwiseXor,         // ^
-    BitwiseNot,         // ~
+    BitwiseOr,          // | (done)
+    BitwiseXor,         // ^ (done)
+    BitwiseNot,         // ~ (done)
     LeftShift,          // << (done)
     RightShift,         // >> (done)
     UnsignedRightShift, // >>> (done)
 
     BitwiseAndAssign,   // &= (done)
-    BitwiseOrAssign,    // |=
-    BitwiseXorAssign,   // ^=
+    BitwiseOrAssign,    // |= (done)
+    BitwiseXorAssign,   // ^= (done)
     LeftShiftAssign,    // <<= (done)
     RightShiftAssign,   // >>= (done)
     UnsignedRightShiftAssign, // >>>= (done)
 
-    NullishCoalescing,  // ??
-    NullishAssign,      // ??=
+    NullishCoalescing,  // ?? (done)
+    NullishAssign,      // ??= (done)
     LogicalAndAssign,   // &&= (done)
-    LogicalOrAssign,    // ||=
-    OptionalChaining,   // ?.
+    LogicalOrAssign,    // ||= (done)
+    OptionalChaining,   // ?. (done)
 
     LeftParen,          // (
     RightParen,         // )
@@ -79,7 +79,7 @@ pub const TokenType = enum {
     Dot,                // .   (done)
     Spread,             // ... (done)
     Arrow,              // => (done)
-    Question,           // ?
+    Question,           // ? (done)
     Colon,              // :
 
     If, Else, Switch, Case, Default,
