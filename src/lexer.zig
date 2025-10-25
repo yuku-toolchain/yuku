@@ -123,7 +123,7 @@ pub const Lexer = struct {
         }
 
         if (next_1 == '>' and next_2 == '>') {
-            if(next_3 == '='){
+            if (next_3 == '=') {
                 return self.consumeMultiCharToken(.UnsignedRightShiftAssign, 4);
             } else {
                 return self.consumeMultiCharToken(.UnsignedRightShift, 3);
@@ -180,7 +180,6 @@ pub const Lexer = struct {
             else => self.consumeSingleCharToken(.Assign),
         };
     }
-
 
     fn scanMinus(self: *Lexer) Token {
         const next_char = self.peekAhead(1);
@@ -361,6 +360,10 @@ pub const Lexer = struct {
         while (!self.isAtEnd()) {
             const c = self.currentChar();
 
+            if (c == ' ') {
+                break;
+            }
+
             if (c == '\\') {
                 self.advanceBy(1);
                 if (!self.isAtEnd()) {
@@ -410,11 +413,11 @@ pub const Lexer = struct {
         const next1 = self.peekAhead(1);
         const next2 = self.peekAhead(2);
 
-        if(std.ascii.isDigit(next1)){
+        if (std.ascii.isDigit(next1)) {
             return self.scanNumber();
         }
 
-        if(next1 == '.' and next2 == '.'){
+        if (next1 == '.' and next2 == '.') {
             return self.consumeMultiCharToken(TokenType.Spread, 3);
         }
 
@@ -527,8 +530,8 @@ pub const Lexer = struct {
                 const next = self.peekAhead(1);
                 if (std.ascii.isDigit(next) or
                     ((next == '+' or next == '-') and
-                     !self.isAtEndWithOffset(2) and
-                     std.ascii.isDigit(self.peekAhead(2))))
+                        !self.isAtEndWithOffset(2) and
+                        std.ascii.isDigit(self.peekAhead(2))))
                 {
                     self.advanceBy(1);
                     if (self.currentChar() == '+' or self.currentChar() == '-') {
@@ -542,9 +545,11 @@ pub const Lexer = struct {
         if (self.currentChar() == '_') {
             self.advanceBy(1);
             while (!self.isAtEnd()) {
-                if (std.ascii.isAlphanumeric(self.currentChar())) {
-                    self.advanceBy(1);
-                } else if (self.currentChar() == '_') {
+                const current_char = self.currentChar();
+                if ((std.ascii.isAlphanumeric(current_char) or current_char == '_')
+                // n is handled below to detect .BigIntLiteral, if include the n here because of isAlphanumeric
+                // the separate n check below won't reach if there is a underscore in number
+                and current_char != 'n') {
                     self.advanceBy(1);
                 } else {
                     break;

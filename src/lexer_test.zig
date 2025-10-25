@@ -2358,3 +2358,858 @@ test "stress: single character input for all operators" {
         try expectTokenType(try lexer.nextToken(), token_type);
     }
 }
+
+test "span: simple token span" {
+    var lexer = Lexer.init("hello");
+    const token = try lexer.nextToken();
+    try expectTokenSpan(token, 0, 5);
+}
+
+test "span: multiple tokens with whitespace" {
+    var lexer = Lexer.init("let x = 42");
+    const t1 = try lexer.nextToken();
+    try expectTokenSpan(t1, 0, 3);
+    const t2 = try lexer.nextToken();
+    try expectTokenSpan(t2, 4, 5);
+    const t3 = try lexer.nextToken();
+    try expectTokenSpan(t3, 6, 7);
+    const t4 = try lexer.nextToken();
+    try expectTokenSpan(t4, 8, 10);
+}
+
+test "span: string literal span" {
+    var lexer = Lexer.init("\"hello world\"");
+    const token = try lexer.nextToken();
+    try expectTokenSpan(token, 0, 13);
+}
+
+test "span: multi-char operator span" {
+    var lexer = Lexer.init("===");
+    const token = try lexer.nextToken();
+    try expectTokenSpan(token, 0, 3);
+}
+
+test "span: template literal span" {
+    var lexer = Lexer.init("`hello`");
+    const token = try lexer.nextToken();
+    try expectTokenSpan(token, 0, 7);
+}
+
+test "span: regex literal span" {
+    var lexer = Lexer.init("/test/gi");
+    const token = try lexer.nextToken();
+    try expectTokenSpan(token, 0, 8);
+}
+
+test "span: complex expression spans" {
+    var lexer = Lexer.init("x + y * 2");
+    try expectTokenSpan(try lexer.nextToken(), 0, 1);
+    try expectTokenSpan(try lexer.nextToken(), 2, 3);
+    try expectTokenSpan(try lexer.nextToken(), 4, 5);
+    try expectTokenSpan(try lexer.nextToken(), 6, 7);
+    try expectTokenSpan(try lexer.nextToken(), 8, 9);
+}
+
+test "string escape: all basic escapes" {
+    var lexer = Lexer.init("\"\\n\\t\\r\\b\\f\\v\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\n\\t\\r\\b\\f\\v\"");
+}
+
+test "string escape: octal escape" {
+    var lexer = Lexer.init("\"\\101\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\101\"");
+}
+
+test "string escape: null character" {
+    var lexer = Lexer.init("\"\\0\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\0\"");
+}
+
+test "string escape: vertical tab" {
+    var lexer = Lexer.init("\"\\v\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\v\"");
+}
+
+test "string escape: form feed" {
+    var lexer = Lexer.init("\"\\f\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\f\"");
+}
+
+test "string escape: backspace" {
+    var lexer = Lexer.init("\"\\b\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\b\"");
+}
+
+test "string escape: unicode 4 digit" {
+    var lexer = Lexer.init("\"\\u0041\\u0042\\u0043\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\u0041\\u0042\\u0043\"");
+}
+
+test "string escape: unicode with braces" {
+    var lexer = Lexer.init("\"\\u{1F600}\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\u{1F600}\"");
+}
+
+test "string escape: hex escape" {
+    var lexer = Lexer.init("\"\\x41\\x42\\x43\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\x41\\x42\\x43\"");
+}
+
+test "string escape: escaped single quote in double" {
+    var lexer = Lexer.init("\"it\\'s\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"it\\'s\"");
+}
+
+test "string escape: escaped double quote in single" {
+    var lexer = Lexer.init("'say \\\"hi\\\"'");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "'say \\\"hi\\\"'");
+}
+
+test "string escape: multiple backslashes" {
+    var lexer = Lexer.init("\"\\\\\\\\\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\\\\\\\\"");
+}
+
+test "string escape: mixed escapes" {
+    var lexer = Lexer.init("\"\\n\\t\\x41\\u0042\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"\\n\\t\\x41\\u0042\"");
+}
+
+test "string vs regex: after identifier" {
+    var lexer = Lexer.init("x / 2");
+    try expectTokenType(try lexer.nextToken(), .Identifier);
+    try expectTokenType(try lexer.nextToken(), .Slash);
+    try expectTokenType(try lexer.nextToken(), .NumericLiteral);
+}
+
+test "string vs regex: regex at start" {
+    var lexer = Lexer.init("/test/");
+    try expectTokenType(try lexer.nextToken(), .RegexLiteral);
+}
+
+test "string vs regex: division after number" {
+    var lexer = Lexer.init("10 / 2");
+    try expectTokenType(try lexer.nextToken(), .NumericLiteral);
+    try expectTokenType(try lexer.nextToken(), .Slash);
+    try expectTokenType(try lexer.nextToken(), .NumericLiteral);
+}
+
+test "string vs regex: regex after operator" {
+    var lexer = Lexer.init("= /test/");
+    try expectTokenType(try lexer.nextToken(), .Assign);
+    try expectTokenType(try lexer.nextToken(), .RegexLiteral);
+}
+
+test "string vs regex: division after paren" {
+    var lexer = Lexer.init("(x) / 2");
+    try expectTokenType(try lexer.nextToken(), .LeftParen);
+    try expectTokenType(try lexer.nextToken(), .Identifier);
+    try expectTokenType(try lexer.nextToken(), .RightParen);
+    try expectTokenType(try lexer.nextToken(), .Slash);
+    try expectTokenType(try lexer.nextToken(), .NumericLiteral);
+}
+
+test "number: integer zero" {
+    var lexer = Lexer.init("0");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "0");
+}
+
+test "number: leading zeros in legacy octal" {
+    var lexer = Lexer.init("0777");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "0777");
+}
+
+test "number: float starting with dot" {
+    var lexer = Lexer.init(".123");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, ".123");
+}
+
+test "number: float ending with dot" {
+    var lexer = Lexer.init("123.");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "123");
+    try expectToken(try lexer.nextToken(), .Dot, ".");
+}
+
+test "number: scientific with uppercase E" {
+    var lexer = Lexer.init("1E10");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1E10");
+}
+
+test "number: scientific with negative exponent" {
+    var lexer = Lexer.init("3.14e-10");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3.14e-10");
+}
+
+test "number: scientific with positive exponent" {
+    var lexer = Lexer.init("2.5e+3");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "2.5e+3");
+}
+
+test "number: hex with lowercase x" {
+    var lexer = Lexer.init("0xabc");
+    try expectToken(try lexer.nextToken(), .HexLiteral, "0xabc");
+}
+
+test "number: hex with uppercase X" {
+    var lexer = Lexer.init("0XABC");
+    try expectToken(try lexer.nextToken(), .HexLiteral, "0XABC");
+}
+
+test "number: hex with mixed case letters" {
+    var lexer = Lexer.init("0xAbCdEf123");
+    try expectToken(try lexer.nextToken(), .HexLiteral, "0xAbCdEf123");
+}
+
+test "number: octal with lowercase o" {
+    var lexer = Lexer.init("0o123");
+    try expectToken(try lexer.nextToken(), .OctalLiteral, "0o123");
+}
+
+test "number: octal with uppercase O" {
+    var lexer = Lexer.init("0O777");
+    try expectToken(try lexer.nextToken(), .OctalLiteral, "0O777");
+}
+
+test "number: binary with lowercase b" {
+    var lexer = Lexer.init("0b101");
+    try expectToken(try lexer.nextToken(), .BinaryLiteral, "0b101");
+}
+
+test "number: binary with uppercase B" {
+    var lexer = Lexer.init("0B111");
+    try expectToken(try lexer.nextToken(), .BinaryLiteral, "0B111");
+}
+
+test "number: bigint from decimal" {
+    var lexer = Lexer.init("999999999999999999n");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "999999999999999999n");
+}
+
+test "number: bigint from hex" {
+    var lexer = Lexer.init("0xFFFFFFFFn");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "0xFFFFFFFFn");
+}
+
+test "number: bigint from octal" {
+    var lexer = Lexer.init("0o7777n");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "0o7777n");
+}
+
+test "number: bigint from binary" {
+    var lexer = Lexer.init("0b11111111n");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "0b11111111n");
+}
+
+test "number: underscore separator in integer" {
+    var lexer = Lexer.init("1_000_000_000");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1_000_000_000");
+}
+
+test "number: underscore separator in float" {
+    var lexer = Lexer.init("3.141_592_653");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3.141_592_653");
+}
+
+test "number: underscore separator in hex" {
+    var lexer = Lexer.init("0xFF_FF_FF_FF");
+    try expectToken(try lexer.nextToken(), .HexLiteral, "0xFF_FF_FF_FF");
+}
+
+test "number: underscore separator in binary" {
+    var lexer = Lexer.init("0b1111_0000_1111_0000");
+    try expectToken(try lexer.nextToken(), .BinaryLiteral, "0b1111_0000_1111_0000");
+}
+
+test "number: underscore separator in octal" {
+    var lexer = Lexer.init("0o777_666_555");
+    try expectToken(try lexer.nextToken(), .OctalLiteral, "0o777_666_555");
+}
+
+test "number: multiple underscores" {
+    var lexer = Lexer.init("1__000");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1__000");
+}
+
+test "regex: empty pattern with flags" {
+    var lexer = Lexer.init("//gi");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "//gi");
+}
+
+test "regex: character class simple" {
+    var lexer = Lexer.init("/[abc]/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/[abc]/");
+}
+
+test "regex: character class with range" {
+    var lexer = Lexer.init("/[a-z0-9]/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/[a-z0-9]/");
+}
+
+test "regex: character class negated" {
+    var lexer = Lexer.init("/[^abc]/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/[^abc]/");
+}
+
+test "regex: character class with special chars" {
+    var lexer = Lexer.init("/[\\]\\[\\-\\^]/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/[\\]\\[\\-\\^]/");
+}
+
+test "regex: nested character classes" {
+    var lexer = Lexer.init("/[a[bc]d]/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/[a[bc]d]/");
+}
+
+test "regex: quantifiers" {
+    var lexer = Lexer.init("/a*b+c?d{2}e{3,}f{4,5}/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/a*b+c?d{2}e{3,}f{4,5}/");
+}
+
+test "regex: lazy quantifiers" {
+    var lexer = Lexer.init("/a*?b+?c??/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/a*?b+?c??/");
+}
+
+test "regex: anchors" {
+    var lexer = Lexer.init("/^start.*end$/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/^start.*end$/");
+}
+
+test "regex: word boundary" {
+    var lexer = Lexer.init("/\\bword\\b/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/\\bword\\b/");
+}
+
+test "regex: capturing groups" {
+    var lexer = Lexer.init("/(a)(b)(c)/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/(a)(b)(c)/");
+}
+
+test "regex: non-capturing groups" {
+    var lexer = Lexer.init("/(?:a)(?:b)/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/(?:a)(?:b)/");
+}
+
+test "regex: named groups" {
+    var lexer = Lexer.init("/(?<name>pattern)/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/(?<name>pattern)/");
+}
+
+test "regex: lookahead positive" {
+    var lexer = Lexer.init("/a(?=b)/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/a(?=b)/");
+}
+
+test "regex: lookahead negative" {
+    var lexer = Lexer.init("/a(?!b)/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/a(?!b)/");
+}
+
+test "regex: lookbehind positive" {
+    var lexer = Lexer.init("/(?<=a)b/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/(?<=a)b/");
+}
+
+test "regex: lookbehind negative" {
+    var lexer = Lexer.init("/(?<!a)b/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/(?<!a)b/");
+}
+
+test "regex: backreferences" {
+    var lexer = Lexer.init("/(a)\\1/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/(a)\\1/");
+}
+
+test "regex: escape sequences" {
+    var lexer = Lexer.init("/\\d\\D\\w\\W\\s\\S/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/\\d\\D\\w\\W\\s\\S/");
+}
+
+test "regex: unicode property escapes" {
+    var lexer = Lexer.init("/\\p{L}/u");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/\\p{L}/u");
+}
+
+test "regex: alternation" {
+    var lexer = Lexer.init("/cat|dog|bird/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/cat|dog|bird/");
+}
+
+test "regex: all flags" {
+    var lexer = Lexer.init("/test/gimsuy");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/test/gimsuy");
+}
+
+test "regex: escaped slash in pattern" {
+    var lexer = Lexer.init("/\\/path\\/to\\/file/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/\\/path\\/to\\/file/");
+}
+
+test "regex: complex email pattern" {
+    var lexer = Lexer.init("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/");
+}
+
+test "multiple lexemes: variable declaration" {
+    var lexer = Lexer.init("const x = 42;");
+    try expectToken(try lexer.nextToken(), .Const, "const");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Assign, "=");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "42");
+    try expectToken(try lexer.nextToken(), .Semicolon, ";");
+    try expectTokenType(try lexer.nextToken(), .EOF);
+}
+
+test "multiple lexemes: array literal" {
+    var lexer = Lexer.init("[1, 2, 3]");
+    try expectToken(try lexer.nextToken(), .LeftBracket, "[");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "2");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3");
+    try expectToken(try lexer.nextToken(), .RightBracket, "]");
+}
+
+test "multiple lexemes: object literal" {
+    var lexer = Lexer.init("{a: 1, b: 2}");
+    try expectToken(try lexer.nextToken(), .LeftBrace, "{");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "2");
+    try expectToken(try lexer.nextToken(), .RightBrace, "}");
+}
+
+test "multiple lexemes: arrow function" {
+    var lexer = Lexer.init("(x, y) => x + y");
+    try expectToken(try lexer.nextToken(), .LeftParen, "(");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+    try expectToken(try lexer.nextToken(), .RightParen, ")");
+    try expectToken(try lexer.nextToken(), .Arrow, "=>");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+}
+
+test "multiple lexemes: ternary operator" {
+    var lexer = Lexer.init("x ? y : z");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Question, "?");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .Identifier, "z");
+}
+
+test "multiple lexemes: spread operator" {
+    var lexer = Lexer.init("[...arr]");
+    try expectToken(try lexer.nextToken(), .LeftBracket, "[");
+    try expectToken(try lexer.nextToken(), .Spread, "...");
+    try expectToken(try lexer.nextToken(), .Identifier, "arr");
+    try expectToken(try lexer.nextToken(), .RightBracket, "]");
+}
+
+test "multiple lexemes: optional chaining" {
+    var lexer = Lexer.init("obj?.prop?.method()");
+    try expectToken(try lexer.nextToken(), .Identifier, "obj");
+    try expectToken(try lexer.nextToken(), .OptionalChaining, "?.");
+    try expectToken(try lexer.nextToken(), .Identifier, "prop");
+    try expectToken(try lexer.nextToken(), .OptionalChaining, "?.");
+    try expectToken(try lexer.nextToken(), .Identifier, "method");
+    try expectToken(try lexer.nextToken(), .LeftParen, "(");
+    try expectToken(try lexer.nextToken(), .RightParen, ")");
+}
+
+test "multiple lexemes: destructuring" {
+    var lexer = Lexer.init("const {a, b: c} = obj");
+    try expectToken(try lexer.nextToken(), .Const, "const");
+    try expectToken(try lexer.nextToken(), .LeftBrace, "{");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .RightBrace, "}");
+    try expectToken(try lexer.nextToken(), .Assign, "=");
+    try expectToken(try lexer.nextToken(), .Identifier, "obj");
+}
+
+test "multiple lexemes: compound assignment" {
+    var lexer = Lexer.init("x += 5");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .PlusAssign, "+=");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "5");
+}
+
+test "multiple lexemes: comparison chain" {
+    var lexer = Lexer.init("a < b && b < c");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .LessThan, "<");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .LogicalAnd, "&&");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .LessThan, "<");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+}
+
+test "multiple lexemes: bitwise operations" {
+    var lexer = Lexer.init("a & b | c ^ d");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .BitwiseAnd, "&");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .BitwiseOr, "|");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .BitwiseXor, "^");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+}
+
+test "multiple lexemes: shift operations" {
+    var lexer = Lexer.init("x << 2 >> 1 >>> 3");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .LeftShift, "<<");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "2");
+    try expectToken(try lexer.nextToken(), .RightShift, ">>");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1");
+    try expectToken(try lexer.nextToken(), .UnsignedRightShift, ">>>");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3");
+}
+
+test "multiple lexemes: nullish coalescing" {
+    var lexer = Lexer.init("x ?? y ?? z");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .NullishCoalescing, "??");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+    try expectToken(try lexer.nextToken(), .NullishCoalescing, "??");
+    try expectToken(try lexer.nextToken(), .Identifier, "z");
+}
+
+test "multiple lexemes: template with expressions" {
+    var lexer = Lexer.init("`sum: ${a + b}`");
+    try expectTokenType(try lexer.nextToken(), .TemplateHead);
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectTokenType(try lexer.nextToken(), .TemplateTail);
+}
+
+test "multiple lexemes: private field access" {
+    var lexer = Lexer.init("this.#field");
+    try expectToken(try lexer.nextToken(), .This, "this");
+    try expectToken(try lexer.nextToken(), .Dot, ".");
+    try expectToken(try lexer.nextToken(), .PrivateIdentifier, "#field");
+}
+
+test "multiple lexemes: increment expressions" {
+    var lexer = Lexer.init("++x + y--");
+    try expectToken(try lexer.nextToken(), .Increment, "++");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+    try expectToken(try lexer.nextToken(), .Decrement, "--");
+}
+
+test "multiple lexemes: typeof expression" {
+    var lexer = Lexer.init("typeof x === 'string'");
+    try expectToken(try lexer.nextToken(), .Typeof, "typeof");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .StrictEqual, "===");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "'string'");
+}
+
+test "multiple lexemes: for of loop" {
+    var lexer = Lexer.init("for (const x of arr)");
+    try expectToken(try lexer.nextToken(), .For, "for");
+    try expectToken(try lexer.nextToken(), .LeftParen, "(");
+    try expectToken(try lexer.nextToken(), .Const, "const");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Of, "of");
+    try expectToken(try lexer.nextToken(), .Identifier, "arr");
+    try expectToken(try lexer.nextToken(), .RightParen, ")");
+}
+
+test "multiple lexemes: async function" {
+    var lexer = Lexer.init("async function test()");
+    try expectToken(try lexer.nextToken(), .Async, "async");
+    try expectToken(try lexer.nextToken(), .Function, "function");
+    try expectToken(try lexer.nextToken(), .Identifier, "test");
+    try expectToken(try lexer.nextToken(), .LeftParen, "(");
+    try expectToken(try lexer.nextToken(), .RightParen, ")");
+}
+
+test "multiple lexemes: class with extends" {
+    var lexer = Lexer.init("class Child extends Parent");
+    try expectToken(try lexer.nextToken(), .Class, "class");
+    try expectToken(try lexer.nextToken(), .Identifier, "Child");
+    try expectToken(try lexer.nextToken(), .Extends, "extends");
+    try expectToken(try lexer.nextToken(), .Identifier, "Parent");
+}
+
+test "edge: no whitespace operators" {
+    var lexer = Lexer.init("a+b-c*d/e%f");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .Minus, "-");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .Star, "*");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+    try expectToken(try lexer.nextToken(), .Slash, "/");
+    try expectToken(try lexer.nextToken(), .Identifier, "e");
+    try expectToken(try lexer.nextToken(), .Percent, "%");
+    try expectToken(try lexer.nextToken(), .Identifier, "f");
+}
+
+test "edge: ambiguous operator sequences" {
+    var lexer = Lexer.init("x+++y");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Increment, "++");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+}
+
+test "edge: multiple dots" {
+    var lexer = Lexer.init("obj...spread");
+    try expectToken(try lexer.nextToken(), .Identifier, "obj");
+    try expectToken(try lexer.nextToken(), .Spread, "...");
+    try expectToken(try lexer.nextToken(), .Identifier, "spread");
+}
+
+test "edge: question marks sequence" {
+    var lexer = Lexer.init("a?b??c?.d??=e");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .Question, "?");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .NullishCoalescing, "??");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .OptionalChaining, "?.");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+    try expectToken(try lexer.nextToken(), .NullishAssign, "??=");
+    try expectToken(try lexer.nextToken(), .Identifier, "e");
+}
+
+test "edge: equals sequence" {
+    var lexer = Lexer.init("a=b==c===d");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .Assign, "=");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .Equal, "==");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .StrictEqual, "===");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+}
+
+test "edge: angle brackets sequence" {
+    var lexer = Lexer.init("a<b<<c<<=d");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .LessThan, "<");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .LeftShift, "<<");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .LeftShiftAssign, "<<=");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+}
+
+test "edge: mixed string quotes" {
+    var lexer = Lexer.init("\"double\"'single'`template`");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "\"double\"");
+    try expectToken(try lexer.nextToken(), .StringLiteral, "'single'");
+    try expectToken(try lexer.nextToken(), .NoSubstitutionTemplate, "`template`");
+}
+
+test "edge: numbers with underscores and bigint" {
+    var lexer = Lexer.init("1_000n");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "1_000n");
+}
+
+test "edge: hex bigint with underscores" {
+    var lexer = Lexer.init("0xFF_FFn");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "0xFF_FFn");
+}
+
+test "edge: decimal starting and ending" {
+    var lexer = Lexer.init(".5 + 5.");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, ".5");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "5");
+    try expectToken(try lexer.nextToken(), .Dot, ".");
+}
+
+test "edge: exponent without decimal" {
+    var lexer = Lexer.init("1e10");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1e10");
+}
+
+test "edge: negative exponent" {
+    var lexer = Lexer.init("1e-10");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1e-10");
+}
+
+test "edge: positive exponent" {
+    var lexer = Lexer.init("1e+10");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1e+10");
+}
+
+test "complex: nested template literals" {
+    var lexer = Lexer.init("`outer ${`inner ${x}`} end`");
+    try expectTokenType(try lexer.nextToken(), .TemplateHead);
+    try expectTokenType(try lexer.nextToken(), .TemplateHead);
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectTokenType(try lexer.nextToken(), .TemplateTail);
+    try expectTokenType(try lexer.nextToken(), .TemplateTail);
+}
+
+test "complex: regex with unicode flag" {
+    var lexer = Lexer.init("/\\p{Letter}/u");
+    try expectToken(try lexer.nextToken(), .RegexLiteral, "/\\p{Letter}/u");
+}
+
+test "complex: all assignment operators sequence" {
+    var lexer = Lexer.init("a += b -= c *= d /= e %= f **= g");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .PlusAssign, "+=");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .MinusAssign, "-=");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .StarAssign, "*=");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+    try expectToken(try lexer.nextToken(), .SlashAssign, "/=");
+    try expectToken(try lexer.nextToken(), .Identifier, "e");
+    try expectToken(try lexer.nextToken(), .PercentAssign, "%=");
+    try expectToken(try lexer.nextToken(), .Identifier, "f");
+    try expectToken(try lexer.nextToken(), .ExponentAssign, "**=");
+    try expectToken(try lexer.nextToken(), .Identifier, "g");
+}
+
+test "complex: all bitwise assignment operators" {
+    var lexer = Lexer.init("a &= b |= c ^= d <<= e >>= f >>>= g");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .BitwiseAndAssign, "&=");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .BitwiseOrAssign, "|=");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .BitwiseXorAssign, "^=");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+    try expectToken(try lexer.nextToken(), .LeftShiftAssign, "<<=");
+    try expectToken(try lexer.nextToken(), .Identifier, "e");
+    try expectToken(try lexer.nextToken(), .RightShiftAssign, ">>=");
+    try expectToken(try lexer.nextToken(), .Identifier, "f");
+    try expectToken(try lexer.nextToken(), .UnsignedRightShiftAssign, ">>>=");
+    try expectToken(try lexer.nextToken(), .Identifier, "g");
+}
+
+test "complex: all logical assignment operators" {
+    var lexer = Lexer.init("a &&= b ||= c ??= d");
+    try expectToken(try lexer.nextToken(), .Identifier, "a");
+    try expectToken(try lexer.nextToken(), .LogicalAndAssign, "&&=");
+    try expectToken(try lexer.nextToken(), .Identifier, "b");
+    try expectToken(try lexer.nextToken(), .LogicalOrAssign, "||=");
+    try expectToken(try lexer.nextToken(), .Identifier, "c");
+    try expectToken(try lexer.nextToken(), .NullishAssign, "??=");
+    try expectToken(try lexer.nextToken(), .Identifier, "d");
+}
+
+test "complex: mixed number formats in expression" {
+    var lexer = Lexer.init("0xFF + 0o77 + 0b11 + 123n + 3.14e10");
+    try expectToken(try lexer.nextToken(), .HexLiteral, "0xFF");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .OctalLiteral, "0o77");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .BinaryLiteral, "0b11");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .BigIntLiteral, "123n");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3.14e10");
+}
+
+test "complex: keywords as object keys" {
+    var lexer = Lexer.init("{if: 1, class: 2, return: 3}");
+    try expectToken(try lexer.nextToken(), .LeftBrace, "{");
+    try expectToken(try lexer.nextToken(), .If, "if");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .Class, "class");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "2");
+    try expectToken(try lexer.nextToken(), .Comma, ",");
+    try expectToken(try lexer.nextToken(), .Return, "return");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3");
+    try expectToken(try lexer.nextToken(), .RightBrace, "}");
+}
+
+test "complex: computed property names" {
+    var lexer = Lexer.init("{[x + y]: value}");
+    try expectToken(try lexer.nextToken(), .LeftBrace, "{");
+    try expectToken(try lexer.nextToken(), .LeftBracket, "[");
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Identifier, "y");
+    try expectToken(try lexer.nextToken(), .RightBracket, "]");
+    try expectToken(try lexer.nextToken(), .Colon, ":");
+    try expectToken(try lexer.nextToken(), .Identifier, "value");
+    try expectToken(try lexer.nextToken(), .RightBrace, "}");
+}
+
+test "stress: very deep nesting" {
+    var lexer = Lexer.init("((((((((((x))))))))))");
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        try expectToken(try lexer.nextToken(), .LeftParen, "(");
+    }
+    try expectToken(try lexer.nextToken(), .Identifier, "x");
+    i = 0;
+    while (i < 10) : (i += 1) {
+        try expectToken(try lexer.nextToken(), .RightParen, ")");
+    }
+}
+
+test "stress: long identifier chain" {
+    var lexer = Lexer.init("a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z");
+    const letters = "abcdefghijklmnopqrstuvwxyz";
+    for (letters) |letter| {
+        const buf = [1]u8{letter};
+        try expectToken(try lexer.nextToken(), .Identifier, &buf);
+        if (letter != 'z') {
+            try expectToken(try lexer.nextToken(), .Dot, ".");
+        }
+    }
+}
+
+test "stress: many sequential operators" {
+    var lexer = Lexer.init("+ - * / % ** ++ -- += -= *= /= %= **=");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .Minus, "-");
+    try expectToken(try lexer.nextToken(), .Star, "*");
+    try expectToken(try lexer.nextToken(), .Slash, "/");
+    try expectToken(try lexer.nextToken(), .Percent, "%");
+    try expectToken(try lexer.nextToken(), .Exponent, "**");
+    try expectToken(try lexer.nextToken(), .Increment, "++");
+    try expectToken(try lexer.nextToken(), .Decrement, "--");
+    try expectToken(try lexer.nextToken(), .PlusAssign, "+=");
+    try expectToken(try lexer.nextToken(), .MinusAssign, "-=");
+    try expectToken(try lexer.nextToken(), .StarAssign, "*=");
+    try expectToken(try lexer.nextToken(), .SlashAssign, "/=");
+    try expectToken(try lexer.nextToken(), .PercentAssign, "%=");
+    try expectToken(try lexer.nextToken(), .ExponentAssign, "**=");
+}
+
+test "stress: alternating tokens" {
+    var lexer = Lexer.init("1+2-3*4/5%6");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "1");
+    try expectToken(try lexer.nextToken(), .Plus, "+");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "2");
+    try expectToken(try lexer.nextToken(), .Minus, "-");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "3");
+    try expectToken(try lexer.nextToken(), .Star, "*");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "4");
+    try expectToken(try lexer.nextToken(), .Slash, "/");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "5");
+    try expectToken(try lexer.nextToken(), .Percent, "%");
+    try expectToken(try lexer.nextToken(), .NumericLiteral, "6");
+}
