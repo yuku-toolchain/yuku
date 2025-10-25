@@ -3,7 +3,6 @@
     .version = "0.0.0",
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
     .minimum_zig_version = "0.16.0-dev.731+958faa703",
-    .dependencies = .{},
     .paths = .{
         "build.zig",
         "build.zig.zon",

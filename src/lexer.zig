@@ -433,7 +433,6 @@ pub const Lexer = struct {
     fn scanIdentifierOrKeyword(self: *Lexer) Token {
         const start = self.position;
 
-        // consume first character (already validated as letter, $, or _)
         self.advanceBy(1);
 
         // consume remaining identifier characters
@@ -448,7 +447,8 @@ pub const Lexer = struct {
 
         const end = self.position;
         const lexeme = self.source[start..end];
-        const token_type = self.getKeywordType(lexeme);
+
+        const token_type: TokenType = self.getKeywordType(lexeme);
 
         return self.createToken(token_type, lexeme, start, end);
     }
@@ -483,7 +483,148 @@ pub const Lexer = struct {
 
     fn getKeywordType(self: *Lexer, lexeme: []const u8) TokenType {
         _ = self;
-        return KeywordMap.get(lexeme) orelse .Identifier;
+        switch (lexeme.len) {
+            2 => {
+                switch (lexeme[1]) {
+                    'f' => {
+                        return switch (lexeme[0]) {
+                            'i' => .If, // "if"
+                            'o' => .Of, // "of"
+                            else => .Identifier,
+                        };
+                    },
+                    'n' => if (lexeme[0] == 'i') return .In, // "in"
+                    'o' => if (lexeme[0] == 'd') return .Do, // "do"
+                    's' => if (lexeme[0] == 'a') return .As, // "as"
+                    else => {},
+                }
+            },
+
+            3 => {
+                switch (lexeme[0]) {
+                    'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .For,
+                    'l' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .Let,
+                    'n' => if (lexeme[1] == 'e' and lexeme[2] == 'w') return .New,
+                    't' => if (lexeme[1] == 'r' and lexeme[2] == 'y') return .Try,
+                    'v' => if (lexeme[1] == 'a' and lexeme[2] == 'r') return .Var,
+                    else => {},
+                }
+            },
+
+            4 => {
+                switch (lexeme[1]) {
+                    'a' => if (lexeme[0] == 'c' and lexeme[2] == 's' and lexeme[3] == 'e') return .Case,
+                    'h' => if (lexeme[0] == 't' and lexeme[2] == 'i' and lexeme[3] == 's') return .This,
+                    'l' => if (lexeme[0] == 'e' and lexeme[2] == 's' and lexeme[3] == 'e') return .Else,
+                    'n' => if (lexeme[0] == 'e' and lexeme[2] == 'u' and lexeme[3] == 'm') return .Enum,
+                    'o' => if (lexeme[0] == 'v' and lexeme[2] == 'i' and lexeme[3] == 'd') return .Void,
+                    'i' => if (lexeme[0] == 'w' and lexeme[2] == 't' and lexeme[3] == 'h') return .With,
+                    'u' => if (lexeme[0] == 'n' and lexeme[2] == 'l' and lexeme[3] == 'l') return .NullLiteral,
+                    'r' => {
+                        if (lexeme[0] == 't' and lexeme[2] == 'u' and lexeme[3] == 'e') return .True;
+                        if (lexeme[0] == 'f' and lexeme[2] == 'o' and lexeme[3] == 'm') return .From;
+                    },
+                    else => {},
+                }
+            },
+
+            5 => {
+                switch (lexeme[0]) {
+                    'a' => {
+                        if (lexeme[1] == 'w' and lexeme[2] == 'a' and lexeme[3] == 'i' and lexeme[4] == 't')
+                            return .Await;
+                        if (lexeme[1] == 's' and lexeme[2] == 'y' and lexeme[3] == 'n' and lexeme[4] == 'c')
+                            return .Async;
+                    },
+                    'b' => if (lexeme[1] == 'r' and lexeme[2] == 'e' and lexeme[3] == 'a' and lexeme[4] == 'k')
+                        return .Break,
+                    'c' => {
+                        if (lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 's' and lexeme[4] == 't')
+                            return .Const;
+                        if (lexeme[1] == 'l' and lexeme[2] == 'a' and lexeme[3] == 's' and lexeme[4] == 's')
+                            return .Class;
+                        if (lexeme[1] == 'a' and lexeme[2] == 't' and lexeme[3] == 'c' and lexeme[4] == 'h')
+                            return .Catch;
+                    },
+                    'f' => if (lexeme[1] == 'a' and lexeme[2] == 'l' and lexeme[3] == 's' and lexeme[4] == 'e')
+                        return .False,
+                    's' => if (lexeme[1] == 'u' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'r')
+                        return .Super,
+                    't' => if (lexeme[1] == 'h' and lexeme[2] == 'r' and lexeme[3] == 'o' and lexeme[4] == 'w')
+                        return .Throw,
+                    'w' => if (lexeme[1] == 'h' and lexeme[2] == 'i' and lexeme[3] == 'l' and lexeme[4] == 'e')
+                        return .While,
+                    'y' => if (lexeme[1] == 'i' and lexeme[2] == 'e' and lexeme[3] == 'l' and lexeme[4] == 'd')
+                        return .Yield,
+                    else => {},
+                }
+            },
+
+            6 => {
+                switch (lexeme[0]) {
+                    'd' => if (lexeme[1] == 'e' and lexeme[2] == 'l' and lexeme[3] == 'e' and lexeme[4] == 't' and lexeme[5] == 'e')
+                        return .Delete,
+                    'e' => if (lexeme[1] == 'x' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
+                        return .Export,
+                    'i' => if (lexeme[1] == 'm' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
+                        return .Import,
+                    'p' => if (lexeme[1] == 'u' and lexeme[2] == 'b' and lexeme[3] == 'l' and lexeme[4] == 'i' and lexeme[5] == 'c')
+                        return .Public,
+                    'r' => if (lexeme[1] == 'e' and lexeme[2] == 't' and lexeme[3] == 'u' and lexeme[4] == 'r' and lexeme[5] == 'n')
+                        return .Return,
+                    's' => {
+                        if (lexeme[1] == 'w' and lexeme[2] == 'i' and lexeme[3] == 't' and lexeme[4] == 'c' and lexeme[5] == 'h')
+                            return .Switch;
+                        if (lexeme[1] == 't' and lexeme[2] == 'a' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'c')
+                            return .Static;
+                    },
+                    't' => if (lexeme[1] == 'y' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'o' and lexeme[5] == 'f')
+                        return .Typeof,
+                    else => {},
+                }
+            },
+
+            7 => {
+                switch (lexeme[0]) {
+                    'd' => if (std.mem.eql(u8, lexeme, "default")) return .Default,
+                    'e' => if (std.mem.eql(u8, lexeme, "extends")) return .Extends,
+                    'f' => if (std.mem.eql(u8, lexeme, "finally")) return .Finally,
+                    'p' => if (std.mem.eql(u8, lexeme, "private")) return .Private,
+                    else => {},
+                }
+            },
+
+            8 => {
+                switch (lexeme[0]) {
+                    'c' => if (std.mem.eql(u8, lexeme, "continue")) return .Continue,
+                    'd' => if (std.mem.eql(u8, lexeme, "debugger")) return .Debugger,
+                    'f' => if (std.mem.eql(u8, lexeme, "function")) return .Function,
+                    else => {},
+                }
+            },
+
+            9 => {
+                switch (lexeme[0]) {
+                    'i' => if (std.mem.eql(u8, lexeme, "interface")) return .Interface,
+                    'p' => if (std.mem.eql(u8, lexeme, "protected")) return .Protected,
+                    else => {},
+                }
+            },
+
+            10 => {
+                switch (lexeme[0]) {
+                    'i' => {
+                        if (std.mem.eql(u8, lexeme, "instanceof")) return .Instanceof;
+                        if (std.mem.eql(u8, lexeme, "implements")) return .Implements;
+                    },
+                    else => {},
+                }
+            },
+
+            else => {},
+        }
+
+        return .Identifier;
     }
 
     fn scanNumber(self: *Lexer) Token {
@@ -630,8 +771,8 @@ pub const Lexer = struct {
         return self.source[self.position];
     }
 
-    fn peekAhead(self: *Lexer, comptime offset: u8) u8 {
-        if (self.isAtEndWithOffset(offset)) return 0;
+    fn peekAhead(self: *Lexer, offset: u8) u8 {
+        if ((self.position + offset) >= self.source.len) return 0;
         return self.source[self.position + offset];
     }
 

@@ -2178,15 +2178,7 @@ test "edge: all keywords in sequence" {
     const keywords = "if else for while do break continue return function const let var class extends super static this new import export from as try catch finally throw switch case default async await yield typeof instanceof in of delete void with debugger enum interface implements public private protected true false null";
     var lexer = Lexer.init(keywords);
 
-    const expected = [_]TokenType{
-        .If, .Else, .For, .While, .Do, .Break, .Continue, .Return,
-        .Function, .Const, .Let, .Var, .Class, .Extends, .Super, .Static,
-        .This, .New, .Import, .Export, .From, .As, .Try, .Catch,
-        .Finally, .Throw, .Switch, .Case, .Default, .Async, .Await, .Yield,
-        .Typeof, .Instanceof, .In, .Of, .Delete, .Void, .With, .Debugger,
-        .Enum, .Interface, .Implements, .Public, .Private, .Protected,
-        .True, .False, .NullLiteral
-    };
+    const expected = [_]TokenType{ .If, .Else, .For, .While, .Do, .Break, .Continue, .Return, .Function, .Const, .Let, .Var, .Class, .Extends, .Super, .Static, .This, .New, .Import, .Export, .From, .As, .Try, .Catch, .Finally, .Throw, .Switch, .Case, .Default, .Async, .Await, .Yield, .Typeof, .Instanceof, .In, .Of, .Delete, .Void, .With, .Debugger, .Enum, .Interface, .Implements, .Public, .Private, .Protected, .True, .False, .NullLiteral };
 
     for (expected) |token_type| {
         try expectTokenType(try lexer.nextToken(), token_type);
@@ -2360,12 +2352,7 @@ test "stress: single character input for all operators" {
     const single_chars = "+ - * / % < > = ! & | ^ ~ ( ) { } [ ] ; , : . ?";
     var lexer = Lexer.init(single_chars);
 
-    const expected = [_]TokenType{
-        .Plus, .Minus, .Star, .Slash, .Percent, .LessThan, .GreaterThan,
-        .Assign, .LogicalNot, .BitwiseAnd, .BitwiseOr, .BitwiseXor, .BitwiseNot,
-        .LeftParen, .RightParen, .LeftBrace, .RightBrace, .LeftBracket, .RightBracket,
-        .Semicolon, .Comma, .Colon, .Dot, .Question
-    };
+    const expected = [_]TokenType{ .Plus, .Minus, .Star, .Slash, .Percent, .LessThan, .GreaterThan, .Assign, .LogicalNot, .BitwiseAnd, .BitwiseOr, .BitwiseXor, .BitwiseNot, .LeftParen, .RightParen, .LeftBrace, .RightBrace, .LeftBracket, .RightBracket, .Semicolon, .Comma, .Colon, .Dot, .Question };
 
     for (expected) |token_type| {
         try expectTokenType(try lexer.nextToken(), token_type);
