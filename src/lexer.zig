@@ -759,32 +759,6 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..i], start, i);
     }
 
-    fn consumeWhileOctal(self: *Lexer) void {
-        var i = self.position;
-        while (i < self.source.len) {
-            const c = self.source[i];
-            if (c >= '0' and c <= '7') {
-                i += 1;
-            } else {
-                break;
-            }
-        }
-        self.position = i;
-    }
-
-    fn consumeWhileBinary(self: *Lexer) void {
-        var i = self.position;
-        while (i < self.source.len) {
-            const c = self.source[i];
-            if (c == '0' or c == '1') {
-                i += 1;
-            } else {
-                break;
-            }
-        }
-        self.position = i;
-    }
-
     fn skipSkippable(self: *Lexer) void {
         var i = self.position;
 
@@ -883,35 +857,5 @@ pub const Lexer = struct {
             .lexeme = lexeme,
             .span = .{ .start = start, .end = end }
         };
-    }
-
-    fn advanceBy(self: *Lexer, comptime offset: u8) void {
-        self.position += offset;
-    }
-
-    fn currentChar(self: *Lexer) u8 {
-        if (self.isEof()) return 0;
-        return self.source[self.position];
-    }
-
-    fn peekAhead(self: *Lexer, offset: u8) u8 {
-        if ((self.position + offset) >= self.source.len) return 0;
-        return self.source[self.position + offset];
-    }
-
-    fn consumeWhile(self: *Lexer, comptime predicate: fn (u8) bool) void {
-        var i = self.position;
-        while (i < self.source.len and predicate(self.source[i])) {
-            i += 1;
-        }
-        self.position = i;
-    }
-
-    fn isEof(self: *Lexer) bool {
-        return self.position >= self.source.len;
-    }
-
-    fn isEofWithOffset(self: *Lexer, comptime offset: u8) bool {
-        return (self.position + offset) >= self.source.len;
     }
 };
