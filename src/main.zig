@@ -32,7 +32,7 @@ pub fn main() !void {
     const content = @embedFile("test.js");
 
     const num_runs = 10;
-    var total_time: u64 = 0;
+    var total_time: i128 = 0;
     var total_tokens: usize = 0;
 
     for (0..num_runs) |_| {
@@ -41,7 +41,7 @@ pub fn main() !void {
         var token_count: usize = 0;
         var last_token: ?Token = null;
 
-        var timer = try std.time.Timer.start();
+        const start = std.time.nanoTimestamp();
 
         while (true) {
             const token = lexer.nextToken() catch |err| {
@@ -62,11 +62,14 @@ pub fn main() !void {
             last_token = token;
         }
 
-        total_time += timer.read();
+        const end = std.time.nanoTimestamp();
+        const elapsed = end - start;
+        total_time += elapsed;
         total_tokens = token_count;
     }
 
-    const avg_time_ns = total_time / num_runs;
+    const avg_time_ns = @divTrunc(total_time, @as(i128, num_runs));
+
     const avg_time_ms = @as(f64, @floatFromInt(avg_time_ns)) / 1_000_000.0;
     const mb_per_sec = (@as(f64, @floatFromInt(content.len)) / @as(f64, @floatFromInt(avg_time_ns))) * 1_000.0;
 

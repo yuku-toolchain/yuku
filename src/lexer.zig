@@ -837,7 +837,7 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..i], start, i);
     }
 
-    fn skipSkippable(self: *Lexer) void {
+    inline fn skipSkippable(self: *Lexer) void {
         var i = self.position;
 
         while (i < self.source_len) {
@@ -873,7 +873,7 @@ pub const Lexer = struct {
         self.position = i;
     }
 
-    fn skipSingleLineComment(self: *Lexer) !void {
+    inline fn skipSingleLineComment(self: *Lexer) !void {
         const start = self.position;
         var i = start + 2;
 
@@ -893,7 +893,7 @@ pub const Lexer = struct {
         });
     }
 
-    fn skipMultiLineComment(self: *Lexer) !void {
+    inline fn skipMultiLineComment(self: *Lexer) !void {
         const start = self.position;
         var i = start + 2;
 
