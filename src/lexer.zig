@@ -66,16 +66,52 @@ pub const Lexer = struct {
             '/' => self.scanSlash(),
             '?' => self.scanQuestionMark(),
             '`' => self.scanTemplateLiteral(),
-            '~' => self.consumeSingleCharToken(TokenType.BitwiseNot),
-            '(' => self.consumeSingleCharToken(TokenType.LeftParen),
-            ')' => self.consumeSingleCharToken(TokenType.RightParen),
-            '{' => self.consumeSingleCharToken(TokenType.LeftBrace),
+            '~' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.BitwiseNot, self.source[start..self.position], start, self.position);
+            },
+            '(' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.LeftParen, self.source[start..self.position], start, self.position);
+            },
+            ')' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.RightParen, self.source[start..self.position], start, self.position);
+            },
+            '{' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.LeftBrace, self.source[start..self.position], start, self.position);
+            },
             '}' => self.handleRightBrace(),
-            '[' => self.consumeSingleCharToken(TokenType.LeftBracket),
-            ']' => self.consumeSingleCharToken(TokenType.RightBracket),
-            ';' => self.consumeSingleCharToken(TokenType.Semicolon),
-            ',' => self.consumeSingleCharToken(TokenType.Comma),
-            ':' => self.consumeSingleCharToken(TokenType.Colon),
+            '[' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.LeftBracket, self.source[start..self.position], start, self.position);
+            },
+            ']' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.RightBracket, self.source[start..self.position], start, self.position);
+            },
+            ';' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Semicolon, self.source[start..self.position], start, self.position);
+            },
+            ',' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Comma, self.source[start..self.position], start, self.position);
+            },
+            ':' => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Colon, self.source[start..self.position], start, self.position);
+            },
             '#' => self.scanPrivateIdentifier(),
             'a'...'z', 'A'...'Z', '_', '$' => self.scanIdentifierOrKeyword(),
             else => error.UnexpectedCharacter,
@@ -87,13 +123,27 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '?' and next_2 == '=') {
-            return self.consumeMultiCharToken(.NullishAssign, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.NullishAssign, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '?' => self.consumeMultiCharToken(.NullishCoalescing, 2),
-            '.' => self.consumeMultiCharToken(.OptionalChaining, 2),
-            else => self.consumeSingleCharToken(.Question),
+            '?' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.NullishCoalescing, self.source[start..self.position], start, self.position);
+            },
+            '.' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.OptionalChaining, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Question, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -101,8 +151,16 @@ pub const Lexer = struct {
         const next_char = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
 
         return switch (next_char) {
-            '=' => self.consumeMultiCharToken(.BitwiseXorAssign, 2),
-            else => self.consumeSingleCharToken(.BitwiseXor),
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.BitwiseXorAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.BitwiseXor, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -111,13 +169,27 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '|' and next_2 == '=') {
-            return self.consumeMultiCharToken(.LogicalOrAssign, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.LogicalOrAssign, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '|' => self.consumeMultiCharToken(.LogicalOr, 2),
-            '=' => self.consumeMultiCharToken(.BitwiseOrAssign, 2),
-            else => self.consumeSingleCharToken(.BitwiseOr),
+            '|' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.LogicalOr, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.BitwiseOrAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.BitwiseOr, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -126,13 +198,27 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '&' and next_2 == '=') {
-            return self.consumeMultiCharToken(.LogicalAndAssign, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.LogicalAndAssign, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '&' => self.consumeMultiCharToken(.LogicalAnd, 2),
-            '=' => self.consumeMultiCharToken(.BitwiseAndAssign, 2),
-            else => self.consumeSingleCharToken(.BitwiseAnd),
+            '&' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.LogicalAnd, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.BitwiseAndAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.BitwiseAnd, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -142,21 +228,38 @@ pub const Lexer = struct {
         const next_3 = if (self.position + 3 < self.source.len) self.source[self.position + 3] else 0;
 
         if (next_1 == '>' and next_2 == '=') {
-            return self.consumeMultiCharToken(.RightShiftAssign, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.RightShiftAssign, self.source[start..self.position], start, self.position);
         }
 
         if (next_1 == '>' and next_2 == '>') {
+            const start = self.position;
             if (next_3 == '=') {
-                return self.consumeMultiCharToken(.UnsignedRightShiftAssign, 4);
+                self.position += 4;
+                return self.createToken(.UnsignedRightShiftAssign, self.source[start..self.position], start, self.position);
             } else {
-                return self.consumeMultiCharToken(.UnsignedRightShift, 3);
+                self.position += 3;
+                return self.createToken(.UnsignedRightShift, self.source[start..self.position], start, self.position);
             }
         }
 
         return switch (next_1) {
-            '>' => self.consumeMultiCharToken(.RightShift, 2),
-            '=' => self.consumeMultiCharToken(.GreaterThanEqual, 2),
-            else => self.consumeSingleCharToken(.GreaterThan),
+            '>' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.RightShift, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.GreaterThanEqual, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.GreaterThan, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -165,13 +268,27 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '<' and next_2 == '=') {
-            return self.consumeMultiCharToken(.LeftShiftAssign, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.LeftShiftAssign, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '<' => self.consumeMultiCharToken(.LeftShift, 2),
-            '=' => self.consumeMultiCharToken(.LessThanEqual, 2),
-            else => self.consumeSingleCharToken(.LessThan),
+            '<' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.LeftShift, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.LessThanEqual, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.LessThan, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -180,12 +297,22 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '=' and next_2 == '=') {
-            return self.consumeMultiCharToken(.StrictNotEqual, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.StrictNotEqual, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '=' => self.consumeMultiCharToken(.NotEqual, 2),
-            else => self.consumeSingleCharToken(.LogicalNot),
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.NotEqual, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.LogicalNot, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -194,13 +321,27 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '=' and next_2 == '=') {
-            return self.consumeMultiCharToken(.StrictEqual, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.StrictEqual, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '=' => self.consumeMultiCharToken(.Equal, 2),
-            '>' => self.consumeMultiCharToken(.Arrow, 2),
-            else => self.consumeSingleCharToken(.Assign),
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.Equal, self.source[start..self.position], start, self.position);
+            },
+            '>' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.Arrow, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Assign, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -208,9 +349,21 @@ pub const Lexer = struct {
         const next_char = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
 
         return switch (next_char) {
-            '-' => self.consumeMultiCharToken(.Decrement, 2),
-            '=' => self.consumeMultiCharToken(.MinusAssign, 2),
-            else => self.consumeSingleCharToken(.Minus),
+            '-' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.Decrement, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.MinusAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Minus, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -218,8 +371,16 @@ pub const Lexer = struct {
         const next_char = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
 
         return switch (next_char) {
-            '=' => self.consumeMultiCharToken(.PercentAssign, 2),
-            else => self.consumeSingleCharToken(.Percent),
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.PercentAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Percent, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -228,13 +389,27 @@ pub const Lexer = struct {
         const next_2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
 
         if (next_1 == '*' and next_2 == '=') {
-            return self.consumeMultiCharToken(.ExponentAssign, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.ExponentAssign, self.source[start..self.position], start, self.position);
         }
 
         return switch (next_1) {
-            '*' => self.consumeMultiCharToken(.Exponent, 2),
-            '=' => self.consumeMultiCharToken(.StarAssign, 2),
-            else => self.consumeSingleCharToken(.Star),
+            '*' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.Exponent, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.StarAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Star, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -358,22 +533,27 @@ pub const Lexer = struct {
     }
 
     fn handleRightBrace(self: *Lexer) LexError!Token {
-        // if we're inside a template substitution, scan template middle/tail
         if (self.template_depth > 0) {
             return self.scanTemplateMiddleOrTail();
         }
 
-        return self.consumeSingleCharToken(TokenType.RightBrace);
+        const start = self.position;
+        self.position += 1;
+        return self.createToken(.RightBrace, self.source[start..self.position], start, self.position);
     }
 
     fn scanSlash(self: *Lexer) Token {
         const next = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
 
         if (next == '=') {
-            return self.consumeMultiCharToken(.SlashAssign, 2);
+            const start = self.position;
+            self.position += 2;
+            return self.createToken(.SlashAssign, self.source[start..self.position], start, self.position);
         }
 
-        const slash = self.consumeSingleCharToken(.Slash);
+        const start = self.position;
+        self.position += 1;
+        const slash = self.createToken(.Slash, self.source[start..self.position], start, self.position);
         const token = self.reScanAsRegex(slash);
 
         if(@TypeOf(token) == Token){
@@ -453,19 +633,35 @@ pub const Lexer = struct {
         }
 
         if (next1 == '.' and next2 == '.') {
-            return self.consumeMultiCharToken(TokenType.Spread, 3);
+            const start = self.position;
+            self.position += 3;
+            return self.createToken(.Spread, self.source[start..self.position], start, self.position);
         }
 
-        return self.consumeSingleCharToken(.Dot);
+        const start = self.position;
+        self.position += 1;
+        return self.createToken(.Dot, self.source[start..self.position], start, self.position);
     }
 
     fn scanPlus(self: *Lexer) Token {
         const next_char = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
 
         return switch (next_char) {
-            '+' => self.consumeMultiCharToken(.Increment, 2),
-            '=' => self.consumeMultiCharToken(.PlusAssign, 2),
-            else => self.consumeSingleCharToken(.Plus),
+            '+' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.Increment, self.source[start..self.position], start, self.position);
+            },
+            '=' => blk: {
+                const start = self.position;
+                self.position += 2;
+                break :blk self.createToken(.PlusAssign, self.source[start..self.position], start, self.position);
+            },
+            else => blk: {
+                const start = self.position;
+                self.position += 1;
+                break :blk self.createToken(.Plus, self.source[start..self.position], start, self.position);
+            },
         };
     }
 
@@ -837,20 +1033,7 @@ pub const Lexer = struct {
         return error.UnterminatedMultiLineComment;
     }
 
-    fn consumeSingleCharToken(self: *Lexer, comptime token_type: TokenType) Token {
-        const start = self.position;
-        self.position += 1;
-        return self.createToken(token_type, self.source[start..self.position], start, self.position);
-    }
-
-    fn consumeMultiCharToken(self: *Lexer, comptime token_type: TokenType, comptime length: u8) Token {
-        const start = self.position;
-        self.position += length;
-        const end = self.position;
-        return self.createToken(token_type, self.source[start..end], start, end);
-    }
-
-    fn createToken(self: *Lexer, token_type: TokenType, lexeme: []const u8, start: usize, end: usize) Token {
+    inline fn createToken(self: *Lexer, token_type: TokenType, lexeme: []const u8, start: usize, end: usize) Token {
         _ = self;
         return Token{
             .type = token_type,
