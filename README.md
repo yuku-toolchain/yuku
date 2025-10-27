@@ -10,7 +10,7 @@
   [![NPM Version](https://img.shields.io/npm/v/yuku?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku)
   [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
-A very fast TypeScript declarations bundler written in Zig!
+Very fast parser for the web, written in Zig.
 
 <br/>
 
