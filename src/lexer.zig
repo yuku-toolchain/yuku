@@ -25,15 +25,25 @@ const LexError = error{
 // and some simd optimizations
 
 pub const Lexer = struct {
-    source: []const u8,
+    source: []u8,
+    source_len: usize,
     position: usize,
     template_depth: usize,
     allocator: std.mem.Allocator,
     comments: std.ArrayListUnmanaged(Comment),
 
-    pub fn init(allocator: std.mem.Allocator, source: []const u8) Lexer {
+    const PADDING_SIZE = 4;
+
+    pub fn init(allocator: std.mem.Allocator, source: []const u8) !Lexer {
+        const padded_buffer = try allocator.alloc(u8, source.len + PADDING_SIZE);
+
+        @memcpy(padded_buffer[0..source.len], source);
+
+        @memset(padded_buffer[source.len..], 0);
+
         return .{
-            .source = source,
+            .source = padded_buffer,
+            .source_len = source.len,
             .position = 0,
             .template_depth = 0,
             .allocator = allocator,
@@ -43,12 +53,13 @@ pub const Lexer = struct {
 
     pub fn deinit(self: *Lexer) void {
         self.comments.deinit(self.allocator);
+        self.allocator.free(self.source);
     }
 
     pub fn nextToken(self: *Lexer) LexError!Token {
         self.skipSkippable();
 
-        if (self.position >= self.source.len) {
+        if (self.position >= self.source_len) {
             return self.createToken(.EOF, "", self.position, self.position);
         }
 
@@ -92,9 +103,9 @@ pub const Lexer = struct {
     fn scanPunctuation(self: *Lexer) LexError!Token {
         const start = self.position;
         const c0 = self.source[self.position];
-        const c1 = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
-        const c2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
-        const c3 = if (self.position + 3 < self.source.len) self.source[self.position + 3] else 0;
+        const c1 = self.source[self.position + 1];
+        const c2 = self.source[self.position + 2];
+        const c3 = self.source[self.position + 3];
 
         return switch (c0) {
             '+' => switch (c1) {
@@ -352,14 +363,13 @@ pub const Lexer = struct {
 
                 if (c == '\\') {
                     i += 1;
-                    if (i >= self.source.len) break;
-
                     const next = self.source[i];
+                    if (next == 0) break;
                     if (next == '\n') {
                         i += 1;
                     } else if (next == '\r') {
                         i += 1;
-                        if (i < self.source.len and self.source[i] == '\n') {
+                        if (self.source[i] == '\n') {
                             i += 1;
                         }
                     } else {
@@ -395,7 +405,7 @@ pub const Lexer = struct {
                 return self.createToken(.NoSubstitutionTemplate, self.source[start..i], start, i);
             }
 
-            if (c == '$' and i + 1 < self.source.len and self.source[i + 1] == '{') {
+            if (c == '$' and self.source[i + 1] == '{') {
                 i += 2;
                 self.template_depth += 1;
                 self.position = i;
@@ -404,7 +414,7 @@ pub const Lexer = struct {
 
             if (c == '\\') {
                 i += 1;
-                if (i < self.source.len) {
+                if (self.source[i] != 0) {
                     i += 1;
                 }
                 continue;
@@ -432,7 +442,7 @@ pub const Lexer = struct {
                 return self.createToken(.TemplateTail, self.source[start..i], start, i);
             }
 
-            if (c == '$' and i + 1 < self.source.len and self.source[i + 1] == '{') {
+            if (c == '$' and self.source[i + 1] == '{') {
                 i += 2;
                 self.position = i;
                 return self.createToken(.TemplateMiddle, self.source[start..i], start, i);
@@ -440,7 +450,7 @@ pub const Lexer = struct {
 
             if (c == '\\') {
                 i += 1;
-                if (i < self.source.len) {
+                if (self.source[i] != 0) {
                     i += 1;
                 }
                 continue;
@@ -520,8 +530,8 @@ pub const Lexer = struct {
     }
 
     fn scanDot(self: *Lexer) Token {
-        const next1 = if (self.position + 1 < self.source.len) self.source[self.position + 1] else 0;
-        const next2 = if (self.position + 2 < self.source.len) self.source[self.position + 2] else 0;
+        const next1 = self.source[self.position + 1];
+        const next2 = self.source[self.position + 2];
 
         if (std.ascii.isDigit(next1)) {
             return self.scanNumber();
@@ -743,7 +753,7 @@ pub const Lexer = struct {
         var token_type: TokenType = .NumericLiteral;
         var i = self.position;
 
-        if (self.source[i] == '0' and i + 1 < self.source.len) {
+        if (self.source[i] == '0') {
             const next = std.ascii.toLower(self.source[i + 1]);
             if (next == 'x') {
                 token_type = .HexLiteral;
@@ -776,7 +786,7 @@ pub const Lexer = struct {
 
         if (token_type == .NumericLiteral and
             i < self.source.len and self.source[i] == '.' and
-            i + 1 < self.source.len and std.ascii.isDigit(self.source[i + 1]))
+            std.ascii.isDigit(self.source[i + 1]))
         {
             i += 1;
             while (i < self.source.len and std.ascii.isDigit(self.source[i])) {
@@ -786,11 +796,10 @@ pub const Lexer = struct {
 
         if (token_type == .NumericLiteral and i < self.source.len) {
             const cur = std.ascii.toLower(self.source[i]);
-            if (cur == 'e' and i + 1 < self.source.len) {
+            if (cur == 'e') {
                 const next = self.source[i + 1];
                 if (std.ascii.isDigit(next) or
                     ((next == '+' or next == '-') and
-                        i + 2 < self.source.len and
                         std.ascii.isDigit(self.source[i + 2])))
                 {
                     i += 1;
@@ -807,7 +816,7 @@ pub const Lexer = struct {
         if (i < self.source.len and self.source[i] == '_') {
             while (i < self.source.len) {
                 const current_char = self.source[i];
-                const next_char = if (i + 1 < self.source.len) self.source[i + 1] else 0;
+                const next_char = self.source[i + 1];
 
                 const char_to_check = if (current_char == '_') next_char else current_char;
 
@@ -840,8 +849,8 @@ pub const Lexer = struct {
                 },
                 '/' => {
                     @branchHint(.likely);
-                    if (i + 1 >= self.source.len) break;
                     const next = self.source[i + 1];
+                    if (next == 0) break;
                     if (next == '/') {
                         self.position = i;
                         self.skipSingleLineComment() catch return;
@@ -890,7 +899,7 @@ pub const Lexer = struct {
 
         while (i < self.source.len) {
             const c = self.source[i];
-            if (c == '*' and i + 1 < self.source.len and self.source[i + 1] == '/') {
+            if (c == '*' and self.source[i + 1] == '/') {
                 i += 2;
                 self.position = i;
                 try self.comments.append(self.allocator, Comment{

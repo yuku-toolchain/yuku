@@ -36,7 +36,7 @@ pub fn main() !void {
     var total_tokens: usize = 0;
 
     for (0..num_runs) |_| {
-        var lexer = Lexer.init(allocator, content);
+        var lexer = try Lexer.init(allocator, content);
         defer lexer.deinit();
         var token_count: usize = 0;
         var last_token: ?Token = null;
