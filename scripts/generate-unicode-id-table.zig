@@ -15,22 +15,48 @@ pub fn main() !void {
     try readSpecToCodes(allocator);
 }
 
+const num_codepoints = std.math.maxInt(u21) + 1;
+
+const Codes = std.ArrayList(u21);
+
+const Kind = enum {
+    Start,
+    Continue
+};
+
 fn readSpecToCodes(allocator: std.mem.Allocator) !void {
     const file_path: []const u8 = "DerivedCoreProperties.txt";
 
     var dir = try std.fs.openDirAbsolute(extracted_dir, .{});
     defer dir.close();
 
-    const content = try dir.readFileAlloc(file_path, allocator, .limited(1024 * 1024 * 1024));
+    const content = try dir.readFileAlloc(file_path, allocator, .limited(2 * 1024 * 1024));
     defer allocator.free(content);
 
     const delim: u8 = '\n';
 
+    // const id_start_codes: Codes = .empty;
+    // const id_continue_codes: Codes = .empty;
+
     var lines = std.mem.splitScalar(u8, content, delim);
+
     while (lines.next()) |line| {
-        if (line.len > 0 and !std.mem.startsWith(u8, line, "#")) {
-            std.log.info("{s}", .{line});
+        if (line.len == 0 and !std.mem.startsWith(u8, line, "#")) {
+            continue;
         }
+
+        const kind: Kind = if(std.mem.indexOf(u8, line, "ID_Start")) |_| .Start else if (std.mem.indexOf(u8, line, "ID_Continue")) |_| .Continue else continue;
+
+        const space_index = std.mem.indexOfScalar(u8, line, ' ') orelse continue;
+
+        const to_parse = line[0..space_index];
+
+        const index_of_dots = std.mem.indexOf(u8, line, "..") orelse continue;
+
+        const start = to_parse[0..index_of_dots];
+        const end = to_parse[index_of_dots + 2..to_parse.len];
+
+        std.debug.print("{any} {any} {any}", .{kind, start, end});
     }
 }
 
