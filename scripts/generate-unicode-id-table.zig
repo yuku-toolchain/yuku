@@ -24,23 +24,35 @@ pub fn main() !void {
     defer id_start_codes.deinit();
     defer id_continue_codes.deinit();
 
-    try codesToRootAndLeaf(allocator, id_start_codes);
+    const result = try codesToRootAndLeaf(allocator, id_start_codes);
+
+    defer allocator.free(result.root);
+    defer allocator.free(result.leaf);
+
+    std.debug.print("root: {any}\n\nleaf: {any}\n", .{result.root, result.leaf});
 }
 
 const Chunk = [16]u32;
 
 const init_chunk: Chunk = .{0} ** 16;
 
-fn codesToRootAndLeaf(allocator: std.mem.Allocator, codes: Codes) !void {
+fn codesToRootAndLeaf(allocator: std.mem.Allocator, codes: Codes) !struct {
+    root: []u32,
+    leaf: []u32
+} {
     const n_piece_per_chunk = 16;
     const n_bits_per_chunk_piece = 32;
     const n_chunk_items = n_piece_per_chunk * n_bits_per_chunk_piece;
     const n_code_points = std.math.maxInt(u21) + 1;
+    const n_chunks = n_code_points / n_chunk_items;
 
-    var root = std.AutoArrayHashMap(Chunk, void).init(allocator);
-    defer root.deinit();
+    var root_indexes = std.AutoArrayHashMap(usize, Chunk).init(allocator);
+    defer root_indexes.deinit();
 
-    for (0..(n_code_points / n_chunk_items)) |chunk_i| {
+    var leaf_offset_for_chunks = std.AutoArrayHashMap(Chunk, usize).init(allocator);
+    defer leaf_offset_for_chunks.deinit();
+
+    for (0..n_chunks) |chunk_i| {
         var chunk: Chunk = init_chunk;
 
         for(0.., &chunk) |i, *piece| {
@@ -51,8 +63,31 @@ fn codesToRootAndLeaf(allocator: std.mem.Allocator, codes: Codes) !void {
             }
         }
 
-        try root.put(chunk, {});
+        try root_indexes.put(chunk_i, chunk);
+
+        const res = try leaf_offset_for_chunks.getOrPut(chunk);
+        if(!res.found_existing) res.value_ptr.* = leaf_offset_for_chunks.count() - 1;
     }
+
+    var root = try allocator.alloc(u32, n_chunks);
+
+    for (0..n_chunks) |i| {
+        const chunk = root_indexes.get(i) orelse std.debug.panic("no chunk found for index {d}", .{i});
+        const offset = leaf_offset_for_chunks.get(chunk) orelse std.debug.panic("no offset found for chunk {d}", .{i});
+        root[i] = @intCast(offset);
+    }
+
+    var leaf: std.ArrayList(u32) = .empty;
+
+    for(leaf_offset_for_chunks.keys()) |*pieces| {
+        for (pieces) |p| {
+            try leaf.append(allocator, p);
+        }
+    }
+
+    const leaf_slice = try leaf.toOwnedSlice(allocator);
+
+    return .{.root = root, .leaf = leaf_slice};
 }
 
 fn readSpecToCodes(allocator: std.mem.Allocator) !struct {Codes, Codes} {
