@@ -4,6 +4,13 @@ const spec_url = "https://www.unicode.org/Public/17.0.0/ucd/UCD.zip";
 const zip_dest = "/tmp/ucd.zip";
 const extracted_dir = "/tmp/ucd";
 
+const Codes = std.AutoHashMapUnmanaged(u32, void);
+
+const Kind = enum {
+    Start,
+    Continue
+};
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -12,19 +19,22 @@ pub fn main() !void {
 
     try downloadAndExtractSpec(allocator);
 
-    try readSpecToCodes(allocator);
+    var id_start_codes, var id_continue_codes = try readSpecToCodes(allocator);
+
+    defer id_start_codes.deinit(allocator);
+    defer id_continue_codes.deinit(allocator);
+
+    std.debug.print("{d} {d}", .{id_start_codes.items.len, id_continue_codes.items.len});
 }
 
-const num_codepoints = std.math.maxInt(u21) + 1;
+fn bitsToRootAndLeaf() !struct {
+    root: []u32,
+    leaf: []u64
+} {
 
-const Codes = std.ArrayList(u21);
+}
 
-const Kind = enum {
-    Start,
-    Continue
-};
-
-fn readSpecToCodes(allocator: std.mem.Allocator) !void {
+fn readSpecToCodes(allocator: std.mem.Allocator) !struct {Codes, Codes} {
     const file_path: []const u8 = "DerivedCoreProperties.txt";
 
     var dir = try std.fs.openDirAbsolute(extracted_dir, .{});
@@ -35,28 +45,53 @@ fn readSpecToCodes(allocator: std.mem.Allocator) !void {
 
     const delim: u8 = '\n';
 
-    // const id_start_codes: Codes = .empty;
-    // const id_continue_codes: Codes = .empty;
+    var id_start_codes: Codes = .empty;
+    var id_continue_codes: Codes = .empty;
 
     var lines = std.mem.splitScalar(u8, content, delim);
 
     while (lines.next()) |line| {
-        if (line.len == 0 and !std.mem.startsWith(u8, line, "#")) {
+        if (line.len == 0 or std.mem.startsWith(u8, line, "#")) {
             continue;
         }
 
         const kind: Kind = if(std.mem.indexOf(u8, line, "ID_Start")) |_| .Start else if (std.mem.indexOf(u8, line, "ID_Continue")) |_| .Continue else continue;
 
-        const space_index = std.mem.indexOfScalar(u8, line, ' ') orelse continue;
+        const parsed = try parseStartEnd(line) orelse continue;
 
-        const to_parse = line[0..space_index];
+            for (parsed.start..parsed.end) |c| {
+                if(kind == .Start){
+                    try id_start_codes.append(allocator, @intCast(c));
+                } else if(kind == .Continue){
+                    try id_continue_codes.append(allocator, @intCast(c));
+                } else {
+                    break;
+                }
+            }
+    }
 
-        const index_of_dots = std.mem.indexOf(u8, line, "..") orelse continue;
+    return .{ id_start_codes, id_continue_codes };
+}
 
-        const start = to_parse[0..index_of_dots];
-        const end = to_parse[index_of_dots + 2..to_parse.len];
+const Parsed = struct {
+    start: u32,
+    end: u32
+};
 
-        std.debug.print("{any} {any} {any}", .{kind, start, end});
+fn parseStartEnd(line: []const u8) !?Parsed {
+    const space_index = std.mem.indexOfScalar(u8, line, ' ') orelse line.len;
+
+    const to_parse = line[0..space_index];
+
+    if(std.mem.indexOf(u8, line, "..")) |i| {
+        const start = try std.fmt.parseInt(u32, to_parse[0..i], 16);
+        const end = try std.fmt.parseInt(u32, to_parse[i + 2 ..], 16);
+
+        return .{.start = start, .end = end + 1};
+    } else {
+        const x = try std.fmt.parseInt(u32, to_parse, 16);
+
+        return .{.start = x, .end = x + 1};
     }
 }
 
