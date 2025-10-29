@@ -4,7 +4,7 @@ const Token = @import("token.zig").Token;
 const TokenType = @import("token.zig").TokenType;
 const Comment = @import("token.zig").Comment;
 const CommentType = @import("token.zig").CommentType;
-const unicodeId = @import("unicode-id.zig");
+const unicodeJsHelpers = @import("unicode/js-helpers.zig");
 const util = @import("util.zig");
 
 const LexError = error{
@@ -556,7 +556,7 @@ pub const Lexer = struct {
 
         const c_cp = util.codePointAt(self.source, i);
 
-        if (!unicodeId.canStartIdentifier(c_cp.value)) {
+        if (!unicodeJsHelpers.canStartJsIdentifier(c_cp.value)) {
             return error.InvalidIdentifierStart;
         }
 
@@ -564,7 +564,7 @@ pub const Lexer = struct {
 
         while (i < self.source_len) {
             const cp = util.codePointAt(self.source, i);
-            if (unicodeId.canContinueIdentifier(cp.value)) {
+            if (unicodeJsHelpers.canContinueJsIdentifier(cp.value)) {
                 i += cp.len;
             } else {
                 break;
@@ -585,7 +585,7 @@ pub const Lexer = struct {
 
         const first_cp = util.codePointAt(self.source, i);
 
-        if (!unicodeId.canStartIdentifier(first_cp.value)) {
+        if (!unicodeJsHelpers.canStartJsIdentifier(first_cp.value)) {
             return error.InvalidPrivateIdentifierStart;
         }
 
@@ -593,7 +593,7 @@ pub const Lexer = struct {
 
         while (i < self.source_len) {
             const cp = util.codePointAt(self.source, i);
-            if (unicodeId.canContinueIdentifier(cp.value)) {
+            if (unicodeJsHelpers.canContinueJsIdentifier(cp.value)) {
                 i += cp.len;
             } else {
                 break;
