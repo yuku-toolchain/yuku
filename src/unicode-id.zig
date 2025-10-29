@@ -1,50 +1,36 @@
-// the design inspired by: https://github.com/dtolnay/unicode-ident
-
 const tables = @import("unicode-id-tables.zig");
 
-/// Checks if a unicode code point is the valid identifier start
+const chunk_size = 512;
+const bits_per_word = 32;
+const leaf_chunk_width = 16;
+
 pub fn canStartIdentifier(cp: u32) bool {
     if (cp < 128) {
-            return (cp >= 'a' and cp <= 'z') or
-                (cp >= 'A' and cp <= 'Z') or
-                cp == '_' or cp == '$';
-        }
+        return (cp >= 'a' and cp <= 'z') or
+            (cp >= 'A' and cp <= 'Z') or
+            cp == '_' or cp == '$';
+    }
 
-    const chunk_number = cp / 512;
-
-    const chunk_offset = @as(u32, tables.id_start_root[chunk_number]) * 16;
-
-    const c = cp - (chunk_number * 512);
-
-    const piece_offset = chunk_offset + (c / 32);
-
-    const bitpos_in_piece: u5 = @truncate(c % 32);
-
-    const piece = tables.id_start_leaf[piece_offset];
-
-    return (piece >> bitpos_in_piece) & 1 == 1;
+    return queryBitTable(cp, tables.id_start_root, tables.id_start_leaf);
 }
 
-/// Checks if a unicode code point is the valid identifier continuation
 pub fn canContinueIdentifier(cp: u32) bool {
     if (cp < 128) {
-            return (cp >= 'a' and cp <= 'z') or
-                (cp >= 'A' and cp <= 'Z') or
-                cp == '_' or cp == '$' or  // ← Add this!
-                (cp >= '0' and cp <= '9');
-        }
+        return (cp >= 'a' and cp <= 'z') or
+            (cp >= 'A' and cp <= 'Z') or
+            cp == '_' or cp == '$' or
+            (cp >= '0' and cp <= '9');
+    }
 
-    const chunk_number = cp / 512;
+    return queryBitTable(cp, tables.id_continue_root, tables.id_continue_leaf);
+}
 
-    const chunk_offset = @as(u32, tables.id_continue_root[chunk_number]) * 16;
-
-    const c = cp - (chunk_number * 512);
-
-    const piece_offset = chunk_offset + (c / 32);
-
-    const bitpos_in_piece: u5 = @truncate(c % 32);
-
-    const piece = tables.id_continue_leaf[piece_offset];
-
-    return (piece >> bitpos_in_piece) & 1 == 1;
+inline fn queryBitTable(cp: u32, root: []const u8, leaf: []const u64) bool {
+    const chunk_idx = cp / chunk_size;
+    const leaf_base = @as(u32, root[chunk_idx]) * leaf_chunk_width;
+    const offset_in_chunk = cp - (chunk_idx * chunk_size);
+    const word_idx = leaf_base + (offset_in_chunk / bits_per_word);
+    const bit_position: u5 = @truncate(offset_in_chunk % bits_per_word);
+    const word = leaf[word_idx];
+    return (word >> bit_position) & 1 == 1;
 }

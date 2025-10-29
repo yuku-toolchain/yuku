@@ -1,46 +1,48 @@
 const std = @import("std");
 
-const spec_url = "https://www.unicode.org/Public/17.0.0/ucd/UCD.zip";
-const zip_dest = "/tmp/ucd.zip";
-const extracted_dir = "/tmp/ucd";
-const tables_file = "./src/unicode-id-tables.zig";
+const unicode_data_url = "https://www.unicode.org/Public/17.0.0/ucd/UCD.zip";
+const temp_zip_path = "/tmp/ucd.zip";
+const extraction_path = "/tmp/ucd";
+const output_table_path = "./src/unicode-id-tables.zig";
 
-const Codes = std.AutoArrayHashMap(u32, void);
+const chunk_elements = 16;
+const bits_per_element = 32;
+const elements_per_chunk = chunk_elements * bits_per_element;
+const total_codepoints = std.math.maxInt(u21) + 1;
+const total_chunks = total_codepoints / elements_per_chunk;
 
-const Structures = struct { root: []u32, leaf: []u32 };
+const CodepointSet = std.AutoArrayHashMap(u32, void);
+const BitsetChunk = [chunk_elements]u32;
+const TableData = struct { root: []u32, leaf: []u32 };
 
-const Kind = enum { Start, Continue };
+const PropertyType = enum { Start, Continue };
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
+    var arena = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = arena.deinit();
+    const alloc = arena.allocator();
 
-    const allocator = gpa.allocator();
-
-    if (!exists(extracted_dir)) {
-        try downloadAndExtractSpec(allocator);
+    if (!pathExists(extraction_path)) {
+        try fetchUnicodeData(alloc);
     }
 
-    var id_start_codes, var id_continue_codes = try readSpecToCodes(allocator);
+    var start_set, var continue_set = try parseUnicodeProperties(alloc);
+    defer start_set.deinit();
+    defer continue_set.deinit();
 
-    defer id_start_codes.deinit();
-    defer id_continue_codes.deinit();
+    const start_tables = try buildLookupTables(alloc, start_set);
+    const continue_tables = try buildLookupTables(alloc, continue_set);
+    defer alloc.free(start_tables.root);
+    defer alloc.free(start_tables.leaf);
+    defer alloc.free(continue_tables.root);
+    defer alloc.free(continue_tables.leaf);
 
-    const id_start_structures = try codesToRootAndLeaf(allocator, id_start_codes);
-    const id_continue_structures = try codesToRootAndLeaf(allocator, id_start_codes);
+    const output = try std.fs.cwd().createFile(output_table_path, .{});
+    defer output.close();
 
-    defer allocator.free(id_start_structures.root);
-    defer allocator.free(id_start_structures.leaf);
-    defer allocator.free(id_continue_structures.root);
-    defer allocator.free(id_continue_structures.leaf);
-
-    const cwd = std.fs.cwd();
-    const file = try cwd.createFile(tables_file, .{});
-    defer file.close();
-
-    var buffer: [1024]u8 = undefined;
-    var file_writer = file.writer(&buffer);
-    const writer = &file_writer.interface;
+    var buf: [1024]u8 = undefined;
+    var buffered_writer = output.writer(&buf);
+    const writer = &buffered_writer.interface;
 
     try writer.writeAll(
         \\// Generated file, do not edit.
@@ -48,166 +50,158 @@ pub fn main() !void {
         \\
     );
 
-    try writeStructuresToFile(id_start_structures, writer, "id_start");
-    try writeStructuresToFile(id_continue_structures, writer, "id_continue");
+    try emitTableStructure(start_tables, writer, "id_start");
+    try emitTableStructure(continue_tables, writer, "id_continue");
 
-    try file_writer.end();
+    try buffered_writer.end();
 }
 
-const Chunk = [16]u32;
+fn buildLookupTables(alloc: std.mem.Allocator, codepoints: CodepointSet) !TableData {
+    var chunk_index_map = std.AutoArrayHashMap(usize, BitsetChunk).init(alloc);
+    defer chunk_index_map.deinit();
 
-const init_chunk: Chunk = .{0} ** 16;
+    var leaf_dedup_map = std.AutoArrayHashMap(BitsetChunk, usize).init(alloc);
+    defer leaf_dedup_map.deinit();
 
-fn codesToRootAndLeaf(allocator: std.mem.Allocator, codes: Codes) !Structures {
-    const n_piece_per_chunk = 16;
-    const n_bits_per_chunk_piece = 32;
-    const n_chunk_items = n_piece_per_chunk * n_bits_per_chunk_piece;
-    const n_code_points = std.math.maxInt(u21) + 1;
-    const n_chunks = n_code_points / n_chunk_items;
+    const zero_chunk: BitsetChunk = .{0} ** chunk_elements;
 
-    var root_indexes = std.AutoArrayHashMap(usize, Chunk).init(allocator);
-    defer root_indexes.deinit();
+    var chunk_idx: usize = 0;
+    while (chunk_idx < total_chunks) : (chunk_idx += 1) {
+        var bitset: BitsetChunk = zero_chunk;
 
-    var leaf_offset_for_chunks = std.AutoArrayHashMap(Chunk, usize).init(allocator);
-    defer leaf_offset_for_chunks.deinit();
-
-    for (0..n_chunks) |chunk_i| {
-        var chunk: Chunk = init_chunk;
-
-        for (0.., &chunk) |i, *piece| {
-            for (0..n_bits_per_chunk_piece) |bi| {
-                const cp: u32 = @intCast(chunk_i * n_chunk_items + i * n_bits_per_chunk_piece + bi);
-                const should: u32 = if (codes.contains(cp)) 1 else 0;
-                piece.* = piece.* | (should << @as(u5, @intCast(bi)));
+        for (0.., &bitset) |elem_idx, *element| {
+            var bit_idx: u32 = 0;
+            while (bit_idx < bits_per_element) : (bit_idx += 1) {
+                const cp: u32 = @intCast(chunk_idx * elements_per_chunk + elem_idx * bits_per_element + bit_idx);
+                const is_set: u32 = if (codepoints.contains(cp)) 1 else 0;
+                element.* = element.* | (is_set << @as(u5, @intCast(bit_idx)));
             }
         }
 
-        try root_indexes.put(chunk_i, chunk);
+        try chunk_index_map.put(chunk_idx, bitset);
 
-        const res = try leaf_offset_for_chunks.getOrPut(chunk);
-        if (!res.found_existing) res.value_ptr.* = leaf_offset_for_chunks.count() - 1;
-    }
-
-    var root = try allocator.alloc(u32, n_chunks);
-
-    for (0..n_chunks) |i| {
-        const chunk = root_indexes.get(i) orelse std.debug.panic("no chunk found for index {d}", .{i});
-        const offset = leaf_offset_for_chunks.get(chunk) orelse std.debug.panic("no offset found for chunk {d}", .{i});
-        root[i] = @intCast(offset);
-    }
-
-    var leaf: std.ArrayList(u32) = .empty;
-
-    for (leaf_offset_for_chunks.keys()) |*pieces| {
-        for (pieces) |p| {
-            try leaf.append(allocator, p);
+        const entry = try leaf_dedup_map.getOrPut(bitset);
+        if (!entry.found_existing) {
+            entry.value_ptr.* = leaf_dedup_map.count() - 1;
         }
     }
 
-    const leaf_slice = try leaf.toOwnedSlice(allocator);
+    const root = try alloc.alloc(u32, total_chunks);
 
-    return .{ .root = root, .leaf = leaf_slice };
+    for (0..total_chunks) |idx| {
+        const bitset = chunk_index_map.get(idx) orelse unreachable;
+        const leaf_idx = leaf_dedup_map.get(bitset) orelse unreachable;
+        root[idx] = @intCast(leaf_idx);
+    }
+
+    var leaf_buffer: std.ArrayList(u32) = .empty;
+
+    for (leaf_dedup_map.keys()) |*chunk_bits| {
+        for (chunk_bits) |bits| {
+            try leaf_buffer.append(alloc, bits);
+        }
+    }
+
+    const leaf = try leaf_buffer.toOwnedSlice(alloc);
+
+    return .{ .root = root, .leaf = leaf };
 }
 
-fn readSpecToCodes(allocator: std.mem.Allocator) !struct { Codes, Codes } {
-    const file_path: []const u8 = "DerivedCoreProperties.txt";
+fn parseUnicodeProperties(alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
+    const target_file = "DerivedCoreProperties.txt";
 
-    var dir = try std.fs.openDirAbsolute(extracted_dir, .{});
-    defer dir.close();
+    var data_dir = try std.fs.openDirAbsolute(extraction_path, .{});
+    defer data_dir.close();
 
-    const content = try dir.readFileAlloc(file_path, allocator, .limited(2 * 1024 * 1024));
-    defer allocator.free(content);
+    const file_data = try data_dir.readFileAlloc(target_file, alloc, .limited(2 * 1024 * 1024));
+    defer alloc.free(file_data);
 
-    const delim: u8 = '\n';
+    var start_set = CodepointSet.init(alloc);
+    var continue_set = CodepointSet.init(alloc);
 
-    var id_start_codes = Codes.init(allocator);
-    var id_continue_codes = Codes.init(allocator);
+    var line_iter = std.mem.splitScalar(u8, file_data, '\n');
 
-    var lines = std.mem.splitScalar(u8, content, delim);
+    while (line_iter.next()) |line| {
+        if (line.len == 0 or std.mem.startsWith(u8, line, "#")) continue;
 
-    while (lines.next()) |line| {
-        if (line.len == 0 or std.mem.startsWith(u8, line, "#")) {
+        const prop_type: PropertyType = if (std.mem.indexOf(u8, line, "ID_Start")) |_|
+            .Start
+        else if (std.mem.indexOf(u8, line, "ID_Continue")) |_|
+            .Continue
+        else
             continue;
-        }
 
-        const kind: Kind = if (std.mem.indexOf(u8, line, "ID_Start")) |_| .Start else if (std.mem.indexOf(u8, line, "ID_Continue")) |_| .Continue else continue;
+        const range = try extractCodepointRange(line) orelse continue;
 
-        const parsed = try parseStartEnd(line) orelse continue;
-
-        for (parsed.start..parsed.end) |c| {
-            if (kind == .Start) {
-                try id_start_codes.put(@intCast(c), {});
-            } else if (kind == .Continue) {
-                try id_continue_codes.put(@intCast(c), {});
-            } else {
-                break;
-            }
+        var cp = range.start;
+        while (cp < range.end) : (cp += 1) {
+            const target_set = if (prop_type == .Start) &start_set else &continue_set;
+            try target_set.put(@intCast(cp), {});
         }
     }
 
-    return .{ id_start_codes, id_continue_codes };
+    return .{ start_set, continue_set };
 }
 
-const Parsed = struct { start: u32, end: u32 };
+const CodepointRange = struct { start: u32, end: u32 };
 
-fn parseStartEnd(line: []const u8) !?Parsed {
-    const space_index = std.mem.indexOfScalar(u8, line, ' ') orelse line.len;
+fn extractCodepointRange(line: []const u8) !?CodepointRange {
+    const sep_pos = std.mem.indexOfScalar(u8, line, ' ') orelse line.len;
+    const hex_part = line[0..sep_pos];
 
-    const to_parse = line[0..space_index];
-
-    if (std.mem.indexOf(u8, line, "..")) |i| {
-        const start = try std.fmt.parseInt(u32, to_parse[0..i], 16);
-        const end = try std.fmt.parseInt(u32, to_parse[i + 2 ..], 16);
-
-        return .{ .start = start, .end = end + 1 };
+    if (std.mem.indexOf(u8, hex_part, "..")) |range_sep| {
+        const low = try std.fmt.parseInt(u32, hex_part[0..range_sep], 16);
+        const high = try std.fmt.parseInt(u32, hex_part[range_sep + 2 ..], 16);
+        return .{ .start = low, .end = high + 1 };
     } else {
-        const x = try std.fmt.parseInt(u32, to_parse, 16);
-
-        return .{ .start = x, .end = x + 1 };
+        const single = try std.fmt.parseInt(u32, hex_part, 16);
+        return .{ .start = single, .end = single + 1 };
     }
 }
 
-pub fn downloadAndExtractSpec(allocator: std.mem.Allocator) !void {
-    var client: std.http.Client = .{ .allocator = allocator };
-    defer client.deinit();
+pub fn fetchUnicodeData(alloc: std.mem.Allocator) !void {
+    var http_client: std.http.Client = .{ .allocator = alloc };
+    defer http_client.deinit();
 
-    const uri = try std.Uri.parse(spec_url);
-    var req = try client.request(.GET, uri, .{ .redirect_behavior = .unhandled, .keep_alive = false });
-    defer req.deinit();
+    const target_uri = try std.Uri.parse(unicode_data_url);
+    var http_req = try http_client.request(.GET, target_uri, .{
+        .redirect_behavior = .unhandled,
+        .keep_alive = false,
+    });
+    defer http_req.deinit();
 
-    try req.sendBodiless();
-    var response = try req.receiveHead(&.{});
+    try http_req.sendBodiless();
+    var http_resp = try http_req.receiveHead(&.{});
 
-    const file = try std.fs.createFileAbsolute(zip_dest, .{});
-    defer file.close();
-    defer std.fs.deleteFileAbsolute(zip_dest) catch {};
+    const zip_file = try std.fs.createFileAbsolute(temp_zip_path, .{});
+    defer zip_file.close();
+    defer std.fs.deleteFileAbsolute(temp_zip_path) catch {};
 
-    var file_writer = file.writer(&.{});
-    const writer = &file_writer.interface;
+    var zip_file_writer = zip_file.writer(&.{});
+    const zip_writer = &zip_file_writer.interface;
 
-    var response_reader_buf: [1024]u8 = undefined;
-    const reader = response.reader(&response_reader_buf);
-    _ = try reader.streamRemaining(writer);
+    var resp_buf: [1024]u8 = undefined;
+    const resp_reader = http_resp.reader(&resp_buf);
+    _ = try resp_reader.streamRemaining(zip_writer);
 
-    try std.fs.deleteTreeAbsolute(extracted_dir);
+    try std.fs.deleteTreeAbsolute(extraction_path);
+    try std.fs.makeDirAbsolute(extraction_path);
 
-    try std.fs.makeDirAbsolute(extracted_dir);
+    var extract_dir = try std.fs.openDirAbsolute(extraction_path, .{});
+    defer extract_dir.close();
 
-    var dir = try std.fs.openDirAbsolute(extracted_dir, .{});
-    defer dir.close();
+    const archive = try std.fs.openFileAbsolute(temp_zip_path, .{});
+    defer archive.close();
 
-    const zip = try std.fs.openFileAbsolute(zip_dest, .{});
-    defer zip.close();
+    var archive_buf: [1024]u8 = undefined;
+    var archive_reader = archive.reader(&archive_buf);
 
-    var zip_reader_buf: [1024]u8 = undefined;
-    var zip_reader = zip.reader(&zip_reader_buf);
+    try std.zip.extract(extract_dir, &archive_reader, .{});
 
-    try std.zip.extract(dir, &zip_reader, .{});
-
-    std.log.info("Extracted successfully to {s}", .{extracted_dir});
+    std.log.info("Extracted successfully to {s}", .{extraction_path});
 }
 
-fn exists(path: []const u8) bool {
+fn pathExists(path: []const u8) bool {
     if (std.fs.accessAbsolute(path, .{})) |_| {
         return true;
     } else |_| {
@@ -215,19 +209,19 @@ fn exists(path: []const u8) bool {
     }
 }
 
-fn writeStructuresToFile(structures: Structures, writer: *std.Io.Writer, name: []const u8) !void {
+fn emitTableStructure(data: TableData, writer: *std.Io.Writer, table_name: []const u8) !void {
     try writer.print(
         \\
         \\pub const {s}_root = [_]u8{{
-    , .{name});
+    , .{table_name});
 
-    for (0.., structures.root) |i, x| {
-        if (i % 16 == 0) {
+    for (0.., data.root) |idx, val| {
+        if (idx % 16 == 0) {
             try writer.writeAll("\n    ");
         } else {
             try writer.writeAll(" ");
         }
-        try writer.print("0x{x:0>2},", .{x});
+        try writer.print("0x{x:0>2},", .{val});
     }
     try writer.writeAll(
         \\
@@ -238,14 +232,14 @@ fn writeStructuresToFile(structures: Structures, writer: *std.Io.Writer, name: [
     try writer.print(
         \\
         \\pub const {s}_leaf = [_]u64{{
-    , .{name});
-    for (0.., structures.leaf) |i, x| {
-        if (i % 8 == 0) {
+    , .{table_name});
+    for (0.., data.leaf) |idx, val| {
+        if (idx % 8 == 0) {
             try writer.writeAll("\n    ");
         } else {
             try writer.writeAll(" ");
         }
-        try writer.print("0x{x:0>2},", .{x});
+        try writer.print("0x{x:0>2},", .{val});
     }
     try writer.writeAll(
         \\
@@ -253,5 +247,5 @@ fn writeStructuresToFile(structures: Structures, writer: *std.Io.Writer, name: [
         \\
     );
 
-    std.log.info("Successfully wrote {s} to {s}", .{ name, tables_file });
+    std.log.info("Successfully wrote {s} to {s}", .{ table_name, output_table_path });
 }
