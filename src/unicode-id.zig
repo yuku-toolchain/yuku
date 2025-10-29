@@ -5,9 +5,10 @@ const tables = @import("unicode-id-tables.zig");
 /// Checks if a unicode code point is the valid identifier start
 pub fn canStartIdentifier(cp: u32) bool {
     if (cp < 128) {
-        return (cp >= 'a' and cp <= 'z') or
-            (cp >= 'A' and cp <= 'Z') or cp == '_';
-    }
+            return (cp >= 'a' and cp <= 'z') or
+                (cp >= 'A' and cp <= 'Z') or
+                cp == '_' or cp == '$';
+        }
 
     const chunk_number = cp / 512;
 
@@ -27,11 +28,11 @@ pub fn canStartIdentifier(cp: u32) bool {
 /// Checks if a unicode code point is the valid identifier continuation
 pub fn canContinueIdentifier(cp: u32) bool {
     if (cp < 128) {
-        return (cp >= 'a' and cp <= 'z') or
-            (cp >= 'A' and cp <= 'Z') or
-            cp == '_' or
-            (cp >= '0' and cp <= '9');
-    }
+            return (cp >= 'a' and cp <= 'z') or
+                (cp >= 'A' and cp <= 'Z') or
+                cp == '_' or cp == '$' or  // ← Add this!
+                (cp >= '0' and cp <= '9');
+        }
 
     const chunk_number = cp / 512;
 
