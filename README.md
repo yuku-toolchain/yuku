@@ -16,10 +16,6 @@ Very fast parser for the web, written in Zig.
 
 <br/>
 
-🚧 WORK IN PROGRESS!
-
-<br/>
-
 - [x] Javascript Lexer
 - [ ] Javascript Parser
 - [ ] TypeScript Support
