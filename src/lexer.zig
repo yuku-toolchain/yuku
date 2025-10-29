@@ -34,7 +34,7 @@ pub const Lexer = struct {
     position: usize,
     template_depth: usize,
     allocator: std.mem.Allocator,
-    comments: std.ArrayListUnmanaged(Comment),
+    comments: std.ArrayList(Comment),
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Lexer {
         const padded_buffer = try allocator.alloc(u8, source.len + padding_size);
@@ -49,7 +49,7 @@ pub const Lexer = struct {
             .position = 0,
             .template_depth = 0,
             .allocator = allocator,
-            .comments = .{},
+            .comments = .empty,
         };
     }
 
