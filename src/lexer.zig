@@ -972,38 +972,45 @@ pub const Lexer = struct {
 
         while (i < self.source_len) {
             const c = self.source[i];
-            switch (c) {
-                ' ',
-                '\t',
-                '\n',
-                '\r',
-                '\u{00A0}',
-                '\u{000B}',
-                '\u{000C}',
-                => {
-                    @branchHint(.likely);
-                    i += 1;
-                },
-                '/' => {
-                    const c1 = self.source[i + 1];
-                    if (c1 == 0) break;
-                    if (c1 == '/') {
-                        self.position = i;
-                        self.skipSingleLineComment() catch return;
-                        i = self.position;
-                    } else if (c1 == '*') {
-                        self.position = i;
-                        self.skipMultiLineComment() catch return;
-                        i = self.position;
-                    } else {
-                        break;
-                    }
-                },
-                else => {
-                    @branchHint(.likely);
-                    break;
-                },
+
+            if (std.ascii.isAscii(c)) {
+                switch (c) {
+                    // simple spaces
+                    ' ', '\t', '\n', '\r', '\u{000B}', '\u{000C}' => {
+                        i += 1;
+                        continue;
+                    },
+                    // handle comments, consume and push to the comments array
+                    '/' => {
+                        const c1 = self.source[i + 1];
+                        if (c1 == 0) break;
+                        if (c1 == '/') {
+                            self.position = i;
+                            self.skipSingleLineComment() catch return;
+                            i = self.position;
+                            continue;
+                        } else if (c1 == '*') {
+                            self.position = i;
+                            self.skipMultiLineComment() catch return;
+                            i = self.position;
+                            continue;
+                        } else {
+                            break;
+                        }
+                    },
+                    else => break,
+                }
+            } else {
+                // okay, it maybe a multi-byte space
+                const cp = util.codePointAt(self.source, i);
+
+                if (util.isMultiByteSpace(cp.value)) {
+                    i += cp.len;
+                    continue;
+                }
             }
+
+            break;
         }
 
         self.position = i;

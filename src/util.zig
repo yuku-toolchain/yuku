@@ -14,6 +14,21 @@ pub fn codePointAt(str: []const u8, i: usize) CodePoint {
     return .{ .len = @intCast(len), .value = codepoint catch unreachable };
 }
 
-pub inline fn isOctalDigit(digit: u8) bool {
+pub fn isOctalDigit(digit: u8) bool {
     return digit >= '0' and digit <= '7';
+}
+
+pub fn isMultiByteSpace(cp: u21) bool {
+    return switch (cp) {
+        '\u{FEFF}',
+        '\u{00A0}',
+        '\u{2000}',
+        '\u{2001}'...'\u{200A}',
+        '\u{202F}',
+        '\u{205F}',
+        '\u{3000}',
+        '\u{1680}',
+        => true,
+        else => false,
+    };
 }
