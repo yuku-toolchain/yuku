@@ -20,7 +20,7 @@ Very fast parser for the web, written in Zig.
 
 <br/>
 
-- [ ] Javascript Lexer (90%)
+- [ ] Javascript Lexer (95%)
 - [ ] Javascript Parser (0%)
 - [ ] TypeScript Support (0%)
 - [ ] JSX Support (0%)
