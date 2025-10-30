@@ -10,9 +10,19 @@ pub fn main() !void {
 
     const content = @embedFile("test.js");
 
+    const start = std.time.nanoTimestamp();
+
     var parser = try Parser.init(allocator, content);
 
-    const ast = try parser.parse();
+    _ =  try parser.parse();
 
-    std.log.info("{f}", .{std.json.fmt(ast, .{ .whitespace = .indent_2 })});
+    const end = std.time.nanoTimestamp();
+
+    const elapsed = end - start;
+
+    const elapsed_ms = @as(f64, @floatFromInt(elapsed)) / 1_000_000.0;
+
+    std.debug.print("{d:.2}ms\n\n", .{elapsed_ms});
+
+    // std.log.info("{f}", .{std.json.fmt(ast, .{ .whitespace = .indent_2 })});
 }

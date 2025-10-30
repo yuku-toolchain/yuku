@@ -1,14 +1,10 @@
 const std = @import("std");
+
 const Token = @import("token.zig").Token;
 const Span = @import("token.zig").Span;
 const TokenType = @import("token.zig").TokenType;
 const Lexer = @import("lexer.zig").Lexer;
-const AstNode = @import("ast.zig").AstNode;
-const Program = @import("ast.zig").Program;
-const VariableDeclaration = @import("ast.zig").VariableDeclaration;
-const VariableKind = @import("ast.zig").VariableKind;
-const Identifier = @import("ast.zig").Identifier;
-const Expression = @import("ast.zig").Expression;
+const Node = @import("ast.zig").Node;
 
 const ParseErrorType = enum {
     LexicalError,
@@ -45,61 +41,36 @@ pub const Parser = struct {
         return Parser{ .lexer = lexer, .current_token = try lexer.nextToken(), .source = source, .allocator = allocator, .panic_mode = false, .errors = .empty };
     }
 
-    pub fn parse(self: *Parser) !AstNode {
-        var body: std.ArrayList(AstNode) = .empty;
+    pub fn parse(self: *Parser) !*Node {
+        var body: std.ArrayList(*Node) = .empty;
 
         while (self.current_token.type != .EOF) {
             const stmt = try self.parseStatement();
             try body.append(self.allocator, stmt);
         }
 
-        return AstNode{ .program = Program{
-            .body = try body.toOwnedSlice(self.allocator),
-        } };
+        return self.createNode(.{ .program = .{
+            .body = try body.toOwnedSlice(self.allocator)
+        }});
     }
 
-    fn parseStatement(self: *Parser) !AstNode {
+    fn parseStatement(self: *Parser) !*Node {
         return switch (self.current_token.type) {
             .Var, .Const, .Let => try self.parseVariableDeclaration(),
-            else => unreachable,
-        };
-    }
-
-    fn parseVariableDeclaration(self: *Parser) !AstNode {
-        const kind: VariableKind = switch (self.current_token.type) {
-            .Var => .var_,
-            .Let => .let,
-            .Const => .const_,
-            else => unreachable,
-        };
-
-        _ = try self.advance();
-
-        const id = try self.expectIdentifier();
-
-        var initializer: ?Expression = null;
-        if (self.current_token.type == .Assign) {
-            _ = try self.advance();
-            initializer = try self.parseExpression();
-        }
-
-        _ = try self.expect(.Semicolon);
-
-        return AstNode{
-            .variable_declaration = VariableDeclaration{
-                .kind = kind,
-                .id = Identifier{ .name = id },
-                .init = initializer,
+            else => {
+                return error.InvalidSyntax;
             },
         };
     }
 
-    fn parseExpression(self: *Parser) !Expression {
+    fn parseExpression(self: *Parser) !*Node {
         return switch (self.current_token.type) {
             .Identifier => {
                 const name = self.current_token.lexeme;
+
                 _ = try self.advance();
-                return Expression{ .identifier = Identifier{ .name = name } };
+
+                return self.createNode(.{ .identifier = .{ .name = name } });
             },
             else => {
                 return error.InvalidSyntax;
@@ -107,25 +78,32 @@ pub const Parser = struct {
         };
     }
 
-    fn advance(self: *Parser) !Token {
+    fn parseVariableDeclaration(self: *Parser) !*Node {
+        _ = try self.advance();
+       return self.createNode(.{
+           .identifier = .{
+               .name = "cool"
+           }
+       });
+    }
+
+    inline fn advance(self: *Parser) !Token {
         const token = self.current_token;
         self.current_token = try self.lexer.nextToken();
         return token;
     }
 
-    fn expect(self: *Parser, expected: TokenType) !Token {
+    inline fn expect(self: *Parser, expected: TokenType) !Token {
         if (self.current_token.type == expected) {
             return try self.advance();
         }
+
         return error.ExpectedToken;
     }
 
-    fn expectIdentifier(self: *Parser) ![]const u8 {
-        if (self.current_token.type == .Identifier) {
-            const name = self.current_token.lexeme;
-            _ = try self.advance();
-            return name;
-        }
-        return error.ExpectedToken;
+    inline fn createNode(self: *Parser, node: Node) !*Node {
+        const ptr = try self.allocator.create(Node);
+        ptr.* = node;
+        return ptr;
     }
 };

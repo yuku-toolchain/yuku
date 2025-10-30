@@ -1,77 +1,70 @@
 const std = @import("std");
 
-pub const NodeType = enum {
-    Program,
+pub const Node = union(enum) {
+    program: Program,
 
-    Directive,
+    // statements
+    expression_statement: ExpressionStatement,
+    variable_declaration: VariableDeclaration,
 
-    VariableDeclaration,
-    ExpressionStatement,
+    // expressions
+    identifier: Identifier,
+    literal: Literal,
 
-    Identifier,
-    Literal,
+    // declarations
+    variable_declarator: VariableDeclarator,
 
-    VariableDeclarator,
+    directive: Directive,
 };
 
 pub const Program = struct {
-    type: NodeType = .Program,
-    body: []ProgramBody,
+    body: []*Node,
+    source_type: SourceType = .script,
+
+    pub const SourceType = enum { script, module };
 };
 
-pub const ProgramBody = union(NodeType) {
-    Directive: Directive,
-    // statements
-    VariableDeclaration: VariableDeclaration,
-    ExpressionStatement: ExpressionStatement,
-};
-
-pub const Expression = union(NodeType) {
-    Identifier: Identifier,
-    Literal: Literal,
-};
-
-pub const Directive = struct {
-    expression: Literal,
-    directive: []const u8,
-};
-
-pub const VariableKind = enum {
-    @"var",
-    let,
-    @"const",
+// statements
+pub const ExpressionStatement = struct {
+    expression: *Node,
 };
 
 pub const VariableDeclaration = struct {
-    type: NodeType = .VariableDeclaration,
     kind: VariableKind,
-    declarations: []VariableDeclarator,
+    declarations: []*Node,
+
+    pub const VariableKind = enum {
+        @"var",
+        let,
+        @"const",
+    };
 };
 
-pub const VariableDeclarator = struct {
-    type: NodeType = .VariableDeclarator,
-    id: Expression,
-    init: ?Expression = null,
-};
-
-pub const ExpressionStatement = struct {
-    type: NodeType = .ExpressionStatement,
-    expression: Expression,
-};
-
+// expressions
 pub const Identifier = struct {
-    type: NodeType = .Identifier,
     name: []const u8,
 };
 
 pub const Literal = struct {
-    type: NodeType = .Literal,
     value: LiteralValue,
+    raw: ?[]const u8 = null,
+
+    pub const LiteralValue = union(enum) {
+        string: []const u8,
+        number: f64,
+        boolean: bool,
+        null: void,
+    };
 };
 
-pub const LiteralValue = union(enum) {
-    string: []const u8,
-    number: f64,
-    boolean: bool,
-    null: void,
+// declarations
+pub const VariableDeclarator = struct {
+    id: *Node,
+    init: ?*Node = null,
+};
+
+// like "use strict"
+pub const Directive = struct {
+    expression: *Node,
+    directive: []const u8,
 };
