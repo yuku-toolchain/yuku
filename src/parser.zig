@@ -64,7 +64,7 @@ pub const Parser = struct {
             .Identifier => {
                 const name = self.current_token.lexeme;
 
-                _ = try self.advance();
+                try self.advance();
 
                 return self.createNode(.{ .identifier = .{ .name = name } });
             },
