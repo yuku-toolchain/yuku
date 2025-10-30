@@ -1,21 +1,50 @@
 const std = @import("std");
 const Token = @import("token.zig").Token;
+const Span = @import("token.zig").Span;
 const TokenType = @import("token.zig").TokenType;
 const Lexer = @import("lexer.zig").Lexer;
 const AstNode = @import("ast.zig").AstNode;
 const Program = @import("ast.zig").Program;
 
+const ParseErrorType = enum {
+    LexicalError,
+    UnexpectedToken,
+    ExpectedToken,
+    UnexpectedEof,
+    InvalidSyntax,
+    DuplicateDeclaration,
+    InvalidAssignmentTarget,
+};
+
+const ParseError = struct {
+    type: ParseErrorType,
+    message: []const u8,
+    span: Span,
+    help: ?[][]const u8,
+    severity: Severity,
+
+    const Severity = enum { @"error", warning, info };
+};
+
 pub const Parser = struct {
-    lexer: *Lexer,
+    panic_mode: bool,
+    source: []const u8,
+    lexer: Lexer,
     current_token: Token,
     /// expects arena allocator
     allocator: std.mem.Allocator,
+    errors: std.ArrayList(ParseError),
 
-    pub fn init(allocator: std.mem.Allocator, lexer: *Lexer) !Parser {
+    pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
+        var lexer = try Lexer.init(allocator, source);
+
         return Parser{
             .lexer = lexer,
             .current_token = try lexer.nextToken(),
-            .allocator = allocator
+            .source = source,
+            .allocator = allocator,
+            .panic_mode = false,
+            .errors = .empty
         };
     }
 

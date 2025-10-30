@@ -1,5 +1,3 @@
 .zig-cache/
 zig-out/
 .DS_Store
-large-test-file.js
-test-file.js

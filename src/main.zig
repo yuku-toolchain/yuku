@@ -1,5 +1,4 @@
 const std = @import("std");
-const Lexer = @import("lexer.zig").Lexer;
 const Parser = @import("parser.zig").Parser;
 const Token = @import("token.zig").Token;
 
@@ -9,11 +8,9 @@ pub fn main() !void {
 
     const allocator = arena.allocator();
 
-    const content = "const";
+    const content = @embedFile("test.js");
 
-    var lexer = try Lexer.init(allocator, content);
-
-    var parser = try Parser.init(allocator, &lexer);
+    var parser = try Parser.init(allocator, content);
 
     const ast = try parser.parse();
 
