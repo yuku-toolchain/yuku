@@ -24,7 +24,7 @@ const LexicalError = error{
     InvalidHexLiteral,
     InvalidExponentPart,
     NumericSeparatorMisuse,
-    TrailingNumericSeparator,
+    ConsecutiveNumericSeparators,
     MultipleDecimalPoints,
     InvalidBigIntSuffix,
 };
@@ -159,7 +159,18 @@ pub const Lexer = struct {
                     break :blk self.createToken(.SlashAssign, self.source[start..self.position], start, self.position);
                 }
                 self.position += 1;
-                break :blk self.createToken(.Slash, self.source[start..self.position], start, self.position);
+
+                const slash = self.createToken(.Slash, self.source[start..self.position], start, self.position);
+
+                // TODO: remove this, this is added now just for testing
+                // when starting parser, should remove this handle scanning regex from parser.
+                const token = self.reScanAsRegex(slash);
+                if (@TypeOf(token) == Token) {
+                    break :blk token;
+                }
+                //
+
+                break :blk slash;
             },
             '%' => switch (c1) {
                 '=' => blk: {
@@ -507,7 +518,7 @@ pub const Lexer = struct {
         return self.createToken(.RightBrace, self.source[start..self.position], start, self.position);
     }
 
-    pub fn a(self: *Lexer, slash_token: Token) LexicalError!Token {
+    pub fn reScanAsRegex(self: *Lexer, slash_token: Token) LexicalError!Token {
         self.position = slash_token.span.start;
         return self.scanRegex();
     }
@@ -801,31 +812,31 @@ pub const Lexer = struct {
                     token_type = .HexLiteral;
                     i += 2;
                     const hex_start = i;
-                    i = self.consumeHexDigits(i);
+                    i = try self.consumeHexDigits(i);
                     if (i == hex_start) return error.InvalidHexLiteral;
                 },
                 'o' => {
                     token_type = .OctalLiteral;
                     i += 2;
                     const oct_start = i;
-                    i = self.consumeOctalDigits(i);
+                    i = try self.consumeOctalDigits(i);
                     if (i == oct_start) return error.InvalidOctalLiteralDigit;
                 },
                 'b' => {
                     token_type = .BinaryLiteral;
                     i += 2;
                     const bin_start = i;
-                    i = self.consumeBinaryDigits(i);
+                    i = try self.consumeBinaryDigits(i);
                     if (i == bin_start) return error.InvalidBinaryLiteral;
                 },
                 else => {
                     // regular or octal
-                    i = self.consumeDecimalDigits(i);
+                    i = try self.consumeDecimalDigits(i);
                 },
             }
         } else {
             // regular
-            i = self.consumeDecimalDigits(i);
+            i = try self.consumeDecimalDigits(i);
         }
 
         // decimal point (only for regular numbers)
@@ -835,7 +846,7 @@ pub const Lexer = struct {
             const next = if (i + 1 < self.source_len) self.source[i + 1] else 0;
             if (std.ascii.isDigit(next)) {
                 i += 1; // consume '.'
-                i = self.consumeDecimalDigits(i);
+                i = try self.consumeDecimalDigits(i);
             }
         }
 
@@ -866,7 +877,7 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..i], start, i);
     }
 
-    inline fn consumeDecimalDigits(self: *Lexer, start: usize) usize {
+    inline fn consumeDecimalDigits(self: *Lexer, start: usize) LexicalError!usize {
         var i = start;
         var last_was_separator = false;
 
@@ -876,9 +887,8 @@ pub const Lexer = struct {
                 i += 1;
                 last_was_separator = false;
             } else if (c == '_') {
-                // numeric separator - must be between digits
-                if (i == start or last_was_separator) {
-                    break; // invalid position
+                if (last_was_separator) {
+                    return error.ConsecutiveNumericSeparators;
                 }
                 i += 1;
                 last_was_separator = true;
@@ -887,10 +897,14 @@ pub const Lexer = struct {
             }
         }
 
+        if (last_was_separator) {
+            return error.NumericSeparatorMisuse;
+        }
+
         return i;
     }
 
-    inline fn consumeHexDigits(self: *Lexer, start: usize) usize {
+    inline fn consumeHexDigits(self: *Lexer, start: usize) LexicalError!usize {
         var i = start;
         var last_was_separator = false;
 
@@ -900,8 +914,8 @@ pub const Lexer = struct {
                 i += 1;
                 last_was_separator = false;
             } else if (c == '_') {
-                if (i == start or last_was_separator) {
-                    break;
+                if (last_was_separator) {
+                    return error.ConsecutiveNumericSeparators;
                 }
                 i += 1;
                 last_was_separator = true;
@@ -910,10 +924,14 @@ pub const Lexer = struct {
             }
         }
 
+        if (last_was_separator) {
+            return error.NumericSeparatorMisuse;
+        }
+
         return i;
     }
 
-    inline fn consumeOctalDigits(self: *Lexer, start: usize) usize {
+    inline fn consumeOctalDigits(self: *Lexer, start: usize) LexicalError!usize {
         var i = start;
         var last_was_separator = false;
 
@@ -923,8 +941,8 @@ pub const Lexer = struct {
                 i += 1;
                 last_was_separator = false;
             } else if (c == '_') {
-                if (i == start or last_was_separator) {
-                    break;
+                if (last_was_separator) {
+                    return error.ConsecutiveNumericSeparators;
                 }
                 i += 1;
                 last_was_separator = true;
@@ -933,10 +951,14 @@ pub const Lexer = struct {
             }
         }
 
+        if (last_was_separator) {
+            return error.NumericSeparatorMisuse;
+        }
+
         return i;
     }
 
-    inline fn consumeBinaryDigits(self: *Lexer, start: usize) usize {
+    inline fn consumeBinaryDigits(self: *Lexer, start: usize) LexicalError!usize {
         var i = start;
         var last_was_separator = false;
 
@@ -946,14 +968,18 @@ pub const Lexer = struct {
                 i += 1;
                 last_was_separator = false;
             } else if (c == '_') {
-                if (i == start or last_was_separator) {
-                    break;
+                if (last_was_separator) {
+                    return error.ConsecutiveNumericSeparators;
                 }
                 i += 1;
                 last_was_separator = true;
             } else {
                 break;
             }
+        }
+
+        if (last_was_separator) {
+            return error.NumericSeparatorMisuse;
         }
 
         return i;
@@ -973,7 +999,7 @@ pub const Lexer = struct {
         }
 
         const exp_start = i;
-        i = self.consumeDecimalDigits(i);
+        i = try self.consumeDecimalDigits(i);
 
         if (i == exp_start) {
             return error.InvalidExponentPart;
@@ -1083,8 +1109,8 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.InvalidOctalLiteralDigit => "Octal literal must contain at least one octal digit",
         error.InvalidHexLiteral => "Hexadecimal literal must contain at least one hex digit",
         error.InvalidExponentPart => "Exponent part is missing a number",
-        error.NumericSeparatorMisuse => "Numeric separator must be between digits",
-        error.TrailingNumericSeparator => "Numeric separator cannot appear at the end of a numeric literal",
+        error.NumericSeparatorMisuse => "Numeric separator cannot appear at the end of a numeric literal",
+        error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive separators",
         error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
         error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
     };
@@ -1108,8 +1134,8 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.InvalidOctalLiteralDigit => "Octal literals (0o) must be followed by at least one octal digit (0-7)",
         error.InvalidHexLiteral => "Hexadecimal literals (0x) must be followed by at least one hex digit (0-9, A-F)",
         error.InvalidExponentPart => "Exponent notation (e or E) must be followed by an integer",
-        error.NumericSeparatorMisuse => "Underscores (_) in numeric literals must appear between digits",
-        error.TrailingNumericSeparator => "Remove the trailing underscore from the numeric literal",
+        error.NumericSeparatorMisuse => "Remove the trailing underscore from the numeric literal",
+        error.ConsecutiveNumericSeparators => "Separate digits with only a single underscore (_), not multiple consecutive underscores",
         error.MultipleDecimalPoints => "Use only one decimal point in a numeric literal",
         error.InvalidBigIntSuffix => "BigInt literals (suffix 'n') cannot contain fractional or exponential parts",
     };
