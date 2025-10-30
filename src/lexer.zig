@@ -1,5 +1,4 @@
 const std = @import("std");
-
 const Token = @import("token.zig").Token;
 const TokenType = @import("token.zig").TokenType;
 const Comment = @import("token.zig").Comment;
@@ -20,11 +19,18 @@ const LexicalError = error{
     InvalidHexEscape,
     InvalidOctalEscape,
     OctalEscapeInStrict,
+    InvalidBinaryLiteral,
+    InvalidOctalLiteralDigit,
+    InvalidHexLiteral,
+    InvalidExponentPart,
+    NumericSeparatorMisuse,
+    TrailingNumericSeparator,
+    MultipleDecimalPoints,
+    InvalidBigIntSuffix,
 };
 
 // TODO:
 // [ ] some simd optimizations
-
 const padding_size = 4; // four safe lookaheads
 
 pub const Lexer = struct {
@@ -41,11 +47,8 @@ pub const Lexer = struct {
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Lexer {
         const padded_buffer = try allocator.alloc(u8, source.len + padding_size);
-
         @memcpy(padded_buffer[0..source.len], source);
-
         @memset(padded_buffer[source.len..], 0);
-
         return .{
             .strict_mode = false,
             .source = padded_buffer,
@@ -59,17 +62,14 @@ pub const Lexer = struct {
 
     pub fn nextToken(self: *Lexer) LexicalError!Token {
         try self.skipSkippable();
-
         if (self.position >= self.source_len) {
             return self.createToken(.EOF, "", self.position, self.position);
         }
-
         const current_char = self.source[self.position];
-
         return switch (current_char) {
             '+', '*', '-', '!', '<', '>', '=', '|', '&', '^', '%', '/', '?' => self.scanPunctuation(),
             '.' => self.scanDot(),
-            '0'...'9' => self.scanNumber(),
+            '0'...'9' => try self.scanNumber(),
             '"', '\'' => self.scanString(),
             '`' => self.scanTemplateLiteral(),
             '~', '(', ')', '{', '[', ']', ';', ',', ':' => self.scanSimplePunctuation(),
@@ -82,7 +82,6 @@ pub const Lexer = struct {
         const start = self.position;
         const c = self.source[self.position];
         self.position += 1;
-
         const token_type: TokenType = switch (c) {
             '~' => .BitwiseNot,
             '(' => .LeftParen,
@@ -95,7 +94,6 @@ pub const Lexer = struct {
             ':' => .Colon,
             else => unreachable,
         };
-
         return self.createToken(token_type, self.source[start..self.position], start, self.position);
     }
 
@@ -160,9 +158,7 @@ pub const Lexer = struct {
                     self.position += 2;
                     break :blk self.createToken(.SlashAssign, self.source[start..self.position], start, self.position);
                 }
-
                 self.position += 1;
-
                 break :blk self.createToken(.Slash, self.source[start..self.position], start, self.position);
             },
             '%' => switch (c1) {
@@ -341,25 +337,20 @@ pub const Lexer = struct {
 
         while (i < self.source_len) {
             const c = self.source[i];
-
             if (c == '\\') {
                 i = try self.consumeEscape(i);
                 continue;
             }
-
             if (c == quote) {
                 i += 1;
                 self.position = i;
                 return self.createToken(.StringLiteral, self.source[start..i], start, i);
             }
-
             if (c == '\n' or c == '\r' or c == '\u{2028}' or c == '\u{2029}') {
                 return error.UnterminatedString;
             }
-
             i += 1;
         }
-
         return error.UnterminatedString;
     }
 
@@ -369,28 +360,23 @@ pub const Lexer = struct {
 
         while (i < self.source_len) {
             const c = self.source[i];
-
             if (c == '\\') {
                 i = try self.consumeEscape(i);
                 continue;
             }
-
             if (c == '`') {
                 i += 1;
                 self.position = i;
                 return self.createToken(.NoSubstitutionTemplate, self.source[start..i], start, i);
             }
-
             if (c == '$' and self.source[i + 1] == '{') {
                 i += 2;
                 self.template_depth += 1;
                 self.position = i;
                 return self.createToken(.TemplateHead, self.source[start..i], start, i);
             }
-
             i += 1;
         }
-
         return error.NonTerminatedTemplateLiteral;
     }
 
@@ -400,12 +386,10 @@ pub const Lexer = struct {
 
         while (i < self.source_len) {
             const c = self.source[i];
-
             if (c == '\\') {
                 i = try self.consumeEscape(i);
                 continue;
             }
-
             if (c == '`') {
                 i += 1;
                 if (self.template_depth > 0) {
@@ -414,22 +398,18 @@ pub const Lexer = struct {
                 self.position = i;
                 return self.createToken(.TemplateTail, self.source[start..i], start, i);
             }
-
             if (c == '$' and self.source[i + 1] == '{') {
                 i += 2;
                 self.position = i;
                 return self.createToken(.TemplateMiddle, self.source[start..i], start, i);
             }
-
             i += 1;
         }
-
         return error.NonTerminatedTemplateLiteral;
     }
 
     fn consumeEscape(self: *Lexer, pos: usize) LexicalError!usize {
         var i = pos + 1;
-
         brk: switch (self.source[i]) {
             '0' => {
                 const c1 = self.source[i + 1];
@@ -438,41 +418,32 @@ pub const Lexer = struct {
                     i += 1;
                     break :brk;
                 }
-
                 if (self.strict_mode) return error.OctalEscapeInStrict;
-
                 i = try self.consumeOctal(i);
             },
-
             // hex
             'x' => {
                 i = try self.consumeHex(i);
             },
-
             // unicode
             'u' => {
                 i = try self.consumeUnicodeEscape(i);
             },
-
             // octal
             '1'...'7' => {
                 if (self.strict_mode) return error.OctalEscapeInStrict;
-
                 i = try self.consumeOctal(i);
             },
-
             else => {
                 i += 1;
             },
         }
-
         return i;
     }
 
     fn consumeOctal(self: *Lexer, pos: usize) LexicalError!usize {
         var i = pos;
         var count: u8 = 0;
-
         while (i < self.source_len and count < 3) {
             const c = self.source[i];
             if (util.isOctalDigit(c)) {
@@ -482,44 +453,35 @@ pub const Lexer = struct {
                 break;
             }
         }
-
         return if (count > 0) i else error.InvalidOctalEscape;
     }
 
     fn consumeHex(self: *Lexer, pos: usize) LexicalError!usize {
         const c1 = self.source[pos + 1];
         const c2 = self.source[pos + 2];
-
         if (!std.ascii.isHex(c1) or !std.ascii.isHex(c2)) {
             return error.InvalidHexEscape;
         }
-
         return pos + 3;
     }
 
     fn consumeUnicodeEscape(self: *Lexer, pos: usize) LexicalError!usize {
         var i = pos + 1;
-
         if (i < self.source_len and self.source[i] == '{') {
             // \u{XXXXX} format
             i += 1;
             const start = i;
-
             const end = std.mem.indexOfScalarPos(u8, self.source, i, '}') orelse
                 return error.InvalidUnicodeEscape;
-
             const hex_len = end - start;
-
             if (hex_len == 0 or hex_len > 6) {
                 return error.InvalidUnicodeEscape;
             }
-
             for (self.source[start..end]) |c| {
                 if (!std.ascii.isHex(c)) {
                     return error.InvalidUnicodeEscape;
                 }
             }
-
             return end + 1;
         } else {
             // \uXXXX format
@@ -540,7 +502,6 @@ pub const Lexer = struct {
         if (self.template_depth > 0) {
             return self.scanTemplateMiddleOrTail();
         }
-
         const start = self.position;
         self.position += 1;
         return self.createToken(.RightBrace, self.source[start..self.position], start, self.position);
@@ -548,19 +509,16 @@ pub const Lexer = struct {
 
     pub fn a(self: *Lexer, slash_token: Token) LexicalError!Token {
         self.position = slash_token.span.start;
-
         return self.scanRegex();
     }
 
     fn scanRegex(self: *Lexer) LexicalError!Token {
         const start = self.position;
         self.position += 1; // consume '/'
-
         var in_class = false;
 
         while (self.position < self.source_len) {
             const c = self.source[self.position];
-
             if (c == '\\') {
                 self.position += 1; // skip backslash
                 if (self.position < self.source_len) {
@@ -568,55 +526,45 @@ pub const Lexer = struct {
                 }
                 continue;
             }
-
             if (c == '[') {
                 in_class = true;
                 self.position += 1;
                 continue;
             }
-
             if (c == ']' and in_class) {
                 in_class = false;
                 self.position += 1;
                 continue;
             }
-
             if (c == '/' and !in_class) {
                 self.position += 1;
-
                 while (self.position < self.source_len and
                     std.ascii.isAlphabetic(self.source[self.position]))
                 {
                     self.position += 1;
                 }
-
                 return self.createToken(.RegexLiteral, self.source[start..self.position], start, self.position);
             }
-
             if (c == '\n' or c == '\r') {
                 return error.InvalidRegexLineTerminator;
             }
-
             self.position += 1;
         }
-
         return error.UnterminatedRegexLiteral;
     }
 
-    fn scanDot(self: *Lexer) Token {
+    fn scanDot(self: *Lexer) LexicalError!Token {
         const c1 = self.source[self.position + 1];
         const c2 = self.source[self.position + 2];
 
         if (std.ascii.isDigit(c1)) {
             return self.scanNumber();
         }
-
         if (c1 == '.' and c2 == '.') {
             const start = self.position;
             self.position += 3;
             return self.createToken(.Spread, self.source[start..self.position], start, self.position);
         }
-
         const start = self.position;
         self.position += 1;
         return self.createToken(.Dot, self.source[start..self.position], start, self.position);
@@ -628,16 +576,12 @@ pub const Lexer = struct {
             const c = self.source[pos];
             if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
-
                 if (c == '\\') {
                     @branchHint(.cold);
-
                     if (self.source[pos + 1] != 'u') {
                         return error.InvalidUnicodeEscape;
                     }
-
                     pos += 1; // consume u
-
                     pos = try self.consumeUnicodeEscape(pos);
                 } else {
                     if ((c >= 'a' and c <= 'z') or
@@ -660,7 +604,6 @@ pub const Lexer = struct {
                 }
             }
         }
-
         return pos;
     }
 
@@ -669,23 +612,18 @@ pub const Lexer = struct {
         var i = start;
 
         const is_private = self.source[i] == '#';
-
         if (is_private) {
             i += 1;
         }
 
         const first_char = self.source[i];
-
         if (std.ascii.isAscii(first_char)) {
             @branchHint(.likely);
-
             if (first_char == '\\') {
                 if (self.source[i + 1] != 'u') {
                     return error.InvalidUnicodeEscape;
                 }
-
                 i += 1; // consume u
-
                 i = try self.consumeUnicodeEscape(i);
             } else {
                 if (!((first_char >= 'a' and first_char <= 'z') or
@@ -697,26 +635,20 @@ pub const Lexer = struct {
                 }
                 i += 1;
             }
-
             i = try self.scanIdentifierBody(i);
         } else {
             @branchHint(.cold);
-
             const c_cp = util.codePointAt(self.source, i);
-
             if (!unicodeJsHelpers.canStartJsIdentifier(c_cp.value)) {
                 return error.InvalidIdentifierStart;
             }
-
             i += c_cp.len;
             i = try self.scanIdentifierBody(i);
         }
 
         self.position = i;
-
         const lexeme = self.source[start..i];
         const token_type: TokenType = if (is_private) .PrivateIdentifier else self.getKeywordType(lexeme);
-
         return self.createToken(token_type, lexeme, start, i);
     }
 
@@ -738,7 +670,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             3 => {
                 switch (lexeme[0]) {
                     'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .For,
@@ -749,7 +680,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             4 => {
                 switch (lexeme[1]) {
                     'a' => if (lexeme[0] == 'c' and lexeme[2] == 's' and lexeme[3] == 'e') return .Case,
@@ -766,7 +696,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             5 => {
                 switch (lexeme[0]) {
                     'a' => {
@@ -798,7 +727,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             6 => {
                 switch (lexeme[0]) {
                     'd' => if (lexeme[1] == 'e' and lexeme[2] == 'l' and lexeme[3] == 'e' and lexeme[4] == 't' and lexeme[5] == 'e')
@@ -822,7 +750,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             7 => {
                 switch (lexeme[0]) {
                     'd' => if (std.mem.eql(u8, lexeme, "default")) return .Default,
@@ -832,7 +759,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             8 => {
                 switch (lexeme[0]) {
                     'c' => if (std.mem.eql(u8, lexeme, "continue")) return .Continue,
@@ -841,7 +767,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             9 => {
                 switch (lexeme[0]) {
                     'i' => if (std.mem.eql(u8, lexeme, "interface")) return .Interface,
@@ -849,7 +774,6 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             10 => {
                 switch (lexeme[0]) {
                     'i' => {
@@ -859,94 +783,81 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
-
             else => {},
         }
-
         return .Identifier;
     }
 
-    fn scanNumber(self: *Lexer) Token {
+    fn scanNumber(self: *Lexer) LexicalError!Token {
         const start = self.position;
         var token_type: TokenType = .NumericLiteral;
         var i = self.position;
 
-        if (self.source[i] == '0') {
-            const c1 = std.ascii.toLower(self.source[i + 1]);
-            if (c1 == 'x') {
-                token_type = .HexLiteral;
-                i += 2;
-                while (i < self.source_len and std.ascii.isHex(self.source[i])) {
-                    i += 1;
-                }
-            } else if (c1 == 'o') {
-                token_type = .OctalLiteral;
-                i += 2;
-                while (i < self.source_len and util.isOctalDigit(self.source[i])) {
-                    i += 1;
-                }
-            } else if (c1 == 'b') {
-                token_type = .BinaryLiteral;
-                i += 2;
-                while (i < self.source_len and (self.source[i] == '0' or self.source[i] == '1')) {
-                    i += 1;
-                }
-            } else {
-                while (i < self.source_len and std.ascii.isDigit(self.source[i])) {
-                    i += 1;
-                }
+        // prefixes 0x, 0o, 0b
+        if (self.source[i] == '0' and i + 1 < self.source_len) {
+            const prefix = std.ascii.toLower(self.source[i + 1]);
+            switch (prefix) {
+                'x' => {
+                    token_type = .HexLiteral;
+                    i += 2;
+                    const hex_start = i;
+                    i = self.consumeHexDigits(i);
+                    if (i == hex_start) return error.InvalidHexLiteral;
+                },
+                'o' => {
+                    token_type = .OctalLiteral;
+                    i += 2;
+                    const oct_start = i;
+                    i = self.consumeOctalDigits(i);
+                    if (i == oct_start) return error.InvalidOctalLiteralDigit;
+                },
+                'b' => {
+                    token_type = .BinaryLiteral;
+                    i += 2;
+                    const bin_start = i;
+                    i = self.consumeBinaryDigits(i);
+                    if (i == bin_start) return error.InvalidBinaryLiteral;
+                },
+                else => {
+                    // regular or octal
+                    i = self.consumeDecimalDigits(i);
+                },
             }
         } else {
-            while (i < self.source_len and std.ascii.isDigit(self.source[i])) {
-                i += 1;
-            }
+            // regular
+            i = self.consumeDecimalDigits(i);
         }
 
+        // decimal point (only for regular numbers)
         if (token_type == .NumericLiteral and
-            i < self.source_len and self.source[i] == '.' and
-            std.ascii.isDigit(self.source[i + 1]))
+            i < self.source_len and self.source[i] == '.')
         {
-            i += 1;
-            while (i < self.source_len and std.ascii.isDigit(self.source[i])) {
-                i += 1;
+            const next = if (i + 1 < self.source_len) self.source[i + 1] else 0;
+            if (std.ascii.isDigit(next)) {
+                i += 1; // consume '.'
+                i = self.consumeDecimalDigits(i);
             }
         }
 
+        // exponent (only for regular numbers)
         if (token_type == .NumericLiteral and i < self.source_len) {
-            const c0 = std.ascii.toLower(self.source[i]);
-            if (c0 == 'e') {
-                const c1 = self.source[i + 1];
-                if (std.ascii.isDigit(c1) or
-                    ((c1 == '+' or c1 == '-') and
-                        std.ascii.isDigit(self.source[i + 2])))
-                {
-                    i += 1;
-                    if (self.source[i] == '+' or self.source[i] == '-') {
-                        i += 1;
-                    }
-                    while (i < self.source_len and std.ascii.isDigit(self.source[i])) {
-                        i += 1;
-                    }
-                }
+            const exp_char = std.ascii.toLower(self.source[i]);
+            if (exp_char == 'e') {
+                i = try self.consumeExponent(i);
             }
         }
 
-        if (i < self.source_len and self.source[i] == '_') {
-            while (i < self.source_len) {
-                const c0 = self.source[i];
-                const c1 = self.source[i + 1];
-
-                const char_to_check = if (c0 == '_') c1 else c0;
-
-                if ((std.ascii.isDigit(char_to_check) or (token_type == .HexLiteral and std.ascii.isAlphabetic(char_to_check))) and char_to_check != 'n') {
-                    i += 1;
-                } else {
-                    break;
-                }
-            }
-        }
-
+        // bigint suffix
         if (i < self.source_len and self.source[i] == 'n') {
+            // bigint cannot have decimal point or exponent
+            if (token_type == .NumericLiteral) {
+                const lexeme = self.source[start..i];
+                for (lexeme) |c| {
+                    if (c == '.' or std.ascii.toLower(c) == 'e') {
+                        return error.InvalidBigIntSuffix;
+                    }
+                }
+            }
             i += 1;
             token_type = .BigIntLiteral;
         }
@@ -955,12 +866,126 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..i], start, i);
     }
 
-    inline fn skipSkippable(self: *Lexer) LexicalError!void {
-        var i = self.position;
+    inline fn consumeDecimalDigits(self: *Lexer, start: usize) usize {
+        var i = start;
+        var last_was_separator = false;
 
         while (i < self.source_len) {
             const c = self.source[i];
+            if (std.ascii.isDigit(c)) {
+                i += 1;
+                last_was_separator = false;
+            } else if (c == '_') {
+                // numeric separator - must be between digits
+                if (i == start or last_was_separator) {
+                    break; // invalid position
+                }
+                i += 1;
+                last_was_separator = true;
+            } else {
+                break;
+            }
+        }
 
+        return i;
+    }
+
+    inline fn consumeHexDigits(self: *Lexer, start: usize) usize {
+        var i = start;
+        var last_was_separator = false;
+
+        while (i < self.source_len) {
+            const c = self.source[i];
+            if (std.ascii.isHex(c)) {
+                i += 1;
+                last_was_separator = false;
+            } else if (c == '_') {
+                if (i == start or last_was_separator) {
+                    break;
+                }
+                i += 1;
+                last_was_separator = true;
+            } else {
+                break;
+            }
+        }
+
+        return i;
+    }
+
+    inline fn consumeOctalDigits(self: *Lexer, start: usize) usize {
+        var i = start;
+        var last_was_separator = false;
+
+        while (i < self.source_len) {
+            const c = self.source[i];
+            if (util.isOctalDigit(c)) {
+                i += 1;
+                last_was_separator = false;
+            } else if (c == '_') {
+                if (i == start or last_was_separator) {
+                    break;
+                }
+                i += 1;
+                last_was_separator = true;
+            } else {
+                break;
+            }
+        }
+
+        return i;
+    }
+
+    inline fn consumeBinaryDigits(self: *Lexer, start: usize) usize {
+        var i = start;
+        var last_was_separator = false;
+
+        while (i < self.source_len) {
+            const c = self.source[i];
+            if (c == '0' or c == '1') {
+                i += 1;
+                last_was_separator = false;
+            } else if (c == '_') {
+                if (i == start or last_was_separator) {
+                    break;
+                }
+                i += 1;
+                last_was_separator = true;
+            } else {
+                break;
+            }
+        }
+
+        return i;
+    }
+
+    fn consumeExponent(self: *Lexer, start: usize) LexicalError!usize {
+        var i = start + 1; // skip 'e/E'
+
+        if (i >= self.source_len) {
+            return error.InvalidExponentPart;
+        }
+
+        // handle optional sign
+        const c = self.source[i];
+        if (c == '+' or c == '-') {
+            i += 1;
+        }
+
+        const exp_start = i;
+        i = self.consumeDecimalDigits(i);
+
+        if (i == exp_start) {
+            return error.InvalidExponentPart;
+        }
+
+        return i;
+    }
+
+    inline fn skipSkippable(self: *Lexer) LexicalError!void {
+        var i = self.position;
+        while (i < self.source_len) {
+            const c = self.source[i];
             if (std.ascii.isAscii(c)) {
                 switch (c) {
                     // simple spaces
@@ -987,23 +1012,19 @@ pub const Lexer = struct {
             } else {
                 // okay, it maybe a multi-byte space
                 const cp = util.codePointAt(self.source, i);
-
                 if (util.isMultiByteSpace(cp.value)) {
                     i += cp.len;
                     continue;
                 }
             }
-
             break;
         }
-
         self.position = i;
     }
 
     inline fn skipSingleLineComment(self: *Lexer, pos: usize) LexicalError!usize {
         const start = pos;
         var i = start + 2;
-
         while (i < self.source_len) {
             const c = self.source[i];
             if (c == '\n' or c == '\r') {
@@ -1011,23 +1032,19 @@ pub const Lexer = struct {
             }
             i += 1;
         }
-
         self.comments.append(self.allocator, Comment{
             .content = self.source[start..i],
             .span = .{ .start = start, .end = i },
             .type = .SingleLine,
         }) catch unreachable;
-
         return i;
     }
 
     inline fn skipMultiLineComment(self: *Lexer, pos: usize) LexicalError!usize {
         const start = pos;
         var i = start + 2;
-
         while (i < self.source_len) {
             const c = self.source[i];
-
             if (c == '*' and self.source[i + 1] == '/') {
                 i += 2;
                 self.comments.append(self.allocator, Comment{
@@ -1037,10 +1054,8 @@ pub const Lexer = struct {
                 }) catch unreachable;
                 return i;
             }
-
             i += 1;
         }
-
         return error.UnterminatedMultiLineComment;
     }
 
@@ -1052,34 +1067,50 @@ pub const Lexer = struct {
 
 pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
     return switch (error_type) {
-        error.InvalidHexEscape => "Invalid hex escape sequence",
+        error.InvalidHexEscape => "Invalid hexadecimal escape sequence",
         error.UnterminatedString => "Unterminated string literal",
         error.UnterminatedRegex => "Unterminated regular expression",
         error.NonTerminatedTemplateLiteral => "Unterminated template literal",
-        error.UnterminatedRegexLiteral => "Unterminated regex literal",
-        error.InvalidRegexLineTerminator => "Invalid line terminator in regex",
+        error.UnterminatedRegexLiteral => "Unterminated regular expression literal",
+        error.InvalidRegexLineTerminator => "Line terminator not allowed in regular expression literal",
         error.InvalidRegex => "Invalid regular expression",
-        error.InvalidIdentifierStart => "Invalid identifier start character",
+        error.InvalidIdentifierStart => "Invalid character at start of identifier",
         error.UnterminatedMultiLineComment => "Unterminated multi-line comment",
-        error.InvalidUnicodeEscape => "Invalid unicode escape sequence",
+        error.InvalidUnicodeEscape => "Invalid Unicode escape sequence",
         error.InvalidOctalEscape => "Invalid octal escape sequence",
-        error.OctalEscapeInStrict => "Octal escape sequences not allowed in strict mode",
+        error.OctalEscapeInStrict => "Octal escape sequences are not allowed in strict mode",
+        error.InvalidBinaryLiteral => "Binary literal must contain at least one binary digit",
+        error.InvalidOctalLiteralDigit => "Octal literal must contain at least one octal digit",
+        error.InvalidHexLiteral => "Hexadecimal literal must contain at least one hex digit",
+        error.InvalidExponentPart => "Exponent part is missing a number",
+        error.NumericSeparatorMisuse => "Numeric separator must be between digits",
+        error.TrailingNumericSeparator => "Numeric separator cannot appear at the end of a numeric literal",
+        error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
+        error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
     };
 }
 
 pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
     return switch (error_type) {
-        error.InvalidHexEscape => "Hex escapes must be in format \\xHH where HH are valid hex digits",
-        error.UnterminatedString => "Add closing quote to complete the string literal",
-        error.UnterminatedRegex => "Add closing delimiter to complete the regular expression",
+        error.InvalidHexEscape => "Use format \\xHH where HH are valid hexadecimal digits (0-9, A-F)",
+        error.UnterminatedString => "Add closing quote (' or \") to complete the string literal",
+        error.UnterminatedRegex => "Add closing delimiter (/) to complete the regular expression",
         error.NonTerminatedTemplateLiteral => "Add closing backtick (`) to complete the template literal",
-        error.UnterminatedRegexLiteral => "Add closing delimiter (/) to complete the regex literal",
-        error.InvalidRegexLineTerminator => "Line terminators are not allowed inside regex literals",
-        error.InvalidRegex => "Check regex syntax for invalid patterns or modifiers",
-        error.InvalidIdentifierStart => "Identifiers must start with a letter, underscore, or dollar sign",
-        error.UnterminatedMultiLineComment => "Add closing */ to complete the multi-line comment",
-        error.InvalidUnicodeEscape => "Unicode escapes must be in format \\uHHHH or \\u{H+}",
-        error.InvalidOctalEscape => "Octal escapes must be in format \\0-7 or \\00-77 or \\000-377",
-        error.OctalEscapeInStrict => "Use \\x or \\u escape sequences instead in strict mode",
+        error.UnterminatedRegexLiteral => "Add closing slash (/) and optional flags to complete the regex",
+        error.InvalidRegexLineTerminator => "Remove line breaks or use a different regex pattern",
+        error.InvalidRegex => "Check regex syntax for invalid patterns, unclosed groups, or invalid modifiers",
+        error.InvalidIdentifierStart => "Identifiers must start with a letter (a-z, A-Z), underscore (_), or dollar sign ($)",
+        error.UnterminatedMultiLineComment => "Add closing delimiter (*/) to complete the comment",
+        error.InvalidUnicodeEscape => "Use format \\uHHHH (4 hex digits) or \\u{H+} (1-6 hex digits in braces)",
+        error.InvalidOctalEscape => "Use format \\0-7, \\00-77, or \\000-377 for octal escapes",
+        error.OctalEscapeInStrict => "Use hexadecimal (\\xHH) or Unicode (\\uHHHH) escape sequences instead",
+        error.InvalidBinaryLiteral => "Binary literals (0b) must be followed by at least one binary digit (0 or 1)",
+        error.InvalidOctalLiteralDigit => "Octal literals (0o) must be followed by at least one octal digit (0-7)",
+        error.InvalidHexLiteral => "Hexadecimal literals (0x) must be followed by at least one hex digit (0-9, A-F)",
+        error.InvalidExponentPart => "Exponent notation (e or E) must be followed by an integer",
+        error.NumericSeparatorMisuse => "Underscores (_) in numeric literals must appear between digits",
+        error.TrailingNumericSeparator => "Remove the trailing underscore from the numeric literal",
+        error.MultipleDecimalPoints => "Use only one decimal point in a numeric literal",
+        error.InvalidBigIntSuffix => "BigInt literals (suffix 'n') cannot contain fractional or exponential parts",
     };
 }
