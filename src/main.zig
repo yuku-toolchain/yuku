@@ -22,7 +22,7 @@ pub fn main() !void {
 
     const elapsed_ms = @as(f64, @floatFromInt(elapsed)) / 1_000_000.0;
 
-    std.debug.print("{d:.2}ms\n\n", .{elapsed_ms});
+    std.debug.print("{d:.3}ms\n\n", .{elapsed_ms});
 
     // std.log.info("{f}", .{std.json.fmt(ast, .{ .whitespace = .indent_2 })});
 }
