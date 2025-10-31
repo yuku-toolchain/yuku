@@ -19,40 +19,6 @@ This document specifies the complete ESTree AST node types, including ES5 throug
 
 ---
 
-## Node Objects
-
-ESTree AST nodes are represented as `Node` objects, which may have any prototype inheritance but which implement the following interface:
-
-```js
-interface Node {
-    type: string;
-    loc: SourceLocation | null;
-}
-```
-
-The `type` field is a string representing the AST variant type. Each subtype of `Node` is documented below with the specific string of its `type` field.
-
-The `loc` field represents the source location information of the node. If the node contains no information about the source location, the field is `null`; otherwise it is an object consisting of a start position and an end position:
-
-```js
-interface SourceLocation {
-    source: string | null;
-    start: Position;
-    end: Position;
-}
-```
-
-Each `Position` object consists of a `line` number (1-indexed) and a `column` number (0-indexed):
-
-```js
-interface Position {
-    line: number; // >= 1
-    column: number; // >= 0
-}
-```
-
----
-
 ## Identifier
 
 ```js

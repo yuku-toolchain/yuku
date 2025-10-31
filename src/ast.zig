@@ -20,13 +20,7 @@ pub const Node = union(enum) {
 
     pub inline fn getSpan(self: *const Node) token.Span {
         return switch (self.*) {
-            .program => |p| p.span,
-            .expression_statement => |e| e.span,
-            .variable_declaration => |v| v.span,
-            .identifier => |i| i.span,
-            .literal => |l| l.span,
-            .variable_declarator => |v| v.span,
-            .directive => |d| d.span,
+            inline else => |variant| variant.span,
         };
     }
 };
@@ -57,6 +51,8 @@ pub const VariableDeclaration = struct {
         @"var",
         let,
         @"const",
+        using,
+        @"await using",
     };
 };
 

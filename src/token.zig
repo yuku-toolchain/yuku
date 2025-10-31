@@ -121,6 +121,7 @@ pub const TokenType = enum {
     Var,
     Let,
     Const,
+    Using,
 
     // Class and OOP keywords
     Class,

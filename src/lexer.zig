@@ -38,10 +38,7 @@ pub const Lexer = struct {
     source: []u8,
     source_len: usize,
     position: usize,
-    // state
     template_depth: usize,
-    //
-    /// expects arena allocator
     allocator: std.mem.Allocator,
     comments: std.ArrayList(Comment),
 
@@ -722,6 +719,8 @@ pub const Lexer = struct {
                         return .Super,
                     't' => if (lexeme[1] == 'h' and lexeme[2] == 'r' and lexeme[3] == 'o' and lexeme[4] == 'w')
                         return .Throw,
+                    'u' => if (lexeme[1] == 's' and lexeme[2] == 'i' and lexeme[3] == 'n' and lexeme[4] == 'g')
+                        return .Using,
                     'w' => if (lexeme[1] == 'h' and lexeme[2] == 'i' and lexeme[3] == 'l' and lexeme[4] == 'e')
                         return .While,
                     'y' => if (lexeme[1] == 'i' and lexeme[2] == 'e' and lexeme[3] == 'l' and lexeme[4] == 'd')
