@@ -49,8 +49,10 @@ pub const Parser = struct {
         var body = std.ArrayList(*ast.Node).empty;
         defer body.deinit(self.allocator);
 
-        try self.errors.ensureTotalCapacity(self.allocator, 16);
-        try body.ensureTotalCapacity(self.allocator, 64);
+        const assumed_capacity = self.source.len / 30;
+
+        try self.errors.ensureTotalCapacity(self.allocator, 3);
+        try body.ensureTotalCapacity(self.allocator, assumed_capacity);
 
         while (self.current.type != .EOF) {
             if (self.parseStatement()) |stmt| {
@@ -103,34 +105,44 @@ pub const Parser = struct {
     fn parseVariableDeclaration(self: *Parser) ?*ast.Node {
         const start = self.current.span.start;
 
-        const kind: ast.VariableDeclaration.VariableKind = blk: {
-            if (self.current.type == .Await) {
+        const kind: ast.VariableDeclaration.VariableKind = switch (self.current.type) {
+            .Await => blk: {
                 self.advance();
-                break :blk .@"await using";
-            }
-
-            const k = switch (self.current.type) {
-                .Var => .@"var",
-                .Let => .let,
-                .Const => .@"const",
-                .Using => .using,
-                else => {
-                    self.err("Expected variable declaration", "Expected 'var', 'let', 'const', or 'using'");
+                if (self.current.type == .Using) {
+                    self.advance();
+                    break :blk .@"await using";
+                } else {
+                    self.err("Expected 'using' after 'await'", null);
                     return null;
-                },
-            };
-
-            self.advance();
-            break :blk k;
+                }
+            },
+            .Var => blk: {
+                self.advance();
+                break :blk .@"var";
+            },
+            .Let => blk: {
+                self.advance();
+                break :blk .let;
+            },
+            .Const => blk: {
+                self.advance();
+                break :blk .@"const";
+            },
+            .Using => blk: {
+                self.advance();
+                break :blk .using;
+            },
+            else => {
+                self.err("Expected variable declaration", "Expected 'var', 'let', 'const', or 'using'");
+                return null;
+            },
         };
-
-        const is_using = kind == .using or kind == .@"await using";
 
         var declarators = std.ArrayList(*ast.Node).empty;
         defer declarators.deinit(self.allocator);
 
         // first declarator
-        if (self.parseDeclarator(is_using)) |decl| {
+        if (self.parseDeclarator(&kind)) |decl| {
             declarators.append(self.allocator, decl) catch return null;
         } else {
             return null;
@@ -139,7 +151,7 @@ pub const Parser = struct {
         // additional declarators
         while (self.current.type == .Comma) {
             self.advance();
-            if (self.parseDeclarator(is_using)) |decl| {
+            if (self.parseDeclarator(&kind)) |decl| {
                 declarators.append(self.allocator, decl) catch return null;
             } else {
                 return null;
@@ -159,7 +171,7 @@ pub const Parser = struct {
         } }) catch null;
     }
 
-    fn parseDeclarator(self: *Parser, is_using: bool) ?*ast.Node {
+    fn parseDeclarator(self: *Parser, kind: *const ast.VariableDeclaration.VariableKind) ?*ast.Node {
         const start = self.current.span.start;
 
         if (self.current.type != .Identifier) {
@@ -184,8 +196,9 @@ pub const Parser = struct {
             init_ = self.parseExpression();
         }
 
-        if (is_using and init_ == null) {
-            self.err("Using declarations require initialization", "Add '= expression' after identifier");
+        if (init_ == null and (kind.* == .@"const" or kind.* == .using or kind.* == .@"await using")) {
+            self.err("Variable declaration missing required initializer",
+                     "Add '= value' after the variable name to complete the declaration");
             return null;
         }
 
@@ -220,12 +233,11 @@ pub const Parser = struct {
     }
 
     inline fn advance(self: *Parser) void {
-        if (self.current.type != .EOF) {
             self.current = self.peek;
-            self.peek = self.lexer.nextToken() catch |error_type| {
+            self.peek = self.lexer.nextToken() catch |error_type| blk: {
                 self.err(lexer.getLexicalErrorMessage(error_type), lexer.getLexicalErrorHelp(error_type));
+                 break :blk token.Token.eof(0);
             };
-        }
     }
 
     inline fn consume(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) bool {
@@ -250,7 +262,10 @@ pub const Parser = struct {
         self.panic_mode = false;
 
         while (self.current.type != .EOF) {
-            if (self.current.type == .Semicolon) return;
+            if (self.current.type == .Semicolon) {
+                self.advance();
+                return;
+            }
 
             switch (self.current.type) {
                 .Class, .Function, .Var, .For, .If, .While, .Return, .Let, .Const, .Using => return,

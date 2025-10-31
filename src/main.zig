@@ -14,7 +14,7 @@ pub fn main() !void {
 
     var parser = try Parser.init(allocator, content);
 
-    _ = try parser.parse();
+    const ast = try parser.parse();
 
     const end = std.time.nanoTimestamp();
 
@@ -24,5 +24,5 @@ pub fn main() !void {
 
     std.debug.print("{d:.3}ms\n\n", .{elapsed_ms});
 
-    // std.log.info("{f}", .{std.json.fmt(ast, .{ .whitespace = .indent_2 })});
+    std.log.info("{f}", .{std.json.fmt(ast, .{ .whitespace = .indent_2 })});
 }

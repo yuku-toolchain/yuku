@@ -1,1 +1,1 @@
-await using hello, hello = hello;
+var nice, hello = hello;
