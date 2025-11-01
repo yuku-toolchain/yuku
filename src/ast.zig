@@ -10,10 +10,16 @@ pub const Body = union(enum) {
             inline else => |variant| variant.span,
         };
     }
+
+    pub inline fn getType(self: *const Body) []const u8 {
+        return switch (self.*) {
+            .statement => |s| s.getType(),
+            .directive => "ExpressionStatement",
+        };
+    }
 };
 
 pub const Program = struct {
-    type: []const u8 = "Program",
     body: []*Body,
     source_type: SourceType = .script,
     span: token.Span,
@@ -22,6 +28,10 @@ pub const Program = struct {
 
     pub inline fn getSpan(self: *const Program) token.Span {
         return self.span;
+    }
+
+    pub inline fn getType() []const u8 {
+        return "Program";
     }
 };
 
@@ -35,20 +45,28 @@ pub const Statement = union(enum) {
             inline else => |variant| variant.span,
         };
     }
+
+    pub inline fn getType(self: *const Statement) []const u8 {
+        return switch (self.*) {
+            .expression_statement => "ExpressionStatement",
+            .variable_declaration => "VariableDeclaration",
+        };
+    }
 };
 
 pub const ExpressionStatement = struct {
-    type: []const u8 = "ExpressionStatement",
     expression: *Expression,
     directive: ?[]const u8 = null,
     span: token.Span,
+
+    pub inline fn getType() []const u8 {
+        return "ExpressionStatement";
+    }
 };
 
 pub const VariableDeclaration = struct {
-    type: []const u8 = "VariableDeclaration",
     kind: VariableDeclarationKind,
     declarations: []*VariableDeclarator,
-    // declare: ?bool = null, when typescript
     span: token.Span,
 
     pub const VariableDeclarationKind = enum {
@@ -58,14 +76,21 @@ pub const VariableDeclaration = struct {
         using,
         @"await using",
     };
+
+    pub inline fn getType() []const u8 {
+        return "VariableDeclaration";
+    }
 };
 
 // directive (like "use strict")
 pub const Directive = struct {
-    type: []const u8 = "ExpressionStatement",
     expression: *StringLiteral,
     directive: []const u8,
     span: token.Span,
+
+    pub inline fn getType() []const u8 {
+        return "ExpressionStatement";
+    }
 };
 
 // expressions
@@ -79,29 +104,44 @@ pub const Expression = union(enum) {
             inline else => |variant| variant.span,
         };
     }
+
+    pub inline fn getType(self: *const Expression) []const u8 {
+        return switch (self.*) {
+            .string_literal => "Literal",
+            .identifier_reference => "Identifier",
+        };
+    }
 };
 
 pub const StringLiteral = struct {
-    type: []const u8 = "Literal",
     value: []const u8,
     raw: ?[]const u8 = null,
     span: token.Span,
+
+    pub inline fn getType() []const u8 {
+        return "Literal";
+    }
 };
 
 pub const IdentifierReference = struct {
-    type: []const u8 = "Identifier",
     name: []const u8,
     span: token.Span,
+
+    pub inline fn getType() []const u8 {
+        return "Identifier";
+    }
 };
 
 pub const BindingIdentifier = struct {
-    type: []const u8 = "Identifier",
     name: []const u8,
     span: token.Span,
+
+    pub inline fn getType() []const u8 {
+        return "Identifier";
+    }
 };
 
 // patterns
-
 pub const BindingPattern = union(enum) {
     binding_identifier: BindingIdentifier,
     // TODO: object_pattern, array_pattern, assignment_pattern
@@ -109,6 +149,12 @@ pub const BindingPattern = union(enum) {
     pub inline fn getSpan(self: *const BindingPattern) token.Span {
         return switch (self.*) {
             inline else => |variant| variant.span,
+        };
+    }
+
+    pub inline fn getType(self: *const BindingPattern) []const u8 {
+        return switch (self.*) {
+            .binding_identifier => "Identifier",
         };
     }
 };
@@ -122,12 +168,20 @@ pub const Declaration = union(enum) {
             inline else => |variant| variant.span,
         };
     }
+
+    pub inline fn getType(self: *const Declaration) []const u8 {
+        return switch (self.*) {
+            .variable_declarator => "VariableDeclarator",
+        };
+    }
 };
 
 pub const VariableDeclarator = struct {
-    type: []const u8 = "VariableDeclarator",
     id: *BindingPattern,
     init: ?*Expression = null,
-    // definite: ?bool = null, when typescript
     span: token.Span,
+
+    pub inline fn getType() []const u8 {
+        return "VariableDeclarator";
+    }
 };

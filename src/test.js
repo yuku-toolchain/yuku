@@ -1,1 +1,1 @@
-var nice;
+using nice = hello;

@@ -13,7 +13,7 @@ pub const ParseResult = struct {
     program: ?ast.Program,
     errors: []Error,
 
-    pub fn hasErrors(self: ParseResult) bool {
+    pub inline fn hasErrors(self: ParseResult) bool {
         return self.errors.len > 0;
     }
 };
@@ -26,6 +26,10 @@ pub const Parser = struct {
     allocator: std.mem.Allocator,
     errors: std.ArrayList(Error),
     panic_mode: bool = false,
+
+    const estimated_nodes_per_line = 3;
+    const avg_chars_per_line = 60;
+    const initial_error_capacity = 4;
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
         var lex = try lexer.Lexer.init(allocator, source);
@@ -48,15 +52,16 @@ pub const Parser = struct {
         const start = self.current.span.start;
         var body = std.ArrayList(*ast.Body).empty;
 
-        const assumed_capacity = self.source.len / 30;
+        const estimated_lines = self.source.len / avg_chars_per_line;
+        const estimated_capacity = estimated_lines * estimated_nodes_per_line;
 
-        try self.errors.ensureTotalCapacity(self.allocator, 3);
-        try body.ensureTotalCapacity(self.allocator, assumed_capacity);
+        try self.errors.ensureTotalCapacity(self.allocator, initial_error_capacity);
+        try body.ensureTotalCapacity(self.allocator, estimated_capacity);
 
         while (self.current.type != .EOF) {
             if (self.parseStatement()) |stmt| {
-                const body_item = try self.alloc(ast.Body, .{ .statement = stmt });
-                try body.append(self.allocator, body_item);
+                const body_item = try self.createNode(ast.Body, .{ .statement = stmt });
+                body.append(self.allocator, body_item) catch unreachable;
                 self.panic_mode = false;
             } else {
                 if (!self.panic_mode) {
@@ -67,7 +72,6 @@ pub const Parser = struct {
         }
 
         const end = self.current.span.end;
-
         const program = if (self.errors.items.len == 0) ast.Program{
             .body = try body.toOwnedSlice(self.allocator),
             .span = .{ .start = start, .end = end },
@@ -86,12 +90,12 @@ pub const Parser = struct {
                 if (self.peek.type == .Using)
                     return self.parseVariableDeclaration()
                 else {
-                    self.err("Invalid await usage", "Expected 'using' after 'await'");
+                    self.recordError("Invalid await usage", "Expected 'using' after 'await'");
                     return null;
                 }
             },
             else => {
-                self.err("Unexpected token", "Expected a statement");
+                self.recordError("Unexpected token", "Expected a statement");
                 return null;
             },
         };
@@ -103,80 +107,98 @@ pub const Parser = struct {
 
         var declarators = std.ArrayList(*ast.VariableDeclarator).empty;
 
-        // parse declarators
-        if (self.parseVariableDeclarator(&kind)) |decl| {
-            declarators.append(self.allocator, decl) catch return null;
-        } else {
-            return null;
-        }
+        declarators.ensureTotalCapacity(self.allocator, 3) catch {};
 
+        // first declarator
+        const first_decl = self.parseVariableDeclarator(&kind) orelse return null;
+        declarators.append(self.allocator, first_decl) catch unreachable;
+
+        // additional declarators
         while (self.current.type == .Comma) {
             self.advance();
-            if (self.parseVariableDeclarator(&kind)) |decl| {
-                declarators.append(self.allocator, decl) catch return null;
-            } else {
-                return null;
-            }
+            const decl = self.parseVariableDeclarator(&kind) orelse return null;
+            declarators.append(self.allocator, decl) catch unreachable;
         }
 
-        if (!self.consume(.Semicolon, "Expected ';'", "Variable declarations must end with semicolon")) {
+        if (!self.expect(.Semicolon, "Expected ';'", "Variable declarations must end with semicolon")) {
             return null;
         }
 
         const end = self.current.span.end;
         const var_decl = ast.VariableDeclaration{
             .kind = kind,
-            .declarations = declarators.toOwnedSlice(self.allocator) catch return null,
+            .declarations = declarators.toOwnedSlice(self.allocator) catch unreachable,
             .span = .{ .start = start, .end = end },
         };
 
-        return self.alloc(ast.Statement, .{ .variable_declaration = var_decl }) catch null;
+        return self.createNode(ast.Statement, .{ .variable_declaration = var_decl }) catch null;
     }
 
     fn parseVariableDeclarationKind(self: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
-        return switch (self.current.type) {
+        const kind: ast.VariableDeclaration.VariableDeclarationKind = switch (self.current.type) {
             .Await => blk: {
                 self.advance();
-                if (self.current.type == .Using) {
-                    self.advance();
-                    break :blk .@"await using";
-                } else {
-                    self.err("Expected 'using' after 'await'", null);
+                if (self.current.type != .Using) {
+                    self.recordError("Expected 'using' after 'await'", null);
                     return null;
                 }
+                self.advance();
+                break :blk .@"await using";
             },
-            .Var => blk: { self.advance(); break :blk .@"var"; },
-            .Let => blk: { self.advance(); break :blk .let; },
-            .Const => blk: { self.advance(); break :blk .@"const"; },
-            .Using => blk: { self.advance(); break :blk .using; },
+            .Var => blk: {
+                self.advance();
+                break :blk .@"var";
+            },
+            .Let => blk: {
+                self.advance();
+                break :blk .let;
+            },
+            .Const => blk: {
+                self.advance();
+                break :blk .@"const";
+            },
+            .Using => blk: {
+                self.advance();
+                break :blk .using;
+            },
             else => {
-                self.err("Expected variable declaration", "Expected 'var', 'let', 'const', or 'using'");
+                self.recordError("Expected variable declaration", "Expected 'var', 'let', 'const', or 'using'");
                 return null;
             },
         };
+        return kind;
     }
 
-    fn parseVariableDeclarator(self: *Parser, kind: *const ast.VariableDeclaration.VariableDeclarationKind) ?*ast.VariableDeclarator {
+    fn parseVariableDeclarator(
+        self: *Parser,
+        kind: *const ast.VariableDeclaration.VariableDeclarationKind,
+    ) ?*ast.VariableDeclarator {
         const start = self.current.span.start;
-
         const id = self.parseBindingPattern() orelse return null;
 
-        var init_: ?*ast.Expression = null;
+        var init_expr: ?*ast.Expression = null;
         if (self.current.type == .Assign) {
             self.advance();
-            init_ = self.parseExpression();
+            init_expr = self.parseExpression();
         }
 
-        if (init_ == null and (kind.* == .@"const" or kind.* == .using or kind.* == .@"await using")) {
-            self.err("Variable declaration missing required initializer", "Add '= value' after the variable name to complete the declaration");
+        const requires_init = kind.* == .@"const" or
+                             kind.* == .using or
+                             kind.* == .@"await using";
+
+        if (init_expr == null and requires_init) {
+            self.recordError(
+                "Variable declaration missing required initializer",
+                "Add '= value' after the variable name to complete the declaration",
+            );
             return null;
         }
 
-        const end = if (init_) |i| i.getSpan().end else id.getSpan().end;
+        const end = if (init_expr) |expr| expr.getSpan().end else id.getSpan().end;
 
-        return self.alloc(ast.VariableDeclarator, .{
+        return self.createNode(ast.VariableDeclarator, .{
             .id = id,
-            .init = init_,
+            .init = init_expr,
             .span = .{ .start = start, .end = end },
         }) catch null;
     }
@@ -189,9 +211,8 @@ pub const Parser = struct {
         return switch (self.current.type) {
             .Identifier => self.parseIdentifierReference(),
             .StringLiteral => self.parseStringLiteral(),
-            // TODO: add more expression types
             else => {
-                self.err("Unexpected token", "Expected expression");
+                self.recordError("Unexpected token", "Expected expression");
                 return null;
             },
         };
@@ -207,7 +228,7 @@ pub const Parser = struct {
             .span = span,
         };
 
-        return self.alloc(ast.Expression, .{ .identifier_reference = identifier }) catch null;
+        return self.createNode(ast.Expression, .{ .identifier_reference = identifier }) catch null;
     }
 
     fn parseStringLiteral(self: *Parser) ?*ast.Expression {
@@ -216,34 +237,32 @@ pub const Parser = struct {
         self.advance();
 
         const literal = ast.StringLiteral{
-            .value = value,
-            .raw = value, // TODO: handle escape sequences
+            .value = value, // TODO: handle escape sequences
+            .raw = value,
             .span = span,
         };
 
-        return self.alloc(ast.Expression, .{ .string_literal = literal }) catch null;
+        return self.createNode(ast.Expression, .{ .string_literal = literal }) catch null;
     }
 
     fn parseBindingPattern(self: *Parser) ?*ast.BindingPattern {
         return switch (self.current.type) {
             .Identifier => self.parseBindingIdentifierPattern(),
-            // TODO: add object patterns, array patterns
             else => {
-                self.err("Expected binding pattern", "Expected identifier or pattern");
+                self.recordError("Expected binding pattern", "Expected identifier or pattern");
                 return null;
             },
         };
     }
 
     fn parseBindingIdentifierPattern(self: *Parser) ?*ast.BindingPattern {
-        const name = self.current.lexeme;
-        const span = self.current.span;
-
         if (self.current.type != .Identifier) {
-            self.err("Expected identifier", "Variable name required");
+            self.recordError("Expected identifier", "Variable name required");
             return null;
         }
 
+        const name = self.current.lexeme;
+        const span = self.current.span;
         self.advance();
 
         const binding_id = ast.BindingIdentifier{
@@ -251,27 +270,35 @@ pub const Parser = struct {
             .span = span,
         };
 
-        return self.alloc(ast.BindingPattern, .{ .binding_identifier = binding_id }) catch null;
+        return self.createNode(ast.BindingPattern, .{ .binding_identifier = binding_id }) catch null;
     }
+
     inline fn advance(self: *Parser) void {
         self.current = self.peek;
-        self.peek = self.lexer.nextToken() catch |error_type| blk: {
-            self.err(lexer.getLexicalErrorMessage(error_type), lexer.getLexicalErrorHelp(error_type));
+        self.peek = self.lexer.nextToken() catch |err| blk: {
+            self.recordError(
+                lexer.getLexicalErrorMessage(err),
+                lexer.getLexicalErrorHelp(err),
+            );
             break :blk token.Token.eof(0);
         };
     }
 
-    inline fn consume(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) bool {
+    inline fn expect(
+        self: *Parser,
+        token_type: token.TokenType,
+        message: []const u8,
+        help: ?[]const u8,
+    ) bool {
         if (self.current.type == token_type) {
             self.advance();
             return true;
         }
-
-        self.err(message, help);
+        self.recordError(message, help);
         return false;
     }
 
-    inline fn err(self: *Parser, message: []const u8, help: ?[]const u8) void {
+    inline fn recordError(self: *Parser, message: []const u8, help: ?[]const u8) void {
         self.errors.append(self.allocator, Error{
             .message = message,
             .span = self.current.span,
@@ -289,7 +316,17 @@ pub const Parser = struct {
             }
 
             switch (self.current.type) {
-                .Class, .Function, .Var, .For, .If, .While, .Return, .Let, .Const, .Using => return,
+                .Class,
+                .Function,
+                .Var,
+                .For,
+                .If,
+                .While,
+                .Return,
+                .Let,
+                .Const,
+                .Using,
+                => return,
                 else => {},
             }
 
@@ -297,7 +334,7 @@ pub const Parser = struct {
         }
     }
 
-    inline fn alloc(self: *Parser, comptime T: type, value: T) !*T {
+    inline fn createNode(self: *Parser, comptime T: type, value: T) !*T {
         const ptr = try self.allocator.create(T);
         ptr.* = value;
         return ptr;
