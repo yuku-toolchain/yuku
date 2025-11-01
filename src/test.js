@@ -1,1 +1,1 @@
-var nice, hello = hello;
+var nice;
