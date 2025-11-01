@@ -23,6 +23,7 @@ pub const Parser = struct {
     lexer: lexer.Lexer,
     current: token.Token,
     peek: token.Token,
+    /// expects arena allocator
     allocator: std.mem.Allocator,
     errors: std.ArrayList(Error),
     panic_mode: bool = false,

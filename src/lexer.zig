@@ -40,6 +40,7 @@ pub const Lexer = struct {
     source_len: usize,
     position: usize,
     template_depth: usize,
+    /// expects arena allocator
     allocator: std.mem.Allocator,
     comments: std.ArrayList(Comment),
 
