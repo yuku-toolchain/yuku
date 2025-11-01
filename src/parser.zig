@@ -74,7 +74,7 @@ pub const Parser = struct {
         while (self.current.type != .EOF) {
             if (self.parseStatement()) |stmt| {
                 const body_item = try self.createNode(ast.Body, .{ .statement = stmt });
-                self.scratch_body.appendAssumeCapacity(body_item);
+                self.scratch_body.append(self.allocator, body_item) catch unreachable;
                 self.panic_mode = false;
             } else {
                 if (!self.panic_mode) {
