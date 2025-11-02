@@ -3,7 +3,7 @@ const token = @import("token.zig");
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
 
-const Error = struct {
+pub const Error = struct {
     message: []const u8,
     span: token.Span,
     help: ?[]const u8 = null,
