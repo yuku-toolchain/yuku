@@ -20,7 +20,6 @@ fn isKeyword(word: []const u8) bool {
 }
 
 fn printHighlightedLine(line: []const u8) void {
-
     var i: usize = 0;
     while (i < line.len) {
         const c = line[i];

@@ -49,7 +49,7 @@ pub const Parser = struct {
             .current = current,
             .peek = peek,
             .allocator = allocator,
-            .errors = std.ArrayList(Error).empty,
+            .errors = .empty,
 
             .scratch_body = std.ArrayList(*ast.Body).empty,
             .scratch_declarators = std.ArrayList(*ast.VariableDeclarator).empty,
@@ -72,16 +72,15 @@ pub const Parser = struct {
         try self.errors.ensureTotalCapacity(self.allocator, estimated_errors);
 
         while (self.current.type != .EOF) {
-            if (self.parseStatement()) |stmt| {
-                const body_item = try self.createNode(ast.Body, .{ .statement = stmt });
-                self.scratch_body.append(self.allocator, body_item) catch unreachable;
-                self.panic_mode = false;
-            } else {
-                if (!self.panic_mode) {
-                    self.panic_mode = true;
-                }
+            const stmt = self.parseStatement() orelse {
+                if (!self.panic_mode) self.panic_mode = true;
                 self.synchronize();
-            }
+                continue;
+            };
+
+            const body_item = try self.createNode(ast.Body, .{ .statement = stmt });
+            self.scratch_body.appendAssumeCapacity(body_item);
+            self.panic_mode = false;
         }
 
         const end = self.current.span.end;
@@ -119,37 +118,7 @@ pub const Parser = struct {
 
     fn parseVariableDeclaration(self: *Parser) ?*ast.Statement {
         const start = self.current.span.start;
-        const kind: ast.VariableDeclaration.VariableDeclarationKind = switch (self.current.type) {
-            .Await => blk: {
-                self.advance();
-                if (self.current.type != .Using) {
-                    self.recordError("Expected 'using' after 'await'", null);
-                    return null;
-                }
-                self.advance();
-                break :blk .@"await using";
-            },
-            .Var => blk: {
-                self.advance();
-                break :blk .@"var";
-            },
-            .Let => blk: {
-                self.advance();
-                break :blk .let;
-            },
-            .Const => blk: {
-                self.advance();
-                break :blk .@"const";
-            },
-            .Using => blk: {
-                self.advance();
-                break :blk .using;
-            },
-            else => {
-                self.recordError("Expected variable declaration", "Expected 'var', 'let', 'const', or 'using'");
-                return null;
-            },
-        };
+        const kind = self.parseVariableDeclarationKind() orelse return null;
 
         self.scratch_declarators.clearRetainingCapacity();
         self.scratch_declarators.ensureTotalCapacity(self.allocator, 4) catch {};
@@ -180,6 +149,42 @@ pub const Parser = struct {
         return self.createNode(ast.Statement, .{ .variable_declaration = var_decl }) catch null;
     }
 
+    fn parseVariableDeclarationKind(self: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
+        return switch (self.current.type) {
+            .Await => blk: {
+                self.advance();
+                if (self.current.type != .Using) {
+                    self.recordError("Expected 'using' after 'await'", null);
+                    return null;
+                }
+                self.advance();
+                break :blk .@"await using";
+            },
+            .Var => blk: {
+                self.advance();
+                break :blk .@"var";
+            },
+            .Let => blk: {
+                @branchHint(.likely);
+                self.advance();
+                break :blk .let;
+            },
+            .Const => blk: {
+                @branchHint(.likely);
+                self.advance();
+                break :blk .@"const";
+            },
+            .Using => blk: {
+                self.advance();
+                break :blk .using;
+            },
+            else => {
+                self.recordError("Expected variable declaration", "Expected 'var', 'let', 'const', or 'using'");
+                return null;
+            },
+        };
+    }
+
     fn parseVariableDeclarator(
         self: *Parser,
         kind: ast.VariableDeclaration.VariableDeclarationKind,
@@ -188,6 +193,7 @@ pub const Parser = struct {
         const id = self.parseBindingPattern() orelse return null;
 
         var init_expr: ?*ast.Expression = null;
+
         if (self.current.type == .Assign) {
             self.advance();
             init_expr = self.parseExpression();
@@ -310,7 +316,7 @@ pub const Parser = struct {
     }
 
     inline fn eatSemi(self: *Parser) void {
-        if(self.current.type == .Semicolon){
+        if (self.current.type == .Semicolon) {
             self.advance();
         }
     }
