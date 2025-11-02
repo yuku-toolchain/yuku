@@ -23,7 +23,7 @@ pub const Parser = struct {
     lexer: lexer.Lexer,
     current: token.Token,
     peek: token.Token,
-    /// expects arena allocator
+    arena: *std.heap.ArenaAllocator,
     allocator: std.mem.Allocator,
     errors: std.ArrayList(Error),
 
@@ -37,7 +37,11 @@ pub const Parser = struct {
     const avg_chars_per_line = 40;
     const initial_error_capacity = 8;
 
-    pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
+    pub fn init(child_allocator: std.mem.Allocator, source: []const u8) !Parser {
+        var arena = std.heap.ArenaAllocator.init(child_allocator);
+
+        const allocator = arena.allocator();
+
         var lex = try lexer.Lexer.init(allocator, source);
 
         const current = lex.nextToken() catch token.Token.eof(0);
@@ -48,6 +52,7 @@ pub const Parser = struct {
             .lexer = lex,
             .current = current,
             .peek = peek,
+            .arena = &arena,
             .allocator = allocator,
             .errors = .empty,
 
@@ -57,6 +62,10 @@ pub const Parser = struct {
 
             .panic_mode = false,
         };
+    }
+
+    pub fn deinit(self: *Parser) void {
+        self.arena.deinit();
     }
 
     pub fn parse(self: *Parser) !ParseResult {

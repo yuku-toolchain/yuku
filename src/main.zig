@@ -4,16 +4,11 @@ const Token = @import("token.zig").Token;
 const printError = @import("print-error.zig").printError;
 
 pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
-    const allocator = arena.allocator();
-
     const content = @embedFile("test.js");
 
     const start = std.time.nanoTimestamp();
 
-    var parser = try Parser.init(allocator, content);
+    var parser = try Parser.init(std.heap.page_allocator, content);
 
     const result = try parser.parse();
 
