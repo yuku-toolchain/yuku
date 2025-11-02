@@ -66,10 +66,9 @@ pub const Parser = struct {
         const estimated_statements = @max(estimated_lines / 2, 16);
         const estimated_errors = @min(@max(estimated_lines / 50, 2), initial_error_capacity);
 
-        self.scratch_body.clearRetainingCapacity();
-        try self.scratch_body.ensureTotalCapacity(self.allocator, estimated_statements);
-
-        try self.errors.ensureTotalCapacity(self.allocator, estimated_errors);
+        self.clearRetainingCapacity(&self.scratch_body);
+        self.ensureCapacity(&self.scratch_body, estimated_statements);
+        self.ensureCapacity(&self.errors, estimated_errors);
 
         while (self.current.type != .EOF) {
             const stmt = self.parseStatement() orelse {
@@ -78,14 +77,14 @@ pub const Parser = struct {
                 continue;
             };
 
-            const body_item = try self.createNode(ast.Body, .{ .statement = stmt });
-            self.scratch_body.appendAssumeCapacity(body_item);
+            const body_item = self.createNode(ast.Body, .{ .statement = stmt });
+            self.appendAssumeCapacity(&self.scratch_body, body_item);
             self.panic_mode = false;
         }
 
         const end = self.current.span.end;
 
-        const body = try self.allocator.dupe(*ast.Body, self.scratch_body.items);
+        const body = self.dupeSlice(*ast.Body, self.scratch_body.items);
 
         const program = ast.Program{
             .body = body,
@@ -94,7 +93,7 @@ pub const Parser = struct {
 
         return ParseResult{
             .program = program,
-            .errors = try self.errors.toOwnedSlice(self.allocator),
+            .errors = self.toOwnedSlice(&self.errors),
         };
     }
 
@@ -120,25 +119,25 @@ pub const Parser = struct {
         const start = self.current.span.start;
         const kind = self.parseVariableDeclarationKind() orelse return null;
 
-        self.scratch_declarators.clearRetainingCapacity();
-        self.scratch_declarators.ensureTotalCapacity(self.allocator, 4) catch {};
+        self.clearRetainingCapacity(&self.scratch_declarators);
+        self.ensureCapacity(&self.scratch_declarators, 4);
 
         // first declarator
         const first_decl = self.parseVariableDeclarator(kind) orelse return null;
-        self.scratch_declarators.appendAssumeCapacity(first_decl);
+        self.appendAssumeCapacity(&self.scratch_declarators, first_decl);
 
         // additional declarators
         while (self.current.type == .Comma) {
             self.advance();
             const decl = self.parseVariableDeclarator(kind) orelse return null;
-            self.scratch_declarators.append(self.allocator, decl) catch unreachable;
+            self.appendItem(&self.scratch_declarators, decl);
         }
 
         self.eatSemi();
 
         const end = self.current.span.end;
 
-        const declarations = self.allocator.dupe(*ast.VariableDeclarator, self.scratch_declarators.items) catch unreachable;
+        const declarations = self.dupeSlice(*ast.VariableDeclarator, self.scratch_declarators.items);
 
         const var_decl = ast.VariableDeclaration{
             .kind = kind,
@@ -146,7 +145,7 @@ pub const Parser = struct {
             .span = .{ .start = start, .end = end },
         };
 
-        return self.createNode(ast.Statement, .{ .variable_declaration = var_decl }) catch null;
+        return self.createNode(ast.Statement, .{ .variable_declaration = var_decl });
     }
 
     fn parseVariableDeclarationKind(self: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
@@ -217,7 +216,7 @@ pub const Parser = struct {
             .id = id,
             .init = init_expr,
             .span = .{ .start = start, .end = end },
-        }) catch null;
+        });
     }
 
     fn parseExpression(self: *Parser) ?*ast.Expression {
@@ -245,7 +244,7 @@ pub const Parser = struct {
             .span = span,
         };
 
-        return self.createNode(ast.Expression, .{ .identifier_reference = identifier }) catch null;
+        return self.createNode(ast.Expression, .{ .identifier_reference = identifier });
     }
 
     fn parseStringLiteral(self: *Parser) ?*ast.Expression {
@@ -259,7 +258,7 @@ pub const Parser = struct {
             .span = span,
         };
 
-        return self.createNode(ast.Expression, .{ .string_literal = literal }) catch null;
+        return self.createNode(ast.Expression, .{ .string_literal = literal });
     }
 
     fn parseBindingPattern(self: *Parser) ?*ast.BindingPattern {
@@ -287,7 +286,7 @@ pub const Parser = struct {
             .span = span,
         };
 
-        return self.createNode(ast.BindingPattern, .{ .binding_identifier = binding_id }) catch null;
+        return self.createNode(ast.BindingPattern, .{ .binding_identifier = binding_id });
     }
 
     inline fn advance(self: *Parser) void {
@@ -322,11 +321,11 @@ pub const Parser = struct {
     }
 
     inline fn recordError(self: *Parser, message: []const u8, help: ?[]const u8) void {
-        self.errors.append(self.allocator, Error{
+        self.appendItem(&self.errors, Error{
             .message = message,
             .span = self.current.span,
             .help = help,
-        }) catch {};
+        });
     }
 
     fn synchronize(self: *Parser) void {
@@ -357,9 +356,35 @@ pub const Parser = struct {
         }
     }
 
-    inline fn createNode(self: *Parser, comptime T: type, value: T) !*T {
-        const ptr = try self.allocator.create(T);
+    inline fn createNode(self: *Parser, comptime T: type, value: T) *T {
+        const ptr = self.allocator.create(T) catch unreachable;
         ptr.* = value;
         return ptr;
+    }
+
+    inline fn ensureCapacity(self: *Parser, list: anytype, capacity: usize) void {
+        list.ensureTotalCapacity(self.allocator, capacity) catch unreachable;
+    }
+
+    inline fn appendItem(self: *Parser, list: anytype, item: anytype) void {
+        list.append(self.allocator, item) catch unreachable;
+    }
+
+    inline fn appendAssumeCapacity(self: *Parser, list: anytype, item: anytype) void {
+        _ = self;
+        list.appendAssumeCapacity(item);
+    }
+
+    inline fn clearRetainingCapacity(self: *Parser, list: anytype) void {
+        _ = self;
+        list.clearRetainingCapacity();
+    }
+
+    inline fn dupeSlice(self: *Parser, comptime T: type, items: []const T) []T {
+        return self.allocator.dupe(T, items) catch unreachable;
+    }
+
+    inline fn toOwnedSlice(self: *Parser, list: anytype) @TypeOf(list.*.toOwnedSlice(self.allocator) catch unreachable) {
+        return list.toOwnedSlice(self.allocator) catch unreachable;
     }
 };
