@@ -229,6 +229,8 @@ pub const Parser = struct {
             .NullLiteral => self.parseNullLiteral(),
             .NumericLiteral, .HexLiteral, .OctalLiteral, .BinaryLiteral => self.parseNumericLiteral(),
             .BigIntLiteral => self.parseBigIntLiteral(),
+            // TODO: the lexer actually won't scan RegexLiteral, we need to take a flag to parseStringLiteral telling whether to scan regex
+            // If yes, we should use reScanAsRegex function from lexer to identify regex.
             .RegexLiteral => self.parseRegExpLiteral(),
             else => {
                 self.recordError("Unexpected token", "Expected expression");
