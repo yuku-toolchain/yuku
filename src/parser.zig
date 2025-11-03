@@ -443,6 +443,7 @@ pub const Parser = struct {
         });
     }
 
+    // TODO: this is much simple now, this can improve later
     fn synchronize(self: *Parser) void {
         self.panic_mode = false;
 
