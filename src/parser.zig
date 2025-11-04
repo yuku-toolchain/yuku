@@ -42,9 +42,7 @@ pub const Parser = struct {
         var lookahead_buf: [4]token.Token = undefined;
         lookahead_buf[0] = lex.nextToken() catch token.Token.eof(0);
 
-        return .{ .source = source, .lexer = lex, .allocator = allocator, .lookahead = lookahead_buf,
-                    .lookahead_start = 0,
-                    .lookahead_count = 1, .errors = .empty, .scratch_body = .empty, .scratch_declarators = .empty, .scratch_expressions = .empty };
+        return .{ .source = source, .lexer = lex, .allocator = allocator, .lookahead = lookahead_buf, .lookahead_start = 0, .lookahead_count = 1, .errors = .empty, .scratch_body = .empty, .scratch_declarators = .empty, .scratch_expressions = .empty };
     }
 
     pub fn parse(self: *Parser) !ParseResult {
@@ -174,9 +172,9 @@ pub const Parser = struct {
             }
         } else if (kind == .@"const" or kind == .using or kind == .@"await using") {
             self.recordError(
-                           "Variable declaration missing required initializer",
-                           "Try adding '= value' here to initialize this variable",
-                       );
+                "Variable declaration missing required initializer",
+                "Try adding '= value' here to initialize this variable",
+            );
             return null;
         }
 
@@ -380,7 +378,7 @@ pub const Parser = struct {
 
     inline fn advance(self: *Parser) void {
         if (self.lookahead_count > 1) {
-            self.lookahead_start +%= 1;  // wrapping add
+            self.lookahead_start +%= 1; // wrapping add
             self.lookahead_start &= 3;
             self.lookahead_count -= 1;
         } else {
