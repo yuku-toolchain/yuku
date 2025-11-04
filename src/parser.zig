@@ -28,13 +28,8 @@ pub const Parser = struct {
     lookahead_start: u3,
     lookahead_count: u3, // how many tokens buffered
 
-    scratch_body: std.ArrayList(*ast.Body),
     scratch_declarators: std.ArrayList(*ast.VariableDeclarator),
     scratch_expressions: std.ArrayList(*ast.Expression),
-
-    const estimated_nodes_per_line = 2;
-    const avg_chars_per_line = 40;
-    const initial_error_capacity = 8;
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
         var lex = try lexer.Lexer.init(allocator, source);
@@ -42,19 +37,13 @@ pub const Parser = struct {
         var lookahead_buf: [4]token.Token = undefined;
         lookahead_buf[0] = lex.nextToken() catch token.Token.eof(0);
 
-        return .{ .source = source, .lexer = lex, .allocator = allocator, .lookahead = lookahead_buf, .lookahead_start = 0, .lookahead_count = 1, .errors = .empty, .scratch_body = .empty, .scratch_declarators = .empty, .scratch_expressions = .empty };
+        return .{ .source = source, .lexer = lex, .allocator = allocator, .lookahead = lookahead_buf, .lookahead_start = 0, .lookahead_count = 1, .errors = .empty, .scratch_declarators = .empty, .scratch_expressions = .empty };
     }
 
     pub fn parse(self: *Parser) !ParseResult {
         const start = self.current().span.start;
 
-        const estimated_lines = self.source.len / avg_chars_per_line;
-        const estimated_statements = @max(estimated_lines / 2, 16);
-        const estimated_errors = @min(@max(estimated_lines / 50, 2), initial_error_capacity);
-
-        self.clearRetainingCapacity(&self.scratch_body);
-        self.ensureCapacity(&self.scratch_body, estimated_statements);
-        self.ensureCapacity(&self.errors, estimated_errors);
+        var body_list = std.ArrayList(*ast.Body).empty;
 
         while (self.current().type != .EOF) {
             const stmt = self.parseStatement() orelse {
@@ -63,15 +52,13 @@ pub const Parser = struct {
             };
 
             const body_item = self.createNode(ast.Body, .{ .statement = stmt });
-            self.appendItem(&self.scratch_body, body_item);
+            self.appendItem(&body_list, body_item);
         }
 
         const end = self.current().span.end;
 
-        const body = self.dupeSlice(*ast.Body, self.scratch_body.items);
-
         const program = ast.Program{
-            .body = body,
+            .body = self.toOwnedSlice(&body_list),
             .span = .{ .start = start, .end = end },
         };
 
