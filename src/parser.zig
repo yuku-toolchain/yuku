@@ -21,16 +21,16 @@ pub const ParseResult = struct {
 pub const Parser = struct {
     source: []const u8,
     lexer: lexer.Lexer,
-    current: token.Token,
-    peek: token.Token,
     allocator: std.mem.Allocator,
     errors: std.ArrayList(Error),
+
+    lookahead: [4]token.Token,
+    lookahead_start: u3,
+    lookahead_count: u3, // how many tokens buffered
 
     scratch_body: std.ArrayList(*ast.Body),
     scratch_declarators: std.ArrayList(*ast.VariableDeclarator),
     scratch_expressions: std.ArrayList(*ast.Expression),
-
-    recover_on_error: bool = true,
 
     const estimated_nodes_per_line = 2;
     const avg_chars_per_line = 40;
@@ -39,14 +39,16 @@ pub const Parser = struct {
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
         var lex = try lexer.Lexer.init(allocator, source);
 
-        const current = lex.nextToken() catch token.Token.eof(0);
-        const peek = lex.nextToken() catch token.Token.eof(0);
+        var lookahead_buf: [4]token.Token = undefined;
+        lookahead_buf[0] = lex.nextToken() catch token.Token.eof(0);
 
-        return .{ .source = source, .lexer = lex, .current = current, .peek = peek, .allocator = allocator, .errors = .empty, .scratch_body = .empty, .scratch_declarators = .empty, .scratch_expressions = .empty, .recover_on_error = true };
+        return .{ .source = source, .lexer = lex, .allocator = allocator, .lookahead = lookahead_buf,
+                    .lookahead_start = 0,
+                    .lookahead_count = 1, .errors = .empty, .scratch_body = .empty, .scratch_declarators = .empty, .scratch_expressions = .empty };
     }
 
     pub fn parse(self: *Parser) !ParseResult {
-        const start = self.current.span.start;
+        const start = self.current().span.start;
 
         const estimated_lines = self.source.len / avg_chars_per_line;
         const estimated_statements = @max(estimated_lines / 2, 16);
@@ -56,11 +58,9 @@ pub const Parser = struct {
         self.ensureCapacity(&self.scratch_body, estimated_statements);
         self.ensureCapacity(&self.errors, estimated_errors);
 
-        while (self.current.type != .EOF) {
+        while (self.current().type != .EOF) {
             const stmt = self.parseStatement() orelse {
-                if (!self.recover_on_error) break;
                 self.synchronize();
-                self.recover_on_error = true;
                 continue;
             };
 
@@ -68,7 +68,7 @@ pub const Parser = struct {
             self.appendItem(&self.scratch_body, body_item);
         }
 
-        const end = self.current.span.end;
+        const end = self.current().span.end;
 
         const body = self.dupeSlice(*ast.Body, self.scratch_body.items);
 
@@ -84,10 +84,12 @@ pub const Parser = struct {
     }
 
     fn parseStatement(self: *Parser) ?*ast.Statement {
-        return switch (self.current.type) {
+        return switch (self.current().type) {
             .Var, .Const, .Let, .Using => self.parseVariableDeclaration(),
             .Await => {
-                if (self.peek.type == .Using) {
+                const next = self.peek(1) orelse return null;
+
+                if (next.type == .Using) {
                     return self.parseVariableDeclaration();
                 }
 
@@ -102,7 +104,7 @@ pub const Parser = struct {
     }
 
     fn parseVariableDeclaration(self: *Parser) ?*ast.Statement {
-        const start = self.current.span.start;
+        const start = self.current().span.start;
         const kind = self.parseVariableDeclarationKind() orelse return null;
 
         self.clearRetainingCapacity(&self.scratch_declarators);
@@ -113,7 +115,7 @@ pub const Parser = struct {
         self.appendItem(&self.scratch_declarators, first_decl);
 
         // additional declarators
-        while (self.current.type == .Comma) {
+        while (self.current().type == .Comma) {
             self.advance();
             const decl = self.parseVariableDeclarator(kind) orelse return null;
             self.appendItem(&self.scratch_declarators, decl);
@@ -121,7 +123,7 @@ pub const Parser = struct {
 
         self.eatSemi();
 
-        const end = self.current.span.end;
+        const end = self.current().span.end;
 
         const declarations = self.dupeSlice(*ast.VariableDeclarator, self.scratch_declarators.items);
 
@@ -134,11 +136,11 @@ pub const Parser = struct {
         return self.createNode(ast.Statement, .{ .variable_declaration = var_decl });
     }
 
-    fn parseVariableDeclarationKind(self: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
-        return switch (self.current.type) {
+    inline fn parseVariableDeclarationKind(self: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
+        return switch (self.current().type) {
             .Await => blk: {
                 self.advance();
-                if (self.current.type != .Using) {
+                if (self.current().type != .Using) {
                     return null;
                 }
                 self.advance();
@@ -173,21 +175,19 @@ pub const Parser = struct {
         self: *Parser,
         kind: ast.VariableDeclaration.VariableDeclarationKind,
     ) ?*ast.VariableDeclarator {
-        const start = self.current.span.start;
+        const start = self.current().span.start;
         const id = self.parseBindingPattern() orelse return null;
-
-        var init_expr: ?*ast.Expression = null;
-
-        if (self.current.type == .Assign) {
-            self.advance();
-            init_expr = self.parseExpression();
-        }
 
         const requires_init = kind == .@"const" or
             kind == .using or
             kind == .@"await using";
 
-        if (init_expr == null and requires_init) {
+        var init_expr: ?*ast.Expression = null;
+
+        if (self.current().type == .Assign) {
+            self.advance();
+            init_expr = self.parseExpression();
+        } else if (requires_init) {
             self.recordError(
                 "Variable declaration missing required initializer",
                 "Try adding '= value' here to initialize this variable",
@@ -209,7 +209,7 @@ pub const Parser = struct {
     }
 
     fn parsePrimaryExpression(self: *Parser) ?*ast.Expression {
-        return switch (self.current.type) {
+        return switch (self.current().type) {
             .Identifier => self.parseIdentifierReference(),
             .StringLiteral => self.parseStringLiteral(),
             .True, .False => self.parseBooleanLiteral(),
@@ -225,8 +225,8 @@ pub const Parser = struct {
     }
 
     fn parseIdentifierReference(self: *Parser) ?*ast.Expression {
-        const name = self.current.lexeme;
-        const span = self.current.span;
+        const name = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const identifier = ast.IdentifierReference{
@@ -238,8 +238,8 @@ pub const Parser = struct {
     }
 
     fn parseStringLiteral(self: *Parser) ?*ast.Expression {
-        const value = self.current.lexeme;
-        const span = self.current.span;
+        const value = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const literal = ast.StringLiteral{
@@ -252,9 +252,9 @@ pub const Parser = struct {
     }
 
     fn parseBooleanLiteral(self: *Parser) ?*ast.Expression {
-        const value = self.current.type == .True;
-        const raw = self.current.lexeme;
-        const span = self.current.span;
+        const value = self.current().type == .True;
+        const raw = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const literal = ast.BooleanLiteral{
@@ -267,8 +267,8 @@ pub const Parser = struct {
     }
 
     fn parseNullLiteral(self: *Parser) ?*ast.Expression {
-        const raw = self.current.lexeme;
-        const span = self.current.span;
+        const raw = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const literal = ast.NullLiteral{
@@ -281,8 +281,8 @@ pub const Parser = struct {
     }
 
     fn parseNumericLiteral(self: *Parser) ?*ast.Expression {
-        const value = self.current.lexeme;
-        const span = self.current.span;
+        const value = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const literal = ast.NumericLiteral{
@@ -295,8 +295,8 @@ pub const Parser = struct {
     }
 
     fn parseBigIntLiteral(self: *Parser) ?*ast.Expression {
-        const raw = self.current.lexeme;
-        const span = self.current.span;
+        const raw = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const bigint = raw[0..(raw.len - 1)];
@@ -312,12 +312,12 @@ pub const Parser = struct {
     }
 
     fn parseRegExpLiteral(self: *Parser) ?*ast.Expression {
-        // we are handling regex as special, lexer won't scan regex as a standalone regex token
-        // parser decide when to scan regex, in this case, we can scanning it in the parseExpression
-        // when a slash encounters, because a expression can be a regex.
-        // so in this parseRegExpLiteral, we need to handle creating the regex token, advancing it manually
+        // we are handling regex as a special case, lexer won't scan regex as a standalone regex token
+        // parser decides when to scan regex, in this case, we are scanning it in the parseExpression
+        // when a slash is encountered, because an expression can be a regex.
+        // so in this parseRegExpLiteral, we need to handle creating the regex token and advancing it manually
         // unlike other tokens or nodes.
-        const regex = self.lexer.reScanAsRegex(self.current) catch |err| {
+        const regex = self.lexer.reScanAsRegex(self.current()) catch |err| {
             self.recordError(
                 lexer.getLexicalErrorMessage(err),
                 lexer.getLexicalErrorHelp(err),
@@ -326,17 +326,16 @@ pub const Parser = struct {
             return null;
         };
 
-        const start = regex.span.start;
-        const end = regex.span.end;
+        // TODO: add a method to add a token to lexer manually
+        // const start = regex.span.start;
+        // const end = regex.span.end;
 
-        const regex_token = self.lexer.createToken(.RegexLiteral, self.source[start..end], start, end);
+        // const regex_token = self.lexer.createToken(.RegexLiteral, self.source[start..end], start, end);
 
-        // because .advance() use peek to set current
-        self.peek = regex_token;
+        // self.position += 1;
+        // self.tokens.append(self.allocator, regex_token) catch {};
 
-        self.advance(); // advance to make regex the current
-
-        self.advance(); // we are done, eat the regex and advance to next
+        self.advance(); // consume the regex
 
         const literal = ast.RegExpLiteral{
             .value = regex.lexeme,
@@ -352,7 +351,7 @@ pub const Parser = struct {
     }
 
     fn parseBindingPattern(self: *Parser) ?*ast.BindingPattern {
-        return switch (self.current.type) {
+        return switch (self.current().type) {
             .Identifier => self.parseBindingIdentifierPattern(),
             else => {
                 self.recordError("Expected binding pattern", "Try using an identifier name here");
@@ -362,13 +361,13 @@ pub const Parser = struct {
     }
 
     fn parseBindingIdentifierPattern(self: *Parser) ?*ast.BindingPattern {
-        if (self.current.type != .Identifier) {
+        if (self.current().type != .Identifier) {
             self.recordError("Expected identifier for variable name", "Try using a valid identifier here (letters, digits, _, or $ - must start with letter, _ or $)");
             return null;
         }
 
-        const name = self.current.lexeme;
-        const span = self.current.span;
+        const name = self.current().lexeme;
+        const span = self.current().span;
         self.advance();
 
         const binding_id = ast.BindingIdentifier{
@@ -379,15 +378,32 @@ pub const Parser = struct {
         return self.createNode(ast.BindingPattern, .{ .binding_identifier = binding_id });
     }
 
+    inline fn current(self: *Parser) token.Token {
+        return self.lookahead[self.lookahead_start];
+    }
+
+    fn peek(self: *Parser, n: u3) ?token.Token {
+        while (self.lookahead_count <= n) {
+            const tok = self.lexer.nextToken() catch return null;
+            const write_pos = (self.lookahead_start + self.lookahead_count) & 3;
+            self.lookahead[write_pos] = tok;
+            self.lookahead_count += 1;
+            if (self.lookahead_count > 4) return null; // buffer full
+        }
+
+        const read_pos = (self.lookahead_start + n) & 3;
+        return self.lookahead[read_pos];
+    }
+
     inline fn advance(self: *Parser) void {
-        self.current = self.peek;
-        self.peek = self.lexer.nextToken() catch |err| blk: {
-            self.recordError(
-                lexer.getLexicalErrorMessage(err),
-                lexer.getLexicalErrorHelp(err),
-            );
-            break :blk token.Token.eof(0);
-        };
+        if (self.lookahead_count > 1) {
+            self.lookahead_start = (self.lookahead_start + 1) & 3;
+            self.lookahead_count -= 1;
+        } else {
+            // refill
+            const tok = self.lexer.nextToken() catch token.Token.eof(0);
+            self.lookahead[self.lookahead_start] = tok;
+        }
     }
 
     inline fn expect(
@@ -396,7 +412,7 @@ pub const Parser = struct {
         message: []const u8,
         help: ?[]const u8,
     ) bool {
-        if (self.current.type == token_type) {
+        if (self.current().type == token_type) {
             self.advance();
             return true;
         }
@@ -405,7 +421,7 @@ pub const Parser = struct {
     }
 
     inline fn eatSemi(self: *Parser) void {
-        if (self.current.type == .Semicolon) {
+        if (self.current().type == .Semicolon) {
             self.advance();
         }
     }
@@ -420,13 +436,13 @@ pub const Parser = struct {
 
     // TODO: this is much simple now, this can improve later
     fn synchronize(self: *Parser) void {
-        while (self.current.type != .EOF) {
-            if (self.current.type == .Semicolon) {
+        while (self.current().type != .EOF) {
+            if (self.current().type == .Semicolon) {
                 self.advance();
                 return;
             }
 
-            switch (self.current.type) {
+            switch (self.current().type) {
                 .Class,
                 .Function,
                 .Var,
