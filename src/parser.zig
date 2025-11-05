@@ -280,11 +280,6 @@ pub const Parser = struct {
     }
 
     fn parseRegExpLiteral(self: *Parser) ?*ast.Expression {
-        // we are handling regex as a special case, lexer won't scan regex as a standalone regex token
-        // parser decides when to scan regex, in this case, we are scanning it in the parseExpression
-        // when a slash is encountered, because an expression can be a regex.
-        // so in this parseRegExpLiteral, we need to handle creating the regex token and advancing it manually
-        // unlike other tokens or nodes.
         const regex = self.lexer.reScanAsRegex(self.current()) catch |err| {
             self.recordError(
                 lexer.getLexicalErrorMessage(err),
@@ -363,13 +358,19 @@ pub const Parser = struct {
     }
 
     inline fn advance(self: *Parser) void {
-           if (self.lookahead_count > 1) {
-               self.lookahead_start +%= 1; // safes to wrap naturally, since lookahead_start is u2
-               self.lookahead_count -= 1;
-           } else {
-               self.lookahead[self.lookahead_start] =
-                   self.lexer.nextToken() catch token.Token.eof(0);
-           }
+        if (self.lookahead_count > 1) {
+            self.lookahead_start +%= 1; // safes to wrap naturally, since lookahead_start is u2
+            self.lookahead_count -= 1;
+        } else {
+            self.lookahead[self.lookahead_start] =
+                self.lexer.nextToken() catch |err| blk: {
+                    self.recordError(
+                        lexer.getLexicalErrorMessage(err),
+                        lexer.getLexicalErrorHelp(err),
+                    );
+                    break :blk token.Token.eof(0);
+                };
+        }
     }
 
     inline fn expect(
