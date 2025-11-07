@@ -63,7 +63,7 @@ pub const Parser = struct {
             start;
 
         const program = ast.Program{
-            .body = self.toOwnedSlice(&body_list),
+            .body = self.dupeSlice(*ast.Body, body_list.items),
             .span = .{ .start = start, .end = end },
         };
 
@@ -487,10 +487,8 @@ pub const Parser = struct {
             break :blk last_end;
         };
 
-        const elements = self.toOwnedSlice(&self.scratch_array_pattern_elements);
-
         const array_pattern = ast.ArrayPattern{
-            .elements = elements,
+            .elements = self.dupeSlice(?*ast.ArrayPatternElement, self.scratch_array_pattern_elements.items),
             .span = .{ .start = start, .end = end },
         };
 
