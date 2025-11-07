@@ -1,5 +1,6 @@
 const std = @import("std");
 const Parser = @import("parser.zig").Parser;
+const Lexer = @import("lexer.zig").Lexer;
 const Token = @import("token.zig").Token;
 const printError = @import("print-error.zig").printError;
 
@@ -31,5 +32,5 @@ pub fn main() !void {
         }
     }
 
-    std.log.info("{f}", .{std.json.fmt(result, .{ .whitespace = .indent_2 })});
+    // std.log.info("{f}", .{std.json.fmt(result, .{ .whitespace = .indent_2 })});
 }

@@ -1,1 +1,1 @@
-var { nice, [nie]: cool, nic } = undefined;
+const [nice, nice = nice;

@@ -39,7 +39,7 @@ pub const Lexer = struct {
     strict_mode: bool,
     source: []u8,
     source_len: usize,
-    /// token start position, retained for error recovery if scan fails
+    /// token start position, retained for lexical error recovery if scan fails
     token_start: usize,
     /// current byte index being scanned in the source
     cursor: usize,
@@ -71,7 +71,6 @@ pub const Lexer = struct {
             return self.createToken(.EOF, "", self.cursor, self.cursor);
         }
 
-        // save token start for error reporting if scan fails
         self.token_start = self.cursor;
 
         const current_char = self.source[self.cursor];
@@ -86,6 +85,22 @@ pub const Lexer = struct {
             '}' => self.handleRightBrace(),
             else => try self.scanIdentifierOrKeyword(),
         };
+    }
+
+    pub fn lexAll(self: *Lexer) LexicalError![]Token {
+        var tokens = std.ArrayList(Token).empty;
+
+        tokens.ensureTotalCapacity(self.allocator, self.source_len / 10) catch unreachable;
+
+        while (self.cursor < self.source_len) {
+            const tok = try self.nextToken();
+
+            tokens.append(self.allocator, tok) catch unreachable;
+
+            if (tok.type == .EOF) break;
+        }
+
+        return tokens.toOwnedSlice(self.allocator) catch unreachable;
     }
 
     inline fn scanSimplePunctuation(self: *Lexer) Token {
