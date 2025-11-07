@@ -31,5 +31,5 @@ pub fn main() !void {
         }
     }
 
-    std.log.info("{f}", .{std.json.fmt(result, .{ .whitespace = .indent_2 })});
+    // std.log.info("{f}", .{std.json.fmt(result, .{ .whitespace = .indent_2 })});
 }

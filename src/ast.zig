@@ -204,6 +204,13 @@ pub const ArrayPattern = struct {
 pub const ArrayPatternElement = union(enum) {
     binding_pattern: *BindingPattern,
     rest_element: *BindingRestElement,
+
+    pub inline fn getSpan(self: *const ArrayPatternElement) token.Span {
+        return switch (self.*) {
+            .binding_pattern => |bp| bp.getSpan(),
+            inline else => |variant| variant.span,
+        };
+    }
 };
 
 pub const VariableDeclarator = struct {

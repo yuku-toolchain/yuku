@@ -448,10 +448,7 @@ pub const Parser = struct {
 
                 self.appendItem(&self.scratch_array_pattern_elements, rest_elem);
 
-                last_end = switch (rest_elem.*) {
-                    .rest_element => |re| re.span.end,
-                    .binding_pattern => |bp| bp.getSpan().end,
-                };
+                last_end = rest_elem.getSpan().end;
 
                 if (self.current().type == .Comma) {
                     self.recordError("Rest element must be last in array pattern", "Try moving the rest element to the end of the array pattern");
@@ -470,10 +467,7 @@ pub const Parser = struct {
                 const elem = self.parseArrayPatternElement() orelse return null;
                 self.appendItem(&self.scratch_array_pattern_elements, elem);
 
-                last_end = switch (elem.*) {
-                    .rest_element => |re| re.span.end,
-                    .binding_pattern => |bp| bp.getSpan().end,
-                };
+                last_end = elem.getSpan().end;
 
                 if (self.current().type == .Comma) {
                     last_end = self.current().span.end;
