@@ -87,22 +87,6 @@ pub const Lexer = struct {
         };
     }
 
-    pub fn lexAll(self: *Lexer) LexicalError![]Token {
-        var tokens = std.ArrayList(Token).empty;
-
-        tokens.ensureTotalCapacity(self.allocator, self.source_len / 10) catch unreachable;
-
-        while (self.cursor < self.source_len) {
-            const tok = try self.nextToken();
-
-            tokens.append(self.allocator, tok) catch unreachable;
-
-            if (tok.type == .EOF) break;
-        }
-
-        return tokens.toOwnedSlice(self.allocator) catch unreachable;
-    }
-
     inline fn scanSimplePunctuation(self: *Lexer) Token {
         const start = self.cursor;
         const c = self.source[self.cursor];
