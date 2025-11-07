@@ -801,14 +801,14 @@ pub const Parser = struct {
     }
 
     inline fn advance(self: *Parser) void {
-            self.current_token = self.lexer.nextToken() catch |_error| blk: {
-                self.appendItem(&self.errors, Error{
-                    .message = lexer.getLexicalErrorMessage(_error),
-                    .span = .{ .start = self.lexer.token_start, .end = self.lexer.cursor },
-                    .help = lexer.getLexicalErrorHelp(_error),
-                });
-                break :blk token.Token.eof(0);
-            };
+        self.current_token = self.lexer.nextToken() catch |_error| blk: {
+            self.appendItem(&self.errors, Error{
+                .message = lexer.getLexicalErrorMessage(_error),
+                .span = .{ .start = self.lexer.token_start, .end = self.lexer.cursor },
+                .help = lexer.getLexicalErrorHelp(_error),
+            });
+            break :blk token.Token.eof(0);
+        };
     }
 
     inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) void {
