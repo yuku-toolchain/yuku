@@ -16,7 +16,7 @@
 - [x] using, await using declarations
 - [x] Basic binding patterns (identifier)
 - [x] Array destructuring patterns (ArrayPattern)
-- [ ] Object destructuring patterns (ObjectPattern)
+- [x] Object destructuring patterns (ObjectPattern)
 - [ ] Rest elements in destructuring
 - [ ] Default values in destructuring (AssignmentPattern)
 
