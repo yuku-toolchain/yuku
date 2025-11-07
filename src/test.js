@@ -1,1 +1,1 @@
-const [nice, nice = nice;
+const nice = nice;

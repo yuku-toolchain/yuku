@@ -24,9 +24,7 @@ pub const Parser = struct {
     allocator: std.mem.Allocator,
     errors: std.ArrayList(Error),
 
-    lookahead: [4]token.Token,
-    lookahead_start: u2,
-    lookahead_count: u3,
+    current_token: token.Token,
 
     scratch_declarators: std.ArrayList(*ast.VariableDeclarator),
     scratch_expressions: std.ArrayList(*ast.Expression),
@@ -37,17 +35,17 @@ pub const Parser = struct {
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
         var lex = try lexer.Lexer.init(allocator, source);
 
-        var lookahead_buf: [4]token.Token = undefined;
-        lookahead_buf[0] = lex.nextToken() catch token.Token.eof(0);
+        const first_token = lex.nextToken() catch token.Token.eof(0);
 
         return .{
             .source = source,
             .lexer = lex,
             .allocator = allocator,
-            .lookahead = lookahead_buf,
-            .lookahead_start = 0,
-            .lookahead_count = 1,
+
+            .current_token = first_token,
+
             .errors = std.ArrayList(Error).empty,
+
             .scratch_declarators = std.ArrayList(*ast.VariableDeclarator).empty,
             .scratch_expressions = std.ArrayList(*ast.Expression).empty,
             .scratch_template_elements = std.ArrayList(*ast.TemplateElement).empty,
@@ -57,11 +55,11 @@ pub const Parser = struct {
     }
 
     pub fn parse(self: *Parser) !ParseResult {
-        const start = self.current().span.start;
+        const start = self.current_token.span.start;
 
         var body_list = std.ArrayList(*ast.Body).empty;
 
-        while (self.current().type != .EOF) {
+        while (self.current_token.type != .EOF) {
             const stmt = self.parseStatement() orelse {
                 self.synchronize();
                 continue;
@@ -88,14 +86,14 @@ pub const Parser = struct {
     }
 
     fn parseStatement(self: *Parser) ?*ast.Statement {
-        return switch (self.current().type) {
+        return switch (self.current_token.type) {
             .Var, .Const, .Let, .Using => self.parseVariableDeclaration(),
             .Await => {
-                const await_token = self.current();
-                const next = self.peek(1) orelse {
+                const await_token = self.current_token;
+                const next = self.peek() orelse {
                     const span_start = await_token.span.start;
                     const span_end = await_token.span.end;
-                    self.recordError(
+                    self.err(
                         span_start,
                         span_end,
                         "Expected 'using' after 'await'",
@@ -110,7 +108,7 @@ pub const Parser = struct {
 
                 const span_start = await_token.span.start;
                 const span_end = await_token.span.end;
-                self.recordError(
+                self.err(
                     span_start,
                     span_end + 1,
                     "Expected 'using' after 'await'",
@@ -119,8 +117,8 @@ pub const Parser = struct {
                 return null;
             },
             else => {
-                const bad_token = self.current();
-                self.recordError(
+                const bad_token = self.current_token;
+                self.err(
                     bad_token.span.start,
                     bad_token.span.end,
                     "Unexpected token in statement position",
@@ -132,7 +130,7 @@ pub const Parser = struct {
     }
 
     fn parseVariableDeclaration(self: *Parser) ?*ast.Statement {
-        const start = self.current().span.start;
+        const start = self.current_token.span.start;
         const kind = self.parseVariableDeclarationKind() orelse return null;
 
         self.clearRetainingCapacity(&self.scratch_declarators);
@@ -143,7 +141,7 @@ pub const Parser = struct {
         self.appendItem(&self.scratch_declarators, first_decl);
 
         // parse additional declarators
-        while (self.current().type == .Comma) {
+        while (self.current_token.type == .Comma) {
             self.advance();
             const decl = self.parseVariableDeclarator(kind) orelse return null;
             self.appendItem(&self.scratch_declarators, decl);
@@ -154,7 +152,7 @@ pub const Parser = struct {
         const end = if (self.scratch_declarators.items.len > 0)
             self.scratch_declarators.items[self.scratch_declarators.items.len - 1].span.end
         else
-            self.current().span.start;
+            self.current_token.span.start;
 
         const declarations = self.dupeSlice(*ast.VariableDeclarator, self.scratch_declarators.items);
 
@@ -168,7 +166,7 @@ pub const Parser = struct {
     }
 
     inline fn parseVariableDeclarationKind(self: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
-        const tok = self.current().type;
+        const tok = self.current_token.type;
         self.advance();
 
         return switch (tok) {
@@ -177,7 +175,7 @@ pub const Parser = struct {
             .Var => .@"var",
             .Using => .using,
             .Await => blk: {
-                if (self.current().type == .Using) {
+                if (self.current_token.type == .Using) {
                     self.advance();
                     break :blk .@"await using";
                 }
@@ -191,13 +189,13 @@ pub const Parser = struct {
         self: *Parser,
         kind: ast.VariableDeclaration.VariableDeclarationKind,
     ) ?*ast.VariableDeclarator {
-        const start = self.current().span.start;
+        const start = self.current_token.span.start;
         const id = self.parseBindingPattern() orelse return null;
 
         var init_expr: ?*ast.Expression = null;
         var end = id.getSpan().end;
 
-        if (self.current().type == .Assign) {
+        if (self.current_token.type == .Assign) {
             self.advance();
             if (self.parseExpression()) |expr| {
                 init_expr = expr;
@@ -205,7 +203,7 @@ pub const Parser = struct {
             }
         } else if (kind == .@"const" or kind == .using or kind == .@"await using") {
             const id_span = id.getSpan();
-            self.recordError(
+            self.err(
                 id_span.start,
                 id_span.end + 1,
                 "Missing initializer in declaration",
@@ -226,7 +224,7 @@ pub const Parser = struct {
     }
 
     fn parsePrimaryExpression(self: *Parser) ?*ast.Expression {
-        return switch (self.current().type) {
+        return switch (self.current_token.type) {
             .Identifier => self.parseIdentifierReference(),
             .StringLiteral => self.parseStringLiteral(),
             .True, .False => self.parseBooleanLiteral(),
@@ -237,8 +235,8 @@ pub const Parser = struct {
             .TemplateHead => self.parseTemplateLiteral(),
             .NoSubstitutionTemplate => self.parseNoSubstitutionTemplateLiteral(),
             else => {
-                const bad_token = self.current();
-                self.recordError(
+                const bad_token = self.current_token;
+                self.err(
                     bad_token.span.start,
                     bad_token.span.end,
                     "Unexpected token in expression position",
@@ -250,8 +248,8 @@ pub const Parser = struct {
     }
 
     fn parseIdentifierReference(self: *Parser) ?*ast.Expression {
-        const name = self.current().lexeme;
-        const span = self.current().span;
+        const name = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const identifier = ast.IdentifierReference{
@@ -263,8 +261,8 @@ pub const Parser = struct {
     }
 
     fn parseStringLiteral(self: *Parser) ?*ast.Expression {
-        const value = self.current().lexeme;
-        const span = self.current().span;
+        const value = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const literal = ast.StringLiteral{
@@ -277,9 +275,9 @@ pub const Parser = struct {
     }
 
     fn parseBooleanLiteral(self: *Parser) ?*ast.Expression {
-        const value = self.current().type == .True;
-        const raw = self.current().lexeme;
-        const span = self.current().span;
+        const value = self.current_token.type == .True;
+        const raw = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const literal = ast.BooleanLiteral{
@@ -292,8 +290,8 @@ pub const Parser = struct {
     }
 
     fn parseNullLiteral(self: *Parser) ?*ast.Expression {
-        const raw = self.current().lexeme;
-        const span = self.current().span;
+        const raw = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const literal = ast.NullLiteral{
@@ -306,8 +304,8 @@ pub const Parser = struct {
     }
 
     fn parseNumericLiteral(self: *Parser) ?*ast.Expression {
-        const value = self.current().lexeme;
-        const span = self.current().span;
+        const value = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const literal = ast.NumericLiteral{
@@ -320,8 +318,8 @@ pub const Parser = struct {
     }
 
     fn parseBigIntLiteral(self: *Parser) ?*ast.Expression {
-        const raw = self.current().lexeme;
-        const span = self.current().span;
+        const raw = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const bigint = raw[0..(raw.len - 1)];
@@ -337,14 +335,14 @@ pub const Parser = struct {
     }
 
     fn parseRegExpLiteral(self: *Parser) ?*ast.Expression {
-        const slash_token = self.current();
+        const slash_token = self.current_token;
 
-        const regex = self.lexer.reScanAsRegex(slash_token) catch |err| {
-            self.recordError(
+        const regex = self.lexer.reScanAsRegex(slash_token) catch |_error| {
+            self.err(
                 slash_token.span.start,
                 slash_token.span.end,
-                lexer.getLexicalErrorMessage(err),
-                lexer.getLexicalErrorHelp(err),
+                lexer.getLexicalErrorMessage(_error),
+                lexer.getLexicalErrorHelp(_error),
             );
             return null;
         };
@@ -370,7 +368,7 @@ pub const Parser = struct {
     }
 
     fn parseNoSubstitutionTemplateLiteral(self: *Parser) ?*ast.Expression {
-        const tok = self.current();
+        const tok = self.current_token;
         self.advance();
 
         const element = self.createTemplateElement(tok, true);
@@ -388,7 +386,7 @@ pub const Parser = struct {
     }
 
     fn parseTemplateLiteral(self: *Parser) ?*ast.Expression {
-        const template_literal_start = self.current().span.start - 1; // -1 include starting backtick
+        const template_literal_start = self.current_token.span.start - 1; // -1 include starting backtick
 
         self.clearRetainingCapacity(&self.scratch_template_elements);
         self.clearRetainingCapacity(&self.scratch_expressions);
@@ -396,7 +394,7 @@ pub const Parser = struct {
         self.ensureCapacity(&self.scratch_expressions, 4);
 
         // parse head element
-        const head_token = self.current();
+        const head_token = self.current_token;
         self.appendItem(&self.scratch_template_elements, self.createTemplateElement(head_token, false));
         self.advance();
 
@@ -404,11 +402,11 @@ pub const Parser = struct {
 
         // parse expressions and middle/tail elements
         while (true) {
-            const expr_start = self.current().span.start;
+            const expr_start = self.current_token.span.start;
             const expr = self.parseExpression() orelse return null;
             self.appendItem(&self.scratch_expressions, expr);
 
-            const template_token = self.current();
+            const template_token = self.current_token;
             const is_tail = template_token.type == .TemplateTail;
 
             switch (template_token.type) {
@@ -424,7 +422,7 @@ pub const Parser = struct {
                     self.advance();
                 },
                 else => {
-                    self.recordError(
+                    self.err(
                         expr_start,
                         template_token.span.start,
                         "Expected template continuation after expression",
@@ -457,13 +455,13 @@ pub const Parser = struct {
     }
 
     fn parseBindingPattern(self: *Parser) ?*ast.BindingPattern {
-        return switch (self.current().type) {
+        return switch (self.current_token.type) {
             .Identifier => self.parseBindingIdentifierPattern(),
             .LeftBracket => self.parseArrayPattern(),
             .LeftBrace => self.parseObjectPattern(),
             else => {
-                const bad_token = self.current();
-                self.recordError(
+                const bad_token = self.current_token;
+                self.err(
                     bad_token.span.start,
                     bad_token.span.end,
                     "Expected binding pattern",
@@ -475,9 +473,9 @@ pub const Parser = struct {
     }
 
     fn parseBindingIdentifierPattern(self: *Parser) ?*ast.BindingPattern {
-        if (self.current().type != .Identifier) {
-            const bad_token = self.current();
-            self.recordError(
+        if (self.current_token.type != .Identifier) {
+            const bad_token = self.current_token;
+            self.err(
                 bad_token.span.start,
                 bad_token.span.end,
                 "Expected identifier for variable name",
@@ -486,8 +484,8 @@ pub const Parser = struct {
             return null;
         }
 
-        const name = self.current().lexeme;
-        const span = self.current().span;
+        const name = self.current_token.lexeme;
+        const span = self.current_token.span;
         self.advance();
 
         const binding_id = ast.BindingIdentifier{
@@ -499,7 +497,7 @@ pub const Parser = struct {
     }
 
     fn parseArrayPattern(self: *Parser) ?*ast.BindingPattern {
-        const opening_bracket = self.current();
+        const opening_bracket = self.current_token;
         const start = opening_bracket.span.start;
 
         if (!self.expect(.LeftBracket, "Expected '[' to start array pattern", "Add '[' here to begin the array destructuring pattern")) {
@@ -509,20 +507,20 @@ pub const Parser = struct {
         self.clearRetainingCapacity(&self.scratch_array_pattern_elements);
         self.ensureCapacity(&self.scratch_array_pattern_elements, 4);
 
-        var last_end = self.current().span.start;
+        var last_end = self.current_token.span.start;
 
         // parse array elements
-        while (self.current().type != .RightBracket and self.current().type != .EOF) {
+        while (self.current_token.type != .RightBracket and self.current_token.type != .EOF) {
             // check for rest element
-            if (self.current().type == .Spread) {
+            if (self.current_token.type == .Spread) {
                 const rest_elem = self.parseRestElement() orelse return null;
                 self.appendItem(&self.scratch_array_pattern_elements, rest_elem);
                 last_end = rest_elem.getSpan().end;
 
                 // Rest element must be last
-                if (self.current().type == .Comma) {
-                    const comma_token = self.current();
-                    self.recordError(
+                if (self.current_token.type == .Comma) {
+                    const comma_token = self.current_token;
+                    self.err(
                         rest_elem.getSpan().start,
                         comma_token.span.end,
                         "Rest element must be last in array pattern",
@@ -534,18 +532,18 @@ pub const Parser = struct {
             }
 
             // parse regular element or empty slot
-            if (self.current().type == .Comma) {
+            if (self.current_token.type == .Comma) {
                 // empty slot: [a, , b]
                 self.appendItem(&self.scratch_array_pattern_elements, null);
-                last_end = self.current().span.end;
+                last_end = self.current_token.span.end;
                 self.advance();
             } else {
                 const elem = self.parseArrayPatternElement() orelse return null;
                 self.appendItem(&self.scratch_array_pattern_elements, elem);
                 last_end = elem.getSpan().end;
 
-                if (self.current().type == .Comma) {
-                    last_end = self.current().span.end;
+                if (self.current_token.type == .Comma) {
+                    last_end = self.current_token.span.end;
                     self.advance();
                 } else {
                     break;
@@ -553,12 +551,12 @@ pub const Parser = struct {
             }
         }
 
-        const end = if (self.current().type == .RightBracket) blk: {
-            const right_bracket_end = self.current().span.end;
+        const end = if (self.current_token.type == .RightBracket) blk: {
+            const right_bracket_end = self.current_token.span.end;
             self.advance();
             break :blk right_bracket_end;
         } else blk: {
-            self.recordError(
+            self.err(
                 start,
                 last_end + 1,
                 "Expected ']' to close array pattern",
@@ -583,7 +581,7 @@ pub const Parser = struct {
     }
 
     fn parseRestElement(self: *Parser) ?*ast.ArrayPatternElement {
-        const spread_token = self.current();
+        const spread_token = self.current_token;
         const start = spread_token.span.start;
 
         if (!self.expect(.Spread, "Expected '...' for rest element", "Add '...' here for the rest element")) {
@@ -604,7 +602,7 @@ pub const Parser = struct {
     }
 
     fn parseObjectPattern(self: *Parser) ?*ast.BindingPattern {
-        const opening_brace = self.current();
+        const opening_brace = self.current_token;
         const start = opening_brace.span.start;
 
         if (!self.expect(.LeftBrace, "Expected '{' to start object pattern", "Add '{' here to begin the object destructuring pattern")) {
@@ -614,20 +612,20 @@ pub const Parser = struct {
         self.clearRetainingCapacity(&self.scratch_object_pattern_properties);
         self.ensureCapacity(&self.scratch_object_pattern_properties, 4);
 
-        var last_end = self.current().span.start;
+        var last_end = self.current_token.span.start;
 
         // parse object properties
-        while (self.current().type != .RightBrace and self.current().type != .EOF) {
+        while (self.current_token.type != .RightBrace and self.current_token.type != .EOF) {
             // check for rest element
-            if (self.current().type == .Spread) {
+            if (self.current_token.type == .Spread) {
                 const rest_prop = self.parseObjectRestElement() orelse return null;
                 self.appendItem(&self.scratch_object_pattern_properties, rest_prop);
                 last_end = rest_prop.getSpan().end;
 
                 // rest element must be last
-                if (self.current().type == .Comma) {
-                    const comma_token = self.current();
-                    self.recordError(
+                if (self.current_token.type == .Comma) {
+                    const comma_token = self.current_token;
+                    self.err(
                         rest_prop.getSpan().start,
                         comma_token.span.end,
                         "Rest element must be last in object pattern",
@@ -643,20 +641,20 @@ pub const Parser = struct {
             self.appendItem(&self.scratch_object_pattern_properties, prop);
             last_end = prop.getSpan().end;
 
-            if (self.current().type == .Comma) {
-                last_end = self.current().span.end;
+            if (self.current_token.type == .Comma) {
+                last_end = self.current_token.span.end;
                 self.advance();
             } else {
                 break;
             }
         }
 
-        const end = if (self.current().type == .RightBrace) blk: {
-            const right_brace_end = self.current().span.end;
+        const end = if (self.current_token.type == .RightBrace) blk: {
+            const right_brace_end = self.current_token.span.end;
             self.advance();
             break :blk right_brace_end;
         } else blk: {
-            self.recordError(
+            self.err(
                 start,
                 last_end,
                 "Expected '}' to close object pattern",
@@ -674,38 +672,38 @@ pub const Parser = struct {
     }
 
     fn parseObjectPatternProperty(self: *Parser) ?*ast.ObjectPatternProperty {
-        const start = self.current().span.start;
+        const start = self.current_token.span.start;
 
         var computed = false;
         var key: ast.PropertyKey = undefined;
         var key_span: token.Span = undefined;
 
         // check for computed property: [expression]
-        if (self.current().type == .LeftBracket) {
+        if (self.current_token.type == .LeftBracket) {
             computed = true;
-            const bracket_start = self.current().span.start;
+            const bracket_start = self.current_token.span.start;
             self.advance();
 
             const key_expr = self.parseExpression() orelse return null;
             key = ast.PropertyKey{ .expression = key_expr };
             key_span = .{ .start = bracket_start, .end = key_expr.getSpan().end };
 
-            if (self.current().type != .RightBracket) {
-                self.recordError(
+            if (self.current_token.type != .RightBracket) {
+                self.err(
                     bracket_start,
-                    self.current().span.start,
+                    self.current_token.span.start,
                     "Expected ']' to close computed property key",
                     "Add ']' here to close the computed property name",
                 );
                 return null;
             }
 
-            key_span.end = self.current().span.end;
+            key_span.end = self.current_token.span.end;
             self.advance();
-        } else if (self.current().type == .Identifier) {
+        } else if (self.current_token.type == .Identifier) {
             // identifier key
-            const name = self.current().lexeme;
-            key_span = self.current().span;
+            const name = self.current_token.lexeme;
+            key_span = self.current_token.span;
             self.advance();
 
             const identifier = ast.IdentifierReference{
@@ -715,8 +713,8 @@ pub const Parser = struct {
 
             key = ast.PropertyKey{ .identifier_reference = identifier };
         } else {
-            const bad_token = self.current();
-            self.recordError(
+            const bad_token = self.current_token;
+            self.err(
                 bad_token.span.start,
                 bad_token.span.end,
                 "Expected property key in object pattern",
@@ -726,7 +724,7 @@ pub const Parser = struct {
         }
 
         // check for shorthand property: { x } is shorthand for { x: x }
-        const is_shorthand = self.current().type == .Comma or self.current().type == .RightBrace;
+        const is_shorthand = self.current_token.type == .Comma or self.current_token.type == .RightBrace;
         var value: *ast.BindingPattern = undefined;
 
         if (is_shorthand) {
@@ -736,7 +734,7 @@ pub const Parser = struct {
                 .expression => {
                     const key_start = key_span.start;
                     const key_end = key_span.end;
-                    self.recordError(
+                    self.err(
                         key_start,
                         key_end,
                         "Computed properties cannot use shorthand syntax",
@@ -754,10 +752,10 @@ pub const Parser = struct {
             value = self.createNode(ast.BindingPattern, .{ .binding_identifier = binding_id });
         } else {
             // regular property: { x: y }
-            if (self.current().type != .Colon) {
-                self.recordError(
+            if (self.current_token.type != .Colon) {
+                self.err(
                     key_span.start,
-                    self.current().span.start,
+                    self.current_token.span.start,
                     "Expected ':' after property key",
                     "Add ':' here to separate the key from the value pattern",
                 );
@@ -781,7 +779,7 @@ pub const Parser = struct {
     }
 
     fn parseObjectRestElement(self: *Parser) ?*ast.ObjectPatternProperty {
-        const spread_token = self.current();
+        const spread_token = self.current_token;
         const start = spread_token.span.start;
 
         self.advance(); // consume '...'
@@ -798,41 +796,23 @@ pub const Parser = struct {
         return self.createNode(ast.ObjectPatternProperty, .{ .rest_element = rest_elem_ptr });
     }
 
-    inline fn current(self: *Parser) token.Token {
-        return self.lookahead[self.lookahead_start];
-    }
-
-    fn peek(self: *Parser, n: u3) ?token.Token {
-        // ensure we have enough tokens in the lookahead buffer
-        while (self.lookahead_count <= n) {
-            const tok = self.lexer.nextToken() catch return null;
-            const write_pos = (self.lookahead_start + self.lookahead_count) & 3;
-            self.lookahead[write_pos] = tok;
-            self.lookahead_count += 1;
-        }
-
-        const read_pos = (self.lookahead_start + n) & 3;
-        return self.lookahead[read_pos];
+    fn peek(self: *Parser) ?token.Token {
+        return self.current_token;
     }
 
     inline fn advance(self: *Parser) void {
-        if (self.lookahead_count > 1) {
-            self.lookahead_start +%= 1; // wraps naturally since lookahead_start is u2
-            self.lookahead_count -= 1;
-        } else {
-            self.lookahead[self.lookahead_start] = self.lexer.nextToken() catch |err| blk: {
+            self.current_token = self.lexer.nextToken() catch |_error| blk: {
                 self.appendItem(&self.errors, Error{
-                    .message = lexer.getLexicalErrorMessage(err),
+                    .message = lexer.getLexicalErrorMessage(_error),
                     .span = .{ .start = self.lexer.token_start, .end = self.lexer.cursor },
-                    .help = lexer.getLexicalErrorHelp(err),
+                    .help = lexer.getLexicalErrorHelp(_error),
                 });
                 break :blk token.Token.eof(0);
             };
-        }
     }
 
     inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) void {
-        self.lookahead[self.lookahead_start] = tok;
+        self.current_token = tok;
         self.advance();
     }
 
@@ -842,23 +822,23 @@ pub const Parser = struct {
         message: []const u8,
         help: ?[]const u8,
     ) bool {
-        if (self.current().type == token_type) {
+        if (self.current_token.type == token_type) {
             self.advance();
             return true;
         }
 
-        const tok = self.current();
-        self.recordError(tok.span.start, tok.span.end, message, help);
+        const tok = self.current_token;
+        self.err(tok.span.start, tok.span.end, message, help);
         return false;
     }
 
     inline fn eatSemi(self: *Parser) void {
-        if (self.current().type == .Semicolon) {
+        if (self.current_token.type == .Semicolon) {
             self.advance();
         }
     }
 
-    inline fn recordError(
+    inline fn err(
         self: *Parser,
         start: usize,
         end: usize,
@@ -873,13 +853,13 @@ pub const Parser = struct {
     }
 
     fn synchronize(self: *Parser) void {
-        while (self.current().type != .EOF) {
-            if (self.current().type == .Semicolon) {
+        while (self.current_token.type != .EOF) {
+            if (self.current_token.type == .Semicolon) {
                 self.advance();
                 return;
             }
 
-            switch (self.current().type) {
+            switch (self.current_token.type) {
                 .Class,
                 .Function,
                 .Var,
