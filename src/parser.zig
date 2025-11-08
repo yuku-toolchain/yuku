@@ -715,7 +715,12 @@ pub const Parser = struct {
             };
 
             key = self.createNode(ast.PropertyKey, .{ .identifier_name = identifier });
-        } else if (self.current_token.type == .PrivateIdentifier) {
+        }
+        // TODO: actually private identifier for object keys is invalid
+        // Only identifiers, numbers and strings. So need to create bit maskings for useful conditions like is_number
+        // So we avoid multiple or's in if
+        // Also ensure if the key is a string, the value will only be the lexeme without quotes
+        else if (self.current_token.type == .PrivateIdentifier) {
             const name = self.current_token.lexeme;
             key_span = self.current_token.span;
             self.advance();
