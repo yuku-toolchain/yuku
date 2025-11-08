@@ -72,6 +72,7 @@ pub const Expression = union(enum) {
     regex_literal: RegExpLiteral,
     template_literal: TemplateLiteral,
     identifier_reference: IdentifierReference,
+    private_identifier: PrivateIdentifier,
 
     pub inline fn getSpan(self: *const Expression) token.Span {
         return switch (self.*) {
@@ -184,6 +185,18 @@ pub const IdentifierReference = struct {
     span: token.Span,
 };
 
+pub const IdentifierName = struct {
+    type: []const u8 = "Identifier",
+    name: []const u8,
+    span: token.Span,
+};
+
+pub const PrivateIdentifier = struct {
+    type: []const u8 = "PrivateIdentifier",
+    name: []const u8,
+    span: token.Span,
+};
+
 pub const BindingIdentifier = struct {
     type: []const u8 = "Identifier",
     name: []const u8,
@@ -222,12 +235,14 @@ pub const VariableDeclarator = struct {
 };
 
 pub const PropertyKey = union(enum) {
-    identifier_reference: IdentifierReference,
+    identifier_name: IdentifierName,
+    private_identifier: PrivateIdentifier,
     expression: *Expression,
 
     pub inline fn getSpan(self: *const PropertyKey) token.Span {
         return switch (self.*) {
-            .identifier_reference => |id| id.span,
+            .identifier_name => |id| id.span,
+            .private_identifier => |id| id.span,
             .expression => |expr| expr.getSpan(),
         };
     }
@@ -236,7 +251,7 @@ pub const PropertyKey = union(enum) {
 pub const BindingProperty = struct {
     type: []const u8 = "Property",
     kind: []const u8 = "init",
-    key: PropertyKey,
+    key: *PropertyKey,
     value: *BindingPattern,
     method: bool = false,
     shorthand: bool,

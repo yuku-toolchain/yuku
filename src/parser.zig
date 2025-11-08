@@ -216,6 +216,7 @@ pub const Parser = struct {
     fn parsePrimaryExpression(self: *Parser) ?*ast.Expression {
         return switch (self.current_token.type) {
             .Identifier => self.parseIdentifierReference(),
+            .PrivateIdentifier => self.parsePrivateIdentifier(),
             .StringLiteral => self.parseStringLiteral(),
             .True, .False => self.parseBooleanLiteral(),
             .NullLiteral => self.parseNullLiteral(),
@@ -248,6 +249,19 @@ pub const Parser = struct {
         };
 
         return self.createNode(ast.Expression, .{ .identifier_reference = identifier });
+    }
+
+    fn parsePrivateIdentifier(self: *Parser) ?*ast.Expression {
+        const name = self.current_token.lexeme;
+        const span = self.current_token.span;
+        self.advance();
+
+        const private_id = ast.PrivateIdentifier{
+            .name = name,
+            .span = span,
+        };
+
+        return self.createNode(ast.Expression, .{ .private_identifier = private_id });
     }
 
     fn parseStringLiteral(self: *Parser) ?*ast.Expression {
@@ -665,7 +679,7 @@ pub const Parser = struct {
         const start = self.current_token.span.start;
 
         var computed = false;
-        var key: ast.PropertyKey = undefined;
+        var key: *ast.PropertyKey = undefined;
         var key_span: token.Span = undefined;
 
         // check for computed property: [expression]
@@ -675,7 +689,7 @@ pub const Parser = struct {
             self.advance();
 
             const key_expr = self.parseExpression() orelse return null;
-            key = ast.PropertyKey{ .expression = key_expr };
+            key = self.createNode(ast.PropertyKey, .{ .expression = key_expr });
             key_span = .{ .start = bracket_start, .end = key_expr.getSpan().end };
 
             if (self.current_token.type != .RightBracket) {
@@ -690,56 +704,67 @@ pub const Parser = struct {
 
             key_span.end = self.current_token.span.end;
             self.advance();
-        } else if (
-            // TODO: object keys are not only identifiers, can be number, strings, so add bit masking things to the tokens
-            // like is_number since there are many number tokens.
-            // so we efficienly determine is a token a number without multiple or's.
-            self.current_token.type == .Identifier) {
-            // identifier key
+        } else if (self.current_token.type == .Identifier) {
             const name = self.current_token.lexeme;
             key_span = self.current_token.span;
             self.advance();
 
-            const identifier = ast.IdentifierReference{
+            const identifier = ast.IdentifierName{
                 .name = name,
                 .span = key_span,
             };
 
-            key = ast.PropertyKey{ .identifier_reference = identifier };
+            key = self.createNode(ast.PropertyKey, .{ .identifier_name = identifier });
+        } else if (self.current_token.type == .PrivateIdentifier) {
+            const name = self.current_token.lexeme;
+            key_span = self.current_token.span;
+            self.advance();
+
+            const private_id = ast.PrivateIdentifier{
+                .name = name,
+                .span = key_span,
+            };
+
+            key = self.createNode(ast.PropertyKey, .{ .private_identifier = private_id });
         } else {
-            const bad_token = self.current_token;
-            self.err(
-                bad_token.span.start,
-                bad_token.span.end,
-                "Expected property key in object pattern",
-                "Use an identifier or computed property key [expression]",
-            );
-            return null;
+            const key_expr = self.parseExpression() orelse return null;
+            key = self.createNode(ast.PropertyKey, .{ .expression = key_expr });
+            key_span = key_expr.getSpan();
         }
 
-        // check for shorthand property: { x } is shorthand for { x: x }
         const is_shorthand = self.current_token.type == .Comma or self.current_token.type == .RightBrace;
         var value: *ast.BindingPattern = undefined;
 
         if (is_shorthand) {
-            // shorthand: use the identifier as both key and value
-            const identifier_ref = switch (key) {
-                .identifier_reference => |id| id,
+            // shorthand: only allowed with identifier_name keys
+            const identifier_name = switch (key.*) {
+                .identifier_name => |id| id,
+                .private_identifier => {
+                    const key_start = key_span.start;
+                    const key_end = key_span.end;
+                    self.err(
+                        key_start,
+                        key_end,
+                        "Cannot use private identifier as shorthand property",
+                        "Private identifiers require explicit binding. Use ': <pattern>' after the key",
+                    );
+                    return null;
+                },
                 .expression => {
                     const key_start = key_span.start;
                     const key_end = key_span.end;
                     self.err(
                         key_start,
                         key_end,
-                        "Computed properties cannot use shorthand syntax",
-                        "Add ': <pattern>' after the computed key to specify the binding",
+                        "Cannot use computed property as shorthand property",
+                        "Computed properties require explicit binding. Use ': <pattern>' after the key",
                     );
                     return null;
                 },
             };
 
             const binding_id = ast.BindingIdentifier{
-                .name = identifier_ref.name,
+                .name = identifier_name.name,
                 .span = key_span,
             };
 

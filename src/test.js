@@ -1,1 +1,1 @@
-const {0: nice} = nice;
+const {#hello} = nice;
