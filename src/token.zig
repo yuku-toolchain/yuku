@@ -153,8 +153,8 @@ pub const TokenType = enum(u32) {
 
     EOF = 121, // end of file
 
-    pub fn precedence(self: TokenType) u32 {
-        return (@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap;
+    pub fn precedence(self: TokenType) u5 {
+        return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
     }
 
     pub fn is(self: TokenType, mask: u32) bool {

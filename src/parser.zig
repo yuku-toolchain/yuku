@@ -206,7 +206,7 @@ pub const Parser = struct {
         });
     }
 
-    fn parseExpression(self: *Parser, prec: u32) ?*ast.Expression {
+    fn parseExpression(self: *Parser, prec: u5) ?*ast.Expression {
         var left: *ast.Expression = self.parseExpressionPrefix() orelse return null;
 
         while (self.current_token.type != .EOF) {
@@ -220,7 +220,7 @@ pub const Parser = struct {
         return left;
     }
 
-    fn parseExpressionInfix(self: *Parser, prec: u32, left: *ast.Expression) ?*ast.Expression {
+    fn parseExpressionInfix(self: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
         const current_token = self.current_token;
 
         if (current_token.type.isBinaryOperator()) {
@@ -259,7 +259,7 @@ pub const Parser = struct {
         };
     }
 
-    fn parseBinaryExpression(self: *Parser, prec: u32, left: *ast.Expression) ?*ast.Expression {
+    fn parseBinaryExpression(self: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
         const operator_token = self.current_token;
         const operator = ast.BinaryOperator.fromToken(operator_token.type);
 
@@ -283,7 +283,7 @@ pub const Parser = struct {
         return self.createNode(ast.Expression, .{ .binary_expression = binary_expression });
     }
 
-    fn parseLogicalExpression(self: *Parser, prec: u32, left: *ast.Expression) ?*ast.Expression {
+    fn parseLogicalExpression(self: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
         const operator_token = self.current_token;
 
         const operator = ast.LogicalOperator.fromToken(operator_token.type);
@@ -380,7 +380,7 @@ pub const Parser = struct {
         self.advance();
 
         const literal = ast.NumericLiteral{
-            .value = std.fmt.parseFloat(f64, value) catch unreachable, // lexer only tokenizes valid numeric literals
+            .value = std.fmt.parseFloat(f64, value) catch unreachable, // safety: lexer only tokenizes valid numeric literals
             .raw = value,
             .span = span,
         };

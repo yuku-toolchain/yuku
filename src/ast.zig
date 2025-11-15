@@ -143,7 +143,7 @@ pub const BinaryOperator = enum {
             .BitwiseAnd => .BitwiseAnd,
             .In => .In,
             .Instanceof => .Instanceof,
-            else => unreachable, // we are sure we only call fromToken for binary operators
+            else => unreachable, // safety: we are sure we only call fromToken for binary operators
         };
     }
 };
@@ -158,7 +158,7 @@ pub const LogicalOperator = enum {
             .LogicalOr => .LogicalOr,
             .LogicalAnd => .LogicalAnd,
             .NullishCoalescing => .NullishCoalescing,
-            else => unreachable, // we are sure we only call fromToken for binary operators
+            else => unreachable, // safety: we are sure we only call fromToken for logical operators
         };
     }
 };
