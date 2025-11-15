@@ -24,7 +24,7 @@
 **Operators & Binary Expressions:**
 - [x] Binary expressions (+, -, *, /, %, etc.)
 - [x] Logical expressions (&&, ||, ??)
-- [ ] Unary expressions (!, ~, +, -, typeof, void, delete)
+- [x] Unary expressions (!, ~, +, -, typeof, void, delete)
 - [ ] Update expressions (++, --)
 - [ ] Assignment expressions (=, +=, -=, etc.)
 - [ ] Conditional expression (ternary ? :)

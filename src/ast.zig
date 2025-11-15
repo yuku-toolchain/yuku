@@ -75,6 +75,7 @@ pub const Expression = union(enum) {
     private_identifier: PrivateIdentifier,
     binary_expression: BinaryExpression,
     logical_expression: LogicalExpression,
+    unary_expression: UnaryExpression,
 
     pub inline fn getSpan(self: *const Expression) token.Span {
         return switch (self.*) {
@@ -161,6 +162,37 @@ pub const LogicalOperator = enum {
             else => unreachable, // safety: we are sure we only call fromToken for logical operators
         };
     }
+};
+
+pub const UnaryOperator = enum {
+    Plus, // +
+    Minus, // -
+    LogicalNot, // !
+    BitwiseNot, // ~
+    Typeof, // typeof
+    Void, // void
+    Delete, // delete
+
+    pub fn fromToken(token_type: token.TokenType) UnaryOperator {
+        return switch (token_type) {
+            .Plus => .Plus,
+            .Minus => .Minus,
+            .LogicalNot => .LogicalNot,
+            .BitwiseNot => .BitwiseNot,
+            .Typeof => .Typeof,
+            .Void => .Void,
+            .Delete => .Delete,
+            else => unreachable, // safety: we are sure we only call fromToken for unary operators
+        };
+    }
+};
+
+pub const UnaryExpression = struct {
+    type: []const u8 = "UnaryExpression",
+    operator: UnaryOperator,
+    argument: *Expression,
+    prefix: bool = true,
+    span: token.Span,
 };
 
 pub const BinaryExpression = struct {

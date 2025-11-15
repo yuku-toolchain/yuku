@@ -235,6 +235,10 @@ pub const Parser = struct {
     }
 
     fn parseExpressionPrefix(self: *Parser) ?*ast.Expression {
+        if (self.current_token.type.isUnaryOperator()) {
+            return self.parseUnaryExpression();
+        }
+
         return switch (self.current_token.type) {
             .Identifier => self.parseIdentifierReference(),
             .PrivateIdentifier => self.parsePrivateIdentifier(),
@@ -257,6 +261,29 @@ pub const Parser = struct {
                 return null;
             },
         };
+    }
+
+    fn parseUnaryExpression(self: *Parser) ?*ast.Expression {
+        const operator_token = self.current_token;
+        const operator = ast.UnaryOperator.fromToken(operator_token.type);
+        const start = operator_token.span.start;
+
+        self.advance();
+
+        // parse the argument with unary precedence (14) to ensure proper binding
+        // for example, !x + y should parse as (!x) + y, not !(x + y)
+        const argument = self.parseExpression(14) orelse return null;
+
+        const unary_expression = ast.UnaryExpression{
+            .span = .{
+                .start = start,
+                .end = argument.getSpan().end,
+            },
+            .operator = operator,
+            .argument = argument,
+        };
+
+        return self.createNode(ast.Expression, .{ .unary_expression = unary_expression });
     }
 
     fn parseBinaryExpression(self: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {

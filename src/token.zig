@@ -2,8 +2,9 @@ const std = @import("std");
 
 pub const Mask = struct {
     pub const IsNumericLiteral: u32 = 1 << 12;
-    pub const IsBinaryOperator: u32 = 1 << 13;
-    pub const IsLogicalOperator: u32 = 1 << 14;
+    pub const IsBinaryOp: u32 = 1 << 13;
+    pub const IsLogicalOp: u32 = 1 << 14;
+    pub const IsUnaryOp: u32 = 1 << 15;
 
     pub const PrecShift: u32 = 7;
     pub const PrecOverlap: u32 = 31;
@@ -28,12 +29,12 @@ pub const TokenType = enum(u32) {
     False = 13,
     NullLiteral = 14,
 
-    Plus = 15 | (11 << Mask.PrecShift) | Mask.IsBinaryOperator, // +
-    Minus = 16 | (11 << Mask.PrecShift) | Mask.IsBinaryOperator, // -
-    Star = 17 | (12 << Mask.PrecShift) | Mask.IsBinaryOperator, // *
-    Slash = 18 | (12 << Mask.PrecShift) | Mask.IsBinaryOperator, // /
-    Percent = 19 | (12 << Mask.PrecShift) | Mask.IsBinaryOperator, // %
-    Exponent = 20 | (13 << Mask.PrecShift) | Mask.IsBinaryOperator, // **
+    Plus = 15 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // +
+    Minus = 16 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // -
+    Star = 17 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // *
+    Slash = 18 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // /
+    Percent = 19 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // %
+    Exponent = 20 | (13 << Mask.PrecShift) | Mask.IsBinaryOp, // **
 
     Assign = 21, // =
     PlusAssign = 22, // +=
@@ -46,26 +47,26 @@ pub const TokenType = enum(u32) {
     Increment = 28, // ++
     Decrement = 29, // --
 
-    Equal = 30 | (8 << Mask.PrecShift) | Mask.IsBinaryOperator, // ==
-    NotEqual = 31 | (8 << Mask.PrecShift) | Mask.IsBinaryOperator, // !=
-    StrictEqual = 32 | (8 << Mask.PrecShift) | Mask.IsBinaryOperator, // ===
-    StrictNotEqual = 33 | (8 << Mask.PrecShift) | Mask.IsBinaryOperator, // !==
-    LessThan = 34 | (9 << Mask.PrecShift) | Mask.IsBinaryOperator, // <
-    GreaterThan = 35 | (9 << Mask.PrecShift) | Mask.IsBinaryOperator, // >
-    LessThanEqual = 36 | (9 << Mask.PrecShift) | Mask.IsBinaryOperator, // <=
-    GreaterThanEqual = 37 | (9 << Mask.PrecShift) | Mask.IsBinaryOperator, // >=
+    Equal = 30 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // ==
+    NotEqual = 31 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // !=
+    StrictEqual = 32 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // ===
+    StrictNotEqual = 33 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // !==
+    LessThan = 34 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // <
+    GreaterThan = 35 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // >
+    LessThanEqual = 36 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // <=
+    GreaterThanEqual = 37 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // >=
 
-    LogicalAnd = 38 | (4 << Mask.PrecShift) | Mask.IsLogicalOperator, // &&
-    LogicalOr = 39 | (3 << Mask.PrecShift) | Mask.IsLogicalOperator, // ||
-    LogicalNot = 40, // !
+    LogicalAnd = 38 | (4 << Mask.PrecShift) | Mask.IsLogicalOp, // &&
+    LogicalOr = 39 | (3 << Mask.PrecShift) | Mask.IsLogicalOp, // ||
+    LogicalNot = 40 | (14 << Mask.PrecShift) | Mask.IsUnaryOp, // !
 
-    BitwiseAnd = 41 | (7 << Mask.PrecShift) | Mask.IsBinaryOperator, // &
-    BitwiseOr = 42 | (5 << Mask.PrecShift) | Mask.IsBinaryOperator, // |
-    BitwiseXor = 43 | (6 << Mask.PrecShift) | Mask.IsBinaryOperator, // ^
-    BitwiseNot = 44, // ~
-    LeftShift = 45 | (10 << Mask.PrecShift) | Mask.IsBinaryOperator, // <<
-    RightShift = 46 | (10 << Mask.PrecShift) | Mask.IsBinaryOperator, // >>
-    UnsignedRightShift = 47 | (10 << Mask.PrecShift) | Mask.IsBinaryOperator, // >>>
+    BitwiseAnd = 41 | (7 << Mask.PrecShift) | Mask.IsBinaryOp, // &
+    BitwiseOr = 42 | (5 << Mask.PrecShift) | Mask.IsBinaryOp, // |
+    BitwiseXor = 43 | (6 << Mask.PrecShift) | Mask.IsBinaryOp, // ^
+    BitwiseNot = 44 | (14 << Mask.PrecShift) | Mask.IsUnaryOp, // ~
+    LeftShift = 45 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // <<
+    RightShift = 46 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // >>
+    UnsignedRightShift = 47 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // >>>
 
     BitwiseAndAssign = 48, // &=
     BitwiseOrAssign = 49, // |=
@@ -74,7 +75,7 @@ pub const TokenType = enum(u32) {
     RightShiftAssign = 52, // >>=
     UnsignedRightShiftAssign = 53, // >>>=
 
-    NullishCoalescing = 54 | (3 << Mask.PrecShift) | Mask.IsLogicalOperator, // ??
+    NullishCoalescing = 54 | (3 << Mask.PrecShift) | Mask.IsLogicalOp, // ??
     NullishAssign = 55, // ??=
     LogicalAndAssign = 56, // &&=
     LogicalOrAssign = 57, // ||=
@@ -139,12 +140,12 @@ pub const TokenType = enum(u32) {
 
     New = 109,
     This = 110,
-    Typeof = 111,
-    Instanceof = 112 | (9 << Mask.PrecShift) | Mask.IsBinaryOperator,
-    In = 113 | (9 << Mask.PrecShift) | Mask.IsBinaryOperator,
+    Typeof = 111 | (14 << Mask.PrecShift) | Mask.IsUnaryOp,
+    Instanceof = 112 | (9 << Mask.PrecShift) | Mask.IsBinaryOp,
+    In = 113 | (9 << Mask.PrecShift) | Mask.IsBinaryOp,
     Of = 114,
-    Delete = 115,
-    Void = 116,
+    Delete = 115 | (14 << Mask.PrecShift) | Mask.IsUnaryOp,
+    Void = 116 | (14 << Mask.PrecShift) | Mask.IsUnaryOp,
     With = 117,
     Debugger = 118,
 
@@ -166,11 +167,15 @@ pub const TokenType = enum(u32) {
     }
 
     pub fn isBinaryOperator(self: TokenType) bool {
-        return self.is(Mask.IsBinaryOperator);
+        return self.is(Mask.IsBinaryOp);
     }
 
     pub fn isLogicalOperator(self: TokenType) bool {
-        return self.is(Mask.IsLogicalOperator);
+        return self.is(Mask.IsLogicalOp);
+    }
+
+    pub fn isUnaryOperator(self: TokenType) bool {
+        return self.is(Mask.IsUnaryOp);
     }
 };
 

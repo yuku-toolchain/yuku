@@ -1,1 +1,1 @@
-const hello = nic || ni && oo
+const hello = void x;
