@@ -102,7 +102,7 @@ pub const Parser = struct {
                 const span_end = await_token.span.end;
                 self.err(
                     span_start,
-                    span_end + 1,
+                    span_end,
                     "Expected 'using' after 'await'",
                     "Add 'using' after 'await' to create an 'await using' declaration",
                 );
@@ -197,7 +197,7 @@ pub const Parser = struct {
             const id_span = id.getSpan();
             self.err(
                 id_span.start,
-                id_span.end + 1,
+                id_span.end,
                 "Missing initializer in destructuring declaration",
                 "Destructuring patterns must be initialized. Add '= <value>' after the pattern",
             );
@@ -214,7 +214,7 @@ pub const Parser = struct {
 
             self.err(
                 id_span.start,
-                id_span.end + 1,
+                id_span.end,
                 self.formatMessage(
                     "Missing initializer in {s} declaration",
                     .{kind_str},
@@ -717,7 +717,7 @@ pub const Parser = struct {
                         rest_elem.getSpan().start,
                         comma_token.span.end,
                         "Rest element must be last in array pattern",
-                        "Remove this comma, or move the rest element to the end",
+                        "Move the rest element to the end. Example: { a, b, ...rest } instead of { ...rest, a, b }",
                     );
                     return null;
                 }
@@ -751,9 +751,9 @@ pub const Parser = struct {
         } else blk: {
             self.err(
                 start,
-                last_end + 1,
+                last_end,
                 "Expected ']' to close array pattern",
-                "Add ']' here to close the array destructuring pattern",
+                "Add ']' to close the array destructuring pattern",
             );
             break :blk last_end;
         };
@@ -828,7 +828,7 @@ pub const Parser = struct {
                         rest_prop.getSpan().start,
                         comma_token.span.end,
                         "Rest element must be last in object pattern",
-                        "Remove this comma, or move the rest element to the end",
+                        "Move the rest element to the end. Example: { a, b, ...rest } instead of { ...rest, a, b }",
                     );
                     return null;
                 }

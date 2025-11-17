@@ -1,5 +1,5 @@
 // this will be a really bad code since this is AI generated for quick testing of errors while development
-// after the parser work done, we will start working on error formatter without using AI and much better.
+// after the parser work done, we will start working on error formatter without which will be much better.
 const std = @import("std");
 const ParserError = @import("parser.zig").Error;
 
@@ -270,36 +270,11 @@ pub fn printError(source: []const u8, err: ParserError) void {
             std.debug.print(" ", .{});
         }
 
-        // Print underline
-        const is_single_char = (err.span.start == err.span.end - 1) and (start_line == end_line);
-        if (is_single_char) {
-            std.debug.print("\x1b[1;31m^\x1b[0m", .{});
-        } else {
-            // First character
-            if (current_line == start_line and current_line == end_line) {
-                // Single line span
-                while (i < visual_error_end - 1) : (i += 1) {
-                    std.debug.print("\x1b[1;31m~\x1b[0m", .{});
-                }
-                std.debug.print("\x1b[1;31m^\x1b[0m", .{});
-            } else if (current_line == start_line) {
-                // First line of multiline span
-                while (i < visual_error_end) : (i += 1) {
-                    std.debug.print("\x1b[1;31m~\x1b[0m", .{});
-                }
-            } else if (current_line == end_line) {
-                // Last line of multiline span
-                while (i < visual_error_end - 1) : (i += 1) {
-                    std.debug.print("\x1b[1;31m~\x1b[0m", .{});
-                }
-                std.debug.print("\x1b[1;31m^\x1b[0m", .{});
-            } else {
-                // Middle line of multiline span
-                while (i < visual_error_end) : (i += 1) {
-                    std.debug.print("\x1b[1;31m~\x1b[0m", .{});
-                }
-            }
+        // Print underline with only ~ characters
+        while (i < visual_error_end) : (i += 1) {
+            std.debug.print("\x1b[1;31m~\x1b[0m", .{});
         }
+
         std.debug.print("\n", .{});
     }
 
