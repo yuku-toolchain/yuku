@@ -1,1 +1,1 @@
-const x = !x + y;
+const x = !x++;

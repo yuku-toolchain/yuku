@@ -44,8 +44,8 @@ pub const TokenType = enum(u32) {
     PercentAssign = 26, // %=
     ExponentAssign = 27, // **=
 
-    Increment = 28 | (15 << Mask.PrecShift), // ++ (postfix precedence 15)
-    Decrement = 29 | (15 << Mask.PrecShift), // -- (postfix precedence 15)
+    Increment = 28 | (15 << Mask.PrecShift),
+    Decrement = 29 | (15 << Mask.PrecShift),
 
     Equal = 30 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // ==
     NotEqual = 31 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // !=

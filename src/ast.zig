@@ -213,7 +213,7 @@ pub const UpdateExpression = struct {
     type: []const u8 = "UpdateExpression",
     operator: UpdateOperator,
     prefix: bool,
-    argument: *Expression, // SimpleAssignmentTarget: IdentifierReference or MemberExpression
+    argument: *Expression,
     span: token.Span,
 };
 
