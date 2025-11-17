@@ -1,1 +1,1 @@
-const x = x++;
+const hello = --nice--

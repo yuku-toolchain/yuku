@@ -292,7 +292,7 @@ pub const Parser = struct {
             else => {
                 const bad_token = self.current_token;
                 self.err(
-                    bad_token.span.start,
+                    bad_token.span.start - 1,
                     bad_token.span.end,
                     "Unexpected token in expression position",
                     "Expected an expression like a variable name, number, string, or other literal value",
