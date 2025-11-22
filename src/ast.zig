@@ -77,6 +77,7 @@ pub const Expression = union(enum) {
     logical_expression: LogicalExpression,
     unary_expression: UnaryExpression,
     update_expression: UpdateExpression,
+    assignment_expression: AssignmentExpression,
 
     pub inline fn getSpan(self: *const Expression) token.Span {
         return switch (self.*) {
@@ -201,6 +202,47 @@ pub const UpdateOperator = enum {
     }
 };
 
+pub const AssignmentOperator = enum {
+    Assign, // =
+    PlusAssign, // +=
+    MinusAssign, // -=
+    StarAssign, // *=
+    SlashAssign, // /=
+    PercentAssign, // %=
+    ExponentAssign, // **=
+    LeftShiftAssign, // <<=
+    RightShiftAssign, // >>=
+    UnsignedRightShiftAssign, // >>>=
+    BitwiseOrAssign, // |=
+    BitwiseXorAssign, // ^=
+    BitwiseAndAssign, // &=
+    LogicalOrAssign, // ||=
+    LogicalAndAssign, // &&=
+    NullishAssign, // ??=
+
+    pub fn fromToken(token_type: token.TokenType) AssignmentOperator {
+        return switch (token_type) {
+            .Assign => .Assign,
+            .PlusAssign => .PlusAssign,
+            .MinusAssign => .MinusAssign,
+            .StarAssign => .StarAssign,
+            .SlashAssign => .SlashAssign,
+            .PercentAssign => .PercentAssign,
+            .ExponentAssign => .ExponentAssign,
+            .LeftShiftAssign => .LeftShiftAssign,
+            .RightShiftAssign => .RightShiftAssign,
+            .UnsignedRightShiftAssign => .UnsignedRightShiftAssign,
+            .BitwiseOrAssign => .BitwiseOrAssign,
+            .BitwiseXorAssign => .BitwiseXorAssign,
+            .BitwiseAndAssign => .BitwiseAndAssign,
+            .LogicalOrAssign => .LogicalOrAssign,
+            .LogicalAndAssign => .LogicalAndAssign,
+            .NullishAssign => .NullishAssign,
+            else => unreachable, // safety: we are sure we only call fromToken for assignment operators
+        };
+    }
+};
+
 // UnaryExpression
 pub const UnaryExpression = struct {
     operator: UnaryOperator,
@@ -230,6 +272,26 @@ pub const LogicalExpression = struct {
     left: *Expression,
     right: *Expression,
     operator: LogicalOperator,
+    span: token.Span,
+};
+
+// AssignmentTarget (SimpleAssignmentTarget for now)
+// Note: Full destructuring assignment targets will be added when needed
+pub const AssignmentTarget = union(enum) {
+    simple_assignment_target: *Expression, // IdentifierReference or MemberExpression
+
+    pub inline fn getSpan(self: *const AssignmentTarget) token.Span {
+        return switch (self.*) {
+            .simple_assignment_target => |expr| expr.getSpan(),
+        };
+    }
+};
+
+// AssignmentExpression
+pub const AssignmentExpression = struct {
+    operator: AssignmentOperator,
+    left: AssignmentTarget,
+    right: *Expression,
     span: token.Span,
 };
 

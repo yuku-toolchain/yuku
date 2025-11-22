@@ -108,17 +108,20 @@ pub const Parser = struct {
                 );
                 return null;
             },
-            else => {
-                const bad_token = self.current_token;
-                self.err(
-                    bad_token.span.start,
-                    bad_token.span.end,
-                    "Unexpected token in statement position",
-                    "Expected a statement keyword like 'var', 'let', 'const', 'if', 'for', 'while', 'function', or 'class'",
-                );
-                return null;
-            },
+            else => self.parseExpressionStatement(),
         };
+    }
+
+    fn parseExpressionStatement(self: *Parser) ?*ast.Statement {
+        const expr = self.parseExpression(0) orelse return null;
+        const end = if (self.eatSemi()) expr.getSpan().end + 1 else expr.getSpan().end;
+
+        const expr_stmt = ast.ExpressionStatement{
+            .expression = expr,
+            .span = .{ .start = expr.getSpan().start, .end = end },
+        };
+
+        return self.createNode(ast.Statement, .{ .expression_statement = expr_stmt });
     }
 
     fn parseVariableDeclaration(self: *Parser) ?*ast.Statement {
@@ -259,6 +262,10 @@ pub const Parser = struct {
 
         if (current_token.type.isLogicalOperator()) {
             return self.parseLogicalExpression(prec, left);
+        }
+
+        if (current_token.type.isAssignmentOperator()) {
+            return self.parseAssignmentExpression(prec, left);
         }
 
         unreachable;
@@ -435,6 +442,55 @@ pub const Parser = struct {
         };
 
         return self.createNode(ast.Expression, .{ .logical_expression = logical_expression });
+    }
+
+    fn parseAssignmentExpression(self: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
+        const operator_token = self.current_token;
+        const operator = ast.AssignmentOperator.fromToken(operator_token.type);
+
+        if (!self.isValidAssignmentTarget(left)) {
+            const left_span = left.getSpan();
+            self.err(
+                left_span.start,
+                left_span.end,
+                "Invalid left-hand side in assignment",
+                "The left side of an assignment must be a variable or property access",
+            );
+            return null;
+        }
+
+        // for logical assignment operators (&&=, ||=, ??=), check for simple assignment target
+        const is_logical_assign = operator == .LogicalAndAssign or operator == .LogicalOrAssign or operator == .NullishAssign;
+
+        if (is_logical_assign and !self.isSimpleAssignmentTarget(left)) {
+            const left_span = left.getSpan();
+            self.err(
+                left_span.start,
+                left_span.end,
+                "Invalid left-hand side in logical assignment",
+                "Logical assignment operators (&&=, ||=, ??=) require a simple reference (variable or property access)",
+            );
+            return null;
+        }
+
+        self.advance();
+
+        // assignment is right-associative, so parse with same precedence
+        const right = self.parseExpression(prec) orelse return null;
+
+        const target = ast.AssignmentTarget{ .simple_assignment_target = left };
+
+        const assignment_expression = ast.AssignmentExpression{
+            .span = .{
+                .start = left.getSpan().start,
+                .end = right.getSpan().end,
+            },
+            .operator = operator,
+            .left = target,
+            .right = right,
+        };
+
+        return self.createNode(ast.Expression, .{ .assignment_expression = assignment_expression });
     }
 
     fn parseIdentifierReference(self: *Parser) ?*ast.Expression {
@@ -1056,6 +1112,17 @@ pub const Parser = struct {
     // validators
 
     inline fn isValidAssignmentTarget(self: *Parser, expr: *ast.Expression) bool {
+        _ = self;
+        return switch (expr.*) {
+            .identifier_reference => true,
+            // TODO: uncomment when add member_expression
+            // .member_expression => true,
+
+            else => false,
+        };
+    }
+
+    inline fn isSimpleAssignmentTarget(self: *Parser, expr: *ast.Expression) bool {
         _ = self;
         return switch (expr.*) {
             .identifier_reference => true,

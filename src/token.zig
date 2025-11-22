@@ -5,6 +5,7 @@ pub const Mask = struct {
     pub const IsBinaryOp: u32 = 1 << 13;
     pub const IsLogicalOp: u32 = 1 << 14;
     pub const IsUnaryOp: u32 = 1 << 15;
+    pub const IsAssignmentOp: u32 = 1 << 16;
 
     pub const PrecShift: u32 = 7;
     pub const PrecOverlap: u32 = 31;
@@ -36,13 +37,13 @@ pub const TokenType = enum(u32) {
     Percent = 19 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // %
     Exponent = 20 | (13 << Mask.PrecShift) | Mask.IsBinaryOp, // **
 
-    Assign = 21, // =
-    PlusAssign = 22, // +=
-    MinusAssign = 23, // -=
-    StarAssign = 24, // *=
-    SlashAssign = 25, // /=
-    PercentAssign = 26, // %=
-    ExponentAssign = 27, // **=
+    Assign = 21 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // =
+    PlusAssign = 22 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // +=
+    MinusAssign = 23 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // -=
+    StarAssign = 24 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // *=
+    SlashAssign = 25 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // /=
+    PercentAssign = 26 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // %=
+    ExponentAssign = 27 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // **=
 
     Increment = 28 | (15 << Mask.PrecShift), // ++
     Decrement = 29 | (15 << Mask.PrecShift), // --
@@ -68,17 +69,17 @@ pub const TokenType = enum(u32) {
     RightShift = 46 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // >>
     UnsignedRightShift = 47 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // >>>
 
-    BitwiseAndAssign = 48, // &=
-    BitwiseOrAssign = 49, // |=
-    BitwiseXorAssign = 50, // ^=
-    LeftShiftAssign = 51, // <<=
-    RightShiftAssign = 52, // >>=
-    UnsignedRightShiftAssign = 53, // >>>=
+    BitwiseAndAssign = 48 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // &=
+    BitwiseOrAssign = 49 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // |=
+    BitwiseXorAssign = 50 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // ^=
+    LeftShiftAssign = 51 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // <<=
+    RightShiftAssign = 52 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // >>=
+    UnsignedRightShiftAssign = 53 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // >>>=
 
     NullishCoalescing = 54 | (3 << Mask.PrecShift) | Mask.IsLogicalOp, // ??
-    NullishAssign = 55, // ??=
-    LogicalAndAssign = 56, // &&=
-    LogicalOrAssign = 57, // ||=
+    NullishAssign = 55 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // ??=
+    LogicalAndAssign = 56 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // &&=
+    LogicalOrAssign = 57 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // ||=
     OptionalChaining = 58, // ?.
 
     LeftParen = 59, // (
@@ -176,6 +177,10 @@ pub const TokenType = enum(u32) {
 
     pub fn isUnaryOperator(self: TokenType) bool {
         return self.is(Mask.IsUnaryOp);
+    }
+
+    pub fn isAssignmentOperator(self: TokenType) bool {
+        return self.is(Mask.IsAssignmentOp);
     }
 };
 
