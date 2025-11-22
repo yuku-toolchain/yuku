@@ -97,4 +97,6 @@ pub fn main() !void {
     std.debug.print(" lines/sec\n", .{});
     std.debug.print("  {d:.2} MB/sec\n", .{mb_per_sec});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+
+    std.log.info("\n\n{f}", .{std.json.fmt(first_result, .{ .whitespace = .indent_2 })});
 }
