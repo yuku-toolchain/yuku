@@ -275,7 +275,6 @@ pub const LogicalExpression = struct {
     span: token.Span,
 };
 
-// AssignmentTarget
 pub const AssignmentTarget = union(enum) {
     simple_assignment_target: *Expression,
 
