@@ -1,0 +1,627 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "var",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 4,
+                      "end": 5
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 4,
+                  "end": 5
+                }
+              }
+            ],
+            "span": {
+              "start": 0,
+              "end": 5
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "var",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 10,
+                      "end": 11
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 5,
+                    "raw": "5",
+                    "span": {
+                      "start": 14,
+                      "end": 15
+                    }
+                  }
+                },
+                "span": {
+                  "start": 10,
+                  "end": 15
+                }
+              }
+            ],
+            "span": {
+              "start": 6,
+              "end": 15
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "var",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 20,
+                      "end": 21
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 20,
+                  "end": 21
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 23,
+                      "end": 24
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 23,
+                  "end": 24
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "z",
+                    "span": {
+                      "start": 26,
+                      "end": 27
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 26,
+                  "end": 27
+                }
+              }
+            ],
+            "span": {
+              "start": 16,
+              "end": 27
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "var",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 32,
+                      "end": 33
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 36,
+                      "end": 37
+                    }
+                  }
+                },
+                "span": {
+                  "start": 32,
+                  "end": 37
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 39,
+                      "end": 40
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 2,
+                    "raw": "2",
+                    "span": {
+                      "start": 43,
+                      "end": 44
+                    }
+                  }
+                },
+                "span": {
+                  "start": 39,
+                  "end": 44
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "z",
+                    "span": {
+                      "start": 46,
+                      "end": 47
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 3,
+                    "raw": "3",
+                    "span": {
+                      "start": 50,
+                      "end": 51
+                    }
+                  }
+                },
+                "span": {
+                  "start": 46,
+                  "end": 51
+                }
+              }
+            ],
+            "span": {
+              "start": 28,
+              "end": 51
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 56,
+                      "end": 57
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 56,
+                  "end": 57
+                }
+              }
+            ],
+            "span": {
+              "start": 52,
+              "end": 57
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 62,
+                      "end": 63
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 5,
+                    "raw": "5",
+                    "span": {
+                      "start": 66,
+                      "end": 67
+                    }
+                  }
+                },
+                "span": {
+                  "start": 62,
+                  "end": 67
+                }
+              }
+            ],
+            "span": {
+              "start": 58,
+              "end": 67
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 72,
+                      "end": 73
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 72,
+                  "end": 73
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 75,
+                      "end": 76
+                    }
+                  }
+                },
+                "init": null,
+                "span": {
+                  "start": 75,
+                  "end": 76
+                }
+              }
+            ],
+            "span": {
+              "start": 68,
+              "end": 76
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 81,
+                      "end": 82
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 85,
+                      "end": 86
+                    }
+                  }
+                },
+                "span": {
+                  "start": 81,
+                  "end": 86
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 88,
+                      "end": 89
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 2,
+                    "raw": "2",
+                    "span": {
+                      "start": 92,
+                      "end": 93
+                    }
+                  }
+                },
+                "span": {
+                  "start": 88,
+                  "end": 93
+                }
+              }
+            ],
+            "span": {
+              "start": 77,
+              "end": 93
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "const",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 100,
+                      "end": 101
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 5,
+                    "raw": "5",
+                    "span": {
+                      "start": 104,
+                      "end": 105
+                    }
+                  }
+                },
+                "span": {
+                  "start": 100,
+                  "end": 105
+                }
+              }
+            ],
+            "span": {
+              "start": 94,
+              "end": 105
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "const",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 112,
+                      "end": 113
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 116,
+                      "end": 117
+                    }
+                  }
+                },
+                "span": {
+                  "start": 112,
+                  "end": 117
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 119,
+                      "end": 120
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 2,
+                    "raw": "2",
+                    "span": {
+                      "start": 123,
+                      "end": 124
+                    }
+                  }
+                },
+                "span": {
+                  "start": 119,
+                  "end": 124
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "z",
+                    "span": {
+                      "start": 126,
+                      "end": 127
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 3,
+                    "raw": "3",
+                    "span": {
+                      "start": 130,
+                      "end": 131
+                    }
+                  }
+                },
+                "span": {
+                  "start": 126,
+                  "end": 131
+                }
+              }
+            ],
+            "span": {
+              "start": 106,
+              "end": 131
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "using",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 138,
+                      "end": 139
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "resource",
+                    "span": {
+                      "start": 142,
+                      "end": 150
+                    }
+                  }
+                },
+                "span": {
+                  "start": 138,
+                  "end": 150
+                }
+              }
+            ],
+            "span": {
+              "start": 132,
+              "end": 150
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "using",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 157,
+                      "end": 158
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "a",
+                    "span": {
+                      "start": 161,
+                      "end": 162
+                    }
+                  }
+                },
+                "span": {
+                  "start": 157,
+                  "end": 162
+                }
+              },
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 164,
+                      "end": 165
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "b",
+                    "span": {
+                      "start": 168,
+                      "end": 169
+                    }
+                  }
+                },
+                "span": {
+                  "start": 164,
+                  "end": 169
+                }
+              }
+            ],
+            "span": {
+              "start": 151,
+              "end": 169
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 170
+    }
+  },
+  "errors": []
+}

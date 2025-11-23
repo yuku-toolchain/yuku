@@ -51,16 +51,14 @@ pub const Parser = struct {
     source_type: SourceType = .Module,
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
-        var lex = try lexer.Lexer.init(allocator, source);
-
-        const first_token = lex.nextToken() catch token.Token.eof(0);
+        const lex = try lexer.Lexer.init(allocator, source);
 
         return .{
             .source = source,
             .lexer = lex,
             .allocator = allocator,
 
-            .current_token = first_token,
+            .current_token = undefined,
 
             .errors = std.ArrayList(Error).empty,
 
@@ -73,6 +71,9 @@ pub const Parser = struct {
     }
 
     pub fn parse(self: *Parser) !ParseResult {
+        // let's gooo
+        self.advance();
+
         const start = self.current_token.span.start;
 
         var body_list = std.ArrayList(*ast.Body).empty;
@@ -137,7 +138,14 @@ pub const Parser = struct {
         return self.createNode(ast.Statement, .{ .expression_statement = expr_stmt });
     }
 
-    pub inline fn validateReservedWord(self: *Parser, tok: token.Token, comptime as_what: []const u8, help: []const u8) bool {
+    pub inline fn ensureValidIdentifier(self: *Parser, tok: token.Token, comptime as_what: []const u8, help: []const u8) bool {
+        if (self.strict_mode and (tok.type == .Identifier)) {
+            if (std.mem.eql(u8, tok.lexeme, "eval") or std.mem.eql(u8, tok.lexeme, "arguments")) {
+                self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' cannot be used {s} in strict mode", .{ tok.lexeme, as_what }), help);
+                return false;
+            }
+        }
+
         if (self.strict_mode and tok.type.isStrictModeReserved()) {
             self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' is reserved in strict mode and cannot be used {s}", .{ tok.lexeme, as_what }), help);
             return false;

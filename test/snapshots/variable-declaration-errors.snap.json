@@ -1,0 +1,66 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "using",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 47,
+                      "end": 48
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "resource",
+                    "span": {
+                      "start": 51,
+                      "end": 59
+                    }
+                  }
+                },
+                "span": {
+                  "start": 47,
+                  "end": 59
+                }
+              }
+            ],
+            "span": {
+              "start": 41,
+              "end": 59
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 60
+    }
+  },
+  "errors": [
+    {
+      "message": "Missing initializer in 'const' declaration",
+      "span": {
+        "start": 6,
+        "end": 7
+      },
+      "help": "Add '= <value>' after the variable name to initialize it"
+    },
+    {
+      "message": "Missing initializer in 'using' declaration",
+      "span": {
+        "start": 25,
+        "end": 26
+      },
+      "help": "Add '= <value>' after the variable name to initialize it"
+    }
+  ]
+}

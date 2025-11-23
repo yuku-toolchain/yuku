@@ -1,6 +1,7 @@
 const std = @import("std");
 
 pub const UnicodeId = @import("unicode-id.zig");
+pub const Number = @import("number.zig");
 
 pub const CodePoint = struct { len: u3, value: u21 };
 
@@ -33,4 +34,15 @@ pub fn isMultiByteSpace(cp: u21) bool {
         => true,
         else => false,
     };
+}
+
+pub fn parseAnyNumberStrToFloatUnsafe(str: []const u8) !f64 {
+    const float = try std.fmt.parseFloat(f64, str) catch null;
+
+    if(float == null){
+        const int = try std.fmt.parseInt(u64, str, 0);
+        return @as(f64, @floatFromInt(int));
+    }
+
+    return float;
 }

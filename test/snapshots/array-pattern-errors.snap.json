@@ -1,0 +1,36 @@
+{
+  "program": {
+    "body": [],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 67
+    }
+  },
+  "errors": [
+    {
+      "message": "Rest element must be last in array pattern",
+      "span": {
+        "start": 5,
+        "end": 13
+      },
+      "help": "Move the rest element to the end. Example: { a, b, ...rest } instead of { ...rest, a, b }"
+    },
+    {
+      "message": "Rest element must be last in array pattern",
+      "span": {
+        "start": 31,
+        "end": 39
+      },
+      "help": "Move the rest element to the end. Example: { a, b, ...rest } instead of { ...rest, a, b }"
+    },
+    {
+      "message": "Missing initializer in destructuring declaration",
+      "span": {
+        "start": 53,
+        "end": 56
+      },
+      "help": "Destructuring patterns must be initialized. Add '= <value>' after the pattern"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+/unterminated
+/has
+newline/

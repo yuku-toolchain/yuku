@@ -1,0 +1,229 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "null_literal": {
+                "value": null,
+                "raw": "null",
+                "span": {
+                  "start": 0,
+                  "end": 4
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 0,
+              "end": 4
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "null_literal": {
+                    "value": null,
+                    "raw": "null",
+                    "span": {
+                      "start": 5,
+                      "end": 9
+                    }
+                  }
+                },
+                "right": {
+                  "identifier_reference": {
+                    "name": "undefined",
+                    "span": {
+                      "start": 14,
+                      "end": 23
+                    }
+                  }
+                },
+                "operator": "StrictEqual",
+                "span": {
+                  "start": 5,
+                  "end": 23
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 5,
+              "end": 23
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "logical_expression": {
+                "left": {
+                  "null_literal": {
+                    "value": null,
+                    "raw": "null",
+                    "span": {
+                      "start": 24,
+                      "end": 28
+                    }
+                  }
+                },
+                "right": {
+                  "numeric_literal": {
+                    "value": 0,
+                    "raw": "0",
+                    "span": {
+                      "start": 32,
+                      "end": 33
+                    }
+                  }
+                },
+                "operator": "NullishCoalescing",
+                "span": {
+                  "start": 24,
+                  "end": 33
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 24,
+              "end": 33
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "assignment_expression": {
+                "operator": "Assign",
+                "left": {
+                  "simple_assignment_target": {
+                    "identifier_reference": {
+                      "name": "x",
+                      "span": {
+                        "start": 34,
+                        "end": 35
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "null_literal": {
+                    "value": null,
+                    "raw": "null",
+                    "span": {
+                      "start": 38,
+                      "end": 42
+                    }
+                  }
+                },
+                "span": {
+                  "start": 34,
+                  "end": 42
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 34,
+              "end": 42
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "x",
+                    "span": {
+                      "start": 47,
+                      "end": 48
+                    }
+                  }
+                },
+                "init": {
+                  "null_literal": {
+                    "value": null,
+                    "raw": "null",
+                    "span": {
+                      "start": 51,
+                      "end": 55
+                    }
+                  }
+                },
+                "span": {
+                  "start": 47,
+                  "end": 55
+                }
+              }
+            ],
+            "span": {
+              "start": 43,
+              "end": 55
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "const",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "y",
+                    "span": {
+                      "start": 62,
+                      "end": 63
+                    }
+                  }
+                },
+                "init": {
+                  "null_literal": {
+                    "value": null,
+                    "raw": "null",
+                    "span": {
+                      "start": 66,
+                      "end": 70
+                    }
+                  }
+                },
+                "span": {
+                  "start": 62,
+                  "end": 70
+                }
+              }
+            ],
+            "span": {
+              "start": 56,
+              "end": 70
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 71
+    }
+  },
+  "errors": []
+}

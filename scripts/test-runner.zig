@@ -193,7 +193,7 @@ fn runTest(
 
     const output = try std.fmt.allocPrint(
         allocator,
-        "{f}",
+        "{f}\n",
         .{std.json.fmt(result, .{ .whitespace = .indent_2 })},
     );
     defer allocator.free(output);

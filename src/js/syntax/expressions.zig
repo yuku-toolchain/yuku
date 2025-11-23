@@ -9,11 +9,11 @@ pub fn parseExpression(parser: *Parser, prec: u5) ?*ast.Expression {
     var left: *ast.Expression = parseExpressionPrefix(parser) orelse return null;
 
     while (parser.current_token.type != .EOF) {
-        const current_prec = parser.current_token.type.precedence();
+        const lbp = parser.current_token.type.leftBindingPower();
 
-        if (prec > current_prec or current_prec == 0) break;
+           if (prec > lbp or lbp == 0) break;
 
-        left = parseExpressionInfix(parser, current_prec, left) orelse return null;
+           left = parseExpressionInfix(parser, lbp, left) orelse return null;
     }
 
     return left;
@@ -39,7 +39,15 @@ fn parseExpressionInfix(parser: *Parser, prec: u5, left: *ast.Expression) ?*ast.
         return parseAssignmentExpression(parser, prec, left);
     }
 
-    unreachable;
+    // TODO: haha we need to remove this after we implement all expressions
+    parser.err(
+        current_token.span.start,
+        current_token.span.end,
+        parser.formatMessage("Unexpected token '{s}' in expression", .{current_token.lexeme}),
+        "This operator or syntax is not yet supported by the parser",
+    );
+
+    return null;
 }
 
 fn parseExpressionPrefix(parser: *Parser) ?*ast.Expression {

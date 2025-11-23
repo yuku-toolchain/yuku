@@ -1,0 +1,1899 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 5,
+                                "end": 6
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 5,
+                                "end": 6
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 5,
+                            "end": 6
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 4,
+                      "end": 7
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 10,
+                      "end": 13
+                    }
+                  }
+                },
+                "span": {
+                  "start": 4,
+                  "end": 13
+                }
+              }
+            ],
+            "span": {
+              "start": 0,
+              "end": 13
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 19,
+                                "end": 20
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 19,
+                                "end": 20
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 19,
+                            "end": 20
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 22,
+                                "end": 23
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "b",
+                              "span": {
+                                "start": 22,
+                                "end": 23
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 22,
+                            "end": 23
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 18,
+                      "end": 24
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 27,
+                      "end": 30
+                    }
+                  }
+                },
+                "span": {
+                  "start": 18,
+                  "end": 30
+                }
+              }
+            ],
+            "span": {
+              "start": 14,
+              "end": 30
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 36,
+                                "end": 37
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 36,
+                                "end": 37
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 36,
+                            "end": 37
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 39,
+                                "end": 40
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "b",
+                              "span": {
+                                "start": 39,
+                                "end": 40
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 39,
+                            "end": 40
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "c",
+                              "span": {
+                                "start": 42,
+                                "end": 43
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "c",
+                              "span": {
+                                "start": 42,
+                                "end": 43
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 42,
+                            "end": 43
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 35,
+                      "end": 44
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 47,
+                      "end": 50
+                    }
+                  }
+                },
+                "span": {
+                  "start": 35,
+                  "end": 50
+                }
+              }
+            ],
+            "span": {
+              "start": 31,
+              "end": 50
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 56,
+                                "end": 57
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "x",
+                              "span": {
+                                "start": 59,
+                                "end": 60
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 56,
+                            "end": 60
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 55,
+                      "end": 61
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 64,
+                      "end": 67
+                    }
+                  }
+                },
+                "span": {
+                  "start": 55,
+                  "end": 67
+                }
+              }
+            ],
+            "span": {
+              "start": 51,
+              "end": 67
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 73,
+                                "end": 74
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "x",
+                              "span": {
+                                "start": 76,
+                                "end": 77
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 73,
+                            "end": 77
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 79,
+                                "end": 80
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "y",
+                              "span": {
+                                "start": 82,
+                                "end": 83
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 79,
+                            "end": 83
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 72,
+                      "end": 84
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 87,
+                      "end": 90
+                    }
+                  }
+                },
+                "span": {
+                  "start": 72,
+                  "end": 90
+                }
+              }
+            ],
+            "span": {
+              "start": 68,
+              "end": 90
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "expression": {
+                              "string_literal": {
+                                "value": "\"key\"",
+                                "raw": "\"key\"",
+                                "span": {
+                                  "start": 96,
+                                  "end": 101
+                                }
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "value",
+                              "span": {
+                                "start": 103,
+                                "end": 108
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 96,
+                            "end": 108
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 95,
+                      "end": 109
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 112,
+                      "end": 115
+                    }
+                  }
+                },
+                "span": {
+                  "start": 95,
+                  "end": 115
+                }
+              }
+            ],
+            "span": {
+              "start": 91,
+              "end": 115
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "expression": {
+                              "identifier_reference": {
+                                "name": "expr",
+                                "span": {
+                                  "start": 122,
+                                  "end": 126
+                                }
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "value",
+                              "span": {
+                                "start": 129,
+                                "end": 134
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": true,
+                          "span": {
+                            "start": 121,
+                            "end": 134
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 120,
+                      "end": 135
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 138,
+                      "end": 141
+                    }
+                  }
+                },
+                "span": {
+                  "start": 120,
+                  "end": 141
+                }
+              }
+            ],
+            "span": {
+              "start": 116,
+              "end": 141
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 147,
+                                "end": 148
+                              }
+                            }
+                          },
+                          "value": {
+                            "assignment_pattern": {
+                              "left": {
+                                "binding_identifier": {
+                                  "name": "a",
+                                  "span": {
+                                    "start": 147,
+                                    "end": 148
+                                  }
+                                }
+                              },
+                              "right": {
+                                "numeric_literal": {
+                                  "value": 1,
+                                  "raw": "1",
+                                  "span": {
+                                    "start": 151,
+                                    "end": 152
+                                  }
+                                }
+                              },
+                              "span": {
+                                "start": 147,
+                                "end": 152
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 147,
+                            "end": 152
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 146,
+                      "end": 153
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 156,
+                      "end": 159
+                    }
+                  }
+                },
+                "span": {
+                  "start": 146,
+                  "end": 159
+                }
+              }
+            ],
+            "span": {
+              "start": 142,
+              "end": 159
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 165,
+                                "end": 166
+                              }
+                            }
+                          },
+                          "value": {
+                            "assignment_pattern": {
+                              "left": {
+                                "binding_identifier": {
+                                  "name": "a",
+                                  "span": {
+                                    "start": 165,
+                                    "end": 166
+                                  }
+                                }
+                              },
+                              "right": {
+                                "numeric_literal": {
+                                  "value": 1,
+                                  "raw": "1",
+                                  "span": {
+                                    "start": 169,
+                                    "end": 170
+                                  }
+                                }
+                              },
+                              "span": {
+                                "start": 165,
+                                "end": 170
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 165,
+                            "end": 170
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 172,
+                                "end": 173
+                              }
+                            }
+                          },
+                          "value": {
+                            "assignment_pattern": {
+                              "left": {
+                                "binding_identifier": {
+                                  "name": "b",
+                                  "span": {
+                                    "start": 172,
+                                    "end": 173
+                                  }
+                                }
+                              },
+                              "right": {
+                                "numeric_literal": {
+                                  "value": 2,
+                                  "raw": "2",
+                                  "span": {
+                                    "start": 176,
+                                    "end": 177
+                                  }
+                                }
+                              },
+                              "span": {
+                                "start": 172,
+                                "end": 177
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 172,
+                            "end": 177
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 164,
+                      "end": 178
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 181,
+                      "end": 184
+                    }
+                  }
+                },
+                "span": {
+                  "start": 164,
+                  "end": 184
+                }
+              }
+            ],
+            "span": {
+              "start": 160,
+              "end": 184
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 190,
+                                "end": 191
+                              }
+                            }
+                          },
+                          "value": {
+                            "assignment_pattern": {
+                              "left": {
+                                "binding_identifier": {
+                                  "name": "x",
+                                  "span": {
+                                    "start": 193,
+                                    "end": 194
+                                  }
+                                }
+                              },
+                              "right": {
+                                "numeric_literal": {
+                                  "value": 1,
+                                  "raw": "1",
+                                  "span": {
+                                    "start": 197,
+                                    "end": 198
+                                  }
+                                }
+                              },
+                              "span": {
+                                "start": 193,
+                                "end": 198
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 190,
+                            "end": 198
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 189,
+                      "end": 199
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 202,
+                      "end": 205
+                    }
+                  }
+                },
+                "span": {
+                  "start": 189,
+                  "end": 205
+                }
+              }
+            ],
+            "span": {
+              "start": 185,
+              "end": 205
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 215,
+                                "end": 216
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "b",
+                              "span": {
+                                "start": 215,
+                                "end": 216
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 215,
+                            "end": 216
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 211,
+                                "end": 212
+                              }
+                            }
+                          },
+                          "value": {
+                            "object_pattern": {
+                              "properties": [
+                                {
+                                  "binding_property": {
+                                    "kind": "init",
+                                    "key": {
+                                      "identifier_name": {
+                                        "name": "b",
+                                        "span": {
+                                          "start": 215,
+                                          "end": 216
+                                        }
+                                      }
+                                    },
+                                    "value": {
+                                      "binding_identifier": {
+                                        "name": "b",
+                                        "span": {
+                                          "start": 215,
+                                          "end": 216
+                                        }
+                                      }
+                                    },
+                                    "method": false,
+                                    "shorthand": true,
+                                    "computed": false,
+                                    "span": {
+                                      "start": 215,
+                                      "end": 216
+                                    }
+                                  }
+                                }
+                              ],
+                              "span": {
+                                "start": 214,
+                                "end": 217
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 211,
+                            "end": 217
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 210,
+                      "end": 218
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 221,
+                      "end": 224
+                    }
+                  }
+                },
+                "span": {
+                  "start": 210,
+                  "end": 224
+                }
+              }
+            ],
+            "span": {
+              "start": 206,
+              "end": 224
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 234,
+                                "end": 235
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "c",
+                              "span": {
+                                "start": 237,
+                                "end": 238
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 234,
+                            "end": 238
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 230,
+                                "end": 231
+                              }
+                            }
+                          },
+                          "value": {
+                            "object_pattern": {
+                              "properties": [
+                                {
+                                  "binding_property": {
+                                    "kind": "init",
+                                    "key": {
+                                      "identifier_name": {
+                                        "name": "b",
+                                        "span": {
+                                          "start": 234,
+                                          "end": 235
+                                        }
+                                      }
+                                    },
+                                    "value": {
+                                      "binding_identifier": {
+                                        "name": "c",
+                                        "span": {
+                                          "start": 237,
+                                          "end": 238
+                                        }
+                                      }
+                                    },
+                                    "method": false,
+                                    "shorthand": false,
+                                    "computed": false,
+                                    "span": {
+                                      "start": 234,
+                                      "end": 238
+                                    }
+                                  }
+                                }
+                              ],
+                              "span": {
+                                "start": 233,
+                                "end": 239
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 230,
+                            "end": 239
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 229,
+                      "end": 240
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 243,
+                      "end": 246
+                    }
+                  }
+                },
+                "span": {
+                  "start": 229,
+                  "end": 246
+                }
+              }
+            ],
+            "span": {
+              "start": 225,
+              "end": 246
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "c",
+                              "span": {
+                                "start": 259,
+                                "end": 260
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "c",
+                              "span": {
+                                "start": 259,
+                                "end": 260
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 259,
+                            "end": 260
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "d",
+                              "span": {
+                                "start": 262,
+                                "end": 263
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "d",
+                              "span": {
+                                "start": 262,
+                                "end": 263
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 262,
+                            "end": 263
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 255,
+                                "end": 256
+                              }
+                            }
+                          },
+                          "value": {
+                            "object_pattern": {
+                              "properties": [
+                                {
+                                  "binding_property": {
+                                    "kind": "init",
+                                    "key": {
+                                      "identifier_name": {
+                                        "name": "c",
+                                        "span": {
+                                          "start": 259,
+                                          "end": 260
+                                        }
+                                      }
+                                    },
+                                    "value": {
+                                      "binding_identifier": {
+                                        "name": "c",
+                                        "span": {
+                                          "start": 259,
+                                          "end": 260
+                                        }
+                                      }
+                                    },
+                                    "method": false,
+                                    "shorthand": true,
+                                    "computed": false,
+                                    "span": {
+                                      "start": 259,
+                                      "end": 260
+                                    }
+                                  }
+                                },
+                                {
+                                  "binding_property": {
+                                    "kind": "init",
+                                    "key": {
+                                      "identifier_name": {
+                                        "name": "d",
+                                        "span": {
+                                          "start": 262,
+                                          "end": 263
+                                        }
+                                      }
+                                    },
+                                    "value": {
+                                      "binding_identifier": {
+                                        "name": "d",
+                                        "span": {
+                                          "start": 262,
+                                          "end": 263
+                                        }
+                                      }
+                                    },
+                                    "method": false,
+                                    "shorthand": true,
+                                    "computed": false,
+                                    "span": {
+                                      "start": 262,
+                                      "end": 263
+                                    }
+                                  }
+                                }
+                              ],
+                              "span": {
+                                "start": 258,
+                                "end": 264
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 255,
+                            "end": 264
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 251,
+                      "end": 265
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 268,
+                      "end": 271
+                    }
+                  }
+                },
+                "span": {
+                  "start": 251,
+                  "end": 271
+                }
+              }
+            ],
+            "span": {
+              "start": 247,
+              "end": 271
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "rest_element": {
+                          "argument": {
+                            "binding_identifier": {
+                              "name": "rest",
+                              "span": {
+                                "start": 280,
+                                "end": 284
+                              }
+                            }
+                          },
+                          "span": {
+                            "start": 277,
+                            "end": 284
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 276,
+                      "end": 285
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 288,
+                      "end": 291
+                    }
+                  }
+                },
+                "span": {
+                  "start": 276,
+                  "end": 291
+                }
+              }
+            ],
+            "span": {
+              "start": 272,
+              "end": 291
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 297,
+                                "end": 298
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 297,
+                                "end": 298
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 297,
+                            "end": 298
+                          }
+                        }
+                      },
+                      {
+                        "rest_element": {
+                          "argument": {
+                            "binding_identifier": {
+                              "name": "rest",
+                              "span": {
+                                "start": 303,
+                                "end": 307
+                              }
+                            }
+                          },
+                          "span": {
+                            "start": 300,
+                            "end": 307
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 296,
+                      "end": 308
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 311,
+                      "end": 314
+                    }
+                  }
+                },
+                "span": {
+                  "start": 296,
+                  "end": 314
+                }
+              }
+            ],
+            "span": {
+              "start": 292,
+              "end": 314
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "a",
+                              "span": {
+                                "start": 320,
+                                "end": 321
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 320,
+                                "end": 321
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 320,
+                            "end": 321
+                          }
+                        }
+                      },
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "b",
+                              "span": {
+                                "start": 323,
+                                "end": 324
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "b",
+                              "span": {
+                                "start": 323,
+                                "end": 324
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 323,
+                            "end": 324
+                          }
+                        }
+                      },
+                      {
+                        "rest_element": {
+                          "argument": {
+                            "binding_identifier": {
+                              "name": "rest",
+                              "span": {
+                                "start": 329,
+                                "end": 333
+                              }
+                            }
+                          },
+                          "span": {
+                            "start": 326,
+                            "end": 333
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 319,
+                      "end": 334
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 337,
+                      "end": 340
+                    }
+                  }
+                },
+                "span": {
+                  "start": 319,
+                  "end": 340
+                }
+              }
+            ],
+            "span": {
+              "start": 315,
+              "end": 340
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "const",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "x",
+                              "span": {
+                                "start": 348,
+                                "end": 349
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "x",
+                              "span": {
+                                "start": 348,
+                                "end": 349
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 348,
+                            "end": 349
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 347,
+                      "end": 350
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 353,
+                      "end": 356
+                    }
+                  }
+                },
+                "span": {
+                  "start": 347,
+                  "end": 356
+                }
+              }
+            ],
+            "span": {
+              "start": 341,
+              "end": 356
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "var",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "identifier_name": {
+                              "name": "y",
+                              "span": {
+                                "start": 362,
+                                "end": 363
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "y",
+                              "span": {
+                                "start": 362,
+                                "end": 363
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": true,
+                          "computed": false,
+                          "span": {
+                            "start": 362,
+                            "end": 363
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 361,
+                      "end": 364
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 367,
+                      "end": 370
+                    }
+                  }
+                },
+                "span": {
+                  "start": 361,
+                  "end": 370
+                }
+              }
+            ],
+            "span": {
+              "start": 357,
+              "end": 370
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "expression": {
+                              "numeric_literal": {
+                                "value": 1,
+                                "raw": "1",
+                                "span": {
+                                  "start": 376,
+                                  "end": 377
+                                }
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 379,
+                                "end": 380
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 376,
+                            "end": 380
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 375,
+                      "end": 381
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 384,
+                      "end": 387
+                    }
+                  }
+                },
+                "span": {
+                  "start": 375,
+                  "end": 387
+                }
+              }
+            ],
+            "span": {
+              "start": 371,
+              "end": 387
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "object_pattern": {
+                    "properties": [
+                      {
+                        "binding_property": {
+                          "kind": "init",
+                          "key": {
+                            "expression": {
+                              "numeric_literal": {
+                                "value": 255,
+                                "raw": "0xFF",
+                                "span": {
+                                  "start": 393,
+                                  "end": 397
+                                }
+                              }
+                            }
+                          },
+                          "value": {
+                            "binding_identifier": {
+                              "name": "a",
+                              "span": {
+                                "start": 399,
+                                "end": 400
+                              }
+                            }
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false,
+                          "span": {
+                            "start": 393,
+                            "end": 400
+                          }
+                        }
+                      }
+                    ],
+                    "span": {
+                      "start": 392,
+                      "end": 401
+                    }
+                  }
+                },
+                "init": {
+                  "identifier_reference": {
+                    "name": "obj",
+                    "span": {
+                      "start": 404,
+                      "end": 407
+                    }
+                  }
+                },
+                "span": {
+                  "start": 392,
+                  "end": 407
+                }
+              }
+            ],
+            "span": {
+              "start": 388,
+              "end": 407
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 408
+    }
+  },
+  "errors": []
+}

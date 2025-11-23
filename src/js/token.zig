@@ -156,10 +156,17 @@ pub const TokenType = enum(u32) {
     Identifier = 119 | Mask.IsIdentifierLike, // e.g., "myVar", "foo", "_bar"
     PrivateIdentifier = 120, // e.g., "#privateField", "#method"
 
-    EOF = 121, // End of file
+    EOF = 121, // end of file
 
-    pub fn precedence(self: TokenType) u5 {
-        return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
+    // for expressions parsing
+    pub fn leftBindingPower(self: TokenType) u5 {
+        if (self.isBinaryOperator() or self.isLogicalOperator() or
+            self.isAssignmentOperator() or self == .Increment or self == .Decrement) {
+            const precedence: u5 = @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
+            return precedence;
+        }
+
+        return 0;  // can't be infix
     }
 
     pub fn is(self: TokenType, mask: u32) bool {

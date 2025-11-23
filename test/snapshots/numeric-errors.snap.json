@@ -1,0 +1,20 @@
+{
+  "program": {
+    "body": [],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 0
+    }
+  },
+  "errors": [
+    {
+      "message": "Hexadecimal literal must contain at least one hex digit",
+      "span": {
+        "start": 0,
+        "end": 2
+      },
+      "help": "Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'"
+    }
+  ]
+}

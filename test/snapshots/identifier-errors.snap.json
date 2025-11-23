@@ -1,0 +1,123 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "variable_declaration": {
+            "kind": "let",
+            "declarations": [
+              {
+                "id": {
+                  "binding_identifier": {
+                    "name": "package",
+                    "span": {
+                      "start": 96,
+                      "end": 103
+                    }
+                  }
+                },
+                "init": {
+                  "numeric_literal": {
+                    "value": 5,
+                    "raw": "5",
+                    "span": {
+                      "start": 106,
+                      "end": 107
+                    }
+                  }
+                },
+                "span": {
+                  "start": 96,
+                  "end": 107
+                }
+              }
+            ],
+            "span": {
+              "start": 92,
+              "end": 107
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 157
+    }
+  },
+  "errors": [
+    {
+      "message": "'let' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 4,
+        "end": 7
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'const' is a reserved word and cannot be used as an identifier",
+      "span": {
+        "start": 18,
+        "end": 23
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'var' is a reserved word and cannot be used as an identifier",
+      "span": {
+        "start": 32,
+        "end": 35
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'static' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 44,
+        "end": 50
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'implements' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 59,
+        "end": 69
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'interface' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 78,
+        "end": 87
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'private' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 112,
+        "end": 119
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'protected' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 128,
+        "end": 137
+      },
+      "help": "Choose a different identifier name"
+    },
+    {
+      "message": "'public' is reserved in strict mode and cannot be used as an identifier",
+      "span": {
+        "start": 146,
+        "end": 152
+      },
+      "help": "Choose a different identifier name"
+    }
+  ]
+}

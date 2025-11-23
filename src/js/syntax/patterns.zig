@@ -42,7 +42,7 @@ fn parseBindingIdentifierPattern(parser: *Parser) ?*ast.BindingPattern {
     const name = parser.current_token.lexeme;
     const span = parser.current_token.span;
 
-    if (!parser.validateReservedWord(parser.current_token, "as an identifier", "Choose a different identifier name")) {
+    if (!parser.ensureValidIdentifier(parser.current_token, "as an identifier", "Choose a different identifier name")) {
         return null;
     }
 
@@ -330,7 +330,7 @@ fn parseObjectPatternProperty(parser: *Parser) ?*ast.ObjectPatternProperty {
             else => return null,
         };
 
-        if (!parser.validateReservedWord(identifier_key_token, "in shorthand property", parser.formatMessage("Use the full form: {{ {s}: identifier }}", .{identifier_name.name}))) {
+        if (!parser.ensureValidIdentifier(identifier_key_token, "in shorthand property", parser.formatMessage("Use the full form: {{ {s}: identifier }}", .{identifier_name.name}))) {
             return null;
         }
 

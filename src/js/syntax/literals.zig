@@ -3,6 +3,7 @@ const token = @import("../token.zig");
 const lexer = @import("../lexer.zig");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
+const util = @import("util");
 
 const expressions = @import("expressions.zig");
 
@@ -55,7 +56,7 @@ pub fn parseNumericLiteral(parser: *Parser) ?*ast.Expression {
     parser.advance();
 
     const literal = ast.NumericLiteral{
-        .value = std.fmt.parseFloat(f64, value) catch unreachable, // safety: lexer only tokenizes valid numeric literals
+        .value = util.Number.parseJSNumeric(value) catch unreachable,
         .raw = value,
         .span = span,
     };
@@ -195,10 +196,10 @@ inline fn createTemplateElement(parser: *Parser, tok: token.Token, is_tail: bool
     const actual_end = tok.span.end;
 
     // so we don't need those punctuators in the elements as per spec
-    const span: token.Span  = switch (tok.type) {
-        .TemplateHead, .TemplateMiddle => token.Span{.start = actual_start + 1, .end = actual_end - 2},
-        .TemplateTail => token.Span{.start = actual_start + 1, .end = actual_end - 1},
-        else => unreachable
+    const span: token.Span = switch (tok.type) {
+        .TemplateHead, .TemplateMiddle => token.Span{ .start = actual_start + 1, .end = actual_end - 2 },
+        .TemplateTail, .NoSubstitutionTemplate => token.Span{ .start = actual_start + 1, .end = actual_end - 1 },
+        else => unreachable,
     };
 
     const lexeme = parser.source[span.start..span.end];

@@ -1,0 +1,60 @@
+{
+  "program": {
+    "body": [],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 117
+    }
+  },
+  "errors": [
+    {
+      "message": "Rest element must be last in object pattern",
+      "span": {
+        "start": 5,
+        "end": 13
+      },
+      "help": "Move the rest element to the end. Example: { a, b, ...rest } instead of { ...rest, a, b }"
+    },
+    {
+      "message": "Rest element must be last in object pattern",
+      "span": {
+        "start": 31,
+        "end": 39
+      },
+      "help": "Move the rest element to the end. Example: { a, b, ...rest } instead of { ...rest, a, b }"
+    },
+    {
+      "message": "Missing initializer in destructuring declaration",
+      "span": {
+        "start": 53,
+        "end": 56
+      },
+      "help": "Destructuring patterns must be initialized. Add '= <value>' after the pattern"
+    },
+    {
+      "message": "'let' is reserved in strict mode and cannot be used in shorthand property",
+      "span": {
+        "start": 72,
+        "end": 75
+      },
+      "help": "Use the full form: { let: identifier }"
+    },
+    {
+      "message": "'const' is a reserved word and cannot be used in shorthand property",
+      "span": {
+        "start": 88,
+        "end": 93
+      },
+      "help": "Use the full form: { const: identifier }"
+    },
+    {
+      "message": "'var' is a reserved word and cannot be used in shorthand property",
+      "span": {
+        "start": 106,
+        "end": 109
+      },
+      "help": "Use the full form: { var: identifier }"
+    }
+  ]
+}

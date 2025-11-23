@@ -1,0 +1,939 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 0,
+                      "end": 1
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 4,
+                          "end": 5
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 3,
+                        "raw": "3",
+                        "span": {
+                          "start": 8,
+                          "end": 9
+                        }
+                      }
+                    },
+                    "operator": "Star",
+                    "span": {
+                      "start": 4,
+                      "end": 9
+                    }
+                  }
+                },
+                "operator": "Plus",
+                "span": {
+                  "start": 0,
+                  "end": 9
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 0,
+              "end": 9
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 1,
+                        "raw": "1",
+                        "span": {
+                          "start": 10,
+                          "end": 11
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 14,
+                          "end": 15
+                        }
+                      }
+                    },
+                    "operator": "Star",
+                    "span": {
+                      "start": 10,
+                      "end": 15
+                    }
+                  }
+                },
+                "right": {
+                  "numeric_literal": {
+                    "value": 3,
+                    "raw": "3",
+                    "span": {
+                      "start": 18,
+                      "end": 19
+                    }
+                  }
+                },
+                "operator": "Plus",
+                "span": {
+                  "start": 10,
+                  "end": 19
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 10,
+              "end": 19
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "numeric_literal": {
+                    "value": 2,
+                    "raw": "2",
+                    "span": {
+                      "start": 20,
+                      "end": 21
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 3,
+                        "raw": "3",
+                        "span": {
+                          "start": 25,
+                          "end": 26
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 4,
+                        "raw": "4",
+                        "span": {
+                          "start": 30,
+                          "end": 31
+                        }
+                      }
+                    },
+                    "operator": "Exponent",
+                    "span": {
+                      "start": 25,
+                      "end": 31
+                    }
+                  }
+                },
+                "operator": "Exponent",
+                "span": {
+                  "start": 20,
+                  "end": 31
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 20,
+              "end": 31
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 32,
+                      "end": 33
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 36,
+                          "end": 37
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 3,
+                        "raw": "3",
+                        "span": {
+                          "start": 41,
+                          "end": 42
+                        }
+                      }
+                    },
+                    "operator": "Exponent",
+                    "span": {
+                      "start": 36,
+                      "end": 42
+                    }
+                  }
+                },
+                "operator": "Plus",
+                "span": {
+                  "start": 32,
+                  "end": 42
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 32,
+              "end": 42
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 43,
+                      "end": 44
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 48,
+                          "end": 49
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 3,
+                        "raw": "3",
+                        "span": {
+                          "start": 52,
+                          "end": 53
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 48,
+                      "end": 53
+                    }
+                  }
+                },
+                "operator": "LeftShift",
+                "span": {
+                  "start": 43,
+                  "end": 53
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 43,
+              "end": 53
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 1,
+                        "raw": "1",
+                        "span": {
+                          "start": 54,
+                          "end": 55
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 58,
+                          "end": 59
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 54,
+                      "end": 59
+                    }
+                  }
+                },
+                "right": {
+                  "numeric_literal": {
+                    "value": 3,
+                    "raw": "3",
+                    "span": {
+                      "start": 63,
+                      "end": 64
+                    }
+                  }
+                },
+                "operator": "LeftShift",
+                "span": {
+                  "start": 54,
+                  "end": 64
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 54,
+              "end": 64
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 65,
+                      "end": 66
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 69,
+                          "end": 70
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 3,
+                        "raw": "3",
+                        "span": {
+                          "start": 73,
+                          "end": 74
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 69,
+                      "end": 74
+                    }
+                  }
+                },
+                "operator": "LessThan",
+                "span": {
+                  "start": 65,
+                  "end": 74
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 65,
+              "end": 74
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 1,
+                        "raw": "1",
+                        "span": {
+                          "start": 75,
+                          "end": 76
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 79,
+                          "end": 80
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 75,
+                      "end": 80
+                    }
+                  }
+                },
+                "right": {
+                  "numeric_literal": {
+                    "value": 3,
+                    "raw": "3",
+                    "span": {
+                      "start": 83,
+                      "end": 84
+                    }
+                  }
+                },
+                "operator": "LessThan",
+                "span": {
+                  "start": 75,
+                  "end": 84
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 75,
+              "end": 84
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "numeric_literal": {
+                    "value": 1,
+                    "raw": "1",
+                    "span": {
+                      "start": 85,
+                      "end": 86
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 90,
+                          "end": 91
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 3,
+                        "raw": "3",
+                        "span": {
+                          "start": 94,
+                          "end": 95
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 90,
+                      "end": 95
+                    }
+                  }
+                },
+                "operator": "Equal",
+                "span": {
+                  "start": 85,
+                  "end": 95
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 85,
+              "end": 95
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "binary_expression": {
+                    "left": {
+                      "numeric_literal": {
+                        "value": 1,
+                        "raw": "1",
+                        "span": {
+                          "start": 96,
+                          "end": 97
+                        }
+                      }
+                    },
+                    "right": {
+                      "numeric_literal": {
+                        "value": 2,
+                        "raw": "2",
+                        "span": {
+                          "start": 100,
+                          "end": 101
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 96,
+                      "end": 101
+                    }
+                  }
+                },
+                "right": {
+                  "numeric_literal": {
+                    "value": 3,
+                    "raw": "3",
+                    "span": {
+                      "start": 105,
+                      "end": 106
+                    }
+                  }
+                },
+                "operator": "Equal",
+                "span": {
+                  "start": 96,
+                  "end": 106
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 96,
+              "end": 106
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "logical_expression": {
+                "left": {
+                  "identifier_reference": {
+                    "name": "a",
+                    "span": {
+                      "start": 107,
+                      "end": 108
+                    }
+                  }
+                },
+                "right": {
+                  "binary_expression": {
+                    "left": {
+                      "identifier_reference": {
+                        "name": "b",
+                        "span": {
+                          "start": 112,
+                          "end": 113
+                        }
+                      }
+                    },
+                    "right": {
+                      "identifier_reference": {
+                        "name": "c",
+                        "span": {
+                          "start": 116,
+                          "end": 117
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 112,
+                      "end": 117
+                    }
+                  }
+                },
+                "operator": "LogicalAnd",
+                "span": {
+                  "start": 107,
+                  "end": 117
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 107,
+              "end": 117
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "logical_expression": {
+                "left": {
+                  "binary_expression": {
+                    "left": {
+                      "identifier_reference": {
+                        "name": "a",
+                        "span": {
+                          "start": 118,
+                          "end": 119
+                        }
+                      }
+                    },
+                    "right": {
+                      "identifier_reference": {
+                        "name": "b",
+                        "span": {
+                          "start": 122,
+                          "end": 123
+                        }
+                      }
+                    },
+                    "operator": "Plus",
+                    "span": {
+                      "start": 118,
+                      "end": 123
+                    }
+                  }
+                },
+                "right": {
+                  "identifier_reference": {
+                    "name": "c",
+                    "span": {
+                      "start": 127,
+                      "end": 128
+                    }
+                  }
+                },
+                "operator": "LogicalAnd",
+                "span": {
+                  "start": 118,
+                  "end": 128
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 118,
+              "end": 128
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "logical_expression": {
+                "left": {
+                  "identifier_reference": {
+                    "name": "a",
+                    "span": {
+                      "start": 129,
+                      "end": 130
+                    }
+                  }
+                },
+                "right": {
+                  "logical_expression": {
+                    "left": {
+                      "identifier_reference": {
+                        "name": "b",
+                        "span": {
+                          "start": 134,
+                          "end": 135
+                        }
+                      }
+                    },
+                    "right": {
+                      "identifier_reference": {
+                        "name": "c",
+                        "span": {
+                          "start": 139,
+                          "end": 140
+                        }
+                      }
+                    },
+                    "operator": "LogicalAnd",
+                    "span": {
+                      "start": 134,
+                      "end": 140
+                    }
+                  }
+                },
+                "operator": "LogicalOr",
+                "span": {
+                  "start": 129,
+                  "end": 140
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 129,
+              "end": 140
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "logical_expression": {
+                "left": {
+                  "logical_expression": {
+                    "left": {
+                      "identifier_reference": {
+                        "name": "a",
+                        "span": {
+                          "start": 141,
+                          "end": 142
+                        }
+                      }
+                    },
+                    "right": {
+                      "identifier_reference": {
+                        "name": "b",
+                        "span": {
+                          "start": 146,
+                          "end": 147
+                        }
+                      }
+                    },
+                    "operator": "LogicalAnd",
+                    "span": {
+                      "start": 141,
+                      "end": 147
+                    }
+                  }
+                },
+                "right": {
+                  "identifier_reference": {
+                    "name": "c",
+                    "span": {
+                      "start": 151,
+                      "end": 152
+                    }
+                  }
+                },
+                "operator": "LogicalOr",
+                "span": {
+                  "start": 141,
+                  "end": 152
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 141,
+              "end": 152
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "logical_expression": {
+                "left": {
+                  "logical_expression": {
+                    "left": {
+                      "identifier_reference": {
+                        "name": "a",
+                        "span": {
+                          "start": 153,
+                          "end": 154
+                        }
+                      }
+                    },
+                    "right": {
+                      "identifier_reference": {
+                        "name": "b",
+                        "span": {
+                          "start": 158,
+                          "end": 159
+                        }
+                      }
+                    },
+                    "operator": "NullishCoalescing",
+                    "span": {
+                      "start": 153,
+                      "end": 159
+                    }
+                  }
+                },
+                "right": {
+                  "identifier_reference": {
+                    "name": "c",
+                    "span": {
+                      "start": 163,
+                      "end": 164
+                    }
+                  }
+                },
+                "operator": "LogicalOr",
+                "span": {
+                  "start": 153,
+                  "end": 164
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 153,
+              "end": 164
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "binary_expression": {
+                "left": {
+                  "unary_expression": {
+                    "operator": "LogicalNot",
+                    "argument": {
+                      "identifier_reference": {
+                        "name": "a",
+                        "span": {
+                          "start": 166,
+                          "end": 167
+                        }
+                      }
+                    },
+                    "prefix": true,
+                    "span": {
+                      "start": 165,
+                      "end": 167
+                    }
+                  }
+                },
+                "right": {
+                  "identifier_reference": {
+                    "name": "b",
+                    "span": {
+                      "start": 170,
+                      "end": 171
+                    }
+                  }
+                },
+                "operator": "Plus",
+                "span": {
+                  "start": 165,
+                  "end": 171
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 165,
+              "end": 171
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 269
+    }
+  },
+  "errors": [
+    {
+      "message": "Line terminator not allowed before postfix operator",
+      "span": {
+        "start": 178,
+        "end": 181
+      },
+      "help": "Remove the line break before '++'"
+    }
+  ]
+}

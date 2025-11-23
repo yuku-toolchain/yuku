@@ -1,0 +1,16 @@
+/abc/
+/[0-9]+/
+/pattern/g
+/test/i
+/multi/gim
+/with\/escape/
+/[a-z]/gi
+/\d+/
+/\w+/
+/^start/
+/end$/
+/(group)/
+/a|b/
+/a{2,5}/
+/./
+/[^abc]/

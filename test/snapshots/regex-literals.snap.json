@@ -1,0 +1,28 @@
+{
+  "program": {
+    "body": [],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 0
+    }
+  },
+  "errors": [
+    {
+      "message": "Unexpected token in expression position",
+      "span": {
+        "start": 7,
+        "end": 8
+      },
+      "help": "Expected an expression like a variable name, number, string, or other literal value"
+    },
+    {
+      "message": "Invalid Unicode escape sequence",
+      "span": {
+        "start": 46,
+        "end": 50
+      },
+      "help": "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH} (1-6 hex digits) here"
+    }
+  ]
+}

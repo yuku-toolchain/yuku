@@ -1,0 +1,320 @@
+{
+  "program": {
+    "body": [
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0n",
+                "raw": "0n",
+                "bigint": "0",
+                "span": {
+                  "start": 0,
+                  "end": 2
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 0,
+              "end": 2
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "1n",
+                "raw": "1n",
+                "bigint": "1",
+                "span": {
+                  "start": 3,
+                  "end": 5
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 3,
+              "end": 5
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "123n",
+                "raw": "123n",
+                "bigint": "123",
+                "span": {
+                  "start": 6,
+                  "end": 10
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 6,
+              "end": 10
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "9007199254740991n",
+                "raw": "9007199254740991n",
+                "bigint": "9007199254740991",
+                "span": {
+                  "start": 11,
+                  "end": 28
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 11,
+              "end": 28
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0xFFn",
+                "raw": "0xFFn",
+                "bigint": "0xFF",
+                "span": {
+                  "start": 29,
+                  "end": 34
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 29,
+              "end": 34
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0XFFFFFFFFn",
+                "raw": "0XFFFFFFFFn",
+                "bigint": "0XFFFFFFFF",
+                "span": {
+                  "start": 35,
+                  "end": 46
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 35,
+              "end": 46
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0b1010n",
+                "raw": "0b1010n",
+                "bigint": "0b1010",
+                "span": {
+                  "start": 47,
+                  "end": 54
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 47,
+              "end": 54
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0B11111111n",
+                "raw": "0B11111111n",
+                "bigint": "0B11111111",
+                "span": {
+                  "start": 55,
+                  "end": 66
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 55,
+              "end": 66
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0o777n",
+                "raw": "0o777n",
+                "bigint": "0o777",
+                "span": {
+                  "start": 67,
+                  "end": 73
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 67,
+              "end": 73
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0O1234567n",
+                "raw": "0O1234567n",
+                "bigint": "0O1234567",
+                "span": {
+                  "start": 74,
+                  "end": 84
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 74,
+              "end": 84
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "123_456_789n",
+                "raw": "123_456_789n",
+                "bigint": "123_456_789",
+                "span": {
+                  "start": 85,
+                  "end": 97
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 85,
+              "end": 97
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0xFF_FF_FFn",
+                "raw": "0xFF_FF_FFn",
+                "bigint": "0xFF_FF_FF",
+                "span": {
+                  "start": 98,
+                  "end": 109
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 98,
+              "end": 109
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0b1010_1010n",
+                "raw": "0b1010_1010n",
+                "bigint": "0b1010_1010",
+                "span": {
+                  "start": 110,
+                  "end": 122
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 110,
+              "end": 122
+            }
+          }
+        }
+      },
+      {
+        "statement": {
+          "expression_statement": {
+            "expression": {
+              "bigint_literal": {
+                "value": "0o77_77n",
+                "raw": "0o77_77n",
+                "bigint": "0o77_77",
+                "span": {
+                  "start": 123,
+                  "end": 131
+                }
+              }
+            },
+            "directive": null,
+            "span": {
+              "start": 123,
+              "end": 131
+            }
+          }
+        }
+      }
+    ],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 132
+    }
+  },
+  "errors": []
+}

@@ -1,0 +1,28 @@
+{
+  "program": {
+    "body": [],
+    "source_type": "script",
+    "span": {
+      "start": 0,
+      "end": 42
+    }
+  },
+  "errors": [
+    {
+      "message": "Unterminated template literal",
+      "span": {
+        "start": 34,
+        "end": 42
+      },
+      "help": "Try adding a closing backtick (`) here to complete the template"
+    },
+    {
+      "message": "Expected template continuation after expression",
+      "span": {
+        "start": 24,
+        "end": 0
+      },
+      "help": "Add '}' here to close the template expression"
+    }
+  ]
+}

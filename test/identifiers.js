@@ -1,0 +1,14 @@
+x
+myVariable
+_underscore
+$dollar
+camelCase
+PascalCase
+snake_case
+with123numbers
+_
+$
+__proto__
+\u0041
+\u{1F600}
+#privateField
