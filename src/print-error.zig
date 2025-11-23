@@ -1,7 +1,7 @@
 // this will be a really bad code since this is AI generated for quick testing of errors while development
 // after the parser work done, we will start working on error formatter without which will be much better.
 const std = @import("std");
-const ParserError = @import("parser.zig").Error;
+const js = @import("js");
 
 fn isKeyword(word: []const u8) bool {
     return switch (word.len) {
@@ -179,7 +179,7 @@ fn getVisualColumn(line: []const u8, byte_pos: usize) usize {
     return col;
 }
 
-pub fn printError(source: []const u8, err: ParserError) void {
+pub fn printError(source: []const u8, err: js.ParserError) void {
     var line_start_positions = std.ArrayList(usize).empty;
     defer line_start_positions.deinit(std.heap.page_allocator);
     line_start_positions.append(std.heap.page_allocator, 0) catch return;

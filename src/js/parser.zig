@@ -122,7 +122,7 @@ pub const Parser = struct {
 
     fn parseExpressionStatement(self: *Parser) ?*ast.Statement {
         const expr = self.parseExpression(0) orelse return null;
-        const end = if (self.eatSemi()) expr.getSpan().end + 1 else expr.getSpan().end;
+        const end = self.eatSemi(expr.getSpan().end);
 
         const expr_stmt = ast.ExpressionStatement{
             .expression = expr,
@@ -153,9 +153,7 @@ pub const Parser = struct {
             self.append(&self.scratch_declarators, decl);
         }
 
-        if (self.eatSemi()) {
-            end += 1;
-        }
+        end = self.eatSemi(end);
 
         const declarations = self.dupe(*ast.VariableDeclarator, self.scratch_declarators.items);
 
@@ -1257,13 +1255,13 @@ pub const Parser = struct {
         return false;
     }
 
-    inline fn eatSemi(self: *Parser) bool {
+    inline fn eatSemi(self: *Parser, current_end: u32) u32 {
         if (self.current_token.type == .Semicolon) {
             self.advance();
-            return true;
+            return current_end + 1;
         }
 
-        return false;
+        return current_end;
     }
 
     inline fn err(

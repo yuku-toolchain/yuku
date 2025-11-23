@@ -1,9 +1,8 @@
 const std = @import("std");
-const Token = @import("token.zig").Token;
-const Span = @import("token.zig").Span;
-const TokenType = @import("token.zig").TokenType;
-const unicodeJsHelpers = @import("unicode/js-helpers.zig");
-const util = @import("util.zig");
+
+const token = @import("token.zig");
+
+const util = @import("util");
 
 const LexicalError = error{
     UnterminatedString,
@@ -62,7 +61,7 @@ pub const Lexer = struct {
         };
     }
 
-    pub fn nextToken(self: *Lexer) LexicalError!Token {
+    pub fn nextToken(self: *Lexer) LexicalError!token.Token {
         try self.skipSkippable();
 
         if (self.cursor >= self.source_len) {
@@ -85,11 +84,11 @@ pub const Lexer = struct {
         };
     }
 
-    inline fn scanSimplePunctuation(self: *Lexer) Token {
+    inline fn scanSimplePunctuation(self: *Lexer) token.Token {
         const start = self.cursor;
         const c = self.source[self.cursor];
         self.cursor += 1;
-        const token_type: TokenType = switch (c) {
+        const token_type: token.TokenType = switch (c) {
             '~' => .BitwiseNot,
             '(' => .LeftParen,
             ')' => .RightParen,
@@ -104,7 +103,7 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
     }
 
-    fn scanPunctuation(self: *Lexer) LexicalError!Token {
+    fn scanPunctuation(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         const c0 = self.source[self.cursor];
         const c1 = self.source[self.cursor + 1];
@@ -339,7 +338,7 @@ pub const Lexer = struct {
         };
     }
 
-    fn scanString(self: *Lexer) LexicalError!Token {
+    fn scanString(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         const quote = self.source[start];
         self.cursor += 1;
@@ -362,7 +361,7 @@ pub const Lexer = struct {
         return error.UnterminatedString;
     }
 
-    fn scanTemplateLiteral(self: *Lexer) LexicalError!Token {
+    fn scanTemplateLiteral(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor + 1; // +1 consume backtick too, we don't need it in the token
         self.cursor += 1;
 
@@ -388,7 +387,7 @@ pub const Lexer = struct {
         return error.NonTerminatedTemplateLiteral;
     }
 
-    fn scanTemplateMiddleOrTail(self: *Lexer) LexicalError!Token {
+    fn scanTemplateMiddleOrTail(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor + 1; // +1 consume } because we don't need it in the token
         self.cursor += 1;
 
@@ -504,7 +503,7 @@ pub const Lexer = struct {
         }
     }
 
-    fn handleRightBrace(self: *Lexer) LexicalError!Token {
+    fn handleRightBrace(self: *Lexer) LexicalError!token.Token {
         if (self.template_depth > 0) {
             return self.scanTemplateMiddleOrTail();
         }
@@ -513,7 +512,7 @@ pub const Lexer = struct {
         return self.createToken(.RightBrace, self.source[start..self.cursor], start, self.cursor);
     }
 
-    pub fn reScanAsRegex(self: *Lexer, slash_token: Token) LexicalError!struct { span: Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
+    pub fn reScanAsRegex(self: *Lexer, slash_token: token.Token) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
         self.cursor = slash_token.span.start;
 
         const start = self.cursor;
@@ -569,7 +568,7 @@ pub const Lexer = struct {
         return error.UnterminatedRegexLiteral;
     }
 
-    fn scanDot(self: *Lexer) LexicalError!Token {
+    fn scanDot(self: *Lexer) LexicalError!token.Token {
         const c1 = self.source[self.cursor + 1];
         const c2 = self.source[self.cursor + 2];
 
@@ -612,7 +611,7 @@ pub const Lexer = struct {
             } else {
                 @branchHint(.cold);
                 const cp = util.codePointAt(self.source, self.cursor);
-                if (unicodeJsHelpers.canContinueJsIdentifier(cp.value)) {
+                if (util.UnicodeId.canContinueIdentifier(cp.value)) {
                     self.cursor += cp.len;
                 } else {
                     break;
@@ -621,7 +620,7 @@ pub const Lexer = struct {
         }
     }
 
-    fn scanIdentifierOrKeyword(self: *Lexer) !Token {
+    fn scanIdentifierOrKeyword(self: *Lexer) !token.Token {
         const start = self.cursor;
 
         const is_private = self.source[self.cursor] == '#';
@@ -652,7 +651,7 @@ pub const Lexer = struct {
         } else {
             @branchHint(.cold);
             const c_cp = util.codePointAt(self.source, self.cursor);
-            if (!unicodeJsHelpers.canStartJsIdentifier(c_cp.value)) {
+            if (!util.UnicodeId.canStartIdentifier(c_cp.value)) {
                 return error.InvalidIdentifierStart;
             }
             self.cursor += c_cp.len;
@@ -660,11 +659,11 @@ pub const Lexer = struct {
         }
 
         const lexeme = self.source[start..self.cursor];
-        const token_type: TokenType = if (is_private) .PrivateIdentifier else self.getKeywordType(lexeme);
+        const token_type: token.TokenType = if (is_private) .PrivateIdentifier else self.getKeywordType(lexeme);
         return self.createToken(token_type, lexeme, start, self.cursor);
     }
 
-    fn getKeywordType(self: *Lexer, lexeme: []const u8) TokenType {
+    fn getKeywordType(self: *Lexer, lexeme: []const u8) token.TokenType {
         _ = self;
         switch (lexeme.len) {
             2 => {
@@ -802,9 +801,9 @@ pub const Lexer = struct {
         return .Identifier;
     }
 
-    fn scanNumber(self: *Lexer) LexicalError!Token {
+    fn scanNumber(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
-        var token_type: TokenType = .NumericLiteral;
+        var token_type: token.TokenType = .NumericLiteral;
 
         // prefixes 0x, 0o, 0b
         if (self.source[self.cursor] == '0' and self.cursor + 1 < self.source_len) {
@@ -1025,12 +1024,12 @@ pub const Lexer = struct {
         }
     }
 
-    pub inline fn createToken(self: *Lexer, token_type: TokenType, lexeme: []const u8, start: u32, end: u32) Token {
-        const token = Token{ .type = token_type, .lexeme = lexeme, .span = .{ .start = start, .end = end }, .has_line_terminator_before = self.has_line_terminator_before };
+    pub inline fn createToken(self: *Lexer, token_type: token.TokenType, lexeme: []const u8, start: u32, end: u32) token.Token {
+        const tok = token.Token{ .type = token_type, .lexeme = lexeme, .span = .{ .start = start, .end = end }, .has_line_terminator_before = self.has_line_terminator_before };
 
         self.has_line_terminator_before = false;
 
-        return token;
+        return tok;
     }
 };
 

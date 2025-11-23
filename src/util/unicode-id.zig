@@ -1,11 +1,36 @@
 // Generated file, do not edit.
-// See: scripts/generate-unicode-id-table.zig
+// See: scripts/generate-unicode-id.zig
+
+// inspired by https://github.com/dtolnay/unicode-ident
+
+const std = @import("std");
+
+pub fn canStartIdentifier(cp: u32) bool {
+    if (cp < 128) {
+        return (cp >= 'a' and cp <= 'z') or
+            (cp >= 'A' and cp <= 'Z') or
+            cp == '_' or cp == '$';
+    }
+
+    return queryBitTable(cp, &id_start_root, &id_start_leaf);
+}
+
+pub fn canContinueIdentifier(cp: u32) bool {
+    if (cp < 128) {
+        return (cp >= 'a' and cp <= 'z') or
+            (cp >= 'A' and cp <= 'Z') or
+            cp == '_' or cp == '$' or
+            (cp >= '0' and cp <= '9');
+    }
+
+    return queryBitTable(cp, &id_continue_root, &id_continue_leaf);
+}
 
 const chunk_size = 512;
 const bits_per_word = 32;
 const leaf_chunk_width = 16;
 
-pub inline fn queryBitTable(cp: u32, root: []const u8, leaf: []const u64) bool {
+inline fn queryBitTable(cp: u32, root: []const u8, leaf: []const u64) bool {
     const chunk_idx = cp / chunk_size;
     const leaf_base = @as(u32, root[chunk_idx]) * leaf_chunk_width;
     const offset_in_chunk = cp - (chunk_idx * chunk_size);
@@ -15,7 +40,7 @@ pub inline fn queryBitTable(cp: u32, root: []const u8, leaf: []const u64) bool {
     return (word >> bit_position) & 1 == 1;
 }
 
-pub const id_start_root = [_]u8{
+const id_start_root = [_]u8{
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     0x10, 0x11, 0x11, 0x11, 0x11, 0x11, 0x12, 0x11, 0x13, 0x11, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
     0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x15, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
@@ -694,7 +719,7 @@ pub const id_continue_root = [_]u8{
     0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
 };
 
-pub const id_continue_leaf = [_]u64{
+const id_continue_leaf = [_]u64{
     0x00,       0x3ff0000,  0x87fffffe, 0x7fffffe,  0x00,       0x4a00400,  0xff7fffff, 0xff7fffff,
     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x3ffc3,    0x501f,

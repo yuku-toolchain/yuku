@@ -1,8 +1,6 @@
 const std = @import("std");
-const Parser = @import("parser.zig").Parser;
-const ParseResult = @import("parser.zig").ParseResult;
-const Lexer = @import("lexer.zig").Lexer;
-const Token = @import("token.zig").Token;
+
+const js = @import("js");
 const printError = @import("print-error.zig").printError;
 
 fn countLines(content: []const u8) usize {
@@ -38,10 +36,10 @@ pub fn main() !void {
     std.debug.print("Running {d} iterations...\n", .{iterations});
 
     var i: usize = 0;
-    var first_result: ParseResult = undefined;
+    var first_result: js.ParserResult = undefined;
 
     while (i < iterations) : (i += 1) {
-        var parser = try Parser.init(allocator, content);
+        var parser = try js.Parser.init(allocator, content);
 
         const start = std.time.nanoTimestamp();
         const result = try parser.parse();

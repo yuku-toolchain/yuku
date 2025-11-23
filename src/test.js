@@ -1,1 +1,1 @@
-const {async} = obj;
+const awaits = ""

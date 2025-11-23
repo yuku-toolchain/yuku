@@ -3,7 +3,7 @@ const std = @import("std");
 const unicode_data_url = "https://www.unicode.org/Public/17.0.0/ucd/UCD.zip";
 const temp_zip_path = "/tmp/ucd.zip";
 const extraction_path = "/tmp/ucd";
-const output_table_path = "./src/unicode/id-tables.zig";
+const output_table_path = "./src/util/unicode-id.zig";
 
 const chunk_elements = 16;
 const bits_per_element = 32;
@@ -46,22 +46,46 @@ pub fn main() !void {
 
     try writer.writeAll(
         \\// Generated file, do not edit.
-        \\// See: scripts/generate-unicode-id-table.zig
+        \\// See: scripts/generate-unicode-id.zig
         \\
-        \\ const chunk_size = 512;
-        \\ const bits_per_word = 32;
-        \\ const leaf_chunk_width = 16;
+        \\// inspired by https://github.com/dtolnay/unicode-ident
         \\
-        \\ pub inline fn queryBitTable(cp: u32, root: []const u8, leaf: []const u64) bool {
-        \\     const chunk_idx = cp / chunk_size;
-        \\     const leaf_base = @as(u32, root[chunk_idx]) * leaf_chunk_width;
-        \\     const offset_in_chunk = cp - (chunk_idx * chunk_size);
-        \\     const word_idx = leaf_base + (offset_in_chunk / bits_per_word);
-        \\     const bit_position: u5 = @truncate(offset_in_chunk % bits_per_word);
-        \\     const word = leaf[word_idx];
-        \\     return (word >> bit_position) & 1 == 1;
-        \\ }
+        \\const std = @import("std");
         \\
+        \\pub fn canStartIdentifier(cp: u32) bool {
+        \\    if (cp < 128) {
+        \\        return (cp >= 'a' and cp <= 'z') or
+        \\            (cp >= 'A' and cp <= 'Z') or
+        \\            cp == '_' or cp == '$';
+        \\    }
+        \\
+        \\    return queryBitTable(cp, &id_start_root, &id_start_leaf);
+        \\}
+        \\
+        \\pub fn canContinueIdentifier(cp: u32) bool {
+        \\    if (cp < 128) {
+        \\        return (cp >= 'a' and cp <= 'z') or
+        \\            (cp >= 'A' and cp <= 'Z') or
+        \\            cp == '_' or cp == '$' or
+        \\            (cp >= '0' and cp <= '9');
+        \\    }
+        \\
+        \\    return queryBitTable(cp, &id_continue_root, &id_continue_leaf);
+        \\}
+        \\
+        \\const chunk_size = 512;
+        \\const bits_per_word = 32;
+        \\const leaf_chunk_width = 16;
+        \\
+        \\pub inline fn queryBitTable(cp: u32, root: []const u8, leaf: []const u64) bool {
+        \\    const chunk_idx = cp / chunk_size;
+        \\    const leaf_base = @as(u32, root[chunk_idx]) * leaf_chunk_width;
+        \\    const offset_in_chunk = cp - (chunk_idx * chunk_size);
+        \\    const word_idx = leaf_base + (offset_in_chunk / bits_per_word);
+        \\    const bit_position: u5 = @truncate(offset_in_chunk % bits_per_word);
+        \\    const word = leaf[word_idx];
+        \\    return (word >> bit_position) & 1 == 1;
+        \\}
     );
 
     try emitTableStructure(start_tables, writer, "id_start");
