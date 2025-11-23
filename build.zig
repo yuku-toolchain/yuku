@@ -58,4 +58,31 @@ pub fn build(b: *std.Build) void {
     const run_gen_unicode_id_table = b.addRunArtifact(gen_unicode_id_table);
     const gen_unicode_id_table_step = b.step("generate-unicode-id", "Run unicode identifier table and utils generation");
     gen_unicode_id_table_step.dependOn(&run_gen_unicode_id_table.step);
+
+    const test_runner_module = b.createModule(.{
+        .root_source_file = b.path("scripts/test-runner.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    test_runner_module.addImport("js", js_module);
+
+    const test_runner = b.addExecutable(.{
+        .name = "test-runner",
+        .root_module = test_runner_module,
+    });
+
+    b.installArtifact(test_runner);
+
+    const test_step = b.step("test", "Run parser snapshot tests");
+
+    const run_test = b.addRunArtifact(test_runner);
+
+    run_test.step.dependOn(b.getInstallStep());
+
+    if (b.args) |args| {
+        run_test.addArgs(args);
+    }
+
+    test_step.dependOn(&run_test.step);
 }
