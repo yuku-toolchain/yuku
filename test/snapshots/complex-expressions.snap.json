@@ -383,115 +383,21 @@
                     "left": {
                       "logical_expression": {
                         "left": {
-                          "identifier_reference": {
-                            "name": "a",
-                            "span": {
-                              "start": 77,
-                              "end": 78
-                            }
-                          }
-                        },
-                        "right": {
-                          "identifier_reference": {
-                            "name": "b",
-                            "span": {
-                              "start": 82,
-                              "end": 83
-                            }
-                          }
-                        },
-                        "operator": "NullishCoalescing",
-                        "span": {
-                          "start": 77,
-                          "end": 83
-                        }
-                      }
-                    },
-                    "right": {
-                      "logical_expression": {
-                        "left": {
-                          "identifier_reference": {
-                            "name": "c",
-                            "span": {
-                              "start": 87,
-                              "end": 88
-                            }
-                          }
-                        },
-                        "right": {
-                          "identifier_reference": {
-                            "name": "d",
-                            "span": {
-                              "start": 92,
-                              "end": 93
-                            }
-                          }
-                        },
-                        "operator": "LogicalAnd",
-                        "span": {
-                          "start": 87,
-                          "end": 93
-                        }
-                      }
-                    },
-                    "operator": "LogicalOr",
-                    "span": {
-                      "start": 77,
-                      "end": 93
-                    }
-                  }
-                },
-                "span": {
-                  "start": 73,
-                  "end": 93
-                }
-              }
-            },
-            "directive": null,
-            "span": {
-              "start": 73,
-              "end": 93
-            }
-          }
-        }
-      },
-      {
-        "statement": {
-          "expression_statement": {
-            "expression": {
-              "assignment_expression": {
-                "operator": "Assign",
-                "left": {
-                  "simple_assignment_target": {
-                    "identifier_reference": {
-                      "name": "x",
-                      "span": {
-                        "start": 94,
-                        "end": 95
-                      }
-                    }
-                  }
-                },
-                "right": {
-                  "logical_expression": {
-                    "left": {
-                      "logical_expression": {
-                        "left": {
                           "unary_expression": {
                             "operator": "LogicalNot",
                             "argument": {
                               "identifier_reference": {
                                 "name": "a",
                                 "span": {
-                                  "start": 99,
-                                  "end": 100
+                                  "start": 78,
+                                  "end": 79
                                 }
                               }
                             },
                             "prefix": true,
                             "span": {
-                              "start": 98,
-                              "end": 100
+                              "start": 77,
+                              "end": 79
                             }
                           }
                         },
@@ -499,15 +405,15 @@
                           "identifier_reference": {
                             "name": "b",
                             "span": {
-                              "start": 104,
-                              "end": 105
+                              "start": 83,
+                              "end": 84
                             }
                           }
                         },
                         "operator": "LogicalAnd",
                         "span": {
-                          "start": 98,
-                          "end": 105
+                          "start": 77,
+                          "end": 84
                         }
                       }
                     },
@@ -518,35 +424,35 @@
                           "identifier_reference": {
                             "name": "c",
                             "span": {
-                              "start": 110,
-                              "end": 111
+                              "start": 89,
+                              "end": 90
                             }
                           }
                         },
                         "prefix": true,
                         "span": {
-                          "start": 109,
-                          "end": 111
+                          "start": 88,
+                          "end": 90
                         }
                       }
                     },
                     "operator": "LogicalOr",
                     "span": {
-                      "start": 98,
-                      "end": 111
+                      "start": 77,
+                      "end": 90
                     }
                   }
                 },
                 "span": {
-                  "start": 94,
-                  "end": 111
+                  "start": 73,
+                  "end": 90
                 }
               }
             },
             "directive": null,
             "span": {
-              "start": 94,
-              "end": 111
+              "start": 73,
+              "end": 90
             }
           }
         }
@@ -562,8 +468,8 @@
                     "identifier_reference": {
                       "name": "x",
                       "span": {
-                        "start": 112,
-                        "end": 113
+                        "start": 91,
+                        "end": 92
                       }
                     }
                   }
@@ -580,14 +486,14 @@
                               "identifier_reference": {
                                 "name": "a",
                                 "span": {
-                                  "start": 118,
-                                  "end": 119
+                                  "start": 97,
+                                  "end": 98
                                 }
                               }
                             },
                             "span": {
-                              "start": 116,
-                              "end": 119
+                              "start": 95,
+                              "end": 98
                             }
                           }
                         },
@@ -599,21 +505,21 @@
                               "identifier_reference": {
                                 "name": "b",
                                 "span": {
-                                  "start": 122,
-                                  "end": 123
+                                  "start": 101,
+                                  "end": 102
                                 }
                               }
                             },
                             "span": {
-                              "start": 122,
-                              "end": 125
+                              "start": 101,
+                              "end": 104
                             }
                           }
                         },
                         "operator": "Plus",
                         "span": {
-                          "start": 116,
-                          "end": 125
+                          "start": 95,
+                          "end": 104
                         }
                       }
                     },
@@ -625,34 +531,34 @@
                           "identifier_reference": {
                             "name": "c",
                             "span": {
-                              "start": 130,
-                              "end": 131
+                              "start": 109,
+                              "end": 110
                             }
                           }
                         },
                         "span": {
-                          "start": 128,
-                          "end": 131
+                          "start": 107,
+                          "end": 110
                         }
                       }
                     },
                     "operator": "Minus",
                     "span": {
-                      "start": 116,
-                      "end": 131
+                      "start": 95,
+                      "end": 110
                     }
                   }
                 },
                 "span": {
-                  "start": 112,
-                  "end": 131
+                  "start": 91,
+                  "end": 110
                 }
               }
             },
             "directive": null,
             "span": {
-              "start": 112,
-              "end": 131
+              "start": 91,
+              "end": 110
             }
           }
         }
@@ -668,8 +574,8 @@
                     "identifier_reference": {
                       "name": "x",
                       "span": {
-                        "start": 132,
-                        "end": 133
+                        "start": 111,
+                        "end": 112
                       }
                     }
                   }
@@ -680,8 +586,8 @@
                       "identifier_reference": {
                         "name": "a",
                         "span": {
-                          "start": 136,
-                          "end": 137
+                          "start": 115,
+                          "end": 116
                         }
                       }
                     },
@@ -691,8 +597,8 @@
                           "identifier_reference": {
                             "name": "b",
                             "span": {
-                              "start": 141,
-                              "end": 142
+                              "start": 120,
+                              "end": 121
                             }
                           }
                         },
@@ -700,35 +606,35 @@
                           "identifier_reference": {
                             "name": "c",
                             "span": {
-                              "start": 146,
-                              "end": 147
+                              "start": 125,
+                              "end": 126
                             }
                           }
                         },
                         "operator": "Exponent",
                         "span": {
-                          "start": 141,
-                          "end": 147
+                          "start": 120,
+                          "end": 126
                         }
                       }
                     },
                     "operator": "Exponent",
                     "span": {
-                      "start": 136,
-                      "end": 147
+                      "start": 115,
+                      "end": 126
                     }
                   }
                 },
                 "span": {
-                  "start": 132,
-                  "end": 147
+                  "start": 111,
+                  "end": 126
                 }
               }
             },
             "directive": null,
             "span": {
-              "start": 132,
-              "end": 147
+              "start": 111,
+              "end": 126
             }
           }
         }
@@ -744,8 +650,8 @@
                     "identifier_reference": {
                       "name": "x",
                       "span": {
-                        "start": 148,
-                        "end": 149
+                        "start": 127,
+                        "end": 128
                       }
                     }
                   }
@@ -758,8 +664,8 @@
                           "identifier_reference": {
                             "name": "a",
                             "span": {
-                              "start": 152,
-                              "end": 153
+                              "start": 131,
+                              "end": 132
                             }
                           }
                         },
@@ -767,15 +673,15 @@
                           "identifier_reference": {
                             "name": "b",
                             "span": {
-                              "start": 157,
-                              "end": 158
+                              "start": 136,
+                              "end": 137
                             }
                           }
                         },
                         "operator": "LeftShift",
                         "span": {
-                          "start": 152,
-                          "end": 158
+                          "start": 131,
+                          "end": 137
                         }
                       }
                     },
@@ -787,8 +693,8 @@
                               "identifier_reference": {
                                 "name": "c",
                                 "span": {
-                                  "start": 161,
-                                  "end": 162
+                                  "start": 140,
+                                  "end": 141
                                 }
                               }
                             },
@@ -796,15 +702,15 @@
                               "identifier_reference": {
                                 "name": "d",
                                 "span": {
-                                  "start": 166,
-                                  "end": 167
+                                  "start": 145,
+                                  "end": 146
                                 }
                               }
                             },
                             "operator": "RightShift",
                             "span": {
-                              "start": 161,
-                              "end": 167
+                              "start": 140,
+                              "end": 146
                             }
                           }
                         },
@@ -814,8 +720,8 @@
                               "identifier_reference": {
                                 "name": "e",
                                 "span": {
-                                  "start": 170,
-                                  "end": 171
+                                  "start": 149,
+                                  "end": 150
                                 }
                               }
                             },
@@ -823,42 +729,42 @@
                               "identifier_reference": {
                                 "name": "f",
                                 "span": {
-                                  "start": 176,
-                                  "end": 177
+                                  "start": 155,
+                                  "end": 156
                                 }
                               }
                             },
                             "operator": "UnsignedRightShift",
                             "span": {
-                              "start": 170,
-                              "end": 177
+                              "start": 149,
+                              "end": 156
                             }
                           }
                         },
                         "operator": "BitwiseAnd",
                         "span": {
-                          "start": 161,
-                          "end": 177
+                          "start": 140,
+                          "end": 156
                         }
                       }
                     },
                     "operator": "BitwiseOr",
                     "span": {
-                      "start": 152,
-                      "end": 177
+                      "start": 131,
+                      "end": 156
                     }
                   }
                 },
                 "span": {
-                  "start": 148,
-                  "end": 177
+                  "start": 127,
+                  "end": 156
                 }
               }
             },
             "directive": null,
             "span": {
-              "start": 148,
-              "end": 177
+              "start": 127,
+              "end": 156
             }
           }
         }
@@ -874,8 +780,8 @@
                     "identifier_reference": {
                       "name": "x",
                       "span": {
-                        "start": 178,
-                        "end": 179
+                        "start": 157,
+                        "end": 158
                       }
                     }
                   }
@@ -890,8 +796,8 @@
                               "identifier_reference": {
                                 "name": "a",
                                 "span": {
-                                  "start": 182,
-                                  "end": 183
+                                  "start": 161,
+                                  "end": 162
                                 }
                               }
                             },
@@ -899,15 +805,15 @@
                               "identifier_reference": {
                                 "name": "b",
                                 "span": {
-                                  "start": 188,
-                                  "end": 189
+                                  "start": 167,
+                                  "end": 168
                                 }
                               }
                             },
                             "operator": "StrictEqual",
                             "span": {
-                              "start": 182,
-                              "end": 189
+                              "start": 161,
+                              "end": 168
                             }
                           }
                         },
@@ -917,8 +823,8 @@
                               "identifier_reference": {
                                 "name": "c",
                                 "span": {
-                                  "start": 193,
-                                  "end": 194
+                                  "start": 172,
+                                  "end": 173
                                 }
                               }
                             },
@@ -926,22 +832,22 @@
                               "identifier_reference": {
                                 "name": "d",
                                 "span": {
-                                  "start": 199,
-                                  "end": 200
+                                  "start": 178,
+                                  "end": 179
                                 }
                               }
                             },
                             "operator": "StrictNotEqual",
                             "span": {
-                              "start": 193,
-                              "end": 200
+                              "start": 172,
+                              "end": 179
                             }
                           }
                         },
                         "operator": "LogicalAnd",
                         "span": {
-                          "start": 182,
-                          "end": 200
+                          "start": 161,
+                          "end": 179
                         }
                       }
                     },
@@ -951,8 +857,8 @@
                           "identifier_reference": {
                             "name": "e",
                             "span": {
-                              "start": 204,
-                              "end": 205
+                              "start": 183,
+                              "end": 184
                             }
                           }
                         },
@@ -960,35 +866,35 @@
                           "identifier_reference": {
                             "name": "f",
                             "span": {
-                              "start": 208,
-                              "end": 209
+                              "start": 187,
+                              "end": 188
                             }
                           }
                         },
                         "operator": "LessThan",
                         "span": {
-                          "start": 204,
-                          "end": 209
+                          "start": 183,
+                          "end": 188
                         }
                       }
                     },
                     "operator": "LogicalOr",
                     "span": {
-                      "start": 182,
-                      "end": 209
+                      "start": 161,
+                      "end": 188
                     }
                   }
                 },
                 "span": {
-                  "start": 178,
-                  "end": 209
+                  "start": 157,
+                  "end": 188
                 }
               }
             },
             "directive": null,
             "span": {
-              "start": 178,
-              "end": 209
+              "start": 157,
+              "end": 188
             }
           }
         }
@@ -1007,8 +913,8 @@
                           "binding_identifier": {
                             "name": "a",
                             "span": {
-                              "start": 215,
-                              "end": 216
+                              "start": 194,
+                              "end": 195
                             }
                           }
                         }
@@ -1024,8 +930,8 @@
                                     "identifier_name": {
                                       "name": "b",
                                       "span": {
-                                        "start": 219,
-                                        "end": 220
+                                        "start": 198,
+                                        "end": 199
                                       }
                                     }
                                   },
@@ -1033,8 +939,8 @@
                                     "binding_identifier": {
                                       "name": "b",
                                       "span": {
-                                        "start": 219,
-                                        "end": 220
+                                        "start": 198,
+                                        "end": 199
                                       }
                                     }
                                   },
@@ -1042,8 +948,8 @@
                                   "shorthand": true,
                                   "computed": false,
                                   "span": {
-                                    "start": 219,
-                                    "end": 220
+                                    "start": 198,
+                                    "end": 199
                                   }
                                 }
                               },
@@ -1054,8 +960,8 @@
                                     "identifier_name": {
                                       "name": "c",
                                       "span": {
-                                        "start": 222,
-                                        "end": 223
+                                        "start": 201,
+                                        "end": 202
                                       }
                                     }
                                   },
@@ -1067,8 +973,8 @@
                                             "binding_identifier": {
                                               "name": "d",
                                               "span": {
-                                                "start": 226,
-                                                "end": 227
+                                                "start": 205,
+                                                "end": 206
                                               }
                                             }
                                           }
@@ -1078,16 +984,16 @@
                                             "binding_identifier": {
                                               "name": "e",
                                               "span": {
-                                                "start": 229,
-                                                "end": 230
+                                                "start": 208,
+                                                "end": 209
                                               }
                                             }
                                           }
                                         }
                                       ],
                                       "span": {
-                                        "start": 225,
-                                        "end": 231
+                                        "start": 204,
+                                        "end": 210
                                       }
                                     }
                                   },
@@ -1095,23 +1001,23 @@
                                   "shorthand": false,
                                   "computed": false,
                                   "span": {
-                                    "start": 222,
-                                    "end": 231
+                                    "start": 201,
+                                    "end": 210
                                   }
                                 }
                               }
                             ],
                             "span": {
-                              "start": 218,
-                              "end": 232
+                              "start": 197,
+                              "end": 211
                             }
                           }
                         }
                       }
                     ],
                     "span": {
-                      "start": 214,
-                      "end": 233
+                      "start": 193,
+                      "end": 212
                     }
                   }
                 },
@@ -1119,20 +1025,20 @@
                   "identifier_reference": {
                     "name": "obj",
                     "span": {
-                      "start": 236,
-                      "end": 239
+                      "start": 215,
+                      "end": 218
                     }
                   }
                 },
                 "span": {
-                  "start": 214,
-                  "end": 239
+                  "start": 193,
+                  "end": 218
                 }
               }
             ],
             "span": {
-              "start": 210,
-              "end": 239
+              "start": 189,
+              "end": 218
             }
           }
         }
@@ -1153,8 +1059,8 @@
                             "identifier_name": {
                               "name": "a",
                               "span": {
-                                "start": 245,
-                                "end": 246
+                                "start": 224,
+                                "end": 225
                               }
                             }
                           },
@@ -1166,8 +1072,8 @@
                                     "binding_identifier": {
                                       "name": "b",
                                       "span": {
-                                        "start": 249,
-                                        "end": 250
+                                        "start": 228,
+                                        "end": 229
                                       }
                                     }
                                   }
@@ -1183,8 +1089,8 @@
                                               "identifier_name": {
                                                 "name": "c",
                                                 "span": {
-                                                  "start": 253,
-                                                  "end": 254
+                                                  "start": 232,
+                                                  "end": 233
                                                 }
                                               }
                                             },
@@ -1192,8 +1098,8 @@
                                               "binding_identifier": {
                                                 "name": "c",
                                                 "span": {
-                                                  "start": 253,
-                                                  "end": 254
+                                                  "start": 232,
+                                                  "end": 233
                                                 }
                                               }
                                             },
@@ -1201,23 +1107,23 @@
                                             "shorthand": true,
                                             "computed": false,
                                             "span": {
-                                              "start": 253,
-                                              "end": 254
+                                              "start": 232,
+                                              "end": 233
                                             }
                                           }
                                         }
                                       ],
                                       "span": {
-                                        "start": 252,
-                                        "end": 255
+                                        "start": 231,
+                                        "end": 234
                                       }
                                     }
                                   }
                                 }
                               ],
                               "span": {
-                                "start": 248,
-                                "end": 256
+                                "start": 227,
+                                "end": 235
                               }
                             }
                           },
@@ -1225,8 +1131,8 @@
                           "shorthand": false,
                           "computed": false,
                           "span": {
-                            "start": 245,
-                            "end": 256
+                            "start": 224,
+                            "end": 235
                           }
                         }
                       },
@@ -1237,8 +1143,8 @@
                             "identifier_name": {
                               "name": "d",
                               "span": {
-                                "start": 258,
-                                "end": 259
+                                "start": 237,
+                                "end": 238
                               }
                             }
                           },
@@ -1246,8 +1152,8 @@
                             "binding_identifier": {
                               "name": "d",
                               "span": {
-                                "start": 258,
-                                "end": 259
+                                "start": 237,
+                                "end": 238
                               }
                             }
                           },
@@ -1255,15 +1161,15 @@
                           "shorthand": true,
                           "computed": false,
                           "span": {
-                            "start": 258,
-                            "end": 259
+                            "start": 237,
+                            "end": 238
                           }
                         }
                       }
                     ],
                     "span": {
-                      "start": 244,
-                      "end": 260
+                      "start": 223,
+                      "end": 239
                     }
                   }
                 },
@@ -1271,20 +1177,20 @@
                   "identifier_reference": {
                     "name": "obj",
                     "span": {
-                      "start": 263,
-                      "end": 266
+                      "start": 242,
+                      "end": 245
                     }
                   }
                 },
                 "span": {
-                  "start": 244,
-                  "end": 266
+                  "start": 223,
+                  "end": 245
                 }
               }
             ],
             "span": {
-              "start": 240,
-              "end": 266
+              "start": 219,
+              "end": 245
             }
           }
         }
@@ -1307,8 +1213,8 @@
                                   "binding_identifier": {
                                     "name": "a",
                                     "span": {
-                                      "start": 275,
-                                      "end": 276
+                                      "start": 254,
+                                      "end": 255
                                     }
                                   }
                                 }
@@ -1318,16 +1224,16 @@
                                   "binding_identifier": {
                                     "name": "b",
                                     "span": {
-                                      "start": 278,
-                                      "end": 279
+                                      "start": 257,
+                                      "end": 258
                                     }
                                   }
                                 }
                               }
                             ],
                             "span": {
-                              "start": 274,
-                              "end": 280
+                              "start": 253,
+                              "end": 259
                             }
                           }
                         }
@@ -1341,8 +1247,8 @@
                                   "binding_identifier": {
                                     "name": "c",
                                     "span": {
-                                      "start": 283,
-                                      "end": 284
+                                      "start": 262,
+                                      "end": 263
                                     }
                                   }
                                 }
@@ -1352,24 +1258,24 @@
                                   "binding_identifier": {
                                     "name": "d",
                                     "span": {
-                                      "start": 286,
-                                      "end": 287
+                                      "start": 265,
+                                      "end": 266
                                     }
                                   }
                                 }
                               }
                             ],
                             "span": {
-                              "start": 282,
-                              "end": 288
+                              "start": 261,
+                              "end": 267
                             }
                           }
                         }
                       }
                     ],
                     "span": {
-                      "start": 273,
-                      "end": 289
+                      "start": 252,
+                      "end": 268
                     }
                   }
                 },
@@ -1377,20 +1283,20 @@
                   "identifier_reference": {
                     "name": "arr",
                     "span": {
-                      "start": 292,
-                      "end": 295
+                      "start": 271,
+                      "end": 274
                     }
                   }
                 },
                 "span": {
-                  "start": 273,
-                  "end": 295
+                  "start": 252,
+                  "end": 274
                 }
               }
             ],
             "span": {
-              "start": 267,
-              "end": 295
+              "start": 246,
+              "end": 274
             }
           }
         }
@@ -1411,8 +1317,8 @@
                             "identifier_name": {
                               "name": "a",
                               "span": {
-                                "start": 301,
-                                "end": 302
+                                "start": 280,
+                                "end": 281
                               }
                             }
                           },
@@ -1422,8 +1328,8 @@
                                 "binding_identifier": {
                                   "name": "a",
                                   "span": {
-                                    "start": 301,
-                                    "end": 302
+                                    "start": 280,
+                                    "end": 281
                                   }
                                 }
                               },
@@ -1432,14 +1338,14 @@
                                   "value": 1,
                                   "raw": "1",
                                   "span": {
-                                    "start": 305,
-                                    "end": 306
+                                    "start": 284,
+                                    "end": 285
                                   }
                                 }
                               },
                               "span": {
-                                "start": 301,
-                                "end": 306
+                                "start": 280,
+                                "end": 285
                               }
                             }
                           },
@@ -1447,8 +1353,8 @@
                           "shorthand": true,
                           "computed": false,
                           "span": {
-                            "start": 301,
-                            "end": 306
+                            "start": 280,
+                            "end": 285
                           }
                         }
                       },
@@ -1459,8 +1365,8 @@
                             "identifier_name": {
                               "name": "b",
                               "span": {
-                                "start": 308,
-                                "end": 309
+                                "start": 287,
+                                "end": 288
                               }
                             }
                           },
@@ -1474,8 +1380,8 @@
                                       "identifier_name": {
                                         "name": "c",
                                         "span": {
-                                          "start": 312,
-                                          "end": 313
+                                          "start": 291,
+                                          "end": 292
                                         }
                                       }
                                     },
@@ -1485,8 +1391,8 @@
                                           "binding_identifier": {
                                             "name": "c",
                                             "span": {
-                                              "start": 312,
-                                              "end": 313
+                                              "start": 291,
+                                              "end": 292
                                             }
                                           }
                                         },
@@ -1495,14 +1401,14 @@
                                             "value": 2,
                                             "raw": "2",
                                             "span": {
-                                              "start": 316,
-                                              "end": 317
+                                              "start": 295,
+                                              "end": 296
                                             }
                                           }
                                         },
                                         "span": {
-                                          "start": 312,
-                                          "end": 317
+                                          "start": 291,
+                                          "end": 296
                                         }
                                       }
                                     },
@@ -1510,15 +1416,15 @@
                                     "shorthand": true,
                                     "computed": false,
                                     "span": {
-                                      "start": 312,
-                                      "end": 317
+                                      "start": 291,
+                                      "end": 296
                                     }
                                   }
                                 }
                               ],
                               "span": {
-                                "start": 311,
-                                "end": 318
+                                "start": 290,
+                                "end": 297
                               }
                             }
                           },
@@ -1526,15 +1432,15 @@
                           "shorthand": false,
                           "computed": false,
                           "span": {
-                            "start": 308,
-                            "end": 318
+                            "start": 287,
+                            "end": 297
                           }
                         }
                       }
                     ],
                     "span": {
-                      "start": 300,
-                      "end": 319
+                      "start": 279,
+                      "end": 298
                     }
                   }
                 },
@@ -1542,20 +1448,20 @@
                   "identifier_reference": {
                     "name": "obj",
                     "span": {
-                      "start": 322,
-                      "end": 325
+                      "start": 301,
+                      "end": 304
                     }
                   }
                 },
                 "span": {
-                  "start": 300,
-                  "end": 325
+                  "start": 279,
+                  "end": 304
                 }
               }
             ],
             "span": {
-              "start": 296,
-              "end": 325
+              "start": 275,
+              "end": 304
             }
           }
         }
@@ -1571,8 +1477,8 @@
                     "identifier_reference": {
                       "name": "x",
                       "span": {
-                        "start": 326,
-                        "end": 327
+                        "start": 305,
+                        "end": 306
                       }
                     }
                   }
@@ -1585,8 +1491,8 @@
                         "identifier_reference": {
                           "name": "y",
                           "span": {
-                            "start": 331,
-                            "end": 332
+                            "start": 310,
+                            "end": 311
                           }
                         }
                       }
@@ -1595,27 +1501,27 @@
                       "identifier_reference": {
                         "name": "z",
                         "span": {
-                          "start": 336,
-                          "end": 337
+                          "start": 315,
+                          "end": 316
                         }
                       }
                     },
                     "span": {
-                      "start": 331,
-                      "end": 337
+                      "start": 310,
+                      "end": 316
                     }
                   }
                 },
                 "span": {
-                  "start": 326,
-                  "end": 337
+                  "start": 305,
+                  "end": 316
                 }
               }
             },
             "directive": null,
             "span": {
-              "start": 326,
-              "end": 337
+              "start": 305,
+              "end": 316
             }
           }
         }
@@ -1624,7 +1530,7 @@
     "source_type": "script",
     "span": {
       "start": 0,
-      "end": 338
+      "end": 317
     }
   },
   "errors": []

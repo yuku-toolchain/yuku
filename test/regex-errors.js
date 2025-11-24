@@ -1,3 +1,3 @@
-/unterminated
-/has
-newline/
+const a = /unterminated
+const b = /has
+const c = newline/
