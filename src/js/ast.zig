@@ -292,19 +292,18 @@ pub const Node = struct {
 
 pub const NodeList = struct {
     nodes: std.MultiArrayList(Node),
-    extra: []NodeIndex,
-    extra_len: u32 = 0,
+    extra: std.ArrayList(NodeIndex),
 
     pub fn init(allocator: std.mem.Allocator, source_len: u32) NodeList {
         const estimated_nodes = @max(256, source_len / 2);
         const estimated_extra = estimated_nodes / 3;
 
-        var nodes = std.MultiArrayList(Node){};
+        var nodes = std.MultiArrayList(Node);
         nodes.ensureTotalCapacity(allocator, estimated_nodes) catch unreachable;
 
         return .{
             .nodes = nodes,
-            .extra = allocator.alloc(NodeIndex, estimated_extra) catch unreachable,
+            .extra = std.ArrayList(NodeIndex).initCapacity(allocator, estimated_extra) catch unreachable,
         };
     }
 
@@ -315,14 +314,9 @@ pub const NodeList = struct {
     }
 
     pub inline fn addExtra(self: *NodeList, allocator: std.mem.Allocator, indices: []const NodeIndex) IndexRange {
-        const start = self.extra_len;
+        const start: u32 = @intCast(self.extra.items.len);
         const len: u32 = @intCast(indices.len);
-
-        if (start + len > self.extra.len) self.growExtra(allocator, len);
-
-        @memcpy(self.extra[start..][0..len], indices);
-        self.extra_len += len;
-
+        self.extra.appendSlice(allocator, indices) catch unreachable;
         return .{ .start = start, .len = len };
     }
 
@@ -335,16 +329,7 @@ pub const NodeList = struct {
     }
 
     pub inline fn getExtra(self: *const NodeList, range: IndexRange) []const NodeIndex {
-        return self.extra[range.start..][0..range.len];
-    }
-
-    fn growExtra(self: *NodeList, allocator: std.mem.Allocator, minimum: u32) void {
-        const new_capacity = @max(self.extra.len * 2, self.extra_len + minimum);
-        const new_extra = allocator.alloc(NodeIndex, new_capacity) catch unreachable;
-
-        @memcpy(new_extra[0..self.extra_len], self.extra[0..self.extra_len]);
-        allocator.free(self.extra);
-        self.extra = new_extra;
+        return self.extra.items[range.start..][0..range.len];
     }
 };
 

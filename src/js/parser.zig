@@ -35,6 +35,7 @@ pub const Parser = struct {
     nodes: ast.NodeList,
     current_token: token.Token = undefined,
 
+    // multiple scratches to handle multiple extras at the same time
     scratch_a: ScratchBuffer,
     scratch_b: ScratchBuffer,
 
