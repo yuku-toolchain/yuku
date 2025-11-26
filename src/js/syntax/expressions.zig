@@ -1,71 +1,49 @@
 const std = @import("std");
-const token = @import("../token.zig");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
-
 const literals = @import("literals.zig");
 
-pub fn parseExpression(parser: *Parser, prec: u5) ?*ast.Expression {
-    var left: *ast.Expression = parseExpressionPrefix(parser) orelse return null;
-
+pub fn parseExpression(parser: *Parser, precedence: u5) ?ast.NodeIndex {
+    var left = parsePrefix(parser) orelse return null;
     while (parser.current_token.type != .EOF) {
-        const lbp = parser.current_token.leftBindingPower();
-
-        if (prec > lbp or lbp == 0) break;
-
-        left = parseExpressionInfix(parser, lbp, left) orelse return null;
+        const left_binding_power = parser.current_token.leftBindingPower();
+        if (precedence > left_binding_power or left_binding_power == 0) break;
+        left = parseInfix(parser, left_binding_power, left) orelse return null;
     }
-
     return left;
 }
 
-fn parseExpressionInfix(parser: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
-    const current_token = parser.current_token;
-
-    // (x++, x--)
-    if (current_token.type == .Increment or current_token.type == .Decrement) {
+fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) ?ast.NodeIndex {
+    const current = parser.current_token;
+    if (current.type == .Increment or current.type == .Decrement) {
         return parseUpdateExpression(parser, false, left);
     }
-
-    if (current_token.type.isBinaryOperator()) {
-        return parseBinaryExpression(parser, prec, left);
+    if (current.type.isBinaryOperator()) {
+        return parseBinaryExpression(parser, precedence, left);
     }
-
-    if (current_token.type.isLogicalOperator()) {
-        return parseLogicalExpression(parser, prec, left);
+    if (current.type.isLogicalOperator()) {
+        return parseLogicalExpression(parser, precedence, left);
     }
-
-    if (current_token.type.isAssignmentOperator()) {
-        return parseAssignmentExpression(parser, prec, left);
+    if (current.type.isAssignmentOperator()) {
+        return parseAssignmentExpression(parser, precedence, left);
     }
-
-    // TODO: haha we need to remove this after we implement all expressions
-    parser.err(
-        current_token.span.start,
-        current_token.span.end,
-        parser.formatMessage("Unexpected token '{s}' in expression", .{current_token.lexeme}),
-        "This operator or syntax is not yet supported by the parser",
-    );
-
+    parser.err(current.span.start, current.span.end, parser.formatMessage("Unexpected token '{s}'", .{current.lexeme}), null);
     return null;
 }
 
-fn parseExpressionPrefix(parser: *Parser) ?*ast.Expression {
-    // (++x, --x)
+fn parsePrefix(parser: *Parser) ?ast.NodeIndex {
     if (parser.current_token.type == .Increment or parser.current_token.type == .Decrement) {
-        return parseUpdateExpression(parser, true, undefined);
+        return parseUpdateExpression(parser, true, ast.null_node);
     }
-
     if (parser.current_token.type.isUnaryOperator()) {
         return parseUnaryExpression(parser);
     }
-
     return parsePrimaryExpression(parser);
 }
 
-fn parsePrimaryExpression(parser: *Parser) ?*ast.Expression {
+fn parsePrimaryExpression(parser: *Parser) ?ast.NodeIndex {
     return switch (parser.current_token.type) {
-        .Identifier => literals.parseIdentifierReference(parser),
+        .Identifier => literals.parseIdentifier(parser),
         .PrivateIdentifier => literals.parsePrivateIdentifier(parser),
         .StringLiteral => literals.parseStringLiteral(parser),
         .True, .False => literals.parseBooleanLiteral(parser),
@@ -74,453 +52,244 @@ fn parsePrimaryExpression(parser: *Parser) ?*ast.Expression {
         .BigIntLiteral => literals.parseBigIntLiteral(parser),
         .Slash => literals.parseRegExpLiteral(parser),
         .TemplateHead => literals.parseTemplateLiteral(parser),
-        .NoSubstitutionTemplate => literals.parseNoSubstitutionTemplateLiteral(parser),
+        .NoSubstitutionTemplate => literals.parseNoSubstitutionTemplate(parser),
         .LeftBracket => parseArrayExpression(parser),
         .LeftBrace => parseObjectExpression(parser),
         else => {
-            const bad_token = parser.current_token;
-            parser.err(
-                bad_token.span.start,
-                bad_token.span.end,
-                "Unexpected token in expression position",
-                "Expected an expression like a variable name, number, string, or other literal value",
-            );
+            parser.err(parser.current_token.span.start, parser.current_token.span.end, "Unexpected token", null);
             return null;
         },
     };
 }
 
-fn parseUnaryExpression(parser: *Parser) ?*ast.Expression {
+fn parseUnaryExpression(parser: *Parser) ?ast.NodeIndex {
     const operator_token = parser.current_token;
-    const operator = ast.UnaryOperator.fromToken(operator_token.type);
-    const start = operator_token.span.start;
-
     parser.advance();
-
     const argument = parseExpression(parser, 14) orelse return null;
-
-    // https://tc39.es/ecma262/#sec-delete-operator-static-semantics-early-errors
-    // TODO: uncomment it when we implement MemberExpression
-    // TODO: also add parentheses check when we implement ParenthesizedExpression, recursively check for member-expression inside parentheses, for example
-    // delete (((foo))) is also an early error
-    // if (parser.strict_mode and operator == .Delete and argument.* != .member_expression) {
-    //     const argument_span = argument.getSpan();
-    //     parser.err(argument_span.start, argument_span.end, "Delete of an unqualified identifier in strict mode", "In strict mode, 'delete' can only be applied to property references, not to variable references");
-    // }
-
-    const unary_expression = ast.UnaryExpression{
-        .span = .{
-            .start = start,
-            .end = argument.getSpan().end,
+    return parser.addNode(.{
+        .unary_expression = .{
+            .argument = argument,
+            .operator = ast.unaryOperatorFromToken(operator_token.type),
         },
-        .operator = operator,
-        .argument = argument,
-    };
-
-    return parser.createNode(ast.Expression, .{ .unary_expression = unary_expression });
+    }, .{ .start = operator_token.span.start, .end = parser.getSpan(argument).end });
 }
 
-fn parseUpdateExpression(parser: *Parser, is_prefix: bool, left: ?*ast.Expression) ?*ast.Expression {
+fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) ?ast.NodeIndex {
     const operator_token = parser.current_token;
-
-    const operator = ast.UpdateOperator.fromToken(operator_token.type);
-
-    const start = if (is_prefix) operator_token.span.start else left.?.getSpan().start;
-
+    const operator = ast.updateOperatorFromToken(operator_token.type);
     parser.advance();
 
-    var argument: *ast.Expression = undefined;
-    var end: u32 = undefined;
-
-    if (is_prefix) {
-        // ++x, --x
-        argument = parseExpression(parser, 14) orelse return null;
-        const arg_span = argument.getSpan();
-        end = arg_span.end;
-
+    if (prefix) {
+        const argument = parseExpression(parser, 14) orelse return null;
+        const span = parser.getSpan(argument);
         if (!isValidAssignmentTarget(parser, argument)) {
-            parser.err(
-                arg_span.start,
-                arg_span.end,
-                "Invalid left-hand side expression in prefix operation",
-                "Prefix increment/decrement requires a variable or property, not an expression result",
-            );
+            parser.err(span.start, span.end, "Invalid operand", null);
             return null;
         }
-    } else {
-        // x++, x--
-        argument = left orelse unreachable;
-
-        end = operator_token.span.end;
-
-        if (!isValidAssignmentTarget(parser, argument)) {
-            const arg_span = argument.getSpan();
-            parser.err(
-                arg_span.start,
-                arg_span.end,
-                "Invalid left-hand side expression in postfix operation",
-                "Postfix increment/decrement requires a variable or property, not an expression result",
-            );
-            return null;
-        }
+        return parser.addNode(.{
+            .update_expression = .{ .argument = argument, .operator = operator, .prefix = true },
+        }, .{ .start = operator_token.span.start, .end = span.end });
     }
-
-    const update_expression = ast.UpdateExpression{
-        .span = .{
-            .start = start,
-            .end = end,
-        },
-        .operator = operator,
-        .prefix = is_prefix,
-        .argument = argument,
-    };
-
-    return parser.createNode(ast.Expression, .{ .update_expression = update_expression });
-}
-
-fn parseBinaryExpression(parser: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
-    const operator_token = parser.current_token;
-    const operator = ast.BinaryOperator.fromToken(operator_token.type);
-
-    parser.advance();
-
-    // ** is right assosiative
-    const next_prec = if (operator == .Exponent) prec else prec + 1;
-
-    const right = parseExpression(parser, next_prec) orelse return null;
-
-    const binary_expression = ast.BinaryExpression{
-        .span = .{
-            .start = left.getSpan().start,
-            .end = right.getSpan().end,
-        },
-        .operator = operator,
-        .left = left,
-        .right = right,
-    };
-
-    return parser.createNode(ast.Expression, .{ .binary_expression = binary_expression });
-}
-
-fn parseLogicalExpression(parser: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
-    const operator_token = parser.current_token;
-
-    const operator = ast.LogicalOperator.fromToken(operator_token.type);
-
-    parser.advance();
-
-    const right = parseExpression(parser, prec + 1) orelse return null;
-
-    const logical_expression = ast.LogicalExpression{
-        .span = .{
-            .start = left.getSpan().start,
-            .end = right.getSpan().end,
-        },
-        .operator = operator,
-        .left = left,
-        .right = right,
-    };
-
-    return parser.createNode(ast.Expression, .{ .logical_expression = logical_expression });
-}
-
-fn parseAssignmentExpression(parser: *Parser, prec: u5, left: *ast.Expression) ?*ast.Expression {
-    const operator_token = parser.current_token;
-    const operator = ast.AssignmentOperator.fromToken(operator_token.type);
 
     if (!isValidAssignmentTarget(parser, left)) {
-        const left_span = left.getSpan();
-        parser.err(
-            left_span.start,
-            left_span.end,
-            "Invalid left-hand side in assignment",
-            "The left side of an assignment must be a variable or property access",
-        );
+        const span = parser.getSpan(left);
+        parser.err(span.start, span.end, "Invalid operand", null);
+        return null;
+    }
+    return parser.addNode(.{
+        .update_expression = .{ .argument = left, .operator = operator, .prefix = false },
+    }, .{ .start = parser.getSpan(left).start, .end = operator_token.span.end });
+}
+
+fn parseBinaryExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) ?ast.NodeIndex {
+    const operator_token = parser.current_token;
+    const operator = ast.binaryOperatorFromToken(operator_token.type);
+    parser.advance();
+    const next_precedence = if (operator == .Exponent) precedence else precedence + 1;
+    const right = parseExpression(parser, next_precedence) orelse return null;
+    return parser.addNode(.{
+        .binary_expression = .{ .left = left, .right = right, .operator = operator },
+    }, .{ .start = parser.getSpan(left).start, .end = parser.getSpan(right).end });
+}
+
+fn parseLogicalExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) ?ast.NodeIndex {
+    const operator_token = parser.current_token;
+    parser.advance();
+    const right = parseExpression(parser, precedence + 1) orelse return null;
+    return parser.addNode(.{
+        .logical_expression = .{
+            .left = left,
+            .right = right,
+            .operator = ast.logicalOperatorFromToken(operator_token.type),
+        },
+    }, .{ .start = parser.getSpan(left).start, .end = parser.getSpan(right).end });
+}
+
+fn parseAssignmentExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) ?ast.NodeIndex {
+    const operator_token = parser.current_token;
+    const operator = ast.assignmentOperatorFromToken(operator_token.type);
+    const left_span = parser.getSpan(left);
+
+    if (!isValidAssignmentTarget(parser, left)) {
+        parser.err(left_span.start, left_span.end, "Invalid assignment target", null);
         return null;
     }
 
-    // for logical assignment operators (&&=, ||=, ??=), check for simple assignment target
-    const is_logical_assign = operator == .LogicalAndAssign or operator == .LogicalOrAssign or operator == .NullishAssign;
-
-    if (is_logical_assign and !isSimpleAssignmentTarget(parser, left)) {
-        const left_span = left.getSpan();
-        parser.err(
-            left_span.start,
-            left_span.end,
-            "Invalid left-hand side in logical assignment",
-            "Logical assignment operators (&&=, ||=, ??=) require a simple reference (variable or property access)",
-        );
+    const is_logical = operator == .LogicalAndAssign or operator == .LogicalOrAssign or operator == .NullishAssign;
+    if (is_logical and !isSimpleAssignmentTarget(parser, left)) {
+        parser.err(left_span.start, left_span.end, "Invalid logical assignment target", null);
         return null;
     }
 
     parser.advance();
-
-    // assignment is right-associative, so parse with same precedence
-    const right = parseExpression(parser, prec) orelse return null;
-
-    const target = parseAssignmentTarget(parser, left) orelse return null;
-
-    const assignment_expression = ast.AssignmentExpression{
-        .span = .{
-            .start = left.getSpan().start,
-            .end = right.getSpan().end,
-        },
-        .operator = operator,
-        .left = target,
-        .right = right,
-    };
-
-    return parser.createNode(ast.Expression, .{ .assignment_expression = assignment_expression });
+    const right = parseExpression(parser, precedence) orelse return null;
+    const target = parser.addNode(.{ .simple_assignment_target = left }, left_span);
+    return parser.addNode(.{
+        .assignment_expression = .{ .left = target, .right = right, .operator = operator },
+    }, .{ .start = left_span.start, .end = parser.getSpan(right).end });
 }
 
-fn parseAssignmentTarget(parser: *Parser, expr: *ast.Expression) ?*ast.AssignmentTarget {
-    if (!isValidAssignmentTarget(parser, expr)) {
-        return null;
-    }
-
-    const target = ast.AssignmentTarget{ .simple_assignment_target = expr };
-    return parser.createNode(ast.AssignmentTarget, target);
+pub fn isValidAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
+    return parser.getData(index) == .identifier;
 }
 
-// validators
-
-pub inline fn isValidAssignmentTarget(parser: *Parser, expr: *ast.Expression) bool {
-    _ = parser;
-    return switch (expr.*) {
-        .identifier_reference => true,
-        // TODO: uncomment when add member_expression
-        // .member_expression => true,
-
-        else => false,
-    };
+pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
+    return parser.getData(index) == .identifier;
 }
 
-pub inline fn isSimpleAssignmentTarget(parser: *Parser, expr: *ast.Expression) bool {
-    _ = parser;
-    return switch (expr.*) {
-        .identifier_reference => true,
-        // TODO: uncomment when add member_expression
-        // .member_expression => true,
-
-        else => false,
-    };
-}
-
-// ArrayExpression: [elem1, elem2, ...spread, , ]
-fn parseArrayExpression(parser: *Parser) ?*ast.Expression {
+fn parseArrayExpression(parser: *Parser) ?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    parser.advance(); // consume '['
+    parser.advance();
 
-    var elements = std.ArrayList(?*ast.ArrayExpressionElement).empty;
+    var elements: [256]ast.NodeIndex = undefined;
+    var length: usize = 0;
 
     while (parser.current_token.type != .RightBracket and parser.current_token.type != .EOF) {
         if (parser.current_token.type == .Comma) {
-            // elision (empty slot): [1, , 3]
-            parser.append(&elements, null);
+            elements[length] = ast.null_node;
+            length += 1;
             parser.advance();
             continue;
         }
-
-        const elem = parseArrayElement(parser) orelse return null;
-        parser.append(&elements, elem);
-
-        if (parser.current_token.type == .Comma) {
-            parser.advance();
-        } else {
-            break;
-        }
+        elements[length] = parseArrayElement(parser) orelse return null;
+        length += 1;
+        if (parser.current_token.type == .Comma) parser.advance() else break;
     }
 
     if (parser.current_token.type != .RightBracket) {
-        parser.err(
-            start,
-            parser.current_token.span.end,
-            "Expected ']' to close array expression",
-            "Add ']' to close the array literal",
-        );
+        parser.err(start, parser.current_token.span.end, "Expected ']'", null);
         return null;
     }
-
     const end = parser.current_token.span.end;
     parser.advance();
 
-    const array_expr = ast.ArrayExpression{
-        .elements = parser.dupe(?*ast.ArrayExpressionElement, elements.items),
-        .span = .{ .start = start, .end = end },
-    };
-
-    return parser.createNode(ast.Expression, .{ .array_expression = array_expr });
+    return parser.addNode(.{
+        .array_expression = .{ .elements = parser.addExtra(elements[0..length]) },
+    }, .{ .start = start, .end = end });
 }
 
-fn parseArrayElement(parser: *Parser) ?*ast.ArrayExpressionElement {
-    if (parser.current_token.type == .Spread) {
-        const spread = parseSpreadElement(parser) orelse return null;
-        return parser.createNode(ast.ArrayExpressionElement, .{ .spread_element = spread });
-    }
-
-    const expr = parseExpression(parser, 0) orelse return null;
-    return parser.createNode(ast.ArrayExpressionElement, .{ .expression = expr });
+fn parseArrayElement(parser: *Parser) ?ast.NodeIndex {
+    if (parser.current_token.type == .Spread) return parseSpreadElement(parser);
+    return parseExpression(parser, 0);
 }
 
-fn parseSpreadElement(parser: *Parser) ?*ast.SpreadElement {
+pub fn parseSpreadElement(parser: *Parser) ?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    parser.advance(); // consume '...'
-
+    parser.advance();
     const argument = parseExpression(parser, 0) orelse return null;
-    const end = argument.getSpan().end;
-
-    const spread = ast.SpreadElement{
-        .argument = argument,
-        .span = .{ .start = start, .end = end },
-    };
-
-    return parser.createNode(ast.SpreadElement, spread);
+    return parser.addNode(.{
+        .spread_element = .{ .argument = argument },
+    }, .{ .start = start, .end = parser.getSpan(argument).end });
 }
 
-// ObjectExpression: { key: value, shorthand, ...spread }
-fn parseObjectExpression(parser: *Parser) ?*ast.Expression {
+fn parseObjectExpression(parser: *Parser) ?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    parser.advance(); // consume '{'
+    parser.advance();
 
-    var properties = std.ArrayList(*ast.ObjectExpressionProperty).empty;
+    var properties: [256]ast.NodeIndex = undefined;
+    var length: usize = 0;
 
     while (parser.current_token.type != .RightBrace and parser.current_token.type != .EOF) {
-        const prop = parseObjectProperty(parser) orelse return null;
-        parser.append(&properties, prop);
-
-        if (parser.current_token.type == .Comma) {
-            parser.advance();
-        } else {
-            break;
-        }
+        properties[length] = parseObjectProperty(parser) orelse return null;
+        length += 1;
+        if (parser.current_token.type == .Comma) parser.advance() else break;
     }
 
     if (parser.current_token.type != .RightBrace) {
-        parser.err(
-            start,
-            parser.current_token.span.end,
-            "Expected '}' to close object expression",
-            "Add '}' to close the object literal",
-        );
+        parser.err(start, parser.current_token.span.end, "Expected '}'", null);
         return null;
     }
-
     const end = parser.current_token.span.end;
     parser.advance();
 
-    const obj_expr = ast.ObjectExpression{
-        .properties = parser.dupe(*ast.ObjectExpressionProperty, properties.items),
-        .span = .{ .start = start, .end = end },
-    };
-
-    return parser.createNode(ast.Expression, .{ .object_expression = obj_expr });
+    return parser.addNode(.{
+        .object_expression = .{ .properties = parser.addExtra(properties[0..length]) },
+    }, .{ .start = start, .end = end });
 }
 
-fn parseObjectProperty(parser: *Parser) ?*ast.ObjectExpressionProperty {
-    // spread property: { ...obj }
-    if (parser.current_token.type == .Spread) {
-        const spread = parseSpreadElement(parser) orelse return null;
-        return parser.createNode(ast.ObjectExpressionProperty, .{ .spread_element = spread });
-    }
+fn parseObjectProperty(parser: *Parser) ?ast.NodeIndex {
+    if (parser.current_token.type == .Spread) return parseSpreadElement(parser);
 
     const start = parser.current_token.span.start;
     var computed = false;
-    var key: *ast.PropertyKey = undefined;
-    var shorthand_identifier_token: ?token.Token = null;
+    var key: ast.NodeIndex = undefined;
+    var shorthand_token: ?@import("../token.zig").Token = null;
 
-    // computed property: { [expr]: value }
     if (parser.current_token.type == .LeftBracket) {
         computed = true;
         parser.advance();
-
-        const key_expr = parseExpression(parser, 0) orelse return null;
-        key = parser.createNode(ast.PropertyKey, .{ .expression = key_expr });
-
+        key = parseExpression(parser, 0) orelse return null;
         if (parser.current_token.type != .RightBracket) {
-            parser.err(
-                key_expr.getSpan().start,
-                parser.current_token.span.end,
-                "Expected ']' after computed property key",
-                "Add ']' to close the computed property name",
-            );
+            parser.err(start, parser.current_token.span.end, "Expected ']'", null);
             return null;
         }
         parser.advance();
     } else if (parser.current_token.type.isIdentifierLike()) {
-        // identifier key: { foo: value } or shorthand { foo }
-        shorthand_identifier_token = parser.current_token;
-
-        const id_name = ast.IdentifierName{
-            .name = parser.current_token.lexeme,
-            .span = parser.current_token.span,
-        };
-
-        key = parser.createNode(ast.PropertyKey, .{ .identifier_name = id_name });
-
+        shorthand_token = parser.current_token;
+        key = parser.addNode(.{
+            .identifier_name = .{
+                .name_start = parser.current_token.span.start,
+                .name_len = @intCast(parser.current_token.lexeme.len),
+            },
+        }, parser.current_token.span);
         parser.advance();
     } else if (parser.current_token.type.isNumericLiteral()) {
-        // numeric key: { 0: value }
-        const num_lit = literals.parseNumericLiteral(parser) orelse return null;
-        key = parser.createNode(ast.PropertyKey, .{ .expression = num_lit });
+        key = literals.parseNumericLiteral(parser) orelse return null;
     } else if (parser.current_token.type == .StringLiteral) {
-        // string key: { "foo": value }
-        const str_lit = literals.parseStringLiteral(parser) orelse return null;
-        key = parser.createNode(ast.PropertyKey, .{ .expression = str_lit });
+        key = literals.parseStringLiteral(parser) orelse return null;
     } else {
-        parser.err(
-            parser.current_token.span.start,
-            parser.current_token.span.end,
-            "Expected property key",
-            "Use an identifier, string, number, or computed property [expression]",
-        );
+        parser.err(parser.current_token.span.start, parser.current_token.span.end, "Expected property key", null);
         return null;
     }
 
-    // check for shorthand: { foo } or shorthand with value: { foo = default }
-    const is_shorthand = !computed and
-        shorthand_identifier_token != null and
+    const is_shorthand = !computed and shorthand_token != null and
         (parser.current_token.type == .Comma or parser.current_token.type == .RightBrace);
 
-    var value: *ast.Expression = undefined;
-
+    var value: ast.NodeIndex = undefined;
     if (is_shorthand) {
-        // shorthand property: { foo }
-        const id_token = shorthand_identifier_token.?;
-        const id_ref = ast.IdentifierReference{
-            .name = id_token.lexeme,
-            .span = id_token.span,
-        };
-        value = parser.createNode(ast.Expression, .{ .identifier_reference = id_ref });
+        const token = shorthand_token.?;
+        value = parser.addNode(.{
+            .identifier = .{
+                .name_start = token.span.start,
+                .name_len = @intCast(token.lexeme.len),
+            },
+        }, token.span);
     } else {
-        // regular property: { key: value }
         if (parser.current_token.type != .Colon) {
-            const key_span = key.getSpan();
-            parser.err(
-                key_span.start,
-                parser.current_token.span.end,
-                "Expected ':' after property key",
-                "Add ':' followed by a value, or use shorthand syntax for identifiers",
-            );
+            parser.err(parser.getSpan(key).start, parser.current_token.span.end, "Expected ':'", null);
             return null;
         }
-        parser.advance(); // consume ':'
-
+        parser.advance();
         value = parseExpression(parser, 0) orelse return null;
     }
 
-    const end = value.getSpan().end;
-
-    const prop = ast.ObjectProperty{
-        .key = key,
-        .value = value,
-        .shorthand = is_shorthand,
-        .computed = computed,
-        .span = .{ .start = start, .end = end },
-    };
-
-    const prop_ptr = parser.createNode(ast.ObjectProperty, prop);
-    return parser.createNode(ast.ObjectExpressionProperty, .{ .property = prop_ptr });
-
-    // TODO: handle method, and set/get property kinds, currently only handling 'init' and not handling the method.
-    // Since we need to implement the FunctionExpression/ArrowFunctionExpression first.
+    return parser.addNode(.{
+        .object_property = .{
+            .key = key,
+            .value = value,
+            .kind = .Init,
+            .shorthand = is_shorthand,
+            .computed = computed,
+        },
+    }, .{ .start = start, .end = parser.getSpan(value).end });
 }

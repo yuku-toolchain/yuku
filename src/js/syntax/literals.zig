@@ -1,242 +1,190 @@
 const std = @import("std");
-const token = @import("../token.zig");
-const lexer = @import("../lexer.zig");
 const ast = @import("../ast.zig");
+const lexer = @import("../lexer.zig");
 const Parser = @import("../parser.zig").Parser;
 const util = @import("util");
-
 const expressions = @import("expressions.zig");
 
-pub fn parseStringLiteral(parser: *Parser) ?*ast.Expression {
-    const value = parser.current_token.lexeme;
-    const span = parser.current_token.span;
+pub fn parseStringLiteral(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const literal = ast.StringLiteral{
-        .value = value, // TODO: handle escape sequences and remove quotes
-        .raw = value,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .string_literal = literal });
+    return parser.addNode(.{
+        .string_literal = .{
+            .raw_start = token.span.start,
+            .raw_len = @intCast(token.lexeme.len),
+        },
+    }, token.span);
 }
 
-pub fn parseBooleanLiteral(parser: *Parser) ?*ast.Expression {
-    const value = parser.current_token.type == .True;
-    const raw = parser.current_token.lexeme;
-    const span = parser.current_token.span;
+pub fn parseBooleanLiteral(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const literal = ast.BooleanLiteral{
-        .value = value,
-        .raw = raw,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .boolean_literal = literal });
+    return parser.addNode(.{
+        .boolean_literal = .{ .value = token.type == .True },
+    }, token.span);
 }
 
-pub fn parseNullLiteral(parser: *Parser) ?*ast.Expression {
-    const raw = parser.current_token.lexeme;
-    const span = parser.current_token.span;
+pub fn parseNullLiteral(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const literal = ast.NullLiteral{
-        .value = null,
-        .raw = raw,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .null_literal = literal });
+    return parser.addNode(.null_literal, token.span);
 }
 
-pub fn parseNumericLiteral(parser: *Parser) ?*ast.Expression {
-    const value = parser.current_token.lexeme;
-    const span = parser.current_token.span;
+pub fn parseNumericLiteral(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const literal = ast.NumericLiteral{
-        .value = util.Number.parseJSNumeric(value) catch unreachable,
-        .raw = value,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .numeric_literal = literal });
+    return parser.addNode(.{
+        .numeric_literal = .{
+            .value = util.Number.parseJSNumeric(token.lexeme) catch unreachable,
+        },
+    }, token.span);
 }
 
-pub fn parseBigIntLiteral(parser: *Parser) ?*ast.Expression {
-    const raw = parser.current_token.lexeme;
-    const span = parser.current_token.span;
+pub fn parseBigIntLiteral(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const bigint = raw[0..(raw.len - 1)]; // lexer only produces BigInt tokens for valid literals
-
-    const literal = ast.BigIntLiteral{
-        .value = raw,
-        .raw = raw,
-        .bigint = bigint,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .bigint_literal = literal });
+    return parser.addNode(.{
+        .bigint_literal = .{
+            .raw_start = token.span.start,
+            .raw_len = @intCast(token.lexeme.len),
+        },
+    }, token.span);
 }
 
-pub fn parseRegExpLiteral(parser: *Parser) ?*ast.Expression {
-    const slash_token = parser.current_token;
-
-    const regex = parser.lexer.reScanAsRegex(slash_token) catch |err_| {
-        parser.err(
-            slash_token.span.start,
-            slash_token.span.end,
-            lexer.getLexicalErrorMessage(err_),
-            lexer.getLexicalErrorHelp(err_),
-        );
+pub fn parseRegExpLiteral(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
+    const regex = parser.lexer.reScanAsRegex(token) catch |e| {
+        parser.err(token.span.start, token.span.end, lexer.getLexicalErrorMessage(e), lexer.getLexicalErrorHelp(e));
         return null;
     };
-
-    const start = regex.span.start;
-    const end = regex.span.end;
-
-    const regex_token = parser.lexer.createToken(.RegexLiteral, parser.source[start..end], start, end);
-
-    parser.replaceTokenAndAdvance(regex_token);
-
-    const literal = ast.RegExpLiteral{
-        .value = regex.lexeme,
-        .raw = regex.lexeme,
-        .regex = .{
-            .pattern = regex.pattern,
-            .flags = regex.flags,
+    parser.replaceTokenAndAdvance(parser.lexer.createToken(
+        .RegexLiteral,
+        parser.source[regex.span.start..regex.span.end],
+        regex.span.start,
+        regex.span.end,
+    ));
+    return parser.addNode(.{
+        .regexp_literal = .{
+            .pattern_start = @intCast(regex.span.start + 1),
+            .pattern_len = @intCast(regex.pattern.len),
+            .flags_start = @intCast(regex.span.end - regex.flags.len),
+            .flags_len = @intCast(regex.flags.len),
         },
-        .span = regex.span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .regex_literal = literal });
+    }, regex.span);
 }
 
-pub fn parseNoSubstitutionTemplateLiteral(parser: *Parser) ?*ast.Expression {
-    const tok = parser.current_token;
+pub fn parseNoSubstitutionTemplate(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const element = createTemplateElement(parser, tok, true);
-
-    const template_literal = ast.TemplateLiteral{
-        .quasis = parser.dupe(*ast.TemplateElement, &[_]*ast.TemplateElement{element}),
-        .expressions = parser.dupe(*ast.Expression, &[_]*ast.Expression{}),
-        .span = .{
-            .start = tok.span.start,
-            .end = tok.span.end,
+    const element_span = getTemplateElementSpan(token);
+    const element = parser.addNode(.{
+        .template_element = .{
+            .raw_start = element_span.start,
+            .raw_len = @intCast(element_span.end - element_span.start),
+            .tail = true,
         },
-    };
-
-    return parser.createNode(ast.Expression, .{ .template_literal = template_literal });
+    }, element_span);
+    return parser.addNode(.{
+        .template_literal = .{
+            .quasis = parser.addExtra(&[_]ast.NodeIndex{element}),
+            .expressions = ast.IndexRange.empty,
+        },
+    }, token.span);
 }
 
-pub fn parseTemplateLiteral(parser: *Parser) ?*ast.Expression {
-    const template_literal_start = parser.current_token.span.start;
+pub fn parseTemplateLiteral(parser: *Parser) ?ast.NodeIndex {
+    const start = parser.current_token.span.start;
 
-    var template_elements = std.ArrayList(*ast.TemplateElement).empty;
-    var template_expressions = std.ArrayList(*ast.Expression).empty;
-    parser.ensureCapacity(&template_elements, 4);
-    parser.ensureCapacity(&template_expressions, 4);
+    var quasis: [64]ast.NodeIndex = undefined;
+    var template_expressions: [64]ast.NodeIndex = undefined;
+    var quasis_length: usize = 0;
+    var expressions_length: usize = 0;
 
-    // parse head element
-    const head_token = parser.current_token;
-
-    parser.append(&template_elements, createTemplateElement(parser, head_token, false));
+    const head = parser.current_token;
+    const head_span = getTemplateElementSpan(head);
+    quasis[quasis_length] = parser.addNode(.{
+        .template_element = .{
+            .raw_start = head_span.start,
+            .raw_len = @intCast(head_span.end - head_span.start),
+            .tail = false,
+        },
+    }, head_span);
+    quasis_length += 1;
     parser.advance();
 
-    var template_literal_end: u32 = undefined;
-
-    // parse expressions and middle/tail elements
+    var end: u32 = undefined;
     while (true) {
-        const expr_start = parser.current_token.span.start;
-        const expr = expressions.parseExpression(parser, 0) orelse return null;
-        parser.append(&template_expressions, expr);
+        template_expressions[expressions_length] = expressions.parseExpression(parser, 0) orelse return null;
+        expressions_length += 1;
 
-        const template_token = parser.current_token;
-        const is_tail = template_token.type == .TemplateTail;
+        const token = parser.current_token;
+        const is_tail = token.type == .TemplateTail;
 
-        switch (template_token.type) {
+        switch (token.type) {
             .TemplateMiddle, .TemplateTail => {
-                parser.append(&template_elements, createTemplateElement(parser, template_token, is_tail));
-
+                const span = getTemplateElementSpan(token);
+                quasis[quasis_length] = parser.addNode(.{
+                    .template_element = .{
+                        .raw_start = span.start,
+                        .raw_len = @intCast(span.end - span.start),
+                        .tail = is_tail,
+                    },
+                }, span);
+                quasis_length += 1;
                 if (is_tail) {
-                    template_literal_end = template_token.span.end;
+                    end = token.span.end;
                     parser.advance();
                     break;
                 }
-
                 parser.advance();
             },
             else => {
-                parser.err(
-                    expr_start,
-                    template_token.span.start,
-                    "Expected template continuation after expression",
-                    "Add '}' here to close the template expression",
-                );
+                parser.err(token.span.start, token.span.end, "Expected template continuation", null);
                 return null;
             },
         }
     }
 
-    const template_literal = ast.TemplateLiteral{
-        .quasis = parser.dupe(*ast.TemplateElement, template_elements.items),
-        .expressions = parser.dupe(*ast.Expression, template_expressions.items),
-        .span = .{ .start = template_literal_start, .end = template_literal_end },
-    };
-
-    return parser.createNode(ast.Expression, .{ .template_literal = template_literal });
+    return parser.addNode(.{
+        .template_literal = .{
+            .quasis = parser.addExtra(quasis[0..quasis_length]),
+            .expressions = parser.addExtra(template_expressions[0..expressions_length]),
+        },
+    }, .{ .start = start, .end = end });
 }
 
-inline fn createTemplateElement(parser: *Parser, tok: token.Token, is_tail: bool) *ast.TemplateElement {
-    // the template literal tokens includes the template literal punctuators, like `, ${}
-    const actual_start = tok.span.start;
-    const actual_end = tok.span.end;
-
-    // so we don't need those punctuators in the elements as per spec
-    const span: token.Span = switch (tok.type) {
-        .TemplateHead, .TemplateMiddle => token.Span{ .start = actual_start + 1, .end = actual_end - 2 },
-        .TemplateTail, .NoSubstitutionTemplate => token.Span{ .start = actual_start + 1, .end = actual_end - 1 },
+inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span {
+    return switch (token.type) {
+        .TemplateHead, .TemplateMiddle => .{
+            .start = token.span.start + 1,
+            .end = token.span.end - 2,
+        },
+        .TemplateTail, .NoSubstitutionTemplate => .{
+            .start = token.span.start + 1,
+            .end = token.span.end - 1,
+        },
         else => unreachable,
     };
+}
 
-    const lexeme = parser.source[span.start..span.end];
-
-    const element = ast.TemplateElement{
-        .value = .{
-            .raw = lexeme,
-            .cooked = lexeme, // TODO: process escape sequences
+pub fn parseIdentifier(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
+    parser.advance();
+    return parser.addNode(.{
+        .identifier = .{
+            .name_start = token.span.start,
+            .name_len = @intCast(token.lexeme.len),
         },
-        .tail = is_tail,
-        .span = span,
-    };
-    return parser.createNode(ast.TemplateElement, element);
+    }, token.span);
 }
 
-pub fn parseIdentifierReference(parser: *Parser) ?*ast.Expression {
-    const name = parser.current_token.lexeme;
-    const span = parser.current_token.span;
+pub fn parsePrivateIdentifier(parser: *Parser) ?ast.NodeIndex {
+    const token = parser.current_token;
     parser.advance();
-
-    const identifier = ast.IdentifierReference{
-        .name = name,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .identifier_reference = identifier });
-}
-
-pub fn parsePrivateIdentifier(parser: *Parser) ?*ast.Expression {
-    const name = parser.current_token.lexeme;
-    const span = parser.current_token.span;
-    parser.advance();
-
-    const private_id = ast.PrivateIdentifier{
-        .name = name,
-        .span = span,
-    };
-
-    return parser.createNode(ast.Expression, .{ .private_identifier = private_id });
+    return parser.addNode(.{
+        .private_identifier = .{
+            .name_start = token.span.start,
+            .name_len = @intCast(token.lexeme.len),
+        },
+    }, token.span);
 }

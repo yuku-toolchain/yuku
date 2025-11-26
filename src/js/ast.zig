@@ -1,78 +1,128 @@
 const std = @import("std");
 const token = @import("token.zig");
 
-pub const Body = union(enum) {
-    statement: *Statement,
-    directive: *Directive,
+pub const NodeIndex = u32;
+pub const null_node: NodeIndex = std.math.maxInt(NodeIndex);
+pub const Span = token.Span;
 
-    pub inline fn getSpan(self: *const Body) token.Span {
-        return switch (self.*) {
-            inline else => |variant| variant.span,
-        };
-    }
+pub const IndexRange = struct {
+    start: u32,
+    len: u32,
+    pub const empty: IndexRange = .{ .start = 0, .len = 0 };
 };
 
-// Program
-pub const Program = struct {
-    body: []*Body,
-    source_type: SourceType = .script,
-    span: token.Span,
-
-    pub const SourceType = enum { script, module };
-
-    pub inline fn getSpan(self: *const Program) token.Span {
-        return self.span;
-    }
+pub const BinaryOperator = enum(u8) {
+    Equal,
+    NotEqual,
+    StrictEqual,
+    StrictNotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Modulo,
+    Exponent,
+    BitwiseOr,
+    BitwiseXor,
+    BitwiseAnd,
+    LeftShift,
+    RightShift,
+    UnsignedRightShift,
+    In,
+    Instanceof,
 };
 
-// statements
-pub const Statement = union(enum) {
-    expression_statement: ExpressionStatement,
-    variable_declaration: VariableDeclaration,
-
-    pub inline fn getSpan(self: *const Statement) token.Span {
-        return switch (self.*) {
-            inline else => |variant| variant.span,
-        };
-    }
+pub const LogicalOperator = enum(u8) {
+    And,
+    Or,
+    NullishCoalescing,
 };
 
-// patterns
-pub const BindingPattern = union(enum) {
-    binding_identifier: BindingIdentifier,
-    array_pattern: ArrayPattern,
-    object_pattern: ObjectPattern,
-    assignment_pattern: AssignmentPattern,
-
-    pub inline fn getSpan(self: *const BindingPattern) token.Span {
-        return switch (self.*) {
-            inline else => |variant| variant.span,
-        };
-    }
+pub const UnaryOperator = enum(u8) {
+    Negate,
+    Positive,
+    LogicalNot,
+    BitwiseNot,
+    Typeof,
+    Void,
+    Delete,
 };
 
-// declarations
-pub const Declaration = union(enum) {
-    variable_declarator: VariableDeclarator,
-
-    pub inline fn getSpan(self: *const Declaration) token.Span {
-        return switch (self.*) {
-            inline else => |variant| variant.span,
-        };
-    }
+pub const UpdateOperator = enum(u8) {
+    Increment,
+    Decrement,
 };
 
-// expressions
-pub const Expression = union(enum) {
-    string_literal: StringLiteral,
-    boolean_literal: BooleanLiteral,
-    null_literal: NullLiteral,
-    numeric_literal: NumericLiteral,
-    bigint_literal: BigIntLiteral,
-    regex_literal: RegExpLiteral,
-    template_literal: TemplateLiteral,
-    identifier_reference: IdentifierReference,
-    private_identifier: PrivateIdentifier,
+pub const AssignmentOperator = enum(u8) {
+    Assign,
+    AddAssign,
+    SubtractAssign,
+    MultiplyAssign,
+    DivideAssign,
+    ModuloAssign,
+    ExponentAssign,
+    LeftShiftAssign,
+    RightShiftAssign,
+    UnsignedRightShiftAssign,
+    BitwiseOrAssign,
+    BitwiseXorAssign,
+    BitwiseAndAssign,
+    LogicalOrAssign,
+    LogicalAndAssign,
+    NullishAssign,
+};
+
+pub const VariableKind = enum(u8) {
+    Var,
+    Let,
+    Const,
+    Using,
+    AwaitUsing,
+};
+
+pub const PropertyKind = enum(u8) {
+    Init,
+    Get,
+    Set,
+};
+
+pub const BinaryExpression = struct { left: NodeIndex, right: NodeIndex, operator: BinaryOperator };
+pub const LogicalExpression = struct { left: NodeIndex, right: NodeIndex, operator: LogicalOperator };
+pub const UnaryExpression = struct { argument: NodeIndex, operator: UnaryOperator };
+pub const UpdateExpression = struct { argument: NodeIndex, operator: UpdateOperator, prefix: bool };
+pub const AssignmentExpression = struct { left: NodeIndex, right: NodeIndex, operator: AssignmentOperator };
+pub const VariableDeclaration = struct { declarators: IndexRange, kind: VariableKind };
+pub const VariableDeclarator = struct { id: NodeIndex, init: NodeIndex };
+pub const ExpressionStatement = struct { expression: NodeIndex };
+pub const StringLiteral = struct { raw_start: u32, raw_len: u16 };
+pub const NumericLiteral = struct { value: f64 };
+pub const BigIntLiteral = struct { raw_start: u32, raw_len: u16 };
+pub const BooleanLiteral = struct { value: bool };
+pub const RegExpLiteral = struct { pattern_start: u32, pattern_len: u16, flags_start: u32, flags_len: u8 };
+pub const TemplateLiteral = struct { quasis: IndexRange, expressions: IndexRange };
+pub const TemplateElement = struct { raw_start: u32, raw_len: u16, tail: bool };
+pub const Identifier = struct { name_start: u32, name_len: u16 };
+pub const PrivateIdentifier = struct { name_start: u32, name_len: u16 };
+pub const BindingIdentifier = struct { name_start: u32, name_len: u16 };
+pub const IdentifierName = struct { name_start: u32, name_len: u16 };
+pub const AssignmentPattern = struct { left: NodeIndex, right: NodeIndex };
+pub const RestElement = struct { argument: NodeIndex };
+pub const ArrayPattern = struct { elements: IndexRange };
+pub const ObjectPattern = struct { properties: IndexRange };
+pub const BindingProperty = struct { key: NodeIndex, value: NodeIndex, shorthand: bool, computed: bool };
+pub const ArrayExpression = struct { elements: IndexRange };
+pub const ObjectExpression = struct { properties: IndexRange };
+pub const SpreadElement = struct { argument: NodeIndex };
+pub const ObjectProperty = struct { key: NodeIndex, value: NodeIndex, kind: PropertyKind, shorthand: bool, computed: bool };
+pub const Program = struct { body: IndexRange, source_type: SourceType };
+pub const SourceType = enum(u8) { Script, Module };
+pub const Directive = struct { expression: NodeIndex, value_start: u32, value_len: u16 };
+
+pub const NodeData = union(enum) {
     binary_expression: BinaryExpression,
     logical_expression: LogicalExpression,
     unary_expression: UnaryExpression,
@@ -80,475 +130,172 @@ pub const Expression = union(enum) {
     assignment_expression: AssignmentExpression,
     array_expression: ArrayExpression,
     object_expression: ObjectExpression,
-
-    pub inline fn getSpan(self: *const Expression) token.Span {
-        return switch (self.*) {
-            inline else => |variant| variant.span,
-        };
-    }
-};
-
-// ExpressionStatement
-pub const ExpressionStatement = struct {
-    expression: *Expression,
-    directive: ?[]const u8 = null,
-    span: token.Span,
-};
-
-pub const BinaryOperator = enum {
-    Equal, // ==
-    NotEqual, // !=
-    StrictEqual, // ===
-    StrictNotEqual, // !==
-
-    LessThan, // <
-    LessThanEqual, // <=
-    GreaterThan, // >
-    GreaterThanEqual, // >=
-
-    Plus, // +
-    Minus, // -
-    Star, // *
-    Slash, // /
-    Percent, // %
-    Exponent, // **
-
-    LeftShift, // <<
-    RightShift, // >>
-    UnsignedRightShift, // >>>
-
-    BitwiseOr, // |
-    BitwiseXor, // ^
-    BitwiseAnd, // &
-
-    In, // in
-    Instanceof, // instanceof
-
-    pub fn fromToken(token_type: token.TokenType) BinaryOperator {
-        return switch (token_type) {
-            .Equal => .Equal,
-            .NotEqual => .NotEqual,
-            .StrictEqual => .StrictEqual,
-            .StrictNotEqual => .StrictNotEqual,
-            .LessThan => .LessThan,
-            .LessThanEqual => .LessThanEqual,
-            .GreaterThan => .GreaterThan,
-            .GreaterThanEqual => .GreaterThanEqual,
-            .Plus => .Plus,
-            .Minus => .Minus,
-            .Star => .Star,
-            .Slash => .Slash,
-            .Percent => .Percent,
-            .Exponent => .Exponent,
-            .LeftShift => .LeftShift,
-            .RightShift => .RightShift,
-            .UnsignedRightShift => .UnsignedRightShift,
-            .BitwiseOr => .BitwiseOr,
-            .BitwiseXor => .BitwiseXor,
-            .BitwiseAnd => .BitwiseAnd,
-            .In => .In,
-            .Instanceof => .Instanceof,
-            else => unreachable, // safety: we are sure we only call fromToken for binary operators
-        };
-    }
-};
-
-pub const LogicalOperator = enum {
-    LogicalOr, // ||
-    LogicalAnd, // &&
-    NullishCoalescing, // ??
-
-    pub fn fromToken(token_type: token.TokenType) LogicalOperator {
-        return switch (token_type) {
-            .LogicalOr => .LogicalOr,
-            .LogicalAnd => .LogicalAnd,
-            .NullishCoalescing => .NullishCoalescing,
-            else => unreachable, // safety: we are sure we only call fromToken for logical operators
-        };
-    }
-};
-
-pub const UnaryOperator = enum {
-    Plus, // +
-    Minus, // -
-    LogicalNot, // !
-    BitwiseNot, // ~
-    Typeof, // typeof
-    Void, // void
-    Delete, // delete
-
-    pub fn fromToken(token_type: token.TokenType) UnaryOperator {
-        return switch (token_type) {
-            .Plus => .Plus,
-            .Minus => .Minus,
-            .LogicalNot => .LogicalNot,
-            .BitwiseNot => .BitwiseNot,
-            .Typeof => .Typeof,
-            .Void => .Void,
-            .Delete => .Delete,
-            else => unreachable, // safety: we are sure we only call fromToken for unary operators
-        };
-    }
-};
-
-pub const UpdateOperator = enum {
-    Increment, // ++
-    Decrement, // --
-
-    pub fn fromToken(token_type: token.TokenType) UpdateOperator {
-        return switch (token_type) {
-            .Increment => .Increment,
-            .Decrement => .Decrement,
-            else => unreachable, // safety: we are sure we only call fromToken for update operators
-        };
-    }
-};
-
-pub const AssignmentOperator = enum {
-    Assign, // =
-    PlusAssign, // +=
-    MinusAssign, // -=
-    StarAssign, // *=
-    SlashAssign, // /=
-    PercentAssign, // %=
-    ExponentAssign, // **=
-    LeftShiftAssign, // <<=
-    RightShiftAssign, // >>=
-    UnsignedRightShiftAssign, // >>>=
-    BitwiseOrAssign, // |=
-    BitwiseXorAssign, // ^=
-    BitwiseAndAssign, // &=
-    LogicalOrAssign, // ||=
-    LogicalAndAssign, // &&=
-    NullishAssign, // ??=
-
-    pub fn fromToken(token_type: token.TokenType) AssignmentOperator {
-        return switch (token_type) {
-            .Assign => .Assign,
-            .PlusAssign => .PlusAssign,
-            .MinusAssign => .MinusAssign,
-            .StarAssign => .StarAssign,
-            .SlashAssign => .SlashAssign,
-            .PercentAssign => .PercentAssign,
-            .ExponentAssign => .ExponentAssign,
-            .LeftShiftAssign => .LeftShiftAssign,
-            .RightShiftAssign => .RightShiftAssign,
-            .UnsignedRightShiftAssign => .UnsignedRightShiftAssign,
-            .BitwiseOrAssign => .BitwiseOrAssign,
-            .BitwiseXorAssign => .BitwiseXorAssign,
-            .BitwiseAndAssign => .BitwiseAndAssign,
-            .LogicalOrAssign => .LogicalOrAssign,
-            .LogicalAndAssign => .LogicalAndAssign,
-            .NullishAssign => .NullishAssign,
-            else => unreachable, // safety: we are sure we only call fromToken for assignment operators
-        };
-    }
-};
-
-// UnaryExpression
-pub const UnaryExpression = struct {
-    operator: UnaryOperator,
-    argument: *Expression,
-    prefix: bool = true,
-    span: token.Span,
-};
-
-// UpdateExpression
-pub const UpdateExpression = struct {
-    operator: UpdateOperator,
-    prefix: bool,
-    argument: *Expression,
-    span: token.Span,
-};
-
-// BinaryExpression
-pub const BinaryExpression = struct {
-    left: *Expression,
-    right: *Expression,
-    operator: BinaryOperator,
-    span: token.Span,
-};
-
-// LogicalExpression
-pub const LogicalExpression = struct {
-    left: *Expression,
-    right: *Expression,
-    operator: LogicalOperator,
-    span: token.Span,
-};
-
-pub const AssignmentTarget = union(enum) {
-    simple_assignment_target: *Expression,
-    // TODO: implement assigment_target_pattern
-    // we already have ArrayExpression, good
-    // but we first need to finish ObjectExpression to add assigment_target_pattern, to finish ObjectExpression
-    // we need to implement the FunctionExpression
-    // lol
-
-    pub inline fn getSpan(self: *const AssignmentTarget) token.Span {
-        return switch (self.*) {
-            inline else => |target| target.getSpan(),
-        };
-    }
-};
-
-// AssignmentExpression
-pub const AssignmentExpression = struct {
-    operator: AssignmentOperator,
-    left: *AssignmentTarget,
-    right: *Expression,
-    span: token.Span,
-};
-
-// VariableDeclaration
-pub const VariableDeclaration = struct {
-    kind: VariableDeclarationKind,
-    declarations: []*VariableDeclarator,
-    span: token.Span,
-
-    pub const VariableDeclarationKind = enum {
-        @"var",
-        let,
-        @"const",
-        using,
-        @"await using",
-    };
-};
-
-// ExpressionStatement
-pub const Directive = struct {
-    expression: *StringLiteral,
-    directive: []const u8,
-    span: token.Span,
-};
-
-// Literal
-pub const StringLiteral = struct {
-    value: []const u8,
-    raw: ?[]const u8 = null,
-    span: token.Span,
-};
-
-// Literal
-pub const BooleanLiteral = struct {
-    value: bool,
-    raw: ?[]const u8 = null,
-    span: token.Span,
-};
-
-// Literal
-pub const NullLiteral = struct {
-    value: ?[]const u8 = null,
-    raw: ?[]const u8 = null,
-    span: token.Span,
-};
-
-// Literal
-pub const NumericLiteral = struct {
-    value: f64,
-    raw: ?[]const u8 = null,
-    span: token.Span,
-};
-
-// Literal
-pub const BigIntLiteral = struct {
-    value: []const u8,
-    raw: ?[]const u8 = null,
-    bigint: []const u8,
-    span: token.Span,
-};
-
-// Literal
-pub const RegExpLiteral = struct {
-    value: ?[]const u8 = null,
-    raw: ?[]const u8 = null,
-    regex: RegExp,
-    span: token.Span,
-
-    pub const RegExp = struct {
-        pattern: []const u8,
-        flags: []const u8,
-    };
-};
-
-pub const TemplateElementValue = struct {
-    raw: []const u8,
-    cooked: ?[]const u8 = null,
-};
-
-// TemplateElement
-pub const TemplateElement = struct {
-    value: TemplateElementValue,
-    tail: bool,
-    span: token.Span,
-};
-
-// TemplateLiteral
-pub const TemplateLiteral = struct {
-    quasis: []*TemplateElement,
-    expressions: []*Expression,
-    span: token.Span,
-};
-
-// Identifier
-pub const IdentifierReference = struct {
-    name: []const u8,
-    span: token.Span,
-};
-
-// Identifier
-pub const IdentifierName = struct {
-    name: []const u8,
-    span: token.Span,
-};
-
-// PrivateIdentifier
-pub const PrivateIdentifier = struct {
-    name: []const u8,
-    span: token.Span,
-};
-
-// Identifier
-pub const BindingIdentifier = struct {
-    name: []const u8,
-    span: token.Span,
-};
-
-// AssignmentPattern
-pub const AssignmentPattern = struct {
-    left: *BindingPattern,
-    right: *Expression,
-    span: token.Span,
-};
-
-// RestElement
-pub const BindingRestElement = struct {
-    argument: *BindingPattern,
-    span: token.Span,
-};
-
-// ArrayPattern
-pub const ArrayPattern = struct {
-    elements: []?*ArrayPatternElement,
-    span: token.Span,
-};
-
-pub const ArrayPatternElement = union(enum) {
-    binding_pattern: *BindingPattern,
-    rest_element: *BindingRestElement,
-
-    pub inline fn getSpan(self: *const ArrayPatternElement) token.Span {
-        return switch (self.*) {
-            .binding_pattern => |bp| bp.getSpan(),
-            inline else => |variant| variant.span,
-        };
-    }
-};
-
-// VariableDeclarator
-pub const VariableDeclarator = struct {
-    id: *BindingPattern,
-    init: ?*Expression = null,
-    span: token.Span,
-};
-
-pub const PropertyKey = union(enum) {
-    identifier_name: IdentifierName,
+    spread_element: SpreadElement,
+    object_property: ObjectProperty,
+    string_literal: StringLiteral,
+    numeric_literal: NumericLiteral,
+    bigint_literal: BigIntLiteral,
+    boolean_literal: BooleanLiteral,
+    null_literal,
+    regexp_literal: RegExpLiteral,
+    template_literal: TemplateLiteral,
+    template_element: TemplateElement,
+    identifier: Identifier,
     private_identifier: PrivateIdentifier,
-    expression: *Expression,
+    binding_identifier: BindingIdentifier,
+    identifier_name: IdentifierName,
+    expression_statement: ExpressionStatement,
+    variable_declaration: VariableDeclaration,
+    variable_declarator: VariableDeclarator,
+    directive: Directive,
+    assignment_pattern: AssignmentPattern,
+    rest_element: RestElement,
+    array_pattern: ArrayPattern,
+    object_pattern: ObjectPattern,
+    binding_property: BindingProperty,
+    program: Program,
+    simple_assignment_target: NodeIndex,
+};
 
-    pub inline fn getSpan(self: *const PropertyKey) token.Span {
-        return switch (self.*) {
-            .identifier_name => |id| id.span,
-            .private_identifier => |id| id.span,
-            .expression => |expr| expr.getSpan(),
+pub const Node = struct {
+    data: NodeData,
+    span: Span,
+};
+
+pub const NodeList = struct {
+    nodes: std.MultiArrayList(Node),
+    extra: []NodeIndex,
+    extra_len: u32 = 0,
+
+    pub fn init(allocator: std.mem.Allocator, source_len: u32) NodeList {
+        const estimated_nodes = @max(256, source_len / 2);
+        const estimated_extra = estimated_nodes / 3;
+
+        var nodes = std.MultiArrayList(Node){};
+        nodes.ensureTotalCapacity(allocator, estimated_nodes) catch unreachable;
+
+        return .{
+            .nodes = nodes,
+            .extra = allocator.alloc(NodeIndex, estimated_extra) catch unreachable,
         };
+    }
+
+    pub inline fn add(self: *NodeList, allocator: std.mem.Allocator, data: NodeData, span: Span) NodeIndex {
+        const index: NodeIndex = @intCast(self.nodes.len);
+        self.nodes.append(allocator, .{ .data = data, .span = span }) catch unreachable;
+        return index;
+    }
+
+    pub inline fn addExtra(self: *NodeList, allocator: std.mem.Allocator, indices: []const NodeIndex) IndexRange {
+        const start = self.extra_len;
+        const len: u32 = @intCast(indices.len);
+        if (start + len > self.extra.len) self.growExtra(allocator, len);
+        @memcpy(self.extra[start..][0..len], indices);
+        self.extra_len += len;
+        return .{ .start = start, .len = len };
+    }
+
+    pub inline fn getData(self: *const NodeList, index: NodeIndex) NodeData {
+        return self.nodes.items(.data)[index];
+    }
+
+    pub inline fn getSpan(self: *const NodeList, index: NodeIndex) Span {
+        return self.nodes.items(.span)[index];
+    }
+
+    pub inline fn getExtra(self: *const NodeList, range: IndexRange) []const NodeIndex {
+        return self.extra[range.start..][0..range.len];
+    }
+
+    fn growExtra(self: *NodeList, allocator: std.mem.Allocator, minimum: u32) void {
+        const new_capacity = @max(self.extra.len * 2, self.extra_len + minimum);
+        const new_extra = allocator.alloc(NodeIndex, new_capacity) catch unreachable;
+        @memcpy(new_extra[0..self.extra_len], self.extra[0..self.extra_len]);
+        allocator.free(self.extra);
+        self.extra = new_extra;
     }
 };
 
-// Property
-pub const BindingProperty = struct {
-    kind: []const u8 = "init",
-    key: *PropertyKey,
-    value: *BindingPattern,
-    method: bool = false,
-    shorthand: bool,
-    computed: bool,
-    span: token.Span,
-};
+pub fn binaryOperatorFromToken(tok: token.TokenType) BinaryOperator {
+    return switch (tok) {
+        .Equal => .Equal,
+        .NotEqual => .NotEqual,
+        .StrictEqual => .StrictEqual,
+        .StrictNotEqual => .StrictNotEqual,
+        .LessThan => .LessThan,
+        .LessThanEqual => .LessThanOrEqual,
+        .GreaterThan => .GreaterThan,
+        .GreaterThanEqual => .GreaterThanOrEqual,
+        .Plus => .Add,
+        .Minus => .Subtract,
+        .Star => .Multiply,
+        .Slash => .Divide,
+        .Percent => .Modulo,
+        .Exponent => .Exponent,
+        .BitwiseOr => .BitwiseOr,
+        .BitwiseXor => .BitwiseXor,
+        .BitwiseAnd => .BitwiseAnd,
+        .LeftShift => .LeftShift,
+        .RightShift => .RightShift,
+        .UnsignedRightShift => .UnsignedRightShift,
+        .In => .In,
+        .Instanceof => .Instanceof,
+        else => unreachable,
+    };
+}
 
-pub const ObjectPatternProperty = union(enum) {
-    binding_property: *BindingProperty,
-    rest_element: *BindingRestElement,
+pub fn logicalOperatorFromToken(tok: token.TokenType) LogicalOperator {
+    return switch (tok) {
+        .LogicalAnd => .And,
+        .LogicalOr => .Or,
+        .NullishCoalescing => .NullishCoalescing,
+        else => unreachable,
+    };
+}
 
-    pub inline fn getSpan(self: *const ObjectPatternProperty) token.Span {
-        return switch (self.*) {
-            inline else => |variant| variant.span,
-        };
-    }
-};
+pub fn unaryOperatorFromToken(tok: token.TokenType) UnaryOperator {
+    return switch (tok) {
+        .Minus => .Negate,
+        .Plus => .Positive,
+        .LogicalNot => .LogicalNot,
+        .BitwiseNot => .BitwiseNot,
+        .Typeof => .Typeof,
+        .Void => .Void,
+        .Delete => .Delete,
+        else => unreachable,
+    };
+}
 
-// ObjectPattern
-pub const ObjectPattern = struct {
-    properties: []*ObjectPatternProperty,
-    span: token.Span,
-};
+pub fn updateOperatorFromToken(tok: token.TokenType) UpdateOperator {
+    return switch (tok) {
+        .Increment => .Increment,
+        .Decrement => .Decrement,
+        else => unreachable,
+    };
+}
 
-// SpreadElement
-pub const SpreadElement = struct {
-    argument: *Expression,
-    span: token.Span,
-};
+pub fn assignmentOperatorFromToken(tok: token.TokenType) AssignmentOperator {
+    return switch (tok) {
+        .Assign => .Assign,
+        .PlusAssign => .AddAssign,
+        .MinusAssign => .SubtractAssign,
+        .StarAssign => .MultiplyAssign,
+        .SlashAssign => .DivideAssign,
+        .PercentAssign => .ModuloAssign,
+        .ExponentAssign => .ExponentAssign,
+        .LeftShiftAssign => .LeftShiftAssign,
+        .RightShiftAssign => .RightShiftAssign,
+        .UnsignedRightShiftAssign => .UnsignedRightShiftAssign,
+        .BitwiseOrAssign => .BitwiseOrAssign,
+        .BitwiseXorAssign => .BitwiseXorAssign,
+        .BitwiseAndAssign => .BitwiseAndAssign,
+        .LogicalOrAssign => .LogicalOrAssign,
+        .LogicalAndAssign => .LogicalAndAssign,
+        .NullishAssign => .NullishAssign,
+        else => unreachable,
+    };
+}
 
-// ArrayExpression
-pub const ArrayExpression = struct {
-    elements: []?*ArrayExpressionElement,
-    span: token.Span,
-};
-
-pub const ArrayExpressionElement = union(enum) {
-    expression: *Expression,
-    spread_element: *SpreadElement,
-
-    pub inline fn getSpan(self: *const ArrayExpressionElement) token.Span {
-        return switch (self.*) {
-            .expression => |expr| expr.getSpan(),
-            .spread_element => |spread| spread.span,
-        };
-    }
-};
-
-// ObjectExpression
-pub const ObjectExpression = struct {
-    properties: []*ObjectExpressionProperty,
-    span: token.Span,
-};
-
-pub const ObjectExpressionProperty = union(enum) {
-    property: *ObjectProperty,
-    spread_element: *SpreadElement,
-
-    pub inline fn getSpan(self: *const ObjectExpressionProperty) token.Span {
-        return switch (self.*) {
-            .property => |prop| prop.span,
-            .spread_element => |spread| spread.span,
-        };
-    }
-};
-
-pub const PropertyKind = enum {
-    init,
-    get,
-    set,
-};
-
-// Property
-pub const ObjectProperty = struct {
-    kind: PropertyKind = .init,
-    key: *PropertyKey,
-    value: *Expression,
-    method: bool = false,
-    shorthand: bool,
-    computed: bool,
-    span: token.Span,
-};
+pub inline fn isNull(index: NodeIndex) bool {
+    return index == null_node;
+}

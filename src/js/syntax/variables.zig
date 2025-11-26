@@ -1,115 +1,71 @@
 const std = @import("std");
-const token = @import("../token.zig");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
-
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 
-pub fn parseVariableDeclaration(parser: *Parser) ?*ast.Statement {
+pub fn parseVariableDeclaration(parser: *Parser) ?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    const kind = parseVariableDeclarationKind(parser) orelse return null;
+    const kind = parseVariableKind(parser) orelse return null;
 
-    var declarators = std.ArrayList(*ast.VariableDeclarator).empty;
-    parser.ensureCapacity(&declarators, 4);
+    var declarators: [64]ast.NodeIndex = undefined;
+    declarators[0] = parseVariableDeclarator(parser, kind) orelse return null;
+    var length: usize = 1;
+    var end = parser.getSpan(declarators[0]).end;
 
-    // parse first declarator
-    const first_decl = parseVariableDeclarator(parser, kind) orelse return null;
-    parser.append(&declarators, first_decl);
-
-    var end = first_decl.span.end;
-
-    // parse additional declarators
     while (parser.current_token.type == .Comma) {
         parser.advance();
-        const decl = parseVariableDeclarator(parser, kind) orelse return null;
-        end = decl.span.end;
-        parser.append(&declarators, decl);
+        declarators[length] = parseVariableDeclarator(parser, kind) orelse return null;
+        end = parser.getSpan(declarators[length]).end;
+        length += 1;
     }
 
-    end = parser.eatSemi(end);
-
-    const declarations = parser.dupe(*ast.VariableDeclarator, declarators.items);
-
-    const var_decl = ast.VariableDeclaration{
-        .kind = kind,
-        .declarations = declarations,
-        .span = .{ .start = start, .end = end },
-    };
-
-    return parser.createNode(ast.Statement, .{ .variable_declaration = var_decl });
+    return parser.addNode(.{
+        .variable_declaration = .{
+            .declarators = parser.addExtra(declarators[0..length]),
+            .kind = kind,
+        },
+    }, .{ .start = start, .end = parser.eatSemicolon(end) });
 }
 
-inline fn parseVariableDeclarationKind(parser: *Parser) ?ast.VariableDeclaration.VariableDeclarationKind {
-    const tok = parser.current_token.type;
+inline fn parseVariableKind(parser: *Parser) ?ast.VariableKind {
+    const token_type = parser.current_token.type;
     parser.advance();
-
-    return switch (tok) {
-        .Let => .let,
-        .Const => .@"const",
-        .Var => .@"var",
-        .Using => .using,
-        .Await => blk: {
-            if (parser.current_token.type == .Using) {
-                parser.advance();
-                break :blk .@"await using";
-            }
-            return null;
-        },
+    return switch (token_type) {
+        .Let => .Let,
+        .Const => .Const,
+        .Var => .Var,
+        .Using => .Using,
+        .Await => if (parser.current_token.type == .Using) blk: {
+            parser.advance();
+            break :blk .AwaitUsing;
+        } else null,
         else => null,
     };
 }
 
-fn parseVariableDeclarator(
-    parser: *Parser,
-    kind: ast.VariableDeclaration.VariableDeclarationKind,
-) ?*ast.VariableDeclarator {
+fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) ?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = patterns.parseBindingPattern(parser) orelse return null;
 
-    var init_expr: ?*ast.Expression = null;
-    var end = id.getSpan().end;
+    var init: ast.NodeIndex = ast.null_node;
+    var end = parser.getSpan(id).end;
 
     if (parser.current_token.type == .Assign) {
         parser.advance();
-        if (expressions.parseExpression(parser, 0)) |expr| {
-            init_expr = expr;
-            end = expr.getSpan().end;
+        if (expressions.parseExpression(parser, 0)) |expression| {
+            init = expression;
+            end = parser.getSpan(expression).end;
         }
     } else if (patterns.isDestructuringPattern(parser, id)) {
-        const id_span = id.getSpan();
-        parser.err(
-            id_span.start,
-            id_span.end,
-            "Missing initializer in destructuring declaration",
-            "Destructuring patterns must be initialized. Add '= <value>' after the pattern",
-        );
+        parser.err(parser.getSpan(id).start, parser.getSpan(id).end, "Destructuring requires initializer", null);
         return null;
-    } else if (kind == .@"const" or kind == .using or kind == .@"await using") {
-        const id_span = id.getSpan();
-
-        const kind_str = switch (kind) {
-            .@"const" => "'const'",
-            .using => "'using'",
-            .@"await using" => "'await using'",
-            else => unreachable,
-        };
-
-        parser.err(
-            id_span.start,
-            id_span.end,
-            parser.formatMessage(
-                "Missing initializer in {s} declaration",
-                .{kind_str},
-            ),
-            "Add '= <value>' after the variable name to initialize it",
-        );
+    } else if (kind == .Const or kind == .Using or kind == .AwaitUsing) {
+        parser.err(parser.getSpan(id).start, parser.getSpan(id).end, parser.formatMessage("{s} requires initializer", .{@tagName(kind)}), null);
         return null;
     }
 
-    return parser.createNode(ast.VariableDeclarator, .{
-        .id = id,
-        .init = init_expr,
-        .span = .{ .start = start, .end = end },
-    });
+    return parser.addNode(.{
+        .variable_declarator = .{ .id = id, .init = init },
+    }, .{ .start = start, .end = end });
 }

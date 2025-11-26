@@ -178,7 +178,7 @@ fn getVisualColumn(line: []const u8, byte_pos: usize) usize {
     return col;
 }
 
-pub fn printError(source: []const u8, err: js.ParserError) void {
+pub fn printError(source: []const u8, err: js.ParseError) void {
     var line_start_positions = std.ArrayList(usize).empty;
     defer line_start_positions.deinit(std.heap.page_allocator);
     line_start_positions.append(std.heap.page_allocator, 0) catch return;

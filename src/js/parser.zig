@@ -10,12 +10,14 @@ const variables = @import("syntax/variables.zig");
 
 pub const Error = struct {
     message: []const u8,
-    span: token.Span,
+    span: ast.Span,
     help: ?[]const u8 = null,
 };
 
 pub const ParseResult = struct {
-    program: ?ast.Program,
+    program: ast.NodeIndex,
+    nodes: *ast.NodeList,
+    source: []const u8,
     errors: []Error,
 
     pub inline fn hasErrors(self: ParseResult) bool {
@@ -23,156 +25,114 @@ pub const ParseResult = struct {
     }
 };
 
-pub const SourceType = enum {
-    Script,
-    Module,
-};
+pub const SourceType = enum { Script, Module };
 
 pub const Parser = struct {
     source: []const u8,
     lexer: lexer.Lexer,
     allocator: std.mem.Allocator,
-    errors: std.ArrayList(Error),
-
-    current_token: token.Token,
+    errors: std.ArrayList(Error) = .empty,
+    nodes: ast.NodeList,
+    current_token: token.Token = undefined,
 
     in_async: bool = false,
     in_generator: bool = false,
     in_function: bool = false,
 
-    // TODO: add logic to detect it, likely in directive parsing
     strict_mode: bool = true,
     source_type: SourceType = .Module,
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !Parser {
-        const lex = try lexer.Lexer.init(allocator, source);
-
         return .{
             .source = source,
-            .lexer = lex,
+            .lexer = try lexer.Lexer.init(allocator, source),
             .allocator = allocator,
-
-            .current_token = undefined,
-
-            .errors = std.ArrayList(Error).empty,
+            .nodes = ast.NodeList.init(allocator, @intCast(source.len)),
         };
     }
 
     pub fn parse(self: *Parser) !ParseResult {
-        // let's gooo
         self.advance();
 
         const start = self.current_token.span.start;
-
-        var body_list = std.ArrayList(*ast.Body).empty;
+        var statements: std.ArrayList(ast.NodeIndex) = .empty;
 
         while (self.current_token.type != .EOF) {
-            const stmt = self.parseStatement() orelse {
+            if (self.parseStatement()) |statement| {
+                statements.append(self.allocator, statement) catch unreachable;
+            } else {
                 self.synchronize();
-                continue;
-            };
-
-            const body_item = self.createNode(ast.Body, .{ .statement = stmt });
-            self.append(&body_list, body_item);
+            }
         }
 
-        const end = self.current_token.span.start;
+        const body = self.nodes.addExtra(self.allocator, statements.items);
 
-        const program = ast.Program{
-            .body = self.dupe(*ast.Body, body_list.items),
-            .span = .{ .start = start, .end = end },
-        };
+        const program = self.addNode(.{
+            .program = .{
+                .body = body,
+                .source_type = if (self.source_type == .Module) .Module else .Script,
+            },
+        }, .{ .start = start, .end = self.current_token.span.start });
 
-        return ParseResult{
+        return .{
             .program = program,
-            .errors = self.toOwnedSlice(&self.errors),
+            .nodes = &self.nodes,
+            .source = self.source,
+            .errors = self.errors.toOwnedSlice(self.allocator) catch unreachable,
         };
     }
 
-    pub fn parseStatement(self: *Parser) ?*ast.Statement {
+    pub fn parseStatement(self: *Parser) ?ast.NodeIndex {
         return switch (self.current_token.type) {
             .Var, .Const, .Let, .Using => variables.parseVariableDeclaration(self),
-            .Await => {
+            .Await => blk: {
                 const await_token = self.current_token;
-                const next = self.lookAhead() orelse return null;
-
-                if (next.type == .Using) {
-                    return variables.parseVariableDeclaration(self);
+                if ((self.lookAhead() orelse break :blk null).type == .Using) {
+                    break :blk variables.parseVariableDeclaration(self);
                 }
-
-                const span_start = await_token.span.start;
-                const span_end = await_token.span.end;
-                self.err(
-                    span_start,
-                    span_end,
-                    "Expected 'using' after 'await'",
-                    "Add 'using' after 'await' to create an 'await using' declaration",
-                );
-                return null;
+                self.err(await_token.span.start, await_token.span.end, "Expected 'using' after 'await'", null);
+                break :blk null;
             },
             else => self.parseExpressionStatement(),
         };
     }
 
-    pub fn parseExpressionStatement(self: *Parser) ?*ast.Statement {
-        const expr = expressions.parseExpression(self, 0) orelse return null;
-        const end = self.eatSemi(expr.getSpan().end);
-
-        const expr_stmt = ast.ExpressionStatement{
-            .expression = expr,
-            .span = .{ .start = expr.getSpan().start, .end = end },
-        };
-
-        return self.createNode(ast.Statement, .{ .expression_statement = expr_stmt });
+    pub fn parseExpressionStatement(self: *Parser) ?ast.NodeIndex {
+        const expression = expressions.parseExpression(self, 0) orelse return null;
+        const span = self.nodes.getSpan(expression);
+        return self.addNode(.{ .expression_statement = .{ .expression = expression } }, .{
+            .start = span.start,
+            .end = self.eatSemicolon(span.end),
+        });
     }
 
-    pub inline fn ensureValidIdentifier(self: *Parser, tok: token.Token, comptime as_what: []const u8, comptime help: []const u8, help_args: anytype) bool {
-        if (self.strict_mode and (tok.type == .Identifier)) {
-            if (std.mem.eql(u8, tok.lexeme, "eval") or std.mem.eql(u8, tok.lexeme, "arguments")) {
-                self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' cannot be used {s} in strict mode", .{ tok.lexeme, as_what }), help);
-                return false;
-            }
-        }
-
-        if (self.strict_mode and tok.type.isStrictModeReserved()) {
-            self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' is reserved in strict mode and cannot be used {s}", .{ tok.lexeme, as_what }), help);
-            return false;
-        }
-
-        if (tok.type == .Await and (self.in_async or self.source_type == .Module)) {
-            self.err(tok.span.start, tok.span.end, self.formatMessage("'await' is reserved {s} and cannot be used {s}", .{ if (self.in_async) "in async functions" else "at the top level of modules", as_what }), help);
-            return false;
-        }
-
-        if (tok.type == .Yield and (self.in_generator or self.source_type == .Module)) {
-            self.err(tok.span.start, tok.span.end, self.formatMessage("'yield' is reserved {s} and cannot be used {s}", .{ if (self.in_generator) "in generator functions" else "at the top level of modules", as_what }), help);
-            return false;
-        }
-
-        if (tok.type.isStrictReserved()) {
-            self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' is a reserved word and cannot be used {s}", .{ tok.lexeme, as_what }), self.formatMessage(help, help_args));
-            return false;
-        }
-
-        return true;
+    pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) ast.NodeIndex {
+        return self.nodes.add(self.allocator, data, span);
     }
 
-    pub fn formatMessage(self: *Parser, comptime fmt: []const u8, args: anytype) []u8 {
-        return std.fmt.allocPrint(self.allocator, fmt, args) catch unreachable;
+    pub inline fn addExtra(self: *Parser, indices: []const ast.NodeIndex) ast.IndexRange {
+        return self.nodes.addExtra(self.allocator, indices);
+    }
+
+    pub inline fn getSpan(self: *Parser, index: ast.NodeIndex) ast.Span {
+        return self.nodes.getSpan(index);
+    }
+
+    pub inline fn getData(self: *Parser, index: ast.NodeIndex) ast.NodeData {
+        return self.nodes.getData(index);
     }
 
     pub fn lookAhead(self: *Parser) ?token.Token {
-        // TODO: add lookahead support, rewind etc.
         return self.current_token;
     }
 
     pub inline fn advance(self: *Parser) void {
-        self.current_token = self.lexer.nextToken() catch |err_| blk: {
-            self.append(&self.errors, Error{
-                .message = lexer.getLexicalErrorMessage(err_),
+        self.current_token = self.lexer.nextToken() catch |e| blk: {
+            self.errors.append(self.allocator, .{
+                .message = lexer.getLexicalErrorMessage(e),
                 .span = .{ .start = self.lexer.token_start, .end = self.lexer.cursor },
-                .help = lexer.getLexicalErrorHelp(err_),
-            });
+                .help = lexer.getLexicalErrorHelp(e),
+            }) catch unreachable;
             break :blk token.Token.eof(0);
         };
     }
@@ -182,93 +142,79 @@ pub const Parser = struct {
         self.advance();
     }
 
-    pub inline fn expect(
-        self: *Parser,
-        token_type: token.TokenType,
-        message: []const u8,
-        help: ?[]const u8,
-    ) bool {
+    pub inline fn expect(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) bool {
         if (self.current_token.type == token_type) {
             self.advance();
             return true;
         }
-
-        const tok = self.current_token;
-        self.err(tok.span.start, tok.span.end, message, help);
+        self.err(self.current_token.span.start, self.current_token.span.end, message, help);
         return false;
     }
 
-    pub inline fn eatSemi(self: *Parser, current_end: u32) u32 {
+    pub inline fn eatSemicolon(self: *Parser, end: u32) u32 {
         if (self.current_token.type == .Semicolon) {
             self.advance();
-            return current_end + 1;
+            return end + 1;
         }
-
-        return current_end;
+        return end;
     }
 
-    pub inline fn err(
+    pub inline fn ensureValidIdentifier(
         self: *Parser,
-        start: u32,
-        end: u32,
-        message: []const u8,
-        help: ?[]const u8,
-    ) void {
-        self.append(&self.errors, Error{
+        tok: token.Token,
+        comptime as_what: []const u8,
+        comptime help: []const u8,
+        help_args: anytype,
+    ) bool {
+        if (self.strict_mode and tok.type == .Identifier) {
+            if (std.mem.eql(u8, tok.lexeme, "eval") or std.mem.eql(u8, tok.lexeme, "arguments")) {
+                self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' cannot be used {s} in strict mode", .{ tok.lexeme, as_what }), help);
+                return false;
+            }
+        }
+        if (self.strict_mode and tok.type.isStrictModeReserved()) {
+            self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' is reserved in strict mode and cannot be used {s}", .{ tok.lexeme, as_what }), help);
+            return false;
+        }
+        if (tok.type == .Await and (self.in_async or self.source_type == .Module)) {
+            self.err(tok.span.start, tok.span.end, self.formatMessage("'await' is reserved {s} and cannot be used {s}", .{ if (self.in_async) "in async functions" else "at the top level of modules", as_what }), help);
+            return false;
+        }
+        if (tok.type == .Yield and (self.in_generator or self.source_type == .Module)) {
+            self.err(tok.span.start, tok.span.end, self.formatMessage("'yield' is reserved {s} and cannot be used {s}", .{ if (self.in_generator) "in generator functions" else "at the top level of modules", as_what }), help);
+            return false;
+        }
+        if (tok.type.isStrictReserved()) {
+            self.err(tok.span.start, tok.span.end, self.formatMessage("'{s}' is a reserved word and cannot be used {s}", .{ tok.lexeme, as_what }), self.formatMessage(help, help_args));
+            return false;
+        }
+        return true;
+    }
+
+    pub inline fn err(self: *Parser, start: u32, end: u32, message: []const u8, help: ?[]const u8) void {
+        self.errors.append(self.allocator, .{
             .message = message,
             .span = .{ .start = start, .end = end },
             .help = help,
-        });
+        }) catch unreachable;
     }
 
-    // TODO(arshad): this is too basic now, make it much better later
+    pub fn formatMessage(self: *Parser, comptime format: []const u8, args: anytype) []u8 {
+        return std.fmt.allocPrint(self.allocator, format, args) catch unreachable;
+    }
+
     fn synchronize(self: *Parser) void {
         self.advance();
-
         while (self.current_token.type != .EOF) {
             if (self.current_token.type == .Semicolon) {
                 self.advance();
                 return;
             }
-
             switch (self.current_token.type) {
-                .Class,
-                .Function,
-                .Var,
-                .For,
-                .If,
-                .While,
-                .Return,
-                .Let,
-                .Const,
-                .Using,
-                => return,
+                .Class, .Function, .Var, .For, .If, .While, .Return, .Let, .Const, .Using => return,
                 else => {},
             }
-
             self.advance();
         }
-    }
-
-    pub inline fn createNode(self: *Parser, comptime T: type, value: T) *T {
-        const ptr = self.allocator.create(T) catch unreachable;
-        ptr.* = value;
-        return ptr;
-    }
-
-    pub inline fn ensureCapacity(self: *Parser, list: anytype, capacity: u32) void {
-        list.ensureUnusedCapacity(self.allocator, capacity) catch unreachable;
-    }
-
-    pub inline fn append(self: *Parser, list: anytype, item: anytype) void {
-        list.append(self.allocator, item) catch unreachable;
-    }
-
-    pub inline fn dupe(self: *Parser, comptime T: type, items: []const T) []T {
-        return self.allocator.dupe(T, items) catch unreachable;
-    }
-
-    pub inline fn toOwnedSlice(self: *Parser, list: anytype) @TypeOf(list.*.toOwnedSlice(self.allocator) catch unreachable) {
-        return list.toOwnedSlice(self.allocator) catch unreachable;
     }
 };
