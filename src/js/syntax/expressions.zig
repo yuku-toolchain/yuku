@@ -218,20 +218,36 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u5, left: ast.NodeInde
 
     parser.advance();
     const right = parseExpression(parser, precedence) orelse return null;
-    const target = parser.addNode(.{ .simple_assignment_target = left }, left_span);
 
     return parser.addNode(
-        .{ .assignment_expression = .{ .left = target, .right = right, .operator = operator } },
+        .{ .assignment_expression = .{ .left = left, .right = right, .operator = operator } },
         .{ .start = left_span.start, .end = parser.getSpan(right).end },
     );
 }
 
+/// AssignmentTarget: can be simple (identifier/member) or pattern (destructuring)
 pub fn isValidAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
-    return parser.getData(index) == .identifier_reference;
+    return switch (parser.getData(index)) {
+        // SimpleAssignmentTarget
+        .identifier_reference => true,
+        // TODO: add member expressions when implemented
+        // .member_expression, .computed_member_expression => true,
+
+        // AssignmentPattern (destructuring)
+        .array_pattern, .object_pattern => true,
+
+        else => false,
+    };
 }
 
+/// SimpleAssignmentTarget: only identifier and member expressions (no destructuring)
 pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
-    return parser.getData(index) == .identifier_reference;
+    return switch (parser.getData(index)) {
+        .identifier_reference => true,
+        // TODO: add member expressions when implemented
+        // .member_expression, .computed_member_expression => true,
+        else => false,
+    };
 }
 
 fn parseArrayExpression(parser: *Parser) ?ast.NodeIndex {

@@ -129,7 +129,7 @@ pub const UnaryExpression = struct {
 /// `++argument` or `argument++`
 /// https://tc39.es/ecma262/#sec-update-expressions
 pub const UpdateExpression = struct {
-    /// SimpleAssignmentTarget
+    /// SimpleAssignmentTarget (IdentifierReference | MemberExpression)
     argument: NodeIndex,
     operator: UpdateOperator,
     prefix: bool,
@@ -138,7 +138,7 @@ pub const UpdateExpression = struct {
 /// `left operator right`
 /// https://tc39.es/ecma262/#sec-assignment-operators
 pub const AssignmentExpression = struct {
-    /// AssignmentTarget
+    /// AssignmentTarget (IdentifierReference | MemberExpression | ArrayPattern | ObjectPattern)
     left: NodeIndex,
     /// Expression
     right: NodeIndex,
@@ -398,7 +398,6 @@ pub const NodeData = union(enum) {
     object_pattern: ObjectPattern,
     binding_property: BindingProperty,
     program: Program,
-    simple_assignment_target: NodeIndex,
 };
 
 pub const Node = struct {
