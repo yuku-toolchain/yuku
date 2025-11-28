@@ -263,8 +263,4 @@ const ScratchBuffer = struct {
     pub inline fn reset(self: *ScratchBuffer, checkpoint: usize) void {
         self.items.shrinkRetainingCapacity(checkpoint);
     }
-
-    fn deinit(self: *ScratchBuffer) void {
-        self.items.deinit(self.allocator);
-    }
 };
