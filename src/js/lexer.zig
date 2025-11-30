@@ -28,56 +28,42 @@ pub const LexicalError = error{
 // TODO:
 // [ ] some simd optimizations
 
-const padding_size = 4; // four safe lookaheads
-
 pub const Lexer = struct {
     strict_mode: bool,
-    source: []u8,
+    source: []const u8,
     source_len: u32,
     /// token start position, retained for lexical error recovery if scan fails
     token_start: u32,
     /// current byte index being scanned in the source
     cursor: u32,
     template_depth: u32,
-
     arena: std.heap.ArenaAllocator,
-
     has_line_terminator_before: bool,
-    initialized: bool = false,
-
-    _source_ref: []const u8,
 
     pub fn init(backing_allocator: std.mem.Allocator, source: []const u8) Lexer {
         return .{
             .strict_mode = false,
-            .source = undefined,
+            .source = source,
             .source_len = @intCast(source.len),
             .token_start = 0,
             .cursor = 0,
             .template_depth = 0,
             .arena = std.heap.ArenaAllocator.init(backing_allocator),
             .has_line_terminator_before = false,
-            ._source_ref = source,
         };
-    }
-
-    fn ensureInitialized(self: *Lexer) !void {
-        if (self.initialized) return;
-
-        const alloc = self.arena.allocator();
-        const padded = try alloc.alloc(u8, self._source_ref.len + padding_size);
-        @memcpy(padded[0..self._source_ref.len], self._source_ref);
-        @memset(padded[self._source_ref.len..], 0);
-        self.source = padded;
-        self.initialized = true;
     }
 
     pub fn deinit(self: *Lexer) void {
         self.arena.deinit();
     }
 
-    pub fn nextToken(self: *Lexer) (LexicalError || error{OutOfMemory})!token.Token {
-        try self.ensureInitialized();
+    inline fn peek(self: *const Lexer, offset: u32) u8 {
+        const pos = self.cursor + offset;
+        if (pos >= self.source_len) return 0;
+        return self.source[pos];
+    }
+
+    pub fn nextToken(self: *Lexer) LexicalError!token.Token {
         try self.skipSkippable();
 
         if (self.cursor >= self.source_len) {
@@ -123,9 +109,9 @@ pub const Lexer = struct {
     fn scanPunctuation(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         const c0 = self.source[self.cursor];
-        const c1 = self.source[self.cursor + 1];
-        const c2 = self.source[self.cursor + 2];
-        const c3 = self.source[self.cursor + 3];
+        const c1 = self.peek(1);
+        const c2 = self.peek(2);
+        const c3 = self.peek(3);
 
         return switch (c0) {
             '+' => switch (c1) {
@@ -401,7 +387,7 @@ pub const Lexer = struct {
                 return self.createToken(.NoSubstitutionTemplate, self.source[start..end], start, end);
             }
 
-            if (c == '$' and self.source[self.cursor + 1] == '{') {
+            if (c == '$' and self.peek(1) == '{') {
                 self.cursor += 2;
                 const end = self.cursor;
                 self.template_depth += 1;
@@ -432,7 +418,7 @@ pub const Lexer = struct {
                 }
                 return self.createToken(.TemplateTail, self.source[start..end], start, end);
             }
-            if (c == '$' and self.source[self.cursor + 1] == '{') {
+            if (c == '$' and self.peek(1) == '{') {
                 self.cursor += 2;
                 const end = self.cursor;
                 return self.createToken(.TemplateMiddle, self.source[start..end], start, end);
@@ -447,7 +433,7 @@ pub const Lexer = struct {
 
         brk: switch (self.source[self.cursor]) {
             '0' => {
-                const c1 = self.source[self.cursor + 1];
+                const c1 = self.peek(1);
 
                 if (!util.isOctalDigit(c1)) {
                     self.cursor += 1; // null escape
@@ -491,8 +477,8 @@ pub const Lexer = struct {
     }
 
     fn consumeHex(self: *Lexer) LexicalError!void {
-        const c1 = self.source[self.cursor + 1];
-        const c2 = self.source[self.cursor + 2];
+        const c1 = self.peek(1);
+        const c2 = self.peek(2);
 
         if (!std.ascii.isHex(c1) or !std.ascii.isHex(c2)) {
             return error.InvalidHexEscape;
@@ -608,8 +594,8 @@ pub const Lexer = struct {
     }
 
     fn scanDot(self: *Lexer) LexicalError!token.Token {
-        const c1 = self.source[self.cursor + 1];
-        const c2 = self.source[self.cursor + 2];
+        const c1 = self.peek(1);
+        const c2 = self.peek(2);
 
         if (std.ascii.isDigit(c1)) {
             return self.scanNumber();
@@ -631,7 +617,7 @@ pub const Lexer = struct {
                 @branchHint(.likely);
                 if (c == '\\') {
                     @branchHint(.cold);
-                    if (self.source[self.cursor + 1] != 'u') {
+                    if (self.peek(1) != 'u') {
                         return error.InvalidUnicodeEscape;
                     }
                     self.cursor += 1; // consume backslash to get to 'u'
@@ -671,7 +657,7 @@ pub const Lexer = struct {
         if (std.ascii.isAscii(first_char)) {
             @branchHint(.likely);
             if (first_char == '\\') {
-                if (self.source[self.cursor + 1] != 'u') {
+                if (self.peek(1) != 'u') {
                     return error.InvalidUnicodeEscape;
                 }
                 self.cursor += 1; // consume backslash to get to 'u'
@@ -845,8 +831,8 @@ pub const Lexer = struct {
         var token_type: token.TokenType = .NumericLiteral;
 
         // handle prefixes: 0x, 0o, 0b
-        if (self.source[self.cursor] == '0' and self.cursor + 1 < self.source_len) {
-            const prefix = std.ascii.toLower(self.source[self.cursor + 1]);
+        if (self.source[self.cursor] == '0') {
+            const prefix = std.ascii.toLower(self.peek(1));
 
             switch (prefix) {
                 'x' => {
@@ -882,7 +868,7 @@ pub const Lexer = struct {
         if (token_type == .NumericLiteral and
             self.cursor < self.source_len and self.source[self.cursor] == '.')
         {
-            const next = if (self.cursor + 1 < self.source_len) self.source[self.cursor + 1] else 0;
+            const next = self.peek(1);
 
             if (std.ascii.isDigit(next)) {
                 self.cursor += 1;
