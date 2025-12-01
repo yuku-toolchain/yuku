@@ -146,21 +146,6 @@ pub const Parser = struct {
         };
     }
 
-    pub fn parseDirective(self: *Parser) ?ast.NodeIndex {
-        const current_token = self.current_token;
-
-        const expression = literals.parseStringLiteral(self) orelse return null;
-
-        return self.addNode(.{
-            .directive = .{
-                .expression = expression,
-                // without quotes
-                .value_start = current_token.span.start + 1,
-                .value_len = @intCast(current_token.lexeme.len - 2),
-            },
-        }, current_token.span);
-    }
-
     pub fn parseStatement(self: *Parser) ?ast.NodeIndex {
         return switch (self.current_token.type) {
             .Var, .Const, .Let, .Using => variables.parseVariableDeclaration(self),
@@ -190,6 +175,21 @@ pub const Parser = struct {
 
             else => self.parseExpressionStatement(),
         };
+    }
+
+    pub fn parseDirective(self: *Parser) ?ast.NodeIndex {
+        const current_token = self.current_token;
+
+        const expression = literals.parseStringLiteral(self) orelse return null;
+
+        return self.addNode(.{
+            .directive = .{
+                .expression = expression,
+                // without quotes
+                .value_start = current_token.span.start + 1,
+                .value_len = @intCast(current_token.lexeme.len - 2),
+            },
+        }, .{ .start = current_token.span.start, .end = self.eatSemicolon(current_token.span.end) });
     }
 
     pub fn parseExpressionStatement(self: *Parser) ?ast.NodeIndex {
