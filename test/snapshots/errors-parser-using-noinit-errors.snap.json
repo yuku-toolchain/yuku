@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "'using' declarations must be initialized",
+      "help": "Disposable resources require an initial value that implements the dispose protocol.",
+      "start": 6,
+      "end": 7
+    }
+  ]
+}

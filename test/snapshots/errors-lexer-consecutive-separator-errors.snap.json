@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 0,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "Numeric literal cannot contain consecutive separators",
+      "help": "Try removing one of the consecutive underscores here",
+      "start": 0,
+      "end": 2
+    }
+  ]
+}

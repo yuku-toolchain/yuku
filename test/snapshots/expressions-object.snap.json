@@ -1,0 +1,746 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 202,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 0,
+          "end": 2,
+          "properties": [
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 9,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 3,
+          "end": 9,
+          "properties": [{
+              "type": "Property",
+              "start": 4,
+              "end": 8,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 4,
+                "end": 5,
+                "name": "a"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 7,
+                "end": 8,
+                "value": 1,
+                "raw": "1"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 10,
+        "end": 22,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 10,
+          "end": 22,
+          "properties": [{
+              "type": "Property",
+              "start": 11,
+              "end": 15,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 11,
+                "end": 12,
+                "name": "a"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 14,
+                "end": 15,
+                "value": 1,
+                "raw": "1"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            },{
+              "type": "Property",
+              "start": 17,
+              "end": 21,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 17,
+                "end": 18,
+                "name": "b"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 20,
+                "end": 21,
+                "value": 2,
+                "raw": "2"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 23,
+        "end": 36,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 23,
+          "end": 36,
+          "properties": [{
+              "type": "Property",
+              "start": 24,
+              "end": 28,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 24,
+                "end": 25,
+                "name": "a"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 27,
+                "end": 28,
+                "value": 1,
+                "raw": "1"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            },{
+              "type": "Property",
+              "start": 30,
+              "end": 34,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 30,
+                "end": 31,
+                "name": "b"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 33,
+                "end": 34,
+                "value": 2,
+                "raw": "2"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 37,
+        "end": 40,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 37,
+          "end": 40,
+          "properties": [{
+              "type": "Property",
+              "start": 38,
+              "end": 39,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 38,
+                "end": 39,
+                "name": "a"
+              },
+              "value": {
+                "type": "Identifier",
+                "start": 38,
+                "end": 39,
+                "name": "a"
+              },
+              "method": false,
+              "shorthand": true,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 41,
+        "end": 47,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 41,
+          "end": 47,
+          "properties": [{
+              "type": "Property",
+              "start": 42,
+              "end": 43,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 42,
+                "end": 43,
+                "name": "a"
+              },
+              "value": {
+                "type": "Identifier",
+                "start": 42,
+                "end": 43,
+                "name": "a"
+              },
+              "method": false,
+              "shorthand": true,
+              "computed": false
+            },{
+              "type": "Property",
+              "start": 45,
+              "end": 46,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 45,
+                "end": 46,
+                "name": "b"
+              },
+              "value": {
+                "type": "Identifier",
+                "start": 45,
+                "end": 46,
+                "name": "b"
+              },
+              "method": false,
+              "shorthand": true,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 48,
+        "end": 57,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 48,
+          "end": 57,
+          "properties": [{
+              "type": "Property",
+              "start": 49,
+              "end": 50,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 49,
+                "end": 50,
+                "name": "a"
+              },
+              "value": {
+                "type": "Identifier",
+                "start": 49,
+                "end": 50,
+                "name": "a"
+              },
+              "method": false,
+              "shorthand": true,
+              "computed": false
+            },{
+              "type": "Property",
+              "start": 52,
+              "end": 56,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 52,
+                "end": 53,
+                "name": "b"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 55,
+                "end": 56,
+                "value": 2,
+                "raw": "2"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 58,
+        "end": 68,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 58,
+          "end": 68,
+          "properties": [{
+              "type": "Property",
+              "start": 59,
+              "end": 67,
+              "kind": "init",
+              "key": {
+                "type": "Literal",
+                "start": 59,
+                "end": 64,
+                "value": "key",
+                "raw": "\"key\""
+              },
+              "value": {
+                "type": "Literal",
+                "start": 66,
+                "end": 67,
+                "value": 1,
+                "raw": "1"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 69,
+        "end": 79,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 69,
+          "end": 79,
+          "properties": [{
+              "type": "Property",
+              "start": 70,
+              "end": 78,
+              "kind": "init",
+              "key": {
+                "type": "Literal",
+                "start": 70,
+                "end": 75,
+                "value": "key",
+                "raw": "'key'"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 77,
+                "end": 78,
+                "value": 2,
+                "raw": "2"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 80,
+        "end": 88,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 80,
+          "end": 88,
+          "properties": [{
+              "type": "Property",
+              "start": 81,
+              "end": 87,
+              "kind": "init",
+              "key": {
+                "type": "Literal",
+                "start": 81,
+                "end": 84,
+                "value": 123,
+                "raw": "123"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 86,
+                "end": 87,
+                "value": 3,
+                "raw": "3"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 89,
+        "end": 97,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 89,
+          "end": 97,
+          "properties": [{
+              "type": "Property",
+              "start": 90,
+              "end": 96,
+              "kind": "init",
+              "key": {
+                "type": "Literal",
+                "start": 90,
+                "end": 93,
+                "value": 1.5,
+                "raw": "1.5"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 95,
+                "end": 96,
+                "value": 4,
+                "raw": "4"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 98,
+        "end": 106,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 98,
+          "end": 106,
+          "properties": [{
+              "type": "Property",
+              "start": 99,
+              "end": 105,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 100,
+                "end": 101,
+                "name": "a"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 104,
+                "end": 105,
+                "value": 1,
+                "raw": "1"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": true
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 107,
+        "end": 119,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 107,
+          "end": 119,
+          "properties": [{
+              "type": "Property",
+              "start": 108,
+              "end": 118,
+              "kind": "init",
+              "key": {
+                "type": "BinaryExpression",
+                "start": 109,
+                "end": 114,
+                "left": {
+                  "type": "Identifier",
+                  "start": 109,
+                  "end": 110,
+                  "name": "a"
+                },
+                "operator": "+",
+                "right": {
+                  "type": "Identifier",
+                  "start": 113,
+                  "end": 114,
+                  "name": "b"
+                }
+              },
+              "value": {
+                "type": "Literal",
+                "start": 117,
+                "end": 118,
+                "value": 2,
+                "raw": "2"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": true
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 120,
+        "end": 137,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 120,
+          "end": 137,
+          "properties": [{
+              "type": "Property",
+              "start": 121,
+              "end": 136,
+              "kind": "init",
+              "key": {
+                "type": "Literal",
+                "start": 122,
+                "end": 132,
+                "value": "computed",
+                "raw": "\"computed\""
+              },
+              "value": {
+                "type": "Literal",
+                "start": 135,
+                "end": 136,
+                "value": 3,
+                "raw": "3"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": true
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 138,
+        "end": 144,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 138,
+          "end": 144,
+          "properties": [{
+              "type": "SpreadElement",
+              "start": 139,
+              "end": 143,
+              "argument": {
+                "type": "Identifier",
+                "start": 142,
+                "end": 143,
+                "name": "x"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 145,
+        "end": 157,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 145,
+          "end": 157,
+          "properties": [{
+              "type": "Property",
+              "start": 146,
+              "end": 150,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 146,
+                "end": 147,
+                "name": "a"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 149,
+                "end": 150,
+                "value": 1,
+                "raw": "1"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            },{
+              "type": "SpreadElement",
+              "start": 152,
+              "end": 156,
+              "argument": {
+                "type": "Identifier",
+                "start": 155,
+                "end": 156,
+                "name": "x"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 158,
+        "end": 170,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 158,
+          "end": 170,
+          "properties": [{
+              "type": "SpreadElement",
+              "start": 159,
+              "end": 163,
+              "argument": {
+                "type": "Identifier",
+                "start": 162,
+                "end": 163,
+                "name": "x"
+              }
+            },{
+              "type": "Property",
+              "start": 165,
+              "end": 169,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 165,
+                "end": 166,
+                "name": "b"
+              },
+              "value": {
+                "type": "Literal",
+                "start": 168,
+                "end": 169,
+                "value": 2,
+                "raw": "2"
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 171,
+        "end": 183,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 171,
+          "end": 183,
+          "properties": [{
+              "type": "SpreadElement",
+              "start": 172,
+              "end": 176,
+              "argument": {
+                "type": "Identifier",
+                "start": 175,
+                "end": 176,
+                "name": "x"
+              }
+            },{
+              "type": "SpreadElement",
+              "start": 178,
+              "end": 182,
+              "argument": {
+                "type": "Identifier",
+                "start": 181,
+                "end": 182,
+                "name": "y"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 184,
+        "end": 200,
+        "expression": {
+          "type": "ObjectExpression",
+          "start": 184,
+          "end": 200,
+          "properties": [{
+              "type": "Property",
+              "start": 185,
+              "end": 199,
+              "kind": "init",
+              "key": {
+                "type": "Identifier",
+                "start": 185,
+                "end": 186,
+                "name": "a"
+              },
+              "value": {
+                "type": "ObjectExpression",
+                "start": 188,
+                "end": 199,
+                "properties": [{
+                    "type": "Property",
+                    "start": 189,
+                    "end": 198,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 189,
+                      "end": 190,
+                      "name": "b"
+                    },
+                    "value": {
+                      "type": "ObjectExpression",
+                      "start": 192,
+                      "end": 198,
+                      "properties": [{
+                          "type": "Property",
+                          "start": 193,
+                          "end": 197,
+                          "kind": "init",
+                          "key": {
+                            "type": "Identifier",
+                            "start": 193,
+                            "end": 194,
+                            "name": "c"
+                          },
+                          "value": {
+                            "type": "Literal",
+                            "start": 196,
+                            "end": 197,
+                            "value": 1,
+                            "raw": "1"
+                          },
+                          "method": false,
+                          "shorthand": false,
+                          "computed": false
+                        }
+                      ]
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  }
+                ]
+              },
+              "method": false,
+              "shorthand": false,
+              "computed": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

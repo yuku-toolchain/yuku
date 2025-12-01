@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "TS(1183): An implementation cannot be declared in ambient contexts.",
+      "help": "Remove the function body or remove the 'declare' modifier",
+      "start": 23,
+      "end": 24
+    }
+  ]
+}

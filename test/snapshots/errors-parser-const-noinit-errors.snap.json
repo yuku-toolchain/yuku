@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "'const' declarations must be initialized",
+      "help": "Add '= value' to initialize the constant, or use 'let' if you need to assign it later.",
+      "start": 6,
+      "end": 7
+    }
+  ]
+}

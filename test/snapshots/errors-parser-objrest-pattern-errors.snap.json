@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 18,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "Object rest element must be a simple identifier",
+      "help": "Unlike array rest, object rest (...rest) cannot use nested destructuring patterns.",
+      "start": 8,
+      "end": 11
+    }
+  ]
+}

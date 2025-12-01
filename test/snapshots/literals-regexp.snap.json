@@ -1,0 +1,177 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 99,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 6,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 5,
+          "value": null,
+          "raw": "/abc/",
+          "regex": {
+            "pattern": "abc",
+            "flags": ""
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 7,
+        "end": 14,
+        "expression": {
+          "type": "Literal",
+          "start": 7,
+          "end": 13,
+          "value": null,
+          "raw": "/abc/g",
+          "regex": {
+            "pattern": "abc",
+            "flags": "g"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 15,
+        "end": 22,
+        "expression": {
+          "type": "Literal",
+          "start": 15,
+          "end": 21,
+          "value": null,
+          "raw": "/abc/i",
+          "regex": {
+            "pattern": "abc",
+            "flags": "i"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 23,
+        "end": 30,
+        "expression": {
+          "type": "Literal",
+          "start": 23,
+          "end": 29,
+          "value": null,
+          "raw": "/abc/m",
+          "regex": {
+            "pattern": "abc",
+            "flags": "m"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 31,
+        "end": 40,
+        "expression": {
+          "type": "Literal",
+          "start": 31,
+          "end": 39,
+          "value": null,
+          "raw": "/abc/gim",
+          "regex": {
+            "pattern": "abc",
+            "flags": "gim"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 41,
+        "end": 49,
+        "expression": {
+          "type": "Literal",
+          "start": 41,
+          "end": 48,
+          "value": null,
+          "raw": "/[a-z]/",
+          "regex": {
+            "pattern": "[a-z]",
+            "flags": ""
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 50,
+        "end": 59,
+        "expression": {
+          "type": "Literal",
+          "start": 50,
+          "end": 58,
+          "value": null,
+          "raw": "/[0-9]+/",
+          "regex": {
+            "pattern": "[0-9]+",
+            "flags": ""
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 60,
+        "end": 69,
+        "expression": {
+          "type": "Literal",
+          "start": 60,
+          "end": 68,
+          "value": null,
+          "raw": "/a*b+c?/",
+          "regex": {
+            "pattern": "a*b+c?",
+            "flags": ""
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 70,
+        "end": 79,
+        "expression": {
+          "type": "Literal",
+          "start": 70,
+          "end": 78,
+          "value": null,
+          "raw": "/^start/",
+          "regex": {
+            "pattern": "^start",
+            "flags": ""
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 80,
+        "end": 87,
+        "expression": {
+          "type": "Literal",
+          "start": 80,
+          "end": 86,
+          "value": null,
+          "raw": "/end$/",
+          "regex": {
+            "pattern": "end$",
+            "flags": ""
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 88,
+        "end": 98,
+        "expression": {
+          "type": "Literal",
+          "start": 88,
+          "end": 97,
+          "value": null,
+          "raw": "/(group)/",
+          "regex": {
+            "pattern": "(group)",
+            "flags": ""
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

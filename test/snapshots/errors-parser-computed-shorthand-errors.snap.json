@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 17,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "Computed property names cannot use shorthand syntax",
+      "help": "Use the full syntax with a colon: [expr]: value",
+      "start": 5,
+      "end": 8
+    }
+  ]
+}

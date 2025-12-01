@@ -26,7 +26,12 @@ pub const Serializer = struct {
             .pretty = pretty,
         };
 
+        try self.beginObject();
+        try self.writeKeyFirst("program");
         try self.writeNode(tree.program);
+        try self.writeKey("errors");
+        try self.writeErrors();
+        try self.endObject();
 
         return buffer.toOwnedSlice(allocator);
     }
@@ -377,7 +382,7 @@ pub const Serializer = struct {
         try self.writeSpan(span);
         try self.writeKey("value");
         try self.beginObject();
-        try self.writeKey("raw");
+        try self.writeKeyFirst("raw");
         try self.writeString(raw);
         try self.writeKey("cooked");
         try self.writeString(raw); // TODO: proper escape processing
@@ -470,7 +475,7 @@ pub const Serializer = struct {
         try self.writeByte('"');
         try self.writeKey("regex");
         try self.beginObject();
-        try self.writeKey("pattern");
+        try self.writeKeyFirst("pattern");
         try self.writeString(pattern);
         try self.writeKey("flags");
         try self.writeString(flags);
@@ -581,6 +586,28 @@ pub const Serializer = struct {
         try self.endObject();
     }
 
+    fn writeErrors(self: *Self) !void {
+        try self.beginArray();
+        for (self.tree.errors.items, 0..) |err, i| {
+            if (i > 0) try self.writeComma();
+            try self.beginObject();
+            try self.writeKeyFirst("message");
+            try self.writeString(err.message);
+            try self.writeKey("help");
+            if (err.help) |help| {
+                try self.writeString(help);
+            } else {
+                try self.writeNull();
+            }
+            try self.writeKey("start");
+            try self.writeInt(err.span.start);
+            try self.writeKey("end");
+            try self.writeInt(err.span.end);
+            try self.endObject();
+        }
+        try self.endArray();
+    }
+
     inline fn write(self: *Self, bytes: []const u8) !void {
         try self.buffer.appendSlice(self.allocator, bytes);
     }
@@ -619,6 +646,14 @@ pub const Serializer = struct {
 
     fn writeKey(self: *Self, key: []const u8) !void {
         try self.writeComma();
+        try self.writeKeyNoComma(key);
+    }
+
+    fn writeKeyFirst(self: *Self, key: []const u8) !void {
+        try self.writeKeyNoComma(key);
+    }
+
+    fn writeKeyNoComma(self: *Self, key: []const u8) !void {
         if (self.pretty) {
             try self.writeByte('\n');
             try self.writeIndent();

@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 13,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "Unclosed object literal",
+      "help": "Add a closing brace '}' to complete the object, or check for missing commas between properties.",
+      "start": 0,
+      "end": 13
+    }
+  ]
+}

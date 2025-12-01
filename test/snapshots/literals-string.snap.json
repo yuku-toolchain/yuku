@@ -1,0 +1,134 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 162,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 7,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 7,
+          "value": "hello",
+          "raw": "\"hello\""
+        },
+        "directive": "hello"
+      },{
+        "type": "ExpressionStatement",
+        "start": 8,
+        "end": 15,
+        "expression": {
+          "type": "Literal",
+          "start": 8,
+          "end": 15,
+          "value": "world",
+          "raw": "'world'"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 16,
+        "end": 36,
+        "expression": {
+          "type": "Literal",
+          "start": 16,
+          "end": 36,
+          "value": "with escape \\n\\t\\r",
+          "raw": "\"with escape \\n\\t\\r\""
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 37,
+        "end": 62,
+        "expression": {
+          "type": "Literal",
+          "start": 37,
+          "end": 62,
+          "value": "single with escape \\n\\t",
+          "raw": "'single with escape \\n\\t'"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 63,
+        "end": 79,
+        "expression": {
+          "type": "Literal",
+          "start": 63,
+          "end": 79,
+          "value": "unicode \\u0041",
+          "raw": "\"unicode \\u0041\""
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 80,
+        "end": 97,
+        "expression": {
+          "type": "Literal",
+          "start": 80,
+          "end": 97,
+          "value": "hex escape \\x41",
+          "raw": "\"hex escape \\x41\""
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 98,
+        "end": 100,
+        "expression": {
+          "type": "Literal",
+          "start": 98,
+          "end": 100,
+          "value": "",
+          "raw": "\"\""
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 101,
+        "end": 103,
+        "expression": {
+          "type": "Literal",
+          "start": 101,
+          "end": 103,
+          "value": "",
+          "raw": "''"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 104,
+        "end": 124,
+        "expression": {
+          "type": "Literal",
+          "start": 104,
+          "end": 124,
+          "value": "line with \\\" quote",
+          "raw": "\"line with \\\" quote\""
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 125,
+        "end": 145,
+        "expression": {
+          "type": "Literal",
+          "start": 125,
+          "end": 145,
+          "value": "line with \\' quote",
+          "raw": "'line with \\' quote'"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 146,
+        "end": 160,
+        "expression": {
+          "type": "Literal",
+          "start": 146,
+          "end": 160,
+          "value": "backslash \\\\",
+          "raw": "\"backslash \\\\\""
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

@@ -1,0 +1,496 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 156,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 5,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 0,
+          "end": 5,
+          "left": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 1,
+            "name": "a"
+          },
+          "operator": "+",
+          "right": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 6,
+        "end": 11,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 6,
+          "end": 11,
+          "left": {
+            "type": "Identifier",
+            "start": 6,
+            "end": 7,
+            "name": "a"
+          },
+          "operator": "-",
+          "right": {
+            "type": "Identifier",
+            "start": 10,
+            "end": 11,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 17,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 12,
+          "end": 17,
+          "left": {
+            "type": "Identifier",
+            "start": 12,
+            "end": 13,
+            "name": "a"
+          },
+          "operator": "*",
+          "right": {
+            "type": "Identifier",
+            "start": 16,
+            "end": 17,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 18,
+        "end": 23,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 18,
+          "end": 23,
+          "left": {
+            "type": "Identifier",
+            "start": 18,
+            "end": 19,
+            "name": "a"
+          },
+          "operator": "/",
+          "right": {
+            "type": "Identifier",
+            "start": 22,
+            "end": 23,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 24,
+        "end": 29,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 24,
+          "end": 29,
+          "left": {
+            "type": "Identifier",
+            "start": 24,
+            "end": 25,
+            "name": "a"
+          },
+          "operator": "%",
+          "right": {
+            "type": "Identifier",
+            "start": 28,
+            "end": 29,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 30,
+        "end": 36,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 30,
+          "end": 36,
+          "left": {
+            "type": "Identifier",
+            "start": 30,
+            "end": 31,
+            "name": "a"
+          },
+          "operator": "**",
+          "right": {
+            "type": "Identifier",
+            "start": 35,
+            "end": 36,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 37,
+        "end": 43,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 37,
+          "end": 43,
+          "left": {
+            "type": "Identifier",
+            "start": 37,
+            "end": 38,
+            "name": "a"
+          },
+          "operator": "==",
+          "right": {
+            "type": "Identifier",
+            "start": 42,
+            "end": 43,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 44,
+        "end": 50,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 44,
+          "end": 50,
+          "left": {
+            "type": "Identifier",
+            "start": 44,
+            "end": 45,
+            "name": "a"
+          },
+          "operator": "!=",
+          "right": {
+            "type": "Identifier",
+            "start": 49,
+            "end": 50,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 51,
+        "end": 58,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 51,
+          "end": 58,
+          "left": {
+            "type": "Identifier",
+            "start": 51,
+            "end": 52,
+            "name": "a"
+          },
+          "operator": "===",
+          "right": {
+            "type": "Identifier",
+            "start": 57,
+            "end": 58,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 59,
+        "end": 66,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 59,
+          "end": 66,
+          "left": {
+            "type": "Identifier",
+            "start": 59,
+            "end": 60,
+            "name": "a"
+          },
+          "operator": "!==",
+          "right": {
+            "type": "Identifier",
+            "start": 65,
+            "end": 66,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 67,
+        "end": 72,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 67,
+          "end": 72,
+          "left": {
+            "type": "Identifier",
+            "start": 67,
+            "end": 68,
+            "name": "a"
+          },
+          "operator": "<",
+          "right": {
+            "type": "Identifier",
+            "start": 71,
+            "end": 72,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 73,
+        "end": 78,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 73,
+          "end": 78,
+          "left": {
+            "type": "Identifier",
+            "start": 73,
+            "end": 74,
+            "name": "a"
+          },
+          "operator": ">",
+          "right": {
+            "type": "Identifier",
+            "start": 77,
+            "end": 78,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 79,
+        "end": 85,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 79,
+          "end": 85,
+          "left": {
+            "type": "Identifier",
+            "start": 79,
+            "end": 80,
+            "name": "a"
+          },
+          "operator": "<=",
+          "right": {
+            "type": "Identifier",
+            "start": 84,
+            "end": 85,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 86,
+        "end": 92,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 86,
+          "end": 92,
+          "left": {
+            "type": "Identifier",
+            "start": 86,
+            "end": 87,
+            "name": "a"
+          },
+          "operator": ">=",
+          "right": {
+            "type": "Identifier",
+            "start": 91,
+            "end": 92,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 93,
+        "end": 98,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 93,
+          "end": 98,
+          "left": {
+            "type": "Identifier",
+            "start": 93,
+            "end": 94,
+            "name": "a"
+          },
+          "operator": "&",
+          "right": {
+            "type": "Identifier",
+            "start": 97,
+            "end": 98,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 99,
+        "end": 104,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 99,
+          "end": 104,
+          "left": {
+            "type": "Identifier",
+            "start": 99,
+            "end": 100,
+            "name": "a"
+          },
+          "operator": "|",
+          "right": {
+            "type": "Identifier",
+            "start": 103,
+            "end": 104,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 105,
+        "end": 110,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 105,
+          "end": 110,
+          "left": {
+            "type": "Identifier",
+            "start": 105,
+            "end": 106,
+            "name": "a"
+          },
+          "operator": "^",
+          "right": {
+            "type": "Identifier",
+            "start": 109,
+            "end": 110,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 111,
+        "end": 117,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 111,
+          "end": 117,
+          "left": {
+            "type": "Identifier",
+            "start": 111,
+            "end": 112,
+            "name": "a"
+          },
+          "operator": "<<",
+          "right": {
+            "type": "Identifier",
+            "start": 116,
+            "end": 117,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 118,
+        "end": 124,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 118,
+          "end": 124,
+          "left": {
+            "type": "Identifier",
+            "start": 118,
+            "end": 119,
+            "name": "a"
+          },
+          "operator": ">>",
+          "right": {
+            "type": "Identifier",
+            "start": 123,
+            "end": 124,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 125,
+        "end": 132,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 125,
+          "end": 132,
+          "left": {
+            "type": "Identifier",
+            "start": 125,
+            "end": 126,
+            "name": "a"
+          },
+          "operator": ">>>",
+          "right": {
+            "type": "Identifier",
+            "start": 131,
+            "end": 132,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 133,
+        "end": 139,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 133,
+          "end": 139,
+          "left": {
+            "type": "Identifier",
+            "start": 133,
+            "end": 134,
+            "name": "a"
+          },
+          "operator": "in",
+          "right": {
+            "type": "Identifier",
+            "start": 138,
+            "end": 139,
+            "name": "b"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 140,
+        "end": 154,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 140,
+          "end": 154,
+          "left": {
+            "type": "Identifier",
+            "start": 140,
+            "end": 141,
+            "name": "a"
+          },
+          "operator": "instanceof",
+          "right": {
+            "type": "Identifier",
+            "start": 153,
+            "end": 154,
+            "name": "b"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

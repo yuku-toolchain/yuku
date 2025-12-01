@@ -1,0 +1,295 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 99,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 5,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 0,
+          "end": 5,
+          "left": {
+            "type": "UnaryExpression",
+            "start": 0,
+            "end": 2,
+            "operator": "-",
+            "prefix": true,
+            "argument": {
+              "type": "Identifier",
+              "start": 1,
+              "end": 2,
+              "name": "x"
+            }
+          },
+          "operator": "+",
+          "right": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "x"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 6,
+        "end": 8,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 6,
+          "end": 8,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 7,
+            "end": 8,
+            "name": "x"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 9,
+        "end": 11,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 9,
+          "end": 11,
+          "operator": "~",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 10,
+            "end": 11,
+            "name": "x"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 20,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 12,
+          "end": 20,
+          "operator": "typeof",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 19,
+            "end": 20,
+            "name": "x"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 21,
+        "end": 27,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 21,
+          "end": 27,
+          "operator": "void",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 26,
+            "end": 27,
+            "name": "x"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 28,
+        "end": 42,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 28,
+          "end": 42,
+          "left": {
+            "type": "BinaryExpression",
+            "start": 28,
+            "end": 39,
+            "left": {
+              "type": "UnaryExpression",
+              "start": 28,
+              "end": 36,
+              "operator": "delete",
+              "prefix": true,
+              "argument": {
+                "type": "Identifier",
+                "start": 35,
+                "end": 36,
+                "name": "x"
+              }
+            },
+            "operator": "-",
+            "right": {
+              "type": "Literal",
+              "start": 38,
+              "end": 39,
+              "value": 1,
+              "raw": "1"
+            }
+          },
+          "operator": "+",
+          "right": {
+            "type": "Literal",
+            "start": 41,
+            "end": 42,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 43,
+        "end": 48,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 43,
+          "end": 48,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "Literal",
+            "start": 44,
+            "end": 48,
+            "value": true,
+            "raw": "true"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 49,
+        "end": 55,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 49,
+          "end": 55,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "Literal",
+            "start": 50,
+            "end": 55,
+            "value": false,
+            "raw": "false"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 56,
+        "end": 59,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 56,
+          "end": 59,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "UnaryExpression",
+            "start": 57,
+            "end": 59,
+            "operator": "!",
+            "prefix": true,
+            "argument": {
+              "type": "Identifier",
+              "start": 58,
+              "end": 59,
+              "name": "x"
+            }
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 60,
+        "end": 63,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 60,
+          "end": 63,
+          "operator": "~",
+          "prefix": true,
+          "argument": {
+            "type": "UnaryExpression",
+            "start": 61,
+            "end": 63,
+            "operator": "~",
+            "prefix": true,
+            "argument": {
+              "type": "Identifier",
+              "start": 62,
+              "end": 63,
+              "name": "x"
+            }
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 64,
+        "end": 79,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 64,
+          "end": 79,
+          "operator": "typeof",
+          "prefix": true,
+          "argument": {
+            "type": "UnaryExpression",
+            "start": 71,
+            "end": 79,
+            "operator": "typeof",
+            "prefix": true,
+            "argument": {
+              "type": "Identifier",
+              "start": 78,
+              "end": 79,
+              "name": "x"
+            }
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 80,
+        "end": 86,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 80,
+          "end": 86,
+          "operator": "void",
+          "prefix": true,
+          "argument": {
+            "type": "Literal",
+            "start": 85,
+            "end": 86,
+            "value": 0,
+            "raw": "0"
+          }
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 87,
+        "end": 97,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 87,
+          "end": 97,
+          "operator": "delete",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 94,
+            "end": 97,
+            "name": "obj"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

@@ -1,0 +1,557 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 166,
+    "sourceType": "module",
+    "body": [{
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 13,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 13,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 4,
+              "end": 9,
+              "elements": [{
+                  "type": "ObjectPattern",
+                  "start": 5,
+                  "end": 8,
+                  "properties": [{
+                      "type": "Property",
+                      "start": 6,
+                      "end": 7,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 6,
+                        "end": 7,
+                        "name": "a"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 6,
+                        "end": 7,
+                        "name": "a"
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 12,
+              "end": 13,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 14,
+        "end": 30,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 18,
+            "end": 30,
+            "id": {
+              "type": "ObjectPattern",
+              "start": 18,
+              "end": 26,
+              "properties": [{
+                  "type": "Property",
+                  "start": 19,
+                  "end": 25,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 19,
+                    "end": 20,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "ArrayPattern",
+                    "start": 22,
+                    "end": 25,
+                    "elements": [{
+                        "type": "Identifier",
+                        "start": 23,
+                        "end": 24,
+                        "name": "b"
+                      }
+                    ]
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 29,
+              "end": 30,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 31,
+        "end": 47,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 35,
+            "end": 47,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 35,
+              "end": 43,
+              "elements": [{
+                  "type": "ObjectPattern",
+                  "start": 36,
+                  "end": 42,
+                  "properties": [{
+                      "type": "Property",
+                      "start": 37,
+                      "end": 41,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 37,
+                        "end": 38,
+                        "name": "a"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 40,
+                        "end": 41,
+                        "name": "b"
+                      },
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 46,
+              "end": 47,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 48,
+        "end": 67,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 52,
+            "end": 67,
+            "id": {
+              "type": "ObjectPattern",
+              "start": 52,
+              "end": 63,
+              "properties": [{
+                  "type": "Property",
+                  "start": 53,
+                  "end": 62,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 53,
+                    "end": 54,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "ArrayPattern",
+                    "start": 56,
+                    "end": 62,
+                    "elements": [{
+                        "type": "Identifier",
+                        "start": 57,
+                        "end": 58,
+                        "name": "b"
+                      },{
+                        "type": "Identifier",
+                        "start": 60,
+                        "end": 61,
+                        "name": "c"
+                      }
+                    ]
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 66,
+              "end": 67,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 68,
+        "end": 86,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 72,
+            "end": 86,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 72,
+              "end": 82,
+              "elements": [{
+                  "type": "ObjectPattern",
+                  "start": 73,
+                  "end": 76,
+                  "properties": [{
+                      "type": "Property",
+                      "start": 74,
+                      "end": 75,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 74,
+                        "end": 75,
+                        "name": "a"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 74,
+                        "end": 75,
+                        "name": "a"
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    }
+                  ]
+                },{
+                  "type": "ObjectPattern",
+                  "start": 78,
+                  "end": 81,
+                  "properties": [{
+                      "type": "Property",
+                      "start": 79,
+                      "end": 80,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 79,
+                        "end": 80,
+                        "name": "b"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 79,
+                        "end": 80,
+                        "name": "b"
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 85,
+              "end": 86,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 87,
+        "end": 111,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 91,
+            "end": 111,
+            "id": {
+              "type": "ObjectPattern",
+              "start": 91,
+              "end": 107,
+              "properties": [{
+                  "type": "Property",
+                  "start": 92,
+                  "end": 98,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 92,
+                    "end": 93,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "ArrayPattern",
+                    "start": 95,
+                    "end": 98,
+                    "elements": [{
+                        "type": "Identifier",
+                        "start": 96,
+                        "end": 97,
+                        "name": "b"
+                      }
+                    ]
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },{
+                  "type": "Property",
+                  "start": 100,
+                  "end": 106,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 100,
+                    "end": 101,
+                    "name": "c"
+                  },
+                  "value": {
+                    "type": "ObjectPattern",
+                    "start": 103,
+                    "end": 106,
+                    "properties": [{
+                        "type": "Property",
+                        "start": 104,
+                        "end": 105,
+                        "kind": "init",
+                        "key": {
+                          "type": "Identifier",
+                          "start": 104,
+                          "end": 105,
+                          "name": "d"
+                        },
+                        "value": {
+                          "type": "Identifier",
+                          "start": 104,
+                          "end": 105,
+                          "name": "d"
+                        },
+                        "method": false,
+                        "shorthand": true,
+                        "computed": false
+                      }
+                    ]
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 110,
+              "end": 111,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 112,
+        "end": 136,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 116,
+            "end": 136,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 116,
+              "end": 132,
+              "elements": [{
+                  "type": "ObjectPattern",
+                  "start": 117,
+                  "end": 124,
+                  "properties": [{
+                      "type": "Property",
+                      "start": 118,
+                      "end": 123,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 118,
+                        "end": 119,
+                        "name": "a"
+                      },
+                      "value": {
+                        "type": "AssignmentPattern",
+                        "start": 118,
+                        "end": 123,
+                        "left": {
+                          "type": "Identifier",
+                          "start": 118,
+                          "end": 119,
+                          "name": "a"
+                        },
+                        "right": {
+                          "type": "Literal",
+                          "start": 122,
+                          "end": 123,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    }
+                  ]
+                },{
+                  "type": "AssignmentPattern",
+                  "start": 126,
+                  "end": 131,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 126,
+                    "end": 127,
+                    "name": "b"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "start": 130,
+                    "end": 131,
+                    "value": 2,
+                    "raw": "2"
+                  }
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 135,
+              "end": 136,
+              "name": "x"
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 137,
+        "end": 164,
+        "kind": "let",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 141,
+            "end": 164,
+            "id": {
+              "type": "ObjectPattern",
+              "start": 141,
+              "end": 160,
+              "properties": [{
+                  "type": "Property",
+                  "start": 142,
+                  "end": 152,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 142,
+                    "end": 143,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "ArrayPattern",
+                    "start": 145,
+                    "end": 152,
+                    "elements": [{
+                        "type": "AssignmentPattern",
+                        "start": 146,
+                        "end": 151,
+                        "left": {
+                          "type": "Identifier",
+                          "start": 146,
+                          "end": 147,
+                          "name": "b"
+                        },
+                        "right": {
+                          "type": "Literal",
+                          "start": 150,
+                          "end": 151,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },{
+                  "type": "Property",
+                  "start": 154,
+                  "end": 159,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 154,
+                    "end": 155,
+                    "name": "c"
+                  },
+                  "value": {
+                    "type": "AssignmentPattern",
+                    "start": 154,
+                    "end": 159,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 154,
+                      "end": 155,
+                      "name": "c"
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "start": 158,
+                      "end": 159,
+                      "value": 2,
+                      "raw": "2"
+                    }
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false
+                }
+              ]
+            },
+            "init": {
+              "type": "Identifier",
+              "start": 163,
+              "end": 164,
+              "name": "x"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

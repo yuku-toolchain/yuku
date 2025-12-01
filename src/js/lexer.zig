@@ -58,7 +58,7 @@ pub const Lexer = struct {
     }
 
     inline fn peek(self: *const Lexer, offset: u32) u8 {
-        if (offset > self.source_len or self.cursor > self.source_len - offset) {
+        if (offset > self.source_len or self.cursor >= self.source_len - offset) {
             return 0;
         }
         return self.source[self.cursor + offset];

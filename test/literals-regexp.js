@@ -1,0 +1,11 @@
+/abc/;
+/abc/g;
+/abc/i;
+/abc/m;
+/abc/gim;
+/[a-z]/;
+/[0-9]+/;
+/a*b+c?/;
+/^start/;
+/end$/;
+/(group)/;

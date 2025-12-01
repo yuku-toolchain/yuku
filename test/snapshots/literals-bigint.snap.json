@@ -1,0 +1,108 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 62,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "0n",
+          "bigint": "0"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 5,
+        "expression": {
+          "type": "Literal",
+          "start": 3,
+          "end": 5,
+          "value": null,
+          "raw": "1n",
+          "bigint": "1"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 6,
+        "end": 10,
+        "expression": {
+          "type": "Literal",
+          "start": 6,
+          "end": 10,
+          "value": null,
+          "raw": "123n",
+          "bigint": "123"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 11,
+        "end": 28,
+        "expression": {
+          "type": "Literal",
+          "start": 11,
+          "end": 28,
+          "value": null,
+          "raw": "9007199254740991n",
+          "bigint": "9007199254740991"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 29,
+        "end": 34,
+        "expression": {
+          "type": "Literal",
+          "start": 29,
+          "end": 34,
+          "value": null,
+          "raw": "0xffn",
+          "bigint": "0xff"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 35,
+        "end": 41,
+        "expression": {
+          "type": "Literal",
+          "start": 35,
+          "end": 41,
+          "value": null,
+          "raw": "0o777n",
+          "bigint": "0o777"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 42,
+        "end": 49,
+        "expression": {
+          "type": "Literal",
+          "start": 42,
+          "end": 49,
+          "value": null,
+          "raw": "0b1010n",
+          "bigint": "0b1010"
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 50,
+        "end": 60,
+        "expression": {
+          "type": "Literal",
+          "start": 50,
+          "end": 60,
+          "value": null,
+          "raw": "1_000_000n",
+          "bigint": "1_000_000"
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

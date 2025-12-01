@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 10,
+    "sourceType": "module",
+    "body": [
+    ]
+  },
+  "errors": [{
+      "message": "Unclosed array literal",
+      "help": "Add a closing bracket ']' to complete the array, or check for missing commas between elements.",
+      "start": 0,
+      "end": 10
+    }
+  ]
+}
