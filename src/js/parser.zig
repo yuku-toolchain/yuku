@@ -312,6 +312,7 @@ pub const Parser = struct {
         try self.extra.ensureTotalCapacity(alloc, estimated_extra);
         try self.errors.ensureTotalCapacity(alloc, 32);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
+        try self.scratch_directives.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_a.items.ensureTotalCapacity(alloc, 128);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 128);
     }
