@@ -1,1 +1,1 @@
-declare function greet(name, { nice });
+function greet(name, { nice }) {}
