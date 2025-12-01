@@ -16,6 +16,7 @@ pub const Error = struct {
 };
 
 pub const SourceType = enum { Script, Module };
+pub const Lang = enum { Js, Ts, Jsx, Tsx, Dts };
 
 /// Must be deinitialized to free the arena-allocated memory.
 pub const ParseTree = struct {
@@ -64,6 +65,7 @@ pub const Parser = struct {
 
     strict_mode: bool = true,
     source_type: SourceType = .Module,
+    lang: Lang = .Ts,
 
     pub fn init(backing_allocator: std.mem.Allocator, source: []const u8) Parser {
         return .{
@@ -85,7 +87,11 @@ pub const Parser = struct {
 
         self.advance();
 
+        const start = self.current_token.span.start;
+
         const program_data = self.parseBody();
+
+        const end = self.current_token.span.start;
 
         const program = self.addNode(
             .{
@@ -95,7 +101,7 @@ pub const Parser = struct {
                     .directives = program_data.directives,
                 },
             },
-            .{ .start = program_data.span.start, .end = program_data.span.end},
+            .{ .start = start, .end = end },
         );
 
         const tree = ParseTree{
@@ -112,11 +118,9 @@ pub const Parser = struct {
         return tree;
     }
 
-    pub fn parseBody(self: *Parser) struct { statements: ast.IndexRange, directives: ast.IndexRange, span: ast.Span } {
+    pub fn parseBody(self: *Parser) struct { statements: ast.IndexRange, directives: ast.IndexRange } {
         const statements_checkpoint = self.scratch_statements.begin();
         const directives_checkpoint = self.scratch_directives.begin();
-
-        const start = self.current_token.span.start;
 
         // directive
         // can only appear at top
@@ -137,20 +141,23 @@ pub const Parser = struct {
             }
         }
 
-        const end = self.current_token.span.start;
-
         return .{
-          .statements = self.addExtra(self.scratch_statements.take(statements_checkpoint)),
-          .directives = self.addExtra(self.scratch_directives.take(directives_checkpoint)),
-          .span = .{ .start = start, .end = end }
+            .statements = self.addExtra(self.scratch_statements.take(statements_checkpoint)),
+            .directives = self.addExtra(self.scratch_directives.take(directives_checkpoint)),
         };
     }
 
     pub fn parseStatement(self: *Parser) ?ast.NodeIndex {
         return switch (self.current_token.type) {
             .Var, .Const, .Let, .Using => variables.parseVariableDeclaration(self),
-            .Function => functions.parseFunction(self, false, false),
-            .Async => functions.parseFunction(self, true, false),
+            .Function => functions.parseFunction(self, .{}),
+            .Async => functions.parseFunction(self, .{ .is_async = true }),
+            .Declare => blk: {
+                if (!self.isTs()) {
+                    break :blk self.parseExpressionStatement();
+                }
+                break :blk functions.parseFunction(self, .{ .is_declare = true });
+            },
 
             .Await => blk: {
                 const await_token = self.current_token;
@@ -202,6 +209,12 @@ pub const Parser = struct {
         );
     }
 
+    pub inline fn isTs(self: *Parser) bool {
+        return self.lang == .Ts or self.lang == .Tsx or self.lang == .Dts;
+    }
+
+    // utils
+
     pub fn lookAhead(self: *Parser) ?token.Token {
         return self.current_token;
     }
@@ -212,7 +225,7 @@ pub const Parser = struct {
         return index;
     }
 
-    pub inline fn addExtra(self: *Parser, indices: []const ast.NodeIndex) ast.IndexRange {
+    pub fn addExtra(self: *Parser, indices: []const ast.NodeIndex) ast.IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
         const len: u32 = @intCast(indices.len);
         self.extra.appendSlice(self.allocator(), indices) catch unreachable;
@@ -231,7 +244,7 @@ pub const Parser = struct {
         return self.extra.items[range.start..][0..range.len];
     }
 
-    pub inline fn advance(self: *Parser) void {
+    pub fn advance(self: *Parser) void {
         self.current_token = self.lexer.nextToken() catch |e| blk: {
             if (e == error.OutOfMemory) @panic("Out of memory");
 
@@ -284,7 +297,9 @@ pub const Parser = struct {
         return std.fmt.allocPrint(self.allocator(), format, args) catch unreachable;
     }
 
+    // this is very basic now
     fn synchronize(self: *Parser) void {
+        self.advance();
         self.advance();
 
         while (self.current_token.type != .EOF) {

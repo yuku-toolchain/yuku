@@ -156,7 +156,10 @@ pub const TokenType = enum(u32) {
     Identifier = 119 | Mask.IsIdentifierLike, // e.g., "myVar", "foo", "_bar"
     PrivateIdentifier = 120, // e.g., "#privateField", "#method"
 
-    EOF = 121, // end of file
+    // typescript
+    Declare = 121 | Mask.IsIdentifierLike, // "declare"
+
+    EOF = 122, // end of file
 
     pub fn precedence(self: TokenType) u5 {
         return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);

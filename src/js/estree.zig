@@ -120,7 +120,7 @@ pub const Serializer = struct {
 
     fn writeFunction(self: *Self, data: ast.Function, span: ast.Span) !void {
         try self.beginObject();
-        try self.writeType(if (data.type == .FunctionDeclaration) "FunctionDeclaration" else "FunctionExpression");
+        try self.writeType(@tagName(data.type));
         try self.writeSpan(span);
         try self.writeKey("id");
         try self.writeNode(data.id);

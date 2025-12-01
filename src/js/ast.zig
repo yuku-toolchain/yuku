@@ -336,6 +336,17 @@ pub const Directive = struct {
 pub const FunctionType = enum {
     FunctionDeclaration,
     FunctionExpression,
+    TSDeclareFunction,
+    // https://github.com/typescript-eslint/typescript-eslint/pull/1289
+    // TODO:
+    // declare class MyClass {
+    //  myMethod(): void;
+    // }
+    //
+    // interface MyInterface {
+    //  myFunction(): string;
+    // }
+    TSEmptyBodyFunctionExpression,
 };
 
 /// https://tc39.es/ecma262/#sec-function-definitions

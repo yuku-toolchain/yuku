@@ -791,7 +791,10 @@ pub const Lexer = struct {
             },
             7 => {
                 switch (lexeme[0]) {
-                    'd' => if (std.mem.eql(u8, lexeme, "default")) return .Default,
+                    'd' => {
+                        if (std.mem.eql(u8, lexeme, "default")) return .Default;
+                        if (std.mem.eql(u8, lexeme, "declare")) return .Declare;
+                    },
                     'e' => if (std.mem.eql(u8, lexeme, "extends")) return .Extends,
                     'f' => if (std.mem.eql(u8, lexeme, "finally")) return .Finally,
                     'p' => if (std.mem.eql(u8, lexeme, "private")) return .Private,

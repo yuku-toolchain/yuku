@@ -1,4 +1,4 @@
-// this will be a really bad code since this is AI generated for quick testing of errors while development
+// this will be a bad code because this is AI generated for quick testing of errors while development
 // after the parser work done, we will start working on error formatter without which will be much better.
 
 const std = @import("std");
@@ -223,8 +223,11 @@ pub fn printError(source: []const u8, err: js.ParseError) void {
     std.debug.print("\x1b[1;31merror\x1b[0m: {s}\n", .{err.message});
     std.debug.print("  \x1b[1;34m-->\x1b[0m src/test.js:{}:{}\n\n", .{ start_line + 1, visual_start_col + 1 });
 
-    var current_line = start_line;
-    while (current_line <= end_line) : (current_line += 1) {
+    const display_start = if (start_line > 0) start_line - 1 else start_line;
+    const display_end = if (end_line + 1 < line_start_positions.items.len) end_line + 1 else end_line;
+
+    var current_line = display_start;
+    while (current_line <= display_end) : (current_line += 1) {
         const line_start = line_start_positions.items[current_line];
         const line_end = if (current_line + 1 < line_start_positions.items.len)
             line_start_positions.items[current_line + 1] - 1
@@ -243,35 +246,37 @@ pub fn printError(source: []const u8, err: js.ParseError) void {
         printHighlightedLine(line_content);
         std.debug.print("\n", .{});
 
-        var empty_padding: [16]u8 = undefined;
-        @memset(empty_padding[0..line_num_width], ' ');
-        const empty_padded = empty_padding[0..line_num_width];
-        std.debug.print(" \x1b[2;36m{s}\x1b[0m \x1b[2m|\x1b[0m ", .{empty_padded});
+        if (current_line >= start_line and current_line <= end_line) {
+            var empty_padding: [16]u8 = undefined;
+            @memset(empty_padding[0..line_num_width], ' ');
+            const empty_padded = empty_padding[0..line_num_width];
+            std.debug.print(" \x1b[2;36m{s}\x1b[0m \x1b[2m|\x1b[0m ", .{empty_padded});
 
-        const line_error_start = if (current_line == start_line) err.span.start - line_start else 0;
-        const line_error_end = if (current_line == end_line)
-            @min(err.span.end - line_start, line_content.len)
-        else
-            line_content.len;
+            const line_error_start = if (current_line == start_line) err.span.start - line_start else 0;
+            const line_error_end = if (current_line == end_line)
+                @min(err.span.end - line_start, line_content.len)
+            else
+                line_content.len;
 
-        const visual_error_start = getVisualColumn(line_content, line_error_start);
-        const visual_error_end = getVisualColumn(line_content, line_error_end);
+            const visual_error_start = getVisualColumn(line_content, line_error_start);
+            const visual_error_end = getVisualColumn(line_content, line_error_end);
 
-        var i: usize = 0;
-        while (i < visual_error_start) : (i += 1) {
-            std.debug.print(" ", .{});
+            var i: usize = 0;
+            while (i < visual_error_start) : (i += 1) {
+                std.debug.print(" ", .{});
+            }
+
+            while (i < visual_error_end) : (i += 1) {
+                std.debug.print("\x1b[1;31m~\x1b[0m", .{});
+            }
+
+            std.debug.print("\n", .{});
         }
-
-        while (i < visual_error_end) : (i += 1) {
-            std.debug.print("\x1b[1;31m~\x1b[0m", .{});
-        }
-
-        std.debug.print("\n", .{});
     }
 
     std.debug.print("\n", .{});
 
     if (err.help) |help| {
-        std.debug.print("\x1b[1;36mhelp\x1b[0m: {s}\n\n", .{help});
+        std.debug.print("\x1b[1;36mnote\x1b[0m: {s}\n\n", .{help});
     }
 }

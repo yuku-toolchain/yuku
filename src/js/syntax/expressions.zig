@@ -52,10 +52,9 @@ inline fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) ?ast.
 inline fn parsePrefix(parser: *Parser) ?ast.NodeIndex {
     const token_type = parser.current_token.type;
 
-    // TODO: implement after declaration
-    // if(token_type == .Function) {
-    //     return functions.parseFunction();
-    // }
+    if (token_type == .Function) {
+        return functions.parseFunction(parser, .{ .is_expression = true });
+    }
 
     if (token_type == .Increment or token_type == .Decrement) {
         return parseUpdateExpression(parser, true, ast.null_node);
@@ -446,4 +445,7 @@ fn parseObjectProperty(parser: *Parser) ?ast.NodeIndex {
         },
         .{ .start = start, .end = parser.getSpan(value).end },
     );
+
+    // TODO: handle methods, getter, setter.
+    // first need to implement the function/arrow function expressions.
 }
