@@ -128,6 +128,8 @@ pub const Serializer = struct {
         try self.writeBool(data.generator);
         try self.writeKey("async");
         try self.writeBool(data.async);
+        try self.writeKey("declare");
+        try self.writeBool(data.type == .TSDeclareFunction);
         try self.writeKey("params");
         try self.writeFunctionParams(data.params);
         try self.writeKey("body");

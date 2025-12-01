@@ -50,14 +50,9 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
 
     var body = ast.null_node;
 
-    if(opts.is_declare){
-        if(parser.current_token.type == .LeftBrace){
-            parser.err(
-                parser.current_token.span.start,
-                parser.current_token.span.end,
-                "TS(1183): An implementation cannot be declared in ambient contexts.",
-                "Remove the function body or remove the 'declare' modifier"
-            );
+    if (opts.is_declare) {
+        if (parser.current_token.type == .LeftBrace) {
+            parser.err(parser.current_token.span.start, parser.current_token.span.end, "TS(1183): An implementation cannot be declared in ambient contexts.", "Remove the function body or remove the 'declare' modifier");
             return null;
         }
     } else {
