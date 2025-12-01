@@ -69,9 +69,9 @@ pub const Parser = struct {
     in_generator: bool = false,
     in_function: bool = false,
 
-    strict_mode: bool = true,
-    source_type: SourceType = .Module,
-    lang: Lang = .Js,
+    strict_mode: bool,
+    source_type: SourceType,
+    lang: Lang,
 
     pub fn init(backing_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
