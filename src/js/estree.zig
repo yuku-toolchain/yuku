@@ -132,6 +132,8 @@ pub const Serializer = struct {
         try self.writeFunctionParams(data.params);
         try self.writeKey("body");
         try self.writeNode(data.body);
+        try self.writeKey("expression");
+        try self.writeBool(false);
         try self.endObject();
     }
 
