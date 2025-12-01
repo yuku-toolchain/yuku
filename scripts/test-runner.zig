@@ -85,10 +85,6 @@ pub fn main() !void {
 
     var stats = TestStats{};
 
-    print("\n", .{});
-    printColored(.cyan, "Running Parser Snapshot Tests\n", .{});
-    print("\n", .{});
-
     var iter = test_dir.iterate();
     while (try iter.next()) |entry| {
         if (entry.kind != .file) continue;
@@ -97,8 +93,11 @@ pub fn main() !void {
         const is_ts = std.mem.endsWith(u8, entry.name, ".ts");
         if (!is_js and !is_ts) continue;
 
+        // Duplicate the filename since entry.name points to a reused internal buffer
+        const test_filename = try allocator.dupe(u8, entry.name);
+
         const lang: js.Lang = if (is_ts) .Ts else .Js;
-        const result = try runTest(allocator, test_dir, entry.name, lang, update_snapshots);
+        const result = try runTest(allocator, test_dir, test_filename, lang, update_snapshots);
         try results.append(allocator, result);
 
         stats.total += 1;
@@ -129,10 +128,10 @@ pub fn main() !void {
                 allocator.free(msg);
             }
         }
+        allocator.free(result.name);
     }
 
     print("\n", .{});
-    printColored(.cyan, "Summary:\n", .{});
     printColored(.cyan, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
     print("Total:  {d}\n", .{stats.total});
     printColored(.green, "Passed: {d}\n", .{stats.passed});
