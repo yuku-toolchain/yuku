@@ -19,7 +19,7 @@ pub fn main() !void {
     defer allocator.free(contents);
 
     for (0..3) |_| {
-        var parser = js.Parser.init(std.heap.page_allocator, contents);
+        var parser = js.Parser.init(std.heap.page_allocator, contents, .{});
         var tree = try parser.parse();
         defer tree.deinit();
     }
@@ -31,7 +31,7 @@ pub fn main() !void {
     var first_json: ?[]u8 = null;
 
     for (0..iterations) |i| {
-        var parser = js.Parser.init(std.heap.page_allocator, contents);
+        var parser = js.Parser.init(std.heap.page_allocator, contents, .{});
 
         const start = std.time.nanoTimestamp();
         var tree = try parser.parse();

@@ -18,6 +18,12 @@ pub const Error = struct {
 pub const SourceType = enum { Script, Module };
 pub const Lang = enum { Js, Ts, Jsx, Tsx, Dts };
 
+pub const Options = struct {
+    source_type: SourceType = .Module,
+    lang: Lang = .Js,
+    is_strict: bool = true,
+};
+
 /// Must be deinitialized to free the arena-allocated memory.
 pub const ParseTree = struct {
     /// Root node of the AST (always a Program node)
@@ -65,13 +71,16 @@ pub const Parser = struct {
 
     strict_mode: bool = true,
     source_type: SourceType = .Module,
-    lang: Lang = .Ts,
+    lang: Lang = .Js,
 
-    pub fn init(backing_allocator: std.mem.Allocator, source: []const u8) Parser {
+    pub fn init(backing_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
             .source = source,
             .lexer = lexer.Lexer.init(backing_allocator, source),
             .arena = std.heap.ArenaAllocator.init(backing_allocator),
+            .source_type = options.source_type,
+            .lang = options.lang,
+            .strict_mode = options.is_strict,
         };
     }
 

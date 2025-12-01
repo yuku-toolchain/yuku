@@ -92,9 +92,13 @@ pub fn main() !void {
     var iter = test_dir.iterate();
     while (try iter.next()) |entry| {
         if (entry.kind != .file) continue;
-        if (!std.mem.endsWith(u8, entry.name, ".js")) continue;
 
-        const result = try runTest(allocator, test_dir, entry.name, update_snapshots);
+        const is_js = std.mem.endsWith(u8, entry.name, ".js");
+        const is_ts = std.mem.endsWith(u8, entry.name, ".ts");
+        if (!is_js and !is_ts) continue;
+
+        const lang: js.Lang = if (is_ts) .Ts else .Js;
+        const result = try runTest(allocator, test_dir, entry.name, lang, update_snapshots);
         try results.append(allocator, result);
 
         stats.total += 1;
@@ -149,12 +153,21 @@ fn runTest(
     allocator: std.mem.Allocator,
     test_dir: std.fs.Dir,
     test_filename: []const u8,
+    lang: js.Lang,
     update_snapshots: bool,
 ) !TestResult {
+    const base_name = blk: {
+        if (std.mem.endsWith(u8, test_filename, ".ts")) {
+            break :blk test_filename[0 .. test_filename.len - 3];
+        } else {
+            break :blk test_filename[0 .. test_filename.len - 3];
+        }
+    };
+
     const snapshot_filename = try std.fmt.allocPrint(
         allocator,
         "snapshots/{s}.snap.json",
-        .{test_filename[0 .. test_filename.len - 3]}, // remove .js extension
+        .{base_name},
     );
 
     defer allocator.free(snapshot_filename);
@@ -169,7 +182,7 @@ fn runTest(
 
     defer allocator.free(input);
 
-    var parser = js.Parser.init(std.heap.page_allocator, input);
+    var parser = js.Parser.init(std.heap.page_allocator, input, .{ .lang = lang });
 
     const tree = parser.parse() catch |err| {
         return TestResult{
