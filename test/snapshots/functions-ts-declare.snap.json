@@ -24,7 +24,7 @@
       },{
         "type": "TSDeclareFunction",
         "start": 23,
-        "end": 45,
+        "end": 46,
         "id": {
           "type": "Identifier",
           "start": 40,
@@ -46,7 +46,7 @@
       },{
         "type": "TSDeclareFunction",
         "start": 47,
-        "end": 72,
+        "end": 73,
         "id": {
           "type": "Identifier",
           "start": 64,
@@ -73,7 +73,7 @@
       },{
         "type": "TSDeclareFunction",
         "start": 74,
-        "end": 102,
+        "end": 103,
         "id": {
           "type": "Identifier",
           "start": 91,
@@ -100,7 +100,7 @@
       },{
         "type": "TSDeclareFunction",
         "start": 104,
-        "end": 138,
+        "end": 139,
         "id": {
           "type": "Identifier",
           "start": 121,

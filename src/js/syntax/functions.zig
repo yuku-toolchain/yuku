@@ -46,7 +46,23 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
         return null;
     }
 
+    if (!parser.expect(
+        .LeftParen,
+        "Expected '(' to start parameter list",
+        "Function parameters must be enclosed in parentheses: function name(a, b) {}",
+    )) return null;
+
     const params = parseFormalParamaters(parser) orelse return null;
+
+    const params_end = parser.current_token.span.end; // including )
+
+    if (!parser.expect(
+        .RightParen,
+        "Expected ')' to close parameter list",
+        "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
+    )) {
+        return null;
+    }
 
     var body = ast.null_node;
 
@@ -59,7 +75,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
         body = parseFunctionBody(parser) orelse ast.null_node;
     }
 
-    const end = if (body != ast.null_node) parser.getSpan(body).end else parser.getSpan(params).end;
+    const end = if (body != ast.null_node) parser.getSpan(body).end else params_end;
 
     return parser.addNode(.{
         .function = .{
@@ -99,12 +115,6 @@ pub fn parseFunctionBody(parser: *Parser) ?ast.NodeIndex {
 }
 
 pub fn parseFormalParamaters(parser: *Parser) ?ast.NodeIndex {
-    if (!parser.expect(
-        .LeftParen,
-        "Expected '(' to start parameter list",
-        "Function parameters must be enclosed in parentheses: function name(a, b) {}",
-    )) return null;
-
     const start = parser.current_token.span.start;
     var end: u32 = parser.current_token.span.end;
 
@@ -142,15 +152,6 @@ pub fn parseFormalParamaters(parser: *Parser) ?ast.NodeIndex {
         if (parser.current_token.type == .Comma) {
             parser.advance();
         } else break;
-    }
-
-    if (!parser.expect(
-        .RightParen,
-        "Expected ')' to close parameter list",
-        "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
-    )) {
-        parser.scratch_a.reset(params_checkpoint);
-        return null;
     }
 
     return parser.addNode(.{ .formal_parameters = .{ .items = parser.addExtra(parser.scratch_a.take(params_checkpoint)), .rest = rest } }, .{ .start = start, .end = end });
