@@ -1,0 +1,29 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 88,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 74,
+        "end": 87,
+        "expression": {
+          "type": "Literal",
+          "start": 74,
+          "end": 86,
+          "value": "use strict",
+          "raw": "\"use strict\""
+        },
+        "directive": "use strict"
+      }
+    ]
+  },
+  "errors": [{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 22,
+      "end": 35
+    }
+  ]
+}

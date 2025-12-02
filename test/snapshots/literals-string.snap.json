@@ -2,130 +2,296 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 162,
+    "end": 309,
     "sourceType": "module",
     "body": [{
-        "type": "ExpressionStatement",
+        "type": "VariableDeclaration",
         "start": 0,
-        "end": 7,
-        "expression": {
-          "type": "Literal",
-          "start": 0,
-          "end": 7,
-          "value": "hello",
-          "raw": "\"hello\""
-        },
-        "directive": "hello"
+        "end": 18,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 17,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "a"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 10,
+              "end": 17,
+              "value": "hello",
+              "raw": "\"hello\""
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 8,
-        "end": 15,
-        "expression": {
-          "type": "Literal",
-          "start": 8,
-          "end": 15,
-          "value": "world",
-          "raw": "'world'"
-        }
+        "type": "VariableDeclaration",
+        "start": 19,
+        "end": 37,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 25,
+            "end": 36,
+            "id": {
+              "type": "Identifier",
+              "start": 25,
+              "end": 26,
+              "name": "b"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 29,
+              "end": 36,
+              "value": "world",
+              "raw": "'world'"
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 16,
-        "end": 36,
-        "expression": {
-          "type": "Literal",
-          "start": 16,
-          "end": 36,
-          "value": "with escape \\n\\t\\r",
-          "raw": "\"with escape \\n\\t\\r\""
-        }
+        "type": "VariableDeclaration",
+        "start": 38,
+        "end": 69,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 44,
+            "end": 68,
+            "id": {
+              "type": "Identifier",
+              "start": 44,
+              "end": 45,
+              "name": "c"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 48,
+              "end": 68,
+              "value": "with escape \\n\\t\\r",
+              "raw": "\"with escape \\n\\t\\r\""
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 37,
-        "end": 62,
-        "expression": {
-          "type": "Literal",
-          "start": 37,
-          "end": 62,
-          "value": "single with escape \\n\\t",
-          "raw": "'single with escape \\n\\t'"
-        }
+        "type": "VariableDeclaration",
+        "start": 70,
+        "end": 106,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 76,
+            "end": 105,
+            "id": {
+              "type": "Identifier",
+              "start": 76,
+              "end": 77,
+              "name": "d"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 80,
+              "end": 105,
+              "value": "single with escape \\n\\t",
+              "raw": "'single with escape \\n\\t'"
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 63,
-        "end": 79,
-        "expression": {
-          "type": "Literal",
-          "start": 63,
-          "end": 79,
-          "value": "unicode \\u0041",
-          "raw": "\"unicode \\u0041\""
-        }
+        "type": "VariableDeclaration",
+        "start": 107,
+        "end": 134,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 113,
+            "end": 133,
+            "id": {
+              "type": "Identifier",
+              "start": 113,
+              "end": 114,
+              "name": "e"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 117,
+              "end": 133,
+              "value": "unicode \\u0041",
+              "raw": "\"unicode \\u0041\""
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 80,
-        "end": 97,
-        "expression": {
-          "type": "Literal",
-          "start": 80,
-          "end": 97,
-          "value": "hex escape \\x41",
-          "raw": "\"hex escape \\x41\""
-        }
+        "type": "VariableDeclaration",
+        "start": 135,
+        "end": 163,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 141,
+            "end": 162,
+            "id": {
+              "type": "Identifier",
+              "start": 141,
+              "end": 142,
+              "name": "f"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 145,
+              "end": 162,
+              "value": "hex escape \\x41",
+              "raw": "\"hex escape \\x41\""
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 98,
-        "end": 100,
-        "expression": {
-          "type": "Literal",
-          "start": 98,
-          "end": 100,
-          "value": "",
-          "raw": "\"\""
-        }
+        "type": "VariableDeclaration",
+        "start": 164,
+        "end": 177,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 170,
+            "end": 176,
+            "id": {
+              "type": "Identifier",
+              "start": 170,
+              "end": 171,
+              "name": "g"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 174,
+              "end": 176,
+              "value": "",
+              "raw": "\"\""
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 101,
-        "end": 103,
-        "expression": {
-          "type": "Literal",
-          "start": 101,
-          "end": 103,
-          "value": "",
-          "raw": "''"
-        }
+        "type": "VariableDeclaration",
+        "start": 178,
+        "end": 191,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 184,
+            "end": 190,
+            "id": {
+              "type": "Identifier",
+              "start": 184,
+              "end": 185,
+              "name": "h"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 188,
+              "end": 190,
+              "value": "",
+              "raw": "''"
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 104,
-        "end": 124,
-        "expression": {
-          "type": "Literal",
-          "start": 104,
-          "end": 124,
-          "value": "line with \\\" quote",
-          "raw": "\"line with \\\" quote\""
-        }
+        "type": "VariableDeclaration",
+        "start": 192,
+        "end": 223,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 198,
+            "end": 222,
+            "id": {
+              "type": "Identifier",
+              "start": 198,
+              "end": 199,
+              "name": "i"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 202,
+              "end": 222,
+              "value": "line with \\\" quote",
+              "raw": "\"line with \\\" quote\""
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 125,
-        "end": 145,
-        "expression": {
-          "type": "Literal",
-          "start": 125,
-          "end": 145,
-          "value": "line with \\' quote",
-          "raw": "'line with \\' quote'"
-        }
+        "type": "VariableDeclaration",
+        "start": 224,
+        "end": 255,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 230,
+            "end": 254,
+            "id": {
+              "type": "Identifier",
+              "start": 230,
+              "end": 231,
+              "name": "j"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 234,
+              "end": 254,
+              "value": "line with \\' quote",
+              "raw": "'line with \\' quote'"
+            }
+          }
+        ]
       },{
-        "type": "ExpressionStatement",
-        "start": 146,
-        "end": 160,
-        "expression": {
-          "type": "Literal",
-          "start": 146,
-          "end": 160,
-          "value": "backslash \\\\",
-          "raw": "\"backslash \\\\\""
-        }
+        "type": "VariableDeclaration",
+        "start": 256,
+        "end": 281,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 262,
+            "end": 280,
+            "id": {
+              "type": "Identifier",
+              "start": 262,
+              "end": 263,
+              "name": "k"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 266,
+              "end": 280,
+              "value": "backslash \\\\",
+              "raw": "\"backslash \\\\\""
+            }
+          }
+        ]
+      },{
+        "type": "VariableDeclaration",
+        "start": 282,
+        "end": 307,
+        "kind": "const",
+        "declarations": [{
+            "type": "VariableDeclarator",
+            "start": 288,
+            "end": 306,
+            "id": {
+              "type": "Identifier",
+              "start": 288,
+              "end": 289,
+              "name": "l"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 292,
+              "end": 306,
+              "value": "backslash \\\\",
+              "raw": "\"backslash \\\\\""
+            }
+          }
+        ]
       }
     ]
   },

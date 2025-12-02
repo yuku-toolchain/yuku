@@ -1,4 +1,6 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
+const utils = @import("../utils.zig");
 const Parser = @import("../parser.zig").Parser;
 
 const patterns = @import("patterns.zig");
@@ -36,7 +38,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
     else
         ast.null_node;
 
-    if (!opts.is_expression and id == ast.null_node) {
+    if (!opts.is_expression and ast.isNull(id)) {
         parser.err(
             parser.current_token.span.start,
             parser.current_token.span.end,
@@ -73,6 +75,21 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
         }
     } else {
         body = parseFunctionBody(parser) orelse ast.null_node;
+    }
+
+    // 'use strict' and simple params: https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
+    if (!ast.isNull(body) and !isSimpleParametersList(parser, params)) {
+        const function_body = parser.getData(body).function_body;
+        const directives = parser.getExtra(function_body.directives);
+        for (directives) |directive| {
+            const directive_data = parser.getData(directive).directive;
+            if (utils.isUseStrict(parser.getSourceText(directive_data.value_start, directive_data.value_len))) {
+                const directive_span = parser.getSpan(directive);
+                parser.err(directive_span.start, directive_span.end, "Illegal 'use strict' directive in function with non-simple parameter list", "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.");
+
+                return null;
+            }
+        }
     }
 
     const end = if (body != ast.null_node) parser.getSpan(body).end else params_end;
@@ -165,4 +182,24 @@ pub fn parseFormalParamater(parser: *Parser) ?ast.NodeIndex {
     }
 
     return parser.addNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.getSpan(pattern));
+}
+
+// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
+pub fn isSimpleParametersList(parser: *Parser, formal_parameters: ast.NodeIndex) bool {
+    const data = parser.getData(formal_parameters).formal_parameters;
+
+    if (!ast.isNull(data.rest)) {
+        return false;
+    }
+
+    const items = parser.getExtra(data.items);
+    for (items) |item| {
+        const param = parser.getData(item).formal_parameter;
+        const pattern = parser.getData(param.pattern);
+        if (pattern != .binding_identifier) {
+            return false;
+        }
+    }
+
+    return true;
 }

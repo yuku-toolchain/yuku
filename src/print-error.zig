@@ -221,7 +221,7 @@ pub fn printError(source: []const u8, err: js.ParseError) void {
     const visual_start_col = getVisualColumn(first_line_content, start_col);
 
     std.debug.print("\x1b[1;31merror\x1b[0m: {s}\n", .{err.message});
-    std.debug.print("  \x1b[1;34m-->\x1b[0m src/test.js:{}:{}\n\n", .{ start_line + 1, visual_start_col + 1 });
+    std.debug.print("  \x1b[1;34m-->\x1b[0m test.js:{}:{}\n\n", .{ start_line + 1, visual_start_col + 1 });
 
     const display_start = if (start_line > 0) start_line - 1 else start_line;
     const display_end = if (end_line + 1 < line_start_positions.items.len) end_line + 1 else end_line;

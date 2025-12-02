@@ -564,6 +564,7 @@ pub const Function = struct {
 
 /// https://tc39.es/ecma262/#prod-FunctionBody
 pub const FunctionBody = struct {
+    // Directive[]
     directives: IndexRange,
     statements: IndexRange,
 };

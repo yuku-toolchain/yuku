@@ -131,17 +131,16 @@ pub const Parser = struct {
         const statements_checkpoint = self.scratch_statements.begin();
         const directives_checkpoint = self.scratch_directives.begin();
 
-        // directive
-        // can only appear at top
-        if (self.current_token.type == .StringLiteral) {
-            if (self.parseDirective()) |directive| {
-                self.scratch_directives.append(self.allocator(), directive);
-            }
-        }
-
         while (self.current_token.type != .EOF) {
             // block end
             if (self.current_token.type == .RightBrace) break;
+
+            if (self.current_token.type == .StringLiteral) {
+                if (self.parseDirective()) |directive| {
+                    self.scratch_directives.append(self.allocator(), directive);
+                    continue;
+                }
+            }
 
             if (self.parseStatement()) |statement| {
                 self.scratch_statements.append(self.allocator(), statement);
@@ -251,6 +250,10 @@ pub const Parser = struct {
 
     pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {
         return self.extra.items[range.start..][0..range.len];
+    }
+
+    pub inline fn getSourceText(self: *const Parser, value_start: u32, value_len: u16) []const u8 {
+        return self.source[value_start..][0..value_len];
     }
 
     pub fn advance(self: *Parser) void {
