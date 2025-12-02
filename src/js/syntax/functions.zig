@@ -1,6 +1,5 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const utils = @import("../utils.zig");
 const Parser = @import("../parser.zig").Parser;
 
 const patterns = @import("patterns.zig");
@@ -56,6 +55,8 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
 
     const params = parseFormalParamaters(parser) orelse return null;
 
+    parser.current_function_parameters = params;
+
     const params_end = parser.current_token.span.end; // including )
 
     if (!parser.expect(
@@ -77,20 +78,9 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
         body = parseFunctionBody(parser) orelse ast.null_node;
     }
 
-    // 'use strict' and simple params: https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
-    if (!ast.isNull(body) and !isSimpleParametersList(parser, params)) {
-        const function_body = parser.getData(body).function_body;
-        const directives = parser.getExtra(function_body.directives);
-        for (directives) |directive| {
-            const directive_data = parser.getData(directive).directive;
-            if (utils.isUseStrict(parser.getSourceText(directive_data.value_start, directive_data.value_len))) {
-                const directive_span = parser.getSpan(directive);
-                parser.err(directive_span.start, directive_span.end, "Illegal 'use strict' directive in function with non-simple parameter list", "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.");
-
-                return null;
-            }
-        }
-    }
+    // reset after parsing function body, since this state it only available for function body
+    // used to check the "use strict" directive early error
+    parser.current_function_parameters = null;
 
     const end = if (body != ast.null_node) parser.getSpan(body).end else params_end;
 
