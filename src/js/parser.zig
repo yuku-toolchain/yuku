@@ -102,7 +102,7 @@ pub const Parser = struct {
 
         const start = self.current_token.span.start;
 
-        const program_data = self.parseBody();
+        const program_data = self.parseBody(null);
 
         const end = self.current_token.span.start;
 
@@ -131,25 +131,22 @@ pub const Parser = struct {
         return tree;
     }
 
-    pub fn parseBody(self: *Parser) struct { statements: ast.IndexRange, directives: ast.IndexRange } {
+    pub fn parseBody(self: *Parser, terminator: ?token.TokenType) struct { statements: ast.IndexRange, directives: ast.IndexRange } {
         const statements_checkpoint = self.scratch_statements.begin();
         const directives_checkpoint = self.scratch_directives.begin();
 
-        while (self.current_token.type != .EOF) {
-            // block end
-            if (self.current_token.type == .RightBrace) break;
-
+        while (!self.isAtBodyEnd(terminator)) {
             if (self.current_token.type == .StringLiteral) {
                 if (self.parseDirective()) |directive| {
                     self.scratch_directives.append(self.allocator(), directive);
-                    continue;
                 }
+                continue;
             }
 
             if (self.parseStatement()) |statement| {
                 self.scratch_statements.append(self.allocator(), statement);
             } else {
-                self.synchronize();
+                self.synchronize(terminator);
             }
         }
 
@@ -157,6 +154,11 @@ pub const Parser = struct {
             .statements = self.addExtra(self.scratch_statements.take(statements_checkpoint)),
             .directives = self.addExtra(self.scratch_directives.take(directives_checkpoint)),
         };
+    }
+
+    inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenType) bool {
+        return self.current_token.type == .EOF or
+            (terminator != null and self.current_token.type == terminator.?);
     }
 
     pub fn parseStatement(self: *Parser) ?ast.NodeIndex {
@@ -199,17 +201,22 @@ pub const Parser = struct {
     pub fn parseDirective(self: *Parser) ?ast.NodeIndex {
         const current_token = self.current_token;
 
+        const start = current_token.span.start;
+
         const expression = literals.parseStringLiteral(self) orelse return null;
 
+        const end = self.eatSemicolon(current_token.span.end);
+
         // without quotes
-        const value_start = current_token.span.start + 1;
+        const value_start = start + 1;
         const value_len: u16 = @intCast(current_token.lexeme.len - 2);
 
         // It is a Syntax Error if FunctionBodyContainsUseStrict of FunctionBody is true and IsSimpleParameterList of FormalParameters is false.
         // https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
         if (self.current_function_parameters != null) {
             if (self.isUseStrict(self.getSourceText(value_start, value_len)) and !functions.isSimpleParametersList(self, self.current_function_parameters.?)) {
-                self.err(current_token.span.start, current_token.span.end, "Illegal 'use strict' directive in function with non-simple parameter list", "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.");
+                self.err(start, end, "Illegal 'use strict' directive in function with non-simple parameter list", "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.");
+                return null;
             }
         }
 
@@ -219,7 +226,7 @@ pub const Parser = struct {
                 .value_start = value_start,
                 .value_len = value_len,
             },
-        }, .{ .start = current_token.span.start, .end = self.eatSemicolon(current_token.span.end) });
+        }, .{ .start = start, .end = end });
     }
 
     pub fn parseExpressionStatement(self: *Parser) ?ast.NodeIndex {
@@ -330,11 +337,15 @@ pub const Parser = struct {
     }
 
     // this is very basic now
-    fn synchronize(self: *Parser) void {
-        self.advance();
+    fn synchronize(self: *Parser, terminator: ?token.TokenType) void {
         self.advance();
 
         while (self.current_token.type != .EOF) {
+            // stop at the block terminator to avoid consuming the closing brace
+            if (terminator) |t| {
+                if (self.current_token.type == t) return;
+            }
+
             if (self.current_token.type == .Semicolon) {
                 self.advance();
                 return;

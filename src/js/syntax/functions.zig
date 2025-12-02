@@ -108,7 +108,7 @@ pub fn parseFunctionBody(parser: *Parser) ?ast.NodeIndex {
         "Function bodies must be enclosed in braces: function name() { ... }",
     )) return null;
 
-    const body_data = parser.parseBody();
+    const body_data = parser.parseBody(.RightBrace);
 
     const end = parser.current_token.span.end;
 

@@ -85,7 +85,7 @@ pub fn main() !void {
 
     if (first_json) |json| {
         defer allocator.free(json);
-        // std.debug.print("\n{s}\n", .{json});
+        std.debug.print("\n{s}\n", .{json});
     }
 
     if (first_tree) |tree| {

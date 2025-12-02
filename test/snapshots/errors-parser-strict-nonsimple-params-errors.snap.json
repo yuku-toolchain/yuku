@@ -2,20 +2,517 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 88,
+    "end": 441,
     "sourceType": "module",
     "body": [{
-        "type": "ExpressionStatement",
-        "start": 74,
-        "end": 87,
-        "expression": {
-          "type": "Literal",
-          "start": 74,
-          "end": 86,
-          "value": "use strict",
-          "raw": "\"use strict\""
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 37,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
         },
-        "directive": "use strict"
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "AssignmentPattern",
+            "start": 11,
+            "end": 16,
+            "left": {
+              "type": "Identifier",
+              "start": 11,
+              "end": 12,
+              "name": "x"
+            },
+            "right": {
+              "type": "Literal",
+              "start": 15,
+              "end": 16,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 18,
+          "end": 37,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 39,
+        "end": 89,
+        "id": {
+          "type": "Identifier",
+          "start": 48,
+          "end": 49,
+          "name": "b"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "AssignmentPattern",
+            "start": 50,
+            "end": 55,
+            "left": {
+              "type": "Identifier",
+              "start": 50,
+              "end": 51,
+              "name": "x"
+            },
+            "right": {
+              "type": "Literal",
+              "start": 54,
+              "end": 55,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 57,
+          "end": 89,
+          "body": [{
+              "type": "ExpressionStatement",
+              "start": 61,
+              "end": 71,
+              "expression": {
+                "type": "Literal",
+                "start": 61,
+                "end": 70,
+                "value": "use asm",
+                "raw": "\"use asm\""
+              },
+              "directive": "use asm"
+            }
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 91,
+        "end": 130,
+        "id": {
+          "type": "Identifier",
+          "start": 100,
+          "end": 101,
+          "name": "c"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "RestElement",
+            "start": 102,
+            "end": 109,
+            "argument": {
+              "type": "Identifier",
+              "start": 105,
+              "end": 109,
+              "name": "rest"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 111,
+          "end": 130,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 132,
+        "end": 170,
+        "id": {
+          "type": "Identifier",
+          "start": 141,
+          "end": 142,
+          "name": "d"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "ArrayPattern",
+            "start": 143,
+            "end": 149,
+            "elements": [{
+                "type": "Identifier",
+                "start": 144,
+                "end": 145,
+                "name": "a"
+              },{
+                "type": "Identifier",
+                "start": 147,
+                "end": 148,
+                "name": "b"
+              }
+            ]
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 151,
+          "end": 170,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 172,
+        "end": 210,
+        "id": {
+          "type": "Identifier",
+          "start": 181,
+          "end": 182,
+          "name": "e"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "ObjectPattern",
+            "start": 183,
+            "end": 189,
+            "properties": [{
+                "type": "Property",
+                "start": 184,
+                "end": 185,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 184,
+                  "end": 185,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 184,
+                  "end": 185,
+                  "name": "a"
+                },
+                "method": false,
+                "shorthand": true,
+                "computed": false
+              },{
+                "type": "Property",
+                "start": 187,
+                "end": 188,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 187,
+                  "end": 188,
+                  "name": "b"
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 187,
+                  "end": 188,
+                  "name": "b"
+                },
+                "method": false,
+                "shorthand": true,
+                "computed": false
+              }
+            ]
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 191,
+          "end": 210,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 212,
+        "end": 255,
+        "id": {
+          "type": "Identifier",
+          "start": 221,
+          "end": 222,
+          "name": "f"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "Identifier",
+            "start": 223,
+            "end": 224,
+            "name": "a"
+          },{
+            "type": "AssignmentPattern",
+            "start": 226,
+            "end": 231,
+            "left": {
+              "type": "Identifier",
+              "start": 226,
+              "end": 227,
+              "name": "b"
+            },
+            "right": {
+              "type": "Literal",
+              "start": 230,
+              "end": 231,
+              "value": 2,
+              "raw": "2"
+            }
+          },{
+            "type": "Identifier",
+            "start": 233,
+            "end": 234,
+            "name": "c"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 236,
+          "end": 255,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 257,
+        "end": 299,
+        "id": {
+          "type": "Identifier",
+          "start": 266,
+          "end": 267,
+          "name": "g"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "Identifier",
+            "start": 268,
+            "end": 269,
+            "name": "a"
+          },{
+            "type": "RestElement",
+            "start": 271,
+            "end": 278,
+            "argument": {
+              "type": "Identifier",
+              "start": 274,
+              "end": 278,
+              "name": "rest"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 280,
+          "end": 299,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 301,
+        "end": 341,
+        "id": {
+          "type": "Identifier",
+          "start": 310,
+          "end": 311,
+          "name": "h"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "AssignmentPattern",
+            "start": 312,
+            "end": 320,
+            "left": {
+              "type": "ObjectPattern",
+              "start": 312,
+              "end": 315,
+              "properties": [{
+                  "type": "Property",
+                  "start": 313,
+                  "end": 314,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 313,
+                    "end": 314,
+                    "name": "x"
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 313,
+                    "end": 314,
+                    "name": "x"
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false
+                }
+              ]
+            },
+            "right": {
+              "type": "ObjectExpression",
+              "start": 318,
+              "end": 320,
+              "properties": [
+              ]
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 322,
+          "end": 341,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 343,
+        "end": 383,
+        "id": {
+          "type": "Identifier",
+          "start": 352,
+          "end": 353,
+          "name": "i"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "AssignmentPattern",
+            "start": 354,
+            "end": 362,
+            "left": {
+              "type": "ArrayPattern",
+              "start": 354,
+              "end": 357,
+              "elements": [{
+                  "type": "Identifier",
+                  "start": 355,
+                  "end": 356,
+                  "name": "x"
+                }
+              ]
+            },
+            "right": {
+              "type": "ArrayExpression",
+              "start": 360,
+              "end": 362,
+              "elements": [
+              ]
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 364,
+          "end": 383,
+          "body": [
+          ]
+        },
+        "expression": false
+      },{
+        "type": "FunctionDeclaration",
+        "start": 385,
+        "end": 439,
+        "id": {
+          "type": "Identifier",
+          "start": 394,
+          "end": 395,
+          "name": "j"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [{
+            "type": "Identifier",
+            "start": 396,
+            "end": 397,
+            "name": "a"
+          },{
+            "type": "ObjectPattern",
+            "start": 399,
+            "end": 402,
+            "properties": [{
+                "type": "Property",
+                "start": 400,
+                "end": 401,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 400,
+                  "end": 401,
+                  "name": "b"
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 400,
+                  "end": 401,
+                  "name": "b"
+                },
+                "method": false,
+                "shorthand": true,
+                "computed": false
+              }
+            ]
+          },{
+            "type": "AssignmentPattern",
+            "start": 404,
+            "end": 409,
+            "left": {
+              "type": "Identifier",
+              "start": 404,
+              "end": 405,
+              "name": "c"
+            },
+            "right": {
+              "type": "Literal",
+              "start": 408,
+              "end": 409,
+              "value": 1,
+              "raw": "1"
+            }
+          },{
+            "type": "RestElement",
+            "start": 411,
+            "end": 418,
+            "argument": {
+              "type": "Identifier",
+              "start": 414,
+              "end": 418,
+              "name": "rest"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 420,
+          "end": 439,
+          "body": [
+          ]
+        },
+        "expression": false
       }
     ]
   },
@@ -24,6 +521,51 @@
       "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
       "start": 22,
       "end": 35
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 74,
+      "end": 87
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 115,
+      "end": 128
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 155,
+      "end": 168
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 195,
+      "end": 208
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 240,
+      "end": 253
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 284,
+      "end": 297
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 326,
+      "end": 339
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 368,
+      "end": 381
+    },{
+      "message": "Illegal 'use strict' directive in function with non-simple parameter list",
+      "help": "Functions with default values, destructuring, or rest parameters cannot use 'use strict'. Move 'use strict' to the outer scope or simplify the parameters.",
+      "start": 424,
+      "end": 437
     }
   ]
 }
