@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 165,
+    "end": 180,
     "sourceType": "module",
     "body": [{
         "type": "ExpressionStatement",
@@ -264,11 +264,11 @@
       },{
         "type": "ExpressionStatement",
         "start": 129,
-        "end": 163,
+        "end": 179,
         "expression": {
           "type": "AssignmentExpression",
           "start": 129,
-          "end": 163,
+          "end": 179,
           "operator": "=",
           "left": {
             "type": "Identifier",
@@ -279,7 +279,7 @@
           "right": {
             "type": "FunctionExpression",
             "start": 133,
-            "end": 163,
+            "end": 179,
             "id": null,
             "generator": false,
             "async": false,
@@ -321,8 +321,31 @@
             "body": {
               "type": "BlockStatement",
               "start": 161,
-              "end": 163,
-              "body": [
+              "end": 179,
+              "body": [{
+                  "type": "VariableDeclaration",
+                  "start": 165,
+                  "end": 177,
+                  "kind": "const",
+                  "declarations": [{
+                      "type": "VariableDeclarator",
+                      "start": 171,
+                      "end": 176,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 171,
+                        "end": 172,
+                        "name": "a"
+                      },
+                      "init": {
+                        "type": "Identifier",
+                        "start": 175,
+                        "end": 176,
+                        "name": "b"
+                      }
+                    }
+                  ]
+                }
               ]
             },
             "expression": false
