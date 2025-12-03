@@ -21,6 +21,8 @@ Very fast parser for the web, written in Zig.
 - [ ] TypeScript Support
 - [ ] JSX Support
 
+</div>
+
 ```zig
 const std = @import("std");
 const yuku = @import("yuku");
@@ -63,11 +65,9 @@ pub fn main() !void {
         }
         return;
     }
-    
+
     // Coming Soon Built-in AST traverser, visitor pattern, and
     // more utilities to work with the AST efficiently.
 }
 ```
-
-</div>
 <!-- markdownlint-restore -->
