@@ -87,7 +87,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts) ?ast.NodeIndex {
         body = parseFunctionBody(parser) orelse ast.null_node;
     }
 
-    const end = if (body != ast.null_node) parser.getSpan(body).end else params_end;
+    const end = if (!ast.isNull(body)) parser.getSpan(body).end else params_end;
 
     // TODO: function body cannot have super properties or super calls
     // so remember this to handle when implement Super expression
