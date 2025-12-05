@@ -1,5 +1,5 @@
 // Generated file, do not edit.
-// See: scripts/generate-unicode-id.zig
+// See: scripts/generate_unicode_id.zig
 
 // inspired by https://github.com/dtolnay/unicode-ident
 

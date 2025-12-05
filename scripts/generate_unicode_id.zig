@@ -3,7 +3,7 @@ const std = @import("std");
 const unicode_data_url = "https://www.unicode.org/Public/17.0.0/ucd/UCD.zip";
 const temp_zip_path = "/tmp/ucd.zip";
 const extraction_path = "/tmp/ucd";
-const output_table_path = "./src/util/unicode-id.zig";
+const output_table_path = "./src/util/unicode_id.zig";
 
 const chunk_elements = 16;
 const bits_per_element = 32;
@@ -46,7 +46,7 @@ pub fn main() !void {
 
     try writer.writeAll(
         \\// Generated file, do not edit.
-        \\// See: scripts/generate-unicode-id.zig
+        \\// See: scripts/generate_unicode_id.zig
         \\
         \\// inspired by https://github.com/dtolnay/unicode-ident
         \\

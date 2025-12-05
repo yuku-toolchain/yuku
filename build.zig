@@ -47,7 +47,7 @@ pub fn build(b: *std.Build) void {
     const gen_unicode_id_table = b.addExecutable(.{
         .name = "generate-unicode-id",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("scripts/generate-unicode-id.zig"),
+            .root_source_file = b.path("scripts/generate_unicode_id.zig"),
             .target = b.graph.host,
             .optimize = optimize,
         }),
@@ -58,7 +58,7 @@ pub fn build(b: *std.Build) void {
     gen_unicode_id_table_step.dependOn(&run_gen_unicode_id_table.step);
 
     const test_runner_module = b.createModule(.{
-        .root_source_file = b.path("scripts/test-runner.zig"),
+        .root_source_file = b.path("scripts/test_runner.zig"),
         .target = target,
         .optimize = optimize,
     });
