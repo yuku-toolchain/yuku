@@ -6,9 +6,17 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const source = @embedFile("test.js");
+    const file_path = "test.js";
 
-    var parser = js.Parser.init(std.heap.page_allocator, source, .{
+    const file = try std.fs.cwd().openFile(file_path, .{});
+    defer file.close();
+
+    var buffer: [4096]u8 = undefined;
+    var reader = file.reader(&buffer);
+    const contents = try reader.interface.allocRemaining(allocator, std.Io.Limit.limited(10 * 1024 * 1024));
+    defer allocator.free(contents);
+
+    var parser = js.Parser.init(std.heap.page_allocator, contents, .{
         .source_type = .Module,
         .lang = .Js,
         .is_strict = true,
@@ -24,7 +32,7 @@ pub fn main() !void {
     const taken_ms = @as(f64, @floatFromInt(taken)) / ns_to_ms;
 
     var line_count: usize = 1;
-    for (source) |c| {
+    for (contents) |c| {
         if (c == '\n') line_count += 1;
     }
 
@@ -33,12 +41,12 @@ pub fn main() !void {
     const json = try js.estree.toJSON(&tree, allocator);
     defer allocator.free(json);
 
-    std.debug.print("\n{s}\n", .{json});
+    // std.debug.print("\n{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {
-            const start_pos = getLineAndColumn(source, err.span.start);
-            const end_pos = getLineAndColumn(source, err.span.end);
+            const start_pos = getLineAndColumn(contents, err.span.start);
+            const end_pos = getLineAndColumn(contents, err.span.end);
 
             std.debug.print("Error: {s} at src/test.js:{d}:{d} to src/test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
             if (err.help) |help| std.debug.print("  Help: {s}", .{help});
@@ -50,11 +58,11 @@ pub fn main() !void {
 
 const ns_to_ms = 1_000_000.0;
 
-fn getLineAndColumn(source: []const u8, offset: usize) struct { line: usize, col: usize } {
+fn getLineAndColumn(contents: []const u8, offset: usize) struct { line: usize, col: usize } {
     var line: usize = 1;
     var col: usize = 1;
 
-    for (source[0..@min(offset, source.len)]) |char| {
+    for (contents[0..@min(offset, contents.len)]) |char| {
         if (char == '\n') {
             line += 1;
             col = 1;

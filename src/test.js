@@ -1,3 +1,0 @@
-function cool(){
-  const nice = ""
-}

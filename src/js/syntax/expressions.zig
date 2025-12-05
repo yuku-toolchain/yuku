@@ -178,11 +178,6 @@ fn parseBinaryExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) E
     );
 }
 
-inline fn operatorsConflict(op1: ast.LogicalOperator, op2: ast.LogicalOperator) bool {
-    // can't mix ?? with && or ||
-    return (op1 == .NullishCoalescing) != (op2 == .NullishCoalescing);
-}
-
 fn parseLogicalExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const operator_token = parser.current_token;
     try parser.advance();
@@ -192,21 +187,12 @@ fn parseLogicalExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) 
 
     // check for operator mixing: can't mix ?? with && or ||
     const left_data = parser.getData(left);
-    if (left_data == .logical_expression) {
-        if (operatorsConflict(current_operator, left_data.logical_expression.operator)) {
-            const left_span = parser.getSpan(left);
-            try parser.report(
-                .{ .start = left_span.start, .end = parser.getSpan(right).end },
-                "Logical expressions and nullish coalescing cannot be mixed",
-                .{ .help = "Wrap either expression in parentheses" },
-            );
-            return null;
-        }
-    }
-
     const right_data = parser.getData(right);
-    if (right_data == .logical_expression) {
-        if (operatorsConflict(current_operator, right_data.logical_expression.operator)) {
+
+    if (left_data == .logical_expression or right_data == .logical_expression) {
+        const operator_to_check = if (left_data == .logical_expression) left_data.logical_expression.operator else right_data.logical_expression.operator;
+
+        if ((current_operator == .NullishCoalescing) != (operator_to_check == .NullishCoalescing)) {
             const left_span = parser.getSpan(left);
             try parser.report(
                 .{ .start = left_span.start, .end = parser.getSpan(right).end },
