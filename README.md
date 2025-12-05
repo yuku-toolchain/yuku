@@ -18,12 +18,12 @@ A very fast JavaScript/TypeScript parser written in Zig to enable JavaScript too
 
 <br/>
 
-- **Full ECMAScript spec compliance** — Adheres strictly to the latest ECMAScript specification
-- **Blazing fast** — Built with performance in mind from day one; competitive with established parsers like Oxc
-- **Robust error recovery** — Produces partial ASTs on recoverable errors, keeping your tooling functional
-- **Rich feature set** — First-class JSX and TypeScript support out of the box
-- **Flexible AST output** — Uses a performance-optimized AST internally, with optional 100% ESTree + TypeScript-ESTree compatible output when needed
-- **Comprehensive test coverage** — Targeting full Test262 and Babel test suite compliance *(in progress)*
+- Full ECMAScript spec compliance
+- Very fast, built with performance in mind from the start, competitive with established parsers like Oxc.
+- Robust error recovery, partial ASTs on recoverable errors.
+- Rich features, including JSX and TypeScript support.
+- Can output 100% ESTree + TypeScript-ESTree compliant AST when needed, while using a performance-focused AST internally.
+- Passes the full Test262 and Babel test suites (not yet since it's WIP, but we will haha)
 
 <br/>
 
