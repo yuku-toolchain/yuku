@@ -14,13 +14,11 @@ pub fn main() !void {
         if (std.mem.eql(u8, arg, "--update") or std.mem.eql(u8, arg, "-u")) update = true;
     }
 
-    var test_dir = std.fs.cwd().openDir("test", .{ .iterate = true }) catch {
+    var test_dir = std.fs.cwd().openDir("test/snapshot", .{ .iterate = true }) catch {
         std.debug.print("\x1b[31mError: Could not open 'test' directory\x1b[0m\n", .{});
         std.process.exit(1);
     };
     defer test_dir.close();
-
-    test_dir.makeDir("snapshots") catch |e| if (e != error.PathAlreadyExists) return e;
 
     var total: usize = 0;
     var passed: usize = 0;
@@ -54,7 +52,7 @@ pub fn main() !void {
 
 fn runTest(allocator: std.mem.Allocator, test_dir: std.fs.Dir, name: []const u8, lang: js.Lang, update: bool) bool {
     const base = name[0 .. name.len - 3];
-    const snap_name = std.fmt.allocPrint(allocator, "snapshots/{s}.snap.json", .{base}) catch return false;
+    const snap_name = std.fmt.allocPrint(allocator, "{s}.snap.json", .{base}) catch return false;
     defer allocator.free(snap_name);
 
     const input = readFile(allocator, test_dir, name) catch return false;
