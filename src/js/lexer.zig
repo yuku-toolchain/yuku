@@ -23,6 +23,7 @@ pub const LexicalError = error{
     ConsecutiveNumericSeparators,
     MultipleDecimalPoints,
     InvalidBigIntSuffix,
+    InvalidUtf8,
 };
 
 // TODO:
@@ -636,7 +637,7 @@ pub const Lexer = struct {
                 }
             } else {
                 @branchHint(.cold);
-                const cp = util.codePointAt(self.source, self.cursor);
+                const cp = try util.codePointAt(self.source, self.cursor);
                 if (util.UnicodeId.canContinueIdentifier(cp.value)) {
                     self.cursor += cp.len;
                 } else {
@@ -676,7 +677,7 @@ pub const Lexer = struct {
             try self.scanIdentifierBody();
         } else {
             @branchHint(.cold);
-            const c_cp = util.codePointAt(self.source, self.cursor);
+            const c_cp = try util.codePointAt(self.source, self.cursor);
             if (!util.UnicodeId.canStartIdentifier(c_cp.value)) {
                 return error.InvalidIdentifierStart;
             }
@@ -1045,7 +1046,7 @@ pub const Lexer = struct {
             } else {
                 @branchHint(.unlikely);
                 // multi-byte space character
-                const cp = util.codePointAt(self.source, self.cursor);
+                const cp = try util.codePointAt(self.source, self.cursor);
                 if (util.isMultiByteSpace(cp.value)) {
                     self.cursor += cp.len;
                     continue;
@@ -1091,6 +1092,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive separators",
         error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
         error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
+        error.InvalidUtf8 => "Invalid UTF-8 byte sequence",
     };
 }
 
@@ -1116,5 +1118,6 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.ConsecutiveNumericSeparators => "Try removing one of the consecutive underscores here",
         error.MultipleDecimalPoints => "Try removing the extra decimal point here",
         error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal point/exponent from the number",
+        error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the file is saved with valid UTF-8 encoding",
     };
 }
