@@ -158,16 +158,12 @@ pub fn main() !void {
     printSeparator();
 
     var stats = Stats{};
-    var timer = try std.time.Timer.start();
 
     try runPassTests(allocator, &stats);
 
     // NOTE: Fail and early tests disabled until pass tests reach 100%
     // try runFailTests(allocator, &stats);
     // try runEarlyTests(allocator, &stats);
-
-    const elapsed = timer.read();
-    const elapsed_ms = @as(f64, @floatFromInt(elapsed)) / 1_000_000.0;
 
     printSeparator();
     std.debug.print("TEST262 PARSER CONFORMANCE RESULTS\n", .{});
@@ -190,7 +186,6 @@ pub fn main() !void {
     std.debug.print("  Tests Passed:   {d}\n", .{total_passed});
     std.debug.print("  Tests Failed:   {d}\n", .{total_tests - total_passed});
     std.debug.print("  Conformance:    {d:.2}%\n", .{stats.passPercent()});
-    std.debug.print("  Time Elapsed:   {d:.2}ms\n", .{elapsed_ms});
     printSeparator();
     std.debug.print("\n", .{});
 }
