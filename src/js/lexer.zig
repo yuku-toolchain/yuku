@@ -433,6 +433,10 @@ pub const Lexer = struct {
     fn consumeEscape(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip backslash
 
+        if (self.cursor >= self.source_len) {
+            return error.UnterminatedString;
+        }
+
         brk: switch (self.source[self.cursor]) {
             '0' => {
                 const c1 = self.peek(1);

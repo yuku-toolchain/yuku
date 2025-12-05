@@ -145,9 +145,11 @@ pub fn parseFormalParamaters(parser: *Parser) Error!?ast.NodeIndex {
 
         if (parser.current_token.type == .Spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse ast.null_node;
-            end = parser.getSpan(rest).end;
+            if (!ast.isNull(rest)) {
+                end = parser.getSpan(rest).end;
+            }
 
-            if (parser.current_token.type == .Comma) {
+            if (parser.current_token.type == .Comma and !ast.isNull(rest)) {
                 try parser.report(
                     .{ .start = parser.getSpan(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
