@@ -9,10 +9,10 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Rest element must be the last element in array destructuring",
-      "help": "Move the '...rest' pattern to the end, or remove trailing elements.",
+      "message": "Rest element must be the last element",
+      "help": "No elements can follow the rest element in a destructuring pattern.",
       "start": 5,
-      "end": 10,
+      "end": 9,
       "labels": [
       ]
     }

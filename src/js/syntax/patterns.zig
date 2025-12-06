@@ -2,6 +2,7 @@ const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
 
+const grammar = @import("../grammar.zig");
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
 
@@ -51,15 +52,18 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseArrayPattern(parser: *Parser) Error!?ast.NodeIndex {
-    _ = parser;
+    const cover = try grammar.parseArrayCover(parser) orelse return null;
+    return grammar.arrayCoverToPattern(parser, cover);
 }
 
 fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
-    _ = parser;
+    const cover = try grammar.parseObjectCover(parser) orelse return null;
+    return grammar.objectCoverToPattern(parser, cover);
 }
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const start = parser.getSpan(left).start;
+
     if (parser.current_token.type != .assign) return left;
 
     try parser.advance();
@@ -69,6 +73,19 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     return try parser.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
         .{ .start = start, .end = parser.getSpan(right).end },
+    );
+}
+
+pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume ...
+
+    const argument = try parseBindingPattern(parser) orelse return null;
+    const end = parser.getSpan(argument).end;
+
+    return try parser.addNode(
+        .{ .binding_rest_element = .{ .argument = argument } },
+        .{ .start = start, .end = end },
     );
 }
 

@@ -378,85 +378,6 @@
         ]
       },{
         "type": "VariableDeclaration",
-        "start": 112,
-        "end": 136,
-        "kind": "let",
-        "declarations": [{
-            "type": "VariableDeclarator",
-            "start": 116,
-            "end": 136,
-            "id": {
-              "type": "ArrayPattern",
-              "start": 116,
-              "end": 132,
-              "elements": [{
-                  "type": "ObjectPattern",
-                  "start": 117,
-                  "end": 124,
-                  "properties": [{
-                      "type": "Property",
-                      "start": 118,
-                      "end": 123,
-                      "kind": "init",
-                      "key": {
-                        "type": "Identifier",
-                        "start": 118,
-                        "end": 119,
-                        "name": "a"
-                      },
-                      "value": {
-                        "type": "AssignmentPattern",
-                        "start": 118,
-                        "end": 123,
-                        "left": {
-                          "type": "Identifier",
-                          "start": 118,
-                          "end": 119,
-                          "name": "a"
-                        },
-                        "right": {
-                          "type": "Literal",
-                          "start": 122,
-                          "end": 123,
-                          "value": 1,
-                          "raw": "1"
-                        }
-                      },
-                      "method": false,
-                      "shorthand": true,
-                      "computed": false
-                    }
-                  ]
-                },{
-                  "type": "AssignmentPattern",
-                  "start": 126,
-                  "end": 131,
-                  "left": {
-                    "type": "Identifier",
-                    "start": 126,
-                    "end": 127,
-                    "name": "b"
-                  },
-                  "right": {
-                    "type": "Literal",
-                    "start": 130,
-                    "end": 131,
-                    "value": 2,
-                    "raw": "2"
-                  }
-                }
-              ]
-            },
-            "init": {
-              "type": "Identifier",
-              "start": 135,
-              "end": 136,
-              "name": "x"
-            }
-          }
-        ]
-      },{
-        "type": "VariableDeclaration",
         "start": 137,
         "end": 164,
         "kind": "let",
@@ -552,6 +473,14 @@
       }
     ]
   },
-  "diagnostics": [
+  "diagnostics": [{
+      "severity": "error",
+      "message": "Shorthand property cannot have a default value in object expression",
+      "help": "Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.",
+      "start": 118,
+      "end": 123,
+      "labels": [
+      ]
+    }
   ]
 }

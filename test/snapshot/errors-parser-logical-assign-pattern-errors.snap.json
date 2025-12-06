@@ -9,8 +9,8 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Invalid left-hand side in assignment",
-      "help": "The left side of an assignment must be a variable, property access, or destructuring pattern.",
+      "message": "Invalid left-hand side in logical assignment",
+      "help": "Logical assignment operators (&&=, ||=, ??=) require a simple reference like a variable or property, not a destructuring pattern.",
       "start": 0,
       "end": 3,
       "labels": [

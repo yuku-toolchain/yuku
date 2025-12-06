@@ -9,8 +9,8 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Object rest element must be a simple identifier",
-      "help": "Unlike array rest, object rest (...rest) cannot use nested destructuring patterns.",
+      "message": "Rest element argument must be an identifier",
+      "help": "Object rest patterns only accept simple identifiers, not nested patterns.",
       "start": 8,
       "end": 11,
       "labels": [

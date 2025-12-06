@@ -255,6 +255,7 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u5, left: ast.NodeInde
     }
 
     try parser.advance();
+
     const right = try parseExpression(parser, precedence) orelse return null;
 
     return try parser.addNode(
@@ -289,9 +290,27 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
 }
 
 fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
-    _ = parser;
+    const cover = try grammar.parseArrayCover(parser) orelse return null;
+
+    // check for destructuring assignment: [a, b] = expr
+    if (parser.current_token.type == .assign) {
+        // it's a destructuring assignment pattern, so return as array pattern
+        return try grammar.arrayCoverToPattern(parser, cover) orelse return null;
+    }
+
+    // regular array expression
+    return grammar.arrayCoverToExpression(parser, cover);
 }
 
 fn parseObjectExpression(parser: *Parser) Error!?ast.NodeIndex {
-    _ = parser;
+    const cover = try grammar.parseObjectCover(parser) orelse return null;
+
+    // check for destructuring assignment: {a, b} = expr
+    if (parser.current_token.type == .assign) {
+        // it's a destructuring assignment pattern, so return as pattern
+        return try grammar.objectCoverToPattern(parser, cover) orelse return null;
+    }
+
+    // Regular object expression
+    return grammar.objectCoverToExpression(parser, cover);
 }
