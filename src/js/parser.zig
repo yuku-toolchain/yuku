@@ -205,7 +205,7 @@ pub const Parser = struct {
         return switch (self.current_token.type) {
             .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(self),
             .function => functions.parseFunction(self, .{}),
-            .@"async" => functions.parseFunction(self, .{ .is_async = true }),
+            .async => functions.parseFunction(self, .{ .is_async = true }),
             .declare => blk: {
                 if (!self.isTs()) {
                     break :blk try self.parseExpressionStatement();
@@ -213,7 +213,7 @@ pub const Parser = struct {
                 break :blk functions.parseFunction(self, .{ .is_declare = true });
             },
 
-            .@"await" => blk: {
+            .await => blk: {
                 const await_token = self.current_token;
 
                 // TODO: remove lookahead method, and use a way without lookahead, like when we implement
