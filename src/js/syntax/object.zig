@@ -264,12 +264,18 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
     var rest: ast.NodeIndex = ast.null_node;
     var properties_len = properties_range.len;
 
-    if (properties.len > 0) {
-        const last = properties[properties.len - 1];
-        const last_data = parser.getData(last);
+    for (properties, 0..) |prop, i| {
+        const prop_data = parser.getData(prop);
 
-        if (last_data == .spread_element) {
-            const arg = last_data.spread_element.argument;
+        if (prop_data == .spread_element) {
+            if (i != properties.len - 1) {
+                try parser.report(parser.getSpan(prop), "Rest element must be the last property", .{
+                    .help = "No properties can follow the rest element in a destructuring pattern.",
+                });
+                return null;
+            }
+
+            const arg = prop_data.spread_element.argument;
             const arg_data = parser.getData(arg);
             if (arg_data != .identifier_reference) {
                 try parser.report(parser.getSpan(arg), "Rest element argument must be an identifier", .{
@@ -283,20 +289,10 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
                 .name_len = arg_data.identifier_reference.name_len,
             } });
 
-            parser.setData(last, .{ .binding_rest_element = .{ .argument = arg } });
-            rest = last;
-            properties_len -= 1;
-        }
-    }
-
-    for (properties[0..properties_len]) |prop| {
-        const prop_data = parser.getData(prop);
-
-        if (prop_data == .spread_element) {
-            try parser.report(parser.getSpan(prop), "Rest element must be the last property", .{
-                .help = "No properties can follow the rest element in a destructuring pattern.",
-            });
-            return null;
+            parser.setData(prop, .{ .binding_rest_element = .{ .argument = arg } });
+            rest = prop;
+            properties_len = @intCast(i);
+            break;
         }
 
         if (prop_data != .object_property) {

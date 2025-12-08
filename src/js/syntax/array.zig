@@ -128,6 +128,7 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
 
         const elem_data = parser.getData(elem);
         if (elem_data == .spread_element) {
+            // validate rest element is last (ignoring trailing holes)
             const has_more = for (elements[i + 1 ..]) |next| {
                 if (!ast.isNull(next)) break true;
             } else false;
@@ -140,15 +141,13 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
             }
 
             const pattern = try grammar.expressionToPattern(parser, elem_data.spread_element.argument) orelse return null;
+
             parser.setData(elem, .{ .binding_rest_element = .{ .argument = pattern } });
             rest = elem;
             elements_len = @intCast(i);
             break;
         }
-    }
 
-    for (elements[0..elements_len]) |elem| {
-        if (ast.isNull(elem)) continue;
         _ = try grammar.expressionToPattern(parser, elem) orelse return null;
     }
 
