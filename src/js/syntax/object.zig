@@ -4,12 +4,9 @@ const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
 
 const literals = @import("literals.zig");
+const grammar = @import("../grammar.zig");
 
 /// result from parsing object cover grammar: {a, b: c, ...d}
-///
-/// properties are stored in parser scratch and can later be converted to:
-/// - ObjectExpression (for regular object literals)
-/// - ObjectPattern (for destructuring)
 pub const ObjectCover = struct {
     properties: []const ast.NodeIndex,
     start: u32,
@@ -20,7 +17,6 @@ pub const ObjectCover = struct {
 /// returns raw properties for later conversion to ObjectExpression or ObjectPattern.
 /// https://tc39.es/ecma262/#sec-object-initializer (covers ObjectAssignmentPattern)
 pub fn parseCover(parser: *Parser) Error!?ObjectCover {
-    const array = @import("array.zig");
     const start = parser.current_token.span.start;
     try parser.advance(); // consume {
 
@@ -34,7 +30,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
         if (parser.current_token.type == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance();
-            const argument = try array.parseCoverElement(parser) orelse {
+            const argument = try grammar.parseCoverElement(parser) orelse {
                 parser.scratch_a.reset(checkpoint);
                 return null;
             };
@@ -91,7 +87,6 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
 
 /// parse a single property in object cover grammar.
 fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
-    const array = @import("array.zig");
     const prop_start = parser.current_token.span.start;
     var computed = false;
 
@@ -102,7 +97,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         // computed property: [expr]: value
         computed = true;
         try parser.advance();
-        key = try array.parseCoverElement(parser) orelse return null;
+        key = try grammar.parseCoverElement(parser) orelse return null;
         if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
             return null;
         }
@@ -134,7 +129,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.type == .colon) {
         // key: value
         try parser.advance();
-        const value = try array.parseCoverElement(parser) orelse return null;
+        const value = try grammar.parseCoverElement(parser) orelse return null;
         return try parser.addNode(
             .{ .object_property = .{ .key = key, .value = value, .kind = .init, .shorthand = false, .computed = computed } },
             .{ .start = prop_start, .end = parser.getSpan(value).end },
@@ -165,7 +160,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         try parser.advance();
-        const default_value = try array.parseCoverElement(parser) orelse return null;
+        const default_value = try grammar.parseCoverElement(parser) orelse return null;
 
         // create identifier reference from the key for the left side
         const id_ref = try parser.addNode(
@@ -218,15 +213,17 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// convert object cover to ObjectExpression with validation (top-level use).
-/// validation is done separately via validateCoverForExpression.
-/// call this when you know the object is definitely an expression, not a pattern.
+/// convert object cover to ObjectExpression.
+/// currently there are no checks, we can add in future if needed
+/// for no checks, use coverToExpressionUnchecked
 pub fn coverToExpression(parser: *Parser, cover: ObjectCover) Error!?ast.NodeIndex {
-    return coverToExpressionUnchecked(parser, cover);
+    return try parser.addNode(
+        .{ .object_expression = .{ .properties = try parser.addExtra(cover.properties) } },
+        .{ .start = cover.start, .end = cover.end },
+    );
 }
 
 /// convert object cover to ObjectExpression without validation (nested use).
-///
 /// used for nested objects that might later become patterns when parent converts.
 pub fn coverToExpressionUnchecked(parser: *Parser, cover: ObjectCover) Error!?ast.NodeIndex {
     return try parser.addNode(
@@ -244,17 +241,17 @@ pub fn validateCoverForExpression(parser: *Parser, cover: ObjectCover) Error!boo
         switch (prop_data) {
             .object_property => |obj_prop| {
                 // check for CoverInitializedName: { a = 1 }
-                if (obj_prop.shorthand and isCoverInitializedName(parser, obj_prop.value)) {
-                    try reportCoverInitializedNameError(parser, prop);
+                if (obj_prop.shorthand and grammar.isCoverInitializedName(parser, obj_prop.value)) {
+                    try grammar.reportCoverInitializedNameError(parser, prop);
                     return false;
                 }
                 // recursively validate nested structures
-                if (!try validateNoInvalidCoverSyntax(parser, obj_prop.value)) {
+                if (!try grammar.validateNoInvalidCoverSyntax(parser, obj_prop.value)) {
                     return false;
                 }
             },
             .spread_element => |spread| {
-                if (!try validateNoInvalidCoverSyntax(parser, spread.argument)) {
+                if (!try grammar.validateNoInvalidCoverSyntax(parser, spread.argument)) {
                     return false;
                 }
             },
@@ -264,78 +261,7 @@ pub fn validateCoverForExpression(parser: *Parser, cover: ObjectCover) Error!boo
     return true;
 }
 
-/// recursively validate that an expression tree doesn't contain CoverInitializedName.
-///
-/// this walks the entire expression tree looking for object expressions with
-/// the invalid shorthand property syntax ({ a = 1 }).
-pub fn validateNoInvalidCoverSyntax(parser: *Parser, expr: ast.NodeIndex) Error!bool {
-    const data = parser.getData(expr);
-
-    switch (data) {
-        .object_expression => |obj| {
-            const properties = parser.getExtra(obj.properties);
-            for (properties) |prop| {
-                if (ast.isNull(prop)) continue;
-
-                const prop_data = parser.getData(prop);
-                switch (prop_data) {
-                    .object_property => |obj_prop| {
-                        // check for CoverInitializedName
-                        if (obj_prop.shorthand and isCoverInitializedName(parser, obj_prop.value)) {
-                            try reportCoverInitializedNameError(parser, prop);
-                            return false;
-                        }
-                        // recurse into property value
-                        if (!try validateNoInvalidCoverSyntax(parser, obj_prop.value)) {
-                            return false;
-                        }
-                    },
-                    .spread_element => |spread| {
-                        if (!try validateNoInvalidCoverSyntax(parser, spread.argument)) {
-                            return false;
-                        }
-                    },
-                    else => {},
-                }
-            }
-        },
-        .array_expression => |arr| {
-            const elements = parser.getExtra(arr.elements);
-            for (elements) |elem| {
-                if (ast.isNull(elem)) continue;
-                if (!try validateNoInvalidCoverSyntax(parser, elem)) {
-                    return false;
-                }
-            }
-        },
-        .spread_element => |spread| {
-            return validateNoInvalidCoverSyntax(parser, spread.argument);
-        },
-        else => {},
-    }
-
-    return true;
-}
-
-/// check if a node is a CoverInitializedName (assignment expression with = operator).
-/// CoverInitializedName: { a = 1 } where the value is AssignmentExpression
-inline fn isCoverInitializedName(parser: *Parser, node: ast.NodeIndex) bool {
-    const data = parser.getData(node);
-    return data == .assignment_expression and data.assignment_expression.operator == .assign;
-}
-
-/// report error for CoverInitializedName in expression context.
-inline fn reportCoverInitializedNameError(parser: *Parser, node: ast.NodeIndex) Error!void {
-    try parser.report(
-        parser.getSpan(node),
-        "Shorthand property cannot have a default value in object expression",
-        .{ .help = "Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns." },
-    );
-}
-
 /// convert object cover to ObjectPattern.
-///
-/// recursively converts all properties from expressions to patterns.
 /// CoverInitializedName ({ a = 1 }) becomes valid AssignmentPattern here.
 pub fn coverToPattern(parser: *Parser, cover: ObjectCover) Error!?ast.NodeIndex {
     return toObjectPattern(parser, cover.properties, .{ .start = cover.start, .end = cover.end });
@@ -343,7 +269,6 @@ pub fn coverToPattern(parser: *Parser, cover: ObjectCover) Error!?ast.NodeIndex 
 
 /// for converting object properties to ObjectPattern.
 pub fn toObjectPattern(parser: *Parser, properties: []const ast.NodeIndex, span: ast.Span) Error!?ast.NodeIndex {
-    const array = @import("array.zig");
     const checkpoint = parser.scratch_b.begin();
     errdefer parser.scratch_b.reset(checkpoint);
 
@@ -393,7 +318,7 @@ pub fn toObjectPattern(parser: *Parser, properties: []const ast.NodeIndex, span:
         // TODO: validate: obj_prop.method=true and non .init kind are not allowed
         // validate it after implmenting property key method
 
-        const value_pattern = try array.expressionToPattern(parser, obj_prop.value) orelse {
+        const value_pattern = try grammar.expressionToPattern(parser, obj_prop.value) orelse {
             parser.scratch_b.reset(checkpoint);
             return null;
         };
