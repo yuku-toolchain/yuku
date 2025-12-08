@@ -37,7 +37,7 @@ pub fn validateNoInvalidCoverSyntax(parser: *Parser, expr: ast.NodeIndex) Error!
                             try reportCoverInitializedNameError(parser, prop);
                             return false;
                         }
-                        // recurse into property value
+
                         if (!try validateNoInvalidCoverSyntax(parser, obj_prop.value)) {
                             return false;
                         }
@@ -62,6 +62,9 @@ pub fn validateNoInvalidCoverSyntax(parser: *Parser, expr: ast.NodeIndex) Error!
         },
         .spread_element => |spread| {
             return validateNoInvalidCoverSyntax(parser, spread.argument);
+        },
+        .parenthesized_expression => |paren| {
+            return validateNoInvalidCoverSyntax(parser, paren.expression);
         },
         else => {},
     }

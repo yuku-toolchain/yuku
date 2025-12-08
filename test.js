@@ -1,1 +1,1 @@
-const hello = { nice: {nice} } = cool;
+const hello = {}

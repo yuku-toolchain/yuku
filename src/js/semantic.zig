@@ -14,3 +14,4 @@
 // It is a Syntax Error if FunctionBody Contains SuperCall is true.
 // 'evals' and 'arguments' in binding identifier and identifier reference.
 // Reserved checks: https://tc39.es/ecma262/#prod-ReservedWord
+// It is a Syntax Error if HasDirectSuper of MethodDefinition is true.

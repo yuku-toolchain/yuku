@@ -26,7 +26,7 @@
 - [x] Logical expressions (&&, ||, ??)
 - [x] Unary expressions (!, ~, +, -, typeof, void, delete)
 - [x] Update expressions (++, --)
-- [ ] Assignment expressions (=, +=, -=, etc.)
+- [x] Assignment expressions (=, +=, -=, etc.)
 - [ ] Conditional expression (ternary ? :)
 - [ ] Sequence expression (comma operator)
 
@@ -38,10 +38,11 @@
 - [ ] Computed member access
 
 **Modern Expressions:**
-- [ ] Arrow functions (ArrowFunctionExpression)
+- [x] Arrow functions (ArrowFunctionExpression)
+- [x] Parenthesized expressions (ParenthesizedExpression)
 - [x] Function expressions (FunctionExpression)
 - [ ] Class expressions (ClassExpression)
-- [ ] Object expressions (ObjectExpression)
+- [x] Object expressions (ObjectExpression)
 - [x] Array expressions (ArrayExpression)
 - [x] Spread elements (SpreadElement)
 - [ ] Await expressions
@@ -79,7 +80,7 @@
 **Functions:**
 - [x] Function declarations (FunctionDeclaration)
 - [x] Function expressions
-- [ ] Arrow functions
+- [x] Arrow functions (sync and async)
 - [x] Generator functions (function*)
 - [x] Async functions
 - [x] Async generator functions

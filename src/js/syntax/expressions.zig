@@ -6,6 +6,7 @@ const array = @import("array.zig");
 const object = @import("object.zig");
 const literals = @import("literals.zig");
 const functions = @import("functions.zig");
+const parenthesized = @import("parenthesized.zig");
 
 pub fn parseExpression(parser: *Parser, precedence: u5) Error!?ast.NodeIndex {
     var left = try parsePrefix(parser) orelse return null;
@@ -62,16 +63,16 @@ fn parsePrefix(parser: *Parser) Error!?ast.NodeIndex {
         return parseUnaryExpression(parser);
     }
 
-    // if (token_type == .left_paren) {
-    //     return parseParenthesizedExpressionOrArrowExpression(parser);
-    // }
+    if (token_type == .left_paren) {
+        return parseParenthesizedOrArrowFunction(parser, false);
+    }
 
     return parsePrimaryExpression(parser);
 }
 
 inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
-        .identifier => literals.parseIdentifier(parser),
+        .identifier => parseIdentifierOrArrowFunction(parser),
         .private_identifier => literals.parsePrivateIdentifier(parser),
         .string_literal => literals.parseStringLiteral(parser),
         .true, .false => literals.parseBooleanLiteral(parser),
@@ -84,7 +85,7 @@ inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
         .left_bracket => parseArrayExpression(parser),
         .left_brace => parseObjectExpression(parser),
         .function => functions.parseFunction(parser, .{ .is_expression = true }),
-        .async => functions.parseFunction(parser, .{ .is_expression = true, .is_async = true }),
+        .async => parseAsyncFunctionOrArrow(parser),
         else => {
             const tok = parser.current_token;
             if (tok.type == .eof) {
@@ -106,19 +107,68 @@ inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-fn parseParenthesizedOrArrowFunctionExpression(parser: *Parser) Error!?ast.NodeIndex {
-    parser.advance(); // (
-    // TODO: implement cover grammar for parenthesized expressions and arrow functions
-    // parser.advance(); // )
+/// parenthesized expression or arrow function: (a) or (a, b) => ...
+fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
 
-    // const checkpoint = parser.scratch_a.begin();
+    const cover = try parenthesized.parseCover(parser) orelse return null;
 
+    // check for arrow
     if (parser.current_token.type == .arrow) {
-        // it's a arrow function
-        // for (cover_list) |elem| {
-        //     const data = parser.getData(elem);
-        // }
+        return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
+
+    // not an arrow function - convert to parenthesized expression
+    return parenthesized.coverToExpression(parser, cover);
+}
+
+/// identifier, checking for arrow function: x => ...
+fn parseIdentifierOrArrowFunction(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    const id = try literals.parseIdentifier(parser) orelse return null;
+
+    // check for arrow: x => ...
+    if (parser.current_token.type == .arrow) {
+        return parenthesized.identifierToArrowFunction(parser, id, false, start);
+    }
+
+    return id;
+}
+
+/// async function or async arrow function
+fn parseAsyncFunctionOrArrow(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    const async_id = try literals.parseIdentifier(parser); // save as id and consume 'async'
+
+    // async function ...
+    if (parser.current_token.type == .function) {
+        parser.context.in_async = true;
+        return functions.parseFunction(parser, .{ .is_expression = true, .is_async = true });
+    }
+
+    // async (params) => ...
+    if (parser.current_token.type == .left_paren) {
+        return parseParenthesizedOrArrowFunction(parser, true);
+    }
+
+    // async x => ...
+    if (parser.current_token.type == .identifier) {
+        const id = try literals.parseIdentifier(parser) orelse return null;
+
+        if (parser.current_token.type == .arrow) {
+            return parenthesized.identifierToArrowFunction(parser, id, true, start);
+        }
+
+        try parser.report(
+            parser.current_token.span,
+            "Expected '=>' after async arrow function parameter",
+            .{ .help = "Use 'async x => ...' or 'async (x) => ...' for async arrow functions." },
+        );
+        return null;
+    }
+
+    return async_id;
 }
 
 fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
