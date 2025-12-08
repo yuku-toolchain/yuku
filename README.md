@@ -22,8 +22,11 @@ A very fast JavaScript/TypeScript parser written in Zig to enable JavaScript too
 - Very fast, built with performance in mind from the start, competitive with established parsers like Oxc.
 - Robust error recovery, partial ASTs on recoverable errors.
 - Rich features, including JSX and TypeScript support.
-- Can output 100% ESTree + TypeScript-ESTree compliant AST when needed, while using a performance-focused AST internally.
-- Passes the full Test262 and Babel test suites (not yet since it's WIP, but we will haha)
+- Can output 100% ESTree + TypeScript-ESTree compliant AST when needed.
+
+<br/>
+
+We are **38.43%** done so far based on Test262 conformance tests. We'll get there.
 
 <br/>
 
