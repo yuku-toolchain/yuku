@@ -6,10 +6,6 @@ const ast = @import("../ast.zig");
 const expressions = @import("expressions.zig");
 
 /// result from parsing array cover grammar: [a, b, ...c]
-///
-/// elements are stored in parser scratch and can later be converted to:
-/// - ArrayExpression (for regular array literals)
-/// - ArrayPattern (for destructuring)
 pub const ArrayCover = struct {
     elements: []const ast.NodeIndex,
     start: u32,
@@ -38,7 +34,6 @@ pub fn parseCoverElement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// parse array literal permissively using cover grammar: [a, b, ...c]
-/// returns raw elements for later conversion to ArrayExpression or ArrayPattern.
 /// https://tc39.es/ecma262/#sec-array-initializer (covers ArrayAssignmentPattern)
 pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     const start = parser.current_token.span.start;
@@ -118,8 +113,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 
 /// convert array cover to ArrayExpression with validation (top-level use).
 ///
-/// validates recursively that no nested objects contain CoverInitializedName.
-/// call this when you know the array is definitely an expression, not a pattern.
+/// validates recursively that does not contain CoverInitializedName.
 pub fn coverToExpression(parser: *Parser, cover: ArrayCover) Error!?ast.NodeIndex {
     const object = @import("object.zig");
     for (cover.elements) |elem| {

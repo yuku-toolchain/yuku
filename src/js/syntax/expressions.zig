@@ -294,11 +294,11 @@ fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
     const cover = try array.parseCover(parser) orelse return null;
 
     if (parser.current_token.type == .assign) {
-        // Destructuring: [a, b] = expr
+        // destructuring: [a, b] = expr
         return try array.coverToPattern(parser, cover) orelse return null;
     }
 
-    // Regular array expression (validates nested CoverInitializedName)
+    // regular array expression (validates nested CoverInitializedName)
     return array.coverToExpression(parser, cover);
 }
 
