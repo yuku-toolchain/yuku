@@ -66,6 +66,11 @@ pub fn validateNoInvalidCoverSyntax(parser: *Parser, expr: ast.NodeIndex) Error!
         .parenthesized_expression => |paren| {
             return validateNoInvalidCoverSyntax(parser, paren.expression);
         },
+        .sequence_expression => |seq| {
+            for (parser.getExtra(seq.expressions)) |e| {
+                if (!try validateNoInvalidCoverSyntax(parser, e)) return false;
+            }
+        },
         else => {},
     }
 

@@ -28,7 +28,7 @@
 - [x] Update expressions (++, --)
 - [x] Assignment expressions (=, +=, -=, etc.)
 - [ ] Conditional expression (ternary ? :)
-- [ ] Sequence expression (comma operator)
+- [x] Sequence expression (comma operator)
 
 **Member & Call Expressions:**
 - [ ] Member expressions (obj.prop, obj[prop])

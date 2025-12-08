@@ -1,1 +1,1 @@
-const hello = {}
+const cool = i => {}

@@ -153,14 +153,13 @@ pub fn coverToExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.
         return null;
     }
 
-    // validate all elements are valid expressions (no CoverInitializedName in nested objects)
+    // validate no CoverInitializedName in nested objects
     for (cover.elements) |elem| {
         if (!try grammar.validateNoInvalidCoverSyntax(parser, elem)) {
             return null;
         }
     }
 
-    // single element -> parenthesized expression
     if (cover.elements.len == 1) {
         return try parser.addNode(
             .{ .parenthesized_expression = .{ .expression = cover.elements[0] } },
@@ -168,15 +167,18 @@ pub fn coverToExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.
         );
     }
 
-    // multiple elements → sequence expression wrapped in parenthesized
-    // TODO: add SequenceExpression node type
-    // for now, report as error - we'll add SequenceExpression later
-    try parser.report(
-        .{ .start = cover.start, .end = cover.end },
-        "Sequence expressions are not yet implemented",
-        .{ .help = "Use arrow function syntax '(a, b) => ...' or separate statements." },
+    const first_span = parser.getSpan(cover.elements[0]);
+    const last_span = parser.getSpan(cover.elements[cover.elements.len - 1]);
+
+    const seq_expr = try parser.addNode(
+        .{ .sequence_expression = .{ .expressions = try parser.addExtra(cover.elements) } },
+        .{ .start = first_span.start, .end = last_span.end },
     );
-    return null;
+
+    return try parser.addNode(
+        .{ .parenthesized_expression = .{ .expression = seq_expr } },
+        .{ .start = cover.start, .end = cover.end },
+    );
 }
 
 /// convert cover to ArrowFunctionExpression parameters and body.
@@ -186,7 +188,7 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
     // convert elements to formal parameters
     const params = try convertToFormalParameters(parser, cover) orelse return null;
 
-    // parse arrow body (expression or block)
+    // arrow body (expression or block)
     const body_result = try parseArrowBody(parser) orelse return null;
 
     return try parser.addNode(
@@ -212,7 +214,6 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
         .name_len = id_data.name_len,
     } });
 
-    // wrap in formal_parameter
     const param = try parser.addNode(
         .{ .formal_parameter = .{ .pattern = id } },
         parser.getSpan(id),

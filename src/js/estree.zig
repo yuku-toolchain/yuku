@@ -87,6 +87,7 @@ pub const Serializer = struct {
 
             .parenthesized_expression => |d| self.writeParenthesizedExpression(d, span),
             .arrow_function_expression => |d| self.writeArrowFunctionExpression(d, span),
+            .sequence_expression => |d| self.writeSequenceExpression(d, span),
         };
     }
 
@@ -474,6 +475,14 @@ pub const Serializer = struct {
         try self.writeFunctionParams(data.params);
         try self.fieldNode("body", data.body);
         try self.fieldBool("expression", data.expression);
+        try self.endObject();
+    }
+
+    fn writeSequenceExpression(self: *Self, data: ast.SequenceExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("SequenceExpression");
+        try self.fieldSpan(span);
+        try self.fieldNodeArray("expressions", data.expressions);
         try self.endObject();
     }
 

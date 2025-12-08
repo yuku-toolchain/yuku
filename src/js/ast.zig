@@ -603,13 +603,15 @@ pub const ArrowFunctionExpression = struct {
     // TODO: handle PIFE ("Possibly-Invoked Function Expression") cases, there are other needs which are needed this
 };
 
-// Next
-// pub const SequenceExpression = struct {
-//     // Expression[]
-//     expressions: IndexRange,
-// };
+/// `a, b, c`
+/// https://tc39.es/ecma262/#prod-Expression
+pub const SequenceExpression = struct {
+    /// Expression[]
+    expressions: IndexRange,
+};
 
 pub const NodeData = union(enum) {
+    sequence_expression: SequenceExpression,
     parenthesized_expression: ParenthesizedExpression,
     arrow_function_expression: ArrowFunctionExpression,
     function: Function,
