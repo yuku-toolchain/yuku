@@ -2,17 +2,17 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 13,
+    "end": 6,
     "sourceType": "module",
     "body": [
     ]
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Expected ',' or '}' in object",
-      "help": "Add a comma between properties or close the object with '}'.",
-      "start": 13,
-      "end": 13,
+      "message": "Expected ',' or ']' in array",
+      "help": "Add a comma between elements or close the array with ']'.",
+      "start": 3,
+      "end": 4,
       "labels": [
       ]
     }

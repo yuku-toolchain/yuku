@@ -1,1 +1,1 @@
-const hello = wow ?? nice || haha;
+const hello = { nice: {nice} } = cool;

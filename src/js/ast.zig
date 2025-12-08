@@ -577,12 +577,41 @@ pub const FormalParameters = struct {
     rest: NodeIndex,
 };
 
+/// https://tc39.es/ecma262/#prod-FormalParameter
 pub const FormalParameter = struct {
     /// BindingPattern
     pattern: NodeIndex,
 };
 
+/// https://tc39.es/ecma262/#prod-ParenthesizedExpression
+pub const ParenthesizedExpression = struct {
+    /// Expression
+    expression: NodeIndex,
+};
+
+// https://tc39.es/ecma262/#prod-ArrowFunction
+pub const ArrowFunctionExpression = struct {
+    /// Is the function body an arrow expression? i.e. `() => expr` instead of `() => {}`
+    expression: bool,
+    /// async (a, b) => {}
+    async: bool,
+    /// FormalParameters
+    params: NodeIndex,
+    /// FunctionBody
+    body: NodeIndex,
+    // TODO: add pure field too, `true` if the function is marked with a `/*#__NO_SIDE_EFFECTS__*/` comment
+    // TODO: handle PIFE ("Possibly-Invoked Function Expression") cases, there are other needs which are needed this
+};
+
+// Next
+// pub const SequenceExpression = struct {
+//     // Expression[]
+//     expressions: IndexRange,
+// };
+
 pub const NodeData = union(enum) {
+    parenthesized_expression: ParenthesizedExpression,
+    arrow_function_expression: ArrowFunctionExpression,
     function: Function,
     function_body: FunctionBody,
     formal_parameters: FormalParameters,

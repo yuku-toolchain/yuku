@@ -732,7 +732,7 @@ pub const Lexer = struct {
                     'i' => if (lexeme[0] == 'w' and lexeme[2] == 't' and lexeme[3] == 'h') return .with,
                     'u' => if (lexeme[0] == 'n' and lexeme[2] == 'l' and lexeme[3] == 'l') return .null_literal,
                     'r' => {
-                        if (lexeme[0] == 't' and lexeme[2] == 'u' and lexeme[3] == 'e') return .@"true";
+                        if (lexeme[0] == 't' and lexeme[2] == 'u' and lexeme[3] == 'e') return .true;
                         if (lexeme[0] == 'f' and lexeme[2] == 'o' and lexeme[3] == 'm') return .from;
                     },
                     else => {},
@@ -742,9 +742,9 @@ pub const Lexer = struct {
                 switch (lexeme[0]) {
                     'a' => {
                         if (lexeme[1] == 'w' and lexeme[2] == 'a' and lexeme[3] == 'i' and lexeme[4] == 't')
-                            return .@"await";
+                            return .await;
                         if (lexeme[1] == 's' and lexeme[2] == 'y' and lexeme[3] == 'n' and lexeme[4] == 'c')
-                            return .@"async";
+                            return .async;
                     },
                     'b' => if (lexeme[1] == 'r' and lexeme[2] == 'e' and lexeme[3] == 'a' and lexeme[4] == 'k')
                         return .@"break",
@@ -757,7 +757,7 @@ pub const Lexer = struct {
                             return .@"catch";
                     },
                     'f' => if (lexeme[1] == 'a' and lexeme[2] == 'l' and lexeme[3] == 's' and lexeme[4] == 'e')
-                        return .@"false",
+                        return .false,
                     's' => if (lexeme[1] == 'u' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'r')
                         return .super,
                     't' => if (lexeme[1] == 'h' and lexeme[2] == 'r' and lexeme[3] == 'o' and lexeme[4] == 'w')

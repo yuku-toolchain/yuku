@@ -2,6 +2,8 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 
+const array = @import("array.zig");
+const object = @import("object.zig");
 const literals = @import("literals.zig");
 const functions = @import("functions.zig");
 
@@ -52,14 +54,6 @@ fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.N
 fn parsePrefix(parser: *Parser) Error!?ast.NodeIndex {
     const token_type = parser.current_token.type;
 
-    if (token_type == .function) {
-        return functions.parseFunction(parser, .{ .is_expression = true });
-    }
-
-    if (token_type == .@"async") {
-        return functions.parseFunction(parser, .{ .is_expression = true, .is_async = true });
-    }
-
     if (token_type == .increment or token_type == .decrement) {
         return parseUpdateExpression(parser, true, ast.null_node);
     }
@@ -67,6 +61,10 @@ fn parsePrefix(parser: *Parser) Error!?ast.NodeIndex {
     if (token_type.isUnaryOperator()) {
         return parseUnaryExpression(parser);
     }
+
+    // if (token_type == .left_paren) {
+    //     return parseParenthesizedExpressionOrArrowExpression(parser);
+    // }
 
     return parsePrimaryExpression(parser);
 }
@@ -76,7 +74,7 @@ inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
         .identifier => literals.parseIdentifier(parser),
         .private_identifier => literals.parsePrivateIdentifier(parser),
         .string_literal => literals.parseStringLiteral(parser),
-        .@"true", .@"false" => literals.parseBooleanLiteral(parser),
+        .true, .false => literals.parseBooleanLiteral(parser),
         .null_literal => literals.parseNullLiteral(parser),
         .numeric_literal, .hex_literal, .octal_literal, .binary_literal => literals.parseNumericLiteral(parser),
         .bigint_literal => literals.parseBigIntLiteral(parser),
@@ -85,6 +83,8 @@ inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
         .no_substitution_template => literals.parseNoSubstitutionTemplate(parser),
         .left_bracket => parseArrayExpression(parser),
         .left_brace => parseObjectExpression(parser),
+        .function => functions.parseFunction(parser, .{ .is_expression = true }),
+        .async => functions.parseFunction(parser, .{ .is_expression = true, .is_async = true }),
         else => {
             const tok = parser.current_token;
             if (tok.type == .eof) {
@@ -104,6 +104,21 @@ inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         },
     };
+}
+
+fn parseParenthesizedOrArrowFunctionExpression(parser: *Parser) Error!?ast.NodeIndex {
+    parser.advance(); // (
+    // TODO: implement cover grammar for parenthesized expressions and arrow functions
+    // parser.advance(); // )
+
+    // const checkpoint = parser.scratch_a.begin();
+
+    if (parser.current_token.type == .arrow) {
+        // it's a arrow function
+        // for (cover_list) |elem| {
+        //     const data = parser.getData(elem);
+        // }
+    }
 }
 
 fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
@@ -132,7 +147,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
         const argument = try parseExpression(parser, 14) orelse return null;
         const span = parser.getSpan(argument);
 
-        if (!isValidAssignmentTarget(parser, argument)) {
+        if (!isSimpleAssignmentTarget(parser, argument)) {
             try parser.report(
                 span,
                 "Invalid operand for increment/decrement operator",
@@ -147,7 +162,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
         );
     }
 
-    if (!isValidAssignmentTarget(parser, left)) {
+    if (!isSimpleAssignmentTarget(parser, left)) {
         const span = parser.getSpan(left);
         try parser.report(
             span,
@@ -241,6 +256,7 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u5, left: ast.NodeInde
     }
 
     try parser.advance();
+
     const right = try parseExpression(parser, precedence) orelse return null;
 
     return try parser.addNode(
@@ -275,206 +291,31 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
 }
 
 fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    try parser.advance();
+    const saved_flag = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = false;
 
-    const checkpoint = parser.scratch_a.begin();
+    const cover = try array.parseCover(parser) orelse return null;
+    const needs_validation = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = saved_flag or needs_validation;
 
-    while (true) {
-        const token_type = parser.current_token.type;
-        if (token_type == .right_bracket or token_type == .eof) break;
-
-        // elision (holes in array): [1, , 3]
-        if (token_type == .comma) {
-            try parser.scratch_a.append(parser.allocator(), ast.null_node);
-            try parser.advance();
-            continue;
-        }
-
-        const element = try parseArrayElement(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
-        try parser.scratch_a.append(parser.allocator(), element);
-
-        if (parser.current_token.type == .comma) try parser.advance() else break;
+    if (parser.current_token.type == .assign) {
+        return try array.coverToPattern(parser, cover);
     }
 
-    if (parser.current_token.type != .right_bracket) {
-        try parser.report(
-            parser.current_token.span,
-            "Unclosed array literal",
-            .{
-                .help = "Add a closing bracket ']' to complete the array, or check for missing commas between elements.",
-                .labels = try parser.makeLabels(&.{
-                    parser.label(.{ .start = start, .end = start + 1 }, "opened here"),
-                }),
-            },
-        );
-        parser.scratch_a.reset(checkpoint);
-        return null;
-    }
-
-    const end = parser.current_token.span.end;
-    try parser.advance();
-
-    return try parser.addNode(
-        .{ .array_expression = .{ .elements = try parser.addExtra(parser.scratch_a.take(checkpoint)) } },
-        .{ .start = start, .end = end },
-    );
-}
-
-inline fn parseArrayElement(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.type == .spread) return parseSpreadElement(parser);
-    return parseExpression(parser, 0);
-}
-
-pub fn parseSpreadElement(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    try parser.advance();
-    const argument = try parseExpression(parser, 0) orelse return null;
-    return try parser.addNode(.{
-        .spread_element = .{ .argument = argument },
-    }, .{ .start = start, .end = parser.getSpan(argument).end });
+    return array.coverToExpression(parser, cover, needs_validation);
 }
 
 fn parseObjectExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    try parser.advance();
+    const saved_flag = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = false;
 
-    const checkpoint = parser.scratch_a.begin();
+    const cover = try object.parseCover(parser) orelse return null;
+    const needs_validation = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = saved_flag or needs_validation;
 
-    while (true) {
-        const token_type = parser.current_token.type;
-        if (token_type == .right_brace or token_type == .eof) break;
-
-        const property = try parseObjectProperty(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
-        try parser.scratch_a.append(parser.allocator(), property);
-        if (parser.current_token.type == .comma) try parser.advance() else break;
+    if (parser.current_token.type == .assign) {
+        return try object.coverToPattern(parser, cover);
     }
 
-    if (parser.current_token.type != .right_brace) {
-        try parser.report(
-            parser.current_token.span,
-            "Unclosed object literal",
-            .{
-                .help = "Add a closing brace '}' to complete the object, or check for missing commas between properties.",
-                .labels = try parser.makeLabels(&.{
-                    parser.label(.{ .start = start, .end = start + 1 }, "opened here"),
-                }),
-            },
-        );
-        parser.scratch_a.reset(checkpoint);
-        return null;
-    }
-    const end = parser.current_token.span.end;
-    try parser.advance();
-
-    return try parser.addNode(.{
-        .object_expression = .{ .properties = try parser.addExtra(parser.scratch_a.take(checkpoint)) },
-    }, .{ .start = start, .end = end });
-}
-
-fn parseObjectProperty(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.type == .spread) return parseSpreadElement(parser);
-
-    const start = parser.current_token.span.start;
-    var computed = false;
-    var key: ast.NodeIndex = undefined;
-    var shorthand_token: ?@import("../token.zig").Token = null;
-
-    // computed property names: [expr]
-    if (parser.current_token.type == .left_bracket) {
-        computed = true;
-        try parser.advance();
-        key = try parseExpression(parser, 0) orelse return null;
-
-        if (parser.current_token.type != .right_bracket) {
-            try parser.report(
-                parser.current_token.span,
-                "Unclosed computed property name",
-                .{
-                    .help = "Add a closing bracket ']' after the expression used as the property name.",
-                    .labels = try parser.makeLabels(&.{
-                        parser.label(.{ .start = start, .end = start + 1 }, "opened here"),
-                    }),
-                },
-            );
-            return null;
-        }
-        try parser.advance();
-    } else if (parser.current_token.type.isIdentifierLike()) {
-        shorthand_token = parser.current_token;
-        key = try parser.addNode(
-            .{
-                .identifier_name = .{
-                    .name_start = parser.current_token.span.start,
-                    .name_len = @intCast(parser.current_token.lexeme.len),
-                },
-            },
-            parser.current_token.span,
-        );
-        try parser.advance();
-    } else if (parser.current_token.type.isNumericLiteral()) {
-        key = try literals.parseNumericLiteral(parser) orelse return null;
-    } else if (parser.current_token.type == .string_literal) {
-        key = try literals.parseStringLiteral(parser) orelse return null;
-    } else {
-        try parser.reportFmt(
-            parser.current_token.span,
-            "Unexpected token '{s}' in object literal",
-            .{parser.current_token.lexeme},
-            .{ .help = "Object properties must start with an identifier, string, number, or computed property name ([expr])." },
-        );
-        return null;
-    }
-
-    // check for shorthand property: { x } instead of { x: x }
-    const is_shorthand = !computed and shorthand_token != null and
-        (parser.current_token.type == .comma or parser.current_token.type == .right_brace);
-
-    var value: ast.NodeIndex = undefined;
-    if (is_shorthand) {
-        const token = shorthand_token.?;
-
-        value = try parser.addNode(
-            .{
-                .identifier_reference = .{
-                    .name_start = token.span.start,
-                    .name_len = @intCast(token.lexeme.len),
-                },
-            },
-            token.span,
-        );
-    } else {
-        if (parser.current_token.type != .colon) {
-            try parser.report(
-                .{ .start = parser.getSpan(key).start, .end = parser.current_token.span.end },
-                "Missing colon after property name in object literal",
-                .{ .help = "Use 'key: value' syntax for object properties, or just 'key' for shorthand when the variable has the same name." },
-            );
-            return null;
-        }
-        try parser.advance();
-        value = try parseExpression(parser, 0) orelse return null;
-    }
-
-    return try parser.addNode(
-        .{
-            .object_property = .{
-                .key = key,
-                .value = value,
-                .kind = .init,
-                .shorthand = is_shorthand,
-                .computed = computed,
-            },
-        },
-        .{ .start = start, .end = parser.getSpan(value).end },
-    );
-
-    // TODO: handle methods, getter, setter.
-    // first need to implement the function/arrow function expressions.
+    return object.coverToExpression(parser, cover, needs_validation);
 }

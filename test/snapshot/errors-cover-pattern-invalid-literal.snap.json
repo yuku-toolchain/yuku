@@ -9,10 +9,10 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Computed property must have a value",
-      "help": "Add ': value' after the computed key.",
-      "start": 6,
-      "end": 7,
+      "message": "Invalid element in destructuring pattern",
+      "help": "Expected an identifier, array pattern, object pattern, or assignment pattern.",
+      "start": 8,
+      "end": 11,
       "labels": [
       ]
     }

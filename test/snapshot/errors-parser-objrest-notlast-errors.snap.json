@@ -9,10 +9,10 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Rest element must be the last property in object destructuring",
-      "help": "Move the '...rest' pattern to the end, or remove trailing properties.",
+      "message": "Rest element must be the last property",
+      "help": "No properties can follow the rest element in a destructuring pattern.",
       "start": 5,
-      "end": 10,
+      "end": 9,
       "labels": [
       ]
     }

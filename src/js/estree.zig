@@ -84,6 +84,9 @@ pub const Serializer = struct {
             .object_pattern => |d| self.writeObjectPattern(d, span),
             .binding_property => |d| self.writeBindingProperty(d, span),
             .binding_rest_element => |d| self.writeRestElement(d, span),
+
+            .parenthesized_expression => |d| self.writeParenthesizedExpression(d, span),
+            .arrow_function_expression => |d| self.writeArrowFunctionExpression(d, span),
         };
     }
 
@@ -449,6 +452,28 @@ pub const Serializer = struct {
         try self.fieldType("RestElement");
         try self.fieldSpan(span);
         try self.fieldNode("argument", data.argument);
+        try self.endObject();
+    }
+
+    fn writeParenthesizedExpression(self: *Self, data: ast.ParenthesizedExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("ParenthesizedExpression");
+        try self.fieldSpan(span);
+        try self.fieldNode("expression", data.expression);
+        try self.endObject();
+    }
+
+    fn writeArrowFunctionExpression(self: *Self, data: ast.ArrowFunctionExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("ArrowFunctionExpression");
+        try self.fieldSpan(span);
+        try self.fieldNode("id", ast.null_node); // arrow functions are always anonymous
+        try self.fieldBool("generator", false); // arrow functions cannot be generators
+        try self.fieldBool("async", data.async);
+        try self.field("params");
+        try self.writeFunctionParams(data.params);
+        try self.fieldNode("body", data.body);
+        try self.fieldBool("expression", data.expression);
         try self.endObject();
     }
 

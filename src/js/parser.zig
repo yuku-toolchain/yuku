@@ -83,6 +83,11 @@ const ParserContext = struct {
     allow_in: bool,
 };
 
+const ParserState = struct {
+    /// tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
+    cover_has_init_name: bool = false,
+};
+
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
@@ -103,6 +108,7 @@ pub const Parser = struct {
     //
 
     context: ParserContext,
+    state: ParserState = .{},
 
     strict_mode: bool,
     source_type: SourceType,
@@ -205,7 +211,7 @@ pub const Parser = struct {
         return switch (self.current_token.type) {
             .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(self),
             .function => functions.parseFunction(self, .{}),
-            .@"async" => functions.parseFunction(self, .{ .is_async = true }),
+            .async => functions.parseFunction(self, .{ .is_async = true }),
             .declare => blk: {
                 if (!self.isTs()) {
                     break :blk try self.parseExpressionStatement();
@@ -213,7 +219,7 @@ pub const Parser = struct {
                 break :blk functions.parseFunction(self, .{ .is_declare = true });
             },
 
-            .@"await" => blk: {
+            .await => blk: {
                 const await_token = self.current_token;
 
                 // TODO: remove lookahead method, and use a way without lookahead, like when we implement
@@ -300,6 +306,10 @@ pub const Parser = struct {
 
     pub inline fn getData(self: *const Parser, index: ast.NodeIndex) ast.NodeData {
         return self.nodes.items(.data)[index];
+    }
+
+    pub inline fn setData(self: *Parser, index: ast.NodeIndex, data: ast.NodeData) void {
+        self.nodes.items(.data)[index] = data;
     }
 
     pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {

@@ -2,17 +2,17 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 19,
+    "end": 12,
     "sourceType": "module",
     "body": [
     ]
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Rest element must be the last element",
-      "help": "No elements can follow the rest element in a destructuring pattern.",
+      "message": "Shorthand property cannot have a default value in object expression",
+      "help": "Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns.",
       "start": 5,
-      "end": 9,
+      "end": 10,
       "labels": [
       ]
     }

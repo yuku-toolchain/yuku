@@ -1,0 +1,1025 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 335,
+    "sourceType": "module",
+    "body": [{
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 0,
+          "end": 2,
+          "elements": [
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 6,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 3,
+          "end": 6,
+          "elements": [{
+              "type": "Literal",
+              "start": 4,
+              "end": 5,
+              "value": 1,
+              "raw": "1"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 7,
+        "end": 13,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 7,
+          "end": 13,
+          "elements": [{
+              "type": "Literal",
+              "start": 8,
+              "end": 9,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "Literal",
+              "start": 11,
+              "end": 12,
+              "value": 2,
+              "raw": "2"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 14,
+        "end": 23,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 14,
+          "end": 23,
+          "elements": [{
+              "type": "Literal",
+              "start": 15,
+              "end": 16,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "Literal",
+              "start": 18,
+              "end": 19,
+              "value": 2,
+              "raw": "2"
+            },{
+              "type": "Literal",
+              "start": 21,
+              "end": 22,
+              "value": 3,
+              "raw": "3"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 24,
+        "end": 39,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 24,
+          "end": 39,
+          "elements": [{
+              "type": "Literal",
+              "start": 25,
+              "end": 26,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "Literal",
+              "start": 28,
+              "end": 29,
+              "value": 2,
+              "raw": "2"
+            },{
+              "type": "Literal",
+              "start": 31,
+              "end": 32,
+              "value": 3,
+              "raw": "3"
+            },{
+              "type": "Literal",
+              "start": 34,
+              "end": 35,
+              "value": 4,
+              "raw": "4"
+            },{
+              "type": "Literal",
+              "start": 37,
+              "end": 38,
+              "value": 5,
+              "raw": "5"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 40,
+        "end": 43,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 40,
+          "end": 43,
+          "elements": [null
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 44,
+        "end": 48,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 44,
+          "end": 48,
+          "elements": [null,null
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 49,
+        "end": 54,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 49,
+          "end": 54,
+          "elements": [null,null,null
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 55,
+        "end": 59,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 55,
+          "end": 59,
+          "elements": [{
+              "type": "Literal",
+              "start": 56,
+              "end": 57,
+              "value": 1,
+              "raw": "1"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 60,
+        "end": 67,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 60,
+          "end": 67,
+          "elements": [{
+              "type": "Literal",
+              "start": 61,
+              "end": 62,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "Literal",
+              "start": 64,
+              "end": 65,
+              "value": 2,
+              "raw": "2"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 68,
+        "end": 74,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 68,
+          "end": 74,
+          "elements": [{
+              "type": "Literal",
+              "start": 69,
+              "end": 70,
+              "value": 1,
+              "raw": "1"
+            },null,{
+              "type": "Literal",
+              "start": 72,
+              "end": 73,
+              "value": 3,
+              "raw": "3"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 75,
+        "end": 80,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 75,
+          "end": 80,
+          "elements": [null,{
+              "type": "Literal",
+              "start": 77,
+              "end": 78,
+              "value": 1,
+              "raw": "1"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 81,
+        "end": 86,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 81,
+          "end": 86,
+          "elements": [null,null,{
+              "type": "Literal",
+              "start": 84,
+              "end": 85,
+              "value": 1,
+              "raw": "1"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 87,
+        "end": 94,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 87,
+          "end": 94,
+          "elements": [{
+              "type": "Literal",
+              "start": 88,
+              "end": 89,
+              "value": 1,
+              "raw": "1"
+            },null,null,{
+              "type": "Literal",
+              "start": 92,
+              "end": 93,
+              "value": 4,
+              "raw": "4"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 95,
+        "end": 101,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 95,
+          "end": 101,
+          "elements": [{
+              "type": "SpreadElement",
+              "start": 96,
+              "end": 100,
+              "argument": {
+                "type": "Identifier",
+                "start": 99,
+                "end": 100,
+                "name": "x"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 102,
+        "end": 111,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 102,
+          "end": 111,
+          "elements": [{
+              "type": "Literal",
+              "start": 103,
+              "end": 104,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "SpreadElement",
+              "start": 106,
+              "end": 110,
+              "argument": {
+                "type": "Identifier",
+                "start": 109,
+                "end": 110,
+                "name": "x"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 112,
+        "end": 124,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 112,
+          "end": 124,
+          "elements": [{
+              "type": "Literal",
+              "start": 113,
+              "end": 114,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "Literal",
+              "start": 116,
+              "end": 117,
+              "value": 2,
+              "raw": "2"
+            },{
+              "type": "SpreadElement",
+              "start": 119,
+              "end": 123,
+              "argument": {
+                "type": "Identifier",
+                "start": 122,
+                "end": 123,
+                "name": "x"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 125,
+        "end": 137,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 125,
+          "end": 137,
+          "elements": [{
+              "type": "SpreadElement",
+              "start": 126,
+              "end": 130,
+              "argument": {
+                "type": "Identifier",
+                "start": 129,
+                "end": 130,
+                "name": "x"
+              }
+            },{
+              "type": "SpreadElement",
+              "start": 132,
+              "end": 136,
+              "argument": {
+                "type": "Identifier",
+                "start": 135,
+                "end": 136,
+                "name": "y"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 138,
+        "end": 156,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 138,
+          "end": 156,
+          "elements": [{
+              "type": "SpreadElement",
+              "start": 139,
+              "end": 143,
+              "argument": {
+                "type": "Identifier",
+                "start": 142,
+                "end": 143,
+                "name": "x"
+              }
+            },{
+              "type": "SpreadElement",
+              "start": 145,
+              "end": 149,
+              "argument": {
+                "type": "Identifier",
+                "start": 148,
+                "end": 149,
+                "name": "y"
+              }
+            },{
+              "type": "SpreadElement",
+              "start": 151,
+              "end": 155,
+              "argument": {
+                "type": "Identifier",
+                "start": 154,
+                "end": 155,
+                "name": "z"
+              }
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 157,
+        "end": 161,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 157,
+          "end": 161,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 158,
+              "end": 160,
+              "elements": [
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 162,
+        "end": 167,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 162,
+          "end": 167,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 163,
+              "end": 166,
+              "elements": [{
+                  "type": "Literal",
+                  "start": 164,
+                  "end": 165,
+                  "value": 1,
+                  "raw": "1"
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 168,
+        "end": 175,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 168,
+          "end": 175,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 169,
+              "end": 174,
+              "elements": [{
+                  "type": "ArrayExpression",
+                  "start": 170,
+                  "end": 173,
+                  "elements": [{
+                      "type": "Literal",
+                      "start": 171,
+                      "end": 172,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 176,
+        "end": 184,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 176,
+          "end": 184,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 177,
+              "end": 183,
+              "elements": [{
+                  "type": "Literal",
+                  "start": 178,
+                  "end": 179,
+                  "value": 1,
+                  "raw": "1"
+                },{
+                  "type": "Literal",
+                  "start": 181,
+                  "end": 182,
+                  "value": 2,
+                  "raw": "2"
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 185,
+        "end": 195,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 185,
+          "end": 195,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 186,
+              "end": 189,
+              "elements": [{
+                  "type": "Literal",
+                  "start": 187,
+                  "end": 188,
+                  "value": 1,
+                  "raw": "1"
+                }
+              ]
+            },{
+              "type": "ArrayExpression",
+              "start": 191,
+              "end": 194,
+              "elements": [{
+                  "type": "Literal",
+                  "start": 192,
+                  "end": 193,
+                  "value": 2,
+                  "raw": "2"
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 196,
+        "end": 214,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 196,
+          "end": 214,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 197,
+              "end": 213,
+              "elements": [{
+                  "type": "ArrayExpression",
+                  "start": 198,
+                  "end": 204,
+                  "elements": [{
+                      "type": "Literal",
+                      "start": 199,
+                      "end": 200,
+                      "value": 1,
+                      "raw": "1"
+                    },{
+                      "type": "Literal",
+                      "start": 202,
+                      "end": 203,
+                      "value": 2,
+                      "raw": "2"
+                    }
+                  ]
+                },{
+                  "type": "ArrayExpression",
+                  "start": 206,
+                  "end": 212,
+                  "elements": [{
+                      "type": "Literal",
+                      "start": 207,
+                      "end": 208,
+                      "value": 3,
+                      "raw": "3"
+                    },{
+                      "type": "Literal",
+                      "start": 210,
+                      "end": 211,
+                      "value": 4,
+                      "raw": "4"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 215,
+        "end": 229,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 215,
+          "end": 229,
+          "elements": [{
+              "type": "Literal",
+              "start": 216,
+              "end": 217,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "ArrayExpression",
+              "start": 219,
+              "end": 225,
+              "elements": [{
+                  "type": "Literal",
+                  "start": 220,
+                  "end": 221,
+                  "value": 2,
+                  "raw": "2"
+                },{
+                  "type": "Literal",
+                  "start": 223,
+                  "end": 224,
+                  "value": 3,
+                  "raw": "3"
+                }
+              ]
+            },{
+              "type": "Literal",
+              "start": 227,
+              "end": 228,
+              "value": 4,
+              "raw": "4"
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 230,
+        "end": 238,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 230,
+          "end": 238,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 231,
+              "end": 237,
+              "elements": [{
+                  "type": "SpreadElement",
+                  "start": 232,
+                  "end": 236,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 235,
+                    "end": 236,
+                    "name": "x"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 239,
+        "end": 253,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 239,
+          "end": 253,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 240,
+              "end": 252,
+              "elements": [{
+                  "type": "SpreadElement",
+                  "start": 241,
+                  "end": 245,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 244,
+                    "end": 245,
+                    "name": "x"
+                  }
+                },{
+                  "type": "SpreadElement",
+                  "start": 247,
+                  "end": 251,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 250,
+                    "end": 251,
+                    "name": "y"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 254,
+        "end": 265,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 254,
+          "end": 265,
+          "elements": [{
+              "type": "Literal",
+              "start": 255,
+              "end": 256,
+              "value": 1,
+              "raw": "1"
+            },{
+              "type": "ArrayExpression",
+              "start": 258,
+              "end": 264,
+              "elements": [{
+                  "type": "SpreadElement",
+                  "start": 259,
+                  "end": 263,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 262,
+                    "end": 263,
+                    "name": "x"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 266,
+        "end": 274,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 266,
+          "end": 274,
+          "elements": [{
+              "type": "ObjectExpression",
+              "start": 267,
+              "end": 273,
+              "properties": [{
+                  "type": "Property",
+                  "start": 268,
+                  "end": 272,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 268,
+                    "end": 269,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 271,
+                    "end": 272,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 275,
+        "end": 291,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 275,
+          "end": 291,
+          "elements": [{
+              "type": "ObjectExpression",
+              "start": 276,
+              "end": 282,
+              "properties": [{
+                  "type": "Property",
+                  "start": 277,
+                  "end": 281,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 277,
+                    "end": 278,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 280,
+                    "end": 281,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            },{
+              "type": "ObjectExpression",
+              "start": 284,
+              "end": 290,
+              "properties": [{
+                  "type": "Property",
+                  "start": 285,
+                  "end": 289,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 285,
+                    "end": 286,
+                    "name": "b"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 288,
+                    "end": 289,
+                    "value": 2,
+                    "raw": "2"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 292,
+        "end": 306,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 292,
+          "end": 306,
+          "elements": [{
+              "type": "ObjectExpression",
+              "start": 293,
+              "end": 305,
+              "properties": [{
+                  "type": "Property",
+                  "start": 294,
+                  "end": 298,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 294,
+                    "end": 295,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 297,
+                    "end": 298,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },{
+                  "type": "Property",
+                  "start": 300,
+                  "end": 304,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 300,
+                    "end": 301,
+                    "name": "b"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 303,
+                    "end": 304,
+                    "value": 2,
+                    "raw": "2"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 307,
+        "end": 320,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 307,
+          "end": 320,
+          "elements": [{
+              "type": "ArrayExpression",
+              "start": 308,
+              "end": 311,
+              "elements": [{
+                  "type": "Literal",
+                  "start": 309,
+                  "end": 310,
+                  "value": 1,
+                  "raw": "1"
+                }
+              ]
+            },{
+              "type": "ObjectExpression",
+              "start": 313,
+              "end": 319,
+              "properties": [{
+                  "type": "Property",
+                  "start": 314,
+                  "end": 318,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 314,
+                    "end": 315,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 317,
+                    "end": 318,
+                    "value": 2,
+                    "raw": "2"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        }
+      },{
+        "type": "ExpressionStatement",
+        "start": 321,
+        "end": 334,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 321,
+          "end": 334,
+          "elements": [{
+              "type": "ObjectExpression",
+              "start": 322,
+              "end": 333,
+              "properties": [{
+                  "type": "Property",
+                  "start": 323,
+                  "end": 332,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 323,
+                    "end": 324,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "ArrayExpression",
+                    "start": 326,
+                    "end": 332,
+                    "elements": [{
+                        "type": "Literal",
+                        "start": 327,
+                        "end": 328,
+                        "value": 1,
+                        "raw": "1"
+                      },{
+                        "type": "Literal",
+                        "start": 330,
+                        "end": 331,
+                        "value": 2,
+                        "raw": "2"
+                      }
+                    ]
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "diagnostics": [
+  ]
+}

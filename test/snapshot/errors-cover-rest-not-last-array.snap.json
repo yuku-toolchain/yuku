@@ -2,17 +2,17 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 13,
+    "end": 18,
     "sourceType": "module",
     "body": [
     ]
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Expected ',' or '}' in object",
-      "help": "Add a comma between properties or close the object with '}'.",
-      "start": 13,
-      "end": 13,
+      "message": "Rest element must be the last element",
+      "help": "No elements can follow the rest element in a destructuring pattern.",
+      "start": 5,
+      "end": 9,
       "labels": [
       ]
     }

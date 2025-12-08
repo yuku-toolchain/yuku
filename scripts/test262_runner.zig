@@ -41,7 +41,7 @@ const Stats = struct {
 
 fn parseFile(allocator: std.mem.Allocator, source: []const u8, is_module: bool) bool {
     const tree = js.parse(allocator, source, .{
-        .source_type = if(is_module) .module else .script,
+        .source_type = if (is_module) .module else .script,
     }) catch return false;
     defer tree.deinit();
     return !tree.hasDiagnostics();

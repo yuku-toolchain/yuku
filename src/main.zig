@@ -35,15 +35,15 @@ pub fn main() !void {
     const json = try js.estree.toJSON(&tree, allocator);
     defer allocator.free(json);
 
-    std.debug.print("\n{s}\n", .{json});
+    // std.debug.print("\n{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {
             const start_pos = getLineAndColumn(contents, err.span.start);
             const end_pos = getLineAndColumn(contents, err.span.end);
 
-            std.debug.print("Error: {s} at src/test.js:{d}:{d} to src/test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
-            if (err.help) |help| std.debug.print("  Help: {s}", .{help});
+            std.debug.print("Error: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
+            if (err.help) |help| std.debug.print("  Help: {s}\n\n", .{help});
         }
     }
 

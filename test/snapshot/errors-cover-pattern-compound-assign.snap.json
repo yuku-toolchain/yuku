@@ -9,10 +9,10 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Computed property must have a value",
-      "help": "Add ': value' after the computed key.",
-      "start": 6,
-      "end": 7,
+      "message": "Invalid assignment operator in destructuring pattern",
+      "help": "Only '=' is allowed in destructuring defaults, not compound operators like '+='.",
+      "start": 5,
+      "end": 11,
       "labels": [
       ]
     }

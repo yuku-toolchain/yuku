@@ -19,7 +19,7 @@ pub inline fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance();
     return try parser.addNode(.{
-        .boolean_literal = .{ .value = token.type == .@"true" },
+        .boolean_literal = .{ .value = token.type == .true },
     }, token.span);
 }
 

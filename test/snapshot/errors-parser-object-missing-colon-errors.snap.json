@@ -9,9 +9,9 @@
   },
   "diagnostics": [{
       "severity": "error",
-      "message": "Missing colon after property name in object literal",
-      "help": "Use 'key: value' syntax for object properties, or just 'key' for shorthand when the variable has the same name.",
-      "start": 1,
+      "message": "Expected ',' or '}' in object",
+      "help": "Add a comma between properties or close the object with '}'.",
+      "start": 3,
       "end": 4,
       "labels": [
       ]
