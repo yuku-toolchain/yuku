@@ -83,6 +83,11 @@ const ParserContext = struct {
     allow_in: bool,
 };
 
+const ParserState = struct {
+    /// tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
+    cover_has_init_name: bool = false,
+};
+
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
@@ -103,6 +108,7 @@ pub const Parser = struct {
     //
 
     context: ParserContext,
+    state: ParserState = .{},
 
     strict_mode: bool,
     source_type: SourceType,

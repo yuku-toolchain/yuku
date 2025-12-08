@@ -174,6 +174,9 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             .{ .start = key_span.start, .end = parser.getSpan(default_value).end },
         );
 
+        // mark that CoverInitializedName was created
+        parser.state.cover_has_init_name = true;
+
         return try parser.addNode(
             .{ .object_property = .{ .key = key, .value = assign_expr, .kind = .init, .shorthand = true, .computed = false } },
             .{ .start = prop_start, .end = parser.getSpan(default_value).end },

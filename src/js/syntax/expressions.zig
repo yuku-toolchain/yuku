@@ -291,21 +291,31 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
 }
 
 fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const saved_flag = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = false;
+
     const cover = try array.parseCover(parser) orelse return null;
+    const needs_validation = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = saved_flag or needs_validation;
 
     if (parser.current_token.type == .assign) {
         return try array.coverToPattern(parser, cover);
     }
 
-    return array.coverToExpression(parser, cover, true);
+    return array.coverToExpression(parser, cover, needs_validation);
 }
 
 fn parseObjectExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const saved_flag = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = false;
+
     const cover = try object.parseCover(parser) orelse return null;
+    const needs_validation = parser.state.cover_has_init_name;
+    parser.state.cover_has_init_name = saved_flag or needs_validation;
 
     if (parser.current_token.type == .assign) {
         return try object.coverToPattern(parser, cover);
     }
 
-    return object.coverToExpression(parser, cover, true);
+    return object.coverToExpression(parser, cover, needs_validation);
 }

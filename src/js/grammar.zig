@@ -14,14 +14,8 @@ const array = @import("syntax/array.zig");
 /// - if parent becomes a pattern -> no validation needed
 pub fn parseCoverElement(parser: *Parser) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
-        .left_bracket => blk: {
-            const cover = try array.parseCover(parser) orelse return null;
-            break :blk array.coverToExpression(parser, cover, false);
-        },
-        .left_brace => blk: {
-            const cover = try object.parseCover(parser) orelse return null;
-            break :blk object.coverToExpression(parser, cover, false);
-        },
+        .left_bracket => array.coverToExpression(parser, try array.parseCover(parser) orelse return null, false),
+        .left_brace => object.coverToExpression(parser, try object.parseCover(parser) orelse return null, false),
         else => expressions.parseExpression(parser, 2),
     };
 }
