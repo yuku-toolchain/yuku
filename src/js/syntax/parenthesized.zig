@@ -276,7 +276,10 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
     if (!ast.isNull(cover.rest)) {
         const spread_data = parser.getData(cover.rest).spread_element;
-        const pattern = try grammar.expressionToPattern(parser, spread_data.argument) orelse return null;
+        const pattern = try grammar.expressionToPattern(parser, spread_data.argument) orelse {
+            parser.scratch_cover.reset(checkpoint);
+            return null;
+        };
         parser.setData(cover.rest, .{ .binding_rest_element = .{ .argument = pattern } });
         rest = cover.rest;
     }
