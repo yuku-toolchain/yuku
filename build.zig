@@ -53,28 +53,6 @@ pub fn build(b: *std.Build) void {
     const gen_unicode_id_table_step = b.step("generate-unicode-id", "Run unicode identifier table and utils generation");
     gen_unicode_id_table_step.dependOn(&run_gen_unicode_id_table.step);
 
-    const snapshot_test_runner_module = b.createModule(.{
-        .root_source_file = b.path("scripts/snapshot_test_runner.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    snapshot_test_runner_module.addImport("js", js_module);
-
-    const snapshot_test_runner = b.addExecutable(.{
-        .name = "snapshot-test-runner",
-        .root_module = snapshot_test_runner_module,
-    });
-
-    b.installArtifact(snapshot_test_runner);
-
-    const snapshot_step = b.step("snapshot", "Run parser snapshot tests");
-    const run_snapshot = b.addRunArtifact(snapshot_test_runner);
-    run_snapshot.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_snapshot.addArgs(args);
-    }
-    snapshot_step.dependOn(&run_snapshot.step);
-
     const test262_runner_module = b.createModule(.{
         .root_source_file = b.path("scripts/test262_runner.zig"),
         .target = target,
