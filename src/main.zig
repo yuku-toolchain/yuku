@@ -34,10 +34,11 @@ pub fn main() !void {
 
     const mb_per_sec = (@as(f64, @floatFromInt(contents.len)) / 1_000_000.0) / (taken_ms / 1000.0);
 
-    const json = try js.estree.toJSON(&tree, allocator);
+    const json = try js.estree.toJSON(&tree, allocator, .{});
+
     defer allocator.free(json);
 
-    // std.debug.print("\n{s}\n", .{json});
+    std.debug.print("\n{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {

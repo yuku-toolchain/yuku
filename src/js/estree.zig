@@ -2,19 +2,26 @@ const std = @import("std");
 const ast = @import("ast.zig");
 const parser = @import("parser.zig");
 
+pub const EstreeJsonOptions = struct {
+    /// Whether to pretty-print the JSON output
+    pretty: bool = true,
+    /// Number of spaces per indentation level (default: 2)
+    indent_size: u32 = 2,
+};
+
 pub const Serializer = struct {
     tree: *const parser.ParseTree,
     buffer: *std.ArrayList(u8),
     allocator: std.mem.Allocator,
     depth: u32 = 0,
-    pretty: bool = true,
+    options: EstreeJsonOptions,
     needs_comma: [max_depth]bool = [_]bool{false} ** max_depth,
 
     const Self = @This();
     const Error = error{ NoSpaceLeft, OutOfMemory };
     const max_depth = 64;
 
-    pub fn serialize(tree: *const parser.ParseTree, allocator: std.mem.Allocator, pretty: bool) ![]u8 {
+    pub fn serialize(tree: *const parser.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
         var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.source.len * 3);
         errdefer buffer.deinit(allocator);
 
@@ -22,12 +29,12 @@ pub const Serializer = struct {
             .tree = tree,
             .buffer = &buffer,
             .allocator = allocator,
-            .pretty = pretty,
+            .options = options,
         };
 
         try self.beginObject();
         try self.fieldNode("program", tree.program);
-        try self.field("diagnostics");
+        try self.field("errors");
         try self.writeDiagnostics();
         try self.endObject();
 
@@ -490,7 +497,7 @@ pub const Serializer = struct {
         try self.beginArray();
         for (self.tree.diagnostics.items) |diag| {
             try self.sep();
-            if (self.pretty) {
+            if (self.options.pretty) {
                 try self.writeByte('\n');
                 try self.writeIndent();
             }
@@ -509,7 +516,7 @@ pub const Serializer = struct {
             try self.beginArray();
             for (diag.labels) |lbl| {
                 try self.sep();
-                if (self.pretty) {
+                if (self.options.pretty) {
                     try self.writeByte('\n');
                     try self.writeIndent();
                 }
@@ -547,7 +554,7 @@ pub const Serializer = struct {
 
     fn endObject(self: *Self) !void {
         self.depth -= 1;
-        if (self.pretty) {
+        if (self.options.pretty) {
             try self.writeByte('\n');
             try self.writeIndent();
         }
@@ -563,7 +570,7 @@ pub const Serializer = struct {
 
     fn endArray(self: *Self) !void {
         self.depth -= 1;
-        if (self.pretty) {
+        if (self.options.pretty) {
             try self.writeByte('\n');
             try self.writeIndent();
         }
@@ -572,14 +579,14 @@ pub const Serializer = struct {
 
     fn field(self: *Self, key: []const u8) !void {
         try self.sep();
-        if (self.pretty) {
+        if (self.options.pretty) {
             try self.writeByte('\n');
             try self.writeIndent();
         }
         try self.writeByte('"');
         try self.write(key);
         try self.write("\":");
-        if (self.pretty) try self.writeByte(' ');
+        if (self.options.pretty) try self.writeByte(' ');
     }
 
     fn fieldType(self: *Self, type_name: []const u8) !void {
@@ -631,7 +638,7 @@ pub const Serializer = struct {
 
     fn elemNode(self: *Self, node: ast.NodeIndex) !void {
         try self.sep();
-        if (self.pretty) {
+        if (self.options.pretty) {
             try self.writeByte('\n');
             try self.writeIndent();
         }
@@ -682,7 +689,7 @@ pub const Serializer = struct {
     }
 
     fn writeIndent(self: *Self) !void {
-        const indent_size = self.depth * 2;
+        const indent_size = self.depth * self.options.indent_size;
         const spaces = "                                        "; // 40 spaces
         var remaining = indent_size;
         while (remaining > 0) {
@@ -699,12 +706,6 @@ pub const Serializer = struct {
 
 /// Serialize a ParseTree to ESTree-compatible JSON.
 /// Caller owns the returned memory and must free it.
-pub fn toJSON(tree: *const parser.ParseTree, allocator: std.mem.Allocator) ![]u8 {
-    return Serializer.serialize(tree, allocator, true);
-}
-
-/// Serialize a ParseTree to minified ESTree-compatible JSON.
-/// Caller owns the returned memory and must free it.
-pub fn toJSONMinified(tree: *const parser.ParseTree, allocator: std.mem.Allocator) ![]u8 {
-    return Serializer.serialize(tree, allocator, false);
+pub fn toJSON(tree: *const parser.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
+    return Serializer.serialize(tree, allocator, options);
 }
