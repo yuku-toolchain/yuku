@@ -37,7 +37,7 @@ pub fn main() !void {
     const json = try js.estree.toJSON(&tree, allocator);
     defer allocator.free(json);
 
-    // std.debug.print("\n{s}\n", .{json});
+    std.debug.print("\n{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {

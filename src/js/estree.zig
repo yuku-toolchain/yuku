@@ -490,6 +490,10 @@ pub const Serializer = struct {
         try self.beginArray();
         for (self.tree.diagnostics.items) |diag| {
             try self.sep();
+            if (self.pretty) {
+                try self.writeByte('\n');
+                try self.writeIndent();
+            }
             try self.beginObject();
             try self.fieldString("severity", diag.severity.toString());
             try self.fieldString("message", diag.message);
@@ -505,6 +509,10 @@ pub const Serializer = struct {
             try self.beginArray();
             for (diag.labels) |lbl| {
                 try self.sep();
+                if (self.pretty) {
+                    try self.writeByte('\n');
+                    try self.writeIndent();
+                }
                 try self.beginObject();
                 try self.fieldInt("start", lbl.span.start);
                 try self.fieldInt("end", lbl.span.end);
@@ -623,6 +631,10 @@ pub const Serializer = struct {
 
     fn elemNode(self: *Self, node: ast.NodeIndex) !void {
         try self.sep();
+        if (self.pretty) {
+            try self.writeByte('\n');
+            try self.writeIndent();
+        }
         try self.writeNode(node);
     }
 
