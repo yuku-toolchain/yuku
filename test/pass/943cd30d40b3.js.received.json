@@ -1,0 +1,68 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 27,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "b"
+          },
+          {
+            "type": "Identifier",
+            "start": 14,
+            "end": 15,
+            "name": "c"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 17,
+          "end": 27,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 21,
+              "end": 22,
+              "expression": {
+                "type": "Identifier",
+                "start": 21,
+                "end": 22,
+                "name": "d"
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 22,
+      "end": 24,
+      "labels": [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 111,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 81,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 81,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 52,
+              "end": 53,
+              "expression": {
+                "type": "Identifier",
+                "start": 52,
+                "end": 53,
+                "name": "c"
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 63,
+              "end": 75,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 67,
+                  "end": 74,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 67,
+                    "end": 68,
+                    "name": "d"
+                  },
+                  "init": {
+                    "type": "ParenthesizedExpression",
+                    "start": 71,
+                    "end": 74,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 72,
+                      "end": 73,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'while'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 17,
+      "end": 22,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 53,
+      "end": 55,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '{' to start function body",
+      "help": "Function bodies must be enclosed in braces: function name() { ... }",
+      "start": 97,
+      "end": 98,
+      "labels": [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 40,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 39,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 38,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 2,
+                "end": 37,
+                "kind": "set",
+                "key": {
+                  "type": "Identifier",
+                  "start": 6,
+                  "end": 7,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 2,
+                  "end": 37,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "declare": false,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 9,
+                      "end": 10,
+                      "name": "b"
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 12,
+                    "end": 37,
+                    "body": [
+                    ]
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'super'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 17,
+      "end": 22,
+      "labels": [
+      ]
+    }
+  ]
+}

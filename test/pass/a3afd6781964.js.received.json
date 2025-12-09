@@ -1,0 +1,74 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 66,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 12,
+          "value": "use strict",
+          "raw": "\"use strict\""
+        },
+        "directive": "use strict"
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 33,
+        "end": 34,
+        "expression": {
+          "type": "Identifier",
+          "start": 33,
+          "end": 34,
+          "name": "b"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 55,
+        "end": 56,
+        "expression": {
+          "type": "Identifier",
+          "start": 55,
+          "end": 56,
+          "name": "b"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Expected ',' or '}' in object",
+      "help": "Add a comma between properties or close the object with '}'.",
+      "start": 22,
+      "end": 23,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 34,
+      "end": 36,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 56,
+      "end": 58,
+      "labels": [
+      ]
+    }
+  ]
+}

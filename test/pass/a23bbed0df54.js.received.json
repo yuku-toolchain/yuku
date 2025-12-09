@@ -1,0 +1,72 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 50,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 28,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 28,
+          "body": [
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 18,
+      "end": 23,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ')'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 28,
+      "end": 29,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 33,
+      "end": 38,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 48,
+      "end": 49,
+      "labels": [
+      ]
+    }
+  ]
+}

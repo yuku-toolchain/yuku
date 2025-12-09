@@ -1,0 +1,61 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 52,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 19,
+        "end": 20,
+        "expression": {
+          "type": "Identifier",
+          "start": 19,
+          "end": 20,
+          "name": "b"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 41,
+        "end": 42,
+        "expression": {
+          "type": "Identifier",
+          "start": 41,
+          "end": 42,
+          "name": "b"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Expected ',' or '}' in object",
+      "help": "Add a comma between properties or close the object with '}'.",
+      "start": 8,
+      "end": 9,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 20,
+      "end": 22,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 42,
+      "end": 44,
+      "labels": [
+      ]
+    }
+  ]
+}

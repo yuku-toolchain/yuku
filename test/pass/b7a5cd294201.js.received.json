@@ -1,0 +1,40 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 21,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 19,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 19,
+          "value": null,
+          "raw": "/* block comment */",
+          "regex": {
+            "pattern": "* block comment *",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 20,
+        "end": 21,
+        "expression": {
+          "type": "Literal",
+          "start": 20,
+          "end": 21,
+          "value": 1,
+          "raw": "1"
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

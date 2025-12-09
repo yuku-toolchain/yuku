@@ -1,0 +1,75 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 125,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ':'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 19,
+      "end": 20,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 27,
+      "end": 29,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 47,
+      "end": 49,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 67,
+      "end": 69,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 87,
+      "end": 89,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 109,
+      "end": 113,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 118,
+      "end": 119,
+      "labels": [
+      ]
+    }
+  ]
+}

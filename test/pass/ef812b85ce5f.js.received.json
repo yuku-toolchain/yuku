@@ -1,0 +1,84 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 18,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 12,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 12,
+              "name": "Infinity"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 14,
+            "end": 17,
+            "id": {
+              "type": "Identifier",
+              "start": 14,
+              "end": 17,
+              "name": "NaN"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 19,
+        "end": 27,
+        "expression": {
+          "type": "Identifier",
+          "start": 19,
+          "end": 27,
+          "name": "Infinity"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 33,
+        "end": 36,
+        "expression": {
+          "type": "Identifier",
+          "start": 33,
+          "end": 36,
+          "name": "NaN"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 27,
+      "end": 28,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 36,
+      "end": 37,
+      "labels": [
+      ]
+    }
+  ]
+}

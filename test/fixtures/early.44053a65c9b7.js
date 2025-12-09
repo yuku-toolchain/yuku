@@ -1,1 +1,0 @@
-function a() {'use strict'; ({ b: function b(eval) { } }); }

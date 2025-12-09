@@ -1,0 +1,75 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 70,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 11,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 11,
+          "name": "optimize"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'this'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 12,
+      "end": 16,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 27,
+      "end": 28,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 42,
+      "end": 43,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'try'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 48,
+      "end": 51,
+      "labels": [
+      ]
+    }
+  ]
+}

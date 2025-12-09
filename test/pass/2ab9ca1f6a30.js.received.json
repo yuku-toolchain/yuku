@@ -1,0 +1,207 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 162,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 4,
+        "expression": {
+          "type": "Literal",
+          "start": 3,
+          "end": 4,
+          "value": 1,
+          "raw": "1"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 100,
+        "end": 110,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 104,
+            "end": 109,
+            "id": {
+              "type": "Identifier",
+              "start": 104,
+              "end": 105,
+              "name": "e"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 108,
+              "end": 109,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 111,
+        "end": 117,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 111,
+          "end": 116,
+          "left": {
+            "type": "Identifier",
+            "start": 111,
+            "end": 112,
+            "name": "e"
+          },
+          "operator": "<",
+          "right": {
+            "type": "Literal",
+            "start": 115,
+            "end": 116,
+            "value": 2,
+            "raw": "2"
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 118,
+        "end": 121,
+        "expression": {
+          "type": "UpdateExpression",
+          "start": 118,
+          "end": 121,
+          "operator": "++",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 120,
+            "end": 121,
+            "name": "e"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 4,
+      "end": 5,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 6,
+      "end": 8,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 30,
+      "end": 32,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 44,
+      "end": 45,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 73,
+      "end": 74,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 82,
+      "end": 84,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 95,
+      "end": 98,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ')'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 121,
+      "end": 122,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 131,
+      "end": 133,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 143,
+      "end": 144,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 161,
+      "end": 162,
+      "labels": [
+      ]
+    }
+  ]
+}

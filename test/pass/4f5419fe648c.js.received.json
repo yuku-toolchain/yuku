@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 2,
+    "end": 5,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '>'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 4,
+      "end": 5,
+      "labels": [
+      ]
+    }
+  ]
+}

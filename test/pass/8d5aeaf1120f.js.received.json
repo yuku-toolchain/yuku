@@ -1,0 +1,30 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 0,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'throw'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 5,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Invalid character at start of identifier",
+      "help": "Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)",
+      "start": 9,
+      "end": 9,
+      "labels": [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,244 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 397,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 1,
+        "expression": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "c"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 95,
+        "end": 105,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 99,
+            "end": 104,
+            "id": {
+              "type": "Identifier",
+              "start": 99,
+              "end": 100,
+              "name": "b"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 103,
+              "end": 104,
+              "value": 3,
+              "raw": "3"
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 106,
+        "end": 112,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 106,
+          "end": 111,
+          "left": {
+            "type": "Identifier",
+            "start": 106,
+            "end": 107,
+            "name": "b"
+          },
+          "operator": "<",
+          "right": {
+            "type": "Literal",
+            "start": 110,
+            "end": 111,
+            "value": 4,
+            "raw": "4"
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 113,
+        "end": 116,
+        "expression": {
+          "type": "UpdateExpression",
+          "start": 113,
+          "end": 116,
+          "operator": "++",
+          "prefix": false,
+          "argument": {
+            "type": "Identifier",
+            "start": 113,
+            "end": 114,
+            "name": "b"
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 150,
+        "end": 152,
+        "expression": {
+          "type": "Literal",
+          "start": 150,
+          "end": 152,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 202,
+        "end": 206,
+        "expression": {
+          "type": "Identifier",
+          "start": 202,
+          "end": 206,
+          "name": "thus"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ':'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 1,
+      "end": 2,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'switch'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 18,
+      "end": 24,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 66,
+      "end": 68,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 90,
+      "end": 93,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ')'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 116,
+      "end": 117,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 132,
+      "end": 134,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'this'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 153,
+      "end": 157,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 178,
+      "end": 181,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Line terminator not allowed in regular expression literal",
+      "help": "Try removing the line break here or escaping it within the regex pattern",
+      "start": 241,
+      "end": 242,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 303,
+      "end": 304,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'case'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 324,
+      "end": 328,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'break'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 355,
+      "end": 360,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'default'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 368,
+      "end": 375,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 394,
+      "end": 395,
+      "labels": [
+      ]
+    }
+  ]
+}

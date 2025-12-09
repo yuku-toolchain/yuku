@@ -1,1 +1,0 @@
-"use strict"; (class a { static constructor() { super() }})

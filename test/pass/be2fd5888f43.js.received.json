@@ -1,0 +1,63 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 42,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 42,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 42,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 1,
+            "end": 41,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "declare": false,
+            "params": [
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 13,
+              "end": 41,
+              "body": [
+                {
+                  "type": "ExpressionStatement",
+                  "start": 15,
+                  "end": 29,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 15,
+                    "end": 28,
+                    "value": "use\\nstrict",
+                    "raw": "'use\\nstrict'"
+                  },
+                  "directive": "use\\nstrict"
+                }
+              ]
+            },
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'with'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 30,
+      "end": 34,
+      "labels": [
+      ]
+    }
+  ]
+}

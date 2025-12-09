@@ -1,0 +1,66 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 29,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 14,
+        "end": 16,
+        "expression": {
+          "type": "Literal",
+          "start": 14,
+          "end": 15,
+          "value": 3,
+          "raw": "3"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 19,
+        "end": 21,
+        "expression": {
+          "type": "Literal",
+          "start": 19,
+          "end": 20,
+          "value": 4,
+          "raw": "4"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 24,
+        "end": 26,
+        "expression": {
+          "type": "Literal",
+          "start": 24,
+          "end": 25,
+          "value": 5,
+          "raw": "5"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Shorthand property must be an identifier",
+      "help": "String and numeric keys require explicit ': value' syntax.",
+      "start": 4,
+      "end": 5,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 27,
+      "end": 28,
+      "labels": [
+      ]
+    }
+  ]
+}

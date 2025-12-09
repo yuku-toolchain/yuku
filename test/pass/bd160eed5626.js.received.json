@@ -1,0 +1,90 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 68,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 1,
+        "expression": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "d"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 28,
+        "end": 29,
+        "expression": {
+          "type": "Identifier",
+          "start": 28,
+          "end": 29,
+          "name": "c"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 53,
+        "end": 54,
+        "expression": {
+          "type": "Identifier",
+          "start": 53,
+          "end": 54,
+          "name": "e"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ':'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 1,
+      "end": 2,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'while'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 3,
+      "end": 8,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 29,
+      "end": 31,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 54,
+      "end": 56,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 67,
+      "end": 68,
+      "labels": [
+      ]
+    }
+  ]
+}

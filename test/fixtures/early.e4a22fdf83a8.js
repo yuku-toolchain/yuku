@@ -1,1 +1,0 @@
-!{ get a(){ let b; let b; } };

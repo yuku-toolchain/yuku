@@ -1,1 +1,0 @@
-function a({yield=1}){ 'use strict'; }

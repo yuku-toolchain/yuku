@@ -1,0 +1,121 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 68,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 26,
+        "end": 31,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 26,
+          "end": 31,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 26,
+            "end": 27,
+            "name": "d"
+          },
+          "right": {
+            "type": "Identifier",
+            "start": 30,
+            "end": 31,
+            "name": "e"
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 46,
+        "end": 52,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 46,
+          "end": 51,
+          "left": {
+            "type": "Identifier",
+            "start": 46,
+            "end": 47,
+            "name": "b"
+          },
+          "operator": "<",
+          "right": {
+            "type": "Identifier",
+            "start": 50,
+            "end": 51,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 53,
+        "end": 56,
+        "expression": {
+          "type": "UpdateExpression",
+          "start": 53,
+          "end": 56,
+          "operator": "++",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 55,
+            "end": 56,
+            "name": "b"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 2,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 31,
+      "end": 33,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 39,
+      "end": 42,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ')'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 56,
+      "end": 57,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 66,
+      "end": 67,
+      "labels": [
+      ]
+    }
+  ]
+}

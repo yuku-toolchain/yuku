@@ -1,1 +1,0 @@
-function* a(){ (b = yield c) => 1; }

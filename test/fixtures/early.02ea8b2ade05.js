@@ -1,1 +1,0 @@
-for(const {a, a} of 1);

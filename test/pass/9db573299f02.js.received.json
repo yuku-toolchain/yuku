@@ -1,0 +1,296 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 394,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 5,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 48,
+        "end": 53,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 52,
+            "end": 53,
+            "id": {
+              "type": "Identifier",
+              "start": 52,
+              "end": 53,
+              "name": "i"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 97,
+        "end": 102,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 101,
+            "end": 102,
+            "id": {
+              "type": "Identifier",
+              "start": 101,
+              "end": 102,
+              "name": "k"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 146,
+        "end": 151,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 150,
+            "end": 151,
+            "id": {
+              "type": "Identifier",
+              "start": 150,
+              "end": 151,
+              "name": "m"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 245,
+        "end": 250,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 249,
+            "end": 250,
+            "id": {
+              "type": "Identifier",
+              "start": 249,
+              "end": 250,
+              "name": "n"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 344,
+        "end": 387,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 348,
+            "end": 387,
+            "id": {
+              "type": "Identifier",
+              "start": 348,
+              "end": 349,
+              "name": "o"
+            },
+            "init": {
+              "type": "ArrayExpression",
+              "start": 352,
+              "end": 387,
+              "elements": [
+                {
+                  "type": "Literal",
+                  "start": 354,
+                  "end": 357,
+                  "value": "p",
+                  "raw": "\"p\""
+                },
+                {
+                  "type": "BinaryExpression",
+                  "start": 359,
+                  "end": 366,
+                  "left": {
+                    "type": "Literal",
+                    "start": 359,
+                    "end": 362,
+                    "value": "p",
+                    "raw": "\"p\""
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "Identifier",
+                    "start": 365,
+                    "end": 366,
+                    "name": "q"
+                  }
+                },
+                {
+                  "type": "Literal",
+                  "start": 368,
+                  "end": 371,
+                  "value": "b",
+                  "raw": "\"b\""
+                },
+                {
+                  "type": "Literal",
+                  "start": 373,
+                  "end": 376,
+                  "value": "c",
+                  "raw": "\"c\""
+                },
+                {
+                  "type": "BinaryExpression",
+                  "start": 378,
+                  "end": 385,
+                  "left": {
+                    "type": "Literal",
+                    "start": 378,
+                    "end": 381,
+                    "value": "r",
+                    "raw": "\"r\""
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "Identifier",
+                    "start": 384,
+                    "end": 385,
+                    "name": "b"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Expected ',' or ']' in array",
+      "help": "Add a comma between elements or close the array with ']'.",
+      "start": 21,
+      "end": 22,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 21,
+      "end": 23,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ']' in array",
+      "help": "Add a comma between elements or close the array with ']'.",
+      "start": 69,
+      "end": 70,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 69,
+      "end": 71,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ']' in array",
+      "help": "Add a comma between elements or close the array with ']'.",
+      "start": 118,
+      "end": 119,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 118,
+      "end": 120,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ']' in array",
+      "help": "Add a comma between elements or close the array with ']'.",
+      "start": 167,
+      "end": 168,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 167,
+      "end": 169,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ']' in array",
+      "help": "Add a comma between elements or close the array with ']'.",
+      "start": 266,
+      "end": 267,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 266,
+      "end": 268,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 387,
+      "end": 388,
+      "labels": [
+      ]
+    }
+  ]
+}

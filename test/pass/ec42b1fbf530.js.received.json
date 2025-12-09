@@ -1,0 +1,50 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 5,
+        "end": 14,
+        "kind": "let",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 9,
+            "end": 14,
+            "id": {
+              "type": "Identifier",
+              "start": 9,
+              "end": 14,
+              "name": "yield"
+            },
+            "init": null
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 3,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'in'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 15,
+      "end": 17,
+      "labels": [
+      ]
+    }
+  ]
+}

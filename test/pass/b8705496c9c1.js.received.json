@@ -1,0 +1,181 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 268,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 110,
+        "end": 117,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 114,
+            "end": 117,
+            "id": {
+              "type": "Identifier",
+              "start": 114,
+              "end": 117,
+              "name": "obj"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 217,
+        "end": 219,
+        "expression": {
+          "type": "Literal",
+          "start": 217,
+          "end": 219,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 220,
+        "end": 239,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 220,
+          "end": 239,
+          "left": {
+            "type": "Literal",
+            "start": 220,
+            "end": 224,
+            "value": true,
+            "raw": "true"
+          },
+          "operator": "*",
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 230,
+            "end": 239,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 231,
+              "end": 238,
+              "expressions": [
+                {
+                  "type": "Literal",
+                  "start": 231,
+                  "end": 232,
+                  "value": 0,
+                  "raw": "0"
+                },
+                {
+                  "type": "Identifier",
+                  "start": 234,
+                  "end": 238,
+                  "name": "test"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'with'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 36,
+      "end": 40,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unterminated string literal",
+      "help": "Try adding a closing quote here to complete the string",
+      "start": 72,
+      "end": 97,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '}' to close function body",
+      "help": "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
+      "start": 0,
+      "end": 0,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 0,
+      "end": 0,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '(' for method definition",
+      "help": "Method definitions require a parameter list. Use 'method() {}' syntax.",
+      "start": 131,
+      "end": 132,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ':'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 131,
+      "end": 132,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 141,
+      "end": 142,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '*'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 175,
+      "end": 176,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '*'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 188,
+      "end": 189,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 239,
+      "end": 241,
+      "labels": [
+      ]
+    }
+  ]
+}

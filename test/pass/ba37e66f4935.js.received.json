@@ -1,0 +1,75 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 124,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 3,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 11,
+      "end": 14,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 27,
+      "end": 30,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 45,
+      "end": 48,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 61,
+      "end": 64,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 80,
+      "end": 83,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 102,
+      "end": 105,
+      "labels": [
+      ]
+    }
+  ]
+}

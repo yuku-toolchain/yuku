@@ -1,0 +1,57 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 44,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 3,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ';'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 6,
+      "end": 7,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 13,
+      "end": 15,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'continue'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 32,
+      "end": 40,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 42,
+      "end": 43,
+      "labels": [
+      ]
+    }
+  ]
+}

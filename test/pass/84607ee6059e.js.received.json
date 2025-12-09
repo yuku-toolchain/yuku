@@ -1,0 +1,30 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 60,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Invalid element in destructuring pattern",
+      "help": "Expected an identifier, array pattern, object pattern, or assignment pattern.",
+      "start": 28,
+      "end": 29,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 55,
+      "end": 56,
+      "labels": [
+      ]
+    }
+  ]
+}

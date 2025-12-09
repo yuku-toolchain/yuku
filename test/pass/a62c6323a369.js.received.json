@@ -1,0 +1,39 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 0,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unterminated string literal",
+      "help": "Try adding a closing quote here to complete the string",
+      "start": 1,
+      "end": 4,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unterminated parenthesized expression",
+      "help": "Add a closing ')' to complete the expression.",
+      "start": 0,
+      "end": 1,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unterminated string literal",
+      "help": "Try adding a closing quote here to complete the string",
+      "start": 5,
+      "end": 7,
+      "labels": [
+      ]
+    }
+  ]
+}

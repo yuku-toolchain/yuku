@@ -1,0 +1,48 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 126,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'with'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 34,
+      "end": 38,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unterminated string literal",
+      "help": "Try adding a closing quote here to complete the string",
+      "start": 103,
+      "end": 113,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '}' to close function body",
+      "help": "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
+      "start": 0,
+      "end": 0,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 0,
+      "end": 0,
+      "labels": [
+      ]
+    }
+  ]
+}

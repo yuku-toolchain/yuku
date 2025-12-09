@@ -1,0 +1,205 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 89,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 11,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 10,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ObjectExpression",
+              "start": 8,
+              "end": 10,
+              "properties": [
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 13,
+        "expression": {
+          "type": "Identifier",
+          "start": 12,
+          "end": 13,
+          "name": "a"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 27,
+        "end": 44,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 31,
+            "end": 43,
+            "id": {
+              "type": "Identifier",
+              "start": 31,
+              "end": 39,
+              "name": "ↂωↂ"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 42,
+              "end": 43,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 45,
+        "end": 58,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 49,
+            "end": 57,
+            "id": {
+              "type": "Identifier",
+              "start": 49,
+              "end": 53,
+              "name": "l০"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 56,
+              "end": 57,
+              "value": 3,
+              "raw": "3"
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 59,
+        "end": 61,
+        "expression": {
+          "type": "Literal",
+          "start": 59,
+          "end": 61,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 62,
+        "end": 64,
+        "expression": {
+          "type": "Literal",
+          "start": 62,
+          "end": 64,
+          "value": null,
+          "raw": "2n",
+          "bigint": "2"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 64,
+        "end": 65,
+        "expression": {
+          "type": "Identifier",
+          "start": 64,
+          "end": 65,
+          "name": "d"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 66,
+        "end": 70,
+        "expression": {
+          "type": "Identifier",
+          "start": 66,
+          "end": 70,
+          "name": "char"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 71,
+        "end": 73,
+        "expression": {
+          "type": "Identifier",
+          "start": 71,
+          "end": 73,
+          "name": "is"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 74,
+        "end": 75,
+        "expression": {
+          "type": "Identifier",
+          "start": 74,
+          "end": 75,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 76,
+        "end": 83,
+        "expression": {
+          "type": "Identifier",
+          "start": 76,
+          "end": 83,
+          "name": "unicode"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 84,
+        "end": 89,
+        "expression": {
+          "type": "Identifier",
+          "start": 84,
+          "end": 89,
+          "name": "digit"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 13,
+      "end": 14,
+      "labels": [
+      ]
+    }
+  ]
+}

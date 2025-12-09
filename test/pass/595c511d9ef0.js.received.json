@@ -1,0 +1,76 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 82,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 72,
+        "end": 73,
+        "expression": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 73,
+          "name": "b"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 73,
+        "end": 79,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 73,
+          "end": 78,
+          "expression": {
+            "type": "Literal",
+            "start": 74,
+            "end": 77,
+            "value": "d",
+            "raw": "\"d\""
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'switch'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 6,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 38,
+      "end": 39,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 61,
+      "end": 62,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 80,
+      "end": 81,
+      "labels": [
+      ]
+    }
+  ]
+}

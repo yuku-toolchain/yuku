@@ -1,0 +1,134 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 77,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 5,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 5,
+          "name": "DO"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 6,
+        "end": 9,
+        "expression": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 9,
+          "name": "NOT"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 10,
+        "end": 14,
+        "expression": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 14,
+          "name": "DROP"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 15,
+        "end": 16,
+        "expression": {
+          "type": "Identifier",
+          "start": 15,
+          "end": 16,
+          "name": "i"
+        }
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 17,
+        "end": 74,
+        "id": {
+          "type": "Identifier",
+          "start": 26,
+          "end": 27,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 30,
+          "end": 74,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 36,
+              "end": 42,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 40,
+                  "end": 41,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 40,
+                    "end": 41,
+                    "name": "b"
+                  },
+                  "init": null
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'with'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 47,
+      "end": 51,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 75,
+      "end": 76,
+      "labels": [
+      ]
+    }
+  ]
+}

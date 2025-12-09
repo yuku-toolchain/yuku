@@ -1,0 +1,44 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 12,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 12,
+          "value": "use strict",
+          "raw": "\"use strict\""
+        },
+        "directive": "use strict"
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 13,
+        "end": 16,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 13,
+          "end": 16,
+          "operator": "+",
+          "prefix": true,
+          "argument": {
+            "type": "Literal",
+            "start": 15,
+            "end": 16,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

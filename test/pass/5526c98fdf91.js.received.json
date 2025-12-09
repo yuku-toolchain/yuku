@@ -1,0 +1,117 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 144,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 111,
+        "end": 113,
+        "expression": {
+          "type": "Literal",
+          "start": 111,
+          "end": 113,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 114,
+        "end": 118,
+        "expression": {
+          "type": "Identifier",
+          "start": 114,
+          "end": 118,
+          "name": "This"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 119,
+        "end": 125,
+        "expression": {
+          "type": "Identifier",
+          "start": 119,
+          "end": 125,
+          "name": "should"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 126,
+        "end": 128,
+        "expression": {
+          "type": "Identifier",
+          "start": 126,
+          "end": 128,
+          "name": "be"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 129,
+        "end": 136,
+        "expression": {
+          "type": "Identifier",
+          "start": 129,
+          "end": 136,
+          "name": "removed"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'try'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 18,
+      "end": 21,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 49,
+      "end": 54,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 85,
+      "end": 91,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 99,
+      "end": 100,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 136,
+      "end": 137,
+      "labels": [
+      ]
+    }
+  ]
+}

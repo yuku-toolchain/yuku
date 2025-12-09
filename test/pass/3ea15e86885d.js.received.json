@@ -1,0 +1,110 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 85,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 20,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 20,
+          "name": "ContinueStatement"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 21,
+        "end": 27,
+        "expression": {
+          "type": "Identifier",
+          "start": 21,
+          "end": 27,
+          "name": "should"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 28,
+        "end": 31,
+        "expression": {
+          "type": "Identifier",
+          "start": 28,
+          "end": 31,
+          "name": "not"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 32,
+        "end": 34,
+        "expression": {
+          "type": "Identifier",
+          "start": 32,
+          "end": 34,
+          "name": "be"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 35,
+        "end": 42,
+        "expression": {
+          "type": "Identifier",
+          "start": 35,
+          "end": 42,
+          "name": "removed"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 42,
+      "end": 43,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'while'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 47,
+      "end": 52,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'while'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 60,
+      "end": 65,
+      "labels": [
+      ]
+    }
+  ]
+}

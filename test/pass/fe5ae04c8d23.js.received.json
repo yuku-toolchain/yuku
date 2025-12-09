@@ -1,0 +1,133 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 80,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 79,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 79,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 17,
+              "end": 19,
+              "expression": {
+                "type": "Literal",
+                "start": 17,
+                "end": 19,
+                "value": null,
+                "raw": "//",
+                "regex": {
+                  "pattern": "",
+                  "flags": ""
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 47,
+              "end": 57,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 51,
+                  "end": 56,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 51,
+                    "end": 52,
+                    "name": "b"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 55,
+                    "end": 56,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 60,
+              "end": 61,
+              "expression": {
+                "type": "Identifier",
+                "start": 60,
+                "end": 61,
+                "name": "c"
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 67,
+              "end": 77,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 71,
+                  "end": 76,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 71,
+                    "end": 72,
+                    "name": "d"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 75,
+                    "end": 76,
+                    "value": 2,
+                    "raw": "2"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'do'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 20,
+      "end": 22,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 61,
+      "end": 63,
+      "labels": [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 91,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 58,
+        "end": 60,
+        "expression": {
+          "type": "Literal",
+          "start": 58,
+          "end": 60,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 61,
+        "end": 65,
+        "expression": {
+          "type": "Identifier",
+          "start": 61,
+          "end": 65,
+          "name": "This"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 66,
+        "end": 72,
+        "expression": {
+          "type": "Identifier",
+          "start": 66,
+          "end": 72,
+          "name": "should"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 73,
+        "end": 76,
+        "expression": {
+          "type": "Identifier",
+          "start": 73,
+          "end": 76,
+          "name": "not"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 77,
+        "end": 79,
+        "expression": {
+          "type": "Identifier",
+          "start": 77,
+          "end": 79,
+          "name": "be"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 80,
+        "end": 87,
+        "expression": {
+          "type": "Identifier",
+          "start": 80,
+          "end": 87,
+          "name": "removed"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 3,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ';'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 6,
+      "end": 7,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 15,
+      "end": 17,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 46,
+      "end": 47,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 87,
+      "end": 88,
+      "labels": [
+      ]
+    }
+  ]
+}

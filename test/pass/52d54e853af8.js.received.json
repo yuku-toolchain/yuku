@@ -1,0 +1,48 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 67,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'switch'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 6,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'break'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 36,
+      "end": 41,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'default'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 45,
+      "end": 52,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 65,
+      "end": 66,
+      "labels": [
+      ]
+    }
+  ]
+}

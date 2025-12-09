@@ -1,1 +1,0 @@
-for(var a;;) c: function b(){}

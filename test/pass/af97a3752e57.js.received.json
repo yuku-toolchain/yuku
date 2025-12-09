@@ -1,0 +1,50 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 26,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 26,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 1,
+            "end": 25,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "declare": false,
+            "params": [
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 13,
+              "end": 25,
+              "body": [
+              ]
+            },
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'yield'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 15,
+      "end": 20,
+      "labels": [
+      ]
+    }
+  ]
+}

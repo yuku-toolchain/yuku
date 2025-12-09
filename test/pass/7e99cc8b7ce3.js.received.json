@@ -1,0 +1,98 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 11,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 10,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ObjectExpression",
+              "start": 8,
+              "end": 10,
+              "properties": [
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 13,
+        "expression": {
+          "type": "Identifier",
+          "start": 12,
+          "end": 13,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 21,
+        "end": 22,
+        "expression": {
+          "type": "Identifier",
+          "start": 21,
+          "end": 22,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 30,
+        "end": 31,
+        "expression": {
+          "type": "Identifier",
+          "start": 30,
+          "end": 31,
+          "name": "d"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 13,
+      "end": 14,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 22,
+      "end": 23,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 31,
+      "end": 32,
+      "labels": [
+      ]
+    }
+  ]
+}

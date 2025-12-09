@@ -1,1 +1,0 @@
-!{ set a(eval){ 'use strict'; } };

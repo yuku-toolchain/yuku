@@ -1,0 +1,57 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 107,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Line terminator not allowed in regular expression literal",
+      "help": "Try removing the line break here or escaping it within the regex pattern",
+      "start": 40,
+      "end": 41,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 74,
+      "end": 75,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 83,
+      "end": 89,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 96,
+      "end": 97,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 101,
+      "end": 102,
+      "labels": [
+      ]
+    }
+  ]
+}

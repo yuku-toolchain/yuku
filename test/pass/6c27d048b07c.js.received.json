@@ -1,0 +1,144 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 165,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 41,
+        "end": 42,
+        "expression": {
+          "type": "Identifier",
+          "start": 41,
+          "end": 42,
+          "name": "b"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 128,
+        "end": 133,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 132,
+            "end": 133,
+            "id": {
+              "type": "Identifier",
+              "start": 132,
+              "end": 133,
+              "name": "f"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 148,
+        "end": 153,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 152,
+            "end": 153,
+            "id": {
+              "type": "Identifier",
+              "start": 152,
+              "end": 153,
+              "name": "h"
+            },
+            "init": null
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 5,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 42,
+      "end": 44,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 49,
+      "end": 50,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 52,
+      "end": 57,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 106,
+      "end": 111,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 136,
+      "end": 141,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 136,
+      "end": 141,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 156,
+      "end": 161,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 156,
+      "end": 161,
+      "labels": [
+      ]
+    }
+  ]
+}

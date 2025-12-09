@@ -1,0 +1,99 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 106,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 75,
+        "end": 77,
+        "expression": {
+          "type": "Literal",
+          "start": 75,
+          "end": 77,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 78,
+        "end": 82,
+        "expression": {
+          "type": "Identifier",
+          "start": 78,
+          "end": 82,
+          "name": "This"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 83,
+        "end": 89,
+        "expression": {
+          "type": "Identifier",
+          "start": 83,
+          "end": 89,
+          "name": "should"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 90,
+        "end": 92,
+        "expression": {
+          "type": "Identifier",
+          "start": 90,
+          "end": 92,
+          "name": "be"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 93,
+        "end": 99,
+        "expression": {
+          "type": "Identifier",
+          "start": 93,
+          "end": 99,
+          "name": "reduce"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'with'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 30,
+      "end": 34,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 62,
+      "end": 63,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 100,
+      "end": 101,
+      "labels": [
+      ]
+    }
+  ]
+}

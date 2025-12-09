@@ -1,1 +1,0 @@
-class a extends b { constructor() { !{set constructor(c) { super(); }}; } }

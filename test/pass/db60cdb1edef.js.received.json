@@ -1,0 +1,30 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 8,
+      "end": 11,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ')' after method parameters",
+      "help": null,
+      "start": 8,
+      "end": 11,
+      "labels": [
+      ]
+    }
+  ]
+}

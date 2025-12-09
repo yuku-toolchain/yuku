@@ -1,0 +1,63 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 27,
+        "id": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 11,
+          "name": "a"
+        },
+        "generator": true,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 27,
+          "body": [
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'yield'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 14,
+      "end": 19,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 20,
+      "end": 25,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 27,
+      "end": 28,
+      "labels": [
+      ]
+    }
+  ]
+}

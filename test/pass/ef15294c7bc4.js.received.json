@@ -1,0 +1,105 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 64,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 64,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 19,
+              "end": 21,
+              "expression": {
+                "type": "Literal",
+                "start": 19,
+                "end": 21,
+                "value": null,
+                "raw": "//",
+                "regex": {
+                  "pattern": "",
+                  "flags": ""
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 43,
+              "end": 53,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 47,
+                  "end": 52,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 47,
+                    "end": 48,
+                    "name": "b"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 51,
+                    "end": 52,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 58,
+              "end": 62,
+              "expression": {
+                "type": "UpdateExpression",
+                "start": 58,
+                "end": 61,
+                "operator": "++",
+                "prefix": true,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 60,
+                  "end": 61,
+                  "name": "b"
+                }
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'do'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 22,
+      "end": 24,
+      "labels": [
+      ]
+    }
+  ]
+}

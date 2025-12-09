@@ -1,0 +1,80 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 101,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 98,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 98,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 82,
+              "end": 92,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 86,
+                  "end": 91,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 86,
+                    "end": 87,
+                    "name": "a"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 90,
+                    "end": 91,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 19,
+      "end": 21,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 99,
+      "end": 100,
+      "labels": [
+      ]
+    }
+  ]
+}

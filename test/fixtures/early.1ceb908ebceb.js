@@ -1,1 +1,0 @@
-a: while (true) { (function () { break a; }); }

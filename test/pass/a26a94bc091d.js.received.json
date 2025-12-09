@@ -1,0 +1,72 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 35,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 34,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 33,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 32,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 2,
+                "end": 31,
+                "kind": "get",
+                "key": {
+                  "type": "Identifier",
+                  "start": 6,
+                  "end": 7,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 2,
+                  "end": 31,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "declare": false,
+                  "params": [
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 10,
+                    "end": 31,
+                    "body": [
+                    ]
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'super'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 14,
+      "end": 19,
+      "labels": [
+      ]
+    }
+  ]
+}

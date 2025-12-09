@@ -1,0 +1,196 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 99,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 99,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 99,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 19,
+              "end": 21,
+              "expression": {
+                "type": "Literal",
+                "start": 19,
+                "end": 21,
+                "value": null,
+                "raw": "//",
+                "regex": {
+                  "pattern": "",
+                  "flags": ""
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 22,
+              "end": 24,
+              "expression": {
+                "type": "Identifier",
+                "start": 22,
+                "end": 24,
+                "name": "If"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 25,
+              "end": 28,
+              "expression": {
+                "type": "Identifier",
+                "start": 25,
+                "end": 28,
+                "name": "foo"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 29,
+              "end": 31,
+              "expression": {
+                "type": "Identifier",
+                "start": 29,
+                "end": 31,
+                "name": "is"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 32,
+              "end": 36,
+              "expression": {
+                "type": "Literal",
+                "start": 32,
+                "end": 36,
+                "value": null,
+                "raw": "null"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 37,
+              "end": 39,
+              "expression": {
+                "type": "Identifier",
+                "start": 37,
+                "end": 39,
+                "name": "or"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 40,
+              "end": 49,
+              "expression": {
+                "type": "Identifier",
+                "start": 40,
+                "end": 49,
+                "name": "undefined"
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 83,
+              "end": 97,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 87,
+                  "end": 96,
+                  "id": {
+                    "type": "ObjectPattern",
+                    "start": 87,
+                    "end": 92,
+                    "properties": [
+                      {
+                        "type": "Property",
+                        "start": 88,
+                        "end": 89,
+                        "kind": "init",
+                        "key": {
+                          "type": "Identifier",
+                          "start": 88,
+                          "end": 89,
+                          "name": "a"
+                        },
+                        "value": {
+                          "type": "Identifier",
+                          "start": 88,
+                          "end": 89,
+                          "name": "a"
+                        },
+                        "method": false,
+                        "shorthand": true,
+                        "computed": false
+                      },
+                      {
+                        "type": "Property",
+                        "start": 90,
+                        "end": 91,
+                        "kind": "init",
+                        "key": {
+                          "type": "Identifier",
+                          "start": 90,
+                          "end": 91,
+                          "name": "b"
+                        },
+                        "value": {
+                          "type": "Identifier",
+                          "start": 90,
+                          "end": 91,
+                          "name": "b"
+                        },
+                        "method": false,
+                        "shorthand": true,
+                        "computed": false
+                      }
+                    ]
+                  },
+                  "init": {
+                    "type": "Identifier",
+                    "start": 95,
+                    "end": 96,
+                    "name": "c"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ','",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 49,
+      "end": 50,
+      "labels": [
+      ]
+    }
+  ]
+}

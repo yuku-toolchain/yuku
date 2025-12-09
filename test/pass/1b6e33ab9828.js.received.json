@@ -1,0 +1,70 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 10,
+        "end": 11,
+        "expression": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 11,
+          "name": "b"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 16,
+        "end": 17,
+        "expression": {
+          "type": "Identifier",
+          "start": 16,
+          "end": 17,
+          "name": "c"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 5,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 11,
+      "end": 13,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 17,
+      "end": 19,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 22,
+      "end": 23,
+      "labels": [
+      ]
+    }
+  ]
+}

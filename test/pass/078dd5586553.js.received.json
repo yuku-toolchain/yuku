@@ -1,0 +1,148 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 52,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 5,
+        "end": 35,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 9,
+            "end": 25,
+            "id": {
+              "type": "Identifier",
+              "start": 9,
+              "end": 10,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 13,
+              "end": 25,
+              "expression": {
+                "type": "BinaryExpression",
+                "start": 14,
+                "end": 24,
+                "left": {
+                  "type": "ParenthesizedExpression",
+                  "start": 14,
+                  "end": 19,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 15,
+                    "end": 18,
+                    "value": "b",
+                    "raw": "\"b\""
+                  }
+                },
+                "operator": "in",
+                "right": {
+                  "type": "Identifier",
+                  "start": 23,
+                  "end": 24,
+                  "name": "c"
+                }
+              }
+            }
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 27,
+            "end": 34,
+            "id": {
+              "type": "Identifier",
+              "start": 27,
+              "end": 28,
+              "name": "d"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 31,
+              "end": 34,
+              "expression": {
+                "type": "Literal",
+                "start": 32,
+                "end": 33,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 36,
+        "end": 44,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 36,
+          "end": 43,
+          "left": {
+            "type": "Identifier",
+            "start": 36,
+            "end": 37,
+            "name": "d"
+          },
+          "operator": "<",
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 40,
+            "end": 43,
+            "expression": {
+              "type": "Literal",
+              "start": 41,
+              "end": 42,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 45,
+        "end": 48,
+        "expression": {
+          "type": "UpdateExpression",
+          "start": 45,
+          "end": 48,
+          "operator": "++",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 47,
+            "end": 48,
+            "name": "d"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 3,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ')'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 48,
+      "end": 49,
+      "labels": [
+      ]
+    }
+  ]
+}

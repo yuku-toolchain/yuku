@@ -1,0 +1,115 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 153,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 111,
+        "end": 116,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 115,
+            "end": 116,
+            "id": {
+              "type": "Identifier",
+              "start": 115,
+              "end": 116,
+              "name": "f"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 133,
+        "end": 138,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 137,
+            "end": 138,
+            "id": {
+              "type": "Identifier",
+              "start": 137,
+              "end": 138,
+              "name": "h"
+            },
+            "init": null
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 0,
+      "end": 5,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 42,
+      "end": 47,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 88,
+      "end": 93,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 120,
+      "end": 125,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 120,
+      "end": 125,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 142,
+      "end": 147,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'class'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 142,
+      "end": 147,
+      "labels": [
+      ]
+    }
+  ]
+}

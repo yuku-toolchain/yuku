@@ -1,0 +1,66 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 58,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 9,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 9,
+          "name": "global"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ','",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 9,
+      "end": 10,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 37,
+      "end": 38,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 52,
+      "end": 53,
+      "labels": [
+      ]
+    }
+  ]
+}

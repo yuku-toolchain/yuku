@@ -1,1 +1,0 @@
-function a(){ 'use strict'; function a(a=yield){}}

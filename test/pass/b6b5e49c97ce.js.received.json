@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Shorthand property must be an identifier",
+      "help": "String and numeric keys require explicit ': value' syntax.",
+      "start": 6,
+      "end": 18,
+      "labels": [
+      ]
+    }
+  ]
+}

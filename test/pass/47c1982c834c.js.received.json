@@ -1,0 +1,125 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 66,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 13,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 12,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 12,
+              "expression": {
+                "type": "ObjectExpression",
+                "start": 9,
+                "end": 11,
+                "properties": [
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 14,
+        "end": 15,
+        "expression": {
+          "type": "Identifier",
+          "start": 14,
+          "end": 15,
+          "name": "a"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 30,
+        "end": 49,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 34,
+            "end": 48,
+            "id": {
+              "type": "Identifier",
+              "start": 34,
+              "end": 42,
+              "name": "ↂωↂ"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 45,
+              "end": 48,
+              "expression": {
+                "type": "Literal",
+                "start": 46,
+                "end": 47,
+                "value": 2,
+                "raw": "2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 50,
+        "end": 65,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 54,
+            "end": 64,
+            "id": {
+              "type": "Identifier",
+              "start": 54,
+              "end": 58,
+              "name": "l০"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 61,
+              "end": 64,
+              "expression": {
+                "type": "Literal",
+                "start": 62,
+                "end": 63,
+                "value": 3,
+                "raw": "3"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 15,
+      "end": 16,
+      "labels": [
+      ]
+    }
+  ]
+}

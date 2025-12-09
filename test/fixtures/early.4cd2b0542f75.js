@@ -1,1 +1,0 @@
-switch(1) { default: function a(){} case 2: let a  }

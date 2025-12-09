@@ -1,1 +1,0 @@
-import * as enum from 'foo'

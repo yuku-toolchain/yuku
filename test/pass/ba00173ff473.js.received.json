@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 3,
+    "end": 35,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Invalid operand for increment/decrement operator",
+      "help": "The '++' and '--' operators require a variable or property reference, not a literal or complex expression.",
+      "start": 3,
+      "end": 22,
+      "labels": [
+      ]
+    }
+  ]
+}

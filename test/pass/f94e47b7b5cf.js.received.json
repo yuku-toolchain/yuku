@@ -1,0 +1,87 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 9,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 9,
+          "name": "should"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 10,
+        "end": 12,
+        "expression": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 12,
+          "name": "be"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 13,
+        "end": 14,
+        "expression": {
+          "type": "Literal",
+          "start": 13,
+          "end": 14,
+          "value": 4,
+          "raw": "4"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 15,
+        "end": 21,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 15,
+          "end": 21,
+          "left": {
+            "type": "Literal",
+            "start": 15,
+            "end": 16,
+            "value": 1,
+            "raw": "1"
+          },
+          "operator": "<<",
+          "right": {
+            "type": "Literal",
+            "start": 20,
+            "end": 21,
+            "value": 2,
+            "raw": "2"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

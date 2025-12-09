@@ -1,0 +1,74 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 37,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 37,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 22,
+              "end": 27,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 26,
+                  "end": 27,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 26,
+                    "end": 27,
+                    "name": "b"
+                  },
+                  "init": null
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 17,
+      "end": 20,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'in'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 28,
+      "end": 30,
+      "labels": [
+      ]
+    }
+  ]
+}

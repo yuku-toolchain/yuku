@@ -1,1 +1,0 @@
-function a(static) { "use strict"; }

@@ -1,0 +1,67 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 13,
+          "value": null,
+          "raw": "/*@ngInject*/",
+          "regex": {
+            "pattern": "*@ngInject*",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 14,
+        "end": 45,
+        "id": {
+          "type": "Identifier",
+          "start": 23,
+          "end": 24,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 25,
+            "end": 26,
+            "name": "b"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 28,
+          "end": 45,
+          "body": [
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 34,
+      "end": 40,
+      "labels": [
+      ]
+    }
+  ]
+}

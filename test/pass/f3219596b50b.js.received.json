@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 11,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Computed property must have a value",
+      "help": "Add ': value' after the computed key.",
+      "start": 2,
+      "end": 3,
+      "labels": [
+      ]
+    }
+  ]
+}

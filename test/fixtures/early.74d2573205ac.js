@@ -1,1 +1,0 @@
-switch(1) { case 2: function a(){ break; } }

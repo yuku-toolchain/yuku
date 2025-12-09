@@ -1,0 +1,64 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 0,
+          "end": 11,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "FunctionExpression",
+            "start": 1,
+            "end": 11,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "declare": false,
+            "params": [
+            ],
+            "body": null,
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 13,
+      "end": 15,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 20,
+      "end": 22,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '}' to close function body",
+      "help": "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
+      "start": 23,
+      "end": 23,
+      "labels": [
+      ]
+    }
+  ]
+}

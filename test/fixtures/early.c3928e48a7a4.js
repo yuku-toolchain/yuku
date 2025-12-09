@@ -1,1 +1,0 @@
-a: while(1) !function(){ continue a; };

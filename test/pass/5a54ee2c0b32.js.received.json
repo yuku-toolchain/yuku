@@ -1,0 +1,121 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 58,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 56,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "b"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 14,
+          "end": 56,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 25,
+              "end": 41,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 29,
+                  "end": 34,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 29,
+                    "end": 30,
+                    "name": "c"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 33,
+                    "end": 34,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                },
+                {
+                  "type": "VariableDeclarator",
+                  "start": 36,
+                  "end": 41,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 36,
+                    "end": 37,
+                    "name": "d"
+                  },
+                  "init": {
+                    "type": "Identifier",
+                    "start": 40,
+                    "end": 41,
+                    "name": "b"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 20,
+      "end": 23,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 41,
+      "end": 42,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token ';'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 47,
+      "end": 48,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 57,
+      "end": 58,
+      "labels": [
+      ]
+    }
+  ]
+}

@@ -1,10 +1,18 @@
 {
   "name": "yuku",
   "private": true,
+  "scripts": {
+    "gen:expected": "bun run scripts/test/gen_ast_expected.ts",
+    "gen:received": "zig build gen-ast-received",
+    "test": "bun run gen:expected && bun run gen:received"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "oxc-parser": "^0.102.0"
   }
 }

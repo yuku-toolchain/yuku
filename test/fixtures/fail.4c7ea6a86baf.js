@@ -1,1 +1,0 @@
-(function ({e: a.b}) {})

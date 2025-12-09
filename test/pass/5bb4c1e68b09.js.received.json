@@ -1,0 +1,92 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 37,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 9,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 9,
+          "name": "global"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 10,
+        "end": 16,
+        "expression": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 16,
+          "name": "getter"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 17,
+        "end": 19,
+        "expression": {
+          "type": "Identifier",
+          "start": 17,
+          "end": 19,
+          "name": "to"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 20,
+        "end": 21,
+        "expression": {
+          "type": "Identifier",
+          "start": 20,
+          "end": 21,
+          "name": "o"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 22,
+        "end": 23,
+        "expression": {
+          "type": "Identifier",
+          "start": 22,
+          "end": 23,
+          "name": "a"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 23,
+      "end": 24,
+      "labels": [
+      ]
+    }
+  ]
+}

@@ -1,1 +1,0 @@
-for(;;) d: c: b: function a(){}

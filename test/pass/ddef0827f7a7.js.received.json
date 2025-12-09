@@ -1,0 +1,48 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 5,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 6,
+        "end": 20,
+        "expression": {
+          "type": "Literal",
+          "start": 6,
+          "end": 19,
+          "value": null,
+          "raw": "/* comment */",
+          "regex": {
+            "pattern": "* comment *",
+            "flags": ""
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 91,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 22,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 22,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "LogicalExpression",
+              "start": 8,
+              "end": 22,
+              "left": {
+                "type": "UnaryExpression",
+                "start": 8,
+                "end": 10,
+                "operator": "!",
+                "prefix": true,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 9,
+                  "end": 10,
+                  "name": "b"
+                }
+              },
+              "operator": "&&",
+              "right": {
+                "type": "Literal",
+                "start": 20,
+                "end": 22,
+                "value": null,
+                "raw": "//",
+                "regex": {
+                  "pattern": "",
+                  "flags": ""
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 23,
+        "end": 29,
+        "expression": {
+          "type": "Identifier",
+          "start": 23,
+          "end": 29,
+          "name": "should"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 30,
+        "end": 33,
+        "expression": {
+          "type": "Identifier",
+          "start": 30,
+          "end": 33,
+          "name": "not"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 34,
+        "end": 39,
+        "expression": {
+          "type": "Identifier",
+          "start": 34,
+          "end": 39,
+          "name": "touch"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'this'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 40,
+      "end": 44,
+      "labels": [
+      ]
+    }
+  ]
+}

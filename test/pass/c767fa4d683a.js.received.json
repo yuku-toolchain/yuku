@@ -1,0 +1,72 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 27,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 27,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 26,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 3,
+                "end": 24,
+                "kind": "get",
+                "key": {
+                  "type": "Identifier",
+                  "start": 7,
+                  "end": 8,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 3,
+                  "end": 24,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "declare": false,
+                  "params": [
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 10,
+                    "end": 24,
+                    "body": [
+                    ]
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'new'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 12,
+      "end": 15,
+      "labels": [
+      ]
+    }
+  ]
+}

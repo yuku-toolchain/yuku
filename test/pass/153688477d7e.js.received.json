@@ -1,0 +1,91 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 198,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 7,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 7,
+          "name": "TODO"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 7,
+        "end": 22,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 7,
+          "end": 22,
+          "expression": {
+            "type": "Identifier",
+            "start": 8,
+            "end": 21,
+            "name": "Constellation"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ':'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 22,
+      "end": 23,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 143,
+      "end": 144,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'while'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 152,
+      "end": 157,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 190,
+      "end": 191,
+      "labels": [
+      ]
+    }
+  ]
+}

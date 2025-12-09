@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 1,
+    "end": 11,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Line terminator not allowed in regular expression literal",
+      "help": "Try removing the line break here or escaping it within the regex pattern",
+      "start": 1,
+      "end": 2,
+      "labels": [
+      ]
+    }
+  ]
+}

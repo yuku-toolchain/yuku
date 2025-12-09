@@ -1,1 +1,0 @@
-import * as class from 'foo'

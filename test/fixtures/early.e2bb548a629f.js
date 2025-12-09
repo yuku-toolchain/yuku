@@ -1,1 +1,0 @@
-class a extends b { static prototype(){} }

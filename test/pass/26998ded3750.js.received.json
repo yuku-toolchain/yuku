@@ -1,0 +1,214 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 220,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 134,
+        "end": 197,
+        "expression": {
+          "type": "Literal",
+          "start": 134,
+          "end": 197,
+          "value": "t rename this variable to a name that is the same to function",
+          "raw": "'t rename this variable to a name that is the same to function'"
+        },
+        "directive": "t rename this variable to a name that is the same to function"
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 2,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 5,
+        "expression": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 5,
+          "name": "To"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 6,
+        "end": 11,
+        "expression": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 11,
+          "name": "avoid"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 15,
+        "expression": {
+          "type": "Identifier",
+          "start": 12,
+          "end": 15,
+          "name": "JSC"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 16,
+        "end": 19,
+        "expression": {
+          "type": "Identifier",
+          "start": 16,
+          "end": 19,
+          "name": "bug"
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 116,
+        "end": 126,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 120,
+            "end": 125,
+            "id": {
+              "type": "Identifier",
+              "start": 120,
+              "end": 121,
+              "name": "b"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 124,
+              "end": 125,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 128,
+        "end": 130,
+        "expression": {
+          "type": "Literal",
+          "start": 128,
+          "end": 130,
+          "value": null,
+          "raw": "//",
+          "regex": {
+            "pattern": "",
+            "flags": ""
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 131,
+        "end": 134,
+        "expression": {
+          "type": "Identifier",
+          "start": 131,
+          "end": 134,
+          "name": "Don"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 197,
+        "end": 198,
+        "expression": {
+          "type": "Identifier",
+          "start": 197,
+          "end": 198,
+          "name": "s"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 199,
+        "end": 203,
+        "expression": {
+          "type": "Identifier",
+          "start": 199,
+          "end": 203,
+          "name": "name"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 208,
+        "end": 209,
+        "expression": {
+          "type": "Identifier",
+          "start": 208,
+          "end": 209,
+          "name": "c"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 209,
+        "end": 213,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 209,
+          "end": 212,
+          "expression": {
+            "type": "Identifier",
+            "start": 210,
+            "end": 211,
+            "name": "b"
+          }
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token ','",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 19,
+      "end": 20,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ')' to close parameter list",
+      "help": "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
+      "start": 106,
+      "end": 107,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 214,
+      "end": 215,
+      "labels": [
+      ]
+    }
+  ]
+}

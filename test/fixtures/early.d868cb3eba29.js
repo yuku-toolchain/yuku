@@ -1,1 +1,0 @@
-for(var a in b) d: function c(){}

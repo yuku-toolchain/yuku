@@ -1,1 +1,0 @@
-while (1) export default 3

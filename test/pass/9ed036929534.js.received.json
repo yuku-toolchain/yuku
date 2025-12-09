@@ -1,0 +1,39 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 18,
+      "end": 24,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or '}' in object",
+      "help": "Add a comma between properties or close the object with '}'.",
+      "start": 46,
+      "end": 47,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 59,
+      "end": 60,
+      "labels": [
+      ]
+    }
+  ]
+}

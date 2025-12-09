@@ -1,0 +1,73 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 32,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 23,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 23,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "FunctionExpression",
+              "start": 8,
+              "end": 23,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "declare": false,
+              "params": [
+                {
+                  "type": "RestElement",
+                  "start": 18,
+                  "end": 22,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 21,
+                    "end": 22,
+                    "name": "b"
+                  }
+                }
+              ],
+              "body": null,
+              "expression": false
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Empty parentheses are only valid as arrow function parameters",
+      "help": "Use '() => ...' for arrow functions or add an expression inside.",
+      "start": 27,
+      "end": 29,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '}' to close function body",
+      "help": "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
+      "start": 32,
+      "end": 32,
+      "labels": [
+      ]
+    }
+  ]
+}

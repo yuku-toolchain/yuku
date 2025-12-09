@@ -1,0 +1,122 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 0,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 249,
+        "end": 254,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 253,
+            "end": 254,
+            "id": {
+              "type": "Identifier",
+              "start": 253,
+              "end": 254,
+              "name": "a"
+            },
+            "init": null
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 25,
+      "end": 27,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 32,
+      "end": 38,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unterminated string literal",
+      "help": "Try adding a closing quote here to complete the string",
+      "start": 139,
+      "end": 146,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected '}' to close function body",
+      "help": "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
+      "start": 0,
+      "end": 0,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 0,
+      "end": 0,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 217,
+      "end": 223,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 242,
+      "end": 243,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 257,
+      "end": 259,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'return'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 264,
+      "end": 270,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unterminated string literal",
+      "help": "Try adding a closing quote here to complete the string",
+      "start": 346,
+      "end": 364,
+      "labels": [
+      ]
+    }
+  ]
+}

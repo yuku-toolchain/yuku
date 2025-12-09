@@ -1,0 +1,152 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 316,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 1,
+        "expression": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 36,
+        "end": 37,
+        "expression": {
+          "type": "Identifier",
+          "start": 36,
+          "end": 37,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 72,
+        "end": 73,
+        "expression": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 73,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 108,
+        "end": 109,
+        "expression": {
+          "type": "Identifier",
+          "start": 108,
+          "end": 109,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 164,
+        "end": 165,
+        "expression": {
+          "type": "Identifier",
+          "start": 164,
+          "end": 165,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 240,
+        "end": 241,
+        "expression": {
+          "type": "Identifier",
+          "start": 240,
+          "end": 241,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 276,
+        "end": 277,
+        "expression": {
+          "type": "Identifier",
+          "start": 276,
+          "end": 277,
+          "name": "a"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 6,
+      "end": 7,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 41,
+      "end": 42,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 78,
+      "end": 79,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 115,
+      "end": 116,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 190,
+      "end": 191,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 254,
+      "end": 255,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 281,
+      "end": 282,
+      "labels": [
+      ]
+    }
+  ]
+}

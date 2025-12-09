@@ -1,1 +1,0 @@
-let a; export class a {};

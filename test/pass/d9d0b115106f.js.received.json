@@ -1,0 +1,39 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 199,
+    "sourceType": "script",
+    "body": [
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'switch'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 19,
+      "end": 25,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'default'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 76,
+      "end": 83,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 193,
+      "end": 194,
+      "labels": [
+      ]
+    }
+  ]
+}

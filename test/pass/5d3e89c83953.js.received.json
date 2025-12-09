@@ -1,0 +1,132 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 67,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 66,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 66,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 19,
+              "end": 21,
+              "expression": {
+                "type": "Literal",
+                "start": 19,
+                "end": 21,
+                "value": null,
+                "raw": "//",
+                "regex": {
+                  "pattern": "",
+                  "flags": ""
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 22,
+              "end": 24,
+              "expression": {
+                "type": "Identifier",
+                "start": 22,
+                "end": 24,
+                "name": "Do"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 25,
+              "end": 28,
+              "expression": {
+                "type": "Identifier",
+                "start": 25,
+                "end": 28,
+                "name": "not"
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 29,
+              "end": 35,
+              "expression": {
+                "type": "Identifier",
+                "start": 29,
+                "end": 35,
+                "name": "remove"
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 52,
+              "end": 57,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 56,
+                  "end": 57,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 56,
+                    "end": 57,
+                    "name": "b"
+                  },
+                  "init": null
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'this'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 36,
+      "end": 40,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'for'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 47,
+      "end": 50,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'in'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 58,
+      "end": 60,
+      "labels": [
+      ]
+    }
+  ]
+}

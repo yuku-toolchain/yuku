@@ -1,0 +1,134 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 92,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 50,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "declare": false,
+        "params": [
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 50,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 34,
+              "end": 46,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 38,
+                  "end": 45,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 38,
+                    "end": 39,
+                    "name": "b"
+                  },
+                  "init": {
+                    "type": "ParenthesizedExpression",
+                    "start": 42,
+                    "end": 45,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 43,
+                      "end": 44,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 62,
+        "end": 74,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 66,
+            "end": 73,
+            "id": {
+              "type": "Identifier",
+              "start": 66,
+              "end": 67,
+              "name": "c"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 70,
+              "end": 73,
+              "expression": {
+                "type": "Literal",
+                "start": 71,
+                "end": 72,
+                "value": 2,
+                "raw": "2"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token 'if'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 17,
+      "end": 19,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'else'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 51,
+      "end": 55,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 77,
+      "end": 78,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '}'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 90,
+      "end": 91,
+      "labels": [
+      ]
+    }
+  ]
+}

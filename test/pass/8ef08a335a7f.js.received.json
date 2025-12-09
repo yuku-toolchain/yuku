@@ -1,0 +1,52 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 8,
+    "end": 48,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 8,
+        "end": 9,
+        "expression": {
+          "type": "Identifier",
+          "start": 8,
+          "end": 9,
+          "name": "a"
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 27,
+        "end": 28,
+        "expression": {
+          "type": "Identifier",
+          "start": 27,
+          "end": 28,
+          "name": "a"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 9,
+      "end": 10,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token '.'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 28,
+      "end": 29,
+      "labels": [
+      ]
+    }
+  ]
+}

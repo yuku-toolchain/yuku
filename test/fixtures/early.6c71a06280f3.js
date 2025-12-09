@@ -1,1 +1,0 @@
-'use strict'; ({a: arguments} = 1)

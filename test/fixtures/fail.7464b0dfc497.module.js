@@ -1,1 +1,0 @@
-import * as b, a from 'a'
