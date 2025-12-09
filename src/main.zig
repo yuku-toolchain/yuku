@@ -42,7 +42,7 @@ pub fn main() !void {
             const start_pos = getLineAndColumn(contents, err.span.start);
             const end_pos = getLineAndColumn(contents, err.span.end);
 
-            std.debug.print("Error: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
+            std.debug.print("\nError: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
             if (err.help) |help| std.debug.print("  Help: {s}\n\n", .{help});
         }
     }

@@ -1,1 +1,3 @@
-const cool = i => {}
+const cool = {
+  set
+}

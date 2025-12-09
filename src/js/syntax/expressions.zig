@@ -113,8 +113,8 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool) Error!?ast
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
-    // check for arrow
-    if (parser.current_token.type == .arrow) {
+    //  [no LineTerminator here] => ConciseBody
+    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
 
@@ -127,8 +127,8 @@ fn parseIdentifierOrArrowFunction(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = try literals.parseIdentifier(parser) orelse return null;
 
-    // check for arrow: x => ...
-    if (parser.current_token.type == .arrow) {
+    //  [no LineTerminator here] => ConciseBody
+    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
         return parenthesized.identifierToArrowFunction(parser, id, false, start);
     }
 
@@ -151,11 +151,11 @@ fn parseAsyncFunctionOrArrow(parser: *Parser) Error!?ast.NodeIndex {
         return parseParenthesizedOrArrowFunction(parser, true);
     }
 
-    // async x => ...
-    if (parser.current_token.type == .identifier) {
+    //  [no LineTerminator here] => ConciseBody
+    if (parser.current_token.type == .identifier and !parser.current_token.has_line_terminator_before) {
         const id = try literals.parseIdentifier(parser) orelse return null;
 
-        if (parser.current_token.type == .arrow) {
+        if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
             return parenthesized.identifierToArrowFunction(parser, id, true, start);
         }
 

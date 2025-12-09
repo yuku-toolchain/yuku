@@ -5,6 +5,7 @@ const ast = @import("../ast.zig");
 
 const literals = @import("literals.zig");
 const grammar = @import("../grammar.zig");
+const functions = @import("functions.zig");
 
 /// result from parsing object cover grammar: {a, b: c, ...d}
 pub const ObjectCover = struct {
@@ -88,57 +89,113 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
 /// parse a single property in object cover grammar.
 fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     const prop_start = parser.current_token.span.start;
+    var is_async = false;
+    var is_generator = false;
+    var kind: ast.PropertyKind = .init;
     var computed = false;
+    var key: ast.NodeIndex = ast.null_node;
 
-    // key
-    var key: ast.NodeIndex = undefined;
-
-    if (parser.current_token.type == .left_bracket) {
-        // computed property: [expr]: value
-        computed = true;
+    // check for async, consume it, then decide if it's a modifier or key based on what follows
+    if (parser.current_token.type == .async) {
+        const async_token = parser.current_token;
         try parser.advance();
-        key = try grammar.parseCoverElement(parser) orelse return null;
-        if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
+
+        if (isPropertyKeyStart(parser.current_token.type)) {
+            is_async = true;
+        } else {
+            // it's a key named "async"
+            key = try parser.addNode(
+                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.lexeme.len) } },
+                async_token.span,
+            );
+        }
+    }
+
+    // check for generator, only if we don't already have a key
+    if (ast.isNull(key) and parser.current_token.type == .star) {
+        is_generator = true;
+        try parser.advance();
+    }
+
+    // check for get/set, only if no async/generator modifiers and no key yet
+    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
+        const lexeme = parser.current_token.lexeme;
+
+        if (std.mem.eql(u8, lexeme, "get") or std.mem.eql(u8, lexeme, "set")) {
+            const get_set_token = parser.current_token;
+            try parser.advance();
+
+            if (isPropertyKeyStart(parser.current_token.type)) {
+                kind = if (std.mem.eql(u8, lexeme, "get")) .get else .set;
+            } else {
+                key = try parser.addNode(
+                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.lexeme.len) } },
+                    get_set_token.span,
+                );
+            }
+        }
+    }
+
+    // parse property key if not already determined
+    if (ast.isNull(key)) {
+        if (parser.current_token.type == .left_bracket) {
+            computed = true;
+            try parser.advance();
+            key = try grammar.parseCoverElement(parser) orelse return null;
+            if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
+                return null;
+            }
+        } else if (parser.current_token.type.isIdentifierLike()) {
+            const key_token = parser.current_token;
+            try parser.advance();
+            key = try parser.addNode(
+                .{ .identifier_name = .{ .name_start = key_token.span.start, .name_len = @intCast(key_token.lexeme.len) } },
+                key_token.span,
+            );
+        } else if (parser.current_token.type == .string_literal) {
+            key = try literals.parseStringLiteral(parser) orelse return null;
+        } else if (parser.current_token.type.isNumericLiteral()) {
+            key = try literals.parseNumericLiteral(parser) orelse return null;
+        } else {
+            try parser.reportFmt(
+                parser.current_token.span,
+                "Unexpected token '{s}' as property key",
+                .{parser.current_token.lexeme},
+                .{ .help = "Property keys must be identifiers, strings, numbers, or computed expressions [expr]." },
+            );
             return null;
         }
-    } else if (parser.current_token.type.isIdentifierLike()) {
-        // identifier key
-        const key_token = parser.current_token;
-        try parser.advance();
-        key = try parser.addNode(
-            .{ .identifier_name = .{ .name_start = key_token.span.start, .name_len = @intCast(key_token.lexeme.len) } },
-            key_token.span,
-        );
-    } else if (parser.current_token.type == .string_literal) {
-        key = try literals.parseStringLiteral(parser) orelse return null;
-    } else if (parser.current_token.type.isNumericLiteral()) {
-        key = try literals.parseNumericLiteral(parser) orelse return null;
-    } else {
-        try parser.reportFmt(
+    }
+
+    const key_span = parser.getSpan(key);
+
+    // method definition, key followed by (
+    if (parser.current_token.type == .left_paren) {
+        return parseMethodDefinition(parser, prop_start, key, computed, kind, is_async, is_generator);
+    }
+
+    // if we had async, generator, or get/set prefix but no (, it's an error
+    if (is_async or is_generator or kind != .init) {
+        try parser.report(
             parser.current_token.span,
-            "Unexpected token '{s}' as property key",
-            .{parser.current_token.lexeme},
-            .{ .help = "Property keys must be identifiers, strings, numbers, or computed expressions [expr]." },
+            "Expected '(' for method definition",
+            .{ .help = "Method definitions require a parameter list. Use 'method() {}' syntax." },
         );
         return null;
     }
 
-    // check what follows the key
-    const key_span = parser.getSpan(key);
-
+    // regular property: key: value
     if (parser.current_token.type == .colon) {
-        // key: value
         try parser.advance();
         const value = try grammar.parseCoverElement(parser) orelse return null;
         return try parser.addNode(
-            .{ .object_property = .{ .key = key, .value = value, .kind = .init, .shorthand = false, .computed = computed } },
+            .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = false, .computed = computed } },
             .{ .start = prop_start, .end = parser.getSpan(value).end },
         );
     }
 
+    // CoverInitializedName: a = default
     if (parser.current_token.type == .assign) {
-        // CoverInitializedName: a = default (for destructuring patterns, we are permissive here)
-        // store as object_property with shorthand + assignment expression for the value
         if (computed) {
             try parser.report(
                 key_span,
@@ -148,7 +205,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
-        // CoverInitializedName only allows identifier keys
         const key_data = parser.getData(key);
         if (key_data != .identifier_name) {
             try parser.report(
@@ -162,28 +218,25 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance();
         const default_value = try grammar.parseCoverElement(parser) orelse return null;
 
-        // create identifier reference from the key for the left side
         const id_ref = try parser.addNode(
             .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
             key_span,
         );
 
-        // create assignment expression as the value (will be converted to assignment_pattern for patterns)
         const assign_expr = try parser.addNode(
             .{ .assignment_expression = .{ .left = id_ref, .right = default_value, .operator = .assign } },
             .{ .start = key_span.start, .end = parser.getSpan(default_value).end },
         );
 
-        // mark that CoverInitializedName was created
         parser.state.cover_has_init_name = true;
 
         return try parser.addNode(
-            .{ .object_property = .{ .key = key, .value = assign_expr, .kind = .init, .shorthand = true, .computed = false } },
+            .{ .object_property = .{ .key = key, .value = assign_expr, .kind = .init, .method = false, .shorthand = true, .computed = false } },
             .{ .start = prop_start, .end = parser.getSpan(default_value).end },
         );
     }
 
-    // shorthand: { a } equivalent to { a: a }
+    // shorthand property: { a }
     if (computed) {
         try parser.report(
             key_span,
@@ -193,7 +246,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    // shorthand only works with identifier keys
     const key_data = parser.getData(key);
     if (key_data != .identifier_name) {
         try parser.report(
@@ -204,15 +256,131 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    // for shorthand, create identifier reference as value
     const value = try parser.addNode(
         .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
         key_span,
     );
 
     return try parser.addNode(
-        .{ .object_property = .{ .key = key, .value = value, .kind = .init, .shorthand = true, .computed = false } },
+        .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = true, .computed = false } },
         .{ .start = prop_start, .end = key_span.end },
+    );
+}
+
+inline fn isPropertyKeyStart(token_type: @import("../token.zig").TokenType) bool {
+    return token_type == .star or
+        token_type == .left_bracket or
+        token_type.isIdentifierLike() or
+        token_type == .string_literal or
+        token_type.isNumericLiteral();
+}
+
+/// parse a method definition: key(...) { ... }
+fn parseMethodDefinition(
+    parser: *Parser,
+    prop_start: u32,
+    key: ast.NodeIndex,
+    computed: bool,
+    kind: ast.PropertyKind,
+    is_async: bool,
+    is_generator: bool,
+) Error!?ast.NodeIndex {
+    if (kind == .get and is_generator) {
+        try parser.report(
+            .{ .start = prop_start, .end = parser.current_token.span.end },
+            "Getter cannot be a generator",
+            .{ .help = "Remove the '*' from the getter definition." },
+        );
+        return null;
+    }
+
+    if (kind == .set and is_generator) {
+        try parser.report(
+            .{ .start = prop_start, .end = parser.current_token.span.end },
+            "Setter cannot be a generator",
+            .{ .help = "Remove the '*' from the setter definition." },
+        );
+        return null;
+    }
+
+    const saved_async = parser.context.in_async;
+    const saved_generator = parser.context.in_generator;
+
+    parser.context.in_async = is_async;
+    parser.context.in_generator = is_generator;
+
+    defer {
+        parser.context.in_async = saved_async;
+        parser.context.in_generator = saved_generator;
+    }
+
+    if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) {
+        return null;
+    }
+
+    const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
+    const params_data = parser.getData(params).formal_parameters;
+
+    // validate getter has no parameters
+    if (kind == .get) {
+        if (params_data.items.len != 0 or !ast.isNull(params_data.rest)) {
+            try parser.report(
+                parser.getSpan(params),
+                "Getter must have no parameters",
+                .{ .help = "Remove all parameters from the getter." },
+            );
+            return null;
+        }
+    }
+
+    // validate setter has exactly one parameter
+    if (kind == .set) {
+        if (params_data.items.len != 1 or !ast.isNull(params_data.rest)) {
+            try parser.report(
+                parser.getSpan(params),
+                "Setter must have exactly one parameter",
+                .{ .help = "Setters accept exactly one argument." },
+            );
+            return null;
+        }
+    }
+
+    if (!try parser.expect(.right_paren, "Expected ')' after method parameters", null)) {
+        return null;
+    }
+
+    // parse body
+    const body = try functions.parseFunctionBody(parser) orelse return null;
+    const body_end = parser.getSpan(body).end;
+
+    // create function expression for the method value
+    const func = try parser.addNode(
+        .{ .function = .{
+            .type = .function_expression,
+            .id = ast.null_node,
+            .generator = is_generator,
+            .async = is_async,
+            .params = params,
+            .body = body,
+        } },
+        .{ .start = prop_start, .end = body_end },
+    );
+
+    // for methods, kind is always .init (getters/setters have their own kind)
+    const prop_kind: ast.PropertyKind = kind;
+
+    const is_method = kind == .init;
+
+    return try parser.addNode(
+        .{ .object_property = .{
+            .key = key,
+            .value = func,
+            .kind = prop_kind,
+            .method = is_method,
+            .shorthand = false,
+            .computed = computed,
+        } },
+        .{ .start = prop_start, .end = body_end },
     );
 }
 
@@ -305,7 +473,19 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
 
         const obj_prop = prop_data.object_property;
 
-        // TODO: validate obj_prop.method and non .init kind after implementing methods
+        if (obj_prop.method) {
+            try parser.report(parser.getSpan(prop), "Method cannot appear in destructuring pattern", .{
+                .help = "Use a regular property instead of a method definition.",
+            });
+            return null;
+        }
+
+        if (obj_prop.kind != .init) {
+            try parser.report(parser.getSpan(prop), "Getter/setter cannot appear in destructuring pattern", .{
+                .help = "Use a regular property instead of a getter or setter.",
+            });
+            return null;
+        }
 
         const value_pattern = try grammar.expressionToPattern(parser, obj_prop.value) orelse return null;
 

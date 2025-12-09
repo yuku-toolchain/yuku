@@ -284,7 +284,7 @@ pub const Serializer = struct {
         try self.fieldString("kind", data.kind.toString());
         try self.fieldNode("key", data.key);
         try self.fieldNode("value", data.value);
-        try self.fieldBool("method", false); // TODO: update when methods are implemented
+        try self.fieldBool("method", data.method);
         try self.fieldBool("shorthand", data.shorthand);
         try self.fieldBool("computed", data.computed);
         try self.endObject();

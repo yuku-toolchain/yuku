@@ -291,6 +291,18 @@ pub const PropertyKind = enum {
     }
 };
 
+/// https://tc39.es/ecma262/#prod-FormalParameters
+pub const FormalParameterKind = enum {
+    /// https://tc39.es/ecma262/#prod-FormalParameters
+    formal_parameters,
+    /// https://tc39.es/ecma262/#prod-UniqueFormalParameters
+    unique_formal_parameters,
+    /// https://tc39.es/ecma262/#prod-ArrowFormalParameters
+    arrow_formal_parameters,
+    /// Part of TypeScript type signatures
+    signature,
+};
+
 /// `left operator right`
 /// https://tc39.es/ecma262/#sec-binary-operators
 pub const BinaryExpression = struct {
@@ -496,12 +508,12 @@ pub const SpreadElement = struct {
 pub const ObjectProperty = struct {
     /// PropertyKey
     key: NodeIndex,
-    /// Expression
+    /// Expression (for init) or Function (for methods/getters/setters)
     value: NodeIndex,
     kind: PropertyKind,
+    method: bool,
     shorthand: bool,
     computed: bool,
-    // method: bool, TODO: add this after we implement function/arrow function expressions
 };
 
 pub const Program = struct {
@@ -575,6 +587,7 @@ pub const FormalParameters = struct {
     items: IndexRange,
     /// BindingRestElement (optional, may be null_node)
     rest: NodeIndex,
+    kind: FormalParameterKind,
 };
 
 /// https://tc39.es/ecma262/#prod-FormalParameter

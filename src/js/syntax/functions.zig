@@ -14,6 +14,9 @@ const ParseFunctionOpts = packed struct {
 pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
 
+    const saved_async = parser.context.in_async;
+    const saved_generator = parser.context.in_generator;
+
     if (opts.is_async) {
         parser.context.in_async = true;
     }
@@ -54,11 +57,11 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Function parameters must be enclosed in parentheses: function name(a, b) {}",
     )) return null;
 
-    const params = try parseFormalParamaters(parser) orelse return null;
+    const params = try parseFormalParamaters(parser, .formal_parameters) orelse return null;
 
     defer {
-        parser.context.in_async = false;
-        parser.context.in_generator = false;
+        parser.context.in_async = saved_async;
+        parser.context.in_generator = saved_generator;
     }
 
     const params_end = parser.current_token.span.end; // including )
@@ -125,7 +128,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{ .function_body = .{ .statements = body_data.statements, .directives = body_data.directives } }, .{ .start = start, .end = end });
 }
 
-pub fn parseFormalParamaters(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end: u32 = parser.current_token.span.end;
 
@@ -166,7 +169,11 @@ pub fn parseFormalParamaters(parser: *Parser) Error!?ast.NodeIndex {
         } else break;
     }
 
-    return try parser.addNode(.{ .formal_parameters = .{ .items = try parser.addExtra(parser.scratch_a.take(params_checkpoint)), .rest = rest } }, .{ .start = start, .end = end });
+    return try parser.addNode(.{ .formal_parameters = .{
+        .items = try parser.addExtra(parser.scratch_a.take(params_checkpoint)),
+        .rest = rest,
+        .kind = kind,
+    } }, .{ .start = start, .end = end });
 }
 
 pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {

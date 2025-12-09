@@ -223,7 +223,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
     const params_range = try parser.addExtra(&[_]ast.NodeIndex{param});
 
     const params = try parser.addNode(
-        .{ .formal_parameters = .{ .items = params_range, .rest = ast.null_node } },
+        .{ .formal_parameters = .{ .items = params_range, .rest = ast.null_node, .kind = .arrow_formal_parameters } },
         parser.getSpan(id),
     );
 
@@ -284,7 +284,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
     const items = try parser.addExtra(parser.scratch_b.take(checkpoint));
 
     return try parser.addNode(
-        .{ .formal_parameters = .{ .items = items, .rest = rest } },
+        .{ .formal_parameters = .{ .items = items, .rest = rest, .kind = .arrow_formal_parameters } },
         .{ .start = cover.start, .end = cover.end },
     );
 }
