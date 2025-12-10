@@ -115,7 +115,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Function bodies must be enclosed in braces: function name() { ... }",
     )) return null;
 
-    const body_data = try parser.parseBody(.right_brace);
+    const body = try parser.parseBody(.right_brace);
 
     const end = parser.current_token.span.end;
 
@@ -125,7 +125,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.addNode(.{ .function_body = .{ .statements = body_data.statements, .directives = body_data.directives } }, .{ .start = start, .end = end });
+    return try parser.addNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Error!?ast.NodeIndex {

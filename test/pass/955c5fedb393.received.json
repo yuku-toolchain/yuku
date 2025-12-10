@@ -8,27 +8,20 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 3,
-        "expression": {
-          "type": "Literal",
-          "start": 0,
-          "end": 3,
-          "value": "a",
-          "raw": "'a'"
-        },
-        "directive": "a"
-      },
-      {
-        "type": "ExpressionStatement",
-        "start": 4,
         "end": 9,
         "expression": {
-          "type": "UnaryExpression",
-          "start": 4,
+          "type": "BinaryExpression",
+          "start": 0,
           "end": 9,
+          "left": {
+            "type": "Literal",
+            "start": 0,
+            "end": 3,
+            "value": "a",
+            "raw": "'a'"
+          },
           "operator": "+",
-          "prefix": true,
-          "argument": {
+          "right": {
             "type": "Literal",
             "start": 6,
             "end": 9,

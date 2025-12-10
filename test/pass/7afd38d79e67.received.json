@@ -29,19 +29,6 @@
               "body": [
                 {
                   "type": "ExpressionStatement",
-                  "start": 31,
-                  "end": 49,
-                  "expression": {
-                    "type": "Literal",
-                    "start": 31,
-                    "end": 48,
-                    "value": "not a directive",
-                    "raw": "\"not a directive\""
-                  },
-                  "directive": "not a directive"
-                },
-                {
-                  "type": "ExpressionStatement",
                   "start": 19,
                   "end": 26,
                   "expression": {
@@ -58,6 +45,19 @@
                       "raw": "1"
                     }
                   }
+                },
+                {
+                  "type": "ExpressionStatement",
+                  "start": 31,
+                  "end": 49,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 31,
+                    "end": 48,
+                    "value": "not a directive",
+                    "raw": "\"not a directive\""
+                  },
+                  "directive": "not a directive"
                 },
                 {
                   "type": "ExpressionStatement",

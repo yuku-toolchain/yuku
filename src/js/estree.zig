@@ -113,7 +113,6 @@ pub const Serializer = struct {
         try self.fieldString("sourceType", if (data.source_type == .module) "module" else "script");
         try self.field("body");
         try self.beginArray();
-        for (self.getExtra(data.directives)) |idx| try self.elemNode(idx);
         for (self.getExtra(data.body)) |idx| try self.elemNode(idx);
         try self.endArray();
         try self.endObject();
@@ -166,8 +165,7 @@ pub const Serializer = struct {
         try self.fieldSpan(span);
         try self.field("body");
         try self.beginArray();
-        for (self.getExtra(data.directives)) |idx| try self.elemNode(idx);
-        for (self.getExtra(data.statements)) |idx| try self.elemNode(idx);
+        for (self.getExtra(data.body)) |idx| try self.elemNode(idx);
         try self.endArray();
         try self.endObject();
     }

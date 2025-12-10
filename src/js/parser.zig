@@ -126,7 +126,6 @@ pub const Parser = struct {
     current_token: token.Token,
 
     scratch_statements: ScratchBuffer = .{},
-    scratch_directives: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
 
     // multiple scratches to handle multiple extras at the same time
@@ -174,7 +173,7 @@ pub const Parser = struct {
 
         try self.ensureCapacity();
 
-        const program_data = try self.parseBody(null);
+        const body = try self.parseBody(null);
 
         const end = self.current_token.span.end;
 
@@ -182,8 +181,7 @@ pub const Parser = struct {
             .{
                 .program = .{
                     .source_type = if (self.source_type == .module) .module else .script,
-                    .body = program_data.statements,
-                    .directives = program_data.directives,
+                    .body = body,
                 },
             },
             .{ .start = 0, .end = end },
@@ -204,20 +202,10 @@ pub const Parser = struct {
         return tree;
     }
 
-    const BodyResult = struct { statements: ast.IndexRange, directives: ast.IndexRange };
-
-    pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!BodyResult {
+    pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
         const statements_checkpoint = self.scratch_statements.begin();
-        const directives_checkpoint = self.scratch_directives.begin();
 
         while (!self.isAtBodyEnd(terminator)) {
-            if (self.current_token.type == .string_literal) {
-                if (try self.parseDirective()) |directive| {
-                    try self.scratch_directives.append(self.allocator(), directive);
-                }
-                continue;
-            }
-
             if (try self.parseStatement()) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
@@ -225,10 +213,7 @@ pub const Parser = struct {
             }
         }
 
-        return .{
-            .statements = try self.addExtra(self.scratch_statements.take(statements_checkpoint)),
-            .directives = try self.addExtra(self.scratch_directives.take(directives_checkpoint)),
-        };
+        return self.addExtra(self.scratch_statements.take(statements_checkpoint));
     }
 
     inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenType) bool {
@@ -247,68 +232,43 @@ pub const Parser = struct {
             },
             .declare => blk: {
                 if (!self.isTs()) {
-                    break :blk try self.parseExpressionStatement();
+                    break :blk try self.parseExpressionStatementOrDirective();
                 }
                 const start = self.current_token.span.start;
                 try self.advance(); // consume 'declare'
                 break :blk try functions.parseFunction(self, .{ .is_declare = true }, start);
             },
 
-            .await => blk: {
-                const await_token = self.current_token;
-
-                // TODO: remove lookahead method, and use a way without lookahead, like when we implement
-                // top level awaits
-                // leave this as is for now
-                if ((self.lookAhead() orelse break :blk null).type == .using) {
-                    break :blk variables.parseVariableDeclaration(self);
-                }
-
-                try self.report(
-                    await_token.span,
-                    // TODO: message is not always right, there is top level awaits
-                    // fix it when implement that
-                    "'await' is only valid at the start of an 'await using' declaration or inside async functions",
-                    .{
-                        .help = "If you intended to declare a disposable resource, use 'await using'. Otherwise, 'await' can only appear inside an async function.",
-                    },
-                );
-                break :blk null;
-            },
-
-            else => self.parseExpressionStatement(),
+            else => self.parseExpressionStatementOrDirective(),
         };
     }
 
-    pub fn parseDirective(self: *Parser) Error!?ast.NodeIndex {
-        const current_token = self.current_token;
-
-        const start = current_token.span.start;
-
-        const expression = try literals.parseStringLiteral(self) orelse return null;
-
-        const end = try self.eatSemicolon(current_token.span.end);
-
-        // without quotes
-        const value_start = start + 1;
-        const value_len: u16 = @intCast(current_token.lexeme.len - 2);
-
-        return try self.addNode(.{
-            .directive = .{
-                .expression = expression,
-                .value_start = value_start,
-                .value_len = value_len,
-            },
-        }, .{ .start = start, .end = end });
-    }
-
-    pub fn parseExpressionStatement(self: *Parser) Error!?ast.NodeIndex {
+    pub fn parseExpressionStatementOrDirective(self: *Parser) Error!?ast.NodeIndex {
         const expression = try expressions.parseExpression(self, 0) orelse return null;
+
+        const data = self.getData(expression);
         const span = self.getSpan(expression);
+
+        const start = span.start;
+        const end = try self.eatSemicolon(span.end);
+
+        // it's a directive
+        if (data == .string_literal) {
+            const value_start = data.string_literal.raw_start + 1;
+            const value_len: u16 = data.string_literal.raw_len - 2;
+
+            return try self.addNode(.{
+                .directive = .{
+                    .expression = expression,
+                    .value_start = value_start,
+                    .value_len = value_len,
+                },
+            }, .{ .start = start, .end = end });
+        }
 
         return try self.addNode(
             .{ .expression_statement = .{ .expression = expression } },
-            .{ .start = span.start, .end = try self.eatSemicolon(span.end) },
+            .{ .start = start, .end = end },
         );
     }
 
@@ -463,7 +423,6 @@ pub const Parser = struct {
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
-        try self.scratch_directives.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
     }

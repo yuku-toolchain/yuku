@@ -550,10 +550,8 @@ pub const ObjectProperty = struct {
 
 pub const Program = struct {
     source_type: SourceType,
-    /// (Statement | ModuleDeclaration)[]
+    /// (Statement | Directive)[]
     body: IndexRange,
-    /// Directive[]
-    directives: IndexRange,
 };
 
 pub const SourceType = enum {
@@ -608,9 +606,8 @@ pub const Function = struct {
 
 /// https://tc39.es/ecma262/#prod-FunctionBody
 pub const FunctionBody = struct {
-    // Directive[]
-    directives: IndexRange,
-    statements: IndexRange,
+    // (Statement | Directive)[]
+    body: IndexRange,
 };
 
 /// https://tc39.es/ecma262/#prod-FormalParameters

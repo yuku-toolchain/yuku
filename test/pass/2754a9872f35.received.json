@@ -27,27 +27,20 @@
             {
               "type": "ExpressionStatement",
               "start": 15,
-              "end": 27,
-              "expression": {
-                "type": "Literal",
-                "start": 15,
-                "end": 27,
-                "value": "use strict",
-                "raw": "\"use strict\""
-              },
-              "directive": "use strict"
-            },
-            {
-              "type": "ExpressionStatement",
-              "start": 28,
               "end": 32,
               "expression": {
-                "type": "UnaryExpression",
-                "start": 28,
+                "type": "BinaryExpression",
+                "start": 15,
                 "end": 31,
+                "left": {
+                  "type": "Literal",
+                  "start": 15,
+                  "end": 27,
+                  "value": "use strict",
+                  "raw": "\"use strict\""
+                },
                 "operator": "+",
-                "prefix": true,
-                "argument": {
+                "right": {
                   "type": "Literal",
                   "start": 30,
                   "end": 31,
