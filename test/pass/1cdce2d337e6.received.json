@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 36,
+    "end": 34,
     "sourceType": "script",
     "body": [
       {
@@ -23,7 +23,7 @@
       "type": "Block",
       "value": " ",
       "start": 24,
-      "end": 31
+      "end": 29
     }
   ],
   "errors": [
@@ -49,8 +49,8 @@
       "severity": "error",
       "message": "Unexpected token '}'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 35,
-      "end": 36,
+      "start": 33,
+      "end": 34,
       "labels": [
       ]
     }

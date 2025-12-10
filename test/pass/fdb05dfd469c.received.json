@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 89,
+    "end": 78,
     "sourceType": "script",
     "body": [
       {
@@ -44,24 +44,24 @@
       },
       {
         "type": "VariableDeclaration",
-        "start": 27,
-        "end": 44,
+        "start": 23,
+        "end": 35,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "start": 31,
-            "end": 43,
+            "start": 27,
+            "end": 34,
             "id": {
               "type": "Identifier",
-              "start": 31,
-              "end": 39,
+              "start": 27,
+              "end": 30,
               "name": "ↂωↂ"
             },
             "init": {
               "type": "Literal",
-              "start": 42,
-              "end": 43,
+              "start": 33,
+              "end": 34,
               "value": 2,
               "raw": "2"
             }
@@ -70,24 +70,24 @@
       },
       {
         "type": "VariableDeclaration",
-        "start": 45,
-        "end": 58,
+        "start": 36,
+        "end": 47,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "start": 49,
-            "end": 57,
+            "start": 40,
+            "end": 46,
             "id": {
               "type": "Identifier",
-              "start": 49,
-              "end": 53,
+              "start": 40,
+              "end": 42,
               "name": "l০"
             },
             "init": {
               "type": "Literal",
-              "start": 56,
-              "end": 57,
+              "start": 45,
+              "end": 46,
               "value": 3,
               "raw": "3"
             }
@@ -100,8 +100,8 @@
     {
       "type": "Line",
       "value": " 2nd char is a unicode digit",
-      "start": 59,
-      "end": 89
+      "start": 48,
+      "end": 78
     }
   ],
   "errors": [

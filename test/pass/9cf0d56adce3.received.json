@@ -2,7 +2,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 101,
+    "end": 99,
     "sourceType": "script",
     "body": [
       {
@@ -51,23 +51,23 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 68,
-        "end": 69,
+        "start": 66,
+        "end": 67,
         "expression": {
           "type": "Identifier",
-          "start": 68,
-          "end": 69,
+          "start": 66,
+          "end": 67,
           "name": "a"
         }
       },
       {
         "type": "ExpressionStatement",
-        "start": 83,
-        "end": 84,
+        "start": 81,
+        "end": 82,
         "expression": {
           "type": "Identifier",
-          "start": 83,
-          "end": 84,
+          "start": 81,
+          "end": 82,
           "name": "a"
         }
       }
@@ -108,7 +108,7 @@
       "message": "Invalid element in destructuring pattern",
       "help": "Expected an identifier, array pattern, object pattern, or assignment pattern.",
       "start": 52,
-      "end": 57,
+      "end": 55,
       "labels": [
       ]
     },
@@ -116,8 +116,8 @@
       "severity": "error",
       "message": "Invalid element in destructuring pattern",
       "help": "Expected an identifier, array pattern, object pattern, or assignment pattern.",
-      "start": 70,
-      "end": 72,
+      "start": 68,
+      "end": 70,
       "labels": [
       ]
     },
@@ -125,8 +125,8 @@
       "severity": "error",
       "message": "Invalid element in destructuring pattern",
       "help": "Expected an identifier, array pattern, object pattern, or assignment pattern.",
-      "start": 85,
-      "end": 90,
+      "start": 83,
+      "end": 88,
       "labels": [
       ]
     }

@@ -2,32 +2,32 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 18,
+    "end": 12,
     "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 17,
+        "end": 11,
         "expression": {
           "type": "AssignmentExpression",
           "start": 0,
-          "end": 16,
+          "end": 10,
           "operator": "=",
           "left": {
             "type": "Identifier",
             "start": 0,
-            "end": 9,
+            "end": 3,
             "name": "日本語"
           },
           "right": {
             "type": "ParenthesizedExpression",
-            "start": 12,
-            "end": 16,
+            "start": 6,
+            "end": 10,
             "expression": {
               "type": "ArrayExpression",
-              "start": 13,
-              "end": 15,
+              "start": 7,
+              "end": 9,
               "elements": [
               ]
             }

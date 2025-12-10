@@ -2,32 +2,32 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 15,
+    "end": 11,
     "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 14,
+        "end": 10,
         "expression": {
           "type": "AssignmentExpression",
           "start": 0,
-          "end": 13,
+          "end": 9,
           "operator": "=",
           "left": {
             "type": "Identifier",
             "start": 0,
-            "end": 6,
+            "end": 2,
             "name": "ⅣⅡ"
           },
           "right": {
             "type": "ParenthesizedExpression",
-            "start": 9,
-            "end": 13,
+            "start": 5,
+            "end": 9,
             "expression": {
               "type": "ArrayExpression",
-              "start": 10,
-              "end": 12,
+              "start": 6,
+              "end": 8,
               "elements": [
               ]
             }
