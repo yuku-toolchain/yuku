@@ -17,7 +17,7 @@
             "type": "Literal",
             "start": 1,
             "end": 6,
-            "value": "\\5a",
+            "value": "\u0005a",
             "raw": "'\\5a'"
           }
         }

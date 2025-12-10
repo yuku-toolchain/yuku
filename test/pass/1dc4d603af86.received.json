@@ -17,7 +17,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "ObjectPattern",
@@ -102,7 +101,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "ArrayPattern",

@@ -33,7 +33,6 @@
               },
               "generator": false,
               "async": false,
-              "declare": false,
               "params": [
               ],
               "body": null,

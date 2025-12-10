@@ -13,7 +13,7 @@
           "type": "Literal",
           "start": 0,
           "end": 8,
-          "value": "\\u0061",
+          "value": "a",
           "raw": "\"\\u0061\""
         },
         "directive": "\\u0061"

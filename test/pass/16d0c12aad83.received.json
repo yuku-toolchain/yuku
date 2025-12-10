@@ -17,7 +17,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -41,7 +40,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -65,7 +63,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -89,7 +86,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -113,7 +109,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -137,7 +132,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "Identifier",
@@ -211,7 +205,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "Identifier",
@@ -285,7 +278,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "Identifier",
@@ -359,7 +351,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "Identifier",
@@ -449,7 +440,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "Identifier",
@@ -539,7 +529,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -563,7 +552,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -587,7 +575,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {

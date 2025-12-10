@@ -13,7 +13,7 @@
           "type": "Literal",
           "start": 0,
           "end": 16,
-          "value": "Hello\\012World",
+          "value": "Hello\nWorld",
           "raw": "\"Hello\\012World\""
         },
         "directive": "Hello\\012World"

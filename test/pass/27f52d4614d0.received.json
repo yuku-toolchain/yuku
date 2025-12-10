@@ -33,7 +33,7 @@
                     "type": "Literal",
                     "start": 3,
                     "end": 7,
-                    "value": "\\\\",
+                    "value": "\\",
                     "raw": "\"\\\\\""
                   },
                   "value": {

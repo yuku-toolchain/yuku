@@ -30,7 +30,7 @@
             "type": "Literal",
             "start": 15,
             "end": 19,
-            "value": "\\0",
+            "value": "\u0000",
             "raw": "'\\0'"
           }
         }

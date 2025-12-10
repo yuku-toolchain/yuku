@@ -32,7 +32,6 @@
                 "id": null,
                 "generator": false,
                 "async": false,
-                "declare": false,
                 "params": [
                   {
                     "type": "RestElement",

@@ -20,7 +20,7 @@
               "end": 3,
               "value": {
                 "raw": "\\`",
-                "cooked": "\\`"
+                "cooked": "`"
               },
               "tail": true
             }

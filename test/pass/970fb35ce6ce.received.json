@@ -17,7 +17,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -63,7 +62,6 @@
               },
               "generator": false,
               "async": false,
-              "declare": false,
               "params": [
               ],
               "body": {

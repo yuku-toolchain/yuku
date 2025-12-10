@@ -28,7 +28,7 @@
             "type": "Literal",
             "start": 2,
             "end": 6,
-            "value": "\\v",
+            "value": "\u000b",
             "raw": "\"\\v\""
           }
         }

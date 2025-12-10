@@ -17,7 +17,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "AssignmentPattern",
@@ -59,7 +58,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "AssignmentPattern",
@@ -119,7 +117,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
           {
             "type": "AssignmentPattern",

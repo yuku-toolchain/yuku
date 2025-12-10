@@ -20,7 +20,6 @@
             "id": null,
             "generator": false,
             "async": false,
-            "declare": false,
             "params": [
             ],
             "body": {
@@ -36,7 +35,7 @@
                     "type": "Literal",
                     "start": 17,
                     "end": 32,
-                    "value": "use\\x20strict",
+                    "value": "use strict",
                     "raw": "\"use\\x20strict\""
                   },
                   "directive": "use\\x20strict"

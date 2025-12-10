@@ -17,7 +17,7 @@
             "type": "Literal",
             "start": 1,
             "end": 13,
-            "value": "\\u{10FFFF}",
+            "value": "􏿿",
             "raw": "'\\u{10FFFF}'"
           }
         }

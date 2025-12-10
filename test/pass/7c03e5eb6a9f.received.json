@@ -17,7 +17,6 @@
         },
         "generator": false,
         "async": false,
-        "declare": false,
         "params": [
         ],
         "body": {
@@ -46,7 +45,7 @@
                 "type": "Literal",
                 "start": 29,
                 "end": 33,
-                "value": "\\0",
+                "value": "\u0000",
                 "raw": "\"\\0\""
               },
               "directive": "\\0"

@@ -17,7 +17,7 @@
             "type": "Literal",
             "start": 1,
             "end": 6,
-            "value": "\\7a",
+            "value": "\u0007a",
             "raw": "'\\7a'"
           }
         }

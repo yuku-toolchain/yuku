@@ -20,7 +20,6 @@
             "id": null,
             "generator": false,
             "async": false,
-            "declare": false,
             "params": [
             ],
             "body": {
@@ -36,7 +35,7 @@
                     "type": "Literal",
                     "start": 17,
                     "end": 30,
-                    "value": "use\\nstrict",
+                    "value": "use\nstrict",
                     "raw": "\"use\\nstrict\""
                   },
                   "directive": "use\\nstrict"

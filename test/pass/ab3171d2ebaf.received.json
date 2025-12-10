@@ -70,7 +70,6 @@
                       "id": null,
                       "generator": false,
                       "async": false,
-                      "declare": false,
                       "params": [
                         {
                           "type": "Identifier",
@@ -110,7 +109,6 @@
                       "id": null,
                       "generator": false,
                       "async": false,
-                      "declare": false,
                       "params": [
                       ],
                       "body": {

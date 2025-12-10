@@ -13,7 +13,7 @@
           "type": "Literal",
           "start": 0,
           "end": 4,
-          "value": "\\'",
+          "value": "'",
           "raw": "'\\''"
         },
         "directive": "\\'"

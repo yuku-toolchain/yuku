@@ -19,7 +19,7 @@
               "type": "Identifier",
               "start": 4,
               "end": 12,
-              "name": "A\\u{42}C"
+              "name": "ABC"
             },
             "init": null
           }

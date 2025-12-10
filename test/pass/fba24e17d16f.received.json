@@ -13,7 +13,7 @@
           "type": "Literal",
           "start": 0,
           "end": 6,
-          "value": "\\x61",
+          "value": "a",
           "raw": "\"\\x61\""
         },
         "directive": "\\x61"

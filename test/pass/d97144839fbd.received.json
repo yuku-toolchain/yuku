@@ -17,7 +17,7 @@
             "type": "Literal",
             "start": 1,
             "end": 5,
-            "value": "\\\r",
+            "value": "",
             "raw": "'\\\r'"
           }
         }

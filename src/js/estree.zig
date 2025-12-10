@@ -16,6 +16,8 @@ pub const Serializer = struct {
     depth: u32 = 0,
     options: EstreeJsonOptions,
     needs_comma: [max_depth]bool = [_]bool{false} ** max_depth,
+    /// Scratch buffer for decoding escape sequences - reused to avoid allocations
+    scratch: std.ArrayList(u8) = .empty,
 
     const Self = @This();
     const Error = error{ NoSpaceLeft, OutOfMemory };
@@ -30,7 +32,9 @@ pub const Serializer = struct {
             .buffer = &buffer,
             .allocator = allocator,
             .options = options,
+            .scratch = try .initCapacity(allocator, 256),
         };
+        defer self.scratch.deinit(allocator);
 
         try self.beginObject();
         try self.fieldNode("program", tree.program);
@@ -127,7 +131,9 @@ pub const Serializer = struct {
         try self.fieldNode("id", data.id);
         try self.fieldBool("generator", data.generator);
         try self.fieldBool("async", data.async);
-        try self.fieldBool("declare", data.type == .ts_declare_function);
+        if(data.type == .ts_declare_function) {
+            try self.fieldBool("declare", true);
+        }
         try self.field("params");
         try self.writeFunctionParams(data.params);
         try self.fieldNode("body", data.body);
@@ -314,7 +320,8 @@ pub const Serializer = struct {
         try self.field("value");
         try self.beginObject();
         try self.fieldString("raw", raw);
-        try self.fieldString("cooked", raw); // TODO: proper escape processing
+        try self.field("cooked");
+        try self.writeDecodedString(raw);
         try self.endObject();
         try self.fieldBool("tail", data.tail);
         try self.endObject();
@@ -322,10 +329,12 @@ pub const Serializer = struct {
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
         const raw = self.tree.source[data.raw_start..][0..data.raw_len];
+        const content = raw[1 .. raw.len - 1]; // strip quotes
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
-        try self.fieldString("value", raw[1 .. raw.len - 1]); // strip quotes
+        try self.field("value");
+        try self.writeDecodedString(content);
         try self.fieldString("raw", raw);
         try self.endObject();
     }
@@ -393,10 +402,12 @@ pub const Serializer = struct {
     }
 
     fn writeIdentifier(self: *Self, data: anytype, span: ast.Span) !void {
+        const name = self.tree.source[data.name_start..][0..data.name_len];
         try self.beginObject();
         try self.fieldType("Identifier");
         try self.fieldSpan(span);
-        try self.fieldString("name", self.tree.source[data.name_start..][0..data.name_len]);
+        try self.field("name");
+        try self.writeDecodedString(name);
         try self.endObject();
     }
 
@@ -405,7 +416,8 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldType("PrivateIdentifier");
         try self.fieldSpan(span);
-        try self.fieldString("name", name[1..]); // strip '#' prefix
+        try self.field("name");
+        try self.writeDecodedString(name[1..]); // strip '#' prefix
         try self.endObject();
     }
 
@@ -707,6 +719,189 @@ pub const Serializer = struct {
 
     inline fn getExtra(self: *const Self, range: ast.IndexRange) []const ast.NodeIndex {
         return self.tree.extra.items[range.start..][0..range.len];
+    }
+
+    /// Decode JavaScript escape sequences and write as JSON string
+    fn writeDecodedString(self: *Self, s: []const u8) !void {
+        self.scratch.clearRetainingCapacity();
+        try self.decodeEscapes(s, &self.scratch);
+        try self.writeByte('"');
+        try self.writeEscaped(self.scratch.items);
+        try self.writeByte('"');
+    }
+
+    fn decodeEscapes(self: *Self, input: []const u8, out: *std.ArrayList(u8)) !void {
+        var i: usize = 0;
+        while (i < input.len) {
+            const c = input[i];
+            if (c != '\\') {
+                try out.append(self.allocator, c);
+                i += 1;
+                continue;
+            }
+
+            // handle escape sequence
+            i += 1;
+            if (i >= input.len) {
+                try out.append(self.allocator, '\\');
+                break;
+            }
+
+            const next = input[i];
+            switch (next) {
+                'n' => {
+                    try out.append(self.allocator, '\n');
+                    i += 1;
+                },
+                'r' => {
+                    try out.append(self.allocator, '\r');
+                    i += 1;
+                },
+                't' => {
+                    try out.append(self.allocator, '\t');
+                    i += 1;
+                },
+                'b' => {
+                    try out.append(self.allocator, 0x08);
+                    i += 1;
+                },
+                'f' => {
+                    try out.append(self.allocator, 0x0C);
+                    i += 1;
+                },
+                'v' => {
+                    try out.append(self.allocator, 0x0B);
+                    i += 1;
+                },
+                '0' => {
+                    // \0 is null char (but not octal if followed by digit 0-9)
+                    if (i + 1 < input.len and input[i + 1] >= '0' and input[i + 1] <= '9') {
+                        // Octal escape - parse up to 3 digits
+                        const octal_result = parseOctalEscape(input, i);
+                        try out.append(self.allocator, octal_result.value);
+                        i = octal_result.end;
+                    } else {
+                        try out.append(self.allocator, 0);
+                        i += 1;
+                    }
+                },
+                '1'...'7' => {
+                    // octal escape
+                    const octal_result = parseOctalEscape(input, i);
+                    try out.append(self.allocator, octal_result.value);
+                    i = octal_result.end;
+                },
+                'x' => {
+                    // \xHH hex escape - produces code point U+00HH (Latin-1)
+                    i += 1;
+                    if (i + 2 <= input.len) {
+                        if (parseHexDigit(input[i])) |hi| {
+                            if (parseHexDigit(input[i + 1])) |lo| {
+                                const cp: u21 = (@as(u21, hi) << 4) | lo;
+                                try appendCodePoint(out, self.allocator, cp);
+                                i += 2;
+                                continue;
+                            }
+                        }
+                    }
+                    // invalid hex escape - output as-is
+                    try out.append(self.allocator, 'x');
+                },
+                'u' => {
+                    i += 1;
+                    if (i < input.len and input[i] == '{') {
+                        // \u{HHHH...} code point escape
+                        i += 1;
+                        var cp: u21 = 0;
+                        var has_digits = false;
+                        while (i < input.len and input[i] != '}') {
+                            if (parseHexDigit(input[i])) |d| {
+                                cp = (cp << 4) | d;
+                                has_digits = true;
+                                i += 1;
+                            } else break;
+                        }
+                        if (has_digits and i < input.len and input[i] == '}') {
+                            i += 1;
+                            try appendCodePoint(out, self.allocator, cp);
+                        } else {
+                            // invalid - output 'u'
+                            try out.append(self.allocator, 'u');
+                        }
+                    } else if (i + 4 <= input.len) {
+                        // \uHHHH unicode escape
+                        var cp: u21 = 0;
+                        var valid = true;
+                        for (0..4) |j| {
+                            if (parseHexDigit(input[i + j])) |d| {
+                                cp = (cp << 4) | d;
+                            } else {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        if (valid) {
+                            i += 4;
+                            try appendCodePoint(out, self.allocator, cp);
+                        } else {
+                            try out.append(self.allocator, 'u');
+                        }
+                    } else {
+                        try out.append(self.allocator, 'u');
+                    }
+                },
+                '\r' => {
+                    // line continuation - skip CR and optional LF
+                    i += 1;
+                    if (i < input.len and input[i] == '\n') {
+                        i += 1;
+                    }
+                },
+                '\n' => {
+                    // line continuation - skip LF
+                    i += 1;
+                },
+                else => {
+                    // identity escape (including \\, \', \")
+                    try out.append(self.allocator, next);
+                    i += 1;
+                },
+            }
+        }
+    }
+
+    fn parseOctalEscape(input: []const u8, start: usize) struct { value: u8, end: usize } {
+        var value: u16 = 0;
+        var i = start;
+        var count: usize = 0;
+        const max_count: usize = if (input[start] <= '3') 3 else 2;
+
+        while (i < input.len and count < max_count) {
+            const c = input[i];
+            if (c >= '0' and c <= '7') {
+                value = value * 8 + (c - '0');
+                i += 1;
+                count += 1;
+            } else break;
+        }
+        return .{ .value = @truncate(value), .end = i };
+    }
+
+    fn parseHexDigit(c: u8) ?u8 {
+        if (c >= '0' and c <= '9') return c - '0';
+        if (c >= 'a' and c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' and c <= 'F') return c - 'A' + 10;
+        return null;
+    }
+
+    fn appendCodePoint(out: *std.ArrayList(u8), allocator: std.mem.Allocator, cp: u21) !void {
+        var buf: [4]u8 = undefined;
+        const len = std.unicode.utf8Encode(cp, &buf) catch {
+            // invalid code point, use replacement character
+            try out.appendSlice(allocator, "\u{FFFD}");
+            return;
+        };
+        try out.appendSlice(allocator, buf[0..len]);
     }
 };
 

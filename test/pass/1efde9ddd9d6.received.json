@@ -20,7 +20,6 @@
             "id": null,
             "generator": true,
             "async": false,
-            "declare": false,
             "params": [
             ],
             "body": {

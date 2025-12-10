@@ -44,7 +44,7 @@
               "end": 10,
               "value": {
                 "raw": "xx\\`x",
-                "cooked": "xx\\`x"
+                "cooked": "xx`x"
               },
               "tail": true
             }

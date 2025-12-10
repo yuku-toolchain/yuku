@@ -20,7 +20,7 @@
               "end": 25,
               "value": {
                 "raw": "\\u{000042}\\u0042\\x42u0\\A",
-                "cooked": "\\u{000042}\\u0042\\x42u0\\A"
+                "cooked": "BBBu0A"
               },
               "tail": true
             }

@@ -17,7 +17,7 @@
             "type": "Literal",
             "start": 1,
             "end": 11,
-            "value": "\\u{00F8}",
+            "value": "ø",
             "raw": "'\\u{00F8}'"
           }
         }

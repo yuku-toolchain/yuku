@@ -25,7 +25,6 @@
             },
             "generator": false,
             "async": false,
-            "declare": false,
             "params": [
               {
                 "type": "ArrayPattern",
