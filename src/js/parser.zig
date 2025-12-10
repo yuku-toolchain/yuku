@@ -207,7 +207,7 @@ pub const Parser = struct {
         const statements_checkpoint = self.scratch_statements.begin();
 
         while (!self.isAtBodyEnd(terminator)) {
-            if (try self.parseStatement()) |statement| {
+            if (try statements.parseStatement(self)) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
                 try self.synchronize(terminator);
@@ -220,66 +220,6 @@ pub const Parser = struct {
     inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenType) bool {
         return self.current_token.type == .eof or
             (terminator != null and self.current_token.type == terminator.?);
-    }
-
-    pub fn parseStatement(self: *Parser) Error!?ast.NodeIndex {
-        return switch (self.current_token.type) {
-            .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(self),
-            .function => functions.parseFunction(self, .{}, null),
-            .async => blk: {
-                const start = self.current_token.span.start;
-                try self.advance(); // consume 'async'
-                break :blk try functions.parseFunction(self, .{ .is_async = true }, start);
-            },
-            .declare => blk: {
-                if (!self.isTs()) {
-                    break :blk try self.parseExpressionStatementOrDirective();
-                }
-                const start = self.current_token.span.start;
-                try self.advance(); // consume 'declare'
-                break :blk try functions.parseFunction(self, .{ .is_declare = true }, start);
-            },
-            .left_brace => statements.parseBlockStatement(self),
-
-            else => self.parseExpressionStatementOrDirective(),
-        };
-    }
-
-    pub fn parseExpressionStatementOrDirective(self: *Parser) Error!?ast.NodeIndex {
-        const expression = try expressions.parseExpression(self, 0) orelse return null;
-
-        const expression_span = self.getSpan(expression);
-
-        // const current_token = self.current_token;
-
-        // if(current_token.type != .semicolon and !self.canInsertSemicolon()) {
-        //     try self.report(.{ .start = expression_span.end, .end = expression_span.end }, "Expected a semicolon or an implicit semicolon after a statement, but found none", .{ .help = "Try inserting a semicolon here" });
-        //     return null;
-        // }
-
-        const expression_data = self.getData(expression);
-
-        const start = expression_span.start;
-        const end = try self.eatSemicolon(expression_span.end);
-
-        // it's a directive
-        if (expression_data == .string_literal) {
-            const value_start = expression_data.string_literal.raw_start + 1;
-            const value_len: u16 = expression_data.string_literal.raw_len - 2;
-
-            return try self.addNode(.{
-                .directive = .{
-                    .expression = expression,
-                    .value_start = value_start,
-                    .value_len = value_len,
-                },
-            }, .{ .start = start, .end = end });
-        }
-
-        return try self.addNode(
-            .{ .expression_statement = .{ .expression = expression } },
-            .{ .start = start, .end = end },
-        );
     }
 
     // pub inline fn canInsertSemicolon(self: *Parser) bool {
