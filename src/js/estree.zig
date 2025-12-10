@@ -721,7 +721,6 @@ pub const Serializer = struct {
         return self.tree.extra.items[range.start..][0..range.len];
     }
 
-    /// Decode JavaScript escape sequences and write as JSON string
     fn writeDecodedString(self: *Self, s: []const u8) !void {
         self.scratch.clearRetainingCapacity();
         try self.decodeEscapes(s, &self.scratch);

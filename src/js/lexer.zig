@@ -38,10 +38,9 @@ pub const Lexer = struct {
     /// current byte index being scanned in the source
     cursor: u32,
     template_depth: u32,
-    arena: std.heap.ArenaAllocator,
     has_line_terminator_before: bool,
 
-    pub fn init(backing_allocator: std.mem.Allocator, source: []const u8) Lexer {
+    pub fn init(source: []const u8) Lexer {
         return .{
             .strict_mode = false,
             .source = source,
@@ -49,13 +48,8 @@ pub const Lexer = struct {
             .token_start = 0,
             .cursor = 0,
             .template_depth = 0,
-            .arena = std.heap.ArenaAllocator.init(backing_allocator),
             .has_line_terminator_before = false,
         };
-    }
-
-    pub fn deinit(self: *Lexer) void {
-        self.arena.deinit();
     }
 
     inline fn peek(self: *const Lexer, offset: u32) u8 {

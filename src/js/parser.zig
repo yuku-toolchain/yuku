@@ -118,7 +118,7 @@ pub const Parser = struct {
     pub fn init(backing_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
             .source = source,
-            .lexer = lexer.Lexer.init(backing_allocator, source),
+            .lexer = lexer.Lexer.init(source),
             .arena = std.heap.ArenaAllocator.init(backing_allocator),
             .source_type = options.source_type,
             .lang = options.lang,
@@ -137,7 +137,6 @@ pub const Parser = struct {
     /// The caller owns the returned ParseTree and must call deinit() on it.
     pub fn parse(self: *Parser) Error!ParseTree {
         errdefer {
-            self.lexer.deinit();
             self.arena.deinit();
         }
 
@@ -170,8 +169,6 @@ pub const Parser = struct {
             .diagnostics = self.diagnostics,
             .arena = self.arena,
         };
-
-        self.lexer.deinit();
 
         return tree;
     }
