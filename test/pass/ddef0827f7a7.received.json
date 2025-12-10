@@ -8,7 +8,7 @@
       {
         "type": "VariableDeclaration",
         "start": 0,
-        "end": 6,
+        "end": 20,
         "kind": "var",
         "declarations": [
           {

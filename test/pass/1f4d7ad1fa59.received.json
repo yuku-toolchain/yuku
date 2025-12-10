@@ -8,7 +8,7 @@
       {
         "type": "ExpressionStatement",
         "start": 13,
-        "end": 16,
+        "end": 17,
         "expression": {
           "type": "ObjectExpression",
           "start": 13,

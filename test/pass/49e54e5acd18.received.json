@@ -8,7 +8,7 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 2,
+        "end": 3,
         "expression": {
           "type": "Literal",
           "start": 0,

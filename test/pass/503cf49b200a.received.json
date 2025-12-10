@@ -8,7 +8,7 @@
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 4,
+        "end": 5,
         "expression": {
           "type": "ParenthesizedExpression",
           "start": 0,

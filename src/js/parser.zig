@@ -174,11 +174,9 @@ pub const Parser = struct {
 
         try self.ensureCapacity();
 
-        const start = self.current_token.span.start;
-
         const program_data = try self.parseBody(null);
 
-        const end = self.current_token.span.start;
+        const end = self.current_token.span.end;
 
         const program = try self.addNode(
             .{
@@ -188,7 +186,7 @@ pub const Parser = struct {
                     .directives = program_data.directives,
                 },
             },
-            .{ .start = start, .end = end },
+            .{ .start = 0, .end = end },
         );
 
         const tree = ParseTree{
@@ -387,8 +385,9 @@ pub const Parser = struct {
     pub inline fn eatSemicolon(self: *Parser, end: u32) Error!u32 {
         // consume optional semicolon and adjust span
         if (self.current_token.type == .semicolon) {
+            const semicolon_end = self.current_token.span.end;
             try self.advance();
-            return end + 1;
+            return semicolon_end;
         }
 
         return end;

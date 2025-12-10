@@ -43,7 +43,7 @@
                     },
                     "value": {
                       "type": "FunctionExpression",
-                      "start": 10,
+                      "start": 14,
                       "end": 32,
                       "id": null,
                       "generator": true,

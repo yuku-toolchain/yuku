@@ -1,7 +1,7 @@
 {
   "program": {
     "type": "Program",
-    "start": 5,
+    "start": 0,
     "end": 141,
     "sourceType": "script",
     "body": [

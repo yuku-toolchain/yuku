@@ -52,7 +52,7 @@
                   },
                   "value": {
                     "type": "FunctionExpression",
-                    "start": 24,
+                    "start": 29,
                     "end": 34,
                     "id": null,
                     "generator": false,
@@ -85,7 +85,7 @@
                   },
                   "value": {
                     "type": "FunctionExpression",
-                    "start": 36,
+                    "start": 41,
                     "end": 46,
                     "id": null,
                     "generator": false,

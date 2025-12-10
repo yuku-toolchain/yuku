@@ -802,19 +802,18 @@ pub const Serializer = struct {
                 '0' => {
                     // \0 is null char (but not octal if followed by digit 0-9)
                     if (i + 1 < input.len and input[i + 1] >= '0' and input[i + 1] <= '9') {
-                        // Octal escape - parse up to 3 digits
                         const octal_result = parseOctalEscape(input, i);
-                        try out.append(self.allocator, octal_result.value);
+                        try appendCodePoint(out, self.allocator, octal_result.value);
                         i = octal_result.end;
                     } else {
-                        try out.append(self.allocator, 0);
+                        try appendCodePoint(out, self.allocator, 0);
                         i += 1;
                     }
                 },
                 '1'...'7' => {
                     // octal escape
                     const octal_result = parseOctalEscape(input, i);
-                    try out.append(self.allocator, octal_result.value);
+                    try appendCodePoint(out, self.allocator, octal_result.value);
                     i = octal_result.end;
                 },
                 'x' => {

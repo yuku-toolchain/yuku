@@ -314,6 +314,7 @@ fn parseMethodDefinition(
         parser.context.in_generator = saved_generator;
     }
 
+    const func_start = parser.current_token.span.start;
     if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) {
         return null;
     }
@@ -363,7 +364,7 @@ fn parseMethodDefinition(
             .params = params,
             .body = body,
         } },
-        .{ .start = prop_start, .end = body_end },
+        .{ .start = func_start, .end = body_end },
     );
 
     // for methods, kind is always .init (getters/setters have their own kind)
