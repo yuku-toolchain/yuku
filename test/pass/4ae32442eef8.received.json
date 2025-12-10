@@ -8,14 +8,20 @@
     ]
   },
   "comments": [
+    {
+      "type": "Line",
+      "value": "--",
+      "start": 0,
+      "end": 4
+    }
   ],
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token '<'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 1,
+      "start": 5,
+      "end": 6,
       "labels": [
       ]
     }

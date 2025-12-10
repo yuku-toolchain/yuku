@@ -2,6 +2,7 @@ const std = @import("std");
 const token = @import("token.zig");
 const ast = @import("ast.zig");
 const util = @import("util");
+const parser = @import("parser.zig");
 
 pub const LexicalError = error{
     UnterminatedString,
@@ -43,8 +44,9 @@ pub const Lexer = struct {
     has_line_terminator_before: bool,
     comments: std.ArrayList(ast.Comment),
     allocator: std.mem.Allocator,
+    source_type: parser.SourceType,
 
-    pub fn init(source: []const u8, allocator: std.mem.Allocator) error{OutOfMemory}!Lexer {
+    pub fn init(source: []const u8, allocator: std.mem.Allocator, source_type: parser.SourceType) error{OutOfMemory}!Lexer {
         return .{
             .strict_mode = false,
             .source = source,
@@ -55,6 +57,7 @@ pub const Lexer = struct {
             .has_line_terminator_before = false,
             .comments = try .initCapacity(allocator, source.len / 3),
             .allocator = allocator,
+            .source_type = source_type,
         };
     }
 
@@ -1056,6 +1059,19 @@ pub const Lexer = struct {
                         }
                         break;
                     },
+                    '<' => {
+                        // HTML-style comments (<!-- ... -->) are only valid in script mode
+                        if (self.source_type == .script) {
+                            const c1 = self.peek(1);
+                            const c2 = self.peek(2);
+                            const c3 = self.peek(3);
+                            if (c1 == '!' and c2 == '-' and c3 == '-') {
+                                try self.scanHtmlComment();
+                                continue;
+                            }
+                        }
+                        break;
+                    },
                     else => break,
                 }
             } else {
@@ -1118,6 +1134,41 @@ pub const Lexer = struct {
         }
 
         return error.UnterminatedMultiLineComment;
+    }
+
+    /// scans an HTML-style comment (<!-- ... --> or <!-- ... end of line)
+    fn scanHtmlComment(self: *Lexer) LexicalError!void {
+        const start = self.cursor;
+        self.cursor += 4; // skip '<!--'
+
+        while (self.cursor < self.source_len) {
+            const c = self.source[self.cursor];
+
+            // check for early termination with -->
+            if (c == '-' and self.peek(1) == '-' and self.peek(2) == '>') {
+                self.cursor += 3; // skip '-->'
+                self.comments.append(self.allocator, .{
+                    .type = .line,
+                    .start = start,
+                    .end = self.cursor,
+                }) catch return error.OutOfMemory;
+                return;
+            }
+
+            // end of line terminates the comment
+            if (c == '\n' or c == '\r') {
+                break;
+            }
+
+            self.cursor += 1;
+        }
+
+        // comment ends at end of line
+        self.comments.append(self.allocator, .{
+            .type = .line,
+            .start = start,
+            .end = self.cursor,
+        }) catch return error.OutOfMemory;
     }
 
     pub inline fn createToken(self: *Lexer, token_type: token.TokenType, lexeme: []const u8, start: u32, end: u32) token.Token {

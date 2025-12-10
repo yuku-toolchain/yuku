@@ -163,7 +163,7 @@ pub const Parser = struct {
     /// The caller owns the returned ParseTree and must call deinit() on it.
     pub fn parse(self: *Parser) Error!ParseTree {
         // init lexer
-        self.lexer = try lexer.Lexer.init(self.source, self.allocator());
+        self.lexer = try lexer.Lexer.init(self.source, self.allocator(), self.source_type);
 
         // let's begin
         try self.advance();

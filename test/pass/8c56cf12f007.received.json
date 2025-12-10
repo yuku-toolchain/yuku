@@ -19,44 +19,24 @@
             "end": 1,
             "name": "a"
           },
-          "operator": "<",
+          "operator": "+",
           "right": {
-            "type": "BinaryExpression",
-            "start": 3,
+            "type": "Identifier",
+            "start": 11,
             "end": 12,
-            "left": {
-              "type": "UnaryExpression",
-              "start": 3,
-              "end": 9,
-              "operator": "!",
-              "prefix": true,
-              "argument": {
-                "type": "UpdateExpression",
-                "start": 4,
-                "end": 9,
-                "operator": "--",
-                "prefix": true,
-                "argument": {
-                  "type": "Identifier",
-                  "start": 6,
-                  "end": 9,
-                  "name": "bar"
-                }
-              }
-            },
-            "operator": "+",
-            "right": {
-              "type": "Identifier",
-              "start": 11,
-              "end": 12,
-              "name": "b"
-            }
+            "name": "b"
           }
         }
       }
     ]
   },
   "comments": [
+    {
+      "type": "Line",
+      "value": "--bar",
+      "start": 2,
+      "end": 9
+    }
   ],
   "errors": [
   ]
