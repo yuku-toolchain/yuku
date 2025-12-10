@@ -1,5 +1,6 @@
 const std = @import("std");
 const token = @import("token.zig");
+const ast = @import("ast.zig");
 const util = @import("util");
 
 pub const LexicalError = error{
@@ -24,6 +25,7 @@ pub const LexicalError = error{
     MultipleDecimalPoints,
     InvalidBigIntSuffix,
     InvalidUtf8,
+    OutOfMemory,
 };
 
 // TODO:
@@ -39,8 +41,10 @@ pub const Lexer = struct {
     cursor: u32,
     template_depth: u32,
     has_line_terminator_before: bool,
+    comments: std.ArrayList(ast.Comment),
+    allocator: std.mem.Allocator,
 
-    pub fn init(source: []const u8) Lexer {
+    pub fn init(source: []const u8, allocator: std.mem.Allocator) error{OutOfMemory}!Lexer {
         return .{
             .strict_mode = false,
             .source = source,
@@ -49,6 +53,8 @@ pub const Lexer = struct {
             .cursor = 0,
             .template_depth = 0,
             .has_line_terminator_before = false,
+            .comments = try .initCapacity(allocator, source.len / 3),
+            .allocator = allocator,
         };
     }
 
@@ -1039,6 +1045,17 @@ pub const Lexer = struct {
                         self.cursor += 1;
                         continue;
                     },
+                    '/' => {
+                        const next = self.peek(1);
+                        if (next == '/') {
+                            try self.scanLineComment();
+                            continue;
+                        } else if (next == '*') {
+                            try self.scanBlockComment();
+                            continue;
+                        }
+                        break;
+                    },
                     else => break,
                 }
             } else {
@@ -1053,6 +1070,54 @@ pub const Lexer = struct {
 
             break;
         }
+    }
+
+    /// scans a single-line comment (// ...)
+    fn scanLineComment(self: *Lexer) LexicalError!void {
+        const start = self.cursor;
+        self.cursor += 2; // skip '//'
+
+        while (self.cursor < self.source_len) {
+            const c = self.source[self.cursor];
+            if (c == '\n' or c == '\r') {
+                break;
+            }
+            self.cursor += 1;
+        }
+
+        self.comments.append(self.allocator, .{
+            .type = .line,
+            .start = start,
+            .end = self.cursor,
+        }) catch return error.OutOfMemory;
+    }
+
+    /// scans a multi-line comment (/* ... */)
+    fn scanBlockComment(self: *Lexer) LexicalError!void {
+        const start = self.cursor;
+        self.cursor += 2; // skip '/*'
+
+        while (self.cursor < self.source_len) {
+            const c = self.source[self.cursor];
+
+            if (c == '\n' or c == '\r') {
+                self.has_line_terminator_before = true;
+            }
+
+            if (c == '*' and self.peek(1) == '/') {
+                self.cursor += 2; // skip '*/'
+                self.comments.append(self.allocator, .{
+                    .type = .block,
+                    .start = start,
+                    .end = self.cursor,
+                }) catch return error.OutOfMemory;
+                return;
+            }
+
+            self.cursor += 1;
+        }
+
+        return error.UnterminatedMultiLineComment;
     }
 
     pub inline fn createToken(self: *Lexer, token_type: token.TokenType, lexeme: []const u8, start: u32, end: u32) token.Token {
@@ -1091,6 +1156,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
         error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
         error.InvalidUtf8 => "Invalid UTF-8 byte sequence",
+        error.OutOfMemory => "Out of memory",
     };
 }
 
@@ -1117,5 +1183,6 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.MultipleDecimalPoints => "Try removing the extra decimal point here",
         error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal point/exponent from the number",
         error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the file is saved with valid UTF-8 encoding",
+        error.OutOfMemory => "The system ran out of memory while parsing",
     };
 }

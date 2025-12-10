@@ -58,6 +58,8 @@ pub const ParseTree = struct {
     extra: std.ArrayList(ast.NodeIndex),
     /// Diagnostics (errors, warnings, etc.) encountered during parsing
     diagnostics: std.ArrayList(Diagnostic),
+    /// Comments collected in source code
+    comments: std.ArrayList(ast.Comment),
     /// Arena allocator owning all the memory
     arena: std.heap.ArenaAllocator,
 
@@ -118,11 +120,11 @@ pub const Parser = struct {
     pub fn init(backing_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
             .source = source,
-            .lexer = lexer.Lexer.init(source),
             .arena = std.heap.ArenaAllocator.init(backing_allocator),
             .source_type = options.source_type,
             .lang = options.lang,
             .strict_mode = options.is_strict,
+            .lexer = undefined,
             .current_token = undefined,
             .context = .{ .in_async = false, .in_generator = false, .allow_in = false },
         };
@@ -136,13 +138,17 @@ pub const Parser = struct {
     /// The Parser is consumed and should not be used after calling this method.
     /// The caller owns the returned ParseTree and must call deinit() on it.
     pub fn parse(self: *Parser) Error!ParseTree {
+        // init lexer
+        self.lexer = try lexer.Lexer.init(self.source, self.allocator());
+
+        // let's begin
+        try self.advance();
+
         errdefer {
             self.arena.deinit();
         }
 
         try self.ensureCapacity();
-
-        try self.advance();
 
         const start = self.current_token.span.start;
 
@@ -167,6 +173,7 @@ pub const Parser = struct {
             .nodes = self.nodes,
             .extra = self.extra,
             .diagnostics = self.diagnostics,
+            .comments = self.lexer.comments,
             .arena = self.arena,
         };
 
@@ -429,11 +436,11 @@ pub const Parser = struct {
         try self.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.extra.ensureTotalCapacity(alloc, estimated_extra);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
+        try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_directives.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
-        try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
     }
 };
 

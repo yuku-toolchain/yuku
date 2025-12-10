@@ -38,6 +38,8 @@ pub const Serializer = struct {
 
         try self.beginObject();
         try self.fieldNode("program", tree.program);
+        try self.field("comments");
+        try self.writeComments();
         try self.field("errors");
         try self.writeDiagnostics();
         try self.endObject();
@@ -503,6 +505,26 @@ pub const Serializer = struct {
         try self.fieldSpan(span);
         try self.fieldNodeArray("expressions", data.expressions);
         try self.endObject();
+    }
+
+    fn writeComments(self: *Self) !void {
+        try self.beginArray();
+        if (self.tree.comments.items.len > 0) {
+            for (self.tree.comments.items) |comment| {
+                try self.sep();
+                if (self.options.pretty) {
+                    try self.writeByte('\n');
+                    try self.writeIndent();
+                }
+                try self.beginObject();
+                try self.fieldString("type", comment.type.toString());
+                try self.fieldString("value", comment.getValue(self.tree.source));
+                try self.fieldInt("start", comment.start);
+                try self.fieldInt("end", comment.end);
+                try self.endObject();
+            }
+        }
+        try self.endArray();
     }
 
     fn writeDiagnostics(self: *Self) !void {
