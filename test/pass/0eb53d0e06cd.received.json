@@ -35,10 +35,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 16,
-      "end": 21,
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
+      "help": "Try inserting a semicolon here",
+      "start": 25,
+      "end": 25,
       "labels": [
       ]
     }

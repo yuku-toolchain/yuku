@@ -62,10 +62,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'yield'",
+      "message": "Unexpected token 'super'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 10,
-      "end": 15,
+      "start": 16,
+      "end": 21,
       "labels": [
       ]
     }

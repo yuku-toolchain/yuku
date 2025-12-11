@@ -17,9 +17,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     const saved_async = parser.context.in_async;
     const saved_generator = parser.context.in_generator;
 
-    if (opts.is_async) {
-        parser.context.in_async = true;
-    }
+    parser.context.in_async = opts.is_async;
 
     if (!try parser.expect(
         .function,
@@ -33,8 +31,14 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     if (parser.current_token.type == .star) {
         is_generator = true;
-        parser.context.in_generator = true;
         try parser.advance();
+    }
+
+    parser.context.in_generator = is_generator;
+
+    defer {
+        parser.context.in_async = saved_async;
+        parser.context.in_generator = saved_generator;
     }
 
     const id = if (parser.current_token.type.isIdentifierLike())
@@ -58,11 +62,6 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     )) return null;
 
     const params = try parseFormalParamaters(parser, .formal_parameters) orelse return null;
-
-    defer {
-        parser.context.in_async = saved_async;
-        parser.context.in_generator = saved_generator;
-    }
 
     const params_end = parser.current_token.span.end; // including )
 

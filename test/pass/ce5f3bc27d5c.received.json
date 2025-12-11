@@ -24,6 +24,46 @@
           "start": 14,
           "end": 35,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 16,
+              "end": 33,
+              "expression": {
+                "type": "ArrowFunctionExpression",
+                "start": 16,
+                "end": 32,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 17,
+                    "end": 18,
+                    "name": "b"
+                  }
+                ],
+                "body": {
+                  "type": "BinaryExpression",
+                  "start": 23,
+                  "end": 32,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 23,
+                    "end": 24,
+                    "name": "b"
+                  },
+                  "operator": "*",
+                  "right": {
+                    "type": "Identifier",
+                    "start": 27,
+                    "end": 32,
+                    "name": "yield"
+                  }
+                },
+                "expression": true
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +73,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 27,
-      "end": 32,
-      "labels": [
-      ]
-    }
   ]
 }

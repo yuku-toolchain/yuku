@@ -12,10 +12,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '.'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 16,
-      "end": 19,
+      "start": 19,
+      "end": 20,
       "labels": [
       ]
     },
@@ -23,8 +23,8 @@
       "severity": "error",
       "message": "Expected ')' to close parameter list",
       "help": "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
-      "start": 16,
-      "end": 19,
+      "start": 19,
+      "end": 20,
       "labels": [
       ]
     }

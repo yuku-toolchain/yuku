@@ -55,6 +55,23 @@
                         "start": 15,
                         "end": 30,
                         "body": [
+                          {
+                            "type": "ExpressionStatement",
+                            "start": 19,
+                            "end": 28,
+                            "expression": {
+                              "type": "YieldExpression",
+                              "start": 19,
+                              "end": 27,
+                              "delegate": true,
+                              "argument": {
+                                "type": "Identifier",
+                                "start": 26,
+                                "end": 27,
+                                "name": "c"
+                              }
+                            }
+                          }
                         ]
                       },
                       "expression": false
@@ -74,14 +91,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 19,
-      "end": 24,
-      "labels": [
-      ]
-    }
   ]
 }

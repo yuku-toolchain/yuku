@@ -35,15 +35,6 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 14,
-      "end": 19,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'class'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 20,

@@ -29,6 +29,29 @@
             "start": 5,
             "end": 21,
             "body": [
+              {
+                "type": "ExpressionStatement",
+                "start": 9,
+                "end": 19,
+                "expression": {
+                  "type": "BinaryExpression",
+                  "start": 9,
+                  "end": 18,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 9,
+                    "end": 14,
+                    "name": "yield"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "Identifier",
+                    "start": 17,
+                    "end": 18,
+                    "name": "a"
+                  }
+                }
+              }
             ]
           },
           "expression": false
@@ -39,14 +62,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 14,
-      "labels": [
-      ]
-    }
   ]
 }

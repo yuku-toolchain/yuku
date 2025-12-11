@@ -24,6 +24,23 @@
           "start": 14,
           "end": 28,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 18,
+              "end": 26,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 18,
+                "end": 25,
+                "delegate": false,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 24,
+                  "end": 25,
+                  "name": "a"
+                }
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +50,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 18,
-      "end": 23,
-      "labels": [
-      ]
-    }
   ]
 }

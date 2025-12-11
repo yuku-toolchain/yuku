@@ -219,10 +219,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 53,
-      "end": 56,
+      "message": "Unexpected token ')' in expression",
+      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
+      "start": 58,
+      "end": 59,
       "labels": [
       ]
     },
@@ -255,10 +255,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 126,
-      "end": 129,
+      "message": "Unexpected token ')' in expression",
+      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
+      "start": 131,
+      "end": 132,
       "labels": [
       ]
     },
@@ -291,10 +291,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 200,
-      "end": 203,
+      "message": "Unexpected token ')' in expression",
+      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
+      "start": 205,
+      "end": 206,
       "labels": [
       ]
     },

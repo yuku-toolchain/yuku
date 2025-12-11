@@ -5,19 +5,40 @@
     "end": 14,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 12,
+          "callee": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "a"
+          },
+          "arguments": [
+            {
+              "type": "SpreadElement",
+              "start": 6,
+              "end": 11,
+              "argument": {
+                "type": "Literal",
+                "start": 9,
+                "end": 11,
+                "value": .5,
+                "raw": ".5"
+              }
+            }
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 3,
-      "labels": [
-      ]
-    }
   ]
 }

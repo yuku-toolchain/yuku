@@ -24,6 +24,28 @@
           "start": 13,
           "end": 29,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 15,
+              "end": 27,
+              "expression": {
+                "type": "ArrowFunctionExpression",
+                "start": 15,
+                "end": 26,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                ],
+                "body": {
+                  "type": "Identifier",
+                  "start": 21,
+                  "end": 26,
+                  "name": "yield"
+                },
+                "expression": true
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +55,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 21,
-      "end": 26,
-      "labels": [
-      ]
-    }
   ]
 }

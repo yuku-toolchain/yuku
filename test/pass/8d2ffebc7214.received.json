@@ -5,19 +5,34 @@
     "end": 8,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 8,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 0,
+          "end": 8,
+          "left": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 5,
+            "name": "yield"
+          },
+          "operator": "*",
+          "right": {
+            "type": "Literal",
+            "start": 7,
+            "end": 8,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -1,6 +1,7 @@
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
+const token = @import("../token.zig");
 const std = @import("std");
 
 const array = @import("array.zig");
@@ -85,12 +86,25 @@ fn parsePrefix(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
         return parseParenthesizedOrArrowFunction(parser, false);
     }
 
+    if (token_type == .await and (parser.context.in_async or parser.isModule())) {
+        return parseAwaitExpression(parser);
+    }
+
+    if (token_type == .yield and parser.context.in_generator) {
+        return parseYieldExpression(parser);
+    }
+
+    if (token_type == .new) {
+        return parseNewExpression(parser);
+    }
+
     return parsePrimaryExpression(parser, enable_validation);
 }
 
 inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
-        .identifier => parseIdentifierOrArrowFunction(parser),
+        // .yield and .await will be checked for reserved word
+        .identifier, .yield, .await => parseIdentifierOrArrowFunction(parser),
         .private_identifier => literals.parsePrivateIdentifier(parser),
         .string_literal => literals.parseStringLiteral(parser),
         .true, .false => literals.parseBooleanLiteral(parser),
@@ -106,26 +120,18 @@ inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error
         .async => parseAsyncFunctionOrArrow(parser),
         else => {
             const tok = parser.current_token;
-            if (tok.type == .eof) {
-                try parser.report(
-                    tok.span,
-                    "Unexpected end of input while parsing expression",
-                    .{ .help = "The parser reached the end of the file but expected an expression. Check for missing values or unclosed brackets." },
-                );
-            } else {
-                try parser.reportFmt(
-                    tok.span,
-                    "Unexpected token '{s}'",
-                    .{tok.lexeme},
-                    .{ .help = "Expected an expression (identifier, literal, array, object, or parenthesized expression)." },
-                );
-            }
+            try parser.reportFmt(
+                tok.span,
+                "Unexpected token '{s}'",
+                .{tok.lexeme},
+                .{ .help = "Expected an expression (identifier, literal, array, object, or parenthesized expression)." },
+            );
             return null;
         },
     };
 }
 
-/// parenthesized expression or arrow function: (a) or (a, b) => ...
+/// (a) or (a, b) => ...
 fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -202,6 +208,88 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
             },
         },
         .{ .start = operator_token.span.start, .end = parser.getSpan(argument).end },
+    );
+}
+
+/// `await expression`
+/// https://tc39.es/ecma262/#sec-await
+fn parseAwaitExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume 'await'
+
+    const argument = try parseExpression(parser, 14, .{}) orelse return null;
+
+    return try parser.addNode(
+        .{ .await_expression = .{ .argument = argument } },
+        .{ .start = start, .end = parser.getSpan(argument).end },
+    );
+}
+
+/// `yield`, `yield expression`, or `yield* expression`
+/// https://tc39.es/ecma262/#sec-generator-function-definitions-runtime-semantics-evaluation
+fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    var end = parser.current_token.span.end;
+    try parser.advance(); // consume 'yield'
+
+    // check for delegate: yield*
+    var delegate = false;
+    if (parser.current_token.type == .star and !parser.current_token.has_line_terminator_before) {
+        delegate = true;
+        end = parser.current_token.span.end;
+        try parser.advance(); // consume '*'
+    }
+
+    var argument: ast.NodeIndex = ast.null_node;
+
+    if (!parser.current_token.has_line_terminator_before) {
+        argument = try parseExpression(parser, 2, .{}) orelse return null;
+        end = parser.getSpan(argument).end;
+    }
+
+    return try parser.addNode(
+        .{ .yield_expression = .{ .argument = argument, .delegate = delegate } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// `new Callee` or `new Callee(args)`
+/// https://tc39.es/ecma262/#sec-new-operator
+fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume 'new'
+
+    var callee = try parsePrimaryExpression(parser, true) orelse return null;
+    var arguments = ast.IndexRange.empty;
+
+    var arguments_end: ?u32 = null;
+
+    switch (parser.current_token.type) {
+        .left_paren => {
+            try parser.advance();
+            arguments = try parseArguments(parser) orelse return null;
+            arguments_end = parser.current_token.span.end;
+
+            if (!try parser.expect(.right_paren, "Expected ')' after constructor arguments", "Constructor calls must end with ')'.")) {
+                return null;
+            }
+        },
+        .optional_chaining => {
+            try parser.report(
+                parser.current_token.span,
+                "Optional chaining is not allowed in new expression",
+                .{ .help = "Remove the '?.' operator or use regular member access." },
+            );
+            return null;
+        },
+        else => callee = try parseInfix(parser, 16, callee) orelse return null,
+    }
+
+    const end = arguments_end orelse parser.getSpan(callee).end;
+
+    return try parser.addNode(
+        .{ .new_expression = .{ .callee = callee, .arguments = arguments } },
+        .{ .start = start, .end = end },
     );
 }
 

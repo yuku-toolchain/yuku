@@ -37,8 +37,8 @@
       "severity": "error",
       "message": "Unexpected token 'new'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 15,
-      "end": 18,
+      "start": 19,
+      "end": 22,
       "labels": [
       ]
     }

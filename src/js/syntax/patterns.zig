@@ -97,5 +97,3 @@ pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {
         else => false,
     };
 }
-
-

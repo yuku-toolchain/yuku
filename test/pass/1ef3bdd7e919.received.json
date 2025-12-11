@@ -35,10 +35,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'yield'",
+      "message": "Unexpected token ')'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 20,
-      "end": 25,
+      "start": 25,
+      "end": 26,
       "labels": [
       ]
     }

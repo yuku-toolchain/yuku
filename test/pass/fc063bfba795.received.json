@@ -12,10 +12,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '.'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 12,
+      "start": 12,
+      "end": 13,
       "labels": [
       ]
     },
@@ -23,8 +23,8 @@
       "severity": "error",
       "message": "Expected ')' after method parameters",
       "help": null,
-      "start": 9,
-      "end": 12,
+      "start": 12,
+      "end": 13,
       "labels": [
       ]
     }

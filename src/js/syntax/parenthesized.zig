@@ -190,7 +190,7 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
     const params = try convertToFormalParameters(parser, cover) orelse return null;
 
     // arrow body (expression or block)
-    const body_result = try parseArrowBody(parser) orelse return null;
+    const body_result = try parseArrowBody(parser, is_async) orelse return null;
 
     return try parser.addNode(
         .{ .arrow_function_expression = .{
@@ -229,7 +229,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
     );
 
     // parse arrow body
-    const body_result = try parseArrowBody(parser) orelse return null;
+    const body_result = try parseArrowBody(parser, is_async) orelse return null;
 
     return try parser.addNode(
         .{ .arrow_function_expression = .{
@@ -247,7 +247,18 @@ const ArrowBodyResult = struct {
     is_expression: bool,
 };
 
-fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
+fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
+    const saved_async = parser.context.in_async;
+    const saved_generator = parser.context.in_generator;
+
+    parser.context.in_async = is_async;
+    parser.context.in_generator = false;
+
+    defer {
+        parser.context.in_generator = saved_generator;
+        parser.context.in_async = saved_async;
+    }
+
     if (parser.current_token.type == .left_brace) {
         // block body: () => { ... }
         const body = try functions.parseFunctionBody(parser) orelse return null;
@@ -255,7 +266,7 @@ fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
     }
 
     // expression body: () => expr
-    // arrow body is parsed at assignment precedence (not comma)
+    // arrow body is parsed at assignment precedence
     const expr = try expressions.parseExpression(parser, 2, .{}) orelse return null;
     return .{ .body = expr, .is_expression = true };
 }

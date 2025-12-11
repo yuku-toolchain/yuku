@@ -5,6 +5,141 @@
     "end": 124,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 8,
+          "callee": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "a"
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 6,
+              "end": 7,
+              "value": 1,
+              "raw": "1"
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 10,
+        "end": 24,
+        "expression": {
+          "type": "CallExpression",
+          "start": 10,
+          "end": 23,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 10,
+            "end": 20,
+            "expression": {
+              "type": "NewExpression",
+              "start": 11,
+              "end": 19,
+              "callee": {
+                "type": "Identifier",
+                "start": 15,
+                "end": 16,
+                "name": "a"
+              },
+              "arguments": [
+                {
+                  "type": "Literal",
+                  "start": 17,
+                  "end": 18,
+                  "value": 2,
+                  "raw": "2"
+                }
+              ]
+            }
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 21,
+              "end": 22,
+              "value": 3,
+              "raw": "3"
+            }
+          ],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 25,
+        "end": 44,
+        "expression": {
+          "type": "CallExpression",
+          "start": 25,
+          "end": 43,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 25,
+            "end": 40,
+            "expression": {
+              "type": "CallExpression",
+              "start": 26,
+              "end": 39,
+              "callee": {
+                "type": "ParenthesizedExpression",
+                "start": 26,
+                "end": 36,
+                "expression": {
+                  "type": "NewExpression",
+                  "start": 27,
+                  "end": 35,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 31,
+                    "end": 32,
+                    "name": "a"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Literal",
+                      "start": 33,
+                      "end": 34,
+                      "value": 4,
+                      "raw": "4"
+                    }
+                  ]
+                }
+              },
+              "arguments": [
+                {
+                  "type": "Literal",
+                  "start": 37,
+                  "end": 38,
+                  "value": 5,
+                  "raw": "5"
+                }
+              ],
+              "optional": false
+            }
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 41,
+              "end": 42,
+              "value": 6,
+              "raw": "6"
+            }
+          ],
+          "optional": false
+        }
+      }
     ]
   },
   "comments": [
@@ -12,64 +147,37 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 3,
+      "start": 49,
+      "end": 50,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 11,
-      "end": 14,
+      "start": 65,
+      "end": 66,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 27,
-      "end": 30,
+      "start": 84,
+      "end": 85,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 45,
-      "end": 48,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 61,
-      "end": 64,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 80,
-      "end": 83,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 102,
-      "end": 105,
+      "start": 106,
+      "end": 107,
       "labels": [
       ]
     }

@@ -24,6 +24,31 @@
           "start": 13,
           "end": 29,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 14,
+              "end": 28,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 14,
+                "end": 28,
+                "delegate": false,
+                "argument": {
+                  "type": "UnaryExpression",
+                  "start": 20,
+                  "end": 28,
+                  "operator": "typeof",
+                  "prefix": true,
+                  "argument": {
+                    "type": "Literal",
+                    "start": 27,
+                    "end": 28,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +58,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 14,
-      "end": 19,
-      "labels": [
-      ]
-    }
   ]
 }

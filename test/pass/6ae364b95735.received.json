@@ -5,19 +5,50 @@
     "end": 19,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 18,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 0,
+          "end": 17,
+          "id": null,
+          "generator": false,
+          "async": false,
+          "params": [
+            {
+              "type": "AssignmentPattern",
+              "start": 1,
+              "end": 10,
+              "left": {
+                "type": "Identifier",
+                "start": 1,
+                "end": 2,
+                "name": "a"
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 5,
+                "end": 10,
+                "name": "yield"
+              }
+            }
+          ],
+          "body": {
+            "type": "BlockStatement",
+            "start": 15,
+            "end": 17,
+            "body": [
+            ]
+          },
+          "expression": false
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'yield'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 5,
-      "end": 10,
-      "labels": [
-      ]
-    }
   ]
 }

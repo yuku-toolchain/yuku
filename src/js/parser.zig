@@ -44,7 +44,7 @@ pub const Lang = enum { js, ts, jsx, tsx, dts };
 pub const Options = struct {
     source_type: SourceType = .module,
     lang: Lang = .js,
-    is_strict: bool = true,
+    is_strict: bool = false,
 };
 
 /// Must be deinitialized to free the arena-allocated memory.
@@ -224,6 +224,10 @@ pub const Parser = struct {
 
     pub inline fn isTs(self: *Parser) bool {
         return self.lang == .ts or self.lang == .tsx or self.lang == .dts;
+    }
+
+    pub inline fn isModule(self: *Parser) bool {
+        return self.source_type == .module;
     }
 
     // utils

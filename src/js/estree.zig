@@ -88,6 +88,9 @@ pub const Serializer = struct {
             .call_expression => |d| self.writeCallExpression(d, span),
             .chain_expression => |d| self.writeChainExpression(d, span),
             .tagged_template_expression => |d| self.writeTaggedTemplateExpression(d, span),
+            .new_expression => |d| self.writeNewExpression(d, span),
+            .await_expression => |d| self.writeAwaitExpression(d, span),
+            .yield_expression => |d| self.writeYieldExpression(d, span),
             .template_literal => |d| self.writeTemplateLiteral(d, span),
             .template_element => |d| self.writeTemplateElement(d, span),
             .string_literal => |d| self.writeStringLiteral(d, span),
@@ -599,6 +602,32 @@ pub const Serializer = struct {
         try self.fieldSpan(span);
         try self.fieldNode("tag", data.tag);
         try self.fieldNode("quasi", data.quasi);
+        try self.endObject();
+    }
+
+    fn writeNewExpression(self: *Self, data: ast.NewExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("NewExpression");
+        try self.fieldSpan(span);
+        try self.fieldNode("callee", data.callee);
+        try self.fieldNodeArray("arguments", data.arguments);
+        try self.endObject();
+    }
+
+    fn writeAwaitExpression(self: *Self, data: ast.AwaitExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("AwaitExpression");
+        try self.fieldSpan(span);
+        try self.fieldNode("argument", data.argument);
+        try self.endObject();
+    }
+
+    fn writeYieldExpression(self: *Self, data: ast.YieldExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("YieldExpression");
+        try self.fieldSpan(span);
+        try self.fieldBool("delegate", data.delegate);
+        try self.fieldNode("argument", data.argument);
         try self.endObject();
     }
 

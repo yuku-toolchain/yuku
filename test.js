@@ -1,1 +1,1 @@
-const nice = [ a = 10 ] = 1
+new a.b?.()

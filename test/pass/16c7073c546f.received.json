@@ -5,32 +5,6 @@
     "end": 125,
     "sourceType": "script",
     "body": [
-      {
-        "type": "VariableDeclaration",
-        "start": 91,
-        "end": 101,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 95,
-            "end": 100,
-            "id": {
-              "type": "Identifier",
-              "start": 95,
-              "end": 96,
-              "name": "a"
-            },
-            "init": {
-              "type": "Literal",
-              "start": 99,
-              "end": 100,
-              "value": 1,
-              "raw": "1"
-            }
-          }
-        ]
-      }
     ]
   },
   "comments": [
@@ -44,24 +18,6 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 69,
-      "end": 72,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 82,
-      "end": 83,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'this'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 106,
@@ -71,10 +27,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 122,
-      "end": 123,
+      "message": "Unexpected token ';' in expression",
+      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
+      "start": 123,
+      "end": 124,
       "labels": [
       ]
     }

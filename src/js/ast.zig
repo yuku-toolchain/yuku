@@ -44,6 +44,10 @@ pub const IndexRange = struct {
     len: u32,
 
     pub const empty: IndexRange = .{ .start = 0, .len = 0 };
+
+    pub fn isEmpty(self: IndexRange) bool {
+        return self.start == 0 and self.len == 0;
+    }
 };
 
 /// https://tc39.es/ecma262/#sec-binary-operators
@@ -699,6 +703,31 @@ pub const TaggedTemplateExpression = struct {
     quasi: NodeIndex,
 };
 
+/// `new Callee()`, `new Callee(args)`
+/// https://tc39.es/ecma262/#sec-new-operator
+pub const NewExpression = struct {
+    /// Expression - the constructor being called
+    callee: NodeIndex,
+    /// (Expression | SpreadElement)[]
+    arguments: IndexRange,
+};
+
+/// `await expression`
+/// https://tc39.es/ecma262/#sec-await
+pub const AwaitExpression = struct {
+    /// Expression
+    argument: NodeIndex,
+};
+
+/// `yield expression` or `yield* expression`
+/// https://tc39.es/ecma262/#sec-generator-function-definitions-runtime-semantics-evaluation
+pub const YieldExpression = struct {
+    /// Expression (optional, may be null_node)
+    argument: NodeIndex,
+    /// true for `yield*`, false for `yield`
+    delegate: bool,
+};
+
 pub const NodeData = union(enum) {
     sequence_expression: SequenceExpression,
     parenthesized_expression: ParenthesizedExpression,
@@ -721,6 +750,9 @@ pub const NodeData = union(enum) {
     call_expression: CallExpression,
     chain_expression: ChainExpression,
     tagged_template_expression: TaggedTemplateExpression,
+    new_expression: NewExpression,
+    await_expression: AwaitExpression,
+    yield_expression: YieldExpression,
     string_literal: StringLiteral,
     numeric_literal: NumericLiteral,
     bigint_literal: BigIntLiteral,

@@ -12,10 +12,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 2,
-      "end": 5,
+      "message": "Unexpected token ')' in expression",
+      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
+      "start": 7,
+      "end": 8,
       "labels": [
       ]
     }

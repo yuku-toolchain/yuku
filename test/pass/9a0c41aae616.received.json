@@ -12,28 +12,28 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 3,
+      "start": 4,
+      "end": 5,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 12,
-      "end": 15,
+      "start": 16,
+      "end": 17,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'new'",
+      "message": "Unexpected token '('",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 29,
+      "start": 30,
+      "end": 31,
       "labels": [
       ]
     }
