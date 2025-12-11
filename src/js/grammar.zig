@@ -7,17 +7,11 @@ const expressions = @import("syntax/expressions.zig");
 const array = @import("syntax/array.zig");
 
 /// parse an element within a cover grammar context (used for nested arrays/objects).
-///
-/// keeps nested arrays/objects as "covers" by converting them to expressions
 /// without validation. validation is deferred until the top-level context is known:
 /// - if parent becomes an expression -> validate at top level
 /// - if parent becomes a pattern -> no validation needed
 pub fn parseCoverElement(parser: *Parser) Error!?ast.NodeIndex {
-    return switch (parser.current_token.type) {
-        .left_bracket => array.coverToExpression(parser, try array.parseCover(parser) orelse return null, false),
-        .left_brace => object.coverToExpression(parser, try object.parseCover(parser) orelse return null, false),
-        else => expressions.parseExpression(parser, 2),
-    };
+    return expressions.parseExpression(parser, 2, .{ .enable_validation = false });
 }
 
 /// validate that an expression doesn't contain CoverInitializedName.
@@ -120,6 +114,7 @@ pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Node
             }
 
             const left_pattern = try expressionToPattern(parser, assign.left) orelse return null;
+
             parser.setData(expr, .{ .assignment_pattern = .{
                 .left = left_pattern,
                 .right = assign.right,
@@ -133,6 +128,40 @@ pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Node
 
         .object_expression => |obj| {
             return object.toObjectPattern(parser, expr, obj.properties);
+        },
+
+        .member_expression => |member| {
+            if (member.optional) {
+                try parser.report(
+                    parser.getSpan(expr),
+                    "Optional chaining is not allowed in destructuring pattern",
+                    .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
+                );
+                return null;
+            }
+
+            return expr;
+        },
+
+        .parenthesized_expression => |paren| {
+            if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
+                try parser.report(
+                    parser.getSpan(paren.expression),
+                    "Parenthesized expression in destructuring pattern must be a simple assignment target",
+                    .{ .help = "Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in destructuring patterns." },
+                );
+                return null;
+            }
+
+            const inner_pattern = try expressionToPattern(parser, paren.expression) orelse return null;
+
+            const inner_pattern_data = parser.getData(inner_pattern);
+            const inner_pattern_span = parser.getSpan(inner_pattern);
+
+            parser.setData(expr, inner_pattern_data);
+            parser.setSpan(expr, inner_pattern_span);
+
+            return inner_pattern;
         },
 
         .binding_identifier, .array_pattern, .object_pattern, .assignment_pattern => {

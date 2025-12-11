@@ -8,9 +8,16 @@ const object = @import("object.zig");
 const literals = @import("literals.zig");
 const functions = @import("functions.zig");
 const parenthesized = @import("parenthesized.zig");
+const patterns = @import("patterns.zig");
 
-pub fn parseExpression(parser: *Parser, precedence: u5) Error!?ast.NodeIndex {
-    var left = try parsePrefix(parser) orelse return null;
+const ParseExpressionOpts = packed struct {
+    /// whether to enable "expression -> pattern" validations, for example ObjectExpression -> ObjectPattern
+    /// disable this when parsing expressions in cover contexts, where we don't need validations, where we do validations on top level
+    enable_validation: bool = true,
+};
+
+pub fn parseExpression(parser: *Parser, precedence: u5, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
+    var left = try parsePrefix(parser, opts.enable_validation) orelse return null;
 
     while (true) {
         const current_type = parser.current_token.type;
@@ -63,7 +70,7 @@ fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.N
     return null;
 }
 
-fn parsePrefix(parser: *Parser) Error!?ast.NodeIndex {
+fn parsePrefix(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     const token_type = parser.current_token.type;
 
     if (token_type == .increment or token_type == .decrement) {
@@ -78,10 +85,10 @@ fn parsePrefix(parser: *Parser) Error!?ast.NodeIndex {
         return parseParenthesizedOrArrowFunction(parser, false);
     }
 
-    return parsePrimaryExpression(parser);
+    return parsePrimaryExpression(parser, enable_validation);
 }
 
-inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
         .identifier => parseIdentifierOrArrowFunction(parser),
         .private_identifier => literals.parsePrivateIdentifier(parser),
@@ -93,8 +100,8 @@ inline fn parsePrimaryExpression(parser: *Parser) Error!?ast.NodeIndex {
         .slash => literals.parseRegExpLiteral(parser),
         .template_head => literals.parseTemplateLiteral(parser),
         .no_substitution_template => literals.parseNoSubstitutionTemplate(parser),
-        .left_bracket => parseArrayExpression(parser),
-        .left_brace => parseObjectExpression(parser),
+        .left_bracket => parseArrayExpression(parser, enable_validation),
+        .left_brace => parseObjectExpression(parser, enable_validation),
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .async => parseAsyncFunctionOrArrow(parser),
         else => {
@@ -185,7 +192,7 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
     const operator_token = parser.current_token;
     try parser.advance();
 
-    const argument = try parseExpression(parser, 14) orelse return null;
+    const argument = try parseExpression(parser, 14, .{}) orelse return null;
 
     return try parser.addNode(
         .{
@@ -204,7 +211,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
     try parser.advance();
 
     if (prefix) {
-        const argument = try parseExpression(parser, 14) orelse return null;
+        const argument = try parseExpression(parser, 14, .{}) orelse return null;
         const span = parser.getSpan(argument);
 
         if (!isSimpleAssignmentTarget(parser, argument)) {
@@ -244,7 +251,7 @@ fn parseBinaryExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) E
     try parser.advance();
 
     const next_precedence = if (operator == .exponent) precedence else precedence + 1;
-    const right = try parseExpression(parser, next_precedence) orelse return null;
+    const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
     return try parser.addNode(
         .{ .binary_expression = .{ .left = left, .right = right, .operator = operator } },
@@ -256,7 +263,7 @@ fn parseLogicalExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) 
     const operator_token = parser.current_token;
     try parser.advance();
 
-    const right = try parseExpression(parser, precedence + 1) orelse return null;
+    const right = try parseExpression(parser, precedence + 1, .{}) orelse return null;
     const current_operator = ast.LogicalOperator.fromToken(operator_token.type);
 
     // check for operator mixing: can't mix ?? with && or ||
@@ -317,7 +324,7 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u5, left: ast.NodeInde
 
     try parser.advance();
 
-    const right = try parseExpression(parser, precedence) orelse return null;
+    const right = try parseExpression(parser, precedence, .{}) orelse return null;
 
     return try parser.addNode(
         .{ .assignment_expression = .{ .left = left, .right = right, .operator = operator } },
@@ -348,12 +355,12 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
     };
 }
 
-fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseArrayExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     const saved_flag = parser.state.cover_has_init_name;
     parser.state.cover_has_init_name = false;
 
     const cover = try array.parseCover(parser) orelse return null;
-    const needs_validation = parser.state.cover_has_init_name;
+    const needs_validation = enable_validation and parser.state.cover_has_init_name;
     parser.state.cover_has_init_name = saved_flag or needs_validation;
 
     if (parser.current_token.type == .assign) {
@@ -363,12 +370,12 @@ fn parseArrayExpression(parser: *Parser) Error!?ast.NodeIndex {
     return array.coverToExpression(parser, cover, needs_validation);
 }
 
-fn parseObjectExpression(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseObjectExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     const saved_flag = parser.state.cover_has_init_name;
     parser.state.cover_has_init_name = false;
 
     const cover = try object.parseCover(parser) orelse return null;
-    const needs_validation = parser.state.cover_has_init_name;
+    const needs_validation = enable_validation and parser.state.cover_has_init_name;
     parser.state.cover_has_init_name = saved_flag or needs_validation;
 
     if (parser.current_token.type == .assign) {
@@ -428,7 +435,7 @@ fn parseIdentifierName(parser: *Parser) Error!ast.NodeIndex {
 fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, optional: bool) Error!?ast.NodeIndex {
     try parser.advance(); // consume '['
 
-    const property = try parseExpression(parser, 0) orelse return null;
+    const property = try parseExpression(parser, 0, .{}) orelse return null;
 
     const end = parser.current_token.span.end; // ']' position
     if (!try parser.expect(.right_bracket, "Expected ']' after computed property", "Computed member access must end with ']'.")) {
@@ -474,12 +481,12 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
         const arg = if (parser.current_token.type == .spread) blk: {
             const spread_start = parser.current_token.span.start;
             try parser.advance(); // consume '...'
-            const argument = try parseExpression(parser, 2) orelse return null;
+            const argument = try parseExpression(parser, 2, .{}) orelse return null;
             const arg_span = parser.getSpan(argument);
             break :blk try parser.addNode(.{
                 .spread_element = .{ .argument = argument },
             }, .{ .start = spread_start, .end = arg_span.end });
-        } else try parseExpression(parser, 2) orelse return null;
+        } else try parseExpression(parser, 2, .{}) orelse return null;
 
         try parser.scratch_a.append(parser.allocator(), arg);
 

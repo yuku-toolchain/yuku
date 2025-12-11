@@ -257,6 +257,10 @@ pub const Parser = struct {
         self.nodes.items(.data)[index] = data;
     }
 
+    pub inline fn setSpan(self: *Parser, index: ast.NodeIndex, span: ast.Span) void {
+        self.nodes.items(.span)[index] = span;
+    }
+
     pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {
         return self.extra.items[range.start..][0..range.len];
     }

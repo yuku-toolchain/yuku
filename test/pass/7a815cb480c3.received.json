@@ -5,19 +5,40 @@
     "end": 10,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 8,
+          "expression": {
+            "type": "AssignmentExpression",
+            "start": 1,
+            "end": 7,
+            "operator": "=",
+            "left": {
+              "type": "ObjectPattern",
+              "start": 1,
+              "end": 3,
+              "properties": [
+              ]
+            },
+            "right": {
+              "type": "Literal",
+              "start": 6,
+              "end": 7,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected ',' or ')' in parenthesized expression",
-      "help": "Add a comma between elements or close with ')'.",
-      "start": 4,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

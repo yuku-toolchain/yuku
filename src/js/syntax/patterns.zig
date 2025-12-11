@@ -69,7 +69,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     try parser.advance();
 
-    const right = try expressions.parseExpression(parser, 0) orelse return null;
+    const right = try expressions.parseExpression(parser, 0, .{}) orelse return null;
 
     return try parser.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
@@ -97,3 +97,5 @@ pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {
         else => false,
     };
 }
+
+

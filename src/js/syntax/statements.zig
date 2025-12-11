@@ -31,7 +31,7 @@ pub fn parseStatement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseExpressionStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex {
-    const expression = try expressions.parseExpression(parser, 0) orelse return null;
+    const expression = try expressions.parseExpression(parser, 0, .{}) orelse return null;
 
     const expression_span = parser.getSpan(expression);
 

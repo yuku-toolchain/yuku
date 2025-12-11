@@ -70,7 +70,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     // initializer if present
     if (parser.current_token.type == .assign) {
         try parser.advance();
-        if (try expressions.parseExpression(parser, 0)) |expression| {
+        if (try expressions.parseExpression(parser, 0, .{})) |expression| {
             init = expression;
             end = parser.getSpan(expression).end;
         }

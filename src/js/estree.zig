@@ -401,7 +401,7 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
-        if(std.math.isInf(numeric)){
+        if (std.math.isInf(numeric)) {
             try self.fieldNull("value");
         } else {
             try self.fieldRaw("value", raw);

@@ -256,7 +256,7 @@ fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
 
     // expression body: () => expr
     // arrow body is parsed at assignment precedence (not comma)
-    const expr = try expressions.parseExpression(parser, 2) orelse return null;
+    const expr = try expressions.parseExpression(parser, 2, .{}) orelse return null;
     return .{ .body = expr, .is_expression = true };
 }
 
