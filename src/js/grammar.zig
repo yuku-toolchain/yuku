@@ -155,11 +155,9 @@ pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Node
 
             const inner_pattern = try expressionToPattern(parser, paren.expression) orelse return null;
 
-            const inner_pattern_data = parser.getData(inner_pattern);
-            const inner_pattern_span = parser.getSpan(inner_pattern);
 
-            parser.setData(expr, inner_pattern_data);
-            parser.setSpan(expr, inner_pattern_span);
+            parser.setData(expr, parser.getData(inner_pattern));
+            parser.setSpan(expr, parser.getSpan(inner_pattern));
 
             return inner_pattern;
         },
