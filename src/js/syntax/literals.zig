@@ -193,3 +193,14 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
         },
     }, token.span);
 }
+
+pub fn parseIdentifierName(parser: *Parser) Error!ast.NodeIndex {
+    const tok = parser.current_token;
+    try parser.advance();
+    return try parser.addNode(.{
+        .identifier_name = .{
+            .name_start = tok.span.start,
+            .name_len = @intCast(tok.lexeme.len),
+        },
+    }, tok.span);
+}

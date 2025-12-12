@@ -556,7 +556,7 @@ fn parseMemberProperty(parser: *Parser, object_node: ast.NodeIndex, optional: bo
     const tok_type = parser.current_token.type;
 
     const property = if (tok_type.isIdentifierLike())
-        try parseIdentifierName(parser)
+        try literals.parseIdentifierName(parser)
     else if (tok_type == .private_identifier)
         try literals.parsePrivateIdentifier(parser)
     else {
@@ -578,17 +578,6 @@ fn parseMemberProperty(parser: *Parser, object_node: ast.NodeIndex, optional: bo
             .optional = optional,
         },
     }, .{ .start = parser.getSpan(object_node).start, .end = parser.getSpan(prop).end });
-}
-
-fn parseIdentifierName(parser: *Parser) Error!ast.NodeIndex {
-    const tok = parser.current_token;
-    try parser.advance();
-    return try parser.addNode(.{
-        .identifier_name = .{
-            .name_start = tok.span.start,
-            .name_len = @intCast(tok.lexeme.len),
-        },
-    }, tok.span);
 }
 
 /// obj[expr]
