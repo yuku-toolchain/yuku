@@ -43,6 +43,28 @@
                     "start": 10,
                     "end": 27,
                     "body": [
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 14,
+                        "end": 25,
+                        "expression": {
+                          "type": "MetaProperty",
+                          "start": 14,
+                          "end": 24,
+                          "meta": {
+                            "type": "Identifier",
+                            "start": 14,
+                            "end": 17,
+                            "name": "new"
+                          },
+                          "property": {
+                            "type": "Identifier",
+                            "start": 18,
+                            "end": 24,
+                            "name": "target"
+                          }
+                        }
+                      }
                     ]
                   },
                   "expression": false
@@ -60,14 +82,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '.'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 17,
-      "end": 18,
-      "labels": [
-      ]
-    }
   ]
 }

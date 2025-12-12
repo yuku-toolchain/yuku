@@ -25,3 +25,6 @@
 // and CoverParenthesizedExpressionAndArrowParameterList ultimately derives a phrase that, if used in place of UnaryExpression, would produce a Syntax Error according to these rules. This rule is recursively applied.
 // Note
 // (delete unary) The last rule means that expressions such as delete (((foo))) produce early errors because of recursive application of the first rule.
+// ImportMeta :
+//  import.meta
+//  It is a Syntax Error if the syntactic goal symbol is not Module.

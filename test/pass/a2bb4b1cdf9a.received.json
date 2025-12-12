@@ -24,6 +24,40 @@
           "start": 13,
           "end": 36,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 17,
+              "end": 34,
+              "expression": {
+                "type": "NewExpression",
+                "start": 17,
+                "end": 33,
+                "callee": {
+                  "type": "ParenthesizedExpression",
+                  "start": 21,
+                  "end": 33,
+                  "expression": {
+                    "type": "MetaProperty",
+                    "start": 22,
+                    "end": 32,
+                    "meta": {
+                      "type": "Identifier",
+                      "start": 22,
+                      "end": 25,
+                      "name": "new"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 26,
+                      "end": 32,
+                      "name": "target"
+                    }
+                  }
+                },
+                "arguments": [
+                ]
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +67,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '.'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 25,
-      "end": 26,
-      "labels": [
-      ]
-    }
   ]
 }

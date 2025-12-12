@@ -27,20 +27,36 @@
             {
               "type": "VariableDeclaration",
               "start": 19,
-              "end": 24,
+              "end": 38,
               "kind": "let",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
                   "start": 23,
-                  "end": 24,
+                  "end": 37,
                   "id": {
                     "type": "Identifier",
                     "start": 23,
                     "end": 24,
                     "name": "b"
                   },
-                  "init": null
+                  "init": {
+                    "type": "MetaProperty",
+                    "start": 27,
+                    "end": 37,
+                    "meta": {
+                      "type": "Identifier",
+                      "start": 27,
+                      "end": 30,
+                      "name": "new"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 31,
+                      "end": 37,
+                      "name": "target"
+                    }
+                  }
                 }
               ]
             }
@@ -53,23 +69,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '.'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 31,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '.'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 31,
-      "labels": [
-      ]
-    }
   ]
 }

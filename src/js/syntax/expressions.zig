@@ -102,6 +102,10 @@ fn parsePrefix(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
         return parseNewExpression(parser);
     }
 
+    if (token_type == .import) {
+        return parseImportExpression(parser);
+    }
+
     return parsePrimaryExpression(parser, enable_validation);
 }
 
@@ -274,11 +278,89 @@ fn parseThisExpression(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.this_expression, this_token.span);
 }
 
-/// `new Callee` or `new Callee(args)`
+/// `import.meta` or `import(...)`
+/// https://tc39.es/ecma262/#prod-ImportCall
+/// https://tc39.es/ecma262/#prod-ImportMeta
+fn parseImportExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const name = try literals.parseIdentifierName(parser);
+
+    return switch (parser.current_token.type) {
+        .dot => parseImportMeta(parser, name),
+        .left_paren => parseDynamicImport(parser, name),
+        else => {
+            try parser.report(
+                parser.current_token.span,
+                "'import' keyword is not allowed here",
+                .{ .help = "Use 'import.meta' for module metadata or 'import()' for dynamic imports." },
+            );
+            return null;
+        },
+    };
+}
+
+/// `import.meta`
+fn parseImportMeta(parser: *Parser, name: u32) Error!?ast.NodeIndex {
+    try parser.advance(); // consume '.'
+
+    const name_span = parser.getSpan(name);
+
+    if (!std.mem.eql(u8, parser.current_token.lexeme, "meta")) {
+        try parser.report(
+            parser.current_token.span,
+            "The only valid meta property for 'import' is 'import.meta'",
+            .{ .help = "Did you mean 'import.meta'?" },
+        );
+        return null;
+    }
+
+    const property = try literals.parseIdentifierName(parser); // consume 'meta'
+
+    return try parser.addNode(
+        .{ .meta_property = .{ .meta = name, .property = property } },
+        .{ .start = name_span.start, .end = parser.getSpan(property).end },
+    );
+}
+
+/// `import(source)` or `import(source, options)`
+fn parseDynamicImport(parser: *Parser, name: u32) Error!?ast.NodeIndex {
+    _ = parser;
+    _ = name;
+    // TODO: implement dynamic import
+    unreachable;
+}
+
+/// `new.target`
+/// https://tc39.es/ecma262/#prod-NewTarget
+fn parseNewTarget(parser: *Parser, name: u32) Error!?ast.NodeIndex {
+    try parser.advance(); // consume '.'
+
+    if (!std.mem.eql(u8, parser.current_token.lexeme, "target")) {
+        try parser.report(
+            parser.current_token.span,
+            "The only valid meta property for 'new' is 'new.target'",
+            .{ .help = "Did you mean 'new.target'?" },
+        );
+        return null;
+    }
+
+    const property = try literals.parseIdentifierName(parser); // consume 'target'
+
+    return try parser.addNode(
+        .{ .meta_property = .{ .meta = name, .property = property } },
+        .{ .start = parser.getSpan(name).start, .end = parser.getSpan(property).end },
+    );
+}
+
+/// `new Callee`, `new Callee(args)`, or `new.target`
 /// https://tc39.es/ecma262/#sec-new-operator
 fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    try parser.advance(); // consume 'new'
+    const new = try literals.parseIdentifierName(parser); // consume 'new'
+
+    // check for new.target
+    if (parser.current_token.type == .dot) {
+        return parseNewTarget(parser, new);
+    }
 
     var callee: ast.NodeIndex = blk: {
         // parenthesized, allows any expression inside

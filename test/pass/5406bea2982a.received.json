@@ -12,10 +12,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'import'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 6,
+      "message": "'import' keyword is not allowed here",
+      "help": "Use 'import.meta' for module metadata or 'import()' for dynamic imports.",
+      "start": 7,
+      "end": 12,
       "labels": [
       ]
     }

@@ -730,6 +730,15 @@ pub const YieldExpression = struct {
     delegate: bool,
 };
 
+/// `import.meta` or `new.target`
+/// https://tc39.es/ecma262/#prod-MetaProperty
+pub const MetaProperty = struct {
+    /// IdentifierName ('import' or 'new')
+    meta: NodeIndex,
+    /// IdentifierName ('meta' or 'target')
+    property: NodeIndex,
+};
+
 pub const NodeData = union(enum) {
     sequence_expression: SequenceExpression,
     parenthesized_expression: ParenthesizedExpression,
@@ -756,6 +765,7 @@ pub const NodeData = union(enum) {
     new_expression: NewExpression,
     await_expression: AwaitExpression,
     yield_expression: YieldExpression,
+    meta_property: MetaProperty,
     string_literal: StringLiteral,
     numeric_literal: NumericLiteral,
     bigint_literal: BigIntLiteral,

@@ -92,6 +92,7 @@ pub const Serializer = struct {
             .new_expression => |d| self.writeNewExpression(d, span),
             .await_expression => |d| self.writeAwaitExpression(d, span),
             .yield_expression => |d| self.writeYieldExpression(d, span),
+            .meta_property => |d| self.writeMetaProperty(d, span),
             .this_expression => self.writeThisExpression(span),
             .template_literal => |d| self.writeTemplateLiteral(d, span),
             .template_element => |d| self.writeTemplateElement(d, span),
@@ -640,6 +641,15 @@ pub const Serializer = struct {
         try self.fieldSpan(span);
         try self.fieldBool("delegate", data.delegate);
         try self.fieldNode("argument", data.argument);
+        try self.endObject();
+    }
+
+    fn writeMetaProperty(self: *Self, data: ast.MetaProperty, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("MetaProperty");
+        try self.fieldSpan(span);
+        try self.fieldNode("meta", data.meta);
+        try self.fieldNode("property", data.property);
         try self.endObject();
     }
 
