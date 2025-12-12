@@ -46,7 +46,7 @@
 - [x] Spread elements (SpreadElement)
 - [x] Await expressions
 - [x] Yield expressions
-- [ ] Meta property (new.target, import.meta)
+- [x] Meta property (new.target, import.meta)
 
 ### 1.4 Statements
 **Control Flow:**
