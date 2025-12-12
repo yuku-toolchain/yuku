@@ -301,6 +301,14 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
             .dot => try parseStaticMemberExpression(parser, callee, false) orelse return null,
             .left_bracket => try parseComputedMemberExpression(parser, callee, false) orelse return null,
             .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, callee) orelse return null,
+            .optional_chaining => {
+                try parser.report(
+                    parser.current_token.span,
+                    "Optional chaining is not allowed in new expression",
+                    .{ .help = "Remove the '?.' operator or use regular member access." },
+                );
+                return null;
+            },
             else => break,
         };
     }
