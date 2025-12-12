@@ -174,34 +174,27 @@
                     "name": "h"
                   },
                   "init": {
-                    "type": "CallExpression",
+                    "type": "NewExpression",
                     "start": 125,
                     "end": 135,
                     "callee": {
-                      "type": "NewExpression",
-                      "start": 125,
+                      "type": "MemberExpression",
+                      "start": 129,
                       "end": 132,
-                      "callee": {
-                        "type": "MemberExpression",
+                      "object": {
+                        "type": "Identifier",
                         "start": 129,
-                        "end": 132,
-                        "object": {
-                          "type": "Identifier",
-                          "start": 129,
-                          "end": 130,
-                          "name": "b"
-                        },
-                        "property": {
-                          "type": "Identifier",
-                          "start": 131,
-                          "end": 132,
-                          "name": "i"
-                        },
-                        "computed": false,
-                        "optional": false
+                        "end": 130,
+                        "name": "b"
                       },
-                      "arguments": [
-                      ]
+                      "property": {
+                        "type": "Identifier",
+                        "start": 131,
+                        "end": 132,
+                        "name": "i"
+                      },
+                      "computed": false,
+                      "optional": false
                     },
                     "arguments": [
                       {
@@ -210,8 +203,7 @@
                         "end": 134,
                         "name": "d"
                       }
-                    ],
-                    "optional": false
+                    ]
                   }
                 }
               ]
@@ -711,34 +703,27 @@
                     "name": "h"
                   },
                   "init": {
-                    "type": "CallExpression",
+                    "type": "NewExpression",
                     "start": 591,
                     "end": 601,
                     "callee": {
-                      "type": "NewExpression",
-                      "start": 591,
+                      "type": "MemberExpression",
+                      "start": 595,
                       "end": 598,
-                      "callee": {
-                        "type": "MemberExpression",
+                      "object": {
+                        "type": "Identifier",
                         "start": 595,
-                        "end": 598,
-                        "object": {
-                          "type": "Identifier",
-                          "start": 595,
-                          "end": 596,
-                          "name": "b"
-                        },
-                        "property": {
-                          "type": "Identifier",
-                          "start": 597,
-                          "end": 598,
-                          "name": "i"
-                        },
-                        "computed": false,
-                        "optional": false
+                        "end": 596,
+                        "name": "b"
                       },
-                      "arguments": [
-                      ]
+                      "property": {
+                        "type": "Identifier",
+                        "start": 597,
+                        "end": 598,
+                        "name": "i"
+                      },
+                      "computed": false,
+                      "optional": false
                     },
                     "arguments": [
                       {
@@ -747,8 +732,7 @@
                         "end": 600,
                         "name": "d"
                       }
-                    ],
-                    "optional": false
+                    ]
                   }
                 }
               ]

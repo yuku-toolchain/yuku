@@ -131,6 +131,14 @@ inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error
     };
 }
 
+// parse only (a), not arrow, this function is used in the 'new' expression parsing
+// where we only need parenthesized
+fn parseParenthesizedExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const cover = try parenthesized.parseCover(parser) orelse return null;
+
+    return parenthesized.coverToExpression(parser, cover);
+}
+
 /// (a) or (a, b) => ...
 fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
@@ -259,33 +267,45 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance(); // consume 'new'
 
-    var callee = try parsePrimaryExpression(parser, true) orelse return null;
-    var arguments = ast.IndexRange.empty;
+    var callee: ast.NodeIndex = blk: {
+        // parenthesized, allows any expression inside
+        if (parser.current_token.type == .left_paren) {
+            break :blk try parseParenthesizedExpression(parser) orelse return null;
+        }
 
-    var arguments_end: ?u32 = null;
+        // `new new Foo()`
+        if (parser.current_token.type == .new) {
+            break :blk try parseNewExpression(parser) orelse return null;
+        }
 
-    switch (parser.current_token.type) {
-        .left_paren => {
-            try parser.advance();
-            arguments = try parseArguments(parser) orelse return null;
-            arguments_end = parser.current_token.span.end;
+        // otherwise, start with a primary expression
+        break :blk try parsePrimaryExpression(parser, true) orelse return null;
+    };
 
-            if (!try parser.expect(.right_paren, "Expected ')' after constructor arguments", "Constructor calls must end with ')'.")) {
-                return null;
-            }
-        },
-        .optional_chaining => {
-            try parser.report(
-                parser.current_token.span,
-                "Optional chaining is not allowed in new expression",
-                .{ .help = "Remove the '?.' operator or use regular member access." },
-            );
-            return null;
-        },
-        else => callee = try parseInfix(parser, 16, callee) orelse return null,
+    // member expression chain (. [] and tagged templates)
+    while (true) {
+        callee = switch (parser.current_token.type) {
+            .dot => try parseStaticMemberExpression(parser, callee, false) orelse return null,
+            .left_bracket => try parseComputedMemberExpression(parser, callee, false) orelse return null,
+            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, callee) orelse return null,
+            else => break,
+        };
     }
 
-    const end = arguments_end orelse parser.getSpan(callee).end;
+    // optional arguments
+    var arguments = ast.IndexRange.empty;
+
+    const end = if (parser.current_token.type == .left_paren) blk: {
+        try parser.advance();
+        arguments = try parseArguments(parser) orelse return null;
+        const arguments_end = parser.current_token.span.end;
+
+        if (!try parser.expect(.right_paren, "Expected ')' after constructor arguments", "Constructor calls must end with ')'.")) {
+            return null;
+        }
+
+        break :blk arguments_end;
+    } else parser.getSpan(callee).end;
 
     return try parser.addNode(
         .{ .new_expression = .{ .callee = callee, .arguments = arguments } },

@@ -6,35 +6,70 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "VariableDeclaration",
-        "start": 21,
-        "end": 33,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 25,
-            "end": 32,
-            "id": {
-              "type": "Identifier",
-              "start": 25,
-              "end": 26,
-              "name": "a"
-            },
-            "init": {
-              "type": "ParenthesizedExpression",
-              "start": 29,
-              "end": 32,
-              "expression": {
-                "type": "Literal",
-                "start": 30,
-                "end": 31,
-                "value": 1,
-                "raw": "1"
-              }
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 78,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 77,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 4,
+            "end": 77,
+            "expression": {
+              "type": "FunctionExpression",
+              "start": 5,
+              "end": 76,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [
+              ],
+              "body": {
+                "type": "BlockStatement",
+                "start": 17,
+                "end": 76,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 21,
+                    "end": 33,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 25,
+                        "end": 32,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 25,
+                          "end": 26,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "ParenthesizedExpression",
+                          "start": 29,
+                          "end": 32,
+                          "expression": {
+                            "type": "Literal",
+                            "start": 30,
+                            "end": 31,
+                            "value": 1,
+                            "raw": "1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "expression": false
             }
-          }
-        ]
+          },
+          "arguments": [
+          ]
+        }
       }
     ]
   },
@@ -43,37 +78,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 4,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 14,
-      "end": 15,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'this'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 41,
       "end": 45,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 75,
-      "end": 76,
       "labels": [
       ]
     }

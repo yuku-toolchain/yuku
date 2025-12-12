@@ -5,19 +5,45 @@
     "end": 12,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 11,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 3,
+            "end": 11,
+            "expression": {
+              "type": "BinaryExpression",
+              "start": 4,
+              "end": 10,
+              "left": {
+                "type": "Identifier",
+                "start": 4,
+                "end": 5,
+                "name": "a"
+              },
+              "operator": "in",
+              "right": {
+                "type": "Identifier",
+                "start": 9,
+                "end": 10,
+                "name": "b"
+              }
+            }
+          },
+          "arguments": [
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 3,
-      "end": 4,
-      "labels": [
-      ]
-    }
   ]
 }

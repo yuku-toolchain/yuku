@@ -124,47 +124,178 @@
           ],
           "optional": false
         }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 39,
+        "end": 52,
+        "expression": {
+          "type": "NewExpression",
+          "start": 39,
+          "end": 51,
+          "callee": {
+            "type": "NewExpression",
+            "start": 43,
+            "end": 51,
+            "callee": {
+              "type": "Identifier",
+              "start": 47,
+              "end": 48,
+              "name": "a"
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 49,
+                "end": 50,
+                "value": 7,
+                "raw": "7"
+              }
+            ]
+          },
+          "arguments": [
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 53,
+        "end": 69,
+        "expression": {
+          "type": "NewExpression",
+          "start": 53,
+          "end": 68,
+          "callee": {
+            "type": "NewExpression",
+            "start": 57,
+            "end": 65,
+            "callee": {
+              "type": "Identifier",
+              "start": 61,
+              "end": 62,
+              "name": "a"
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 63,
+                "end": 64,
+                "value": 8,
+                "raw": "8"
+              }
+            ]
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 66,
+              "end": 67,
+              "value": 9,
+              "raw": "9"
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 70,
+        "end": 90,
+        "expression": {
+          "type": "NewExpression",
+          "start": 70,
+          "end": 89,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 74,
+            "end": 85,
+            "expression": {
+              "type": "NewExpression",
+              "start": 75,
+              "end": 84,
+              "callee": {
+                "type": "Identifier",
+                "start": 79,
+                "end": 80,
+                "name": "a"
+              },
+              "arguments": [
+                {
+                  "type": "Literal",
+                  "start": 81,
+                  "end": 83,
+                  "value": 10,
+                  "raw": "10"
+                }
+              ]
+            }
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 86,
+              "end": 88,
+              "value": 11,
+              "raw": "11"
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 91,
+        "end": 111,
+        "expression": {
+          "type": "CallExpression",
+          "start": 91,
+          "end": 110,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 91,
+            "end": 106,
+            "expression": {
+              "type": "NewExpression",
+              "start": 92,
+              "end": 105,
+              "callee": {
+                "type": "NewExpression",
+                "start": 96,
+                "end": 105,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 100,
+                  "end": 101,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 102,
+                    "end": 104,
+                    "value": 12,
+                    "raw": "12"
+                  }
+                ]
+              },
+              "arguments": [
+              ]
+            }
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 107,
+              "end": 109,
+              "value": 13,
+              "raw": "13"
+            }
+          ],
+          "optional": false
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 43,
-      "end": 46,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 57,
-      "end": 60,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 74,
-      "end": 75,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'new'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 96,
-      "end": 99,
-      "labels": [
-      ]
-    }
   ]
 }

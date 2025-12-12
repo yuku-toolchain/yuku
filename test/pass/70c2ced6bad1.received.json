@@ -10,38 +10,30 @@
         "start": 0,
         "end": 9,
         "expression": {
-          "type": "CallExpression",
+          "type": "NewExpression",
           "start": 0,
           "end": 9,
           "callee": {
-            "type": "NewExpression",
-            "start": 0,
+            "type": "MemberExpression",
+            "start": 4,
             "end": 7,
-            "callee": {
-              "type": "MemberExpression",
+            "object": {
+              "type": "Identifier",
               "start": 4,
-              "end": 7,
-              "object": {
-                "type": "Identifier",
-                "start": 4,
-                "end": 5,
-                "name": "a"
-              },
-              "property": {
-                "type": "Identifier",
-                "start": 6,
-                "end": 7,
-                "name": "b"
-              },
-              "computed": false,
-              "optional": false
+              "end": 5,
+              "name": "a"
             },
-            "arguments": [
-            ]
+            "property": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "b"
+            },
+            "computed": false,
+            "optional": false
           },
           "arguments": [
-          ],
-          "optional": false
+          ]
         }
       }
     ]

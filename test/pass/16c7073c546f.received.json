@@ -5,6 +5,62 @@
     "end": 125,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 69,
+        "end": 124,
+        "expression": {
+          "type": "NewExpression",
+          "start": 69,
+          "end": 123,
+          "callee": {
+            "type": "FunctionExpression",
+            "start": 73,
+            "end": 123,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 85,
+              "end": 123,
+              "body": [
+                {
+                  "type": "VariableDeclaration",
+                  "start": 91,
+                  "end": 101,
+                  "kind": "var",
+                  "declarations": [
+                    {
+                      "type": "VariableDeclarator",
+                      "start": 95,
+                      "end": 100,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 95,
+                        "end": 96,
+                        "name": "a"
+                      },
+                      "init": {
+                        "type": "Literal",
+                        "start": 99,
+                        "end": 100,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "expression": false
+          },
+          "arguments": [
+          ]
+        }
+      }
     ]
   },
   "comments": [
@@ -22,15 +78,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 106,
       "end": 110,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token ';' in expression",
-      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
-      "start": 123,
-      "end": 124,
       "labels": [
       ]
     }

@@ -24,6 +24,32 @@
           "start": 13,
           "end": 26,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 15,
+              "end": 24,
+              "expression": {
+                "type": "NewExpression",
+                "start": 15,
+                "end": 23,
+                "callee": {
+                  "type": "ArrayExpression",
+                  "start": 18,
+                  "end": 23,
+                  "elements": [
+                    {
+                      "type": "Literal",
+                      "start": 19,
+                      "end": 22,
+                      "value": "b",
+                      "raw": "\"b\""
+                    }
+                  ]
+                },
+                "arguments": [
+                ]
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +59,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ';' in expression",
-      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
-      "start": 23,
-      "end": 24,
-      "labels": [
-      ]
-    }
   ]
 }

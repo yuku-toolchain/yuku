@@ -180,20 +180,61 @@
             {
               "type": "VariableDeclaration",
               "start": 79,
-              "end": 84,
+              "end": 102,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
                   "start": 83,
-                  "end": 84,
+                  "end": 101,
                   "id": {
                     "type": "Identifier",
                     "start": 83,
                     "end": 84,
                     "name": "h"
                   },
-                  "init": null
+                  "init": {
+                    "type": "ParenthesizedExpression",
+                    "start": 87,
+                    "end": 101,
+                    "expression": {
+                      "type": "NewExpression",
+                      "start": 88,
+                      "end": 100,
+                      "callee": {
+                        "type": "ParenthesizedExpression",
+                        "start": 92,
+                        "end": 97,
+                        "expression": {
+                          "type": "MemberExpression",
+                          "start": 93,
+                          "end": 96,
+                          "object": {
+                            "type": "Identifier",
+                            "start": 93,
+                            "end": 94,
+                            "name": "b"
+                          },
+                          "property": {
+                            "type": "Identifier",
+                            "start": 95,
+                            "end": 96,
+                            "name": "i"
+                          },
+                          "computed": false,
+                          "optional": false
+                        }
+                      },
+                      "arguments": [
+                        {
+                          "type": "Identifier",
+                          "start": 98,
+                          "end": 99,
+                          "name": "d"
+                        }
+                      ]
+                    }
+                  }
                 }
               ]
             },
@@ -763,20 +804,61 @@
             {
               "type": "VariableDeclaration",
               "start": 557,
-              "end": 562,
+              "end": 580,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
                   "start": 561,
-                  "end": 562,
+                  "end": 579,
                   "id": {
                     "type": "Identifier",
                     "start": 561,
                     "end": 562,
                     "name": "h"
                   },
-                  "init": null
+                  "init": {
+                    "type": "ParenthesizedExpression",
+                    "start": 565,
+                    "end": 579,
+                    "expression": {
+                      "type": "NewExpression",
+                      "start": 566,
+                      "end": 578,
+                      "callee": {
+                        "type": "ParenthesizedExpression",
+                        "start": 570,
+                        "end": 575,
+                        "expression": {
+                          "type": "MemberExpression",
+                          "start": 571,
+                          "end": 574,
+                          "object": {
+                            "type": "Identifier",
+                            "start": 571,
+                            "end": 572,
+                            "name": "b"
+                          },
+                          "property": {
+                            "type": "Identifier",
+                            "start": 573,
+                            "end": 574,
+                            "name": "i"
+                          },
+                          "computed": false,
+                          "optional": false
+                        }
+                      },
+                      "arguments": [
+                        {
+                          "type": "Identifier",
+                          "start": 576,
+                          "end": 577,
+                          "name": "d"
+                        }
+                      ]
+                    }
+                  }
                 }
               ]
             },
@@ -1191,24 +1273,6 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 92,
-      "end": 93,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 100,
-      "end": 100,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'for'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 201,
@@ -1258,24 +1322,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 489,
       "end": 490,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 570,
-      "end": 571,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 578,
-      "end": 578,
       "labels": [
       ]
     },

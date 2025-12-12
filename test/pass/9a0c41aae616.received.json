@@ -5,6 +5,77 @@
     "end": 43,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 10,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 4,
+            "end": 10,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 5,
+              "end": 9,
+              "expressions": [
+                {
+                  "type": "Identifier",
+                  "start": 5,
+                  "end": 6,
+                  "name": "a"
+                },
+                {
+                  "type": "Identifier",
+                  "start": 8,
+                  "end": 9,
+                  "name": "b"
+                }
+              ]
+            }
+          },
+          "arguments": [
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 25,
+        "expression": {
+          "type": "NewExpression",
+          "start": 12,
+          "end": 24,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 16,
+            "end": 24,
+            "expression": {
+              "type": "LogicalExpression",
+              "start": 17,
+              "end": 23,
+              "left": {
+                "type": "Identifier",
+                "start": 17,
+                "end": 18,
+                "name": "a"
+              },
+              "operator": "||",
+              "right": {
+                "type": "Identifier",
+                "start": 22,
+                "end": 23,
+                "name": "b"
+              }
+            }
+          },
+          "arguments": [
+          ]
+        }
+      }
     ]
   },
   "comments": [
@@ -12,28 +83,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 4,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 16,
-      "end": 17,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '('",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 31,
+      "message": "Expected ',' or ')' in parenthesized expression",
+      "help": "Add a comma between elements or close with ')'.",
+      "start": 33,
+      "end": 34,
       "labels": [
       ]
     }

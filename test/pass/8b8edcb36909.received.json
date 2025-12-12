@@ -5,19 +5,28 @@
     "end": 25,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 25,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 25,
+          "callee": {
+            "type": "Identifier",
+            "start": 24,
+            "end": 25,
+            "name": "a"
+          },
+          "arguments": [
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '' in expression",
-      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
-      "start": 25,
-      "end": 25,
-      "labels": [
-      ]
-    }
   ]
 }

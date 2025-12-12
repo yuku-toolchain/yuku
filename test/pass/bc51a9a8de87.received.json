@@ -86,6 +86,41 @@
                                           "init": null
                                         }
                                       ]
+                                    },
+                                    {
+                                      "type": "ExpressionStatement",
+                                      "start": 48,
+                                      "end": 60,
+                                      "expression": {
+                                        "type": "AssignmentExpression",
+                                        "start": 48,
+                                        "end": 59,
+                                        "operator": "=",
+                                        "left": {
+                                          "type": "Identifier",
+                                          "start": 48,
+                                          "end": 49,
+                                          "name": "a"
+                                        },
+                                        "right": {
+                                          "type": "ParenthesizedExpression",
+                                          "start": 52,
+                                          "end": 59,
+                                          "expression": {
+                                            "type": "NewExpression",
+                                            "start": 53,
+                                            "end": 58,
+                                            "callee": {
+                                              "type": "Identifier",
+                                              "start": 57,
+                                              "end": 58,
+                                              "name": "c"
+                                            },
+                                            "arguments": [
+                                            ]
+                                          }
+                                        }
+                                      }
                                     }
                                   ]
                                 },
@@ -131,6 +166,41 @@
                                       "init": null
                                     }
                                   ]
+                                },
+                                {
+                                  "type": "ExpressionStatement",
+                                  "start": 121,
+                                  "end": 133,
+                                  "expression": {
+                                    "type": "AssignmentExpression",
+                                    "start": 121,
+                                    "end": 132,
+                                    "operator": "=",
+                                    "left": {
+                                      "type": "Identifier",
+                                      "start": 121,
+                                      "end": 122,
+                                      "name": "a"
+                                    },
+                                    "right": {
+                                      "type": "ParenthesizedExpression",
+                                      "start": 125,
+                                      "end": 132,
+                                      "expression": {
+                                        "type": "NewExpression",
+                                        "start": 126,
+                                        "end": 131,
+                                        "callee": {
+                                          "type": "Identifier",
+                                          "start": 130,
+                                          "end": 131,
+                                          "name": "c"
+                                        },
+                                        "arguments": [
+                                        ]
+                                      }
+                                    }
+                                  }
                                 }
                               ]
                             },
@@ -179,6 +249,41 @@
                               "init": null
                             }
                           ]
+                        },
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 195,
+                          "end": 207,
+                          "expression": {
+                            "type": "AssignmentExpression",
+                            "start": 195,
+                            "end": 206,
+                            "operator": "=",
+                            "left": {
+                              "type": "Identifier",
+                              "start": 195,
+                              "end": 196,
+                              "name": "a"
+                            },
+                            "right": {
+                              "type": "ParenthesizedExpression",
+                              "start": 199,
+                              "end": 206,
+                              "expression": {
+                                "type": "NewExpression",
+                                "start": 200,
+                                "end": 205,
+                                "callee": {
+                                  "type": "Identifier",
+                                  "start": 204,
+                                  "end": 205,
+                                  "name": "c"
+                                },
+                                "arguments": [
+                                ]
+                              }
+                            }
+                          }
                         }
                       ]
                     },
@@ -219,15 +324,6 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token ')' in expression",
-      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
-      "start": 58,
-      "end": 59,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 63,
@@ -255,15 +351,6 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token ')' in expression",
-      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
-      "start": 131,
-      "end": 132,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 136,
@@ -286,15 +373,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 185,
       "end": 191,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token ')' in expression",
-      "help": "This token cannot be used here. Expected an operator, semicolon, or end of expression.",
-      "start": 205,
-      "end": 206,
       "labels": [
       ]
     },
