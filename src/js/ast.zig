@@ -350,6 +350,17 @@ pub const LogicalExpression = struct {
     operator: LogicalOperator,
 };
 
+/// `test ? consequent : alternate`
+/// https://tc39.es/ecma262/#sec-conditional-operator
+pub const ConditionalExpression = struct {
+    /// Expression (ShortCircuitExpression)
+    @"test": NodeIndex,
+    /// Expression (AssignmentExpression)
+    consequent: NodeIndex,
+    /// Expression (AssignmentExpression)
+    alternate: NodeIndex,
+};
+
 /// `operator argument`
 /// https://tc39.es/ecma262/#sec-unary-operators
 pub const UnaryExpression = struct {
@@ -730,6 +741,7 @@ pub const NodeData = union(enum) {
     formal_parameter: FormalParameter,
     binary_expression: BinaryExpression,
     logical_expression: LogicalExpression,
+    conditional_expression: ConditionalExpression,
     unary_expression: UnaryExpression,
     update_expression: UpdateExpression,
     assignment_expression: AssignmentExpression,

@@ -35,6 +35,58 @@
                   "start": 14,
                   "end": 36,
                   "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 18,
+                      "end": 34,
+                      "expression": {
+                        "type": "ConditionalExpression",
+                        "start": 18,
+                        "end": 33,
+                        "test": {
+                          "type": "Identifier",
+                          "start": 18,
+                          "end": 19,
+                          "name": "a"
+                        },
+                        "consequent": {
+                          "type": "ParenthesizedExpression",
+                          "start": 22,
+                          "end": 26,
+                          "expression": {
+                            "type": "UnaryExpression",
+                            "start": 23,
+                            "end": 25,
+                            "operator": "!",
+                            "prefix": true,
+                            "argument": {
+                              "type": "Identifier",
+                              "start": 24,
+                              "end": 25,
+                              "name": "b"
+                            }
+                          }
+                        },
+                        "alternate": {
+                          "type": "ParenthesizedExpression",
+                          "start": 29,
+                          "end": 33,
+                          "expression": {
+                            "type": "UnaryExpression",
+                            "start": 30,
+                            "end": 32,
+                            "operator": "!",
+                            "prefix": true,
+                            "argument": {
+                              "type": "Identifier",
+                              "start": 31,
+                              "end": 32,
+                              "name": "c"
+                            }
+                          }
+                        }
+                      }
+                    }
                   ]
                 },
                 "expression": false
@@ -51,14 +103,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 19,
-      "end": 19,
-      "labels": [
-      ]
-    }
   ]
 }

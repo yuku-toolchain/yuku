@@ -92,7 +92,7 @@ pub const TokenType = enum(u32) {
     dot = 67, // "."
     spread = 68, // "..."
     arrow = 69, // "=>"
-    question = 70, // "?"
+    question = 70 | (2 << Mask.PrecShift), // "?"
     colon = 71, // ":"
 
     @"if" = 72 | Mask.IsIdentifierLike, // "if"
@@ -363,6 +363,11 @@ pub const Token = struct {
             self.type.isAssignmentOperator() or self.type == .increment or self.type == .decrement)
         {
             return self.type.precedence();
+        }
+
+        // conditional operator (precedence 2)
+        if (self.type == .question) {
+            return 2;
         }
 
         // member access, call, and tagged template expressions (precedence 17)

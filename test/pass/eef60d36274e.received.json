@@ -75,20 +75,51 @@
           "arguments": [
           ]
         }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 24,
+        "end": 39,
+        "expression": {
+          "type": "NewExpression",
+          "start": 24,
+          "end": 39,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 28,
+            "end": 39,
+            "expression": {
+              "type": "ConditionalExpression",
+              "start": 29,
+              "end": 38,
+              "test": {
+                "type": "Identifier",
+                "start": 29,
+                "end": 30,
+                "name": "c"
+              },
+              "consequent": {
+                "type": "Identifier",
+                "start": 33,
+                "end": 34,
+                "name": "a"
+              },
+              "alternate": {
+                "type": "Identifier",
+                "start": 37,
+                "end": 38,
+                "name": "b"
+              }
+            }
+          },
+          "arguments": [
+          ]
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected ',' or ')' in parenthesized expression",
-      "help": "Add a comma between elements or close with ')'.",
-      "start": 31,
-      "end": 32,
-      "labels": [
-      ]
-    }
   ]
 }

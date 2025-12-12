@@ -5,6 +5,115 @@
     "end": 55,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 55,
+        "expression": {
+          "type": "ConditionalExpression",
+          "start": 0,
+          "end": 54,
+          "test": {
+            "type": "CallExpression",
+            "start": 0,
+            "end": 29,
+            "callee": {
+              "type": "ParenthesizedExpression",
+              "start": 0,
+              "end": 27,
+              "expression": {
+                "type": "FunctionExpression",
+                "start": 1,
+                "end": 26,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 11,
+                  "end": 26,
+                  "body": [
+                  ]
+                },
+                "expression": false
+              }
+            },
+            "arguments": [
+            ],
+            "optional": false
+          },
+          "consequent": {
+            "type": "CallExpression",
+            "start": 32,
+            "end": 41,
+            "callee": {
+              "type": "MemberExpression",
+              "start": 32,
+              "end": 35,
+              "object": {
+                "type": "Identifier",
+                "start": 32,
+                "end": 33,
+                "name": "a"
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 34,
+                "end": 35,
+                "name": "b"
+              },
+              "computed": false,
+              "optional": false
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 36,
+                "end": 40,
+                "value": true,
+                "raw": "true"
+              }
+            ],
+            "optional": false
+          },
+          "alternate": {
+            "type": "CallExpression",
+            "start": 44,
+            "end": 54,
+            "callee": {
+              "type": "MemberExpression",
+              "start": 44,
+              "end": 47,
+              "object": {
+                "type": "Identifier",
+                "start": 44,
+                "end": 45,
+                "name": "a"
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 46,
+                "end": 47,
+                "name": "b"
+              },
+              "computed": false,
+              "optional": false
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 48,
+                "end": 53,
+                "value": false,
+                "raw": "false"
+              }
+            ],
+            "optional": false
+          }
+        }
+      }
     ]
   },
   "comments": [
@@ -16,15 +125,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 13,
       "end": 19,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 29,
-      "end": 29,
       "labels": [
       ]
     }

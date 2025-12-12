@@ -31,6 +31,53 @@
                 "start": 13,
                 "end": 40,
                 "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 38,
+                    "expression": {
+                      "type": "UnaryExpression",
+                      "start": 19,
+                      "end": 37,
+                      "operator": "void",
+                      "prefix": true,
+                      "argument": {
+                        "type": "ParenthesizedExpression",
+                        "start": 24,
+                        "end": 37,
+                        "expression": {
+                          "type": "ConditionalExpression",
+                          "start": 25,
+                          "end": 36,
+                          "test": {
+                            "type": "ParenthesizedExpression",
+                            "start": 25,
+                            "end": 28,
+                            "expression": {
+                              "type": "Identifier",
+                              "start": 26,
+                              "end": 27,
+                              "name": "a"
+                            }
+                          },
+                          "consequent": {
+                            "type": "Literal",
+                            "start": 31,
+                            "end": 32,
+                            "value": 1,
+                            "raw": "1"
+                          },
+                          "alternate": {
+                            "type": "Literal",
+                            "start": 35,
+                            "end": 36,
+                            "value": 2,
+                            "raw": "2"
+                          }
+                        }
+                      }
+                    }
+                  }
                 ]
               },
               "expression": false
@@ -46,14 +93,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected ',' or ')' in parenthesized expression",
-      "help": "Add a comma between elements or close with ')'.",
-      "start": 29,
-      "end": 30,
-      "labels": [
-      ]
-    }
   ]
 }

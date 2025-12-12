@@ -77,6 +77,7 @@ pub const Serializer = struct {
             .variable_declarator => |d| self.writeVariableDeclarator(d, span),
             .binary_expression => |d| self.writeBinaryExpression(d, span),
             .logical_expression => |d| self.writeLogicalExpression(d, span),
+            .conditional_expression => |d| self.writeConditionalExpression(d, span),
             .unary_expression => |d| self.writeUnaryExpression(d, span),
             .update_expression => |d| self.writeUpdateExpression(d, span),
             .assignment_expression => |d| self.writeAssignmentExpression(d, span),
@@ -268,6 +269,16 @@ pub const Serializer = struct {
         try self.fieldNode("left", data.left);
         try self.fieldString("operator", data.operator.toString());
         try self.fieldNode("right", data.right);
+        try self.endObject();
+    }
+
+    fn writeConditionalExpression(self: *Self, data: ast.ConditionalExpression, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("ConditionalExpression");
+        try self.fieldSpan(span);
+        try self.fieldNode("test", data.@"test");
+        try self.fieldNode("consequent", data.consequent);
+        try self.fieldNode("alternate", data.alternate);
         try self.endObject();
     }
 

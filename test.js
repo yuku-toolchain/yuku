@@ -1,1 +1,1 @@
-new ({} = 10);
+hello ? nice : cool ? wow : haha

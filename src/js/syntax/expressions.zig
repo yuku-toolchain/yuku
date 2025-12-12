@@ -52,6 +52,10 @@ fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.N
         return parseAssignmentExpression(parser, precedence, left);
     }
 
+    if (current.type == .question) {
+        return parseConditionalExpression(parser, precedence, left);
+    }
+
     // member access, call, and tagged template expressions
     switch (current.type) {
         .dot => return parseStaticMemberExpression(parser, left, false),
@@ -446,6 +450,37 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u5, left: ast.NodeInde
     return try parser.addNode(
         .{ .assignment_expression = .{ .left = left, .right = right, .operator = operator } },
         .{ .start = left_span.start, .end = parser.getSpan(right).end },
+    );
+}
+
+/// `test ? consequent : alternate`
+/// https://tc39.es/ecma262/#sec-conditional-operator
+fn parseConditionalExpression(parser: *Parser, precedence: u5, @"test": ast.NodeIndex) Error!?ast.NodeIndex {
+    const test_span = parser.getSpan(@"test");
+
+    try parser.advance(); // consume '?'
+
+    // consequent
+    // right-associative, so same prec, not precedence + 1
+    const consequent = try parseExpression(parser, precedence, .{}) orelse return null;
+
+    if (!try parser.expect(.colon, "Expected ':' after conditional expression consequent", "The ternary operator requires a colon (:) to separate the consequent and alternate expressions.")) {
+        return null;
+    }
+
+    // alternate
+    // right-associative, so same prec, not precedence + 1
+    const alternate = try parseExpression(parser, precedence, .{}) orelse return null;
+
+    return try parser.addNode(
+        .{
+            .conditional_expression = .{
+                .@"test" = @"test",
+                .consequent = consequent,
+                .alternate = alternate,
+            },
+        },
+        .{ .start = test_span.start, .end = parser.getSpan(alternate).end },
     );
 }
 

@@ -31,6 +31,68 @@
                 "start": 13,
                 "end": 44,
                 "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 42,
+                    "expression": {
+                      "type": "BinaryExpression",
+                      "start": 19,
+                      "end": 42,
+                      "left": {
+                        "type": "Literal",
+                        "start": 19,
+                        "end": 23,
+                        "value": null,
+                        "raw": "null"
+                      },
+                      "operator": "!=",
+                      "right": {
+                        "type": "ParenthesizedExpression",
+                        "start": 25,
+                        "end": 42,
+                        "expression": {
+                          "type": "ConditionalExpression",
+                          "start": 26,
+                          "end": 41,
+                          "test": {
+                            "type": "Identifier",
+                            "start": 26,
+                            "end": 27,
+                            "name": "a"
+                          },
+                          "consequent": {
+                            "type": "UnaryExpression",
+                            "start": 28,
+                            "end": 34,
+                            "operator": "void",
+                            "prefix": true,
+                            "argument": {
+                              "type": "Literal",
+                              "start": 33,
+                              "end": 34,
+                              "value": 1,
+                              "raw": "1"
+                            }
+                          },
+                          "alternate": {
+                            "type": "UnaryExpression",
+                            "start": 35,
+                            "end": 41,
+                            "operator": "void",
+                            "prefix": true,
+                            "argument": {
+                              "type": "Literal",
+                              "start": 40,
+                              "end": 41,
+                              "value": 2,
+                              "raw": "2"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 ]
               },
               "expression": false
@@ -46,14 +108,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected ',' or ')' in parenthesized expression",
-      "help": "Add a comma between elements or close with ')'.",
-      "start": 27,
-      "end": 28,
-      "labels": [
-      ]
-    }
   ]
 }

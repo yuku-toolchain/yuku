@@ -35,6 +35,89 @@
                   "start": 14,
                   "end": 54,
                   "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 18,
+                      "end": 52,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 18,
+                        "end": 51,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 18,
+                          "end": 19,
+                          "name": "a"
+                        },
+                        "arguments": [
+                          {
+                            "type": "BinaryExpression",
+                            "start": 20,
+                            "end": 50,
+                            "left": {
+                              "type": "ParenthesizedExpression",
+                              "start": 20,
+                              "end": 26,
+                              "expression": {
+                                "type": "Literal",
+                                "start": 21,
+                                "end": 25,
+                                "value": null,
+                                "raw": "null"
+                              }
+                            },
+                            "operator": "!=",
+                            "right": {
+                              "type": "ParenthesizedExpression",
+                              "start": 30,
+                              "end": 50,
+                              "expression": {
+                                "type": "ConditionalExpression",
+                                "start": 31,
+                                "end": 49,
+                                "test": {
+                                  "type": "Identifier",
+                                  "start": 31,
+                                  "end": 32,
+                                  "name": "b"
+                                },
+                                "consequent": {
+                                  "type": "Identifier",
+                                  "start": 35,
+                                  "end": 36,
+                                  "name": "c"
+                                },
+                                "alternate": {
+                                  "type": "ParenthesizedExpression",
+                                  "start": 39,
+                                  "end": 49,
+                                  "expression": {
+                                    "type": "UnaryExpression",
+                                    "start": 40,
+                                    "end": 48,
+                                    "operator": "void",
+                                    "prefix": true,
+                                    "argument": {
+                                      "type": "ParenthesizedExpression",
+                                      "start": 45,
+                                      "end": 48,
+                                      "expression": {
+                                        "type": "Literal",
+                                        "start": 46,
+                                        "end": 47,
+                                        "value": 1,
+                                        "raw": "1"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ],
+                        "optional": false
+                      }
+                    }
                   ]
                 },
                 "expression": false
@@ -51,14 +134,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected ',' or ')' in parenthesized expression",
-      "help": "Add a comma between elements or close with ')'.",
-      "start": 33,
-      "end": 34,
-      "labels": [
-      ]
-    }
   ]
 }

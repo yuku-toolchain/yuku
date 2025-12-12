@@ -27,7 +27,7 @@
 - [x] Unary expressions (!, ~, +, -, typeof, void, delete)
 - [x] Update expressions (++, --)
 - [x] Assignment expressions (=, +=, -=, etc.)
-- [ ] Conditional expression (ternary ? :)
+- [x] Conditional expression (ternary ? :)
 - [x] Sequence expression (comma operator)
 
 **Member & Call Expressions:**

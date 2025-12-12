@@ -72,6 +72,161 @@
             "init": null
           }
         ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 180,
+        "end": 212,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 180,
+          "end": 211,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 180,
+            "end": 181,
+            "name": "a"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 184,
+            "end": 211,
+            "test": {
+              "type": "Identifier",
+              "start": 184,
+              "end": 185,
+              "name": "b"
+            },
+            "consequent": {
+              "type": "Literal",
+              "start": 188,
+              "end": 191,
+              "value": "f",
+              "raw": "'f'"
+            },
+            "alternate": {
+              "type": "ConditionalExpression",
+              "start": 194,
+              "end": 211,
+              "test": {
+                "type": "Identifier",
+                "start": 194,
+                "end": 195,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "Literal",
+                "start": 198,
+                "end": 201,
+                "value": "f",
+                "raw": "'f'"
+              },
+              "alternate": {
+                "type": "BinaryExpression",
+                "start": 204,
+                "end": 211,
+                "left": {
+                  "type": "Literal",
+                  "start": 204,
+                  "end": 207,
+                  "value": "g",
+                  "raw": "'g'"
+                },
+                "operator": "+",
+                "right": {
+                  "type": "Literal",
+                  "start": 208,
+                  "end": 211,
+                  "value": "h",
+                  "raw": "'h'"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 441,
+        "end": 455,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 441,
+          "end": 454,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 441,
+            "end": 442,
+            "name": "a"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 445,
+            "end": 454,
+            "test": {
+              "type": "Identifier",
+              "start": 445,
+              "end": 446,
+              "name": "b"
+            },
+            "consequent": {
+              "type": "Identifier",
+              "start": 449,
+              "end": 450,
+              "name": "d"
+            },
+            "alternate": {
+              "type": "Identifier",
+              "start": 453,
+              "end": 454,
+              "name": "e"
+            }
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 457,
+        "end": 475,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 457,
+          "end": 474,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 457,
+            "end": 458,
+            "name": "a"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 461,
+            "end": 474,
+            "test": {
+              "type": "Identifier",
+              "start": 461,
+              "end": 462,
+              "name": "b"
+            },
+            "consequent": {
+              "type": "Literal",
+              "start": 465,
+              "end": 468,
+              "value": "f",
+              "raw": "'f'"
+            },
+            "alternate": {
+              "type": "Literal",
+              "start": 471,
+              "end": 474,
+              "value": "g",
+              "raw": "'g'"
+            }
+          }
+        }
       }
     ]
   },
@@ -170,15 +325,6 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 185,
-      "end": 185,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'if'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 260,
@@ -246,24 +392,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 388,
       "end": 389,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 446,
-      "end": 446,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 462,
-      "end": 462,
       "labels": [
       ]
     }

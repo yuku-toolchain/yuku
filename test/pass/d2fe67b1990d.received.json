@@ -31,6 +31,48 @@
                 "start": 13,
                 "end": 33,
                 "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 31,
+                    "expression": {
+                      "type": "ConditionalExpression",
+                      "start": 19,
+                      "end": 30,
+                      "test": {
+                        "type": "Identifier",
+                        "start": 19,
+                        "end": 20,
+                        "name": "a"
+                      },
+                      "consequent": {
+                        "type": "UnaryExpression",
+                        "start": 23,
+                        "end": 25,
+                        "operator": "!",
+                        "prefix": true,
+                        "argument": {
+                          "type": "Identifier",
+                          "start": 24,
+                          "end": 25,
+                          "name": "b"
+                        }
+                      },
+                      "alternate": {
+                        "type": "UnaryExpression",
+                        "start": 28,
+                        "end": 30,
+                        "operator": "!",
+                        "prefix": true,
+                        "argument": {
+                          "type": "Identifier",
+                          "start": 29,
+                          "end": 30,
+                          "name": "c"
+                        }
+                      }
+                    }
+                  }
                 ]
               },
               "expression": false
@@ -46,14 +88,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 20,
-      "end": 20,
-      "labels": [
-      ]
-    }
   ]
 }
