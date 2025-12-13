@@ -24,10 +24,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 102,
-      "end": 102,
+      "message": "Unexpected token 'do'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 104,
+      "end": 106,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected statement after label",
+      "help": null,
+      "start": 104,
+      "end": 106,
       "labels": [
       ]
     },

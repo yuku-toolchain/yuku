@@ -115,6 +115,7 @@ pub const Serializer = struct {
             .identifier_reference => |d| self.writeIdentifier(d, span),
             .binding_identifier => |d| self.writeIdentifier(d, span),
             .identifier_name => |d| self.writeIdentifier(d, span),
+            .label_identifier => |d| self.writeIdentifier(d, span),
             .private_identifier => |d| self.writePrivateIdentifier(d, span),
             .assignment_pattern => |d| self.writeAssignmentPattern(d, span),
             .array_pattern => |d| self.writeArrayPattern(d, span),

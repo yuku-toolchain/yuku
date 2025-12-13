@@ -5,19 +5,32 @@
     "end": 14,
     "sourceType": "script",
     "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 0,
+        "end": 13,
+        "label": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 9,
+          "name": "__proto__"
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 11,
+          "end": 13,
+          "expression": {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "a"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 9,
-      "end": 9,
-      "labels": [
-      ]
-    }
   ]
 }

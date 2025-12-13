@@ -6,25 +6,113 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "BreakStatement",
-        "start": 64,
-        "end": 72,
+        "type": "LabeledStatement",
+        "start": 31,
+        "end": 74,
         "label": {
           "type": "Identifier",
-          "start": 70,
-          "end": 71,
+          "start": 31,
+          "end": 32,
           "name": "c"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 34,
+          "end": 74,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 46,
+              "end": 53,
+              "expression": {
+                "type": "CallExpression",
+                "start": 46,
+                "end": 52,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 46,
+                  "end": 47,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 48,
+                    "end": 51,
+                    "value": "b",
+                    "raw": "\"b\""
+                  }
+                ],
+                "optional": false
+              }
+            },
+            {
+              "type": "BreakStatement",
+              "start": 64,
+              "end": 72,
+              "label": {
+                "type": "Identifier",
+                "start": 70,
+                "end": 71,
+                "name": "c"
+              }
+            }
+          ]
         }
       },
       {
-        "type": "BreakStatement",
-        "start": 108,
-        "end": 116,
+        "type": "LabeledStatement",
+        "start": 75,
+        "end": 118,
         "label": {
           "type": "Identifier",
-          "start": 114,
-          "end": 115,
+          "start": 75,
+          "end": 76,
           "name": "c"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 78,
+          "end": 118,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 90,
+              "end": 97,
+              "expression": {
+                "type": "CallExpression",
+                "start": 90,
+                "end": 96,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 90,
+                  "end": 91,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 92,
+                    "end": 95,
+                    "value": "b",
+                    "raw": "\"b\""
+                  }
+                ],
+                "optional": false
+              }
+            },
+            {
+              "type": "BreakStatement",
+              "start": 108,
+              "end": 116,
+              "label": {
+                "type": "Identifier",
+                "start": 114,
+                "end": 115,
+                "name": "c"
+              }
+            }
+          ]
         }
       }
     ]
@@ -38,32 +126,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 32,
-      "end": 32,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 73,
-      "end": 74,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 117,
-      "end": 118,
-      "labels": [
-      ]
-    }
   ]
 }

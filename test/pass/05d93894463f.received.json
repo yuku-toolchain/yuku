@@ -6,21 +6,32 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "ForStatement",
-        "start": 104,
+        "type": "LabeledStatement",
+        "start": 101,
         "end": 123,
-        "init": null,
-        "test": null,
-        "update": null,
+        "label": {
+          "type": "Identifier",
+          "start": 101,
+          "end": 102,
+          "name": "a"
+        },
         "body": {
-          "type": "ContinueStatement",
-          "start": 112,
+          "type": "ForStatement",
+          "start": 104,
           "end": 123,
-          "label": {
-            "type": "Identifier",
-            "start": 121,
-            "end": 122,
-            "name": "a"
+          "init": null,
+          "test": null,
+          "update": null,
+          "body": {
+            "type": "ContinueStatement",
+            "start": 112,
+            "end": 123,
+            "label": {
+              "type": "Identifier",
+              "start": 121,
+              "end": 122,
+              "name": "a"
+            }
           }
         }
       }
@@ -41,14 +52,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 102,
-      "end": 102,
-      "labels": [
-      ]
-    }
   ]
 }

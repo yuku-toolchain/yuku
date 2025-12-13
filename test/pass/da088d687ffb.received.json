@@ -36,63 +36,74 @@
                   "end": 87,
                   "body": [
                     {
-                      "type": "ForStatement",
-                      "start": 21,
+                      "type": "LabeledStatement",
+                      "start": 18,
                       "end": 85,
-                      "init": null,
-                      "test": null,
-                      "update": null,
+                      "label": {
+                        "type": "Identifier",
+                        "start": 18,
+                        "end": 19,
+                        "name": "a"
+                      },
                       "body": {
-                        "type": "BlockStatement",
-                        "start": 30,
+                        "type": "ForStatement",
+                        "start": 21,
                         "end": 85,
-                        "body": [
-                          {
-                            "type": "ForStatement",
-                            "start": 36,
-                            "end": 81,
-                            "init": null,
-                            "test": null,
-                            "update": null,
-                            "body": {
-                              "type": "BlockStatement",
-                              "start": 45,
+                        "init": null,
+                        "test": null,
+                        "update": null,
+                        "body": {
+                          "type": "BlockStatement",
+                          "start": 30,
+                          "end": 85,
+                          "body": [
+                            {
+                              "type": "ForStatement",
+                              "start": 36,
                               "end": 81,
-                              "body": [
-                                {
-                                  "type": "ContinueStatement",
-                                  "start": 53,
-                                  "end": 64,
-                                  "label": {
-                                    "type": "Identifier",
-                                    "start": 62,
-                                    "end": 63,
-                                    "name": "a"
-                                  }
-                                },
-                                {
-                                  "type": "ExpressionStatement",
-                                  "start": 71,
-                                  "end": 75,
-                                  "expression": {
-                                    "type": "CallExpression",
-                                    "start": 71,
-                                    "end": 74,
-                                    "callee": {
+                              "init": null,
+                              "test": null,
+                              "update": null,
+                              "body": {
+                                "type": "BlockStatement",
+                                "start": 45,
+                                "end": 81,
+                                "body": [
+                                  {
+                                    "type": "ContinueStatement",
+                                    "start": 53,
+                                    "end": 64,
+                                    "label": {
                                       "type": "Identifier",
+                                      "start": 62,
+                                      "end": 63,
+                                      "name": "a"
+                                    }
+                                  },
+                                  {
+                                    "type": "ExpressionStatement",
+                                    "start": 71,
+                                    "end": 75,
+                                    "expression": {
+                                      "type": "CallExpression",
                                       "start": 71,
-                                      "end": 72,
-                                      "name": "b"
-                                    },
-                                    "arguments": [
-                                    ],
-                                    "optional": false
+                                      "end": 74,
+                                      "callee": {
+                                        "type": "Identifier",
+                                        "start": 71,
+                                        "end": 72,
+                                        "name": "b"
+                                      },
+                                      "arguments": [
+                                      ],
+                                      "optional": false
+                                    }
                                   }
-                                }
-                              ]
+                                ]
+                              }
                             }
-                          }
-                        ]
+                          ]
+                        }
                       }
                     }
                   ]
@@ -111,14 +122,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 19,
-      "end": 19,
-      "labels": [
-      ]
-    }
   ]
 }

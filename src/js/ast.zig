@@ -469,21 +469,21 @@ pub const ForOfStatement = struct {
 /// `break;` or `break label;`
 /// https://tc39.es/ecma262/#sec-break-statement
 pub const BreakStatement = struct {
-    /// BindingIdentifier (optional label, may be null_node)
+    /// LabelIdentifier (optional, may be null_node)
     label: NodeIndex,
 };
 
 /// `continue;` or `continue label;`
 /// https://tc39.es/ecma262/#sec-continue-statement
 pub const ContinueStatement = struct {
-    /// BindingIdentifier (optional label, may be null_node)
+    /// LabelIdentifier (optional, may be null_node)
     label: NodeIndex,
 };
 
 /// `label: statement`
 /// https://tc39.es/ecma262/#sec-labelled-statements
 pub const LabeledStatement = struct {
-    /// IdentifierName (the label)
+    /// LabelIdentifier
     label: NodeIndex,
     /// Statement
     body: NodeIndex,
@@ -565,6 +565,13 @@ pub const BindingIdentifier = struct {
 
 /// property keys, meta properties
 pub const IdentifierName = struct {
+    name_start: u32,
+    name_len: u16,
+};
+
+/// used in break, continue, and labeled statements
+/// https://tc39.es/ecma262/#prod-LabelIdentifier
+pub const LabelIdentifier = struct {
     name_start: u32,
     name_len: u16,
 };
@@ -868,6 +875,7 @@ pub const NodeData = union(enum) {
     private_identifier: PrivateIdentifier,
     binding_identifier: BindingIdentifier,
     identifier_name: IdentifierName,
+    label_identifier: LabelIdentifier,
     expression_statement: ExpressionStatement,
     if_statement: IfStatement,
     switch_statement: SwitchStatement,

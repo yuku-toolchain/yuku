@@ -133,20 +133,41 @@
           "computed": false,
           "optional": false
         }
+      },
+      {
+        "type": "LabeledStatement",
+        "start": 79,
+        "end": 86,
+        "label": {
+          "type": "Identifier",
+          "start": 79,
+          "end": 80,
+          "name": "b"
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 82,
+          "end": 86,
+          "expression": {
+            "type": "CallExpression",
+            "start": 82,
+            "end": 85,
+            "callee": {
+              "type": "Identifier",
+              "start": 82,
+              "end": 83,
+              "name": "d"
+            },
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 80,
-      "end": 80,
-      "labels": [
-      ]
-    }
   ]
 }

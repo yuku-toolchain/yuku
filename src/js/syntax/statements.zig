@@ -19,7 +19,7 @@ pub fn parseStatement(parser: *Parser) Error!?ast.NodeIndex {
         },
         .declare => blk: {
             if (!parser.isTs()) {
-                break :blk try parseExpressionStatementOrDirective(parser);
+                break :blk try parseExpressionStatementOrLabeledOrDirective(parser);
             }
             const start = parser.current_token.span.start;
             try parser.advance(); // consume 'declare'
@@ -33,23 +33,24 @@ pub fn parseStatement(parser: *Parser) Error!?ast.NodeIndex {
         .@"continue" => parseContinueStatement(parser),
         .semicolon => parseEmptyStatement(parser),
 
-        else => parseExpressionStatementOrDirective(parser),
+        else => parseExpressionStatementOrLabeledOrDirective(parser),
     };
 }
 
-pub fn parseExpressionStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex {
+fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseExpression(parser, 0, .{}) orelse return null;
-
     const expression_span = parser.getSpan(expression);
+    const expression_data = parser.getData(expression);
 
-    const token_after_expression = parser.current_token;
+    // Check for labeled statement: identifier ':'
+    if (expression_data == .identifier_reference and parser.current_token.type == .colon) {
+        return parseLabeledStatementRest(parser, expression);
+    }
 
-    if (token_after_expression.type != .semicolon and !canInsertSemicolon(parser)) {
+    if (parser.current_token.type != .semicolon and !canInsertSemicolon(parser)) {
         try parser.report(.{ .start = expression_span.end, .end = expression_span.end }, "Expected a semicolon or an implicit semicolon after a statement, but found none", .{ .help = "Try inserting a semicolon here" });
         return null;
     }
-
-    const expression_data = parser.getData(expression);
 
     const start = expression_span.start;
     const end = try parser.eatSemicolon(expression_span.end);
@@ -72,6 +73,32 @@ pub fn parseExpressionStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex
         .{ .expression_statement = .{ .expression = expression } },
         .{ .start = start, .end = end },
     );
+}
+
+/// https://tc39.es/ecma262/#sec-labelled-statements
+/// Called after identifier has been parsed and ':' is the current token
+fn parseLabeledStatementRest(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.NodeIndex {
+    const id_data = parser.getData(identifier);
+    const id_span = parser.getSpan(identifier);
+
+    // Convert IdentifierReference to LabelIdentifier
+    const label = try parser.addNode(.{
+        .label_identifier = .{
+            .name_start = id_data.identifier_reference.name_start,
+            .name_len = id_data.identifier_reference.name_len,
+        },
+    }, id_span);
+
+    try parser.advance(); // consume ':'
+
+    const body = try parseStatement(parser) orelse {
+        try parser.report(parser.current_token.span, "Expected statement after label", .{});
+        return null;
+    };
+
+    return try parser.addNode(.{
+        .labeled_statement = .{ .label = label, .body = body },
+    }, .{ .start = id_span.start, .end = parser.getSpan(body).end });
 }
 
 /// https://tc39.es/ecma262/#prod-BlockStatement
@@ -281,7 +308,7 @@ fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const current = parser.current_token;
     try parser.advance();
     return try parser.addNode(.{
-        .identifier_name = .{
+        .label_identifier = .{
             .name_start = current.span.start,
             .name_len = @intCast(current.lexeme.len),
         },

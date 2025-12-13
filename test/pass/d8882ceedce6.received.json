@@ -6,44 +6,55 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "ForInStatement",
-        "start": 104,
+        "type": "LabeledStatement",
+        "start": 101,
         "end": 131,
-        "left": {
-          "type": "VariableDeclaration",
-          "start": 108,
-          "end": 113,
-          "kind": "var",
-          "declarations": [
-            {
-              "type": "VariableDeclarator",
-              "start": 112,
-              "end": 113,
-              "id": {
-                "type": "Identifier",
-                "start": 112,
-                "end": 113,
-                "name": "a"
-              },
-              "init": null
-            }
-          ]
-        },
-        "right": {
+        "label": {
           "type": "Identifier",
-          "start": 117,
-          "end": 118,
-          "name": "b"
+          "start": 101,
+          "end": 102,
+          "name": "c"
         },
         "body": {
-          "type": "ContinueStatement",
-          "start": 120,
+          "type": "ForInStatement",
+          "start": 104,
           "end": 131,
-          "label": {
+          "left": {
+            "type": "VariableDeclaration",
+            "start": 108,
+            "end": 113,
+            "kind": "var",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "start": 112,
+                "end": 113,
+                "id": {
+                  "type": "Identifier",
+                  "start": 112,
+                  "end": 113,
+                  "name": "a"
+                },
+                "init": null
+              }
+            ]
+          },
+          "right": {
             "type": "Identifier",
-            "start": 129,
-            "end": 130,
-            "name": "c"
+            "start": 117,
+            "end": 118,
+            "name": "b"
+          },
+          "body": {
+            "type": "ContinueStatement",
+            "start": 120,
+            "end": 131,
+            "label": {
+              "type": "Identifier",
+              "start": 129,
+              "end": 130,
+              "name": "c"
+            }
           }
         }
       }
@@ -64,14 +75,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 102,
-      "end": 102,
-      "labels": [
-      ]
-    }
   ]
 }

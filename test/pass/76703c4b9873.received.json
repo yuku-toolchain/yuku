@@ -29,6 +29,29 @@
             "start": 5,
             "end": 13,
             "body": [
+              {
+                "type": "LabeledStatement",
+                "start": 7,
+                "end": 11,
+                "label": {
+                  "type": "Identifier",
+                  "start": 7,
+                  "end": 8,
+                  "name": "b"
+                },
+                "body": {
+                  "type": "ExpressionStatement",
+                  "start": 10,
+                  "end": 11,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 10,
+                    "end": 11,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
             ]
           },
           "expression": false
@@ -39,14 +62,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 8,
-      "end": 8,
-      "labels": [
-      ]
-    }
   ]
 }

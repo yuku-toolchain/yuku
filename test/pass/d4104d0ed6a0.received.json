@@ -6,44 +6,106 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "IfStatement",
-        "start": 72,
-        "end": 111,
-        "test": {
+        "type": "LabeledStatement",
+        "start": 34,
+        "end": 136,
+        "label": {
           "type": "Identifier",
-          "start": 76,
-          "end": 77,
-          "name": "c"
+          "start": 34,
+          "end": 35,
+          "name": "e"
         },
-        "consequent": {
+        "body": {
           "type": "BlockStatement",
-          "start": 79,
-          "end": 111,
+          "start": 37,
+          "end": 136,
           "body": [
             {
-              "type": "BreakStatement",
-              "start": 93,
-              "end": 101,
+              "type": "LabeledStatement",
+              "start": 43,
+              "end": 134,
               "label": {
                 "type": "Identifier",
-                "start": 99,
-                "end": 100,
+                "start": 43,
+                "end": 44,
                 "name": "d"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 46,
+                "end": 134,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 56,
+                    "end": 63,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 56,
+                      "end": 62,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 56,
+                        "end": 57,
+                        "name": "a"
+                      },
+                      "arguments": [
+                        {
+                          "type": "Literal",
+                          "start": 58,
+                          "end": 61,
+                          "value": "b",
+                          "raw": "\"b\""
+                        }
+                      ],
+                      "optional": false
+                    }
+                  },
+                  {
+                    "type": "IfStatement",
+                    "start": 72,
+                    "end": 111,
+                    "test": {
+                      "type": "Identifier",
+                      "start": 76,
+                      "end": 77,
+                      "name": "c"
+                    },
+                    "consequent": {
+                      "type": "BlockStatement",
+                      "start": 79,
+                      "end": 111,
+                      "body": [
+                        {
+                          "type": "BreakStatement",
+                          "start": 93,
+                          "end": 101,
+                          "label": {
+                            "type": "Identifier",
+                            "start": 99,
+                            "end": 100,
+                            "name": "d"
+                          }
+                        }
+                      ]
+                    },
+                    "alternate": null
+                  },
+                  {
+                    "type": "BreakStatement",
+                    "start": 120,
+                    "end": 128,
+                    "label": {
+                      "type": "Identifier",
+                      "start": 126,
+                      "end": 127,
+                      "name": "e"
+                    }
+                  }
+                ]
               }
             }
           ]
-        },
-        "alternate": null
-      },
-      {
-        "type": "BreakStatement",
-        "start": 120,
-        "end": 128,
-        "label": {
-          "type": "Identifier",
-          "start": 126,
-          "end": 127,
-          "name": "e"
         }
       }
     ]
@@ -57,23 +119,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 35,
-      "end": 35,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 133,
-      "end": 134,
-      "labels": [
-      ]
-    }
   ]
 }

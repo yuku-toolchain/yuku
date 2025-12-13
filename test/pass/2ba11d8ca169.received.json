@@ -12,15 +12,6 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 1,
-      "end": 1,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'while'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 3,
@@ -30,10 +21,10 @@
     },
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 23,
-      "end": 23,
+      "message": "Expected statement after label",
+      "help": null,
+      "start": 3,
+      "end": 8,
       "labels": [
       ]
     },
@@ -41,6 +32,15 @@
       "severity": "error",
       "message": "Unexpected token 'while'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 25,
+      "end": 30,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected statement after label",
+      "help": null,
       "start": 25,
       "end": 30,
       "labels": [
