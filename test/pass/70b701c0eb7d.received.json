@@ -18,15 +18,6 @@
       "end": 16,
       "labels": [
       ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 8,
-      "end": 16,
-      "labels": [
-      ]
     }
   ]
 }

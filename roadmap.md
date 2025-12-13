@@ -52,15 +52,15 @@
 **Control Flow:**
 - [x] If statement (IfStatement)
 - [x] Switch statement (SwitchStatement, SwitchCase)
-- [ ] For statement (ForStatement)
-- [ ] For-in statement (ForInStatement)
-- [ ] For-of statement (ForOfStatement)
+- [x] For statement (ForStatement)
+- [x] For-in statement (ForInStatement)
+- [x] For-of statement (ForOfStatement)
 - [ ] While statement (WhileStatement)
 - [ ] Do-while statement (DoWhileStatement)
 
 **Jump Statements:**
-- [ ] Break statement
-- [ ] Continue statement
+- [x] Break statement
+- [x] Continue statement
 - [ ] Return statement
 - [ ] Throw statement
 
@@ -69,10 +69,10 @@
 
 **Other Statements:**
 - [x] Block statement (BlockStatement)
-- [ ] Empty statement (EmptyStatement)
+- [x] Empty statement (EmptyStatement)
 - [ ] Debugger statement
 - [ ] With statement (WithStatement)
-- [ ] Labeled statement (LabeledStatement)
+- [x] Labeled statement (LabeledStatement)
 - [x] Expression statement
 
 ### 1.5 Functions & Classes

@@ -57,26 +57,8 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 23,
-      "end": 29,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 43,
-      "end": 49,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
       "start": 43,
       "end": 49,
       "labels": [

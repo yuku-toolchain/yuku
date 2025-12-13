@@ -77,15 +77,6 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 37,
-      "end": 43,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'else'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 49,

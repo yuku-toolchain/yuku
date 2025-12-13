@@ -143,26 +143,8 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 24,
-      "end": 30,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 72,
-      "end": 78,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
       "start": 72,
       "end": 78,
       "labels": [
@@ -179,15 +161,6 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 89,
-      "end": 95,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 106,
@@ -197,26 +170,8 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 106,
-      "end": 112,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 123,
-      "end": 129,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
       "start": 123,
       "end": 129,
       "labels": [

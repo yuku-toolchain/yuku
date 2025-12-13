@@ -160,15 +160,6 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 49,
-      "end": 54,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'with'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 79,
@@ -187,15 +178,6 @@
     },
     {
       "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
-      "start": 95,
-      "end": 100,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'do'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 125,
@@ -207,15 +189,6 @@
       "severity": "error",
       "message": "Unexpected token 'throw'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 135,
-      "end": 140,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after if condition",
-      "help": null,
       "start": 135,
       "end": 140,
       "labels": [
