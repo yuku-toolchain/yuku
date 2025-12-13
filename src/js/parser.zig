@@ -208,14 +208,12 @@ pub const Parser = struct {
     pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
         const statements_checkpoint = self.scratch_statements.begin();
 
-        // Reset directive prologue state for this body
         self.state.in_directive_prologue = true;
 
         while (!self.isAtBodyEnd(terminator)) {
             if (try statements.parseStatement(self)) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
 
-                // End directive prologue after first non-directive statement
                 if (self.state.in_directive_prologue and self.getData(statement) != .directive) {
                     self.state.in_directive_prologue = false;
                 }

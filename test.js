@@ -1,1 +1,2 @@
-for (;;) break loop;
+"use strict";
+"use strict";

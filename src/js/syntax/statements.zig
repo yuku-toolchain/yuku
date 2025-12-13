@@ -44,7 +44,7 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
     const expression_span = parser.getSpan(expression);
     const expression_data = parser.getData(expression);
 
-    // Check for labeled statement: identifier ':'
+    // labeled statement: identifier ':'
     if (expression_data == .identifier_reference and parser.current_token.type == .colon) {
         return parseLabeledStatementRest(parser, expression);
     }
@@ -57,7 +57,6 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
     const start = expression_span.start;
     const end = try parser.eatSemicolon(expression_span.end);
 
-    // Directive: string literal at start of body (directive prologue)
     if (expression_data == .string_literal and parser.state.in_directive_prologue) {
         const value_start = expression_data.string_literal.raw_start + 1;
         const value_len: u16 = expression_data.string_literal.raw_len - 2;
@@ -78,12 +77,11 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
 }
 
 /// https://tc39.es/ecma262/#sec-labelled-statements
-/// Called after identifier has been parsed and ':' is the current token
 fn parseLabeledStatementRest(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.NodeIndex {
     const id_data = parser.getData(identifier);
     const id_span = parser.getSpan(identifier);
 
-    // Convert IdentifierReference to LabelIdentifier
+    // IdentifierReference to LabelIdentifier
     const label = try parser.addNode(.{
         .label_identifier = .{
             .name_start = id_data.identifier_reference.name_start,
@@ -133,10 +131,7 @@ pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'switch'", null)) return null;
 
-    const discriminant = try expressions.parseExpression(parser, 0, .{}) orelse {
-        try parser.report(parser.current_token.span, "Expected expression in switch", .{});
-        return null;
-    };
+    const discriminant = try expressions.parseExpression(parser, 0, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after switch expression", null)) return null;
     if (!try parser.expect(.left_brace, "Expected '{' to start switch body", null)) return null;
@@ -172,11 +167,9 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance(); // consume 'case' or 'default'
 
     var test_expr: ast.NodeIndex = ast.null_node;
+
     if (!is_default) {
-        test_expr = try expressions.parseExpression(parser, 0, .{}) orelse {
-            try parser.report(parser.current_token.span, "Expected expression after 'case'", .{});
-            return null;
-        };
+        test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
     }
 
     const colon_end = parser.current_token.span.end;
@@ -221,27 +214,18 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'if'", null)) return null;
 
-    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse {
-        try parser.report(parser.current_token.span, "Expected expression in if condition", .{});
-        return null;
-    };
+    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after if condition", null)) return null;
 
-    const consequent = try parseStatement(parser) orelse {
-        try parser.report(parser.current_token.span, "Expected statement after if condition", .{});
-        return null;
-    };
+    const consequent = try parseStatement(parser) orelse return null;
 
     var end = parser.getSpan(consequent).end;
     var alternate: ast.NodeIndex = ast.null_node;
 
     if (parser.current_token.type == .@"else") {
         try parser.advance(); // consume 'else'
-        alternate = try parseStatement(parser) orelse {
-            try parser.report(parser.current_token.span, "Expected statement after 'else'", .{});
-            return null;
-        };
+        alternate = try parseStatement(parser) orelse return null;
         end = parser.getSpan(alternate).end;
     }
 
@@ -319,45 +303,48 @@ fn parseForStatement(parser: *Parser, is_await: bool) Error!?ast.NodeIndex {
             return null;
         }
         try parser.advance(); // consume 'await'
-        // Continue parsing with is_await = true (don't call recursively)
+
+        // continue parsing with is_await = true
+
         if (!try parser.expect(.left_paren, "Expected '(' after 'for await'", null)) return null;
+
         return parseForHead(parser, start, true);
     }
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'for'", null)) return null;
 
-    // Parse the first part and determine which kind of for statement this is
+    // first part and determine which kind of for statement this is
     return parseForHead(parser, start, is_await);
 }
 
-/// Parse the head of a for statement to determine its type
+/// parse the head of a for statement to determine its type
 fn parseForHead(parser: *Parser, start: u32, is_await: bool) Error!?ast.NodeIndex {
     const token_type = parser.current_token.type;
 
-    // Empty init: for (;;)
+    // empty init: for (;;)
     if (token_type == .semicolon) {
         return parseForStatementRest(parser, start, ast.null_node);
     }
 
-    // Variable declaration: for (var/let/const ... )
+    // variable declaration: for (var/let/const ... )
     if (token_type == .@"var" or token_type == .let or token_type == .@"const") {
         return parseForWithDeclaration(parser, start, is_await);
     }
 
-    // Expression or assignment target: for (expr in/of ...) or for (expr; ...)
+    // expression or assignment target: for (expr in/of ...) or for (expr; ...)
     return parseForWithExpression(parser, start, is_await);
 }
 
-/// Parse for loop starting with variable declaration
+/// for loop starting with variable declaration
 fn parseForWithDeclaration(parser: *Parser, start: u32, is_await: bool) Error!?ast.NodeIndex {
     const decl_start = parser.current_token.span.start;
     const kind = parseVariableKindForLoop(parser) orelse return null;
 
-    // Parse first declarator
+    // first declarator
     const first_declarator = try parseForLoopDeclarator(parser) orelse return null;
     const first_end = parser.getSpan(first_declarator).end;
 
-    // Check for for-in/for-of
+    // check for for-in/for-of
     if (parser.current_token.type == .in) {
         // for (var/let/const x in ...)
         if (is_await) {
@@ -375,12 +362,14 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_await: bool) Error!?a
         return parseForOfStatementRest(parser, start, decl, is_await);
     }
 
-    // Regular for statement - might have more declarators
+    // regular for statement, might have more declarators
     var end = first_end;
+
     const checkpoint = parser.scratch_a.begin();
+
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
-    // Additional declarators: for (let a = 1, b = 2; ...)
+    // additional declarators: for (let a = 1, b = 2; ...)
     while (parser.current_token.type == .comma) {
         try parser.advance();
         const declarator = try parseForLoopDeclarator(parser) orelse {
@@ -401,9 +390,9 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_await: bool) Error!?a
     return parseForStatementRest(parser, start, decl);
 }
 
-/// Parse for loop starting with expression
+/// for loop starting with expression
 fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?ast.NodeIndex {
-    // Disable 'in' as binary operator while parsing for-loop initializer
+    // disable 'in' as binary operator while parsing for-loop initializer
     const saved_allow_in = parser.context.allow_in;
     parser.context.allow_in = false;
     const expr = try expressions.parseExpression(parser, 0, .{}) orelse {
@@ -412,7 +401,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
     };
     parser.context.allow_in = saved_allow_in;
 
-    // Check for for-in/for-of
+    // check for for-in/for-of
     if (parser.current_token.type == .in) {
         // for (expr in ...)
         if (is_await) {
@@ -420,47 +409,41 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
             return null;
         }
 
-        // Convert expression to pattern if needed (e.g., [a, b] -> ArrayPattern)
         const left = try grammar.expressionToPattern(parser, expr) orelse return null;
         return parseForInStatementRest(parser, start, left);
     }
 
     if (parser.current_token.type == .of) {
         // for (expr of ...)
-        // Convert expression to pattern if needed (e.g., [a, b] -> ArrayPattern)
         const left = try grammar.expressionToPattern(parser, expr) orelse return null;
         return parseForOfStatementRest(parser, start, left, is_await);
     }
 
-    // Regular for statement
+    // regular for statement
     return parseForStatementRest(parser, start, expr);
 }
 
-/// Parse rest of regular for statement after init
+/// parse rest of regular for statement after init
 fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error!?ast.NodeIndex {
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop init", null)) return null;
 
-    // Parse test expression
     var test_expr: ast.NodeIndex = ast.null_node;
+
     if (parser.current_token.type != .semicolon) {
         test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
     }
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop condition", null)) return null;
 
-    // Parse update expression
     var update: ast.NodeIndex = ast.null_node;
+
     if (parser.current_token.type != .right_paren) {
         update = try expressions.parseExpression(parser, 0, .{}) orelse return null;
     }
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-loop update", null)) return null;
 
-    // Parse body
-    const body = try parseStatement(parser) orelse {
-        try parser.report(parser.current_token.span, "Expected statement after for", .{});
-        return null;
-    };
+    const body = try parseStatement(parser) orelse return null;
 
     return try parser.addNode(.{
         .for_statement = .{
@@ -472,7 +455,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error
     }, .{ .start = start, .end = parser.getSpan(body).end });
 }
 
-/// Parse rest of for-in statement after left
+/// rest of for-in statement after left
 fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance(); // consume 'in'
 
@@ -480,10 +463,7 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex) Err
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-in expression", null)) return null;
 
-    const body = try parseStatement(parser) orelse {
-        try parser.report(parser.current_token.span, "Expected statement after for-in", .{});
-        return null;
-    };
+    const body = try parseStatement(parser) orelse return null;
 
     return try parser.addNode(.{
         .for_in_statement = .{
@@ -494,7 +474,7 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex) Err
     }, .{ .start = start, .end = parser.getSpan(body).end });
 }
 
-/// Parse rest of for-of statement after left
+/// rest of for-of statement after left
 fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_await: bool) Error!?ast.NodeIndex {
     try parser.advance(); // consume 'of'
 
@@ -503,10 +483,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-of expression", null)) return null;
 
-    const body = try parseStatement(parser) orelse {
-        try parser.report(parser.current_token.span, "Expected statement after for-of", .{});
-        return null;
-    };
+    const body = try parseStatement(parser) orelse return null;
 
     return try parser.addNode(.{
         .for_of_statement = .{
@@ -518,7 +495,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
     }, .{ .start = start, .end = parser.getSpan(body).end });
 }
 
-/// Parse variable kind for for loops (doesn't consume semicolon)
+/// variable kind for for loops
 fn parseVariableKindForLoop(parser: *Parser) ?ast.VariableKind {
     const token_type = parser.current_token.type;
     parser.advance() catch return null;
@@ -531,7 +508,7 @@ fn parseVariableKindForLoop(parser: *Parser) ?ast.VariableKind {
     };
 }
 
-/// Parse a single variable declarator for for loops (no required initializer for const in for-in/of)
+/// a single variable declarator for for loops
 fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
     const decl_start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
@@ -550,7 +527,7 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{ .variable_declarator = .{ .id = id, .init = init } }, .{ .start = decl_start, .end = end });
 }
 
-/// Create a variable declaration with a single declarator
+/// create a variable declaration with a single declarator
 fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: ast.NodeIndex, decl_start: u32, decl_end: u32) Error!ast.NodeIndex {
     const checkpoint = parser.scratch_a.begin();
     try parser.scratch_a.append(parser.allocator(), declarator);
