@@ -24,7 +24,6 @@ pub fn parseExpression(parser: *Parser, precedence: u5, opts: ParseExpressionOpt
         const current_type = parser.current_token.type;
         if (current_type == .eof) break;
 
-        // 'in' is not allowed as binary operator in for-loop headers
         if (current_type == .in and !parser.context.allow_in) break;
 
         const left_binding_power = parser.current_token.leftBindingPower();
