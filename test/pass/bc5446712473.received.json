@@ -6,6 +6,84 @@
     "sourceType": "script",
     "body": [
       {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 42,
+        "test": {
+          "type": "Identifier",
+          "start": 7,
+          "end": 8,
+          "name": "a"
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 10,
+          "end": 42,
+          "expression": {
+            "type": "ParenthesizedExpression",
+            "start": 10,
+            "end": 41,
+            "expression": {
+              "type": "CallExpression",
+              "start": 11,
+              "end": 40,
+              "callee": {
+                "type": "ParenthesizedExpression",
+                "start": 11,
+                "end": 38,
+                "expression": {
+                  "type": "FunctionExpression",
+                  "start": 12,
+                  "end": 37,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 24,
+                    "end": 37,
+                    "body": [
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 28,
+                        "end": 35,
+                        "expression": {
+                          "type": "CallExpression",
+                          "start": 28,
+                          "end": 34,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 28,
+                            "end": 29,
+                            "name": "b"
+                          },
+                          "arguments": [
+                            {
+                              "type": "Literal",
+                              "start": 30,
+                              "end": 33,
+                              "value": "c",
+                              "raw": "\"c\""
+                            }
+                          ],
+                          "optional": false
+                        }
+                      }
+                    ]
+                  },
+                  "expression": false
+                }
+              },
+              "arguments": [
+              ],
+              "optional": false
+            }
+          }
+        }
+      },
+      {
         "type": "TryStatement",
         "start": 43,
         "end": 73,
@@ -67,32 +145,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 21,
-      "end": 22,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 36,
-      "end": 37,
-      "labels": [
-      ]
-    }
   ]
 }

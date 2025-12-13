@@ -5,55 +5,73 @@
     "end": 37,
     "sourceType": "script",
     "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 0,
+        "end": 37,
+        "label": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "a"
+        },
+        "body": {
+          "type": "LabeledStatement",
+          "start": 3,
+          "end": 37,
+          "label": {
+            "type": "Identifier",
+            "start": 3,
+            "end": 4,
+            "name": "c"
+          },
+          "body": {
+            "type": "LabeledStatement",
+            "start": 6,
+            "end": 37,
+            "label": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 7,
+              "name": "b"
+            },
+            "body": {
+              "type": "WhileStatement",
+              "start": 9,
+              "end": 37,
+              "test": {
+                "type": "Literal",
+                "start": 16,
+                "end": 20,
+                "value": true,
+                "raw": "true"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 22,
+                "end": 37,
+                "body": [
+                  {
+                    "type": "ContinueStatement",
+                    "start": 24,
+                    "end": 35,
+                    "label": {
+                      "type": "Identifier",
+                      "start": 33,
+                      "end": 34,
+                      "name": "a"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 14,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 9,
-      "end": 14,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 9,
-      "end": 14,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 9,
-      "end": 14,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 36,
-      "end": 37,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -125,27 +125,38 @@
           "end": 99,
           "body": [
             {
-              "type": "IfStatement",
-              "start": 82,
+              "type": "WithStatement",
+              "start": 73,
               "end": 97,
-              "test": {
+              "object": {
                 "type": "Identifier",
-                "start": 86,
-                "end": 87,
-                "name": "b"
+                "start": 79,
+                "end": 80,
+                "name": "a"
               },
-              "consequent": {
-                "type": "ThrowStatement",
-                "start": 89,
+              "body": {
+                "type": "IfStatement",
+                "start": 82,
                 "end": 97,
-                "argument": {
+                "test": {
                   "type": "Identifier",
-                  "start": 95,
-                  "end": 96,
-                  "name": "c"
-                }
-              },
-              "alternate": null
+                  "start": 86,
+                  "end": 87,
+                  "name": "b"
+                },
+                "consequent": {
+                  "type": "ThrowStatement",
+                  "start": 89,
+                  "end": 97,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 95,
+                    "end": 96,
+                    "name": "c"
+                  }
+                },
+                "alternate": null
+              }
             }
           ]
         },
@@ -177,27 +188,38 @@
           "end": 147,
           "body": [
             {
-              "type": "IfStatement",
-              "start": 120,
-              "end": 135,
+              "type": "DoWhileStatement",
+              "start": 117,
+              "end": 145,
+              "body": {
+                "type": "IfStatement",
+                "start": 120,
+                "end": 135,
+                "test": {
+                  "type": "Identifier",
+                  "start": 124,
+                  "end": 125,
+                  "name": "b"
+                },
+                "consequent": {
+                  "type": "ThrowStatement",
+                  "start": 127,
+                  "end": 135,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 133,
+                    "end": 134,
+                    "name": "c"
+                  }
+                },
+                "alternate": null
+              },
               "test": {
                 "type": "Identifier",
-                "start": 124,
-                "end": 125,
-                "name": "b"
-              },
-              "consequent": {
-                "type": "ThrowStatement",
-                "start": 127,
-                "end": 135,
-                "argument": {
-                  "type": "Identifier",
-                  "start": 133,
-                  "end": 134,
-                  "name": "c"
-                }
-              },
-              "alternate": null
+                "start": 143,
+                "end": 144,
+                "name": "a"
+              }
             }
           ]
         },
@@ -218,32 +240,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 73,
-      "end": 77,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 117,
-      "end": 119,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 136,
-      "end": 141,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -5,6 +5,42 @@
     "end": 36,
     "sourceType": "script",
     "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 36,
+        "test": {
+          "type": "Literal",
+          "start": 7,
+          "end": 11,
+          "value": true,
+          "raw": "true"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 36,
+          "body": [
+            {
+              "type": "BreakStatement",
+              "start": 15,
+              "end": 20,
+              "label": null
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 32,
+              "end": 34,
+              "expression": {
+                "type": "Identifier",
+                "start": 32,
+                "end": 33,
+                "name": "a"
+              }
+            }
+          ]
+        }
+      }
     ]
   },
   "comments": [
@@ -16,23 +52,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 35,
-      "end": 36,
-      "labels": [
-      ]
-    }
   ]
 }

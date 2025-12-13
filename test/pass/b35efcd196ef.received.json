@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 81,
+        "end": 110,
         "id": {
           "type": "Identifier",
           "start": 9,
@@ -22,110 +22,136 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 81,
+          "end": 110,
           "body": [
             {
-              "type": "ExpressionStatement",
-              "start": 52,
-              "end": 56,
-              "expression": {
-                "type": "CallExpression",
-                "start": 52,
-                "end": 55,
-                "callee": {
-                  "type": "Identifier",
-                  "start": 52,
-                  "end": 53,
-                  "name": "c"
-                },
-                "arguments": [
-                ],
-                "optional": false
-              }
-            },
-            {
-              "type": "VariableDeclaration",
-              "start": 63,
-              "end": 75,
-              "kind": "var",
-              "declarations": [
-                {
-                  "type": "VariableDeclarator",
-                  "start": 67,
-                  "end": 74,
-                  "id": {
-                    "type": "Identifier",
-                    "start": 67,
-                    "end": 68,
-                    "name": "d"
+              "type": "WhileStatement",
+              "start": 17,
+              "end": 108,
+              "test": {
+                "type": "Identifier",
+                "start": 24,
+                "end": 25,
+                "name": "b"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 27,
+                "end": 108,
+                "body": [
+                  {
+                    "type": "BlockStatement",
+                    "start": 33,
+                    "end": 81,
+                    "body": [
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 41,
+                        "end": 45,
+                        "expression": {
+                          "type": "CallExpression",
+                          "start": 41,
+                          "end": 44,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 41,
+                            "end": 42,
+                            "name": "c"
+                          },
+                          "arguments": [
+                          ],
+                          "optional": false
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 52,
+                        "end": 56,
+                        "expression": {
+                          "type": "CallExpression",
+                          "start": 52,
+                          "end": 55,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 52,
+                            "end": 53,
+                            "name": "c"
+                          },
+                          "arguments": [
+                          ],
+                          "optional": false
+                        }
+                      },
+                      {
+                        "type": "VariableDeclaration",
+                        "start": 63,
+                        "end": 75,
+                        "kind": "var",
+                        "declarations": [
+                          {
+                            "type": "VariableDeclarator",
+                            "start": 67,
+                            "end": 74,
+                            "id": {
+                              "type": "Identifier",
+                              "start": 67,
+                              "end": 68,
+                              "name": "d"
+                            },
+                            "init": {
+                              "type": "ParenthesizedExpression",
+                              "start": 71,
+                              "end": 74,
+                              "expression": {
+                                "type": "Literal",
+                                "start": 72,
+                                "end": 73,
+                                "value": 1,
+                                "raw": "1"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
                   },
-                  "init": {
-                    "type": "ParenthesizedExpression",
-                    "start": 71,
-                    "end": 74,
-                    "expression": {
-                      "type": "Literal",
-                      "start": 72,
-                      "end": 73,
-                      "value": 1,
-                      "raw": "1"
-                    }
+                  {
+                    "type": "BlockStatement",
+                    "start": 86,
+                    "end": 104,
+                    "body": [
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 94,
+                        "end": 98,
+                        "expression": {
+                          "type": "CallExpression",
+                          "start": 94,
+                          "end": 97,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 94,
+                            "end": 95,
+                            "name": "c"
+                          },
+                          "arguments": [
+                          ],
+                          "optional": false
+                        }
+                      }
+                    ]
                   }
-                }
-              ]
+                ]
+              }
             }
           ]
         },
         "expression": false
-      },
-      {
-        "type": "BlockStatement",
-        "start": 86,
-        "end": 104,
-        "body": [
-          {
-            "type": "ExpressionStatement",
-            "start": 94,
-            "end": 98,
-            "expression": {
-              "type": "CallExpression",
-              "start": 94,
-              "end": 97,
-              "callee": {
-                "type": "Identifier",
-                "start": 94,
-                "end": 95,
-                "name": "c"
-              },
-              "arguments": [
-              ],
-              "optional": false
-            }
-          }
-        ]
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 17,
-      "end": 22,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 107,
-      "end": 108,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -8,15 +8,39 @@
       {
         "type": "ForStatement",
         "start": 0,
-        "end": 41,
+        "end": 43,
         "init": null,
         "test": null,
         "update": null,
         "body": {
           "type": "BlockStatement",
           "start": 9,
-          "end": 41,
+          "end": 43,
           "body": [
+            {
+              "type": "WithStatement",
+              "start": 13,
+              "end": 41,
+              "object": {
+                "type": "Identifier",
+                "start": 19,
+                "end": 20,
+                "name": "a"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 22,
+                "end": 41,
+                "body": [
+                  {
+                    "type": "ContinueStatement",
+                    "start": 28,
+                    "end": 37,
+                    "label": null
+                  }
+                ]
+              }
+            }
           ]
         }
       }
@@ -25,23 +49,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 13,
-      "end": 17,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 42,
-      "end": 43,
-      "labels": [
-      ]
-    }
   ]
 }

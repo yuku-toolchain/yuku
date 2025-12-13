@@ -388,20 +388,29 @@
             }
           }
         }
+      },
+      {
+        "type": "WithStatement",
+        "start": 140,
+        "end": 151,
+        "object": {
+          "type": "Identifier",
+          "start": 146,
+          "end": 147,
+          "name": "g"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 149,
+          "end": 151,
+          "body": [
+          ]
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 140,
-      "end": 144,
-      "labels": [
-      ]
-    }
   ]
 }

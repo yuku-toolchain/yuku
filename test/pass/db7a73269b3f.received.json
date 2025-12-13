@@ -5,19 +5,58 @@
     "end": 23,
     "sourceType": "script",
     "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 22,
+        "test": {
+          "type": "BinaryExpression",
+          "start": 7,
+          "end": 18,
+          "left": {
+            "type": "ParenthesizedExpression",
+            "start": 7,
+            "end": 12,
+            "expression": {
+              "type": "UpdateExpression",
+              "start": 8,
+              "end": 11,
+              "operator": "--",
+              "prefix": false,
+              "argument": {
+                "type": "Identifier",
+                "start": 8,
+                "end": 9,
+                "name": "a"
+              }
+            }
+          },
+          "operator": ">",
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 15,
+            "end": 18,
+            "expression": {
+              "type": "Literal",
+              "start": 16,
+              "end": 17,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 20,
+          "end": 22,
+          "body": [
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

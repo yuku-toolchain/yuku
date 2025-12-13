@@ -79,9 +79,12 @@ pub const Serializer = struct {
             .for_statement => |d| self.writeForStatement(d, span),
             .for_in_statement => |d| self.writeForInStatement(d, span),
             .for_of_statement => |d| self.writeForOfStatement(d, span),
+            .while_statement => |d| self.writeWhileStatement(d, span),
+            .do_while_statement => |d| self.writeDoWhileStatement(d, span),
             .break_statement => |d| self.writeBreakStatement(d, span),
             .continue_statement => |d| self.writeContinueStatement(d, span),
             .labeled_statement => |d| self.writeLabeledStatement(d, span),
+            .with_statement => |d| self.writeWithStatement(d, span),
             .return_statement => |d| self.writeReturnStatement(d, span),
             .throw_statement => |d| self.writeThrowStatement(d, span),
             .try_statement => |d| self.writeTryStatement(d, span),
@@ -311,6 +314,24 @@ pub const Serializer = struct {
         try self.endObject();
     }
 
+    fn writeWhileStatement(self: *Self, data: ast.WhileStatement, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("WhileStatement");
+        try self.fieldSpan(span);
+        try self.fieldNode("test", data.@"test");
+        try self.fieldNode("body", data.body);
+        try self.endObject();
+    }
+
+    fn writeDoWhileStatement(self: *Self, data: ast.DoWhileStatement, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("DoWhileStatement");
+        try self.fieldSpan(span);
+        try self.fieldNode("body", data.body);
+        try self.fieldNode("test", data.@"test");
+        try self.endObject();
+    }
+
     fn writeBreakStatement(self: *Self, data: ast.BreakStatement, span: ast.Span) !void {
         try self.beginObject();
         try self.fieldType("BreakStatement");
@@ -332,6 +353,15 @@ pub const Serializer = struct {
         try self.fieldType("LabeledStatement");
         try self.fieldSpan(span);
         try self.fieldNode("label", data.label);
+        try self.fieldNode("body", data.body);
+        try self.endObject();
+    }
+
+    fn writeWithStatement(self: *Self, data: ast.WithStatement, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("WithStatement");
+        try self.fieldSpan(span);
+        try self.fieldNode("object", data.object);
         try self.fieldNode("body", data.body);
         try self.endObject();
     }

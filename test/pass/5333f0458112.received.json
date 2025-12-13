@@ -8,7 +8,7 @@
       {
         "type": "IfStatement",
         "start": 146,
-        "end": 224,
+        "end": 244,
         "test": {
           "type": "Identifier",
           "start": 150,
@@ -18,35 +18,78 @@
         "consequent": {
           "type": "BlockStatement",
           "start": 153,
-          "end": 224,
+          "end": 226,
           "body": [
             {
-              "type": "IfStatement",
-              "start": 178,
-              "end": 218,
-              "test": {
+              "type": "WithStatement",
+              "start": 159,
+              "end": 224,
+              "object": {
                 "type": "Identifier",
-                "start": 182,
-                "end": 183,
-                "name": "c"
+                "start": 165,
+                "end": 166,
+                "name": "b"
               },
-              "consequent": {
+              "body": {
                 "type": "BlockStatement",
-                "start": 185,
-                "end": 218,
+                "start": 168,
+                "end": 224,
                 "body": [
                   {
-                    "type": "DebuggerStatement",
-                    "start": 199,
-                    "end": 208
+                    "type": "IfStatement",
+                    "start": 178,
+                    "end": 218,
+                    "test": {
+                      "type": "Identifier",
+                      "start": 182,
+                      "end": 183,
+                      "name": "c"
+                    },
+                    "consequent": {
+                      "type": "BlockStatement",
+                      "start": 185,
+                      "end": 218,
+                      "body": [
+                        {
+                          "type": "DebuggerStatement",
+                          "start": 199,
+                          "end": 208
+                        }
+                      ]
+                    },
+                    "alternate": null
                   }
                 ]
-              },
-              "alternate": null
+              }
             }
           ]
         },
-        "alternate": null
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 232,
+          "end": 244,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 238,
+              "end": 242,
+              "expression": {
+                "type": "CallExpression",
+                "start": 238,
+                "end": 241,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 238,
+                  "end": 239,
+                  "name": "d"
+                },
+                "arguments": [
+                ],
+                "optional": false
+              }
+            }
+          ]
+        }
       }
     ]
   },
@@ -83,32 +126,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 159,
-      "end": 163,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 225,
-      "end": 226,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 243,
-      "end": 244,
-      "labels": [
-      ]
-    }
   ]
 }

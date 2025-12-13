@@ -43,6 +43,22 @@
                       "raw": "'use\\x20strict'"
                     },
                     "directive": "use\\x20strict"
+                  },
+                  {
+                    "type": "WithStatement",
+                    "start": 32,
+                    "end": 41,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 38,
+                      "end": 39,
+                      "name": "a"
+                    },
+                    "body": {
+                      "type": "EmptyStatement",
+                      "start": 40,
+                      "end": 41
+                    }
                   }
                 ]
               },
@@ -59,14 +75,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 32,
-      "end": 36,
-      "labels": [
-      ]
-    }
   ]
 }

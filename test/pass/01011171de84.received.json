@@ -46,6 +46,22 @@
                         "value": "a",
                         "raw": "\"a\""
                       }
+                    },
+                    {
+                      "type": "WithStatement",
+                      "start": 31,
+                      "end": 41,
+                      "object": {
+                        "type": "Identifier",
+                        "start": 37,
+                        "end": 38,
+                        "name": "b"
+                      },
+                      "body": {
+                        "type": "EmptyStatement",
+                        "start": 40,
+                        "end": 41
+                      }
                     }
                   ]
                 },
@@ -63,14 +79,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 31,
-      "end": 35,
-      "labels": [
-      ]
-    }
   ]
 }

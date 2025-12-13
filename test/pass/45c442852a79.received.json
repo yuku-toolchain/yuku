@@ -11,6 +11,23 @@
         "end": 34,
         "body": [
           {
+            "type": "DoWhileStatement",
+            "start": 4,
+            "end": 23,
+            "body": {
+              "type": "EmptyStatement",
+              "start": 7,
+              "end": 8
+            },
+            "test": {
+              "type": "Literal",
+              "start": 16,
+              "end": 21,
+              "value": false,
+              "raw": "false"
+            }
+          },
+          {
             "type": "ExpressionStatement",
             "start": 26,
             "end": 32,
@@ -29,23 +46,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 4,
-      "end": 6,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 14,
-      "labels": [
-      ]
-    }
   ]
 }

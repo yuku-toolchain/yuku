@@ -55,8 +55,8 @@
 - [x] For statement (ForStatement)
 - [x] For-in statement (ForInStatement)
 - [x] For-of statement (ForOfStatement)
-- [ ] While statement (WhileStatement)
-- [ ] Do-while statement (DoWhileStatement)
+- [x] While statement (WhileStatement)
+- [x] Do-while statement (DoWhileStatement)
 
 **Jump Statements:**
 - [x] Break statement
@@ -71,7 +71,7 @@
 - [x] Block statement (BlockStatement)
 - [x] Empty statement (EmptyStatement)
 - [x] Debugger statement
-- [ ] With statement (WithStatement)
+- [x] With statement (WithStatement)
 - [x] Labeled statement (LabeledStatement)
 - [x] Expression statement
 
@@ -121,46 +121,3 @@
 - [ ] Private class features
 - [ ] Static initialization blocks
 - [ ] Top-level await
-
-## Phase 3: TypeScript Support
-
-### 3.1 Type Annotations
-**Basic Types:**
-- [ ] Type annotations on variables
-- [ ] Type annotations on parameters
-- [ ] Return type annotations
-- [ ] Primitive type keywords (string, number, boolean, etc.)
-- [ ] Literal types
-- [ ] Union types (|)
-- [ ] Intersection types (&)
-- [ ] Tuple types
-- [ ] Array types
-- [ ] Function types
-
-**Advanced Types:**
-- [ ] Generic type parameters (<T>)
-- [ ] Conditional types (T extends U ? X : Y)
-- [ ] Mapped types ({ [K in keyof T]: ... })
-- [ ] Template literal types
-- [ ] Index signatures
-- [ ] Utility types (Partial, Pick, Omit, etc.)
-
-### 3.2 TypeScript Declarations
-- [ ] Interface declarations (TSInterfaceDeclaration)
-- [ ] Type alias declarations (TSTypeAliasDeclaration)
-- [ ] Enum declarations (TSEnumDeclaration)
-- [ ] Namespace declarations (TSModuleDeclaration)
-- [ ] Module declarations (declare module)
-- [ ] Ambient declarations (declare)
-
-### 3.3 TypeScript-Specific Features
-- [ ] Type assertions (as, <>)
-- [ ] Non-null assertions (!)
-- [ ] Const assertions (as const)
-- [ ] Satisfies operator
-- [ ] Parameter properties
-- [ ] Abstract classes
-- [ ] Access modifiers (public, private, protected)
-- [ ] Readonly modifier
-- [ ] Optional properties (?)
-- [ ] Definite assignment assertions (!)

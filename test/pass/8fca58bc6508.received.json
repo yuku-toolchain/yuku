@@ -5,46 +5,56 @@
     "end": 49,
     "sourceType": "script",
     "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 0,
+        "end": 48,
+        "label": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "a"
+        },
+        "body": {
+          "type": "DoWhileStatement",
+          "start": 3,
+          "end": 48,
+          "body": {
+            "type": "DoWhileStatement",
+            "start": 6,
+            "end": 34,
+            "body": {
+              "type": "ContinueStatement",
+              "start": 9,
+              "end": 20,
+              "label": {
+                "type": "Identifier",
+                "start": 18,
+                "end": 19,
+                "name": "a"
+              }
+            },
+            "test": {
+              "type": "Literal",
+              "start": 28,
+              "end": 32,
+              "value": true,
+              "raw": "true"
+            }
+          },
+          "test": {
+            "type": "Literal",
+            "start": 42,
+            "end": 46,
+            "value": true,
+            "raw": "true"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 3,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 3,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 21,
-      "end": 26,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 35,
-      "end": 40,
-      "labels": [
-      ]
-    }
   ]
 }

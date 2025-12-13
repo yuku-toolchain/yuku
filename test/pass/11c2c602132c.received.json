@@ -6,14 +6,50 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "ExpressionStatement",
-        "start": 29,
-        "end": 31,
-        "expression": {
+        "type": "LabeledStatement",
+        "start": 0,
+        "end": 33,
+        "label": {
           "type": "Identifier",
-          "start": 29,
-          "end": 30,
-          "name": "a"
+          "start": 0,
+          "end": 1,
+          "name": "b"
+        },
+        "body": {
+          "type": "WhileStatement",
+          "start": 3,
+          "end": 33,
+          "test": {
+            "type": "Literal",
+            "start": 10,
+            "end": 11,
+            "value": 1,
+            "raw": "1"
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 13,
+            "end": 33,
+            "body": [
+              {
+                "type": "ContinueStatement",
+                "start": 17,
+                "end": 26,
+                "label": null
+              },
+              {
+                "type": "ExpressionStatement",
+                "start": 29,
+                "end": 31,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 29,
+                  "end": 30,
+                  "name": "a"
+                }
+              }
+            ]
+          }
         }
       }
     ]
@@ -21,32 +57,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 3,
-      "end": 8,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 3,
-      "end": 8,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 32,
-      "end": 33,
-      "labels": [
-      ]
-    }
   ]
 }

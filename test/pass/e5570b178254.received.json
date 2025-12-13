@@ -5,6 +5,40 @@
     "end": 133,
     "sourceType": "script",
     "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 101,
+        "end": 132,
+        "label": {
+          "type": "Identifier",
+          "start": 101,
+          "end": 102,
+          "name": "a"
+        },
+        "body": {
+          "type": "DoWhileStatement",
+          "start": 104,
+          "end": 132,
+          "body": {
+            "type": "ContinueStatement",
+            "start": 107,
+            "end": 118,
+            "label": {
+              "type": "Identifier",
+              "start": 116,
+              "end": 117,
+              "name": "a"
+            }
+          },
+          "test": {
+            "type": "Literal",
+            "start": 126,
+            "end": 130,
+            "value": true,
+            "raw": "true"
+          }
+        }
+      }
     ]
   },
   "comments": [
@@ -22,32 +56,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 104,
-      "end": 106,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 104,
-      "end": 106,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 119,
-      "end": 124,
-      "labels": [
-      ]
-    }
   ]
 }

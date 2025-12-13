@@ -5,37 +5,51 @@
     "end": 31,
     "sourceType": "script",
     "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 0,
+        "end": 30,
+        "label": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "a"
+        },
+        "body": {
+          "type": "WhileStatement",
+          "start": 3,
+          "end": 30,
+          "test": {
+            "type": "Literal",
+            "start": 10,
+            "end": 14,
+            "value": true,
+            "raw": "true"
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 16,
+            "end": 30,
+            "body": [
+              {
+                "type": "BreakStatement",
+                "start": 20,
+                "end": 28,
+                "label": {
+                  "type": "Identifier",
+                  "start": 26,
+                  "end": 27,
+                  "name": "a"
+                }
+              }
+            ]
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 3,
-      "end": 8,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected statement after label",
-      "help": null,
-      "start": 3,
-      "end": 8,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 29,
-      "end": 30,
-      "labels": [
-      ]
-    }
   ]
 }

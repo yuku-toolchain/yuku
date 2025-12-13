@@ -5,6 +5,79 @@
     "end": 70,
     "sourceType": "script",
     "body": [
+      {
+        "type": "WithStatement",
+        "start": 0,
+        "end": 69,
+        "object": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 35,
+          "end": 69,
+          "expression": {
+            "type": "ParenthesizedExpression",
+            "start": 35,
+            "end": 68,
+            "expression": {
+              "type": "CallExpression",
+              "start": 36,
+              "end": 67,
+              "callee": {
+                "type": "FunctionExpression",
+                "start": 36,
+                "end": 65,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 48,
+                  "end": 65,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 54,
+                      "end": 61,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 54,
+                        "end": 60,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 54,
+                          "end": 55,
+                          "name": "b"
+                        },
+                        "arguments": [
+                          {
+                            "type": "Literal",
+                            "start": 56,
+                            "end": 59,
+                            "value": "c",
+                            "raw": "'c'"
+                          }
+                        ],
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "arguments": [
+              ],
+              "optional": false
+            }
+          }
+        }
+      }
     ]
   },
   "comments": [
@@ -16,32 +89,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 4,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 45,
-      "end": 46,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 64,
-      "end": 65,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -6,20 +6,69 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "ExpressionStatement",
-        "start": 10,
-        "end": 14,
-        "expression": {
-          "type": "UpdateExpression",
-          "start": 10,
-          "end": 13,
-          "operator": "--",
-          "prefix": false,
-          "argument": {
+        "type": "DoWhileStatement",
+        "start": 0,
+        "end": 30,
+        "body": {
+          "type": "BlockStatement",
+          "start": 3,
+          "end": 16,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 5,
+              "end": 9,
+              "expression": {
+                "type": "UpdateExpression",
+                "start": 5,
+                "end": 8,
+                "operator": "++",
+                "prefix": false,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 5,
+                  "end": 6,
+                  "name": "a"
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 10,
+              "end": 14,
+              "expression": {
+                "type": "UpdateExpression",
+                "start": 10,
+                "end": 13,
+                "operator": "--",
+                "prefix": false,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 10,
+                  "end": 11,
+                  "name": "b"
+                }
+              }
+            }
+          ]
+        },
+        "test": {
+          "type": "BinaryExpression",
+          "start": 24,
+          "end": 29,
+          "left": {
             "type": "Identifier",
-            "start": 10,
-            "end": 11,
-            "name": "b"
+            "start": 24,
+            "end": 25,
+            "name": "a"
+          },
+          "operator": "<",
+          "right": {
+            "type": "Literal",
+            "start": 28,
+            "end": 29,
+            "value": 1,
+            "raw": "1"
           }
         }
       }
@@ -28,32 +77,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 15,
-      "end": 16,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 17,
-      "end": 22,
-      "labels": [
-      ]
-    }
   ]
 }

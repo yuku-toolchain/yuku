@@ -5,6 +5,24 @@
     "end": 56,
     "sourceType": "script",
     "body": [
+      {
+        "type": "DoWhileStatement",
+        "start": 0,
+        "end": 25,
+        "body": {
+          "type": "ContinueStatement",
+          "start": 3,
+          "end": 12,
+          "label": null
+        },
+        "test": {
+          "type": "Literal",
+          "start": 20,
+          "end": 24,
+          "value": true,
+          "raw": "true"
+        }
+      }
     ]
   },
   "comments": [
@@ -16,23 +34,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 13,
-      "end": 18,
-      "labels": [
-      ]
-    }
   ]
 }

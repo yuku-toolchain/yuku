@@ -39,6 +39,22 @@
                     "raw": "'use\\nstrict'"
                   },
                   "directive": "use\\nstrict"
+                },
+                {
+                  "type": "WithStatement",
+                  "start": 30,
+                  "end": 39,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 36,
+                    "end": 37,
+                    "name": "a"
+                  },
+                  "body": {
+                    "type": "EmptyStatement",
+                    "start": 38,
+                    "end": 39
+                  }
                 }
               ]
             },
@@ -51,14 +67,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 34,
-      "labels": [
-      ]
-    }
   ]
 }

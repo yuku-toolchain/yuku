@@ -5,19 +5,34 @@
     "end": 14,
     "sourceType": "script",
     "body": [
+      {
+        "type": "WithStatement",
+        "start": 0,
+        "end": 12,
+        "object": {
+          "type": "ObjectExpression",
+          "start": 5,
+          "end": 7,
+          "properties": [
+          ]
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 9,
+          "end": 12,
+          "body": [
+          ]
+        }
+      },
+      {
+        "type": "EmptyStatement",
+        "start": 12,
+        "end": 13
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 4,
-      "labels": [
-      ]
-    }
   ]
 }

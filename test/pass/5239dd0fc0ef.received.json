@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 17,
-        "end": 74,
+        "end": 76,
         "id": {
           "type": "Identifier",
           "start": 26,
@@ -22,7 +22,7 @@
         "body": {
           "type": "BlockStatement",
           "start": 30,
-          "end": 74,
+          "end": 76,
           "body": [
             {
               "type": "VariableDeclaration",
@@ -43,6 +43,35 @@
                   "init": null
                 }
               ]
+            },
+            {
+              "type": "WithStatement",
+              "start": 47,
+              "end": 74,
+              "object": {
+                "type": "Identifier",
+                "start": 53,
+                "end": 54,
+                "name": "c"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 56,
+                "end": 74,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 66,
+                    "end": 68,
+                    "expression": {
+                      "type": "Identifier",
+                      "start": 66,
+                      "end": 67,
+                      "name": "b"
+                    }
+                  }
+                ]
+              }
             }
           ]
         },
@@ -59,23 +88,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 47,
-      "end": 51,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 75,
-      "end": 76,
-      "labels": [
-      ]
-    }
   ]
 }

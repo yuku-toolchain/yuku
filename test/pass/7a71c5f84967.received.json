@@ -5,28 +5,41 @@
     "end": 19,
     "sourceType": "script",
     "body": [
+      {
+        "type": "DoWhileStatement",
+        "start": 0,
+        "end": 19,
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 3,
+          "end": 7,
+          "expression": {
+            "type": "CallExpression",
+            "start": 3,
+            "end": 6,
+            "callee": {
+              "type": "Identifier",
+              "start": 3,
+              "end": 4,
+              "name": "a"
+            },
+            "arguments": [
+            ],
+            "optional": false
+          }
+        },
+        "test": {
+          "type": "Literal",
+          "start": 14,
+          "end": 18,
+          "value": true,
+          "raw": "true"
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 7,
-      "end": 12,
-      "labels": [
-      ]
-    }
   ]
 }

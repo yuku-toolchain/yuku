@@ -5,19 +5,48 @@
     "end": 16,
     "sourceType": "script",
     "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 16,
+        "test": {
+          "type": "CallExpression",
+          "start": 7,
+          "end": 10,
+          "callee": {
+            "type": "Identifier",
+            "start": 7,
+            "end": 8,
+            "name": "a"
+          },
+          "arguments": [
+          ],
+          "optional": false
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 12,
+          "end": 16,
+          "expression": {
+            "type": "CallExpression",
+            "start": 12,
+            "end": 15,
+            "callee": {
+              "type": "Identifier",
+              "start": 12,
+              "end": 13,
+              "name": "b"
+            },
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

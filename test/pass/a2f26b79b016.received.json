@@ -56,6 +56,41 @@
                         }
                       }
                     ]
+                  },
+                  {
+                    "type": "WithStatement",
+                    "start": 68,
+                    "end": 99,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 74,
+                      "end": 75,
+                      "name": "b"
+                    },
+                    "body": {
+                      "type": "ExpressionStatement",
+                      "start": 85,
+                      "end": 99,
+                      "expression": {
+                        "type": "AssignmentExpression",
+                        "start": 85,
+                        "end": 98,
+                        "operator": "=",
+                        "left": {
+                          "type": "Identifier",
+                          "start": 85,
+                          "end": 94,
+                          "name": "arguments"
+                        },
+                        "right": {
+                          "type": "Literal",
+                          "start": 97,
+                          "end": 98,
+                          "value": 2,
+                          "raw": "2"
+                        }
+                      }
+                    }
                   }
                 ]
               },
@@ -78,14 +113,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'with'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 68,
-      "end": 72,
-      "labels": [
-      ]
-    }
   ]
 }

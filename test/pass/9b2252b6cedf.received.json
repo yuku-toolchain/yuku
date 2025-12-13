@@ -5,55 +5,95 @@
     "end": 57,
     "sourceType": "script",
     "body": [
+      {
+        "type": "DoWhileStatement",
+        "start": 0,
+        "end": 56,
+        "body": {
+          "type": "BlockStatement",
+          "start": 3,
+          "end": 45,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 7,
+              "end": 43,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 7,
+                "end": 42,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 8,
+                  "end": 41,
+                  "callee": {
+                    "type": "ParenthesizedExpression",
+                    "start": 8,
+                    "end": 39,
+                    "expression": {
+                      "type": "FunctionExpression",
+                      "start": 9,
+                      "end": 38,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [
+                      ],
+                      "body": {
+                        "type": "BlockStatement",
+                        "start": 21,
+                        "end": 38,
+                        "body": [
+                          {
+                            "type": "ExpressionStatement",
+                            "start": 27,
+                            "end": 34,
+                            "expression": {
+                              "type": "CallExpression",
+                              "start": 27,
+                              "end": 33,
+                              "callee": {
+                                "type": "Identifier",
+                                "start": 27,
+                                "end": 28,
+                                "name": "a"
+                              },
+                              "arguments": [
+                                {
+                                  "type": "Literal",
+                                  "start": 29,
+                                  "end": 32,
+                                  "value": "b",
+                                  "raw": "\"b\""
+                                }
+                              ],
+                              "optional": false
+                            }
+                          }
+                        ]
+                      },
+                      "expression": false
+                    }
+                  },
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
+              }
+            }
+          ]
+        },
+        "test": {
+          "type": "Identifier",
+          "start": 53,
+          "end": 54,
+          "name": "c"
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 18,
-      "end": 19,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 37,
-      "end": 38,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 44,
-      "end": 45,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 46,
-      "end": 51,
-      "labels": [
-      ]
-    }
   ]
 }

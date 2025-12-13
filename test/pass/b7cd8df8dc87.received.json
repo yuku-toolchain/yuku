@@ -6,47 +6,163 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "VariableDeclaration",
-        "start": 79,
-        "end": 85,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 83,
-            "end": 84,
-            "id": {
-              "type": "Identifier",
-              "start": 83,
-              "end": 84,
-              "name": "a"
-            },
-            "init": null
+        "type": "WhileStatement",
+        "start": 8,
+        "end": 125,
+        "test": {
+          "type": "UnaryExpression",
+          "start": 15,
+          "end": 39,
+          "operator": "!",
+          "prefix": true,
+          "argument": {
+            "type": "ParenthesizedExpression",
+            "start": 16,
+            "end": 39,
+            "expression": {
+              "type": "LogicalExpression",
+              "start": 17,
+              "end": 38,
+              "left": {
+                "type": "ParenthesizedExpression",
+                "start": 17,
+                "end": 25,
+                "expression": {
+                  "type": "LogicalExpression",
+                  "start": 18,
+                  "end": 24,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 18,
+                    "end": 19,
+                    "name": "a"
+                  },
+                  "operator": "&&",
+                  "right": {
+                    "type": "Identifier",
+                    "start": 23,
+                    "end": 24,
+                    "name": "b"
+                  }
+                }
+              },
+              "operator": "||",
+              "right": {
+                "type": "ParenthesizedExpression",
+                "start": 29,
+                "end": 38,
+                "expression": {
+                  "type": "BinaryExpression",
+                  "start": 30,
+                  "end": 37,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 30,
+                    "end": 31,
+                    "name": "c"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "Literal",
+                    "start": 34,
+                    "end": 37,
+                    "value": "0",
+                    "raw": "\"0\""
+                  }
+                }
+              }
+            }
           }
-        ]
-      },
-      {
-        "type": "FunctionDeclaration",
-        "start": 99,
-        "end": 114,
-        "id": {
-          "type": "Identifier",
-          "start": 108,
-          "end": 109,
-          "name": "b"
         },
-        "generator": false,
-        "async": false,
-        "params": [
-        ],
         "body": {
           "type": "BlockStatement",
-          "start": 112,
-          "end": 114,
+          "start": 41,
+          "end": 125,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 56,
+              "end": 65,
+              "expression": {
+                "type": "CallExpression",
+                "start": 56,
+                "end": 64,
+                "callee": {
+                  "type": "MemberExpression",
+                  "start": 56,
+                  "end": 59,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 56,
+                    "end": 57,
+                    "name": "d"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 58,
+                    "end": 59,
+                    "name": "e"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 60,
+                    "end": 63,
+                    "value": "f",
+                    "raw": "\"f\""
+                  }
+                ],
+                "optional": false
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 79,
+              "end": 85,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 83,
+                  "end": 84,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 83,
+                    "end": 84,
+                    "name": "a"
+                  },
+                  "init": null
+                }
+              ]
+            },
+            {
+              "type": "FunctionDeclaration",
+              "start": 99,
+              "end": 114,
+              "id": {
+                "type": "Identifier",
+                "start": 108,
+                "end": 109,
+                "name": "b"
+              },
+              "generator": false,
+              "async": false,
+              "params": [
+              ],
+              "body": {
+                "type": "BlockStatement",
+                "start": 112,
+                "end": 114,
+                "body": [
+                ]
+              },
+              "expression": false
+            }
           ]
-        },
-        "expression": false
+        }
       },
       {
         "type": "ForStatement",
@@ -240,23 +356,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 8,
-      "end": 13,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 124,
-      "end": 125,
-      "labels": [
-      ]
-    }
   ]
 }

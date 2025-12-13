@@ -31,6 +31,9 @@ pub fn parseStatement(parser: *Parser) Error!?ast.NodeIndex {
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
         .@"for" => parseForStatement(parser, false),
+        .@"while" => parseWhileStatement(parser),
+        .do => parseDoWhileStatement(parser),
+        .with => parseWithStatement(parser),
         .@"break" => parseBreakStatement(parser),
         .@"continue" => parseContinueStatement(parser),
         .@"return" => parseReturnStatement(parser),
@@ -245,6 +248,79 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
 pub inline fn canInsertSemicolon(parser: *Parser) bool {
     const current_token = parser.current_token;
     return current_token.type == .eof or current_token.has_line_terminator_before or current_token.type == .right_brace;
+}
+
+/// https://tc39.es/ecma262/#sec-while-statement
+fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume 'while'
+
+    if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
+
+    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+
+    if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
+
+    const body = try parseStatement(parser) orelse return null;
+
+    return try parser.addNode(.{
+        .while_statement = .{
+            .@"test" = test_expr,
+            .body = body,
+        },
+    }, .{ .start = start, .end = parser.getSpan(body).end });
+}
+
+/// https://tc39.es/ecma262/#sec-do-while-statement
+fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume 'do'
+
+    const body = try parseStatement(parser) orelse return null;
+
+    if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) return null;
+    if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
+
+    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+
+    const rparen_end = parser.current_token.span.end;
+    if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
+
+    const end = try parser.eatSemicolon(rparen_end);
+
+    return try parser.addNode(.{
+        .do_while_statement = .{
+            .body = body,
+            .@"test" = test_expr,
+        },
+    }, .{ .start = start, .end = end });
+}
+
+/// https://tc39.es/ecma262/#sec-with-statement
+fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    if (parser.strict_mode) {
+        try parser.report(parser.current_token.span, "'with' statement is not allowed in strict mode", .{});
+        return null;
+    }
+
+    try parser.advance(); // consume 'with'
+
+    if (!try parser.expect(.left_paren, "Expected '(' after 'with'", null)) return null;
+
+    const object = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+
+    if (!try parser.expect(.right_paren, "Expected ')' after with expression", null)) return null;
+
+    const body = try parseStatement(parser) orelse return null;
+
+    return try parser.addNode(.{
+        .with_statement = .{
+            .object = object,
+            .body = body,
+        },
+    }, .{ .start = start, .end = parser.getSpan(body).end });
 }
 
 /// EmptyStatement: `;`

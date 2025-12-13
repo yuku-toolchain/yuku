@@ -1,1 +1,1 @@
-for (let x in obj) label: while(true){}
+with (obj) 10

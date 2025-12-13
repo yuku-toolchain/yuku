@@ -8,15 +8,40 @@
       {
         "type": "ForStatement",
         "start": 0,
-        "end": 53,
+        "end": 55,
         "init": null,
         "test": null,
         "update": null,
         "body": {
           "type": "BlockStatement",
           "start": 9,
-          "end": 53,
+          "end": 55,
           "body": [
+            {
+              "type": "WhileStatement",
+              "start": 15,
+              "end": 53,
+              "test": {
+                "type": "Literal",
+                "start": 22,
+                "end": 26,
+                "value": true,
+                "raw": "true"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 28,
+                "end": 53,
+                "body": [
+                  {
+                    "type": "ContinueStatement",
+                    "start": 38,
+                    "end": 47,
+                    "label": null
+                  }
+                ]
+              }
+            }
           ]
         }
       }
@@ -25,23 +50,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 15,
-      "end": 20,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 54,
-      "end": 55,
-      "labels": [
-      ]
-    }
   ]
 }

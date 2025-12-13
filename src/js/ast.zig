@@ -532,6 +532,33 @@ pub const CatchClause = struct {
     body: NodeIndex,
 };
 
+/// `while (test) body`
+/// https://tc39.es/ecma262/#sec-while-statement
+pub const WhileStatement = struct {
+    /// Expression
+    @"test": NodeIndex,
+    /// Statement
+    body: NodeIndex,
+};
+
+/// `do body while (test);`
+/// https://tc39.es/ecma262/#sec-do-while-statement
+pub const DoWhileStatement = struct {
+    /// Statement
+    body: NodeIndex,
+    /// Expression
+    @"test": NodeIndex,
+};
+
+/// `with (object) body`
+/// https://tc39.es/ecma262/#sec-with-statement
+pub const WithStatement = struct {
+    /// Expression
+    object: NodeIndex,
+    /// Statement
+    body: NodeIndex,
+};
+
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
     raw_start: u32,
@@ -916,9 +943,12 @@ pub const NodeData = union(enum) {
     for_statement: ForStatement,
     for_in_statement: ForInStatement,
     for_of_statement: ForOfStatement,
+    while_statement: WhileStatement,
+    do_while_statement: DoWhileStatement,
     break_statement: BreakStatement,
     continue_statement: ContinueStatement,
     labeled_statement: LabeledStatement,
+    with_statement: WithStatement,
     return_statement: ReturnStatement,
     throw_statement: ThrowStatement,
     try_statement: TryStatement,

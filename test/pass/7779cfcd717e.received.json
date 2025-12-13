@@ -5,28 +5,35 @@
     "end": 26,
     "sourceType": "script",
     "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 26,
+        "test": {
+          "type": "Literal",
+          "start": 6,
+          "end": 10,
+          "value": true,
+          "raw": "true"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 12,
+          "end": 26,
+          "body": [
+            {
+              "type": "ContinueStatement",
+              "start": 14,
+              "end": 24,
+              "label": null
+            }
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 25,
-      "end": 26,
-      "labels": [
-      ]
-    }
   ]
 }

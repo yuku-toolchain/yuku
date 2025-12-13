@@ -5,6 +5,86 @@
     "end": 79,
     "sourceType": "script",
     "body": [
+      {
+        "type": "DoWhileStatement",
+        "start": 0,
+        "end": 78,
+        "body": {
+          "type": "BlockStatement",
+          "start": 3,
+          "end": 67,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 31,
+              "end": 65,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 31,
+                "end": 64,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 32,
+                  "end": 63,
+                  "callee": {
+                    "type": "FunctionExpression",
+                    "start": 32,
+                    "end": 61,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [
+                    ],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 44,
+                      "end": 61,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 50,
+                          "end": 57,
+                          "expression": {
+                            "type": "CallExpression",
+                            "start": 50,
+                            "end": 56,
+                            "callee": {
+                              "type": "Identifier",
+                              "start": 50,
+                              "end": 51,
+                              "name": "a"
+                            },
+                            "arguments": [
+                              {
+                                "type": "Literal",
+                                "start": 52,
+                                "end": 55,
+                                "value": "b",
+                                "raw": "'b'"
+                              }
+                            ],
+                            "optional": false
+                          }
+                        }
+                      ]
+                    },
+                    "expression": false
+                  },
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
+              }
+            }
+          ]
+        },
+        "test": {
+          "type": "Identifier",
+          "start": 75,
+          "end": 76,
+          "name": "c"
+        }
+      }
     ]
   },
   "comments": [
@@ -16,50 +96,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'do'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 41,
-      "end": 42,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 60,
-      "end": 61,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 66,
-      "end": 67,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 68,
-      "end": 73,
-      "labels": [
-      ]
-    }
   ]
 }

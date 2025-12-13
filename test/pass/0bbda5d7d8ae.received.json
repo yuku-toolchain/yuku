@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 46,
+        "end": 65,
         "id": {
           "type": "Identifier",
           "start": 9,
@@ -22,31 +22,50 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 46,
+          "end": 65,
           "body": [
+            {
+              "type": "WhileStatement",
+              "start": 30,
+              "end": 46,
+              "test": {
+                "type": "Literal",
+                "start": 37,
+                "end": 41,
+                "value": true,
+                "raw": "true"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 43,
+                "end": 46,
+                "body": [
+                ]
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 57,
+              "end": 63,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 61,
+                  "end": 62,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 61,
+                    "end": 62,
+                    "name": "b"
+                  },
+                  "init": null
+                }
+              ]
+            }
           ]
         },
         "expression": false
-      },
-      {
-        "type": "VariableDeclaration",
-        "start": 57,
-        "end": 63,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 61,
-            "end": 62,
-            "id": {
-              "type": "Identifier",
-              "start": 61,
-              "end": 62,
-              "name": "b"
-            },
-            "init": null
-          }
-        ]
       }
     ]
   },
@@ -65,23 +84,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'while'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 35,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 64,
-      "end": 65,
-      "labels": [
-      ]
-    }
   ]
 }
