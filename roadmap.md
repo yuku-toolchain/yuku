@@ -50,7 +50,7 @@
 
 ### 1.4 Statements
 **Control Flow:**
-- [ ] If statement (IfStatement)
+- [x] If statement (IfStatement)
 - [ ] Switch statement (SwitchStatement, SwitchCase)
 - [ ] For statement (ForStatement)
 - [ ] For-in statement (ForInStatement)

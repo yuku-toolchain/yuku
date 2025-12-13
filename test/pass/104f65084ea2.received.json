@@ -6,27 +6,40 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "FunctionDeclaration",
-        "start": 28,
+        "type": "IfStatement",
+        "start": 21,
         "end": 43,
-        "id": {
-          "type": "Identifier",
-          "start": 37,
-          "end": 38,
-          "name": "a"
+        "test": {
+          "type": "Literal",
+          "start": 25,
+          "end": 26,
+          "value": 1,
+          "raw": "1"
         },
-        "generator": false,
-        "async": false,
-        "params": [
-        ],
-        "body": {
-          "type": "BlockStatement",
-          "start": 41,
+        "consequent": {
+          "type": "FunctionDeclaration",
+          "start": 28,
           "end": 43,
-          "body": [
-          ]
+          "id": {
+            "type": "Identifier",
+            "start": 37,
+            "end": 38,
+            "name": "a"
+          },
+          "generator": false,
+          "async": false,
+          "params": [
+          ],
+          "body": {
+            "type": "BlockStatement",
+            "start": 41,
+            "end": 43,
+            "body": [
+            ]
+          },
+          "expression": false
         },
-        "expression": false
+        "alternate": null
       }
     ]
   },
@@ -39,15 +52,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 0,
       "end": 3,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 21,
-      "end": 23,
       "labels": [
       ]
     },

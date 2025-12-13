@@ -12,10 +12,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'with'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 19,
-      "end": 21,
+      "start": 45,
+      "end": 49,
       "labels": [
       ]
     },
@@ -23,8 +23,8 @@
       "severity": "error",
       "message": "Expected ',' or ')' in parenthesized expression",
       "help": "Add a comma between elements or close with ')'.",
-      "start": 62,
-      "end": 63,
+      "start": 64,
+      "end": 65,
       "labels": [
       ]
     }

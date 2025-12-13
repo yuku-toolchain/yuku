@@ -6,49 +6,52 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "VariableDeclaration",
-        "start": 7,
+        "type": "IfStatement",
+        "start": 0,
         "end": 19,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 11,
-            "end": 18,
-            "id": {
-              "type": "Identifier",
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "VariableDeclaration",
+          "start": 7,
+          "end": 19,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
               "start": 11,
-              "end": 12,
-              "name": "b"
-            },
-            "init": {
-              "type": "ParenthesizedExpression",
-              "start": 15,
               "end": 18,
-              "expression": {
-                "type": "Literal",
-                "start": 16,
-                "end": 17,
-                "value": 1,
-                "raw": "1"
+              "id": {
+                "type": "Identifier",
+                "start": 11,
+                "end": 12,
+                "name": "b"
+              },
+              "init": {
+                "type": "ParenthesizedExpression",
+                "start": 15,
+                "end": 18,
+                "expression": {
+                  "type": "Literal",
+                  "start": 16,
+                  "end": 17,
+                  "value": 1,
+                  "raw": "1"
+                }
               }
             }
-          }
-        ]
+          ]
+        },
+        "alternate": null
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    }
   ]
 }

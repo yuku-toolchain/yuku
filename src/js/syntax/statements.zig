@@ -25,6 +25,7 @@ pub fn parseStatement(parser: *Parser) Error!?ast.NodeIndex {
             break :blk try functions.parseFunction(parser, .{ .is_declare = true }, start);
         },
         .left_brace => parseBlockStatement(parser),
+        .@"if" => parseIfStatement(parser),
 
         else => parseExpressionStatementOrDirective(parser),
     };
@@ -88,6 +89,46 @@ pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
     )) return null;
 
     return try parser.addNode(.{ .block_statement = .{ .body = body } }, .{ .start = start, .end = end });
+}
+
+/// https://tc39.es/ecma262/#sec-if-statement
+pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume 'if'
+
+    if (!try parser.expect(.left_paren, "Expected '(' after 'if'", null)) return null;
+
+    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse {
+        try parser.report(parser.current_token.span, "Expected expression in if condition", .{});
+        return null;
+    };
+
+    if (!try parser.expect(.right_paren, "Expected ')' after if condition", null)) return null;
+
+    const consequent = try parseStatement(parser) orelse {
+        try parser.report(parser.current_token.span, "Expected statement after if condition", .{});
+        return null;
+    };
+
+    var end = parser.getSpan(consequent).end;
+    var alternate: ast.NodeIndex = ast.null_node;
+
+    if (parser.current_token.type == .@"else") {
+        try parser.advance(); // consume 'else'
+        alternate = try parseStatement(parser) orelse {
+            try parser.report(parser.current_token.span, "Expected statement after 'else'", .{});
+            return null;
+        };
+        end = parser.getSpan(alternate).end;
+    }
+
+    return try parser.addNode(.{
+        .if_statement = .{
+            .@"test" = test_expr,
+            .consequent = consequent,
+            .alternate = alternate,
+        },
+    }, .{ .start = start, .end = end });
 }
 
 pub inline fn canInsertSemicolon(parser: *Parser) bool {

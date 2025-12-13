@@ -5,6 +5,44 @@
     "end": 79,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 60,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 60,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 26,
+              "end": 56,
+              "test": {
+                "type": "Identifier",
+                "start": 30,
+                "end": 31,
+                "name": "c"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 33,
+                "end": 56,
+                "body": [
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "alternate": null
+      }
     ]
   },
   "comments": [
@@ -12,19 +50,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'with'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
+      "start": 11,
+      "end": 15,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'debugger'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 28,
+      "start": 41,
+      "end": 49,
       "labels": [
       ]
     },
@@ -32,8 +70,8 @@
       "severity": "error",
       "message": "Unexpected token '}'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 55,
-      "end": 56,
+      "start": 61,
+      "end": 62,
       "labels": [
       ]
     },

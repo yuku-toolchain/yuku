@@ -357,6 +357,208 @@
         }
       },
       {
+        "type": "IfStatement",
+        "start": 156,
+        "end": 204,
+        "test": {
+          "type": "Identifier",
+          "start": 160,
+          "end": 161,
+          "name": "b"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 163,
+          "end": 180,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 169,
+              "end": 178,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 169,
+                "end": 177,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 169,
+                  "end": 170,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 173,
+                  "end": 177,
+                  "value": true,
+                  "raw": "true"
+                }
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 186,
+          "end": 204,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 192,
+              "end": 202,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 192,
+                "end": 201,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 192,
+                  "end": 193,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 196,
+                  "end": 201,
+                  "value": false,
+                  "raw": "false"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 206,
+        "end": 249,
+        "test": {
+          "type": "Identifier",
+          "start": 210,
+          "end": 211,
+          "name": "b"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 213,
+          "end": 228,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 219,
+              "end": 226,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 219,
+                "end": 225,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 219,
+                  "end": 220,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "UnaryExpression",
+                  "start": 223,
+                  "end": 225,
+                  "operator": "!",
+                  "prefix": true,
+                  "argument": {
+                    "type": "Literal",
+                    "start": 224,
+                    "end": 225,
+                    "value": 5,
+                    "raw": "5"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 234,
+          "end": 249,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 240,
+              "end": 247,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 240,
+                "end": 246,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 240,
+                  "end": 241,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "UnaryExpression",
+                  "start": 244,
+                  "end": 246,
+                  "operator": "!",
+                  "prefix": true,
+                  "argument": {
+                    "type": "Literal",
+                    "start": 245,
+                    "end": 246,
+                    "value": 6,
+                    "raw": "6"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 251,
+        "end": 272,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 251,
+          "end": 271,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 251,
+            "end": 252,
+            "name": "a"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 255,
+            "end": 271,
+            "test": {
+              "type": "Identifier",
+              "start": 255,
+              "end": 256,
+              "name": "b"
+            },
+            "consequent": {
+              "type": "Literal",
+              "start": 259,
+              "end": 264,
+              "value": false,
+              "raw": "false"
+            },
+            "alternate": {
+              "type": "Literal",
+              "start": 267,
+              "end": 271,
+              "value": true,
+              "raw": "true"
+            }
+          }
+        }
+      },
+      {
         "type": "ExpressionStatement",
         "start": 273,
         "end": 295,
@@ -639,6 +841,208 @@
         }
       },
       {
+        "type": "IfStatement",
+        "start": 379,
+        "end": 427,
+        "test": {
+          "type": "Identifier",
+          "start": 383,
+          "end": 384,
+          "name": "b"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 386,
+          "end": 404,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 392,
+              "end": 402,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 392,
+                "end": 401,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 392,
+                  "end": 393,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 396,
+                  "end": 401,
+                  "value": false,
+                  "raw": "false"
+                }
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 410,
+          "end": 427,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 416,
+              "end": 425,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 416,
+                "end": 424,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 416,
+                  "end": 417,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 420,
+                  "end": 424,
+                  "value": true,
+                  "raw": "true"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 429,
+        "end": 474,
+        "test": {
+          "type": "Identifier",
+          "start": 433,
+          "end": 434,
+          "name": "b"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 436,
+          "end": 452,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 442,
+              "end": 450,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 442,
+                "end": 449,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 442,
+                  "end": 443,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "UnaryExpression",
+                  "start": 446,
+                  "end": 449,
+                  "operator": "!",
+                  "prefix": true,
+                  "argument": {
+                    "type": "Literal",
+                    "start": 447,
+                    "end": 449,
+                    "value": 13,
+                    "raw": "13"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 458,
+          "end": 474,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 464,
+              "end": 472,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 464,
+                "end": 471,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 464,
+                  "end": 465,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "UnaryExpression",
+                  "start": 468,
+                  "end": 471,
+                  "operator": "!",
+                  "prefix": true,
+                  "argument": {
+                    "type": "Literal",
+                    "start": 469,
+                    "end": 471,
+                    "value": 14,
+                    "raw": "14"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 476,
+        "end": 495,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 476,
+          "end": 494,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 476,
+            "end": 477,
+            "name": "a"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 480,
+            "end": 494,
+            "test": {
+              "type": "Identifier",
+              "start": 480,
+              "end": 481,
+              "name": "b"
+            },
+            "consequent": {
+              "type": "Literal",
+              "start": 484,
+              "end": 486,
+              "value": 15,
+              "raw": "15"
+            },
+            "alternate": {
+              "type": "Literal",
+              "start": 489,
+              "end": 494,
+              "value": false,
+              "raw": "false"
+            }
+          }
+        }
+      },
+      {
         "type": "ExpressionStatement",
         "start": 496,
         "end": 515,
@@ -740,113 +1144,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 156,
-      "end": 158,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 179,
-      "end": 180,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 203,
-      "end": 204,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 206,
-      "end": 208,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 227,
-      "end": 228,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 248,
-      "end": 249,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 379,
-      "end": 381,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 403,
-      "end": 404,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 426,
-      "end": 427,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 429,
-      "end": 431,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 451,
-      "end": 452,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 473,
-      "end": 474,
-      "labels": [
-      ]
-    }
   ]
 }

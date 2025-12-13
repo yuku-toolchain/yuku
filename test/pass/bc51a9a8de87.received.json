@@ -306,17 +306,17 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 31,
-      "end": 33,
+      "start": 38,
+      "end": 44,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'return'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "message": "Expected statement after if condition",
+      "help": null,
       "start": 38,
       "end": 44,
       "labels": [
@@ -333,17 +333,17 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 104,
-      "end": 106,
+      "start": 111,
+      "end": 117,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'return'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "message": "Expected statement after if condition",
+      "help": null,
       "start": 111,
       "end": 117,
       "labels": [
@@ -360,17 +360,17 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 178,
-      "end": 180,
+      "start": 185,
+      "end": 191,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'return'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "message": "Expected statement after if condition",
+      "help": null,
       "start": 185,
       "end": 191,
       "labels": [

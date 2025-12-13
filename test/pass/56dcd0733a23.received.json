@@ -5,6 +5,25 @@
     "end": 190,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 18,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 18,
+          "body": [
+          ]
+        },
+        "alternate": null
+      }
     ]
   },
   "comments": [
@@ -24,10 +43,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'try'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
+      "start": 11,
+      "end": 14,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'catch'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 19,
+      "end": 24,
       "labels": [
       ]
     },

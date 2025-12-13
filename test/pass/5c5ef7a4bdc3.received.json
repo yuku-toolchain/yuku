@@ -24,6 +24,92 @@
             "init": null
           }
         ]
+      },
+      {
+        "type": "IfStatement",
+        "start": 66,
+        "end": 109,
+        "test": {
+          "type": "Identifier",
+          "start": 70,
+          "end": 71,
+          "name": "b"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 73,
+          "end": 89,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 79,
+              "end": 87,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 79,
+                "end": 86,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 79,
+                  "end": 80,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "start": 83,
+                  "end": 86,
+                  "left": {
+                    "type": "Literal",
+                    "start": 83,
+                    "end": 84,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "Literal",
+                    "start": 85,
+                    "end": 86,
+                    "value": 2,
+                    "raw": "2"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 95,
+          "end": 109,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 101,
+              "end": 107,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 101,
+                "end": 106,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 101,
+                  "end": 102,
+                  "name": "a"
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 105,
+                  "end": 106,
+                  "value": 3,
+                  "raw": "3"
+                }
+              }
+            }
+          ]
+        }
       }
     ]
   },
@@ -36,32 +122,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 66,
-      "end": 68,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 88,
-      "end": 89,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 108,
-      "end": 109,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 57,
+        "end": 59,
         "id": {
           "type": "Identifier",
           "start": 9,
@@ -22,8 +22,27 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 57,
+          "end": 59,
           "body": [
+            {
+              "type": "IfStatement",
+              "start": 30,
+              "end": 57,
+              "test": {
+                "type": "Identifier",
+                "start": 34,
+                "end": 35,
+                "name": "e"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 37,
+                "end": 57,
+                "body": [
+                ]
+              },
+              "alternate": null
+            }
           ]
         },
         "expression": false
@@ -44,19 +63,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'throw'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 32,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 58,
-      "end": 59,
+      "start": 43,
+      "end": 48,
       "labels": [
       ]
     }

@@ -35,10 +35,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 17,
-      "end": 19,
+      "start": 31,
+      "end": 32,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 31,
+      "end": 32,
       "labels": [
       ]
     }

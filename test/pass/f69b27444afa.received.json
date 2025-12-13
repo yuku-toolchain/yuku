@@ -27,37 +27,73 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'break'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 43,
-      "end": 45,
+      "start": 50,
+      "end": 55,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 67,
-      "end": 69,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 50,
+      "end": 55,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'break'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 91,
-      "end": 93,
+      "start": 74,
+      "end": 79,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 74,
+      "end": 79,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'break'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 115,
-      "end": 117,
+      "start": 98,
+      "end": 103,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 98,
+      "end": 103,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Unexpected token 'break'",
+      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "start": 122,
+      "end": 127,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 122,
+      "end": 127,
       "labels": [
       ]
     },

@@ -46,29 +46,70 @@
           ]
         },
         "expression": false
+      },
+      {
+        "type": "IfStatement",
+        "start": 26,
+        "end": 55,
+        "test": {
+          "type": "LogicalExpression",
+          "start": 30,
+          "end": 41,
+          "left": {
+            "type": "CallExpression",
+            "start": 30,
+            "end": 33,
+            "callee": {
+              "type": "Identifier",
+              "start": 30,
+              "end": 31,
+              "name": "a"
+            },
+            "arguments": [
+            ],
+            "optional": false
+          },
+          "operator": "||",
+          "right": {
+            "type": "Literal",
+            "start": 37,
+            "end": 41,
+            "value": true,
+            "raw": "true"
+          }
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 43,
+          "end": 55,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 49,
+              "end": 53,
+              "expression": {
+                "type": "CallExpression",
+                "start": 49,
+                "end": 52,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 49,
+                  "end": 50,
+                  "name": "c"
+                },
+                "arguments": [
+                ],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "alternate": null
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 28,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 54,
-      "end": 55,
-      "labels": [
-      ]
-    }
   ]
 }

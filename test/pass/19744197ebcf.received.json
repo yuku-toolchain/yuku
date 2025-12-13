@@ -5,6 +5,145 @@
     "end": 165,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 30,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 22,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 11,
+              "end": 20,
+              "test": {
+                "type": "Identifier",
+                "start": 15,
+                "end": 16,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "ExpressionStatement",
+                "start": 18,
+                "end": 20,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 18,
+                  "end": 19,
+                  "name": "c"
+                }
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 28,
+          "end": 30,
+          "expression": {
+            "type": "Identifier",
+            "start": 28,
+            "end": 29,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 31,
+        "end": 67,
+        "test": {
+          "type": "Identifier",
+          "start": 35,
+          "end": 36,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 38,
+          "end": 59,
+          "body": [
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 65,
+          "end": 67,
+          "expression": {
+            "type": "Identifier",
+            "start": 65,
+            "end": 66,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 68,
+        "end": 113,
+        "test": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 73,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 75,
+          "end": 105,
+          "body": [
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 111,
+          "end": 113,
+          "expression": {
+            "type": "Identifier",
+            "start": 111,
+            "end": 112,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 114,
+        "end": 164,
+        "test": {
+          "type": "Identifier",
+          "start": 118,
+          "end": 119,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 121,
+          "end": 156,
+          "body": [
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 162,
+          "end": 164,
+          "expression": {
+            "type": "Identifier",
+            "start": 162,
+            "end": 163,
+            "name": "d"
+          }
+        }
+      }
     ]
   },
   "comments": [
@@ -12,100 +151,73 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'throw'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
+      "start": 49,
+      "end": 54,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 11,
-      "end": 13,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 49,
+      "end": 54,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token '}'",
+      "message": "Unexpected token 'with'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 21,
-      "end": 22,
+      "start": 79,
+      "end": 83,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'throw'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 31,
-      "end": 33,
+      "start": 95,
+      "end": 100,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 42,
-      "end": 44,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 95,
+      "end": 100,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token '}'",
+      "message": "Unexpected token 'do'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 58,
-      "end": 59,
+      "start": 125,
+      "end": 127,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'throw'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 68,
-      "end": 70,
+      "start": 135,
+      "end": 140,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 88,
-      "end": 90,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 104,
-      "end": 105,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 114,
-      "end": 116,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 128,
-      "end": 130,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 135,
+      "end": 140,
       "labels": [
       ]
     },
@@ -115,15 +227,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 144,
       "end": 149,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 155,
-      "end": 156,
       "labels": [
       ]
     }

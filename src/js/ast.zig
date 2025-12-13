@@ -409,6 +409,17 @@ pub const ExpressionStatement = struct {
     expression: NodeIndex,
 };
 
+/// `if (test) consequent else alternate`
+/// https://tc39.es/ecma262/#sec-if-statement
+pub const IfStatement = struct {
+    /// Expression (the condition)
+    @"test": NodeIndex,
+    /// Statement (the if-body)
+    consequent: NodeIndex,
+    /// Statement (optional, may be null_node for no else clause)
+    alternate: NodeIndex,
+};
+
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
     raw_start: u32,
@@ -780,6 +791,7 @@ pub const NodeData = union(enum) {
     binding_identifier: BindingIdentifier,
     identifier_name: IdentifierName,
     expression_statement: ExpressionStatement,
+    if_statement: IfStatement,
     variable_declaration: VariableDeclaration,
     variable_declarator: VariableDeclarator,
     directive: Directive,

@@ -12,19 +12,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
+      "start": 20,
+      "end": 21,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'else'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 15,
-      "end": 19,
+      "message": "Expected statement after 'else'",
+      "help": null,
+      "start": 20,
+      "end": 21,
       "labels": [
       ]
     }

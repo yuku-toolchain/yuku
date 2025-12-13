@@ -35,6 +35,37 @@
         }
       },
       {
+        "type": "IfStatement",
+        "start": 9,
+        "end": 20,
+        "test": {
+          "type": "Identifier",
+          "start": 13,
+          "end": 14,
+          "name": "b"
+        },
+        "consequent": {
+          "type": "ExpressionStatement",
+          "start": 16,
+          "end": 20,
+          "expression": {
+            "type": "CallExpression",
+            "start": 16,
+            "end": 19,
+            "callee": {
+              "type": "Identifier",
+              "start": 16,
+              "end": 17,
+              "name": "c"
+            },
+            "arguments": [
+            ],
+            "optional": false
+          }
+        },
+        "alternate": null
+      },
+      {
         "type": "ExpressionStatement",
         "start": 21,
         "end": 29,
@@ -184,15 +215,6 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 11,
-      "labels": [
-      ]
-    },
     {
       "severity": "error",
       "message": "Unexpected token 'for'",

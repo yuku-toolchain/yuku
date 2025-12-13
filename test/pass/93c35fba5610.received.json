@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 73,
+        "end": 75,
         "id": {
           "type": "Identifier",
           "start": 9,
@@ -22,87 +22,106 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 73,
+          "end": 75,
           "body": [
             {
-              "type": "VariableDeclaration",
-              "start": 30,
-              "end": 36,
-              "kind": "let",
-              "declarations": [
-                {
-                  "type": "VariableDeclarator",
-                  "start": 34,
-                  "end": 35,
-                  "id": {
-                    "type": "Identifier",
-                    "start": 34,
-                    "end": 35,
-                    "name": "c"
+              "type": "IfStatement",
+              "start": 17,
+              "end": 73,
+              "test": {
+                "type": "Identifier",
+                "start": 21,
+                "end": 22,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 24,
+                "end": 73,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 30,
+                    "end": 36,
+                    "kind": "let",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 34,
+                        "end": 35,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 34,
+                          "end": 35,
+                          "name": "c"
+                        },
+                        "init": null
+                      }
+                    ]
                   },
-                  "init": null
-                }
-              ]
-            },
-            {
-              "type": "VariableDeclaration",
-              "start": 41,
-              "end": 47,
-              "kind": "let",
-              "declarations": [
-                {
-                  "type": "VariableDeclarator",
-                  "start": 45,
-                  "end": 46,
-                  "id": {
-                    "type": "Identifier",
-                    "start": 45,
-                    "end": 46,
-                    "name": "d"
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 41,
+                    "end": 47,
+                    "kind": "let",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 45,
+                        "end": 46,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 45,
+                          "end": 46,
+                          "name": "d"
+                        },
+                        "init": null
+                      }
+                    ]
                   },
-                  "init": null
-                }
-              ]
-            },
-            {
-              "type": "VariableDeclaration",
-              "start": 52,
-              "end": 58,
-              "kind": "var",
-              "declarations": [
-                {
-                  "type": "VariableDeclarator",
-                  "start": 56,
-                  "end": 57,
-                  "id": {
-                    "type": "Identifier",
-                    "start": 56,
-                    "end": 57,
-                    "name": "e"
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 52,
+                    "end": 58,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 56,
+                        "end": 57,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 56,
+                          "end": 57,
+                          "name": "e"
+                        },
+                        "init": null
+                      }
+                    ]
                   },
-                  "init": null
-                }
-              ]
-            },
-            {
-              "type": "VariableDeclaration",
-              "start": 63,
-              "end": 69,
-              "kind": "var",
-              "declarations": [
-                {
-                  "type": "VariableDeclarator",
-                  "start": 67,
-                  "end": 68,
-                  "id": {
-                    "type": "Identifier",
-                    "start": 67,
-                    "end": 68,
-                    "name": "f"
-                  },
-                  "init": null
-                }
-              ]
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 63,
+                    "end": 69,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 67,
+                        "end": 68,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 67,
+                          "end": 68,
+                          "name": "f"
+                        },
+                        "init": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "alternate": null
             }
           ]
         },
@@ -113,23 +132,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 17,
-      "end": 19,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 74,
-      "end": 75,
-      "labels": [
-      ]
-    }
   ]
 }

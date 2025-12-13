@@ -24,38 +24,95 @@
             "init": null
           }
         ]
+      },
+      {
+        "type": "IfStatement",
+        "start": 7,
+        "end": 48,
+        "test": {
+          "type": "CallExpression",
+          "start": 11,
+          "end": 14,
+          "callee": {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "b"
+          },
+          "arguments": [
+          ],
+          "optional": false
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 16,
+          "end": 31,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 20,
+              "end": 29,
+              "expression": {
+                "type": "NewExpression",
+                "start": 20,
+                "end": 28,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 24,
+                  "end": 25,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 26,
+                    "end": 27,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 37,
+          "end": 48,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 41,
+              "end": 46,
+              "expression": {
+                "type": "CallExpression",
+                "start": 41,
+                "end": 45,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 41,
+                  "end": 42,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 43,
+                    "end": 44,
+                    "value": 2,
+                    "raw": "2"
+                  }
+                ],
+                "optional": false
+              }
+            }
+          ]
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 7,
-      "end": 9,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 30,
-      "end": 31,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 47,
-      "end": 48,
-      "labels": [
-      ]
-    }
   ]
 }

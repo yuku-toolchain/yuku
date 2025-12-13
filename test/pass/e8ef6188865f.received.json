@@ -60,19 +60,19 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'break'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 11,
+      "start": 33,
+      "end": 38,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'else'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 28,
-      "end": 32,
+      "message": "Expected statement after 'else'",
+      "help": null,
+      "start": 33,
+      "end": 38,
       "labels": [
       ]
     },

@@ -6,39 +6,78 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "VariableDeclaration",
-        "start": 27,
-        "end": 33,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 31,
-            "end": 32,
-            "id": {
-              "type": "Identifier",
-              "start": 31,
-              "end": 32,
-              "name": "c"
+        "type": "IfStatement",
+        "start": 0,
+        "end": 39,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 39,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 11,
+              "end": 19,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 11,
+                "end": 18,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 11,
+                  "end": 12,
+                  "name": "b"
+                },
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 15,
+                  "end": 18,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 16,
+                    "end": 17,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
             },
-            "init": null
-          }
-        ]
+            {
+              "type": "VariableDeclaration",
+              "start": 27,
+              "end": 33,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 31,
+                  "end": 32,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 31,
+                    "end": 32,
+                    "name": "c"
+                  },
+                  "init": null
+                }
+              ]
+            }
+          ]
+        },
+        "alternate": null
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
     {
       "severity": "error",
       "message": "Unexpected token 'for'",
@@ -54,15 +93,6 @@
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 33,
       "end": 34,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 38,
-      "end": 39,
       "labels": [
       ]
     }

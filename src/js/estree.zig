@@ -73,6 +73,7 @@ pub const Serializer = struct {
             .formal_parameters => |d| self.writeFormalParameters(d, span),
             .formal_parameter => |d| self.writeFormalParameter(d),
             .expression_statement => |d| self.writeExpressionStatement(d, span),
+            .if_statement => |d| self.writeIfStatement(d, span),
             .variable_declaration => |d| self.writeVariableDeclaration(d, span),
             .variable_declarator => |d| self.writeVariableDeclarator(d, span),
             .binary_expression => |d| self.writeBinaryExpression(d, span),
@@ -232,6 +233,16 @@ pub const Serializer = struct {
         try self.fieldType("ExpressionStatement");
         try self.fieldSpan(span);
         try self.fieldNode("expression", data.expression);
+        try self.endObject();
+    }
+
+    fn writeIfStatement(self: *Self, data: ast.IfStatement, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("IfStatement");
+        try self.fieldSpan(span);
+        try self.fieldNode("test", data.@"test");
+        try self.fieldNode("consequent", data.consequent);
+        try self.fieldNode("alternate", data.alternate);
         try self.endObject();
     }
 

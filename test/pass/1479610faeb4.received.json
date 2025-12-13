@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 60,
+        "end": 87,
         "id": {
           "type": "Identifier",
           "start": 9,
@@ -22,7 +22,7 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 60,
+          "end": 87,
           "body": [
             {
               "type": "VariableDeclaration",
@@ -43,29 +43,53 @@
                   "init": null
                 }
               ]
+            },
+            {
+              "type": "IfStatement",
+              "start": 26,
+              "end": 85,
+              "test": {
+                "type": "AssignmentExpression",
+                "start": 30,
+                "end": 39,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 30,
+                  "end": 31,
+                  "name": "b"
+                },
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 34,
+                  "end": 39,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 35,
+                    "end": 38,
+                    "value": "b",
+                    "raw": "\"b\""
+                  }
+                }
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 41,
+                "end": 60,
+                "body": [
+                ]
+              },
+              "alternate": {
+                "type": "BlockStatement",
+                "start": 66,
+                "end": 85,
+                "body": [
+                ]
+              }
             }
           ]
         },
         "expression": false
-      },
-      {
-        "type": "ExpressionStatement",
-        "start": 90,
-        "end": 94,
-        "expression": {
-          "type": "CallExpression",
-          "start": 90,
-          "end": 93,
-          "callee": {
-            "type": "Identifier",
-            "start": 90,
-            "end": 91,
-            "name": "a"
-          },
-          "arguments": [
-          ],
-          "optional": false
-        }
       }
     ]
   },
@@ -74,28 +98,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 28,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
       "message": "Unexpected token 'return'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
       "start": 47,
       "end": 53,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'else'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 61,
-      "end": 65,
       "labels": [
       ]
     },
@@ -110,10 +116,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token '}'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 84,
-      "end": 85,
+      "start": 88,
+      "end": 89,
       "labels": [
       ]
     }

@@ -6,78 +6,124 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "ExpressionStatement",
-        "start": 24,
-        "end": 34,
-        "expression": {
-          "type": "AssignmentExpression",
-          "start": 24,
-          "end": 33,
-          "operator": "=",
-          "left": {
-            "type": "Identifier",
-            "start": 24,
-            "end": 25,
-            "name": "d"
-          },
-          "right": {
-            "type": "ParenthesizedExpression",
-            "start": 28,
-            "end": 33,
-            "expression": {
-              "type": "CallExpression",
-              "start": 29,
-              "end": 32,
-              "callee": {
-                "type": "Identifier",
-                "start": 29,
-                "end": 30,
-                "name": "e"
-              },
-              "arguments": [
-              ],
-              "optional": false
+        "type": "IfStatement",
+        "start": 0,
+        "end": 67,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 67,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 11,
+              "end": 21,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 11,
+                "end": 20,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 11,
+                  "end": 12,
+                  "name": "b"
+                },
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 15,
+                  "end": 20,
+                  "expression": {
+                    "type": "CallExpression",
+                    "start": 16,
+                    "end": 19,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 16,
+                      "end": 17,
+                      "name": "c"
+                    },
+                    "arguments": [
+                    ],
+                    "optional": false
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 24,
+              "end": 34,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 24,
+                "end": 33,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 24,
+                  "end": 25,
+                  "name": "d"
+                },
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 28,
+                  "end": 33,
+                  "expression": {
+                    "type": "CallExpression",
+                    "start": 29,
+                    "end": 32,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 29,
+                      "end": 30,
+                      "name": "e"
+                    },
+                    "arguments": [
+                    ],
+                    "optional": false
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 44,
+              "end": 50,
+              "expression": {
+                "type": "BinaryExpression",
+                "start": 44,
+                "end": 49,
+                "left": {
+                  "type": "Identifier",
+                  "start": 44,
+                  "end": 45,
+                  "name": "b"
+                },
+                "operator": "<",
+                "right": {
+                  "type": "Identifier",
+                  "start": 48,
+                  "end": 49,
+                  "name": "d"
+                }
+              }
             }
-          }
-        }
-      },
-      {
-        "type": "ExpressionStatement",
-        "start": 44,
-        "end": 50,
-        "expression": {
-          "type": "BinaryExpression",
-          "start": 44,
-          "end": 49,
-          "left": {
-            "type": "Identifier",
-            "start": 44,
-            "end": 45,
-            "name": "b"
-          },
-          "operator": "<",
-          "right": {
-            "type": "Identifier",
-            "start": 48,
-            "end": 49,
-            "name": "d"
-          }
-        }
+          ]
+        },
+        "alternate": null
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
     {
       "severity": "error",
       "message": "Unexpected token 'for'",
@@ -93,15 +139,6 @@
       "help": "Try inserting a semicolon here",
       "start": 54,
       "end": 54,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 66,
-      "end": 67,
       "labels": [
       ]
     }

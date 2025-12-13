@@ -5,38 +5,97 @@
     "end": 87,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 71,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 71,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 11,
+              "end": 47,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 11,
+                "end": 46,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 12,
+                  "end": 45,
+                  "callee": {
+                    "type": "ParenthesizedExpression",
+                    "start": 12,
+                    "end": 43,
+                    "expression": {
+                      "type": "FunctionExpression",
+                      "start": 13,
+                      "end": 42,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [
+                      ],
+                      "body": {
+                        "type": "BlockStatement",
+                        "start": 25,
+                        "end": 42,
+                        "body": [
+                          {
+                            "type": "ExpressionStatement",
+                            "start": 31,
+                            "end": 38,
+                            "expression": {
+                              "type": "CallExpression",
+                              "start": 31,
+                              "end": 37,
+                              "callee": {
+                                "type": "Identifier",
+                                "start": 31,
+                                "end": 32,
+                                "name": "b"
+                              },
+                              "arguments": [
+                                {
+                                  "type": "Literal",
+                                  "start": 33,
+                                  "end": 36,
+                                  "value": "c",
+                                  "raw": "\"c\""
+                                }
+                              ],
+                              "optional": false
+                            }
+                          }
+                        ]
+                      },
+                      "expression": false
+                    }
+                  },
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
+              }
+            }
+          ]
+        },
+        "alternate": null
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Function declaration requires a name",
-      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
-      "start": 22,
-      "end": 23,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 41,
-      "end": 42,
-      "labels": [
-      ]
-    },
     {
       "severity": "error",
       "message": "Unexpected token 'try'",
@@ -48,10 +107,10 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token '}'",
+      "message": "Unexpected token 'catch'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 70,
-      "end": 71,
+      "start": 72,
+      "end": 77,
       "labels": [
       ]
     }

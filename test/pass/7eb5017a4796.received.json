@@ -5,6 +5,37 @@
     "end": 67,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 11,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "ExpressionStatement",
+          "start": 7,
+          "end": 11,
+          "expression": {
+            "type": "CallExpression",
+            "start": 7,
+            "end": 10,
+            "callee": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "b"
+            },
+            "arguments": [
+            ],
+            "optional": false
+          }
+        },
+        "alternate": null
+      }
     ]
   },
   "comments": [
@@ -12,64 +43,55 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
+      "start": 20,
+      "end": 21,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 12,
-      "end": 14,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 20,
+      "end": 21,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'else'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 22,
-      "end": 26,
+      "start": 39,
+      "end": 40,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 32,
-      "end": 34,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 39,
+      "end": 40,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'else'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 41,
-      "end": 45,
+      "start": 58,
+      "end": 59,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 51,
-      "end": 53,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'else'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 60,
-      "end": 64,
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 58,
+      "end": 59,
       "labels": [
       ]
     }

@@ -105,17 +105,17 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'for'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 20,
-      "end": 22,
+      "start": 27,
+      "end": 30,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'for'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
+      "message": "Expected statement after if condition",
+      "help": null,
       "start": 27,
       "end": 30,
       "labels": [

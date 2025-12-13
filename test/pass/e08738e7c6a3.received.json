@@ -5,6 +5,63 @@
     "end": 74,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 55,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 55,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 26,
+              "end": 51,
+              "test": {
+                "type": "Identifier",
+                "start": 30,
+                "end": 31,
+                "name": "c"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 33,
+                "end": 51,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 41,
+                    "end": 45,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 41,
+                      "end": 44,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 41,
+                        "end": 42,
+                        "name": "d"
+                      },
+                      "arguments": [
+                      ],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "alternate": null
+      }
     ]
   },
   "comments": [
@@ -12,19 +69,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'with'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 28,
+      "start": 11,
+      "end": 15,
       "labels": [
       ]
     },
@@ -32,8 +80,8 @@
       "severity": "error",
       "message": "Unexpected token '}'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 50,
-      "end": 51,
+      "start": 56,
+      "end": 57,
       "labels": [
       ]
     },

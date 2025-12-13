@@ -5,28 +5,43 @@
     "end": 14,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 14,
+        "test": {
+          "type": "Identifier",
+          "start": 3,
+          "end": 4,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "ExpressionStatement",
+          "start": 5,
+          "end": 7,
+          "expression": {
+            "type": "Identifier",
+            "start": 5,
+            "end": 6,
+            "name": "b"
+          }
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 12,
+          "end": 14,
+          "expression": {
+            "type": "Identifier",
+            "start": 12,
+            "end": 13,
+            "name": "c"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token 'else'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 7,
-      "end": 11,
-      "labels": [
-      ]
-    }
   ]
 }

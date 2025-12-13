@@ -5,6 +5,44 @@
     "end": 245,
     "sourceType": "script",
     "body": [
+      {
+        "type": "IfStatement",
+        "start": 146,
+        "end": 224,
+        "test": {
+          "type": "Identifier",
+          "start": 150,
+          "end": 151,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 153,
+          "end": 224,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 178,
+              "end": 218,
+              "test": {
+                "type": "Identifier",
+                "start": 182,
+                "end": 183,
+                "name": "c"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 185,
+                "end": 218,
+                "body": [
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "alternate": null
+      }
     ]
   },
   "comments": [
@@ -42,19 +80,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'with'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 146,
-      "end": 148,
+      "start": 159,
+      "end": 163,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'debugger'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 178,
-      "end": 180,
+      "start": 199,
+      "end": 207,
       "labels": [
       ]
     },
@@ -62,8 +100,8 @@
       "severity": "error",
       "message": "Unexpected token '}'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 217,
-      "end": 218,
+      "start": 225,
+      "end": 226,
       "labels": [
       ]
     },

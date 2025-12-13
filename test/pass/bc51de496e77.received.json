@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 47,
+        "end": 49,
         "id": {
           "type": "Identifier",
           "start": 9,
@@ -22,8 +22,66 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 47,
+          "end": 49,
           "body": [
+            {
+              "type": "IfStatement",
+              "start": 17,
+              "end": 47,
+              "test": {
+                "type": "UnaryExpression",
+                "start": 21,
+                "end": 31,
+                "operator": "void",
+                "prefix": true,
+                "argument": {
+                  "type": "ParenthesizedExpression",
+                  "start": 26,
+                  "end": 31,
+                  "expression": {
+                    "type": "CallExpression",
+                    "start": 27,
+                    "end": 30,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 27,
+                      "end": 28,
+                      "name": "b"
+                    },
+                    "arguments": [
+                    ],
+                    "optional": false
+                  }
+                }
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 33,
+                "end": 47,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 39,
+                    "end": 43,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 39,
+                      "end": 42,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 39,
+                        "end": 40,
+                        "name": "c"
+                      },
+                      "arguments": [
+                      ],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "alternate": null
+            }
           ]
         },
         "expression": false
@@ -33,23 +91,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'if'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 17,
-      "end": 19,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 48,
-      "end": 49,
-      "labels": [
-      ]
-    }
   ]
 }

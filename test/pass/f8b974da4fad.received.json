@@ -5,29 +5,6 @@
     "end": 30,
     "sourceType": "script",
     "body": [
-      {
-        "type": "FunctionDeclaration",
-        "start": 7,
-        "end": 22,
-        "id": {
-          "type": "Identifier",
-          "start": 16,
-          "end": 17,
-          "name": "a"
-        },
-        "generator": false,
-        "async": false,
-        "params": [
-        ],
-        "body": {
-          "type": "BlockStatement",
-          "start": 20,
-          "end": 22,
-          "body": [
-          ]
-        },
-        "expression": false
-      }
     ]
   },
   "comments": [
@@ -35,19 +12,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token ';'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 2,
+      "start": 28,
+      "end": 29,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'else'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 23,
-      "end": 27,
+      "message": "Expected statement after 'else'",
+      "help": null,
+      "start": 28,
+      "end": 29,
       "labels": [
       ]
     }

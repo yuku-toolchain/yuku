@@ -21,10 +21,19 @@
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'if'",
+      "message": "Unexpected token 'debugger'",
       "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 10,
-      "end": 12,
+      "start": 17,
+      "end": 25,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Expected statement after if condition",
+      "help": null,
+      "start": 17,
+      "end": 25,
       "labels": [
       ]
     }
