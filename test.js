@@ -1,1 +1,1 @@
-with (obj) 10
+const hello = ""

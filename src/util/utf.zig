@@ -20,6 +20,22 @@ pub fn isOctalDigit(digit: u8) bool {
     return digit >= '0' and digit <= '7';
 }
 
+/// ECMAScript LineTerminator: LF, CR, LS (U+2028), PS (U+2029)
+pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
+    if (pos >= source.len) return 0;
+    const c = source[pos];
+    if (c == '\n' or c == '\r') return 1;
+    if (c == 0xE2 and pos + 2 < source.len and source[pos + 1] == 0x80) {
+        if (source[pos + 2] == 0xA8 or source[pos + 2] == 0xA9) return 3;
+    }
+    return 0;
+}
+
+/// Check if byte at position is start of a line terminator
+pub inline fn isLineTerminator(source: []const u8, pos: usize) bool {
+    return lineTerminatorLen(source, pos) > 0;
+}
+
 pub fn isMultiByteSpace(cp: u21) bool {
     return switch (cp) {
         '\u{FEFF}',

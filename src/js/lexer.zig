@@ -557,7 +557,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source_len) {
             const c = self.source[self.cursor];
 
-            if (c == '\n' or c == '\r') {
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
                 return error.InvalidRegexLineTerminator;
             }
 
@@ -1076,6 +1076,14 @@ pub const Lexer = struct {
                 }
             } else {
                 @branchHint(.unlikely);
+
+                const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
+                if (lt_len > 0) {
+                    self.has_line_terminator_before = true;
+                    self.cursor += lt_len;
+                    continue;
+                }
+
                 // multi-byte space character
                 const cp = try util.Utf.codePointAt(self.source, self.cursor);
                 if (util.Utf.isMultiByteSpace(cp.value)) {
@@ -1094,8 +1102,7 @@ pub const Lexer = struct {
         self.cursor += 2; // skip '//'
 
         while (self.cursor < self.source_len) {
-            const c = self.source[self.cursor];
-            if (c == '\n' or c == '\r') {
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
                 break;
             }
             self.cursor += 1;
@@ -1116,7 +1123,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source_len) {
             const c = self.source[self.cursor];
 
-            if (c == '\n' or c == '\r') {
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
                 self.has_line_terminator_before = true;
             }
 
@@ -1155,8 +1162,7 @@ pub const Lexer = struct {
                 return;
             }
 
-            // end of line terminates the comment
-            if (c == '\n' or c == '\r') {
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
                 break;
             }
 

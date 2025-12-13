@@ -34,8 +34,14 @@
               {
                 "type": "ContinueStatement",
                 "start": 15,
+                "end": 23,
+                "label": null
+              },
+              {
+                "type": "ExpressionStatement",
+                "start": 30,
                 "end": 32,
-                "label": {
+                "expression": {
                   "type": "Identifier",
                   "start": 30,
                   "end": 31,
