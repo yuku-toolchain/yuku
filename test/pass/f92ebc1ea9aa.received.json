@@ -35,10 +35,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token '/='",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 25,
-      "end": 27,
+      "message": "Invalid left-hand side in assignment",
+      "help": "The left side of an assignment must be a variable, property access, or destructuring pattern.",
+      "start": 18,
+      "end": 23,
       "labels": [
       ]
     }

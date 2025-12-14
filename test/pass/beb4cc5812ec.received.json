@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 26,
+        "end": 30,
         "id": {
           "type": "Identifier",
           "start": 10,
@@ -22,8 +22,60 @@
         "body": {
           "type": "BlockStatement",
           "start": 13,
-          "end": 26,
+          "end": 30,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 14,
+              "end": 29,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 14,
+                "end": 29,
+                "expression": {
+                  "type": "AssignmentExpression",
+                  "start": 15,
+                  "end": 28,
+                  "operator": "=",
+                  "left": {
+                    "type": "ObjectPattern",
+                    "start": 15,
+                    "end": 26,
+                    "properties": [
+                      {
+                        "type": "Property",
+                        "start": 16,
+                        "end": 25,
+                        "kind": "init",
+                        "key": {
+                          "type": "YieldExpression",
+                          "start": 17,
+                          "end": 22,
+                          "delegate": false,
+                          "argument": null
+                        },
+                        "value": {
+                          "type": "Identifier",
+                          "start": 24,
+                          "end": 25,
+                          "name": "a"
+                        },
+                        "method": false,
+                        "shorthand": false,
+                        "computed": true
+                      }
+                    ]
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "start": 27,
+                    "end": 28,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
+            }
           ]
         },
         "expression": false
@@ -33,23 +85,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ']'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 22,
-      "end": 23,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '='",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 27,
-      "labels": [
-      ]
-    }
   ]
 }

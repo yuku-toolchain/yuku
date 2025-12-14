@@ -8,7 +8,7 @@
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 13,
+        "end": 20,
         "id": {
           "type": "Identifier",
           "start": 10,
@@ -19,7 +19,25 @@
         "async": false,
         "params": [
         ],
-        "body": null,
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 20,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 14,
+              "end": 19,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 14,
+                "end": 19,
+                "delegate": false,
+                "argument": null
+              }
+            }
+          ]
+        },
         "expression": false
       }
     ]
@@ -27,23 +45,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 19,
-      "end": 20,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Expected '}' to close function body",
-      "help": "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
-      "start": 20,
-      "end": 20,
-      "labels": [
-      ]
-    }
   ]
 }

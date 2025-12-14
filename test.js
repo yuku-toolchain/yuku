@@ -1,1 +1,1 @@
-function* a(){(class {[yield](){}})};
+function *a(){yield/=3/}

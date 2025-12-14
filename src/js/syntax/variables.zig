@@ -70,10 +70,8 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     // initializer if present
     if (parser.current_token.type == .assign) {
         try parser.advance();
-        if (try expressions.parseExpression(parser, 2, .{})) |expression| {
-            init = expression;
-            end = parser.getSpan(expression).end;
-        }
+        init = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+        end = parser.getSpan(init).end;
     } else if (patterns.isDestructuringPattern(parser, id)) {
         try parser.report(
             parser.getSpan(id),

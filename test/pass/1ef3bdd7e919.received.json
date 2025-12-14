@@ -24,6 +24,45 @@
           "start": 14,
           "end": 29,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 16,
+              "end": 27,
+              "expression": {
+                "type": "CallExpression",
+                "start": 16,
+                "end": 26,
+                "callee": {
+                  "type": "MemberExpression",
+                  "start": 16,
+                  "end": 19,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 16,
+                    "end": 17,
+                    "name": "b"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 18,
+                    "end": 19,
+                    "name": "c"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "arguments": [
+                  {
+                    "type": "YieldExpression",
+                    "start": 20,
+                    "end": 25,
+                    "delegate": false,
+                    "argument": null
+                  }
+                ],
+                "optional": false
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +72,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ')'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 25,
-      "end": 26,
-      "labels": [
-      ]
-    }
   ]
 }

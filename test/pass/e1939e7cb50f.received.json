@@ -27,6 +27,76 @@
               "start": 13,
               "end": 40,
               "body": [
+                {
+                  "type": "ExpressionStatement",
+                  "start": 15,
+                  "end": 38,
+                  "expression": {
+                    "type": "AssignmentExpression",
+                    "start": 15,
+                    "end": 37,
+                    "operator": "=",
+                    "left": {
+                      "type": "ArrayPattern",
+                      "start": 15,
+                      "end": 33,
+                      "elements": [
+                        {
+                          "type": "RestElement",
+                          "start": 16,
+                          "end": 32,
+                          "argument": {
+                            "type": "ObjectPattern",
+                            "start": 19,
+                            "end": 32,
+                            "properties": [
+                              {
+                                "type": "Property",
+                                "start": 21,
+                                "end": 30,
+                                "kind": "init",
+                                "key": {
+                                  "type": "Identifier",
+                                  "start": 21,
+                                  "end": 22,
+                                  "name": "a"
+                                },
+                                "value": {
+                                  "type": "AssignmentPattern",
+                                  "start": 21,
+                                  "end": 30,
+                                  "left": {
+                                    "type": "Identifier",
+                                    "start": 21,
+                                    "end": 22,
+                                    "name": "a"
+                                  },
+                                  "right": {
+                                    "type": "YieldExpression",
+                                    "start": 25,
+                                    "end": 30,
+                                    "delegate": false,
+                                    "argument": null
+                                  }
+                                },
+                                "method": false,
+                                "shorthand": true,
+                                "computed": false
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "start": 36,
+                      "end": 37,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
+                }
               ]
             },
             "expression": false
@@ -38,14 +108,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 31,
-      "end": 32,
-      "labels": [
-      ]
-    }
   ]
 }

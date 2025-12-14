@@ -24,6 +24,18 @@
           "start": 14,
           "end": 26,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 18,
+              "end": 24,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 18,
+                "end": 23,
+                "delegate": false,
+                "argument": null
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +45,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ';'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 23,
-      "end": 24,
-      "labels": [
-      ]
-    }
   ]
 }

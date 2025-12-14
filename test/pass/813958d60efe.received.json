@@ -24,6 +24,29 @@
           "start": 14,
           "end": 35,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 18,
+              "end": 33,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 18,
+                "end": 32,
+                "delegate": true,
+                "argument": {
+                  "type": "ParenthesizedExpression",
+                  "start": 25,
+                  "end": 32,
+                  "expression": {
+                    "type": "YieldExpression",
+                    "start": 26,
+                    "end": 31,
+                    "delegate": false,
+                    "argument": null
+                  }
+                }
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +56,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ')'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 31,
-      "end": 32,
-      "labels": [
-      ]
-    }
   ]
 }

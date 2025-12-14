@@ -5,40 +5,11 @@
     "end": 0,
     "sourceType": "script",
     "body": [
-      {
-        "type": "VariableDeclaration",
-        "start": 0,
-        "end": 5,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 4,
-            "end": 5,
-            "id": {
-              "type": "Identifier",
-              "start": 4,
-              "end": 5,
-              "name": "a"
-            },
-            "init": null
-          }
-        ]
-      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '/='",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 11,
-      "labels": [
-      ]
-    },
     {
       "severity": "error",
       "message": "Unexpected token '/='",

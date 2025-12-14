@@ -5,6 +5,7 @@ const Error = @import("../parser.zig").Error;
 
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
+const parenthesized = @import("parenthesized.zig");
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const functions = @import("functions.zig");
@@ -485,18 +486,16 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
             return null;
         }
 
-        const left = try grammar.expressionToPattern(parser, expr) orelse return null;
-        return parseForInStatementRest(parser, start, left);
+        return parseForInStatementRest(parser, start, parenthesized.unwrapParenthesized(parser, expr));
     }
 
     if (parser.current_token.type == .of) {
         // for (expr of ...)
-        const left = try grammar.expressionToPattern(parser, expr) orelse return null;
-        return parseForOfStatementRest(parser, start, left, is_await);
+        return parseForOfStatementRest(parser, start, expr, is_await);
     }
 
     // regular for statement
-    return parseForStatementRest(parser, start, expr);
+    return parseForStatementRest(parser, start, parenthesized.unwrapParenthesized(parser, expr));
 }
 
 /// parse rest of regular for statement after init
@@ -581,10 +580,15 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     // return [no LineTerminator here] Expression?
     if (!canInsertSemicolon(parser) and parser.current_token.type != .semicolon) {
+        // because if parseExpression can't parse an expression
+        // it will emit errors, but we don't need those errors since return argument is optional
+        // so revert any errors after parsed expression
+        const saved_diagnostics = parser.diagnostics;
         if (try expressions.parseExpression(parser, 0, .{})) |expr| {
             argument = expr;
             end = parser.getSpan(expr).end;
         }
+        parser.diagnostics = saved_diagnostics;
     }
 
     end = try parser.eatSemicolon(end);
@@ -704,10 +708,8 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
 
     if (parser.current_token.type == .assign) {
         try parser.advance();
-        if (try expressions.parseExpression(parser, 2, .{})) |expression| {
-            init = expression;
-            end = parser.getSpan(expression).end;
-        }
+        init = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+        end = parser.getSpan(init).end;
     }
 
     return try parser.addNode(.{ .variable_declarator = .{ .id = id, .init = init } }, .{ .start = decl_start, .end = end });

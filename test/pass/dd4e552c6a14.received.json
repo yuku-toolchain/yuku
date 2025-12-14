@@ -43,6 +43,30 @@
                     "start": 7,
                     "end": 24,
                     "body": [
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 11,
+                        "end": 17,
+                        "expression": {
+                          "type": "YieldExpression",
+                          "start": 11,
+                          "end": 16,
+                          "delegate": false,
+                          "argument": null
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "start": 20,
+                        "end": 22,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 20,
+                          "end": 21,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
                     ]
                   },
                   "expression": false
@@ -60,14 +84,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ';'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 16,
-      "end": 17,
-      "labels": [
-      ]
-    }
   ]
 }

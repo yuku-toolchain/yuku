@@ -36,7 +36,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         if (parser.current_token.type == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance();
-            const argument = try grammar.parseCoverElement(parser) orelse {
+            const argument = try grammar.parseCoverExpression(parser, 2) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };
@@ -49,7 +49,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             end = spread_end;
         } else {
             // regular element - parse as cover element
-            const element = try grammar.parseCoverElement(parser) orelse {
+            const element = try grammar.parseCoverExpression(parser, 2) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };

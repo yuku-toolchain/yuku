@@ -260,9 +260,16 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var argument: ast.NodeIndex = ast.null_node;
 
-    if (!parser.current_token.has_line_terminator_before) {
-        argument = try parseExpression(parser, 2, .{}) orelse return null;
-        end = parser.getSpan(argument).end;
+    if (!parser.current_token.has_line_terminator_before and parser.current_token.type != .semicolon) {
+        // because if parseExpression can't parse an expression
+        // it will emit errors, but we don't those errors since yield argument is optional
+        // so revert any errors after parsed expression
+        const saved_diagnostics = parser.diagnostics;
+        if (try parseExpression(parser, 2, .{})) |expr| {
+            argument = expr;
+            end = parser.getSpan(expr).end;
+        }
+        parser.diagnostics = saved_diagnostics;
     }
 
     return try parser.addNode(
@@ -644,7 +651,13 @@ pub fn parseArrayExpression(parser: *Parser, enable_validation: bool) Error!?ast
     const needs_validation = enable_validation and parser.state.cover_has_init_name;
     parser.state.cover_has_init_name = saved_flag or needs_validation;
 
-    if (parser.current_token.type == .assign) {
+    if (
+        // means this array is part of assignment expression/pattern
+        parser.current_token.type == .assign or
+        // means this array is part of for-in/of
+        parser.current_token.type == .in or parser.current_token.type == .of
+        // so convert to pattern
+    ) {
         return try array.coverToPattern(parser, cover);
     }
 
@@ -659,7 +672,13 @@ pub fn parseObjectExpression(parser: *Parser, enable_validation: bool) Error!?as
     const needs_validation = enable_validation and parser.state.cover_has_init_name;
     parser.state.cover_has_init_name = saved_flag or needs_validation;
 
-    if (parser.current_token.type == .assign) {
+    if (
+        // means this object is part of assignment expression/pattern
+        parser.current_token.type == .assign or
+        // means this object is part of for-in/of
+        parser.current_token.type == .in or parser.current_token.type == .of
+        // so convert to pattern
+    ) {
         return try object.coverToPattern(parser, cover);
     }
 

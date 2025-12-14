@@ -10,8 +10,8 @@ const array = @import("syntax/array.zig");
 /// without validation. validation is deferred until the top-level context is known:
 /// - if parent becomes an expression -> validate at top level
 /// - if parent becomes a pattern -> no validation needed
-pub fn parseCoverElement(parser: *Parser) Error!?ast.NodeIndex {
-    return expressions.parseExpression(parser, 2, .{ .enable_validation = false });
+pub fn parseCoverExpression(parser: *Parser, precedence: u5) Error!?ast.NodeIndex {
+    return expressions.parseExpression(parser, precedence, .{ .enable_validation = false });
 }
 
 /// validate that an expression doesn't contain CoverInitializedName.
