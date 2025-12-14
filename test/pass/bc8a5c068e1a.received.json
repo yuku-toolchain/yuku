@@ -32,7 +32,7 @@
                   "type": "Literal",
                   "start": 10,
                   "end": 12,
-                  "value": .5,
+                  "value": 0.5,
                   "raw": ".5"
                 }
               }

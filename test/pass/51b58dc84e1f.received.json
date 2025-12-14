@@ -13,7 +13,7 @@
           "type": "Literal",
           "start": 0,
           "end": 4,
-          "value": 0X04,
+          "value": 4,
           "raw": "0X04"
         }
       }

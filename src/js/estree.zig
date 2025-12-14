@@ -597,16 +597,17 @@ pub const Serializer = struct {
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
         const raw = self.tree.source[data.raw_start..][0..data.raw_len];
-
         const numeric = try util.Number.parseJSNumeric(raw);
 
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
+        try self.field("value");
         if (std.math.isInf(numeric)) {
-            try self.fieldNull("value");
+            try self.writeNull();
         } else {
-            try self.fieldRaw("value", raw);
+            var buf: [32]u8 = undefined;
+            try self.write(std.fmt.bufPrint(&buf, "{d}", .{numeric}) catch unreachable);
         }
         try self.fieldString("raw", raw);
         try self.endObject();
