@@ -486,16 +486,19 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
             return null;
         }
 
-        return parseForInStatementRest(parser, start, parenthesized.unwrapParenthesized(parser, expr));
+        const pattern = try grammar.expressionToPattern(parser, expr) orelse return null;
+
+        return parseForInStatementRest(parser, start, pattern);
     }
 
     if (parser.current_token.type == .of) {
         // for (expr of ...)
-        return parseForOfStatementRest(parser, start, expr, is_await);
+        const pattern = try grammar.expressionToPattern(parser, expr) orelse return null;
+        return parseForOfStatementRest(parser, start, pattern, is_await);
     }
 
     // regular for statement
-    return parseForStatementRest(parser, start, parenthesized.unwrapParenthesized(parser, expr));
+    return parseForStatementRest(parser, start, expr);
 }
 
 /// parse rest of regular for statement after init

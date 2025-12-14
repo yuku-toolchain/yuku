@@ -1,1 +1,1 @@
-function *a(){yield/=3/}
+const hello = (({nice})) = x
