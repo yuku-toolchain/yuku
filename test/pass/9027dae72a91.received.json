@@ -5,19 +5,34 @@
     "end": 9,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 0,
+          "end": 9,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 2,
+            "end": 3,
+            "name": "a"
+          },
+          "right": {
+            "type": "Literal",
+            "start": 8,
+            "end": 9,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Invalid left-hand side in assignment",
-      "help": "The left side of an assignment must be a variable, property access, or destructuring pattern.",
-      "start": 0,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

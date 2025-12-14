@@ -5,19 +5,45 @@
     "end": 13,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 0,
+          "end": 13,
+          "id": null,
+          "generator": false,
+          "async": false,
+          "params": [
+          ],
+          "body": {
+            "type": "AssignmentExpression",
+            "start": 6,
+            "end": 13,
+            "operator": "=",
+            "left": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "a"
+            },
+            "right": {
+              "type": "Literal",
+              "start": 12,
+              "end": 13,
+              "value": 1,
+              "raw": "1"
+            }
+          },
+          "expression": true
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Invalid left-hand side in assignment",
-      "help": "The left side of an assignment must be a variable, property access, or destructuring pattern.",
-      "start": 6,
-      "end": 9,
-      "labels": [
-      ]
-    }
   ]
 }

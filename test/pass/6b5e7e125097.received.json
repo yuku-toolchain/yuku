@@ -5,19 +5,47 @@
     "end": 87,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 87,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 0,
+          "end": 87,
+          "operator": "=",
+          "left": {
+            "type": "MemberExpression",
+            "start": 40,
+            "end": 43,
+            "object": {
+              "type": "Identifier",
+              "start": 40,
+              "end": 41,
+              "name": "a"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 42,
+              "end": 43,
+              "name": "a"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "right": {
+            "type": "Literal",
+            "start": 86,
+            "end": 87,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Invalid left-hand side in assignment",
-      "help": "The left side of an assignment must be a variable, property access, or destructuring pattern.",
-      "start": 0,
-      "end": 83,
-      "labels": [
-      ]
-    }
   ]
 }
