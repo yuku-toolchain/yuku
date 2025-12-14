@@ -14,14 +14,14 @@ pub const Serializer = struct {
     allocator: std.mem.Allocator,
     depth: u32 = 0,
     options: EstreeJsonOptions,
-    needs_comma: [max_depth]bool = [_]bool{false} ** max_depth,
+    needs_comma_bits: [8]u64 = .{0} ** 8,
     scratch: std.ArrayList(u8) = .empty,
     isTs: bool,
     pos_map: []u32,
 
     const Self = @This();
     const Error = error{ InvalidCharacter, NoSpaceLeft, OutOfMemory, Overflow };
-    const max_depth = 64;
+    const max_depth = 512;
 
     pub fn serialize(tree: *const parser.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
         var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.source.len * 3);
@@ -969,15 +969,31 @@ pub const Serializer = struct {
         try self.buffer.append(self.allocator, byte);
     }
 
+    inline fn needsComma(self: *Self) bool {
+        const idx = self.depth / 64;
+        const bit = @as(u6, @intCast(self.depth % 64));
+        return (self.needs_comma_bits[idx] & (@as(u64, 1) << bit)) != 0;
+    }
+
+    inline fn setNeedsComma(self: *Self, value: bool) void {
+        const idx = self.depth / 64;
+        const bit = @as(u6, @intCast(self.depth % 64));
+        if (value) {
+            self.needs_comma_bits[idx] |= (@as(u64, 1) << bit);
+        } else {
+            self.needs_comma_bits[idx] &= ~(@as(u64, 1) << bit);
+        }
+    }
+
     fn sep(self: *Self) !void {
-        if (self.needs_comma[self.depth]) try self.writeByte(',');
-        self.needs_comma[self.depth] = true;
+        if (self.needsComma()) try self.writeByte(',');
+        self.setNeedsComma(true);
     }
 
     fn beginObject(self: *Self) !void {
         try self.writeByte('{');
         self.depth += 1;
-        self.needs_comma[self.depth] = false;
+        self.setNeedsComma(false);
     }
 
     fn endObject(self: *Self) !void {
@@ -992,7 +1008,7 @@ pub const Serializer = struct {
     fn beginArray(self: *Self) !void {
         try self.writeByte('[');
         self.depth += 1;
-        self.needs_comma[self.depth] = false;
+        self.setNeedsComma(false);
     }
 
     fn endArray(self: *Self) !void {

@@ -16,8 +16,8 @@ pub fn main() !void {
     const contents = try reader.interface.allocRemaining(allocator, std.Io.Limit.limited(10 * 1024 * 1024));
     defer allocator.free(contents);
 
-    var start = try std.time.Timer.start();
 
+    var start = try std.time.Timer.start();
     const tree = try js.parse(std.heap.page_allocator, contents, .{});
     defer tree.deinit();
 
