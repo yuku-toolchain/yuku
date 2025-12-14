@@ -114,8 +114,6 @@ fn parsePrefix(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
 
 inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
-        // .yield and .await will be checked for reserved word
-        .identifier, .yield, .await => parseIdentifierOrArrowFunction(parser),
         .private_identifier => literals.parsePrivateIdentifier(parser),
         .string_literal => literals.parseStringLiteral(parser),
         .true, .false => literals.parseBooleanLiteral(parser),
@@ -133,6 +131,10 @@ inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
         .async => parseAsyncFunctionOrArrow(parser),
         else => {
+            if(parser.current_token.type.isIdentifierLike()) {
+                return parseIdentifierOrArrowFunction(parser);
+            }
+
             const tok = parser.current_token;
             try parser.reportFmt(
                 tok.span,

@@ -149,7 +149,7 @@ pub const Parser = struct {
             .arena = std.heap.ArenaAllocator.init(backing_allocator),
             .source_type = options.source_type,
             .lang = options.lang,
-            .strict_mode = options.is_strict,
+            .strict_mode = options.is_strict or options.source_type == .module,
             .lexer = undefined,
             .current_token = undefined,
             .context = .{ .in_async = false, .in_generator = false, .allow_in = true },

@@ -12,10 +12,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'export'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
-      "end": 6,
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
+      "help": "Try inserting a semicolon here",
+      "start": 13,
+      "end": 13,
       "labels": [
       ]
     }

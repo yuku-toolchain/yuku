@@ -5,43 +5,6 @@
     "end": 31,
     "sourceType": "module",
     "body": [
-      {
-        "type": "VariableDeclaration",
-        "start": 7,
-        "end": 30,
-        "kind": "var",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 11,
-            "end": 29,
-            "id": {
-              "type": "Identifier",
-              "start": 11,
-              "end": 12,
-              "name": "a"
-            },
-            "init": {
-              "type": "FunctionExpression",
-              "start": 15,
-              "end": 29,
-              "id": null,
-              "generator": false,
-              "async": false,
-              "params": [
-              ],
-              "body": {
-                "type": "BlockStatement",
-                "start": 27,
-                "end": 29,
-                "body": [
-                ]
-              },
-              "expression": false
-            }
-          }
-        ]
-      }
     ]
   },
   "comments": [
@@ -49,10 +12,19 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'export'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
+      "help": "Try inserting a semicolon here",
+      "start": 6,
       "end": 6,
+      "labels": [
+      ]
+    },
+    {
+      "severity": "error",
+      "message": "Function declaration requires a name",
+      "help": "Add a name after 'function', e.g. 'function myFunc() {}'.",
+      "start": 24,
+      "end": 25,
       "labels": [
       ]
     }

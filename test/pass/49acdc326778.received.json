@@ -5,19 +5,39 @@
     "end": 10,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 8,
+          "expression": {
+            "type": "MemberExpression",
+            "start": 1,
+            "end": 7,
+            "object": {
+              "type": "Identifier",
+              "start": 1,
+              "end": 4,
+              "name": "let"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 5,
+              "end": 6,
+              "name": "a"
+            },
+            "computed": true,
+            "optional": false
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'let'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 1,
-      "end": 4,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -5,32 +5,6 @@
     "end": 18,
     "sourceType": "module",
     "body": [
-      {
-        "type": "VariableDeclaration",
-        "start": 7,
-        "end": 17,
-        "kind": "let",
-        "declarations": [
-          {
-            "type": "VariableDeclarator",
-            "start": 11,
-            "end": 16,
-            "id": {
-              "type": "Identifier",
-              "start": 11,
-              "end": 12,
-              "name": "a"
-            },
-            "init": {
-              "type": "Literal",
-              "start": 15,
-              "end": 16,
-              "value": 1,
-              "raw": "1"
-            }
-          }
-        ]
-      }
     ]
   },
   "comments": [
@@ -38,9 +12,9 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'export'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
+      "help": "Try inserting a semicolon here",
+      "start": 6,
       "end": 6,
       "labels": [
       ]

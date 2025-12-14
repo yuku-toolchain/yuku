@@ -55,18 +55,18 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Unexpected token 'export'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 0,
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
+      "help": "Try inserting a semicolon here",
+      "start": 6,
       "end": 6,
       "labels": [
       ]
     },
     {
       "severity": "error",
-      "message": "Unexpected token 'export'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 38,
+      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
+      "help": "Try inserting a semicolon here",
+      "start": 44,
       "end": 44,
       "labels": [
       ]

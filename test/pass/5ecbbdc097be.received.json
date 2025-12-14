@@ -5,19 +5,34 @@
     "end": 18,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ForInStatement",
+        "start": 0,
+        "end": 17,
+        "left": {
+          "type": "Identifier",
+          "start": 5,
+          "end": 6,
+          "name": "a"
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 13,
+          "name": "let"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 15,
+          "end": 17,
+          "body": [
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token 'let'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 10,
-      "end": 13,
-      "labels": [
-      ]
-    }
   ]
 }
