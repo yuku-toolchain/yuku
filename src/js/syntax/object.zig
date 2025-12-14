@@ -171,7 +171,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
     // method definition, key followed by (
     if (parser.current_token.type == .left_paren) {
-        return parseMethodDefinition(parser, prop_start, key, computed, kind, is_async, is_generator);
+        return parseObjectMethodProperty(parser, prop_start, key, computed, kind, is_async, is_generator);
     }
 
     // if we had async, generator, or get/set prefix but no (, it's an error
@@ -276,7 +276,7 @@ inline fn isPropertyKeyStart(token_type: @import("../token.zig").TokenType) bool
 }
 
 /// parse a method definition: key(...) { ... }
-fn parseMethodDefinition(
+fn parseObjectMethodProperty(
     parser: *Parser,
     prop_start: u32,
     key: ast.NodeIndex,
