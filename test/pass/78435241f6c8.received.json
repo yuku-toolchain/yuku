@@ -5,19 +5,35 @@
     "end": 6,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 6,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 0,
+          "end": 6,
+          "left": {
+            "type": "Literal",
+            "start": 0,
+            "end": 4,
+            "value": 123.,
+            "raw": "123."
+          },
+          "operator": "+",
+          "right": {
+            "type": "Literal",
+            "start": 5,
+            "end": 6,
+            "value": 1,
+            "raw": "1"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected property name after '.'",
-      "help": "Use an identifier or private identifier (#name) for member access.",
-      "start": 4,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

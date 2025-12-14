@@ -903,11 +903,9 @@ pub const Lexer = struct {
             self.cursor < self.source_len and self.source[self.cursor] == '.')
         {
             const next = self.peek(1);
-
-            if (std.ascii.isDigit(next)) {
-                self.cursor += 1;
-                try self.consumeDecimalDigits();
-            }
+            if (next == '_') return error.NumericSeparatorMisuse;
+            self.cursor += 1;
+            if (std.ascii.isDigit(next)) try self.consumeDecimalDigits();
         }
 
         // handle exponent (only for regular numbers)

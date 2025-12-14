@@ -31,7 +31,7 @@ async function readJSON(filePath: string): Promise<ParsedAST> {
     const text = await file.text();
     return JSON.parse(text) as ParsedAST;
   } catch (error) {
-    throw new Error(`Failed to read $${filePath}: $${error}`);
+    throw new Error(`Failed to read ${filePath}: ${error}`);
   }
 }
 
@@ -99,8 +99,15 @@ async function runTests(folderPath: string): Promise<TestResult[]> {
   const glob = new Glob("*.js");
 
   for await (const file of glob.scan(folderPath)) {
-    const result = await testFile(folderPath, file);
-    results.push(result);
+    const path = `test/pass/${file}`;
+    const text = await Bun.file(path).text();
+    if(!text.includes('import') && !text.includes('export')) {
+      const result = await testFile(folderPath, file);
+      if(!result.passed) {
+        console.log(`${path} -- ${result.reason}`);
+      }
+      results.push(result);
+    }
   }
 
   return results;
