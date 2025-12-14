@@ -24,6 +24,28 @@
           "start": 13,
           "end": 24,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 14,
+              "end": 23,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 14,
+                "end": 23,
+                "delegate": false,
+                "argument": {
+                  "type": "Literal",
+                  "start": 19,
+                  "end": 23,
+                  "value": {},
+                  "raw": "/=3/",
+                  "regex": {
+                    "pattern": "=3",
+                    "flags": ""
+                  }
+                }
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +55,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Invalid left-hand side in assignment",
-      "help": "The left side of an assignment must be a variable, property access, or destructuring pattern.",
-      "start": 14,
-      "end": 19,
-      "labels": [
-      ]
-    }
   ]
 }

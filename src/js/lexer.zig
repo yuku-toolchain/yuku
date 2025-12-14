@@ -454,7 +454,30 @@ pub const Lexer = struct {
             return error.UnterminatedString;
         }
 
-        brk: switch (self.source[self.cursor]) {
+        const c = self.source[self.cursor];
+
+        // Line continuation: backslash followed by line terminator
+        // LineTerminatorSequence :: <LF> | <CR> [lookahead != <LF>] | <LS> | <PS> | <CR><LF>
+        if (c == '\r') {
+            self.cursor += 1;
+            // consume optional \n after \r
+            if (self.cursor < self.source_len and self.source[self.cursor] == '\n') {
+                self.cursor += 1;
+            }
+            return;
+        }
+        if (c == '\n') {
+            self.cursor += 1;
+            return;
+        }
+        // Check for multi-byte line terminators (LS U+2028, PS U+2029)
+        const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
+        if (lt_len > 0) {
+            self.cursor += lt_len;
+            return;
+        }
+
+        brk: switch (c) {
             '0' => {
                 const c1 = self.peek(1);
 
@@ -514,21 +537,39 @@ pub const Lexer = struct {
         self.cursor += 1; // skip 'u'
 
         if (self.cursor < self.source_len and self.source[self.cursor] == '{') {
-            // \u{XXXXX} format
+            // \u{XXXXX} format - allows any number of hex digits as long as value <= 0x10FFFF
             self.cursor += 1;
             const start = self.cursor;
             const end = std.mem.indexOfScalarPos(u8, self.source, self.cursor, '}') orelse
                 return error.InvalidUnicodeEscape;
 
-            const hex_len = end - start;
-            if (hex_len == 0 or hex_len > 6) {
+            const hex_str = self.source[start..end];
+            if (hex_str.len == 0) {
                 return error.InvalidUnicodeEscape;
             }
 
-            for (self.source[start..end]) |c| {
+            // Validate all characters are hex digits and compute value
+            var value: u32 = 0;
+            for (hex_str) |c| {
                 if (!std.ascii.isHex(c)) {
                     return error.InvalidUnicodeEscape;
                 }
+                // Check for overflow before shifting
+                if (value > 0x10FFFF) {
+                    return error.InvalidUnicodeEscape;
+                }
+                const digit: u32 = switch (c) {
+                    '0'...'9' => c - '0',
+                    'a'...'f' => c - 'a' + 10,
+                    'A'...'F' => c - 'A' + 10,
+                    else => unreachable,
+                };
+                value = (value << 4) | digit;
+            }
+
+            // Validate code point is in valid Unicode range
+            if (value > 0x10FFFF) {
+                return error.InvalidUnicodeEscape;
             }
 
             self.cursor = @intCast(end + 1);
@@ -863,6 +904,7 @@ pub const Lexer = struct {
     fn scanNumber(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         var token_type: token.TokenType = .numeric_literal;
+        var is_legacy_octal = false;
 
         // handle prefixes: 0x, 0o, 0b
         if (self.source[self.cursor] == '0') {
@@ -890,6 +932,18 @@ pub const Lexer = struct {
                     try self.consumeBinaryDigits();
                     if (self.cursor == bin_start) return error.InvalidBinaryLiteral;
                 },
+                '0'...'7' => {
+                    // Potential legacy octal: 01, 07, etc.
+                    is_legacy_octal = true;
+                    try self.consumeDecimalDigits();
+                    // Check if any digit 8 or 9 was consumed (makes it decimal, not octal)
+                    for (self.source[start..self.cursor]) |c| {
+                        if (c == '8' or c == '9') {
+                            is_legacy_octal = false;
+                            break;
+                        }
+                    }
+                },
                 else => {
                     try self.consumeDecimalDigits();
                 },
@@ -898,14 +952,21 @@ pub const Lexer = struct {
             try self.consumeDecimalDigits();
         }
 
-        // handle decimal point (only for regular numbers)
+        // handle decimal point (only for regular numbers, not legacy octals)
         if (token_type == .numeric_literal and
             self.cursor < self.source_len and self.source[self.cursor] == '.')
         {
             const next = self.peek(1);
             if (next == '_') return error.NumericSeparatorMisuse;
-            self.cursor += 1;
-            if (std.ascii.isDigit(next)) try self.consumeDecimalDigits();
+
+            // Legacy octals (like 01) can't have a decimal point
+            // If followed by a non-digit, the '.' is member access (e.g., 01.toString())
+            if (is_legacy_octal and !std.ascii.isDigit(next)) {
+                // Don't consume the '.', it's member access
+            } else {
+                self.cursor += 1;
+                if (std.ascii.isDigit(next)) try self.consumeDecimalDigits();
+            }
         }
 
         // handle exponent (only for regular numbers)
@@ -1053,6 +1114,10 @@ pub const Lexer = struct {
     }
 
     inline fn skipSkippable(self: *Lexer) LexicalError!void {
+        // Track if we're at a logical line start (start of file OR after newline)
+        // This persists through whitespace/comment skipping for HTML close comment detection
+        var at_line_start = self.cursor == 0 or self.has_line_terminator_before;
+
         while (self.cursor < self.source_len) {
             const c = self.source[self.cursor];
 
@@ -1065,6 +1130,7 @@ pub const Lexer = struct {
                     },
                     '\n', '\r' => {
                         self.has_line_terminator_before = true;
+                        at_line_start = true;
                         self.cursor += 1;
                         continue;
                     },
@@ -1087,6 +1153,19 @@ pub const Lexer = struct {
                             const c3 = self.peek(3);
                             if (c1 == '!' and c2 == '-' and c3 == '-') {
                                 try self.scanHtmlComment();
+                                continue;
+                            }
+                        }
+                        break;
+                    },
+                    '-' => {
+                        // HTML-style close comment --> is only valid at line start in script mode
+                        // "Line start" means start of file OR after newline, with only whitespace/comments before
+                        if (self.source_type == .script and at_line_start) {
+                            const c1 = self.peek(1);
+                            const c2 = self.peek(2);
+                            if (c1 == '-' and c2 == '>') {
+                                try self.scanHtmlCloseComment();
                                 continue;
                             }
                         }
@@ -1190,6 +1269,25 @@ pub const Lexer = struct {
         }
 
         // comment ends at end of line
+        self.comments.append(self.allocator, .{
+            .type = .line,
+            .start = start,
+            .end = self.cursor,
+        }) catch return error.OutOfMemory;
+    }
+
+    /// scans an HTML-style close comment (--> ... end of line)
+    fn scanHtmlCloseComment(self: *Lexer) LexicalError!void {
+        const start = self.cursor;
+        self.cursor += 3; // skip '-->'
+
+        while (self.cursor < self.source_len) {
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+                break;
+            }
+            self.cursor += 1;
+        }
+
         self.comments.append(self.allocator, .{
             .type = .line,
             .start = start,

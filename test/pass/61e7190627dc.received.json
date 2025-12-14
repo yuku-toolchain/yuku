@@ -11,20 +11,27 @@
         "end": 2,
         "body": [
         ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 3,
+        "end": 7,
+        "expression": {
+          "type": "Literal",
+          "start": 3,
+          "end": 6,
+          "value": {},
+          "raw": "/=/",
+          "regex": {
+            "pattern": "=",
+            "flags": ""
+          }
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '/='",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 3,
-      "end": 5,
-      "labels": [
-      ]
-    }
   ]
 }

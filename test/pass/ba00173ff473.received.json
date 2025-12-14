@@ -13,17 +13,14 @@
       "value": " block comment ",
       "start": 3,
       "end": 22
+    },
+    {
+      "type": "Line",
+      "value": "> comment",
+      "start": 24,
+      "end": 35
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '>'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 26,
-      "end": 27,
-      "labels": [
-      ]
-    }
   ]
 }

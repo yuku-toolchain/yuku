@@ -5,19 +5,28 @@
     "end": 5,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 5,
+        "expression": {
+          "type": "UpdateExpression",
+          "start": 0,
+          "end": 5,
+          "operator": "++",
+          "prefix": false,
+          "argument": {
+            "type": "Identifier",
+            "start": 1,
+            "end": 2,
+            "name": "a"
+          }
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Invalid operand for increment/decrement operator",
-      "help": "The '++' and '--' operators require a variable or property reference, not a literal or complex expression.",
-      "start": 0,
-      "end": 3,
-      "labels": [
-      ]
-    }
   ]
 }

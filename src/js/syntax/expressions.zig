@@ -116,7 +116,7 @@ inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error
         .super => parseSuperExpression(parser),
         .numeric_literal, .hex_literal, .octal_literal, .binary_literal => literals.parseNumericLiteral(parser),
         .bigint_literal => literals.parseBigIntLiteral(parser),
-        .slash => literals.parseRegExpLiteral(parser),
+        .slash, .slash_assign => literals.parseRegExpLiteral(parser),
         .template_head => literals.parseTemplateLiteral(parser),
         .no_substitution_template => literals.parseNoSubstitutionTemplate(parser),
         .left_bracket => parseArrayExpression(parser, enable_validation),
@@ -441,7 +441,9 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
         const argument = try parseExpression(parser, 14, .{}) orelse return null;
         const span = parser.getSpan(argument);
 
-        if (!isSimpleAssignmentTarget(parser, argument)) {
+        // Unwrap parenthesized expression for validation and use as argument
+        const unwrapped = parenthesized.unwrapParenthesized(parser, argument);
+        if (!isSimpleAssignmentTarget(parser, unwrapped)) {
             try parser.report(
                 span,
                 "Invalid operand for increment/decrement operator",
@@ -451,12 +453,14 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
         }
 
         return try parser.addNode(
-            .{ .update_expression = .{ .argument = argument, .operator = operator, .prefix = true } },
+            .{ .update_expression = .{ .argument = unwrapped, .operator = operator, .prefix = true } },
             .{ .start = operator_token.span.start, .end = span.end },
         );
     }
 
-    if (!isSimpleAssignmentTarget(parser, left)) {
+    // Unwrap parenthesized expression for validation and use as argument
+    const unwrapped = parenthesized.unwrapParenthesized(parser, left);
+    if (!isSimpleAssignmentTarget(parser, unwrapped)) {
         const span = parser.getSpan(left);
         try parser.report(
             span,
@@ -467,7 +471,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
     }
 
     return try parser.addNode(
-        .{ .update_expression = .{ .argument = left, .operator = operator, .prefix = false } },
+        .{ .update_expression = .{ .argument = unwrapped, .operator = operator, .prefix = false } },
         .{ .start = parser.getSpan(left).start, .end = operator_token.span.end },
     );
 }
@@ -724,7 +728,14 @@ fn parseMemberProperty(parser: *Parser, object_node: ast.NodeIndex, optional: bo
 fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, optional: bool) Error!?ast.NodeIndex {
     try parser.advance(); // consume '['
 
-    const property = try parseExpression(parser, 0, .{}) orelse return null;
+    // Enable 'in' operator inside brackets (e.g., for `a[b in c]` in for-in loops)
+    const saved_allow_in = parser.context.allow_in;
+    parser.context.allow_in = true;
+    const property = try parseExpression(parser, 0, .{}) orelse {
+        parser.context.allow_in = saved_allow_in;
+        return null;
+    };
+    parser.context.allow_in = saved_allow_in;
 
     const end = parser.current_token.span.end; // ']' position
     if (!try parser.expect(.right_bracket, "Expected ']' after computed property", "Computed member access must end with ']'.")) {
@@ -766,16 +777,26 @@ fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bo
 fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
 
+    // Enable 'in' operator inside call arguments (e.g., for `a(b in c)` in for-in loops)
+    const saved_allow_in = parser.context.allow_in;
+    parser.context.allow_in = true;
+
     while (parser.current_token.type != .right_paren and parser.current_token.type != .eof) {
         const arg = if (parser.current_token.type == .spread) blk: {
             const spread_start = parser.current_token.span.start;
             try parser.advance(); // consume '...'
-            const argument = try parseExpression(parser, 2, .{}) orelse return null;
+            const argument = try parseExpression(parser, 2, .{}) orelse {
+                parser.context.allow_in = saved_allow_in;
+                return null;
+            };
             const arg_span = parser.getSpan(argument);
             break :blk try parser.addNode(.{
                 .spread_element = .{ .argument = argument },
             }, .{ .start = spread_start, .end = arg_span.end });
-        } else try parseExpression(parser, 2, .{}) orelse return null;
+        } else try parseExpression(parser, 2, .{}) orelse {
+            parser.context.allow_in = saved_allow_in;
+            return null;
+        };
 
         try parser.scratch_a.append(parser.allocator(), arg);
 
@@ -786,6 +807,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
         }
     }
 
+    parser.context.allow_in = saved_allow_in;
     return try parser.addExtra(parser.scratch_a.take(checkpoint));
 }
 

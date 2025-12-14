@@ -2,31 +2,48 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 0,
+    "end": 25,
     "sourceType": "script",
     "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 24,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 23,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 23,
+              "expression": {
+                "type": "Literal",
+                "start": 9,
+                "end": 22,
+                "value": {},
+                "raw": "/=([^=\\s])+/g",
+                "regex": {
+                  "pattern": "=([^=\\s])+",
+                  "flags": "g"
+                }
+              }
+            }
+          }
+        ]
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '/='",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 9,
-      "end": 11,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Invalid Unicode escape sequence",
-      "help": "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH} (1-6 hex digits) here",
-      "start": 15,
-      "end": 15,
-      "labels": [
-      ]
-    }
   ]
 }

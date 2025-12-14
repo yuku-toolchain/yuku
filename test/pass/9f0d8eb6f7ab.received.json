@@ -13,17 +13,14 @@
       "value": "\n",
       "start": 0,
       "end": 5
+    },
+    {
+      "type": "Line",
+      "value": ">",
+      "start": 5,
+      "end": 8
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token '>'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 7,
-      "end": 8,
-      "labels": [
-      ]
-    }
   ]
 }

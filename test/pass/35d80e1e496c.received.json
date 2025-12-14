@@ -2,22 +2,26 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 0,
+    "end": 19,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 18,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 17,
+          "value": "4",
+          "raw": "\"\\u{00000000034}\""
+        },
+        "directive": "\\u{00000000034}"
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Invalid Unicode escape sequence",
-      "help": "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH} (1-6 hex digits) here",
-      "start": 0,
-      "end": 4,
-      "labels": [
-      ]
-    }
   ]
 }
