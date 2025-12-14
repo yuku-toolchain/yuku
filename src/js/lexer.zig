@@ -40,7 +40,10 @@ pub const Lexer = struct {
     token_start: u32,
     /// current byte index being scanned in the source
     cursor: u32,
+
     template_depth: u32,
+    brace_depth: u32,
+
     has_line_terminator_before: bool,
     comments: std.ArrayList(ast.Comment),
     allocator: std.mem.Allocator,
@@ -54,6 +57,7 @@ pub const Lexer = struct {
             .token_start = 0,
             .cursor = 0,
             .template_depth = 0,
+            .brace_depth = 0,
             .has_line_terminator_before = false,
             .comments = try .initCapacity(allocator, source.len / 3),
             .allocator = allocator,
@@ -99,7 +103,13 @@ pub const Lexer = struct {
             '~' => .bitwise_not,
             '(' => .left_paren,
             ')' => .right_paren,
-            '{' => .left_brace,
+            '{' => blk: {
+                // track nested braces inside template expressions
+                if (self.template_depth > 0) {
+                    self.brace_depth += 1;
+                }
+                break :blk .left_brace;
+            },
             '[' => .left_bracket,
             ']' => .right_bracket,
             ';' => .semicolon,
@@ -536,9 +546,16 @@ pub const Lexer = struct {
     }
 
     fn handleRightBrace(self: *Lexer) LexicalError!token.Token {
-        // inside template, scan for continuation
+        // inside a template expression, check if this } closes a nested brace
+        // or the template substitution itself
         if (self.template_depth > 0) {
-            return self.scanTemplateMiddleOrTail();
+            if (self.brace_depth > 0) {
+                // this } closes a nested brace (e.g., arrow function body, object literal)
+                self.brace_depth -= 1;
+            } else {
+                // this } closes the template substitution ${...}
+                return self.scanTemplateMiddleOrTail();
+            }
         }
 
         const start = self.cursor;
