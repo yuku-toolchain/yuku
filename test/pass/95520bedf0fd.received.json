@@ -25,6 +25,36 @@
           "end": 64,
           "body": [
             {
+              "type": "ExpressionStatement",
+              "start": 19,
+              "end": 25,
+              "expression": {
+                "type": "SequenceExpression",
+                "start": 19,
+                "end": 24,
+                "expressions": [
+                  {
+                    "type": "Identifier",
+                    "start": 19,
+                    "end": 20,
+                    "name": "b"
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 21,
+                    "end": 22,
+                    "name": "c"
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 23,
+                    "end": 24,
+                    "name": "d"
+                  }
+                ]
+              }
+            },
+            {
               "type": "IfStatement",
               "start": 30,
               "end": 62,
@@ -64,14 +94,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 20,
-      "end": 20,
-      "labels": [
-      ]
-    }
   ]
 }

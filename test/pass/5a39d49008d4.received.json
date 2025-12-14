@@ -25,6 +25,48 @@
           "end": 59,
           "body": [
             {
+              "type": "ExpressionStatement",
+              "start": 17,
+              "end": 27,
+              "expression": {
+                "type": "SequenceExpression",
+                "start": 17,
+                "end": 26,
+                "expressions": [
+                  {
+                    "type": "ParenthesizedExpression",
+                    "start": 17,
+                    "end": 23,
+                    "expression": {
+                      "type": "SequenceExpression",
+                      "start": 18,
+                      "end": 22,
+                      "expressions": [
+                        {
+                          "type": "Identifier",
+                          "start": 18,
+                          "end": 19,
+                          "name": "b"
+                        },
+                        {
+                          "type": "Identifier",
+                          "start": 21,
+                          "end": 22,
+                          "name": "c"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 25,
+                    "end": 26,
+                    "name": "d"
+                  }
+                ]
+              }
+            },
+            {
               "type": "IfStatement",
               "start": 30,
               "end": 57,
@@ -64,14 +106,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 23,
-      "end": 23,
-      "labels": [
-      ]
-    }
   ]
 }

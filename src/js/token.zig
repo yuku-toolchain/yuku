@@ -88,7 +88,7 @@ pub const TokenType = enum(u32) {
     left_bracket = 63, // "["
     right_bracket = 64, // "]"
     semicolon = 65, // ";"
-    comma = 66, // ","
+    comma = 66 | (1 << Mask.PrecShift), // ","
     dot = 67, // "."
     spread = 68, // "..."
     arrow = 69, // "=>"
@@ -365,16 +365,12 @@ pub const Token = struct {
             return self.type.precedence();
         }
 
-        // conditional operator (precedence 2)
-        if (self.type == .question) {
-            return 2;
-        }
-
-        // member access, call, and tagged template expressions (precedence 17)
         return switch (self.type) {
             .dot, .optional_chaining, .left_bracket, .left_paren => 17,
             // tagged template: only when no line terminator before the template
             .template_head, .no_substitution_template => if (!self.has_line_terminator_before) 17 else 0,
+            .comma => 1,
+            .question => 2,
             else => 0, // can't be infix
         };
     }

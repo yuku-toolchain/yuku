@@ -81,6 +81,60 @@
                         "start": 42,
                         "end": 66,
                         "body": [
+                          {
+                            "type": "ExpressionStatement",
+                            "start": 48,
+                            "end": 62,
+                            "expression": {
+                              "type": "SequenceExpression",
+                              "start": 48,
+                              "end": 61,
+                              "expressions": [
+                                {
+                                  "type": "ParenthesizedExpression",
+                                  "start": 48,
+                                  "end": 56,
+                                  "expression": {
+                                    "type": "SequenceExpression",
+                                    "start": 49,
+                                    "end": 55,
+                                    "expressions": [
+                                      {
+                                        "type": "Identifier",
+                                        "start": 49,
+                                        "end": 50,
+                                        "name": "a"
+                                      },
+                                      {
+                                        "type": "ParenthesizedExpression",
+                                        "start": 52,
+                                        "end": 55,
+                                        "expression": {
+                                          "type": "Literal",
+                                          "start": 53,
+                                          "end": 54,
+                                          "value": 2,
+                                          "raw": "2"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "ParenthesizedExpression",
+                                  "start": 58,
+                                  "end": 61,
+                                  "expression": {
+                                    "type": "Literal",
+                                    "start": 59,
+                                    "end": 60,
+                                    "value": 3,
+                                    "raw": "3"
+                                  }
+                                }
+                              ]
+                            }
+                          }
                         ]
                       }
                     }
@@ -100,14 +154,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 56,
-      "end": 56,
-      "labels": [
-      ]
-    }
   ]
 }

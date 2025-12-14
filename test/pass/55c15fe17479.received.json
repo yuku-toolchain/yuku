@@ -72,6 +72,38 @@
                       "start": 42,
                       "end": 88,
                       "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 52,
+                          "end": 60,
+                          "expression": {
+                            "type": "SequenceExpression",
+                            "start": 52,
+                            "end": 59,
+                            "expressions": [
+                              {
+                                "type": "Identifier",
+                                "start": 52,
+                                "end": 53,
+                                "name": "a"
+                              },
+                              {
+                                "type": "Literal",
+                                "start": 55,
+                                "end": 56,
+                                "value": 2,
+                                "raw": "2"
+                              },
+                              {
+                                "type": "Literal",
+                                "start": 58,
+                                "end": 59,
+                                "value": 3,
+                                "raw": "3"
+                              }
+                            ]
+                          }
+                        }
                       ]
                     }
                   }
@@ -96,14 +128,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 53,
-      "end": 53,
-      "labels": [
-      ]
-    }
   ]
 }

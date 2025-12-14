@@ -69,7 +69,8 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     try parser.advance();
 
-    const right = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    // right side is AssignmentExpression, not Expression
+    const right = try expressions.parseExpression(parser, 2, .{}) orelse return null;
 
     return try parser.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },

@@ -39,10 +39,6 @@ pub fn parseExpression(parser: *Parser, precedence: u5, opts: ParseExpressionOpt
 fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const current = parser.current_token;
 
-    if (current.type == .increment or current.type == .decrement) {
-        return parseUpdateExpression(parser, false, left);
-    }
-
     if (current.type.isBinaryOperator()) {
         return parseBinaryExpression(parser, precedence, left);
     }
@@ -55,12 +51,10 @@ fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.N
         return parseAssignmentExpression(parser, precedence, left);
     }
 
-    if (current.type == .question) {
-        return parseConditionalExpression(parser, precedence, left);
-    }
-
-    // member access, call, and tagged template expressions
     switch (current.type) {
+        .increment, .decrement => return parseUpdateExpression(parser, false, left),
+        .question => return parseConditionalExpression(parser, precedence, left),
+        .comma => return parseSequenceExpression(parser, precedence, left),
         .dot => return parseStaticMemberExpression(parser, left, false),
         .left_bracket => return parseComputedMemberExpression(parser, left, false),
         .left_paren => return parseCallExpression(parser, left, false),
@@ -519,6 +513,33 @@ fn parseLogicalExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) 
             },
         },
         .{ .start = parser.getSpan(left).start, .end = parser.getSpan(right).end },
+    );
+}
+
+/// `a, b, c` - comma operator / sequence expression
+/// https://tc39.es/ecma262/#sec-comma-operator
+fn parseSequenceExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    const checkpoint = parser.scratch_a.begin();
+    try parser.scratch_a.append(parser.allocator(), left);
+
+    while (parser.current_token.type == .comma) {
+        try parser.advance(); // consume ','
+
+        const expr = try parseExpression(parser, precedence + 1, .{}) orelse {
+            parser.scratch_a.reset(checkpoint);
+            return null;
+        };
+        try parser.scratch_a.append(parser.allocator(), expr);
+    }
+
+    const expressions = parser.scratch_a.take(checkpoint);
+
+    const first_span = parser.getSpan(expressions[0]);
+    const last_span = parser.getSpan(expressions[expressions.len - 1]);
+
+    return try parser.addNode(
+        .{ .sequence_expression = .{ .expressions = try parser.addExtra(expressions) } },
+        .{ .start = first_span.start, .end = last_span.end },
     );
 }
 

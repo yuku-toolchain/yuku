@@ -1,4 +1,1 @@
-class Name {
-  name
-  another
-}
+comma, comma, comma

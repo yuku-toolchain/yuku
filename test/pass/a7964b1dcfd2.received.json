@@ -5,19 +5,47 @@
     "end": 10,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 10,
+        "expression": {
+          "type": "SequenceExpression",
+          "start": 0,
+          "end": 10,
+          "expressions": [
+            {
+              "type": "ArrowFunctionExpression",
+              "start": 0,
+              "end": 7,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [
+              ],
+              "body": {
+                "type": "Literal",
+                "start": 6,
+                "end": 7,
+                "value": 1,
+                "raw": "1"
+              },
+              "expression": true
+            },
+            {
+              "type": "Literal",
+              "start": 9,
+              "end": 10,
+              "value": 2,
+              "raw": "2"
+            }
+          ]
+        }
+      }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 7,
-      "end": 7,
-      "labels": [
-      ]
-    }
   ]
 }

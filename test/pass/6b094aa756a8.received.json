@@ -35,6 +35,60 @@
                   "start": 14,
                   "end": 34,
                   "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 18,
+                      "end": 32,
+                      "expression": {
+                        "type": "SequenceExpression",
+                        "start": 18,
+                        "end": 31,
+                        "expressions": [
+                          {
+                            "type": "ParenthesizedExpression",
+                            "start": 18,
+                            "end": 26,
+                            "expression": {
+                              "type": "SequenceExpression",
+                              "start": 19,
+                              "end": 25,
+                              "expressions": [
+                                {
+                                  "type": "Identifier",
+                                  "start": 19,
+                                  "end": 20,
+                                  "name": "a"
+                                },
+                                {
+                                  "type": "ParenthesizedExpression",
+                                  "start": 22,
+                                  "end": 25,
+                                  "expression": {
+                                    "type": "Literal",
+                                    "start": 23,
+                                    "end": 24,
+                                    "value": 1,
+                                    "raw": "1"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "ParenthesizedExpression",
+                            "start": 28,
+                            "end": 31,
+                            "expression": {
+                              "type": "Literal",
+                              "start": 29,
+                              "end": 30,
+                              "value": 2,
+                              "raw": "2"
+                            }
+                          }
+                        ]
+                      }
+                    }
                   ]
                 },
                 "expression": false
@@ -51,14 +105,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 26,
-      "end": 26,
-      "labels": [
-      ]
-    }
   ]
 }

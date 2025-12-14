@@ -31,6 +31,53 @@
                 "start": 12,
                 "end": 32,
                 "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 18,
+                    "end": 30,
+                    "expression": {
+                      "type": "SequenceExpression",
+                      "start": 18,
+                      "end": 29,
+                      "expressions": [
+                        {
+                          "type": "CallExpression",
+                          "start": 18,
+                          "end": 21,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 18,
+                            "end": 19,
+                            "name": "a"
+                          },
+                          "arguments": [
+                          ],
+                          "optional": false
+                        },
+                        {
+                          "type": "Literal",
+                          "start": 23,
+                          "end": 24,
+                          "value": 1,
+                          "raw": "1"
+                        },
+                        {
+                          "type": "CallExpression",
+                          "start": 26,
+                          "end": 29,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 26,
+                            "end": 27,
+                            "name": "b"
+                          },
+                          "arguments": [
+                          ],
+                          "optional": false
+                        }
+                      ]
+                    }
+                  }
                 ]
               },
               "expression": false
@@ -46,14 +93,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 21,
-      "end": 21,
-      "labels": [
-      ]
-    }
   ]
 }

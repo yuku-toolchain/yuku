@@ -5,6 +5,32 @@
     "end": 49,
     "sourceType": "script",
     "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 39,
+        "end": 48,
+        "expression": {
+          "type": "SequenceExpression",
+          "start": 39,
+          "end": 48,
+          "expressions": [
+            {
+              "type": "Literal",
+              "start": 39,
+              "end": 43,
+              "value": 1e20,
+              "raw": "1e20"
+            },
+            {
+              "type": "Literal",
+              "start": 44,
+              "end": 48,
+              "value": 1e21,
+              "raw": "1e21"
+            }
+          ]
+        }
+      }
     ]
   },
   "comments": [
@@ -16,14 +42,5 @@
     }
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 43,
-      "end": 43,
-      "labels": [
-      ]
-    }
   ]
 }

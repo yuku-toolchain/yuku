@@ -27,12 +27,43 @@
             {
               "type": "ReturnStatement",
               "start": 17,
-              "end": 25,
+              "end": 38,
               "argument": {
-                "type": "Identifier",
+                "type": "SequenceExpression",
                 "start": 24,
-                "end": 25,
-                "name": "a"
+                "end": 37,
+                "expressions": [
+                  {
+                    "type": "Identifier",
+                    "start": 24,
+                    "end": 25,
+                    "name": "a"
+                  },
+                  {
+                    "type": "ParenthesizedExpression",
+                    "start": 27,
+                    "end": 37,
+                    "expression": {
+                      "type": "UnaryExpression",
+                      "start": 28,
+                      "end": 36,
+                      "operator": "void",
+                      "prefix": true,
+                      "argument": {
+                        "type": "ParenthesizedExpression",
+                        "start": 33,
+                        "end": 36,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 34,
+                          "end": 35,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    }
+                  }
+                ]
               }
             }
           ]
@@ -44,14 +75,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ','",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 25,
-      "end": 26,
-      "labels": [
-      ]
-    }
   ]
 }

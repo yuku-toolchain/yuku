@@ -6,32 +6,40 @@
     "sourceType": "script",
     "body": [
       {
-        "type": "EmptyStatement",
-        "start": 9,
-        "end": 10
+        "type": "ForStatement",
+        "start": 0,
+        "end": 12,
+        "init": {
+          "type": "SequenceExpression",
+          "start": 4,
+          "end": 8,
+          "expressions": [
+            {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "b"
+            }
+          ]
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 11,
+          "end": 12
+        }
       }
     ]
   },
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected ';' after for-loop init",
-      "help": null,
-      "start": 5,
-      "end": 6,
-      "labels": [
-      ]
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token ')'",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 10,
-      "end": 11,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -27,84 +27,115 @@
             {
               "type": "ReturnStatement",
               "start": 17,
-              "end": 53,
+              "end": 66,
               "argument": {
-                "type": "ParenthesizedExpression",
+                "type": "SequenceExpression",
                 "start": 24,
-                "end": 53,
-                "expression": {
-                  "type": "SequenceExpression",
-                  "start": 25,
-                  "end": 52,
-                  "expressions": [
-                    {
-                      "type": "ParenthesizedExpression",
+                "end": 65,
+                "expressions": [
+                  {
+                    "type": "ParenthesizedExpression",
+                    "start": 24,
+                    "end": 53,
+                    "expression": {
+                      "type": "SequenceExpression",
                       "start": 25,
-                      "end": 49,
-                      "expression": {
-                        "type": "SequenceExpression",
-                        "start": 26,
-                        "end": 48,
-                        "expressions": [
-                          {
-                            "type": "ParenthesizedExpression",
-                            "start": 26,
-                            "end": 36,
-                            "expression": {
-                              "type": "UnaryExpression",
-                              "start": 27,
-                              "end": 35,
-                              "operator": "void",
-                              "prefix": true,
-                              "argument": {
-                                "type": "ParenthesizedExpression",
-                                "start": 32,
-                                "end": 35,
-                                "expression": {
-                                  "type": "Literal",
-                                  "start": 33,
-                                  "end": 34,
-                                  "value": 1,
-                                  "raw": "1"
-                                }
-                              }
-                            }
-                          },
-                          {
-                            "type": "ParenthesizedExpression",
-                            "start": 38,
-                            "end": 48,
-                            "expression": {
-                              "type": "UnaryExpression",
-                              "start": 39,
-                              "end": 47,
-                              "operator": "void",
-                              "prefix": true,
-                              "argument": {
-                                "type": "ParenthesizedExpression",
-                                "start": 44,
-                                "end": 47,
-                                "expression": {
-                                  "type": "Literal",
-                                  "start": 45,
-                                  "end": 46,
-                                  "value": 2,
-                                  "raw": "2"
-                                }
-                              }
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "Identifier",
-                      "start": 51,
                       "end": 52,
-                      "name": "a"
+                      "expressions": [
+                        {
+                          "type": "ParenthesizedExpression",
+                          "start": 25,
+                          "end": 49,
+                          "expression": {
+                            "type": "SequenceExpression",
+                            "start": 26,
+                            "end": 48,
+                            "expressions": [
+                              {
+                                "type": "ParenthesizedExpression",
+                                "start": 26,
+                                "end": 36,
+                                "expression": {
+                                  "type": "UnaryExpression",
+                                  "start": 27,
+                                  "end": 35,
+                                  "operator": "void",
+                                  "prefix": true,
+                                  "argument": {
+                                    "type": "ParenthesizedExpression",
+                                    "start": 32,
+                                    "end": 35,
+                                    "expression": {
+                                      "type": "Literal",
+                                      "start": 33,
+                                      "end": 34,
+                                      "value": 1,
+                                      "raw": "1"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "ParenthesizedExpression",
+                                "start": 38,
+                                "end": 48,
+                                "expression": {
+                                  "type": "UnaryExpression",
+                                  "start": 39,
+                                  "end": 47,
+                                  "operator": "void",
+                                  "prefix": true,
+                                  "argument": {
+                                    "type": "ParenthesizedExpression",
+                                    "start": 44,
+                                    "end": 47,
+                                    "expression": {
+                                      "type": "Literal",
+                                      "start": 45,
+                                      "end": 46,
+                                      "value": 2,
+                                      "raw": "2"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "Identifier",
+                          "start": 51,
+                          "end": 52,
+                          "name": "a"
+                        }
+                      ]
                     }
-                  ]
-                }
+                  },
+                  {
+                    "type": "ParenthesizedExpression",
+                    "start": 55,
+                    "end": 65,
+                    "expression": {
+                      "type": "UnaryExpression",
+                      "start": 56,
+                      "end": 64,
+                      "operator": "void",
+                      "prefix": true,
+                      "argument": {
+                        "type": "ParenthesizedExpression",
+                        "start": 61,
+                        "end": 64,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 62,
+                          "end": 63,
+                          "value": 3,
+                          "raw": "3"
+                        }
+                      }
+                    }
+                  }
+                ]
               }
             }
           ]
@@ -116,14 +147,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Unexpected token ','",
-      "help": "Expected an expression (identifier, literal, array, object, or parenthesized expression).",
-      "start": 53,
-      "end": 54,
-      "labels": [
-      ]
-    }
   ]
 }

@@ -24,6 +24,72 @@
           "start": 14,
           "end": 42,
           "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 16,
+              "end": 40,
+              "expression": {
+                "type": "SequenceExpression",
+                "start": 16,
+                "end": 40,
+                "expressions": [
+                  {
+                    "type": "YieldExpression",
+                    "start": 16,
+                    "end": 25,
+                    "delegate": false,
+                    "argument": {
+                      "type": "AssignmentExpression",
+                      "start": 22,
+                      "end": 25,
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "start": 22,
+                        "end": 23,
+                        "name": "b"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "start": 24,
+                        "end": 25,
+                        "name": "c"
+                      }
+                    }
+                  },
+                  {
+                    "type": "YieldExpression",
+                    "start": 27,
+                    "end": 37,
+                    "delegate": true,
+                    "argument": {
+                      "type": "AssignmentExpression",
+                      "start": 34,
+                      "end": 37,
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "start": 34,
+                        "end": 35,
+                        "name": "d"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "start": 36,
+                        "end": 37,
+                        "name": "e"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 39,
+                    "end": 40,
+                    "name": "f"
+                  }
+                ]
+              }
+            }
           ]
         },
         "expression": false
@@ -33,14 +99,5 @@
   "comments": [
   ],
   "errors": [
-    {
-      "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found none",
-      "help": "Try inserting a semicolon here",
-      "start": 25,
-      "end": 25,
-      "labels": [
-      ]
-    }
   ]
 }
