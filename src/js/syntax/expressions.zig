@@ -85,7 +85,7 @@ fn parsePrefix(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
     }
 
     if (token_type == .left_paren) {
-        return parseParenthesizedOrArrowFunction(parser, false);
+        return parseParenthesizedOrArrowFunction(parser, false, null);
     }
 
     if (token_type == .await and (parser.context.in_async or parser.isModule())) {
@@ -151,8 +151,8 @@ fn parseParenthesizedExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// (a) or (a, b) => ...
-fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
+fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool, arrow_start: ?u32) Error!?ast.NodeIndex {
+    const start = arrow_start orelse parser.current_token.span.start;
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
@@ -191,7 +191,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser) Error!?ast.NodeIndex {
 
     // async (params) => ...
     if (parser.current_token.type == .left_paren) {
-        return parseParenthesizedOrArrowFunction(parser, true);
+        return parseParenthesizedOrArrowFunction(parser, true, start);
     }
 
     //  [no LineTerminator here] => ConciseBody
