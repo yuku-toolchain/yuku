@@ -53,23 +53,23 @@ pub fn build(b: *std.Build) void {
     const gen_unicode_id_table_step = b.step("generate-unicode-id", "Run unicode identifier table and utils generation");
     gen_unicode_id_table_step.dependOn(&run_gen_unicode_id_table.step);
 
-    const gen_ast_snapshots_module = b.createModule(.{
-        .root_source_file = b.path("scripts/gen_ast_snapshots.zig"),
+    const test262_module = b.createModule(.{
+        .root_source_file = b.path("scripts/test262.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    gen_ast_snapshots_module.addImport("js", js_module);
+    test262_module.addImport("js", js_module);
 
-    const gen_ast_snapshots = b.addExecutable(.{
-        .name = "gen-ast-snapshots",
-        .root_module = gen_ast_snapshots_module,
+    const test262 = b.addExecutable(.{
+        .name = "test262",
+        .root_module = test262_module,
     });
 
-    b.installArtifact(gen_ast_snapshots);
+    b.installArtifact(test262);
 
-    const gen_ast_snapshots_step = b.step("gen-ast-snapshots", "Generate yuku AST snapshots to compare with expected AST");
-    const run_gen_ast_snapshots = b.addRunArtifact(gen_ast_snapshots);
-    run_gen_ast_snapshots.step.dependOn(b.getInstallStep());
-    gen_ast_snapshots_step.dependOn(&run_gen_ast_snapshots.step);
+    const test262_step = b.step("Run Test262 parser tests suite", "");
+    const run_test262 = b.addRunArtifact(test262);
+    run_test262.step.dependOn(b.getInstallStep());
+    test262_step.dependOn(&run_test262.step);
 }
