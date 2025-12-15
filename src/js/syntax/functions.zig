@@ -194,15 +194,6 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
 }
 
 pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
-    if(parser.current_token.type == .yield and parser.context.in_generator) {
-        try parser.report(
-            parser.current_token.span,
-            "'yield' cannot be used as a parameter name in a generator function",
-            .{},
-        );
-        return null;
-    }
-
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
     if (parser.current_token.type == .assign) {
