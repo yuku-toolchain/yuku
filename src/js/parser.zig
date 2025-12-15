@@ -108,6 +108,7 @@ const ParserContext = struct {
     in_async: bool,
     in_generator: bool,
     allow_in: bool,
+    in_function: bool,
 };
 
 const ParserState = struct {
@@ -152,7 +153,7 @@ pub const Parser = struct {
             .strict_mode = options.is_strict or options.source_type == .module,
             .lexer = undefined,
             .current_token = undefined,
-            .context = .{ .in_async = false, .in_generator = false, .allow_in = true },
+            .context = .{ .in_async = false, .in_generator = false, .allow_in = true, .in_function = false },
         };
     }
 

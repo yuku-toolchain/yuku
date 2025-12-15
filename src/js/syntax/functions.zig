@@ -126,6 +126,13 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Function bodies must be enclosed in braces: function name() { ... }",
     )) return null;
 
+    const saved_in_function = parser.context.in_function;
+    parser.context.in_function = true;
+
+    defer {
+        parser.context.in_function = saved_in_function;
+    }
+
     const body = try parser.parseBody(.right_brace);
 
     const end = parser.current_token.span.end;

@@ -250,13 +250,16 @@ const ArrowBodyResult = struct {
 fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
     const saved_async = parser.context.in_async;
     const saved_generator = parser.context.in_generator;
+    const saved_in_function = parser.context.in_function;
 
     parser.context.in_async = is_async;
     parser.context.in_generator = false;
+    parser.context.in_function = true;
 
     defer {
         parser.context.in_generator = saved_generator;
         parser.context.in_async = saved_async;
+        parser.context.in_function = saved_in_function;
     }
 
     if (parser.current_token.type == .left_brace) {
