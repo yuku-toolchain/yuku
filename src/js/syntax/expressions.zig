@@ -126,7 +126,7 @@ inline fn parsePrimaryExpression(parser: *Parser, enable_validation: bool) Error
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
         .async => parseAsyncFunctionOrArrow(parser),
         else => {
-            if(parser.current_token.type.isIdentifierLike()) {
+            if (parser.current_token.type.isIdentifierLike()) {
                 return parseIdentifierOrArrowFunction(parser);
             }
 
@@ -661,8 +661,8 @@ pub fn parseArrayExpression(parser: *Parser, enable_validation: bool) Error!?ast
     parser.state.cover_has_init_name = saved_flag or needs_validation;
 
     if (
-        // means this array is part of assignment expression/pattern
-        parser.current_token.type == .assign or
+    // means this array is part of assignment expression/pattern
+    parser.current_token.type == .assign or
         // means this array is part of for-in/of
         parser.current_token.type == .in or parser.current_token.type == .of
         // so convert to pattern
@@ -682,8 +682,8 @@ pub fn parseObjectExpression(parser: *Parser, enable_validation: bool) Error!?as
     parser.state.cover_has_init_name = saved_flag or needs_validation;
 
     if (
-        // means this object is part of assignment expression/pattern
-        parser.current_token.type == .assign or
+    // means this object is part of assignment expression/pattern
+    parser.current_token.type == .assign or
         // means this object is part of for-in/of
         parser.current_token.type == .in or parser.current_token.type == .of
         // so convert to pattern

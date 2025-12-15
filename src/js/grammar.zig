@@ -86,12 +86,14 @@ pub inline fn reportCoverInitializedNameError(parser: *Parser, node: ast.NodeInd
     );
 }
 
+const ExpressionToBindingPatternOpts = struct { allow_parenthesis: bool = true };
+
 /// Convert an expression node to a binding pattern.
 /// - IdentifierReference -> BindingIdentifier
 /// - ArrayExpression -> ArrayPattern
 /// - ObjectExpression -> ObjectPattern
 /// - AssignmentExpression -> AssignmentPattern
-pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.NodeIndex {
+pub fn expressionToBindingPattern(parser: *Parser, expr: ast.NodeIndex, opts: ExpressionToBindingPatternOpts) Error!?ast.NodeIndex {
     const data = parser.getData(expr);
 
     switch (data) {
@@ -113,7 +115,7 @@ pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Node
                 return null;
             }
 
-            const left_pattern = try expressionToPattern(parser, assign.left) orelse return null;
+            const left_pattern = try expressionToBindingPattern(parser, assign.left, opts) orelse return null;
 
             parser.setData(expr, .{ .assignment_pattern = .{
                 .left = left_pattern,
@@ -144,6 +146,15 @@ pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Node
         },
 
         .parenthesized_expression => |paren| {
+            if (!opts.allow_parenthesis) {
+                try parser.report(
+                    parser.getSpan(expr),
+                    "Parentheses are not allowed in this binding pattern",
+                    .{ .help = "Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions." },
+                );
+                return null;
+            }
+
             if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
                     parser.getSpan(paren.expression),
@@ -153,7 +164,7 @@ pub fn expressionToPattern(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Node
                 return null;
             }
 
-            const inner_pattern = try expressionToPattern(parser, paren.expression) orelse return null;
+            const inner_pattern = try expressionToBindingPattern(parser, paren.expression, opts) orelse return null;
 
             parser.setData(expr, parser.getData(inner_pattern));
             parser.setSpan(expr, parser.getSpan(inner_pattern));

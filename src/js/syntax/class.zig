@@ -407,7 +407,7 @@ fn parseMethodDefinition(
             .value = func,
             .kind = kind,
             .computed = computed,
-            .@"static" = is_static,
+            .static = is_static,
         } },
         .{ .start = elem_start, .end = body_end },
     );
@@ -447,7 +447,7 @@ fn parsePropertyDefinition(
             .key = key,
             .value = value,
             .computed = computed,
-            .@"static" = is_static,
+            .static = is_static,
         } },
         .{ .start = elem_start, .end = end },
     );

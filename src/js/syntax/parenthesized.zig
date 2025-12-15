@@ -291,7 +291,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
     if (!ast.isNull(cover.rest)) {
         const spread_data = parser.getData(cover.rest).spread_element;
-        const pattern = try grammar.expressionToPattern(parser, spread_data.argument) orelse {
+        const pattern = try grammar.expressionToBindingPattern(parser, spread_data.argument, .{}) orelse {
             parser.scratch_cover.reset(checkpoint);
             return null;
         };
@@ -309,18 +309,17 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
 fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.NodeIndex {
     // convert expression to binding pattern
-    const pattern = try grammar.expressionToPattern(parser, expr) orelse return null;
+    const pattern = try grammar.expressionToBindingPattern(parser, expr, .{ .allow_parenthesis = false }) orelse return null;
 
     return try parser.addNode(
         .{ .formal_parameter = .{ .pattern = pattern } },
         parser.getSpan(expr),
     );
 }
-
 pub fn unwrapParenthesized(parser: *Parser, node: ast.NodeIndex) ast.NodeIndex {
     const data = parser.getData(node);
 
-    if(data == .parenthesized_expression) {
+    if (data == .parenthesized_expression) {
         return unwrapParenthesized(parser, data.parenthesized_expression.expression);
     }
 

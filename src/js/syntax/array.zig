@@ -128,19 +128,14 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
 
         const elem_data = parser.getData(elem);
         if (elem_data == .spread_element) {
-            // validate rest element is last (ignoring trailing holes)
-            const has_more = for (elements[i + 1 ..]) |next| {
-                if (!ast.isNull(next)) break true;
-            } else false;
-
-            if (has_more) {
+            if (i != elements_len - 1) {
                 try parser.report(parser.getSpan(elem), "Rest element must be the last element", .{
                     .help = "No elements can follow the rest element in a destructuring pattern.",
                 });
                 return null;
             }
 
-            const pattern = try grammar.expressionToPattern(parser, elem_data.spread_element.argument) orelse return null;
+            const pattern = try grammar.expressionToBindingPattern(parser, elem_data.spread_element.argument, .{}) orelse return null;
 
             parser.setData(elem, .{ .binding_rest_element = .{ .argument = pattern } });
             rest = elem;
@@ -148,7 +143,7 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
             break;
         }
 
-        _ = try grammar.expressionToPattern(parser, elem) orelse return null;
+        _ = try grammar.expressionToBindingPattern(parser, elem, .{}) orelse return null;
     }
 
     const pattern_data: ast.NodeData = .{ .array_pattern = .{

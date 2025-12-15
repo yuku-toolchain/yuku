@@ -328,7 +328,7 @@ pub const Serializer = struct {
         try self.fieldNode("left", data.left);
         try self.fieldNode("right", data.right);
         try self.fieldNode("body", data.body);
-        try self.fieldBool("await", data.@"await");
+        try self.fieldBool("await", data.await);
         try self.endObject();
     }
 
@@ -810,7 +810,7 @@ pub const Serializer = struct {
         try self.fieldNode("value", data.value);
         try self.fieldString("kind", data.kind.toString());
         try self.fieldBool("computed", data.computed);
-        try self.fieldBool("static", data.@"static");
+        try self.fieldBool("static", data.static);
         try self.endObject();
     }
 
@@ -822,7 +822,7 @@ pub const Serializer = struct {
         try self.fieldNode("key", data.key);
         try self.fieldNode("value", data.value);
         try self.fieldBool("computed", data.computed);
-        try self.fieldBool("static", data.@"static");
+        try self.fieldBool("static", data.static);
         try self.endObject();
     }
 

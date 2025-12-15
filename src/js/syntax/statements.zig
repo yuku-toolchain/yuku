@@ -488,7 +488,7 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_await: bool) Error!?a
     for (declarators) |decl| {
         const data = parser.getData(decl).variable_declarator;
         const id_data = parser.getData(data.id);
-        if(ast.isNull(data.init) and id_data != .binding_identifier) {
+        if (ast.isNull(data.init) and id_data != .binding_identifier) {
             try parser.report(parser.getSpan(data.id), "Missing initializer in destructuring declaration", .{ .help = "Add an initializer (e.g. ` = undefined`) here" });
             return null;
         }
@@ -523,14 +523,14 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
             return null;
         }
 
-        const pattern = try grammar.expressionToPattern(parser, expr) orelse return null;
+        const pattern = try grammar.expressionToBindingPattern(parser, expr, .{}) orelse return null;
 
         return parseForInStatementRest(parser, start, pattern);
     }
 
     if (parser.current_token.type == .of) {
         // for (expr of ...)
-        const pattern = try grammar.expressionToPattern(parser, expr) orelse return null;
+        const pattern = try grammar.expressionToBindingPattern(parser, expr, .{}) orelse return null;
         return parseForOfStatementRest(parser, start, pattern, is_await);
     }
 
@@ -605,7 +605,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
             .left = left,
             .right = right,
             .body = body,
-            .@"await" = is_await,
+            .await = is_await,
         },
     }, .{ .start = start, .end = parser.getSpan(body).end });
 }
@@ -614,7 +614,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
-    
+
     if (!parser.context.in_function) {
         try parser.report(
             .{ .start = start, .end = end },
@@ -623,7 +623,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
         );
         return null;
     }
-    
+
     try parser.advance(); // consume 'return'
 
     var argument: ast.NodeIndex = ast.null_node;

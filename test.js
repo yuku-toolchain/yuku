@@ -1,1 +1,1 @@
-const getShaderAsync = async(e,t,r)=>{await this.compileAsync(e,t);const s=this._renderLists.get(e,t),i=this._renderContexts.get(this._renderTarget,this._mrt),n=e.overrideMaterial||r.material,a=this._objects.get(r,n,e,t,s.lightsNode,i,i.clippingContext),{fragmentShader:o,vertexShader:u}=a.getNodeBuilderState();return{fragmentShader:o,vertexShader:u}}
+[...x,,] = 0

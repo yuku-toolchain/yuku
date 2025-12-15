@@ -390,7 +390,7 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance(); // consume 'as'
 
-    if (parser.current_token.type != .@"namespace") {
+    if (parser.current_token.type != .namespace) {
         try parser.report(parser.current_token.span, "Expected 'namespace' after 'export as'", .{});
         return null;
     }

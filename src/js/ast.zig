@@ -366,7 +366,7 @@ pub const MethodDefinition = struct {
     value: NodeIndex,
     kind: MethodDefinitionKind,
     computed: bool,
-    @"static": bool,
+    static: bool,
 };
 
 /// https://tc39.es/ecma262/#prod-FieldDefinition
@@ -376,7 +376,7 @@ pub const PropertyDefinition = struct {
     /// Expression (optional, may be null_node)
     value: NodeIndex,
     computed: bool,
-    @"static": bool,
+    static: bool,
 };
 
 /// https://tc39.es/ecma262/#prod-ClassStaticBlock
@@ -530,7 +530,7 @@ pub const ForOfStatement = struct {
     /// Statement
     body: NodeIndex,
     /// true for `for await (...)`
-    @"await": bool,
+    await: bool,
 };
 
 /// `break;` or `break label;`

@@ -897,7 +897,7 @@ pub const Lexer = struct {
             9 => {
                 switch (lexeme[0]) {
                     'i' => if (std.mem.eql(u8, lexeme, "interface")) return .interface,
-                    'n' => if (std.mem.eql(u8, lexeme, "namespace")) return .@"namespace",
+                    'n' => if (std.mem.eql(u8, lexeme, "namespace")) return .namespace,
                     'p' => if (std.mem.eql(u8, lexeme, "protected")) return .protected,
                     else => {},
                 }

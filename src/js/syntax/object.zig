@@ -488,7 +488,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
             return null;
         }
 
-        const value_pattern = try grammar.expressionToPattern(parser, obj_prop.value) orelse return null;
+        const value_pattern = try grammar.expressionToBindingPattern(parser, obj_prop.value, .{}) orelse return null;
 
         parser.setData(prop, .{ .binding_property = .{
             .key = obj_prop.key,
