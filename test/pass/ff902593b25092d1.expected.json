@@ -1,28 +1,30 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
         "expression": {
           "type": "Literal",
+          "start": 0,
+          "end": 9,
           "value": {},
           "raw": "/[P QR]/i",
           "regex": {
             "pattern": "[P QR]",
             "flags": "i"
-          },
-          "start": 0,
-          "end": 9
-        },
-        "start": 0,
-        "end": 9
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 9
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,69 +1,72 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 51,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 50,
         "init": null,
         "test": null,
         "update": null,
         "body": {
           "type": "BlockStatement",
+          "start": 9,
+          "end": 50,
           "body": [
             {
               "type": "WithStatement",
+              "start": 13,
+              "end": 41,
               "object": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 19,
-                "end": 20
+                "end": 20,
+                "name": "a"
               },
               "body": {
                 "type": "BlockStatement",
+                "start": 22,
+                "end": 41,
                 "body": [
                   {
                     "type": "ContinueStatement",
-                    "label": null,
                     "start": 28,
-                    "end": 37
+                    "end": 37,
+                    "label": null
                   }
-                ],
-                "start": 22,
-                "end": 41
-              },
-              "start": 13,
-              "end": 41
+                ]
+              }
             },
             {
               "type": "ExpressionStatement",
+              "start": 44,
+              "end": 48,
               "expression": {
                 "type": "CallExpression",
+                "start": 44,
+                "end": 47,
                 "callee": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 44,
-                  "end": 45
+                  "end": 45,
+                  "name": "b"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 44,
-                "end": 47
-              },
-              "start": 44,
-              "end": 48
+                "arguments": [
+                ],
+                "optional": false
+              }
             }
-          ],
-          "start": 9,
-          "end": 50
-        },
-        "start": 0,
-        "end": 50
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 51
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

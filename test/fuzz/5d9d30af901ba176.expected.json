@@ -1,51 +1,53 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 44,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 43,
         "init": null,
         "test": null,
         "update": null,
         "body": {
           "type": "BlockStatement",
+          "start": 9,
+          "end": 43,
           "body": [
             {
               "type": "WithStatement",
+              "start": 13,
+              "end": 41,
               "object": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 19,
-                "end": 20
+                "end": 20,
+                "name": "a"
               },
               "body": {
                 "type": "BlockStatement",
+                "start": 22,
+                "end": 41,
                 "body": [
                   {
                     "type": "ContinueStatement",
-                    "label": null,
                     "start": 28,
-                    "end": 37
+                    "end": 37,
+                    "label": null
                   }
-                ],
-                "start": 22,
-                "end": 41
-              },
-              "start": 13,
-              "end": 41
+                ]
+              }
             }
-          ],
-          "start": 9,
-          "end": 43
-        },
-        "start": 0,
-        "end": 43
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 44
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

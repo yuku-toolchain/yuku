@@ -1,82 +1,84 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 43,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 42,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
         "params": [
           {
             "type": "Identifier",
-            "name": "b",
             "start": 11,
-            "end": 12
+            "end": 12,
+            "name": "b"
           },
           {
             "type": "Identifier",
-            "name": "c",
             "start": 14,
-            "end": 15
+            "end": 15,
+            "name": "c"
           }
         ],
         "body": {
           "type": "BlockStatement",
+          "start": 17,
+          "end": 42,
           "body": [
             {
               "type": "ReturnStatement",
+              "start": 21,
+              "end": 40,
               "argument": {
                 "type": "BinaryExpression",
+                "start": 28,
+                "end": 39,
                 "left": {
                   "type": "ParenthesizedExpression",
+                  "start": 28,
+                  "end": 33,
                   "expression": {
                     "type": "UpdateExpression",
+                    "start": 29,
+                    "end": 32,
                     "operator": "--",
                     "prefix": false,
                     "argument": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 29,
-                      "end": 30
-                    },
-                    "start": 29,
-                    "end": 32
-                  },
-                  "start": 28,
-                  "end": 33
+                      "end": 30,
+                      "name": "b"
+                    }
+                  }
                 },
                 "operator": ">>>",
                 "right": {
                   "type": "Identifier",
-                  "name": "c",
                   "start": 38,
-                  "end": 39
-                },
-                "start": 28,
-                "end": 39
-              },
-              "start": 21,
-              "end": 40
+                  "end": 39,
+                  "name": "c"
+                }
+              }
             }
-          ],
-          "start": 17,
-          "end": 42
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 42
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 43
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

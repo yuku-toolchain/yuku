@@ -1,25 +1,24 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 37,
+        "end": 38,
         "expression": {
           "type": "Literal",
-          "value": 1,
-          "raw": "1",
           "start": 37,
-          "end": 38
-        },
-        "start": 37,
-        "end": 38
+          "end": 38,
+          "value": 1,
+          "raw": "1"
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 38
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -33,5 +32,7 @@
       "start": 18,
       "end": 36
     }
+  ],
+  "errors": [
   ]
 }

@@ -1,49 +1,73 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 44,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": null,
         "body": {
           "type": "ClassBody",
+          "start": 8,
+          "end": 44,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 12,
+              "end": 42,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 12,
-                "end": 13
+                "end": 13,
+                "name": "b"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 13,
+                "end": 42,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 16,
+                  "end": 42,
                   "body": [
                     {
                       "type": "ExpressionStatement",
+                      "start": 22,
+                      "end": 38,
                       "expression": {
                         "type": "ArrowFunctionExpression",
-                        "expression": true,
+                        "start": 22,
+                        "end": 37,
+                        "id": null,
+                        "generator": false,
                         "async": false,
-                        "params": [],
+                        "params": [
+                        ],
                         "body": {
                           "type": "ParenthesizedExpression",
+                          "start": 28,
+                          "end": 37,
                           "expression": {
                             "type": "MemberExpression",
+                            "start": 29,
+                            "end": 36,
                             "object": {
                               "type": "Super",
                               "start": 29,
@@ -51,52 +75,32 @@
                             },
                             "property": {
                               "type": "Identifier",
-                              "name": "c",
                               "start": 35,
-                              "end": 36
+                              "end": 36,
+                              "name": "c"
                             },
-                            "optional": false,
                             "computed": false,
-                            "start": 29,
-                            "end": 36
-                          },
-                          "start": 28,
-                          "end": 37
+                            "optional": false
+                          }
                         },
-                        "id": null,
-                        "generator": false,
-                        "start": 22,
-                        "end": 37
-                      },
-                      "start": 22,
-                      "end": 38
+                        "expression": true
+                      }
                     }
-                  ],
-                  "start": 16,
-                  "end": 42
+                  ]
                 },
-                "expression": false,
-                "start": 13,
-                "end": 42
+                "expression": false
               },
               "kind": "method",
               "computed": false,
-              "static": false,
-              "start": 12,
-              "end": 42
+              "static": false
             }
-          ],
-          "start": 8,
-          "end": 44
-        },
-        "start": 0,
-        "end": 44
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 45
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

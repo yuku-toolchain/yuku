@@ -1,67 +1,70 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 15,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 15,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 15,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 14,
             "properties": [
               {
                 "type": "Property",
+                "start": 2,
+                "end": 13,
                 "kind": "set",
                 "key": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 6,
-                  "end": 7
+                  "end": 7,
+                  "name": "a"
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 7,
+                  "end": 13,
                   "id": null,
                   "generator": false,
                   "async": false,
                   "params": [
                     {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 8,
-                      "end": 9
+                      "end": 9,
+                      "name": "b"
                     }
                   ],
                   "body": {
                     "type": "BlockStatement",
-                    "body": [],
                     "start": 11,
-                    "end": 13
+                    "end": 13,
+                    "body": [
+                    ]
                   },
-                  "expression": false,
-                  "start": 7,
-                  "end": 13
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 2,
-                "end": 13
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 14
-          },
-          "start": 0,
-          "end": 15
-        },
-        "start": 0,
-        "end": 15
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 15
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

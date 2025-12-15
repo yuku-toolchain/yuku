@@ -1,97 +1,106 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 71,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 70,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 70,
           "body": [
             {
               "type": "FunctionDeclaration",
-              "id": {
-                "type": "Identifier",
-                "name": "b",
-                "start": 26,
-                "end": 27
-              },
-              "generator": false,
-              "async": false,
-              "params": [],
-              "body": {
-                "type": "BlockStatement",
-                "body": [],
-                "start": 30,
-                "end": 32
-              },
-              "expression": false,
               "start": 17,
-              "end": 32
-            },
-            {
-              "type": "FunctionDeclaration",
+              "end": 32,
               "id": {
                 "type": "Identifier",
-                "name": "c",
-                "start": 44,
-                "end": 45
+                "start": 26,
+                "end": 27,
+                "name": "b"
               },
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
-                "body": [],
-                "start": 48,
-                "end": 50
+                "start": 30,
+                "end": 32,
+                "body": [
+                ]
               },
-              "expression": false,
+              "expression": false
+            },
+            {
+              "type": "FunctionDeclaration",
               "start": 35,
-              "end": 50
-            },
-            {
-              "type": "FunctionDeclaration",
+              "end": 50,
               "id": {
                 "type": "Identifier",
-                "name": "d",
-                "start": 62,
-                "end": 63
+                "start": 44,
+                "end": 45,
+                "name": "c"
               },
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
-                "body": [],
-                "start": 66,
-                "end": 68
+                "start": 48,
+                "end": 50,
+                "body": [
+                ]
               },
-              "expression": false,
+              "expression": false
+            },
+            {
+              "type": "FunctionDeclaration",
               "start": 53,
-              "end": 68
+              "end": 68,
+              "id": {
+                "type": "Identifier",
+                "start": 62,
+                "end": 63,
+                "name": "d"
+              },
+              "generator": false,
+              "async": false,
+              "params": [
+              ],
+              "body": {
+                "type": "BlockStatement",
+                "start": 66,
+                "end": 68,
+                "body": [
+                ]
+              },
+              "expression": false
             }
-          ],
-          "start": 13,
-          "end": 70
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 70
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 71
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

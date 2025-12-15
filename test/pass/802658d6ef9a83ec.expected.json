@@ -1,74 +1,76 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 36,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 36,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 36,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 35,
             "properties": [
               {
                 "type": "Property",
+                "start": 3,
+                "end": 19,
                 "kind": "init",
                 "key": {
                   "type": "Literal",
-                  "value": "__proto__",
-                  "raw": "'__proto__'",
                   "start": 4,
-                  "end": 15
+                  "end": 15,
+                  "value": "__proto__",
+                  "raw": "'__proto__'"
                 },
                 "value": {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 18,
-                  "end": 19
+                  "end": 19,
+                  "value": 1,
+                  "raw": "1"
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": true,
-                "start": 3,
-                "end": 19
+                "computed": true
               },
               {
                 "type": "Property",
+                "start": 21,
+                "end": 33,
                 "kind": "init",
                 "key": {
                   "type": "Identifier",
-                  "name": "__proto__",
                   "start": 21,
-                  "end": 30
+                  "end": 30,
+                  "name": "__proto__"
                 },
                 "value": {
                   "type": "Literal",
-                  "value": 2,
-                  "raw": "2",
                   "start": 32,
-                  "end": 33
+                  "end": 33,
+                  "value": 2,
+                  "raw": "2"
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 21,
-                "end": 33
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 35
-          },
-          "start": 0,
-          "end": 36
-        },
-        "start": 0,
-        "end": 36
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 36
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

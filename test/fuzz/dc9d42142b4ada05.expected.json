@@ -1,68 +1,77 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 40,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 39,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 4,
-          "end": 5
+          "end": 5,
+          "name": "a"
         },
         "consequent": {
           "type": "BlockStatement",
+          "start": 7,
+          "end": 39,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 11,
+              "end": 19,
               "expression": {
                 "type": "AssignmentExpression",
+                "start": 11,
+                "end": 18,
                 "operator": "=",
                 "left": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 11,
-                  "end": 12
+                  "end": 12,
+                  "name": "b"
                 },
                 "right": {
                   "type": "ParenthesizedExpression",
+                  "start": 15,
+                  "end": 18,
                   "expression": {
                     "type": "Literal",
-                    "value": 1,
-                    "raw": "1",
                     "start": 16,
-                    "end": 17
-                  },
-                  "start": 15,
-                  "end": 18
-                },
-                "start": 11,
-                "end": 18
-              },
-              "start": 11,
-              "end": 19
+                    "end": 17,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
             },
             {
               "type": "ForStatement",
+              "start": 22,
+              "end": 37,
               "init": {
                 "type": "VariableDeclaration",
+                "start": 27,
+                "end": 32,
                 "kind": "var",
                 "declarations": [
                   {
                     "type": "VariableDeclarator",
+                    "start": 31,
+                    "end": 32,
                     "id": {
                       "type": "Identifier",
-                      "name": "c",
                       "start": 31,
-                      "end": 32
+                      "end": 32,
+                      "name": "c"
                     },
-                    "init": null,
-                    "start": 31,
-                    "end": 32
+                    "init": null
                   }
-                ],
-                "start": 27,
-                "end": 32
+                ]
               },
               "test": null,
               "update": null,
@@ -70,23 +79,16 @@
                 "type": "EmptyStatement",
                 "start": 36,
                 "end": 37
-              },
-              "start": 22,
-              "end": 37
+              }
             }
-          ],
-          "start": 7,
-          "end": 39
+          ]
         },
-        "alternate": null,
-        "start": 0,
-        "end": 39
+        "alternate": null
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 40
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

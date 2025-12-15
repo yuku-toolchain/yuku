@@ -1,51 +1,57 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 67,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 11,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 4,
-          "end": 5
+          "end": 5,
+          "name": "a"
         },
         "consequent": {
           "type": "ExpressionStatement",
+          "start": 7,
+          "end": 11,
           "expression": {
             "type": "CallExpression",
+            "start": 7,
+            "end": 10,
             "callee": {
               "type": "Identifier",
-              "name": "b",
               "start": 7,
-              "end": 8
+              "end": 8,
+              "name": "b"
             },
-            "arguments": [],
-            "optional": false,
-            "start": 7,
-            "end": 10
-          },
-          "start": 7,
-          "end": 11
+            "arguments": [
+            ],
+            "optional": false
+          }
         },
-        "alternate": null,
-        "start": 0,
-        "end": 11
+        "alternate": null
       },
       {
         "type": "IfStatement",
+        "start": 12,
+        "end": 31,
         "test": {
           "type": "UnaryExpression",
+          "start": 16,
+          "end": 18,
           "operator": "!",
+          "prefix": true,
           "argument": {
             "type": "Identifier",
-            "name": "a",
             "start": 17,
-            "end": 18
-          },
-          "prefix": true,
-          "start": 16,
-          "end": 18
+            "end": 18,
+            "name": "a"
+          }
         },
         "consequent": {
           "type": "EmptyStatement",
@@ -54,32 +60,33 @@
         },
         "alternate": {
           "type": "ExpressionStatement",
+          "start": 27,
+          "end": 31,
           "expression": {
             "type": "CallExpression",
+            "start": 27,
+            "end": 30,
             "callee": {
               "type": "Identifier",
-              "name": "b",
               "start": 27,
-              "end": 28
+              "end": 28,
+              "name": "b"
             },
-            "arguments": [],
-            "optional": false,
-            "start": 27,
-            "end": 30
-          },
-          "start": 27,
-          "end": 31
-        },
-        "start": 12,
-        "end": 31
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       },
       {
         "type": "IfStatement",
+        "start": 32,
+        "end": 50,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 36,
-          "end": 37
+          "end": 37,
+          "name": "a"
         },
         "consequent": {
           "type": "EmptyStatement",
@@ -88,32 +95,33 @@
         },
         "alternate": {
           "type": "ExpressionStatement",
+          "start": 46,
+          "end": 50,
           "expression": {
             "type": "CallExpression",
+            "start": 46,
+            "end": 49,
             "callee": {
               "type": "Identifier",
-              "name": "b",
               "start": 46,
-              "end": 47
+              "end": 47,
+              "name": "b"
             },
-            "arguments": [],
-            "optional": false,
-            "start": 46,
-            "end": 49
-          },
-          "start": 46,
-          "end": 50
-        },
-        "start": 32,
-        "end": 50
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       },
       {
         "type": "IfStatement",
+        "start": 51,
+        "end": 66,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 55,
-          "end": 56
+          "end": 56,
+          "name": "a"
         },
         "consequent": {
           "type": "EmptyStatement",
@@ -124,15 +132,12 @@
           "type": "EmptyStatement",
           "start": 65,
           "end": 66
-        },
-        "start": 51,
-        "end": 66
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 67
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,64 +1,67 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 15,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 14,
             "id": {
               "type": "ObjectPattern",
+              "start": 4,
+              "end": 7,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 5,
+                  "end": 6,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 5,
-                    "end": 6
+                    "end": 6,
+                    "name": "a"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 5,
-                    "end": 6
+                    "end": 6,
+                    "name": "a"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 5,
-                  "end": 6
+                  "computed": false
                 }
-              ],
-              "start": 4,
-              "end": 7
+              ]
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 10,
+              "end": 14,
               "expression": {
                 "type": "ObjectExpression",
-                "properties": [],
                 "start": 11,
-                "end": 13
-              },
-              "start": 10,
-              "end": 14
-            },
-            "start": 4,
-            "end": 14
+                "end": 13,
+                "properties": [
+                ]
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 15
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 16
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

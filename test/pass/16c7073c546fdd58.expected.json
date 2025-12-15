@@ -1,50 +1,66 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 125,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 69,
+        "end": 124,
         "expression": {
           "type": "NewExpression",
+          "start": 69,
+          "end": 123,
           "callee": {
             "type": "FunctionExpression",
+            "start": 73,
+            "end": 123,
             "id": null,
             "generator": false,
             "async": false,
-            "params": [],
+            "params": [
+            ],
             "body": {
               "type": "BlockStatement",
+              "start": 85,
+              "end": 123,
               "body": [
                 {
                   "type": "VariableDeclaration",
+                  "start": 91,
+                  "end": 101,
                   "kind": "var",
                   "declarations": [
                     {
                       "type": "VariableDeclarator",
+                      "start": 95,
+                      "end": 100,
                       "id": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 95,
-                        "end": 96
+                        "end": 96,
+                        "name": "a"
                       },
                       "init": {
                         "type": "Literal",
-                        "value": 1,
-                        "raw": "1",
                         "start": 99,
-                        "end": 100
-                      },
-                      "start": 95,
-                      "end": 100
+                        "end": 100,
+                        "value": 1,
+                        "raw": "1"
+                      }
                     }
-                  ],
-                  "start": 91,
-                  "end": 101
+                  ]
                 },
                 {
                   "type": "ExpressionStatement",
+                  "start": 106,
+                  "end": 121,
                   "expression": {
                     "type": "MemberExpression",
+                    "start": 106,
+                    "end": 120,
                     "object": {
                       "type": "ThisExpression",
                       "start": 106,
@@ -52,39 +68,24 @@
                     },
                     "property": {
                       "type": "Identifier",
-                      "name": "arguments",
                       "start": 111,
-                      "end": 120
+                      "end": 120,
+                      "name": "arguments"
                     },
-                    "optional": false,
                     "computed": false,
-                    "start": 106,
-                    "end": 120
-                  },
-                  "start": 106,
-                  "end": 121
+                    "optional": false
+                  }
                 }
-              ],
-              "start": 85,
-              "end": 123
+              ]
             },
-            "expression": false,
-            "start": 73,
-            "end": 123
+            "expression": false
           },
-          "arguments": [],
-          "start": 69,
-          "end": 123
-        },
-        "start": 69,
-        "end": 124
+          "arguments": [
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 125
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -92,5 +93,7 @@
       "start": 0,
       "end": 68
     }
+  ],
+  "errors": [
   ]
 }

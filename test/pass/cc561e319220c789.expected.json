@@ -1,40 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
     "body": [
       {
         "type": "DoWhileStatement",
+        "start": 0,
+        "end": 22,
         "body": {
           "type": "ExpressionStatement",
+          "start": 3,
+          "end": 7,
           "expression": {
             "type": "Literal",
+            "start": 3,
+            "end": 6,
             "value": {},
             "raw": "/x/",
             "regex": {
               "pattern": "x",
               "flags": ""
-            },
-            "start": 3,
-            "end": 6
-          },
-          "start": 3,
-          "end": 7
+            }
+          }
         },
         "test": {
           "type": "Literal",
-          "value": false,
-          "raw": "false",
           "start": 15,
-          "end": 20
-        },
-        "start": 0,
-        "end": 22
+          "end": 20,
+          "value": false,
+          "raw": "false"
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

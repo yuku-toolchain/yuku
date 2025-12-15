@@ -1,62 +1,66 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 29,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 29,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 12,
+          "end": 29,
           "body": [
             {
               "type": "ReturnStatement",
-              "argument": null,
               "start": 13,
-              "end": 19
+              "end": 19,
+              "argument": null
             },
             {
               "type": "BlockStatement",
-              "body": [],
               "start": 20,
-              "end": 22
+              "end": 22,
+              "body": [
+              ]
             },
             {
               "type": "ExpressionStatement",
+              "start": 23,
+              "end": 28,
               "expression": {
                 "type": "Literal",
+                "start": 23,
+                "end": 28,
                 "value": {},
                 "raw": "/foo/",
                 "regex": {
                   "pattern": "foo",
                   "flags": ""
-                },
-                "start": 23,
-                "end": 28
-              },
-              "start": 23,
-              "end": 28
+                }
+              }
             }
-          ],
-          "start": 12,
-          "end": 29
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 29
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 29
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

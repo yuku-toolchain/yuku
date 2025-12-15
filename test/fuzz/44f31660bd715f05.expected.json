@@ -1,40 +1,43 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 11,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 10,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 0,
+          "end": 9,
           "operator": "=",
           "left": {
             "type": "Identifier",
-            "name": "T‌",
             "start": 0,
-            "end": 2
+            "end": 2,
+            "name": "T‌"
           },
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 5,
+            "end": 9,
             "expression": {
               "type": "ArrayExpression",
-              "elements": [],
               "start": 6,
-              "end": 8
-            },
-            "start": 5,
-            "end": 9
-          },
-          "start": 0,
-          "end": 9
-        },
-        "start": 0,
-        "end": 10
+              "end": 8,
+              "elements": [
+              ]
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 11
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

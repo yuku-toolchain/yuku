@@ -1,39 +1,61 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 35,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 34,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 33,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 32,
             "properties": [
               {
                 "type": "Property",
+                "start": 2,
+                "end": 31,
                 "kind": "get",
                 "key": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 6,
-                  "end": 7
+                  "end": 7,
+                  "name": "a"
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 7,
+                  "end": 31,
                   "id": null,
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
+                    "start": 10,
+                    "end": 31,
                     "body": [
                       {
                         "type": "ExpressionStatement",
+                        "start": 14,
+                        "end": 29,
                         "expression": {
                           "type": "AssignmentExpression",
+                          "start": 14,
+                          "end": 28,
                           "operator": "=",
                           "left": {
                             "type": "MemberExpression",
+                            "start": 14,
+                            "end": 22,
                             "object": {
                               "type": "Super",
                               "start": 14,
@@ -41,63 +63,44 @@
                             },
                             "property": {
                               "type": "Literal",
-                              "value": 1,
-                              "raw": "1",
                               "start": 20,
-                              "end": 21
+                              "end": 21,
+                              "value": 1,
+                              "raw": "1"
                             },
-                            "optional": false,
                             "computed": true,
-                            "start": 14,
-                            "end": 22
+                            "optional": false
                           },
                           "right": {
                             "type": "ParenthesizedExpression",
+                            "start": 25,
+                            "end": 28,
                             "expression": {
                               "type": "Literal",
-                              "value": 2,
-                              "raw": "2",
                               "start": 26,
-                              "end": 27
-                            },
-                            "start": 25,
-                            "end": 28
-                          },
-                          "start": 14,
-                          "end": 28
-                        },
-                        "start": 14,
-                        "end": 29
+                              "end": 27,
+                              "value": 2,
+                              "raw": "2"
+                            }
+                          }
+                        }
                       }
-                    ],
-                    "start": 10,
-                    "end": 31
+                    ]
                   },
-                  "expression": false,
-                  "start": 7,
-                  "end": 31
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 2,
-                "end": 31
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 32
-          },
-          "start": 0,
-          "end": 33
-        },
-        "start": 0,
-        "end": 34
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 35
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

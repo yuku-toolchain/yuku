@@ -1,70 +1,73 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 40,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 40,
           "body": [
             {
               "type": "VariableDeclaration",
+              "start": 19,
+              "end": 38,
               "kind": "let",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 23,
+                  "end": 37,
                   "id": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 23,
-                    "end": 24
+                    "end": 24,
+                    "name": "b"
                   },
                   "init": {
                     "type": "MetaProperty",
+                    "start": 27,
+                    "end": 37,
                     "meta": {
                       "type": "Identifier",
-                      "name": "new",
                       "start": 27,
-                      "end": 30
+                      "end": 30,
+                      "name": "new"
                     },
                     "property": {
                       "type": "Identifier",
-                      "name": "target",
                       "start": 31,
-                      "end": 37
-                    },
-                    "start": 27,
-                    "end": 37
-                  },
-                  "start": 23,
-                  "end": 37
+                      "end": 37,
+                      "name": "target"
+                    }
+                  }
                 }
-              ],
-              "start": 19,
-              "end": 38
+              ]
             }
-          ],
-          "start": 13,
-          "end": 40
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 40
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 41
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,35 +1,39 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
         "expression": {
           "type": "NewExpression",
+          "start": 0,
+          "end": 9,
           "callee": {
             "type": "NewExpression",
+            "start": 4,
+            "end": 9,
             "callee": {
               "type": "Identifier",
-              "name": "a",
               "start": 8,
-              "end": 9
+              "end": 9,
+              "name": "a"
             },
-            "arguments": [],
-            "start": 4,
-            "end": 9
+            "arguments": [
+            ]
           },
-          "arguments": [],
-          "start": 0,
-          "end": 9
-        },
-        "start": 0,
-        "end": 9
+          "arguments": [
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 9
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

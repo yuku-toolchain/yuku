@@ -1,30 +1,32 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
     "body": [
       {
         "type": "DoWhileStatement",
+        "start": 0,
+        "end": 22,
         "body": {
           "type": "ContinueStatement",
-          "label": null,
           "start": 3,
-          "end": 12
+          "end": 12,
+          "label": null
         },
         "test": {
           "type": "Literal",
-          "value": 1,
-          "raw": "1",
           "start": 19,
-          "end": 20
-        },
-        "start": 0,
-        "end": 22
+          "end": 20,
+          "value": 1,
+          "raw": "1"
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

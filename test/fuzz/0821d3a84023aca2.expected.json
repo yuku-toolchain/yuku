@@ -1,77 +1,79 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 19,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 18,
             "id": {
               "type": "ArrayPattern",
+              "start": 4,
+              "end": 12,
               "elements": [
                 {
                   "type": "ObjectPattern",
+                  "start": 5,
+                  "end": 8,
                   "properties": [
                     {
                       "type": "Property",
+                      "start": 6,
+                      "end": 7,
                       "kind": "init",
                       "key": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       "value": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       "method": false,
                       "shorthand": true,
-                      "computed": false,
-                      "start": 6,
-                      "end": 7
+                      "computed": false
                     }
-                  ],
-                  "start": 5,
-                  "end": 8
+                  ]
                 },
                 {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 10,
-                  "end": 11
+                  "end": 11,
+                  "name": "b"
                 }
-              ],
-              "start": 4,
-              "end": 12
+              ]
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 15,
+              "end": 18,
               "expression": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 16,
-                "end": 17
-              },
-              "start": 15,
-              "end": 18
-            },
-            "start": 4,
-            "end": 18
+                "end": 17,
+                "name": "c"
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 19
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 20
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

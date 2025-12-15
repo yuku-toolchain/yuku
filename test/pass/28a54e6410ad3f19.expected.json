@@ -1,94 +1,93 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 177,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 42,
+        "end": 176,
         "init": null,
         "test": null,
         "update": null,
         "body": {
           "type": "BlockStatement",
+          "start": 51,
+          "end": 176,
           "body": [
             {
               "type": "IfStatement",
+              "start": 57,
+              "end": 174,
               "test": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 61,
-                "end": 62
+                "end": 62,
+                "name": "a"
               },
               "consequent": {
                 "type": "BlockStatement",
+                "start": 64,
+                "end": 151,
                 "body": [
                   {
                     "type": "IfStatement",
+                    "start": 74,
+                    "end": 145,
                     "test": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 78,
-                      "end": 79
+                      "end": 79,
+                      "name": "b"
                     },
                     "consequent": {
                       "type": "BlockStatement",
+                      "start": 81,
+                      "end": 114,
                       "body": [
                         {
                           "type": "ContinueStatement",
-                          "label": null,
                           "start": 95,
-                          "end": 104
+                          "end": 104,
+                          "label": null
                         }
-                      ],
-                      "start": 81,
-                      "end": 114
+                      ]
                     },
                     "alternate": {
                       "type": "BlockStatement",
+                      "start": 120,
+                      "end": 145,
                       "body": [
                         {
                           "type": "EmptyStatement",
                           "start": 134,
                           "end": 135
                         }
-                      ],
-                      "start": 120,
-                      "end": 145
-                    },
-                    "start": 74,
-                    "end": 145
+                      ]
+                    }
                   }
-                ],
-                "start": 64,
-                "end": 151
+                ]
               },
               "alternate": {
                 "type": "BlockStatement",
+                "start": 157,
+                "end": 174,
                 "body": [
                   {
                     "type": "EmptyStatement",
                     "start": 167,
                     "end": 168
                   }
-                ],
-                "start": 157,
-                "end": 174
-              },
-              "start": 57,
-              "end": 174
+                ]
+              }
             }
-          ],
-          "start": 51,
-          "end": 176
-        },
-        "start": 42,
-        "end": 176
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 177
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -96,5 +95,7 @@
       "start": 0,
       "end": 41
     }
+  ],
+  "errors": [
   ]
 }

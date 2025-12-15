@@ -1,86 +1,89 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 26,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": false,
+          "start": 0,
+          "end": 25,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "ObjectPattern",
+              "start": 1,
+              "end": 12,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 2,
+                  "end": 11,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 2,
-                    "end": 3
+                    "end": 3,
+                    "name": "a"
                   },
                   "value": {
                     "type": "ArrayPattern",
+                    "start": 5,
+                    "end": 11,
                     "elements": [
                       {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 9,
-                        "end": 10
+                        "end": 10,
+                        "name": "b"
                       }
-                    ],
-                    "start": 5,
-                    "end": 11
+                    ]
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 2,
-                  "end": 11
+                  "computed": false
                 }
-              ],
-              "start": 1,
-              "end": 12
+              ]
             },
             {
               "type": "RestElement",
+              "start": 14,
+              "end": 18,
               "argument": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 17,
-                "end": 18
-              },
-              "start": 14,
-              "end": 18
+                "end": 18,
+                "name": "c"
+              }
             }
           ],
           "body": {
             "type": "BlockStatement",
-            "body": [],
             "start": 23,
-            "end": 25
+            "end": 25,
+            "body": [
+            ]
           },
-          "id": null,
-          "generator": false,
-          "start": 0,
-          "end": 25
-        },
-        "start": 0,
-        "end": 26
+          "expression": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 27
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

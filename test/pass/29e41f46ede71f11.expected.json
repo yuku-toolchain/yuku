@@ -1,41 +1,43 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 14,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 0,
+          "end": 12,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "Identifier",
-              "name": "yield",
               "start": 1,
-              "end": 6
+              "end": 6,
+              "name": "yield"
             }
           ],
           "body": {
             "type": "Literal",
-            "value": 1,
-            "raw": "1",
             "start": 11,
-            "end": 12
+            "end": 12,
+            "value": 1,
+            "raw": "1"
           },
-          "id": null,
-          "generator": false,
-          "start": 0,
-          "end": 12
-        },
-        "start": 0,
-        "end": 13
+          "expression": true
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 14
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

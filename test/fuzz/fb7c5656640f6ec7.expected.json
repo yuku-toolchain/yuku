@@ -1,114 +1,116 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 26,
         "expression": {
           "type": "TemplateLiteral",
+          "start": 0,
+          "end": 25,
           "quasis": [
             {
               "type": "TemplateElement",
+              "start": 1,
+              "end": 1,
               "value": {
                 "raw": "",
                 "cooked": ""
               },
-              "tail": false,
-              "start": 1,
-              "end": 1
+              "tail": false
             },
             {
               "type": "TemplateElement",
+              "start": 24,
+              "end": 24,
               "value": {
                 "raw": "",
                 "cooked": ""
               },
-              "tail": true,
-              "start": 24,
-              "end": 24
+              "tail": true
             }
           ],
           "expressions": [
             {
               "type": "MemberExpression",
+              "start": 3,
+              "end": 23,
               "object": {
                 "type": "ParenthesizedExpression",
+                "start": 3,
+                "end": 20,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 4,
+                  "end": 19,
                   "callee": {
                     "type": "ParenthesizedExpression",
+                    "start": 4,
+                    "end": 14,
                     "expression": {
                       "type": "MemberExpression",
+                      "start": 5,
+                      "end": 13,
                       "object": {
                         "type": "ParenthesizedExpression",
+                        "start": 5,
+                        "end": 11,
                         "expression": {
                           "type": "Literal",
+                          "start": 6,
+                          "end": 10,
                           "value": {},
                           "raw": "/\\d/",
                           "regex": {
                             "pattern": "\\d",
                             "flags": ""
-                          },
-                          "start": 6,
-                          "end": 10
-                        },
-                        "start": 5,
-                        "end": 11
+                          }
+                        }
                       },
                       "property": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 12,
-                        "end": 13
+                        "end": 13,
+                        "name": "a"
                       },
-                      "optional": false,
                       "computed": false,
-                      "start": 5,
-                      "end": 13
-                    },
-                    "start": 4,
-                    "end": 14
+                      "optional": false
+                    }
                   },
                   "arguments": [
                     {
                       "type": "Literal",
-                      "value": "1",
-                      "raw": "\"1\"",
                       "start": 15,
-                      "end": 18
+                      "end": 18,
+                      "value": "1",
+                      "raw": "\"1\""
                     }
                   ],
-                  "optional": false,
-                  "start": 4,
-                  "end": 19
-                },
-                "start": 3,
-                "end": 20
+                  "optional": false
+                }
               },
               "property": {
                 "type": "Literal",
-                "value": 1,
-                "raw": "1",
                 "start": 21,
-                "end": 22
+                "end": 22,
+                "value": 1,
+                "raw": "1"
               },
-              "optional": false,
               "computed": true,
-              "start": 3,
-              "end": 23
+              "optional": false
             }
-          ],
-          "start": 0,
-          "end": 25
-        },
-        "start": 0,
-        "end": 26
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 27
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

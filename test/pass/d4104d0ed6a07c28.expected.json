@@ -1,116 +1,115 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 137,
+    "sourceType": "script",
     "body": [
       {
         "type": "LabeledStatement",
+        "start": 34,
+        "end": 136,
         "label": {
           "type": "Identifier",
-          "name": "e",
           "start": 34,
-          "end": 35
+          "end": 35,
+          "name": "e"
         },
         "body": {
           "type": "BlockStatement",
+          "start": 37,
+          "end": 136,
           "body": [
             {
               "type": "LabeledStatement",
+              "start": 43,
+              "end": 134,
               "label": {
                 "type": "Identifier",
-                "name": "d",
                 "start": 43,
-                "end": 44
+                "end": 44,
+                "name": "d"
               },
               "body": {
                 "type": "BlockStatement",
+                "start": 46,
+                "end": 134,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 56,
+                    "end": 63,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 56,
+                      "end": 62,
                       "callee": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 56,
-                        "end": 57
+                        "end": 57,
+                        "name": "a"
                       },
                       "arguments": [
                         {
                           "type": "Literal",
-                          "value": "b",
-                          "raw": "\"b\"",
                           "start": 58,
-                          "end": 61
+                          "end": 61,
+                          "value": "b",
+                          "raw": "\"b\""
                         }
                       ],
-                      "optional": false,
-                      "start": 56,
-                      "end": 62
-                    },
-                    "start": 56,
-                    "end": 63
+                      "optional": false
+                    }
                   },
                   {
                     "type": "IfStatement",
+                    "start": 72,
+                    "end": 111,
                     "test": {
                       "type": "Identifier",
-                      "name": "c",
                       "start": 76,
-                      "end": 77
+                      "end": 77,
+                      "name": "c"
                     },
                     "consequent": {
                       "type": "BlockStatement",
+                      "start": 79,
+                      "end": 111,
                       "body": [
                         {
                           "type": "BreakStatement",
+                          "start": 93,
+                          "end": 101,
                           "label": {
                             "type": "Identifier",
-                            "name": "d",
                             "start": 99,
-                            "end": 100
-                          },
-                          "start": 93,
-                          "end": 101
+                            "end": 100,
+                            "name": "d"
+                          }
                         }
-                      ],
-                      "start": 79,
-                      "end": 111
+                      ]
                     },
-                    "alternate": null,
-                    "start": 72,
-                    "end": 111
+                    "alternate": null
                   },
                   {
                     "type": "BreakStatement",
+                    "start": 120,
+                    "end": 128,
                     "label": {
                       "type": "Identifier",
-                      "name": "e",
                       "start": 126,
-                      "end": 127
-                    },
-                    "start": 120,
-                    "end": 128
+                      "end": 127,
+                      "name": "e"
+                    }
                   }
-                ],
-                "start": 46,
-                "end": 134
-              },
-              "start": 43,
-              "end": 134
+                ]
+              }
             }
-          ],
-          "start": 37,
-          "end": 136
-        },
-        "start": 34,
-        "end": 136
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 137
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -118,5 +117,7 @@
       "start": 0,
       "end": 33
     }
+  ],
+  "errors": [
   ]
 }

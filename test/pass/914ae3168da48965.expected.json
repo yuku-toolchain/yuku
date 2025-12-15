@@ -1,23 +1,26 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 8,
+    "sourceType": "script",
     "body": [
       {
         "type": "ThrowStatement",
+        "start": 0,
+        "end": 8,
         "argument": {
           "type": "ObjectExpression",
-          "properties": [],
           "start": 6,
-          "end": 8
-        },
-        "start": 0,
-        "end": 8
+          "end": 8,
+          "properties": [
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 8
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

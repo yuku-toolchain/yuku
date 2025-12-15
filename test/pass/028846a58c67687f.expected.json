@@ -1,42 +1,47 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 33,
+    "sourceType": "script",
     "body": [
       {
         "type": "BlockStatement",
+        "start": 0,
+        "end": 3,
         "body": [
           {
             "type": "EmptyStatement",
             "start": 1,
             "end": 2
           }
-        ],
-        "start": 0,
-        "end": 3
+        ]
       },
       {
         "type": "ExpressionStatement",
+        "start": 4,
+        "end": 8,
         "expression": {
           "type": "CallExpression",
+          "start": 4,
+          "end": 7,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 4,
-            "end": 5
+            "end": 5,
+            "name": "a"
           },
-          "arguments": [],
-          "optional": false,
-          "start": 4,
-          "end": 7
-        },
-        "start": 4,
-        "end": 8
+          "arguments": [
+          ],
+          "optional": false
+        }
       },
       {
         "type": "BlockStatement",
-        "body": [],
         "start": 9,
-        "end": 11
+        "end": 11,
+        "body": [
+        ]
       },
       {
         "type": "EmptyStatement",
@@ -45,21 +50,22 @@
       },
       {
         "type": "BlockStatement",
+        "start": 13,
+        "end": 24,
         "body": [
           {
             "type": "BlockStatement",
-            "body": [],
             "start": 19,
-            "end": 21
+            "end": 21,
+            "body": [
+            ]
           },
           {
             "type": "EmptyStatement",
             "start": 21,
             "end": 22
           }
-        ],
-        "start": 13,
-        "end": 24
+        ]
       },
       {
         "type": "EmptyStatement",
@@ -68,33 +74,34 @@
       },
       {
         "type": "ExpressionStatement",
+        "start": 26,
+        "end": 30,
         "expression": {
           "type": "CallExpression",
+          "start": 26,
+          "end": 29,
           "callee": {
             "type": "Identifier",
-            "name": "b",
             "start": 26,
-            "end": 27
+            "end": 27,
+            "name": "b"
           },
-          "arguments": [],
-          "optional": false,
-          "start": 26,
-          "end": 29
-        },
-        "start": 26,
-        "end": 30
+          "arguments": [
+          ],
+          "optional": false
+        }
       },
       {
         "type": "BlockStatement",
-        "body": [],
         "start": 31,
-        "end": 33
+        "end": 33,
+        "body": [
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 33
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

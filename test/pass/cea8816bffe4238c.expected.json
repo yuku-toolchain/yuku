@@ -1,85 +1,90 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 56,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 55,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 55,
           "body": [
             {
               "type": "IfStatement",
+              "start": 19,
+              "end": 53,
               "test": {
                 "type": "UnaryExpression",
+                "start": 23,
+                "end": 31,
                 "operator": "void",
+                "prefix": true,
                 "argument": {
                   "type": "CallExpression",
+                  "start": 28,
+                  "end": 31,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 28,
-                    "end": 29
+                    "end": 29,
+                    "name": "b"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 28,
-                  "end": 31
-                },
-                "prefix": true,
-                "start": 23,
-                "end": 31
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
               },
               "consequent": {
                 "type": "BlockStatement",
+                "start": 33,
+                "end": 53,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 43,
+                    "end": 47,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 43,
+                      "end": 46,
                       "callee": {
                         "type": "Identifier",
-                        "name": "c",
                         "start": 43,
-                        "end": 44
+                        "end": 44,
+                        "name": "c"
                       },
-                      "arguments": [],
-                      "optional": false,
-                      "start": 43,
-                      "end": 46
-                    },
-                    "start": 43,
-                    "end": 47
+                      "arguments": [
+                      ],
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 33,
-                "end": 53
+                ]
               },
-              "alternate": null,
-              "start": 19,
-              "end": 53
+              "alternate": null
             }
-          ],
-          "start": 13,
-          "end": 55
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 55
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 56
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

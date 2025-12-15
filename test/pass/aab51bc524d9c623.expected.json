@@ -1,114 +1,118 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 48,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 47,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 46,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 45,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 43,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 13,
+                "end": 43,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 41,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 19,
+                      "end": 40,
                       "callee": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 19,
-                        "end": 20
+                        "end": 20,
+                        "name": "a"
                       },
                       "arguments": [
                         {
                           "type": "BinaryExpression",
+                          "start": 21,
+                          "end": 39,
                           "left": {
                             "type": "Literal",
-                            "value": null,
-                            "raw": "null",
                             "start": 21,
-                            "end": 25
+                            "end": 25,
+                            "value": null,
+                            "raw": "null"
                           },
                           "operator": "!=",
                           "right": {
                             "type": "ParenthesizedExpression",
+                            "start": 27,
+                            "end": 39,
                             "expression": {
                               "type": "ConditionalExpression",
+                              "start": 28,
+                              "end": 38,
                               "test": {
                                 "type": "Identifier",
-                                "name": "b",
                                 "start": 28,
-                                "end": 29
+                                "end": 29,
+                                "name": "b"
                               },
                               "consequent": {
                                 "type": "Identifier",
-                                "name": "c",
                                 "start": 30,
-                                "end": 31
+                                "end": 31,
+                                "name": "c"
                               },
                               "alternate": {
                                 "type": "UnaryExpression",
+                                "start": 32,
+                                "end": 38,
                                 "operator": "void",
+                                "prefix": true,
                                 "argument": {
                                   "type": "Literal",
-                                  "value": 1,
-                                  "raw": "1",
                                   "start": 37,
-                                  "end": 38
-                                },
-                                "prefix": true,
-                                "start": 32,
-                                "end": 38
-                              },
-                              "start": 28,
-                              "end": 38
-                            },
-                            "start": 27,
-                            "end": 39
-                          },
-                          "start": 21,
-                          "end": 39
+                                  "end": 38,
+                                  "value": 1,
+                                  "raw": "1"
+                                }
+                              }
+                            }
+                          }
                         }
                       ],
-                      "optional": false,
-                      "start": 19,
-                      "end": 40
-                    },
-                    "start": 19,
-                    "end": 41
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 13,
-                "end": 43
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 43
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 45
-          },
-          "start": 0,
-          "end": 46
-        },
-        "start": 0,
-        "end": 47
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 48
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

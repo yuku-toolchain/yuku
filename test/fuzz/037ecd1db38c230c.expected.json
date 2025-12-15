@@ -1,51 +1,55 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "module",
     "body": [
       {
         "type": "ExportNamedDeclaration",
+        "start": 0,
+        "end": 21,
         "declaration": {
           "type": "VariableDeclaration",
+          "start": 7,
+          "end": 21,
           "kind": "const",
           "declarations": [
             {
               "type": "VariableDeclarator",
+              "start": 13,
+              "end": 20,
               "id": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 13,
-                "end": 14
+                "end": 14,
+                "name": "a"
               },
               "init": {
                 "type": "ParenthesizedExpression",
+                "start": 17,
+                "end": 20,
                 "expression": {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 18,
-                  "end": 19
-                },
-                "start": 17,
-                "end": 20
-              },
-              "start": 13,
-              "end": 20
+                  "end": 19,
+                  "value": 1,
+                  "raw": "1"
+                }
+              }
             }
-          ],
-          "start": 7,
-          "end": 21
+          ]
         },
-        "specifiers": [],
+        "specifiers": [
+        ],
         "source": null,
-        "attributes": [],
-        "start": 0,
-        "end": 21
+        "attributes": [
+        ]
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

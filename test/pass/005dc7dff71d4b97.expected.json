@@ -1,31 +1,33 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 5,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 5,
         "expression": {
           "type": "ArrayExpression",
+          "start": 0,
+          "end": 5,
           "elements": [
             {
               "type": "Literal",
-              "value": 1,
-              "raw": "1",
               "start": 2,
-              "end": 3
+              "end": 3,
+              "value": 1,
+              "raw": "1"
             }
-          ],
-          "start": 0,
-          "end": 5
-        },
-        "start": 0,
-        "end": 5
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 5
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

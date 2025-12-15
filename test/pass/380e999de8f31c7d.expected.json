@@ -1,53 +1,56 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 22,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
         "params": [
           {
             "type": "ArrayPattern",
+            "start": 11,
+            "end": 19,
             "elements": [
               {
                 "type": "Identifier",
-                "name": "b",
                 "start": 13,
-                "end": 14
+                "end": 14,
+                "name": "b"
               },
               {
                 "type": "Identifier",
-                "name": "c",
                 "start": 16,
-                "end": 17
+                "end": 17,
+                "name": "c"
               }
-            ],
-            "start": 11,
-            "end": 19
+            ]
           }
         ],
         "body": {
           "type": "BlockStatement",
-          "body": [],
           "start": 20,
-          "end": 22
+          "end": 22,
+          "body": [
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 22
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

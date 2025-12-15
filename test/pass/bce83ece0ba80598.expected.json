@@ -1,12 +1,12 @@
 {
   "program": {
     "type": "Program",
-    "body": [],
-    "sourceType": "script",
     "start": 0,
-    "end": 17
+    "end": 17,
+    "sourceType": "script",
+    "body": [
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -14,5 +14,7 @@
       "start": 0,
       "end": 16
     }
+  ],
+  "errors": [
   ]
 }

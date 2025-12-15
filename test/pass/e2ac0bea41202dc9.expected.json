@@ -1,95 +1,98 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 48,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 48,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 48,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 47,
             "properties": [
               {
                 "type": "Property",
+                "start": 3,
+                "end": 31,
                 "kind": "get",
                 "key": {
                   "type": "Identifier",
-                  "name": "__proto__",
                   "start": 7,
-                  "end": 16
+                  "end": 16,
+                  "name": "__proto__"
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 16,
+                  "end": 31,
                   "id": null,
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
+                    "start": 19,
+                    "end": 31,
                     "body": [
                       {
                         "type": "ReturnStatement",
+                        "start": 21,
+                        "end": 29,
                         "argument": {
                           "type": "Literal",
-                          "value": 1,
-                          "raw": "1",
                           "start": 28,
-                          "end": 29
-                        },
-                        "start": 21,
-                        "end": 29
+                          "end": 29,
+                          "value": 1,
+                          "raw": "1"
+                        }
                       }
-                    ],
-                    "start": 19,
-                    "end": 31
+                    ]
                   },
-                  "expression": false,
-                  "start": 16,
-                  "end": 31
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 3,
-                "end": 31
+                "computed": false
               },
               {
                 "type": "Property",
+                "start": 33,
+                "end": 45,
                 "kind": "init",
                 "key": {
                   "type": "Identifier",
-                  "name": "__proto__",
                   "start": 33,
-                  "end": 42
+                  "end": 42,
+                  "name": "__proto__"
                 },
                 "value": {
                   "type": "Literal",
-                  "value": 2,
-                  "raw": "2",
                   "start": 44,
-                  "end": 45
+                  "end": 45,
+                  "value": 2,
+                  "raw": "2"
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 33,
-                "end": 45
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 47
-          },
-          "start": 0,
-          "end": 48
-        },
-        "start": 0,
-        "end": 48
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 48
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

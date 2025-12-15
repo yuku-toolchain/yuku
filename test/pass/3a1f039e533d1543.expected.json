@@ -1,56 +1,59 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
         "expression": {
           "type": "Literal",
-          "value": "use strict",
-          "raw": "'use strict'",
           "start": 0,
-          "end": 12
+          "end": 12,
+          "value": "use strict",
+          "raw": "'use strict'"
         },
-        "directive": "use strict",
-        "start": 0,
-        "end": 13
+        "directive": "use strict"
       },
       {
         "type": "ExpressionStatement",
+        "start": 14,
+        "end": 25,
         "expression": {
           "type": "CallExpression",
+          "start": 14,
+          "end": 24,
           "callee": {
             "type": "MemberExpression",
+            "start": 14,
+            "end": 22,
             "object": {
               "type": "Identifier",
-              "name": "a",
               "start": 14,
-              "end": 15
+              "end": 15,
+              "name": "a"
             },
             "property": {
               "type": "Identifier",
-              "name": "static",
               "start": 16,
-              "end": 22
+              "end": 22,
+              "name": "static"
             },
-            "optional": false,
             "computed": false,
-            "start": 14,
-            "end": 22
+            "optional": false
           },
-          "arguments": [],
-          "optional": false,
-          "start": 14,
-          "end": 24
-        },
-        "start": 14,
-        "end": 25
+          "arguments": [
+          ],
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 25
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

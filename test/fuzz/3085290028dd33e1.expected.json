@@ -1,110 +1,114 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 67,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 66,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
         "params": [
           {
             "type": "Identifier",
-            "name": "b",
             "start": 11,
-            "end": 12
+            "end": 12,
+            "name": "b"
           },
           {
             "type": "Identifier",
-            "name": "c",
             "start": 14,
-            "end": 15
+            "end": 15,
+            "name": "c"
           }
         ],
         "body": {
           "type": "BlockStatement",
+          "start": 17,
+          "end": 66,
           "body": [
             {
               "type": "FunctionDeclaration",
+              "start": 21,
+              "end": 48,
               "id": {
                 "type": "Identifier",
-                "name": "d",
                 "start": 30,
-                "end": 31
+                "end": 31,
+                "name": "d"
               },
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 34,
+                "end": 48,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 40,
+                    "end": 44,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 40,
+                      "end": 43,
                       "callee": {
                         "type": "Identifier",
-                        "name": "e",
                         "start": 40,
-                        "end": 41
+                        "end": 41,
+                        "name": "e"
                       },
-                      "arguments": [],
-                      "optional": false,
-                      "start": 40,
-                      "end": 43
-                    },
-                    "start": 40,
-                    "end": 44
+                      "arguments": [
+                      ],
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 34,
-                "end": 48
+                ]
               },
-              "expression": false,
-              "start": 21,
-              "end": 48
+              "expression": false
             },
             {
               "type": "ReturnStatement",
+              "start": 51,
+              "end": 64,
               "argument": {
                 "type": "BinaryExpression",
+                "start": 58,
+                "end": 63,
                 "left": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 58,
-                  "end": 59
+                  "end": 59,
+                  "name": "b"
                 },
                 "operator": "+",
                 "right": {
                   "type": "Identifier",
-                  "name": "c",
                   "start": 62,
-                  "end": 63
-                },
-                "start": 58,
-                "end": 63
-              },
-              "start": 51,
-              "end": 64
+                  "end": 63,
+                  "name": "c"
+                }
+              }
             }
-          ],
-          "start": 17,
-          "end": 66
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 66
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 67
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

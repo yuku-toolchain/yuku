@@ -1,91 +1,95 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 58,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 57,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 56,
           "expression": {
             "type": "ClassExpression",
+            "start": 1,
+            "end": 55,
             "decorators": [],
             "id": null,
             "superClass": {
               "type": "Identifier",
-              "name": "a",
               "start": 15,
-              "end": 16
+              "end": 16,
+              "name": "a"
             },
             "body": {
               "type": "ClassBody",
+              "start": 17,
+              "end": 55,
               "body": [
                 {
                   "type": "MethodDefinition",
+                  "start": 21,
+                  "end": 53,
                   "decorators": [],
                   "key": {
                     "type": "Identifier",
-                    "name": "constructor",
                     "start": 21,
-                    "end": 32
+                    "end": 32,
+                    "name": "constructor"
                   },
                   "value": {
                     "type": "FunctionExpression",
+                    "start": 32,
+                    "end": 53,
                     "id": null,
                     "generator": false,
                     "async": false,
-                    "params": [],
+                    "params": [
+                    ],
                     "body": {
                       "type": "BlockStatement",
+                      "start": 35,
+                      "end": 53,
                       "body": [
                         {
                           "type": "ExpressionStatement",
+                          "start": 41,
+                          "end": 49,
                           "expression": {
                             "type": "CallExpression",
+                            "start": 41,
+                            "end": 48,
                             "callee": {
                               "type": "Super",
                               "start": 41,
                               "end": 46
                             },
-                            "arguments": [],
-                            "optional": false,
-                            "start": 41,
-                            "end": 48
-                          },
-                          "start": 41,
-                          "end": 49
+                            "arguments": [
+                            ],
+                            "optional": false
+                          }
                         }
-                      ],
-                      "start": 35,
-                      "end": 53
+                      ]
                     },
-                    "expression": false,
-                    "start": 32,
-                    "end": 53
+                    "expression": false
                   },
                   "kind": "constructor",
                   "computed": false,
-                  "static": false,
-                  "start": 21,
-                  "end": 53
+                  "static": false
                 }
-              ],
-              "start": 17,
-              "end": 55
-            },
-            "start": 1,
-            "end": 55
-          },
-          "start": 0,
-          "end": 56
-        },
-        "start": 0,
-        "end": 57
+              ]
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 58
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

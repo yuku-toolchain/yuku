@@ -1,108 +1,113 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 78,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 77,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": {
           "type": "Identifier",
-          "name": "b",
           "start": 16,
-          "end": 17
+          "end": 17,
+          "name": "b"
         },
         "body": {
           "type": "ClassBody",
+          "start": 18,
+          "end": 77,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 22,
+              "end": 75,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "constructor",
                 "start": 22,
-                "end": 33
+                "end": 33,
+                "name": "constructor"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 33,
+                "end": 75,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 36,
+                  "end": 75,
                   "body": [
                     {
                       "type": "ExpressionStatement",
+                      "start": 42,
+                      "end": 71,
                       "expression": {
                         "type": "ArrowFunctionExpression",
-                        "expression": false,
+                        "start": 42,
+                        "end": 70,
+                        "id": null,
+                        "generator": false,
                         "async": false,
-                        "params": [],
+                        "params": [
+                        ],
                         "body": {
                           "type": "BlockStatement",
+                          "start": 48,
+                          "end": 70,
                           "body": [
                             {
                               "type": "ExpressionStatement",
+                              "start": 56,
+                              "end": 64,
                               "expression": {
                                 "type": "CallExpression",
+                                "start": 56,
+                                "end": 63,
                                 "callee": {
                                   "type": "Super",
                                   "start": 56,
                                   "end": 61
                                 },
-                                "arguments": [],
-                                "optional": false,
-                                "start": 56,
-                                "end": 63
-                              },
-                              "start": 56,
-                              "end": 64
+                                "arguments": [
+                                ],
+                                "optional": false
+                              }
                             }
-                          ],
-                          "start": 48,
-                          "end": 70
+                          ]
                         },
-                        "id": null,
-                        "generator": false,
-                        "start": 42,
-                        "end": 70
-                      },
-                      "start": 42,
-                      "end": 71
+                        "expression": false
+                      }
                     }
-                  ],
-                  "start": 36,
-                  "end": 75
+                  ]
                 },
-                "expression": false,
-                "start": 33,
-                "end": 75
+                "expression": false
               },
               "kind": "constructor",
               "computed": false,
-              "static": false,
-              "start": 22,
-              "end": 75
+              "static": false
             }
-          ],
-          "start": 18,
-          "end": 77
-        },
-        "start": 0,
-        "end": 77
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 78
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

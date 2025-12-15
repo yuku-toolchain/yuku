@@ -1,103 +1,105 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 25,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 24,
             "id": {
               "type": "ArrayPattern",
+              "start": 4,
+              "end": 18,
               "elements": [
                 {
                   "type": "ObjectPattern",
+                  "start": 5,
+                  "end": 11,
                   "properties": [
                     {
                       "type": "Property",
+                      "start": 6,
+                      "end": 7,
                       "kind": "init",
                       "key": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       "value": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       "method": false,
                       "shorthand": true,
-                      "computed": false,
-                      "start": 6,
-                      "end": 7
+                      "computed": false
                     },
                     {
                       "type": "Property",
+                      "start": 9,
+                      "end": 10,
                       "kind": "init",
                       "key": {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 9,
-                        "end": 10
+                        "end": 10,
+                        "name": "b"
                       },
                       "value": {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 9,
-                        "end": 10
+                        "end": 10,
+                        "name": "b"
                       },
                       "method": false,
                       "shorthand": true,
-                      "computed": false,
-                      "start": 9,
-                      "end": 10
+                      "computed": false
                     }
-                  ],
-                  "start": 5,
-                  "end": 11
+                  ]
                 },
                 {
                   "type": "RestElement",
+                  "start": 13,
+                  "end": 17,
                   "argument": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 16,
-                    "end": 17
-                  },
-                  "start": 13,
-                  "end": 17
+                    "end": 17,
+                    "name": "c"
+                  }
                 }
-              ],
-              "start": 4,
-              "end": 18
+              ]
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 21,
+              "end": 24,
               "expression": {
                 "type": "Identifier",
-                "name": "d",
                 "start": 22,
-                "end": 23
-              },
-              "start": 21,
-              "end": 24
-            },
-            "start": 4,
-            "end": 24
+                "end": 23,
+                "name": "d"
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 25
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 26
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

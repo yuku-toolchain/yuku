@@ -1,49 +1,51 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 87,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 87,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 0,
+          "end": 87,
           "operator": "=",
           "left": {
             "type": "MemberExpression",
+            "start": 40,
+            "end": 43,
             "object": {
               "type": "Identifier",
-              "name": "a",
               "start": 40,
-              "end": 41
+              "end": 41,
+              "name": "a"
             },
             "property": {
               "type": "Identifier",
-              "name": "a",
               "start": 42,
-              "end": 43
+              "end": 43,
+              "name": "a"
             },
-            "optional": false,
             "computed": false,
-            "start": 40,
-            "end": 43
+            "optional": false
           },
           "right": {
             "type": "Literal",
-            "value": 1,
-            "raw": "1",
             "start": 86,
-            "end": 87
-          },
-          "start": 0,
-          "end": 87
-        },
-        "start": 0,
-        "end": 87
+            "end": 87,
+            "value": 1,
+            "raw": "1"
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 87
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

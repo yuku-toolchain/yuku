@@ -1,73 +1,79 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 42,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 41,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 41,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 17,
+              "end": 21,
               "expression": {
                 "type": "CallExpression",
+                "start": 17,
+                "end": 20,
                 "callee": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 17,
-                  "end": 18
+                  "end": 18,
+                  "name": "b"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 17,
-                "end": 20
-              },
-              "start": 17,
-              "end": 21
+                "arguments": [
+                ],
+                "optional": false
+              }
             },
             {
               "type": "FunctionDeclaration",
+              "start": 24,
+              "end": 39,
               "id": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 33,
-                "end": 34
+                "end": 34,
+                "name": "c"
               },
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
-                "body": [],
                 "start": 37,
-                "end": 39
+                "end": 39,
+                "body": [
+                ]
               },
-              "expression": false,
-              "start": 24,
-              "end": 39
+              "expression": false
             }
-          ],
-          "start": 13,
-          "end": 41
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 41
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 42
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

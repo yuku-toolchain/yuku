@@ -1,29 +1,31 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 6,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 6,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 6,
           "expression": {
             "type": "Literal",
-            "value": "",
-            "raw": "'\\ '",
             "start": 1,
-            "end": 5
-          },
-          "start": 0,
-          "end": 6
-        },
-        "start": 0,
-        "end": 6
+            "end": 5,
+            "value": "",
+            "raw": "'\\ '"
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 6
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

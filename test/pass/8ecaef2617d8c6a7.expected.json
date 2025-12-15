@@ -1,41 +1,45 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 15,
+    "sourceType": "script",
     "body": [
       {
         "type": "TryStatement",
+        "start": 0,
+        "end": 15,
         "block": {
           "type": "BlockStatement",
-          "body": [],
           "start": 3,
-          "end": 5
+          "end": 5,
+          "body": [
+          ]
         },
         "handler": {
           "type": "CatchClause",
+          "start": 5,
+          "end": 15,
           "param": {
             "type": "Identifier",
-            "name": "a",
             "start": 11,
-            "end": 12
+            "end": 12,
+            "name": "a"
           },
           "body": {
             "type": "BlockStatement",
-            "body": [],
             "start": 13,
-            "end": 15
-          },
-          "start": 5,
-          "end": 15
+            "end": 15,
+            "body": [
+            ]
+          }
         },
-        "finalizer": null,
-        "start": 0,
-        "end": 15
+        "finalizer": null
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 15
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

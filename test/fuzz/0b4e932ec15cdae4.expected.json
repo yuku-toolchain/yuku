@@ -1,77 +1,79 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 33,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 32,
         "init": {
           "type": "VariableDeclaration",
+          "start": 5,
+          "end": 16,
           "kind": "var",
           "declarations": [
             {
               "type": "VariableDeclarator",
+              "start": 9,
+              "end": 16,
               "id": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 9,
-                "end": 10
+                "end": 10,
+                "name": "a"
               },
               "init": {
                 "type": "ParenthesizedExpression",
+                "start": 13,
+                "end": 16,
                 "expression": {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 14,
-                  "end": 15
-                },
-                "start": 13,
-                "end": 16
-              },
-              "start": 9,
-              "end": 16
+                  "end": 15,
+                  "value": 1,
+                  "raw": "1"
+                }
+              }
             }
-          ],
-          "start": 5,
-          "end": 16
+          ]
         },
         "test": null,
         "update": null,
         "body": {
           "type": "BlockStatement",
+          "start": 20,
+          "end": 32,
           "body": [
             {
               "type": "VariableDeclaration",
+              "start": 24,
+              "end": 30,
               "kind": "let",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 28,
+                  "end": 29,
                   "id": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 28,
-                    "end": 29
+                    "end": 29,
+                    "name": "a"
                   },
-                  "init": null,
-                  "start": 28,
-                  "end": 29
+                  "init": null
                 }
-              ],
-              "start": 24,
-              "end": 30
+              ]
             }
-          ],
-          "start": 20,
-          "end": 32
-        },
-        "start": 0,
-        "end": 32
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 33
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

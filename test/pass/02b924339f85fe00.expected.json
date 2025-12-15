@@ -1,91 +1,93 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForInStatement",
+        "start": 0,
+        "end": 22,
         "left": {
           "type": "VariableDeclaration",
+          "start": 5,
+          "end": 15,
           "kind": "var",
           "declarations": [
             {
               "type": "VariableDeclarator",
+              "start": 9,
+              "end": 15,
               "id": {
                 "type": "ObjectPattern",
+                "start": 9,
+                "end": 15,
                 "properties": [
                   {
                     "type": "Property",
+                    "start": 10,
+                    "end": 11,
                     "kind": "init",
                     "key": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 10,
-                      "end": 11
+                      "end": 11,
+                      "name": "a"
                     },
                     "value": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 10,
-                      "end": 11
+                      "end": 11,
+                      "name": "a"
                     },
                     "method": false,
                     "shorthand": true,
-                    "computed": false,
-                    "start": 10,
-                    "end": 11
+                    "computed": false
                   },
                   {
                     "type": "Property",
+                    "start": 13,
+                    "end": 14,
                     "kind": "init",
                     "key": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 13,
-                      "end": 14
+                      "end": 14,
+                      "name": "b"
                     },
                     "value": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 13,
-                      "end": 14
+                      "end": 14,
+                      "name": "b"
                     },
                     "method": false,
                     "shorthand": true,
-                    "computed": false,
-                    "start": 13,
-                    "end": 14
+                    "computed": false
                   }
-                ],
-                "start": 9,
-                "end": 15
+                ]
               },
-              "init": null,
-              "start": 9,
-              "end": 15
+              "init": null
             }
-          ],
-          "start": 5,
-          "end": 15
+          ]
         },
         "right": {
           "type": "Identifier",
-          "name": "c",
           "start": 19,
-          "end": 20
+          "end": 20,
+          "name": "c"
         },
         "body": {
           "type": "EmptyStatement",
           "start": 21,
           "end": 22
-        },
-        "start": 0,
-        "end": 22
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

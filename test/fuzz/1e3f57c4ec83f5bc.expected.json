@@ -1,107 +1,109 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 31,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 30,
         "expression": {
           "type": "CallExpression",
+          "start": 0,
+          "end": 29,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 0,
-            "end": 1
+            "end": 1,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "CallExpression",
+              "start": 2,
+              "end": 14,
               "callee": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 2,
-                "end": 3
+                "end": 3,
+                "name": "b"
               },
               "arguments": [
                 {
                   "type": "BinaryExpression",
+                  "start": 4,
+                  "end": 13,
                   "left": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 4,
-                    "end": 5
+                    "end": 5,
+                    "name": "c"
                   },
                   "operator": "+",
                   "right": {
                     "type": "ParenthesizedExpression",
+                    "start": 8,
+                    "end": 13,
                     "expression": {
                       "type": "Literal",
-                      "value": "d",
-                      "raw": "\"d\"",
                       "start": 9,
-                      "end": 12
-                    },
-                    "start": 8,
-                    "end": 13
-                  },
-                  "start": 4,
-                  "end": 13
+                      "end": 12,
+                      "value": "d",
+                      "raw": "\"d\""
+                    }
+                  }
                 }
               ],
-              "optional": false,
-              "start": 2,
-              "end": 14
+              "optional": false
             },
             {
               "type": "CallExpression",
+              "start": 16,
+              "end": 28,
               "callee": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 16,
-                "end": 17
+                "end": 17,
+                "name": "b"
               },
               "arguments": [
                 {
                   "type": "BinaryExpression",
+                  "start": 18,
+                  "end": 27,
                   "left": {
                     "type": "ParenthesizedExpression",
+                    "start": 18,
+                    "end": 23,
                     "expression": {
                       "type": "Literal",
-                      "value": "d",
-                      "raw": "\"d\"",
                       "start": 19,
-                      "end": 22
-                    },
-                    "start": 18,
-                    "end": 23
+                      "end": 22,
+                      "value": "d",
+                      "raw": "\"d\""
+                    }
                   },
                   "operator": "+",
                   "right": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 26,
-                    "end": 27
-                  },
-                  "start": 18,
-                  "end": 27
+                    "end": 27,
+                    "name": "c"
+                  }
                 }
               ],
-              "optional": false,
-              "start": 16,
-              "end": 28
+              "optional": false
             }
           ],
-          "optional": false,
-          "start": 0,
-          "end": 29
-        },
-        "start": 0,
-        "end": 30
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 31
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

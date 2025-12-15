@@ -1,39 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "module",
     "body": [
       {
         "type": "ImportDeclaration",
+        "start": 0,
+        "end": 24,
         "specifiers": [
           {
             "type": "ImportNamespaceSpecifier",
+            "start": 7,
+            "end": 13,
             "local": {
               "type": "Identifier",
-              "name": "a",
               "start": 12,
-              "end": 13
-            },
-            "start": 7,
-            "end": 13
+              "end": 13,
+              "name": "a"
+            }
           }
         ],
         "source": {
           "type": "Literal",
-          "value": "a",
-          "raw": "\"a\"",
           "start": 19,
-          "end": 22
+          "end": 22,
+          "value": "a",
+          "raw": "\"a\""
         },
         "phase": null,
-        "attributes": [],
-        "start": 0,
-        "end": 24
+        "attributes": [
+        ]
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 24
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

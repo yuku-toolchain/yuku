@@ -1,69 +1,71 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 14,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 14,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 0,
+          "end": 14,
           "operator": "=",
           "left": {
             "type": "ArrayPattern",
+            "start": 0,
+            "end": 10,
             "elements": [
               {
                 "type": "RestElement",
+                "start": 1,
+                "end": 9,
                 "argument": {
                   "type": "ObjectPattern",
+                  "start": 4,
+                  "end": 9,
                   "properties": [
                     {
                       "type": "Property",
+                      "start": 6,
+                      "end": 7,
                       "kind": "init",
                       "key": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       "value": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 6,
-                        "end": 7
+                        "end": 7,
+                        "name": "a"
                       },
                       "method": false,
                       "shorthand": true,
-                      "computed": false,
-                      "start": 6,
-                      "end": 7
+                      "computed": false
                     }
-                  ],
-                  "start": 4,
-                  "end": 9
-                },
-                "start": 1,
-                "end": 9
+                  ]
+                }
               }
-            ],
-            "start": 0,
-            "end": 10
+            ]
           },
           "right": {
             "type": "Identifier",
-            "name": "b",
             "start": 13,
-            "end": 14
-          },
-          "start": 0,
-          "end": 14
-        },
-        "start": 0,
-        "end": 14
+            "end": 14,
+            "name": "b"
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 14
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

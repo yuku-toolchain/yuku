@@ -1,47 +1,69 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 34,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 34,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": null,
         "body": {
           "type": "ClassBody",
+          "start": 8,
+          "end": 34,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 10,
+              "end": 32,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 10,
-                "end": 11
+                "end": 11,
+                "name": "b"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 11,
+                "end": 32,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 14,
+                  "end": 32,
                   "body": [
                     {
                       "type": "ExpressionStatement",
+                      "start": 16,
+                      "end": 30,
                       "expression": {
                         "type": "ArrowFunctionExpression",
-                        "expression": true,
+                        "start": 16,
+                        "end": 29,
+                        "id": null,
+                        "generator": false,
                         "async": false,
-                        "params": [],
+                        "params": [
+                        ],
                         "body": {
                           "type": "MemberExpression",
+                          "start": 22,
+                          "end": 29,
                           "object": {
                             "type": "Super",
                             "start": 22,
@@ -49,49 +71,31 @@
                           },
                           "property": {
                             "type": "Identifier",
-                            "name": "c",
                             "start": 28,
-                            "end": 29
+                            "end": 29,
+                            "name": "c"
                           },
-                          "optional": false,
                           "computed": false,
-                          "start": 22,
-                          "end": 29
+                          "optional": false
                         },
-                        "id": null,
-                        "generator": false,
-                        "start": 16,
-                        "end": 29
-                      },
-                      "start": 16,
-                      "end": 30
+                        "expression": true
+                      }
                     }
-                  ],
-                  "start": 14,
-                  "end": 32
+                  ]
                 },
-                "expression": false,
-                "start": 11,
-                "end": 32
+                "expression": false
               },
               "kind": "method",
               "computed": false,
-              "static": false,
-              "start": 10,
-              "end": 32
+              "static": false
             }
-          ],
-          "start": 8,
-          "end": 34
-        },
-        "start": 0,
-        "end": 34
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 34
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

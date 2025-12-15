@@ -1,130 +1,132 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 29,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 28,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 27,
             "id": {
               "type": "ObjectPattern",
+              "start": 4,
+              "end": 10,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 5,
+                  "end": 6,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 5,
-                    "end": 6
+                    "end": 6,
+                    "name": "a"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 5,
-                    "end": 6
+                    "end": 6,
+                    "name": "a"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 5,
-                  "end": 6
+                  "computed": false
                 },
                 {
                   "type": "Property",
+                  "start": 8,
+                  "end": 9,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 8,
-                    "end": 9
+                    "end": 9,
+                    "name": "b"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 8,
-                    "end": 9
+                    "end": 9,
+                    "name": "b"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 8,
-                  "end": 9
+                  "computed": false
                 }
-              ],
-              "start": 4,
-              "end": 10
+              ]
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 13,
+              "end": 27,
               "expression": {
                 "type": "ObjectExpression",
+                "start": 14,
+                "end": 26,
                 "properties": [
                   {
                     "type": "Property",
+                    "start": 15,
+                    "end": 19,
                     "kind": "init",
                     "key": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 15,
-                      "end": 16
+                      "end": 16,
+                      "name": "a"
                     },
                     "value": {
                       "type": "Literal",
-                      "value": 1,
-                      "raw": "1",
                       "start": 18,
-                      "end": 19
+                      "end": 19,
+                      "value": 1,
+                      "raw": "1"
                     },
                     "method": false,
                     "shorthand": false,
-                    "computed": false,
-                    "start": 15,
-                    "end": 19
+                    "computed": false
                   },
                   {
                     "type": "Property",
+                    "start": 21,
+                    "end": 25,
                     "kind": "init",
                     "key": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 21,
-                      "end": 22
+                      "end": 22,
+                      "name": "b"
                     },
                     "value": {
                       "type": "Literal",
-                      "value": 2,
-                      "raw": "2",
                       "start": 24,
-                      "end": 25
+                      "end": 25,
+                      "value": 2,
+                      "raw": "2"
                     },
                     "method": false,
                     "shorthand": false,
-                    "computed": false,
-                    "start": 21,
-                    "end": 25
+                    "computed": false
                   }
-                ],
-                "start": 14,
-                "end": 26
-              },
-              "start": 13,
-              "end": 27
-            },
-            "start": 4,
-            "end": 27
+                ]
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 28
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 29
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,80 +1,84 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 54,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 53,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 52,
             "callee": {
               "type": "ParenthesizedExpression",
+              "start": 1,
+              "end": 50,
               "expression": {
                 "type": "FunctionExpression",
+                "start": 2,
+                "end": 49,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 14,
+                  "end": 49,
                   "body": [
                     {
                       "type": "ExpressionStatement",
+                      "start": 18,
+                      "end": 34,
                       "expression": {
                         "type": "Literal",
-                        "value": "use strict",
-                        "raw": "\"use\\x20strict\"",
                         "start": 18,
-                        "end": 33
+                        "end": 33,
+                        "value": "use strict",
+                        "raw": "\"use\\x20strict\""
                       },
-                      "directive": "use\\x20strict",
-                      "start": 18,
-                      "end": 34
+                      "directive": "use\\x20strict"
                     },
                     {
                       "type": "WithStatement",
+                      "start": 37,
+                      "end": 47,
                       "object": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 43,
-                        "end": 44
+                        "end": 44,
+                        "name": "a"
                       },
                       "body": {
                         "type": "EmptyStatement",
                         "start": 46,
                         "end": 47
-                      },
-                      "start": 37,
-                      "end": 47
+                      }
                     }
-                  ],
-                  "start": 14,
-                  "end": 49
+                  ]
                 },
-                "expression": false,
-                "start": 2,
-                "end": 49
-              },
-              "start": 1,
-              "end": 50
+                "expression": false
+              }
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 52
-          },
-          "start": 0,
-          "end": 53
-        },
-        "start": 0,
-        "end": 54
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 55
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

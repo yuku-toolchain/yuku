@@ -1,56 +1,59 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 28,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 28,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 15,
+              "end": 26,
               "expression": {
                 "type": "MetaProperty",
+                "start": 15,
+                "end": 25,
                 "meta": {
                   "type": "Identifier",
-                  "name": "new",
                   "start": 15,
-                  "end": 18
+                  "end": 18,
+                  "name": "new"
                 },
                 "property": {
                   "type": "Identifier",
-                  "name": "target",
                   "start": 19,
-                  "end": 25
-                },
-                "start": 15,
-                "end": 25
-              },
-              "start": 15,
-              "end": 26
+                  "end": 25,
+                  "name": "target"
+                }
+              }
             }
-          ],
-          "start": 13,
-          "end": 28
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 28
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 28
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

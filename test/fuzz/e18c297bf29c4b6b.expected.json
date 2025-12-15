@@ -1,99 +1,101 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 25,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
-            "init": null,
-            "start": 4,
-            "end": 5
+            "init": null
           },
           {
             "type": "VariableDeclarator",
+            "start": 7,
+            "end": 24,
             "id": {
               "type": "ObjectPattern",
+              "start": 7,
+              "end": 18,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 8,
+                  "end": 17,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 8,
-                    "end": 9
+                    "end": 9,
+                    "name": "b"
                   },
                   "value": {
                     "type": "ObjectPattern",
+                    "start": 11,
+                    "end": 17,
                     "properties": [
                       {
                         "type": "Property",
+                        "start": 12,
+                        "end": 16,
                         "kind": "init",
                         "key": {
                           "type": "Identifier",
-                          "name": "c",
                           "start": 12,
-                          "end": 13
+                          "end": 13,
+                          "name": "c"
                         },
                         "value": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 15,
-                          "end": 16
+                          "end": 16,
+                          "name": "a"
                         },
                         "method": false,
                         "shorthand": false,
-                        "computed": false,
-                        "start": 12,
-                        "end": 16
+                        "computed": false
                       }
-                    ],
-                    "start": 11,
-                    "end": 17
+                    ]
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 8,
-                  "end": 17
+                  "computed": false
                 }
-              ],
-              "start": 7,
-              "end": 18
+              ]
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 21,
+              "end": 24,
               "expression": {
                 "type": "Literal",
-                "value": 1,
-                "raw": "1",
                 "start": 22,
-                "end": 23
-              },
-              "start": 21,
-              "end": 24
-            },
-            "start": 7,
-            "end": 24
+                "end": 23,
+                "value": 1,
+                "raw": "1"
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 25
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 26
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

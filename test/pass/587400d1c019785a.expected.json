@@ -1,56 +1,59 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "script",
     "body": [
       {
         "type": "TryStatement",
+        "start": 0,
+        "end": 24,
         "block": {
           "type": "BlockStatement",
-          "body": [],
           "start": 4,
-          "end": 7
+          "end": 7,
+          "body": [
+          ]
         },
         "handler": null,
         "finalizer": {
           "type": "BlockStatement",
+          "start": 16,
+          "end": 24,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 18,
+              "end": 22,
               "expression": {
                 "type": "CallExpression",
+                "start": 18,
+                "end": 22,
                 "callee": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 18,
-                  "end": 19
+                  "end": 19,
+                  "name": "a"
                 },
                 "arguments": [
                   {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 20,
-                    "end": 21
+                    "end": 21,
+                    "name": "b"
                   }
                 ],
-                "optional": false,
-                "start": 18,
-                "end": 22
-              },
-              "start": 18,
-              "end": 22
+                "optional": false
+              }
             }
-          ],
-          "start": 16,
-          "end": 24
-        },
-        "start": 0,
-        "end": 24
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 24
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

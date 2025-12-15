@@ -1,63 +1,65 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
         "expression": {
           "type": "Literal",
-          "value": "use strict",
-          "raw": "'use strict'",
           "start": 0,
-          "end": 12
+          "end": 12,
+          "value": "use strict",
+          "raw": "'use strict'"
         },
-        "directive": "use strict",
-        "start": 0,
-        "end": 13
+        "directive": "use strict"
       },
       {
         "type": "ExpressionStatement",
+        "start": 14,
+        "end": 25,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 14,
+          "end": 25,
           "operator": "=",
           "left": {
             "type": "MemberExpression",
+            "start": 14,
+            "end": 21,
             "object": {
               "type": "Identifier",
-              "name": "eval",
               "start": 14,
-              "end": 18
+              "end": 18,
+              "name": "eval"
             },
             "property": {
               "type": "Literal",
-              "value": 1,
-              "raw": "1",
               "start": 19,
-              "end": 20
+              "end": 20,
+              "value": 1,
+              "raw": "1"
             },
-            "optional": false,
             "computed": true,
-            "start": 14,
-            "end": 21
+            "optional": false
           },
           "right": {
             "type": "Literal",
-            "value": 2,
-            "raw": "2",
             "start": 24,
-            "end": 25
-          },
-          "start": 14,
-          "end": 25
-        },
-        "start": 14,
-        "end": 25
+            "end": 25,
+            "value": 2,
+            "raw": "2"
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 25
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,33 +1,39 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "module",
     "body": [
       {
         "type": "ExportNamedDeclaration",
+        "start": 0,
+        "end": 17,
         "declaration": {
           "type": "ClassDeclaration",
+          "start": 7,
+          "end": 17,
           "decorators": [],
           "id": {
             "type": "Identifier",
-            "name": "a",
             "start": 13,
-            "end": 14
+            "end": 14,
+            "name": "a"
           },
           "superClass": null,
           "body": {
             "type": "ClassBody",
-            "body": [],
             "start": 15,
-            "end": 17
-          },
-          "start": 7,
-          "end": 17
+            "end": 17,
+            "body": [
+            ]
+          }
         },
-        "specifiers": [],
+        "specifiers": [
+        ],
         "source": null,
-        "attributes": [],
-        "start": 0,
-        "end": 17
+        "attributes": [
+        ]
       },
       {
         "type": "EmptyStatement",
@@ -36,21 +42,20 @@
       },
       {
         "type": "ExpressionStatement",
+        "start": 20,
+        "end": 22,
         "expression": {
           "type": "Literal",
-          "value": 1,
-          "raw": "1",
           "start": 20,
-          "end": 21
-        },
-        "start": 20,
-        "end": 22
+          "end": 21,
+          "value": 1,
+          "raw": "1"
+        }
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

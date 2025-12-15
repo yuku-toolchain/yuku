@@ -1,40 +1,43 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 24,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
         "params": [
           {
             "type": "Identifier",
-            "name": "__proto__",
             "start": 11,
-            "end": 20
+            "end": 20,
+            "name": "__proto__"
           }
         ],
         "body": {
           "type": "BlockStatement",
-          "body": [],
           "start": 22,
-          "end": 24
+          "end": 24,
+          "body": [
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 24
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 25
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,45 +1,47 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 14,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 14,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 3,
-          "end": 4
+          "end": 4,
+          "name": "a"
         },
         "consequent": {
           "type": "ExpressionStatement",
+          "start": 5,
+          "end": 7,
           "expression": {
             "type": "Identifier",
-            "name": "b",
             "start": 5,
-            "end": 6
-          },
-          "start": 5,
-          "end": 7
+            "end": 6,
+            "name": "b"
+          }
         },
         "alternate": {
           "type": "ExpressionStatement",
+          "start": 12,
+          "end": 14,
           "expression": {
             "type": "Identifier",
-            "name": "c",
             "start": 12,
-            "end": 13
-          },
-          "start": 12,
-          "end": 14
-        },
-        "start": 0,
-        "end": 14
+            "end": 13,
+            "name": "c"
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 14
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

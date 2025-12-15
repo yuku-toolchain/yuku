@@ -1,143 +1,145 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 46,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 46,
         "expression": {
           "type": "LogicalExpression",
+          "start": 0,
+          "end": 46,
           "left": {
             "type": "Identifier",
-            "name": "a",
             "start": 0,
-            "end": 1
+            "end": 1,
+            "name": "a"
           },
           "operator": "||",
           "right": {
             "type": "LogicalExpression",
+            "start": 5,
+            "end": 46,
             "left": {
               "type": "Identifier",
-              "name": "b",
               "start": 5,
-              "end": 6
+              "end": 6,
+              "name": "b"
             },
             "operator": "&&",
             "right": {
               "type": "BinaryExpression",
+              "start": 10,
+              "end": 46,
               "left": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 10,
-                "end": 11
+                "end": 11,
+                "name": "c"
               },
               "operator": "|",
               "right": {
                 "type": "BinaryExpression",
+                "start": 14,
+                "end": 46,
                 "left": {
                   "type": "Identifier",
-                  "name": "d",
                   "start": 14,
-                  "end": 15
+                  "end": 15,
+                  "name": "d"
                 },
                 "operator": "^",
                 "right": {
                   "type": "BinaryExpression",
+                  "start": 18,
+                  "end": 46,
                   "left": {
                     "type": "Identifier",
-                    "name": "e",
                     "start": 18,
-                    "end": 19
+                    "end": 19,
+                    "name": "e"
                   },
                   "operator": "&",
                   "right": {
                     "type": "BinaryExpression",
+                    "start": 22,
+                    "end": 46,
                     "left": {
                       "type": "Identifier",
-                      "name": "f",
                       "start": 22,
-                      "end": 23
+                      "end": 23,
+                      "name": "f"
                     },
                     "operator": "==",
                     "right": {
                       "type": "BinaryExpression",
+                      "start": 27,
+                      "end": 46,
                       "left": {
                         "type": "Identifier",
-                        "name": "g",
                         "start": 27,
-                        "end": 28
+                        "end": 28,
+                        "name": "g"
                       },
                       "operator": "<",
                       "right": {
                         "type": "BinaryExpression",
+                        "start": 31,
+                        "end": 46,
                         "left": {
                           "type": "Identifier",
-                          "name": "h",
                           "start": 31,
-                          "end": 32
+                          "end": 32,
+                          "name": "h"
                         },
                         "operator": ">>>",
                         "right": {
                           "type": "BinaryExpression",
+                          "start": 37,
+                          "end": 46,
                           "left": {
                             "type": "Identifier",
-                            "name": "i",
                             "start": 37,
-                            "end": 38
+                            "end": 38,
+                            "name": "i"
                           },
                           "operator": "+",
                           "right": {
                             "type": "BinaryExpression",
+                            "start": 41,
+                            "end": 46,
                             "left": {
                               "type": "Identifier",
-                              "name": "j",
                               "start": 41,
-                              "end": 42
+                              "end": 42,
+                              "name": "j"
                             },
                             "operator": "*",
                             "right": {
                               "type": "Identifier",
-                              "name": "k",
                               "start": 45,
-                              "end": 46
-                            },
-                            "start": 41,
-                            "end": 46
-                          },
-                          "start": 37,
-                          "end": 46
-                        },
-                        "start": 31,
-                        "end": 46
-                      },
-                      "start": 27,
-                      "end": 46
-                    },
-                    "start": 22,
-                    "end": 46
-                  },
-                  "start": 18,
-                  "end": 46
-                },
-                "start": 14,
-                "end": 46
-              },
-              "start": 10,
-              "end": 46
-            },
-            "start": 5,
-            "end": 46
-          },
-          "start": 0,
-          "end": 46
-        },
-        "start": 0,
-        "end": 46
+                              "end": 46,
+                              "name": "k"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 46
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,75 +1,75 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 37,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 22,
+        "end": 36,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 22,
+          "end": 36,
           "operator": "=",
           "left": {
             "type": "MemberExpression",
+            "start": 22,
+            "end": 25,
             "object": {
               "type": "Identifier",
-              "name": "a",
               "start": 22,
-              "end": 23
+              "end": 23,
+              "name": "a"
             },
             "property": {
               "type": "Identifier",
-              "name": "b",
               "start": 24,
-              "end": 25
+              "end": 25,
+              "name": "b"
             },
-            "optional": false,
             "computed": false,
-            "start": 22,
-            "end": 25
+            "optional": false
           },
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 28,
+            "end": 36,
             "expression": {
               "type": "SequenceExpression",
+              "start": 29,
+              "end": 35,
               "expressions": [
                 {
                   "type": "CallExpression",
+                  "start": 29,
+                  "end": 32,
                   "callee": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 29,
-                    "end": 30
+                    "end": 30,
+                    "name": "c"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 29,
-                  "end": 32
+                  "arguments": [
+                  ],
+                  "optional": false
                 },
                 {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 34,
-                  "end": 35
+                  "end": 35,
+                  "value": 1,
+                  "raw": "1"
                 }
-              ],
-              "start": 29,
-              "end": 35
-            },
-            "start": 28,
-            "end": 36
-          },
-          "start": 22,
-          "end": 36
-        },
-        "start": 22,
-        "end": 36
+              ]
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 37
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -77,5 +77,7 @@
       "start": 0,
       "end": 21
     }
+  ],
+  "errors": [
   ]
 }

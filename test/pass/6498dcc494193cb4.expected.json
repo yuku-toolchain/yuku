@@ -1,79 +1,81 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 11,
+    "sourceType": "script",
     "body": [
       {
         "type": "BlockStatement",
+        "start": 0,
+        "end": 11,
         "body": [
           {
             "type": "ExpressionStatement",
-            "expression": {
-              "type": "Literal",
-              "value": 1,
-              "raw": "1",
-              "start": 1,
-              "end": 2
-            },
             "start": 1,
-            "end": 2
+            "end": 2,
+            "expression": {
+              "type": "Literal",
+              "start": 1,
+              "end": 2,
+              "value": 1,
+              "raw": "1"
+            }
           },
           {
             "type": "ExpressionStatement",
-            "expression": {
-              "type": "Literal",
-              "value": 2,
-              "raw": "2",
-              "start": 3,
-              "end": 4
-            },
             "start": 3,
-            "end": 4
+            "end": 4,
+            "expression": {
+              "type": "Literal",
+              "start": 3,
+              "end": 4,
+              "value": 2,
+              "raw": "2"
+            }
           },
           {
             "type": "ExpressionStatement",
-            "expression": {
-              "type": "Literal",
-              "value": 3,
-              "raw": "3",
-              "start": 5,
-              "end": 6
-            },
             "start": 5,
-            "end": 6
+            "end": 6,
+            "expression": {
+              "type": "Literal",
+              "start": 5,
+              "end": 6,
+              "value": 3,
+              "raw": "3"
+            }
           },
           {
             "type": "ExpressionStatement",
-            "expression": {
-              "type": "Literal",
-              "value": 4,
-              "raw": "4",
-              "start": 7,
-              "end": 8
-            },
             "start": 7,
-            "end": 8
+            "end": 8,
+            "expression": {
+              "type": "Literal",
+              "start": 7,
+              "end": 8,
+              "value": 4,
+              "raw": "4"
+            }
           },
           {
             "type": "ExpressionStatement",
+            "start": 9,
+            "end": 10,
             "expression": {
               "type": "Literal",
-              "value": 5,
-              "raw": "5",
               "start": 9,
-              "end": 10
-            },
-            "start": 9,
-            "end": 10
+              "end": 10,
+              "value": 5,
+              "raw": "5"
+            }
           }
-        ],
-        "start": 0,
-        "end": 11
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 11
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

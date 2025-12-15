@@ -1,108 +1,110 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 48,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 8,
+        "end": 17,
         "expression": {
           "type": "CallExpression",
+          "start": 8,
+          "end": 16,
           "callee": {
             "type": "MemberExpression",
+            "start": 8,
+            "end": 11,
             "object": {
               "type": "Identifier",
-              "name": "a",
               "start": 8,
-              "end": 9
+              "end": 9,
+              "name": "a"
             },
             "property": {
               "type": "Identifier",
-              "name": "b",
               "start": 10,
-              "end": 11
+              "end": 11,
+              "name": "b"
             },
-            "optional": false,
             "computed": false,
-            "start": 8,
-            "end": 11
+            "optional": false
           },
           "arguments": [
             {
               "type": "Literal",
-              "value": "c",
-              "raw": "'c'",
               "start": 12,
-              "end": 15
+              "end": 15,
+              "value": "c",
+              "raw": "'c'"
             }
           ],
-          "optional": false,
-          "start": 8,
-          "end": 16
-        },
-        "start": 8,
-        "end": 17
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 27,
+        "end": 47,
         "expression": {
           "type": "CallExpression",
+          "start": 27,
+          "end": 46,
           "callee": {
             "type": "MemberExpression",
+            "start": 27,
+            "end": 32,
             "object": {
               "type": "MemberExpression",
+              "start": 27,
+              "end": 30,
               "object": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 27,
-                "end": 28
+                "end": 28,
+                "name": "a"
               },
               "property": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 29,
-                "end": 30
+                "end": 30,
+                "name": "b"
               },
-              "optional": false,
               "computed": false,
-              "start": 27,
-              "end": 30
+              "optional": false
             },
             "property": {
               "type": "Identifier",
-              "name": "d",
               "start": 31,
-              "end": 32
+              "end": 32,
+              "name": "d"
             },
-            "optional": false,
             "computed": false,
-            "start": 27,
-            "end": 32
+            "optional": false
           },
           "arguments": [
             {
               "type": "Identifier",
-              "name": "a",
               "start": 33,
-              "end": 34
+              "end": 34,
+              "name": "a"
             },
             {
               "type": "Identifier",
-              "name": "arguments",
               "start": 36,
-              "end": 45
+              "end": 45,
+              "name": "arguments"
             }
           ],
-          "optional": false,
-          "start": 27,
-          "end": 46
-        },
-        "start": 27,
-        "end": 47
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 48
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

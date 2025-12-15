@@ -1,74 +1,76 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 23,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "a",
-              "start": 4,
-              "end": 5
-            },
-            "init": {
-              "type": "Literal",
-              "value": 1,
-              "raw": "1",
-              "start": 8,
-              "end": 9
-            },
             "start": 4,
-            "end": 9
-          },
-          {
-            "type": "VariableDeclarator",
+            "end": 9,
             "id": {
               "type": "Identifier",
-              "name": "b",
-              "start": 11,
-              "end": 12
+              "start": 4,
+              "end": 5,
+              "name": "a"
             },
             "init": {
               "type": "Literal",
-              "value": 2,
-              "raw": "2",
-              "start": 15,
-              "end": 16
-            },
+              "start": 8,
+              "end": 9,
+              "value": 1,
+              "raw": "1"
+            }
+          },
+          {
+            "type": "VariableDeclarator",
             "start": 11,
-            "end": 16
-          },
-          {
-            "type": "VariableDeclarator",
+            "end": 16,
             "id": {
               "type": "Identifier",
-              "name": "c",
-              "start": 18,
-              "end": 19
+              "start": 11,
+              "end": 12,
+              "name": "b"
             },
             "init": {
               "type": "Literal",
-              "value": 3,
-              "raw": "3",
-              "start": 22,
-              "end": 23
-            },
+              "start": 15,
+              "end": 16,
+              "value": 2,
+              "raw": "2"
+            }
+          },
+          {
+            "type": "VariableDeclarator",
             "start": 18,
-            "end": 23
+            "end": 23,
+            "id": {
+              "type": "Identifier",
+              "start": 18,
+              "end": 19,
+              "name": "c"
+            },
+            "init": {
+              "type": "Literal",
+              "start": 22,
+              "end": 23,
+              "value": 3,
+              "raw": "3"
+            }
           }
-        ],
-        "start": 0,
-        "end": 23
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

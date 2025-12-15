@@ -1,56 +1,58 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 34,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 34,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "implements",
-              "start": 4,
-              "end": 14
-            },
-            "init": null,
             "start": 4,
-            "end": 14
+            "end": 14,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 14,
+              "name": "implements"
+            },
+            "init": null
           },
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "interface",
-              "start": 16,
-              "end": 25
-            },
-            "init": null,
             "start": 16,
-            "end": 25
+            "end": 25,
+            "id": {
+              "type": "Identifier",
+              "start": 16,
+              "end": 25,
+              "name": "interface"
+            },
+            "init": null
           },
           {
             "type": "VariableDeclarator",
+            "start": 27,
+            "end": 34,
             "id": {
               "type": "Identifier",
-              "name": "package",
               "start": 27,
-              "end": 34
+              "end": 34,
+              "name": "package"
             },
-            "init": null,
-            "start": 27,
-            "end": 34
+            "init": null
           }
-        ],
-        "start": 0,
-        "end": 34
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 34
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

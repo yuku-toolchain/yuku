@@ -1,25 +1,27 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 15,
         "expression": {
           "type": "Literal",
-          "value": "Hello\u0001World",
-          "raw": "\"Hello\\1World\"",
           "start": 0,
-          "end": 14
+          "end": 14,
+          "value": "Hello\u0001World",
+          "raw": "\"Hello\\1World\""
         },
-        "directive": "Hello\\1World",
-        "start": 0,
-        "end": 15
+        "directive": "Hello\\1World"
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 16
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

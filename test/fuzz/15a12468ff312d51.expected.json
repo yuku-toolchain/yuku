@@ -1,24 +1,26 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 15,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 14,
         "expression": {
           "type": "Literal",
-          "value": 6.02214179e+23,
-          "raw": "6.02214179e23",
           "start": 0,
-          "end": 13
-        },
-        "start": 0,
-        "end": 14
+          "end": 13,
+          "value": 602214179000000000000000,
+          "raw": "6.02214179e23"
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 15
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

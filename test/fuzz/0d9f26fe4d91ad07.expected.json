@@ -1,122 +1,124 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 25,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 0,
+          "end": 24,
           "operator": "=",
           "left": {
             "type": "ArrayPattern",
+            "start": 0,
+            "end": 18,
             "elements": [
               {
                 "type": "ObjectPattern",
+                "start": 1,
+                "end": 8,
                 "properties": [
                   {
                     "type": "Property",
+                    "start": 2,
+                    "end": 7,
                     "kind": "init",
                     "key": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 2,
-                      "end": 3
+                      "end": 3,
+                      "name": "a"
                     },
                     "value": {
                       "type": "AssignmentPattern",
+                      "start": 2,
+                      "end": 7,
                       "left": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 2,
-                        "end": 3
+                        "end": 3,
+                        "name": "a"
                       },
                       "right": {
                         "type": "Literal",
-                        "value": 1,
-                        "raw": "1",
                         "start": 6,
-                        "end": 7
-                      },
-                      "start": 2,
-                      "end": 7
+                        "end": 7,
+                        "value": 1,
+                        "raw": "1"
+                      }
                     },
                     "method": false,
                     "shorthand": true,
-                    "computed": false,
-                    "start": 2,
-                    "end": 7
+                    "computed": false
                   }
-                ],
-                "start": 1,
-                "end": 8
+                ]
               },
               {
                 "type": "ObjectPattern",
+                "start": 10,
+                "end": 17,
                 "properties": [
                   {
                     "type": "Property",
+                    "start": 11,
+                    "end": 16,
                     "kind": "init",
                     "key": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 11,
-                      "end": 12
+                      "end": 12,
+                      "name": "a"
                     },
                     "value": {
                       "type": "AssignmentPattern",
+                      "start": 11,
+                      "end": 16,
                       "left": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 11,
-                        "end": 12
+                        "end": 12,
+                        "name": "a"
                       },
                       "right": {
                         "type": "Literal",
-                        "value": 2,
-                        "raw": "2",
                         "start": 15,
-                        "end": 16
-                      },
-                      "start": 11,
-                      "end": 16
+                        "end": 16,
+                        "value": 2,
+                        "raw": "2"
+                      }
                     },
                     "method": false,
                     "shorthand": true,
-                    "computed": false,
-                    "start": 11,
-                    "end": 16
+                    "computed": false
                   }
-                ],
-                "start": 10,
-                "end": 17
+                ]
               }
-            ],
-            "start": 0,
-            "end": 18
+            ]
           },
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 21,
+            "end": 24,
             "expression": {
               "type": "Literal",
-              "value": 3,
-              "raw": "3",
               "start": 22,
-              "end": 23
-            },
-            "start": 21,
-            "end": 24
-          },
-          "start": 0,
-          "end": 24
-        },
-        "start": 0,
-        "end": 25
+              "end": 23,
+              "value": 3,
+              "raw": "3"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 26
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

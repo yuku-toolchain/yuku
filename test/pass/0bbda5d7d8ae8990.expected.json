@@ -1,73 +1,74 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 65,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 65,
           "body": [
             {
               "type": "WhileStatement",
+              "start": 30,
+              "end": 46,
               "test": {
                 "type": "Literal",
-                "value": true,
-                "raw": "true",
                 "start": 37,
-                "end": 41
+                "end": 41,
+                "value": true,
+                "raw": "true"
               },
               "body": {
                 "type": "BlockStatement",
-                "body": [],
                 "start": 43,
-                "end": 46
-              },
-              "start": 30,
-              "end": 46
+                "end": 46,
+                "body": [
+                ]
+              }
             },
             {
               "type": "VariableDeclaration",
+              "start": 57,
+              "end": 63,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 61,
+                  "end": 62,
                   "id": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 61,
-                    "end": 62
+                    "end": 62,
+                    "name": "b"
                   },
-                  "init": null,
-                  "start": 61,
-                  "end": 62
+                  "init": null
                 }
-              ],
-              "start": 57,
-              "end": 63
+              ]
             }
-          ],
-          "start": 13,
-          "end": 65
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 65
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 65
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Block",
@@ -81,5 +82,7 @@
       "start": 47,
       "end": 56
     }
+  ],
+  "errors": [
   ]
 }

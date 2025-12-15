@@ -1,33 +1,32 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 20,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
-            "init": null,
-            "start": 4,
-            "end": 5
+            "init": null
           }
-        ],
-        "start": 0,
-        "end": 20
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 20
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Block",
@@ -35,5 +34,7 @@
       "start": 6,
       "end": 19
     }
+  ],
+  "errors": [
   ]
 }

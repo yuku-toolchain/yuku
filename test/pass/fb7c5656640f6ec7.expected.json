@@ -1,99 +1,101 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 19,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 19,
         "expression": {
           "type": "TemplateLiteral",
+          "start": 0,
+          "end": 19,
           "quasis": [
             {
               "type": "TemplateElement",
+              "start": 1,
+              "end": 1,
               "value": {
                 "raw": "",
                 "cooked": ""
               },
-              "tail": false,
-              "start": 1,
-              "end": 1
+              "tail": false
             },
             {
               "type": "TemplateElement",
+              "start": 18,
+              "end": 18,
               "value": {
                 "raw": "",
                 "cooked": ""
               },
-              "tail": true,
-              "start": 18,
-              "end": 18
+              "tail": true
             }
           ],
           "expressions": [
             {
               "type": "MemberExpression",
+              "start": 3,
+              "end": 17,
               "object": {
                 "type": "CallExpression",
+                "start": 3,
+                "end": 14,
                 "callee": {
                   "type": "MemberExpression",
+                  "start": 3,
+                  "end": 9,
                   "object": {
                     "type": "Literal",
+                    "start": 3,
+                    "end": 7,
                     "value": {},
                     "raw": "/\\d/",
                     "regex": {
                       "pattern": "\\d",
                       "flags": ""
-                    },
-                    "start": 3,
-                    "end": 7
+                    }
                   },
                   "property": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 8,
-                    "end": 9
+                    "end": 9,
+                    "name": "a"
                   },
-                  "optional": false,
                   "computed": false,
-                  "start": 3,
-                  "end": 9
+                  "optional": false
                 },
                 "arguments": [
                   {
                     "type": "Literal",
-                    "value": "1",
-                    "raw": "'1'",
                     "start": 10,
-                    "end": 13
+                    "end": 13,
+                    "value": "1",
+                    "raw": "'1'"
                   }
                 ],
-                "optional": false,
-                "start": 3,
-                "end": 14
+                "optional": false
               },
               "property": {
                 "type": "Literal",
-                "value": 1,
-                "raw": "1",
                 "start": 15,
-                "end": 16
+                "end": 16,
+                "value": 1,
+                "raw": "1"
               },
-              "optional": false,
               "computed": true,
-              "start": 3,
-              "end": 17
+              "optional": false
             }
-          ],
-          "start": 0,
-          "end": 19
-        },
-        "start": 0,
-        "end": 19
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 19
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

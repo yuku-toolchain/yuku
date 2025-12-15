@@ -1,64 +1,68 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 34,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 34,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": null,
         "body": {
           "type": "ClassBody",
+          "start": 8,
+          "end": 34,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 9,
+              "end": 33,
               "decorators": [],
               "key": {
                 "type": "Literal",
-                "value": "prototype",
-                "raw": "\"prototype\"",
                 "start": 17,
-                "end": 28
+                "end": 28,
+                "value": "prototype",
+                "raw": "\"prototype\""
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 29,
+                "end": 33,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
-                  "body": [],
                   "start": 31,
-                  "end": 33
+                  "end": 33,
+                  "body": [
+                  ]
                 },
-                "expression": false,
-                "start": 29,
-                "end": 33
+                "expression": false
               },
               "kind": "method",
               "computed": true,
-              "static": true,
-              "start": 9,
-              "end": 33
+              "static": true
             }
-          ],
-          "start": 8,
-          "end": 34
-        },
-        "start": 0,
-        "end": 34
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 34
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

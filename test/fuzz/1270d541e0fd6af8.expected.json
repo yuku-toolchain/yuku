@@ -1,11 +1,14 @@
 {
   "program": {
     "type": "Program",
-    "body": [],
-    "sourceType": "script",
     "start": 0,
-    "end": 0
+    "end": 0,
+    "sourceType": "script",
+    "body": [
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

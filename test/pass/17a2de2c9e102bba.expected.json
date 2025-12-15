@@ -1,58 +1,58 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 40,
+    "sourceType": "script",
     "body": [
       {
         "type": "SwitchStatement",
+        "start": 0,
+        "end": 40,
         "discriminant": {
           "type": "Identifier",
-          "name": "a",
           "start": 8,
-          "end": 9
+          "end": 9,
+          "name": "a"
         },
         "cases": [
           {
             "type": "SwitchCase",
+            "start": 13,
+            "end": 38,
             "test": {
               "type": "Literal",
-              "value": 1,
-              "raw": "1",
               "start": 18,
-              "end": 19
+              "end": 19,
+              "value": 1,
+              "raw": "1"
             },
             "consequent": [
               {
                 "type": "ExpressionStatement",
+                "start": 35,
+                "end": 38,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 35,
+                  "end": 38,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 35,
-                    "end": 36
+                    "end": 36,
+                    "name": "b"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 35,
-                  "end": 38
-                },
-                "start": 35,
-                "end": 38
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
               }
-            ],
-            "start": 13,
-            "end": 38
+            ]
           }
-        ],
-        "start": 0,
-        "end": 40
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 40
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Block",
@@ -60,5 +60,7 @@
       "start": 21,
       "end": 34
     }
+  ],
+  "errors": [
   ]
 }

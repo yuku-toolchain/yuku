@@ -1,83 +1,86 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 27,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 27,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 26,
             "properties": [
               {
                 "type": "Property",
+                "start": 3,
+                "end": 24,
                 "kind": "get",
                 "key": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 7,
-                  "end": 8
+                  "end": 8,
+                  "name": "a"
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 8,
+                  "end": 24,
                   "id": null,
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
+                    "start": 10,
+                    "end": 24,
                     "body": [
                       {
                         "type": "ExpressionStatement",
+                        "start": 12,
+                        "end": 22,
                         "expression": {
                           "type": "MetaProperty",
+                          "start": 12,
+                          "end": 22,
                           "meta": {
                             "type": "Identifier",
-                            "name": "new",
                             "start": 12,
-                            "end": 15
+                            "end": 15,
+                            "name": "new"
                           },
                           "property": {
                             "type": "Identifier",
-                            "name": "target",
                             "start": 16,
-                            "end": 22
-                          },
-                          "start": 12,
-                          "end": 22
-                        },
-                        "start": 12,
-                        "end": 22
+                            "end": 22,
+                            "name": "target"
+                          }
+                        }
                       }
-                    ],
-                    "start": 10,
-                    "end": 24
+                    ]
                   },
-                  "expression": false,
-                  "start": 8,
-                  "end": 24
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 3,
-                "end": 24
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 26
-          },
-          "start": 0,
-          "end": 27
-        },
-        "start": 0,
-        "end": 27
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 27
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

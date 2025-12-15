@@ -1,77 +1,81 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 35,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 34,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 34,
           "body": [
             {
               "type": "IfStatement",
+              "start": 17,
+              "end": 32,
               "test": {
                 "type": "LogicalExpression",
+                "start": 21,
+                "end": 30,
                 "left": {
                   "type": "UnaryExpression",
+                  "start": 21,
+                  "end": 23,
                   "operator": "!",
+                  "prefix": true,
                   "argument": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 22,
-                    "end": 23
-                  },
-                  "prefix": true,
-                  "start": 21,
-                  "end": 23
+                    "end": 23,
+                    "name": "b"
+                  }
                 },
                 "operator": "||",
                 "right": {
                   "type": "CallExpression",
+                  "start": 27,
+                  "end": 30,
                   "callee": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 27,
-                    "end": 28
+                    "end": 28,
+                    "name": "c"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 27,
-                  "end": 30
-                },
-                "start": 21,
-                "end": 30
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
               },
               "consequent": {
                 "type": "EmptyStatement",
                 "start": 31,
                 "end": 32
               },
-              "alternate": null,
-              "start": 17,
-              "end": 32
+              "alternate": null
             }
-          ],
-          "start": 13,
-          "end": 34
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 34
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 35
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

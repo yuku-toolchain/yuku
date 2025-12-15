@@ -1,72 +1,76 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 37,
+    "sourceType": "script",
     "body": [
       {
         "type": "WhileStatement",
+        "start": 0,
+        "end": 36,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 7,
-          "end": 8
+          "end": 8,
+          "name": "a"
         },
         "body": {
           "type": "BlockStatement",
+          "start": 10,
+          "end": 36,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 14,
+              "end": 18,
               "expression": {
                 "type": "CallExpression",
+                "start": 14,
+                "end": 17,
                 "callee": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 14,
-                  "end": 15
+                  "end": 15,
+                  "name": "b"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 14,
-                "end": 17
-              },
-              "start": 14,
-              "end": 18
+                "arguments": [
+                ],
+                "optional": false
+              }
             },
             {
               "type": "ExpressionStatement",
+              "start": 21,
+              "end": 25,
               "expression": {
                 "type": "CallExpression",
+                "start": 21,
+                "end": 24,
                 "callee": {
                   "type": "Identifier",
-                  "name": "c",
                   "start": 21,
-                  "end": 22
+                  "end": 22,
+                  "name": "c"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 21,
-                "end": 24
-              },
-              "start": 21,
-              "end": 25
+                "arguments": [
+                ],
+                "optional": false
+              }
             },
             {
               "type": "BreakStatement",
-              "label": null,
               "start": 28,
-              "end": 34
+              "end": 34,
+              "label": null
             }
-          ],
-          "start": 10,
-          "end": 36
-        },
-        "start": 0,
-        "end": 36
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 37
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

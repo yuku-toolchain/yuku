@@ -1,61 +1,63 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 25,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 24,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
             "init": {
               "type": "ObjectExpression",
+              "start": 8,
+              "end": 24,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 14,
+                  "end": 22,
                   "kind": "init",
                   "key": {
                     "type": "Literal",
-                    "value": "0",
-                    "raw": "'0'",
                     "start": 14,
-                    "end": 17
+                    "end": 17,
+                    "value": "0",
+                    "raw": "'0'"
                   },
                   "value": {
                     "type": "Literal",
-                    "value": "b",
-                    "raw": "'b'",
                     "start": 19,
-                    "end": 22
+                    "end": 22,
+                    "value": "b",
+                    "raw": "'b'"
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 14,
-                  "end": 22
+                  "computed": false
                 }
-              ],
-              "start": 8,
-              "end": 24
-            },
-            "start": 4,
-            "end": 24
+              ]
+            }
           }
-        ],
-        "start": 0,
-        "end": 25
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 26
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

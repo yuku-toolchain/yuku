@@ -1,136 +1,136 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 91,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 91,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 90,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
             "init": {
               "type": "LogicalExpression",
+              "start": 8,
+              "end": 90,
               "left": {
                 "type": "LogicalExpression",
+                "start": 8,
+                "end": 79,
                 "left": {
                   "type": "LogicalExpression",
+                  "start": 8,
+                  "end": 62,
                   "left": {
                     "type": "UnaryExpression",
+                    "start": 8,
+                    "end": 10,
                     "operator": "!",
+                    "prefix": true,
                     "argument": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 9,
-                      "end": 10
-                    },
-                    "prefix": true,
-                    "start": 8,
-                    "end": 10
+                      "end": 10,
+                      "name": "b"
+                    }
                   },
                   "operator": "&&",
                   "right": {
                     "type": "ParenthesizedExpression",
+                    "start": 53,
+                    "end": 62,
                     "expression": {
                       "type": "LogicalExpression",
+                      "start": 54,
+                      "end": 61,
                       "left": {
                         "type": "UnaryExpression",
+                        "start": 54,
+                        "end": 56,
                         "operator": "!",
+                        "prefix": true,
                         "argument": {
                           "type": "Identifier",
-                          "name": "c",
                           "start": 55,
-                          "end": 56
-                        },
-                        "prefix": true,
-                        "start": 54,
-                        "end": 56
+                          "end": 56,
+                          "name": "c"
+                        }
                       },
                       "operator": "||",
                       "right": {
                         "type": "Identifier",
-                        "name": "d",
                         "start": 60,
-                        "end": 61
-                      },
-                      "start": 54,
-                      "end": 61
-                    },
-                    "start": 53,
-                    "end": 62
-                  },
-                  "start": 8,
-                  "end": 62
+                        "end": 61,
+                        "name": "d"
+                      }
+                    }
+                  }
                 },
                 "operator": "&&",
                 "right": {
                   "type": "ParenthesizedExpression",
+                  "start": 70,
+                  "end": 79,
                   "expression": {
                     "type": "LogicalExpression",
+                    "start": 71,
+                    "end": 78,
                     "left": {
                       "type": "UnaryExpression",
+                      "start": 71,
+                      "end": 73,
                       "operator": "!",
+                      "prefix": true,
                       "argument": {
                         "type": "Identifier",
-                        "name": "e",
                         "start": 72,
-                        "end": 73
-                      },
-                      "prefix": true,
-                      "start": 71,
-                      "end": 73
+                        "end": 73,
+                        "name": "e"
+                      }
                     },
                     "operator": "||",
                     "right": {
                       "type": "Identifier",
-                      "name": "f",
                       "start": 77,
-                      "end": 78
-                    },
-                    "start": 71,
-                    "end": 78
-                  },
-                  "start": 70,
-                  "end": 79
-                },
-                "start": 8,
-                "end": 79
+                      "end": 78,
+                      "name": "f"
+                    }
+                  }
+                }
               },
               "operator": "&&",
               "right": {
                 "type": "CallExpression",
+                "start": 87,
+                "end": 90,
                 "callee": {
                   "type": "Identifier",
-                  "name": "g",
                   "start": 87,
-                  "end": 88
+                  "end": 88,
+                  "name": "g"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 87,
-                "end": 90
-              },
-              "start": 8,
-              "end": 90
-            },
-            "start": 4,
-            "end": 90
+                "arguments": [
+                ],
+                "optional": false
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 91
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 91
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -138,5 +138,7 @@
       "start": 20,
       "end": 48
     }
+  ],
+  "errors": [
   ]
 }

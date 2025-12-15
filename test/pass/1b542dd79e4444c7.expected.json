@@ -1,27 +1,31 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "module",
     "body": [
       {
         "type": "ImportDeclaration",
-        "specifiers": [],
+        "start": 0,
+        "end": 21,
+        "specifiers": [
+        ],
         "source": {
           "type": "Literal",
-          "value": "foo",
-          "raw": "\"foo\"",
           "start": 15,
-          "end": 20
+          "end": 20,
+          "value": "foo",
+          "raw": "\"foo\""
         },
         "phase": null,
-        "attributes": [],
-        "start": 0,
-        "end": 21
+        "attributes": [
+        ]
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

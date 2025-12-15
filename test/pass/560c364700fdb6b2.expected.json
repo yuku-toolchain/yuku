@@ -1,138 +1,142 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 75,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 74,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 73,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 72,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 70,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 12,
+                "end": 70,
                 "body": [
                   {
                     "type": "VariableDeclaration",
+                    "start": 16,
+                    "end": 26,
                     "kind": "var",
                     "declarations": [
                       {
                         "type": "VariableDeclarator",
+                        "start": 20,
+                        "end": 25,
                         "id": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 20,
-                          "end": 21
+                          "end": 21,
+                          "name": "a"
                         },
                         "init": {
                           "type": "Literal",
-                          "value": 1,
-                          "raw": "1",
                           "start": 24,
-                          "end": 25
-                        },
-                        "start": 20,
-                        "end": 25
+                          "end": 25,
+                          "value": 1,
+                          "raw": "1"
+                        }
                       }
-                    ],
-                    "start": 16,
-                    "end": 26
+                    ]
                   },
                   {
                     "type": "ExpressionStatement",
+                    "start": 29,
+                    "end": 31,
                     "expression": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 29,
-                      "end": 30
-                    },
-                    "start": 29,
-                    "end": 31
+                      "end": 30,
+                      "name": "a"
+                    }
                   },
                   {
                     "type": "VariableDeclaration",
+                    "start": 34,
+                    "end": 44,
                     "kind": "var",
                     "declarations": [
                       {
                         "type": "VariableDeclarator",
+                        "start": 38,
+                        "end": 43,
                         "id": {
                           "type": "Identifier",
-                          "name": "b",
                           "start": 38,
-                          "end": 39
+                          "end": 39,
+                          "name": "b"
                         },
                         "init": {
                           "type": "Literal",
-                          "value": 2,
-                          "raw": "2",
                           "start": 42,
-                          "end": 43
-                        },
-                        "start": 38,
-                        "end": 43
+                          "end": 43,
+                          "value": 2,
+                          "raw": "2"
+                        }
                       }
-                    ],
-                    "start": 34,
-                    "end": 44
+                    ]
                   },
                   {
                     "type": "WithStatement",
+                    "start": 47,
+                    "end": 68,
                     "object": {
                       "type": "Identifier",
-                      "name": "c",
                       "start": 53,
-                      "end": 54
+                      "end": 54,
+                      "name": "c"
                     },
                     "body": {
                       "type": "BlockStatement",
+                      "start": 56,
+                      "end": 68,
                       "body": [
                         {
                           "type": "ExpressionStatement",
+                          "start": 62,
+                          "end": 64,
                           "expression": {
                             "type": "Identifier",
-                            "name": "b",
                             "start": 62,
-                            "end": 63
-                          },
-                          "start": 62,
-                          "end": 64
+                            "end": 63,
+                            "name": "b"
+                          }
                         }
-                      ],
-                      "start": 56,
-                      "end": 68
-                    },
-                    "start": 47,
-                    "end": 68
+                      ]
+                    }
                   }
-                ],
-                "start": 12,
-                "end": 70
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 70
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 72
-          },
-          "start": 0,
-          "end": 73
-        },
-        "start": 0,
-        "end": 74
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 75
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

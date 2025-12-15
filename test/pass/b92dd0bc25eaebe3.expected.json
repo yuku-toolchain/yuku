@@ -1,97 +1,96 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 92,
+    "sourceType": "script",
     "body": [
       {
         "type": "LabeledStatement",
+        "start": 44,
+        "end": 91,
         "label": {
           "type": "Identifier",
-          "name": "d",
           "start": 44,
-          "end": 45
+          "end": 45,
+          "name": "d"
         },
         "body": {
           "type": "ForInStatement",
+          "start": 47,
+          "end": 91,
           "left": {
             "type": "VariableDeclaration",
+            "start": 51,
+            "end": 56,
             "kind": "var",
             "declarations": [
               {
                 "type": "VariableDeclarator",
+                "start": 55,
+                "end": 56,
                 "id": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 55,
-                  "end": 56
+                  "end": 56,
+                  "name": "a"
                 },
-                "init": null,
-                "start": 55,
-                "end": 56
+                "init": null
               }
-            ],
-            "start": 51,
-            "end": 56
+            ]
           },
           "right": {
             "type": "Identifier",
-            "name": "b",
             "start": 60,
-            "end": 61
+            "end": 61,
+            "name": "b"
           },
           "body": {
             "type": "ForInStatement",
+            "start": 63,
+            "end": 91,
             "left": {
               "type": "VariableDeclaration",
+              "start": 68,
+              "end": 73,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 72,
+                  "end": 73,
                   "id": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 72,
-                    "end": 73
+                    "end": 73,
+                    "name": "c"
                   },
-                  "init": null,
-                  "start": 72,
-                  "end": 73
+                  "init": null
                 }
-              ],
-              "start": 68,
-              "end": 73
+              ]
             },
             "right": {
               "type": "Identifier",
-              "name": "b",
               "start": 77,
-              "end": 78
+              "end": 78,
+              "name": "b"
             },
             "body": {
               "type": "ContinueStatement",
+              "start": 80,
+              "end": 91,
               "label": {
                 "type": "Identifier",
-                "name": "d",
                 "start": 89,
-                "end": 90
-              },
-              "start": 80,
-              "end": 91
-            },
-            "start": 63,
-            "end": 91
-          },
-          "start": 47,
-          "end": 91
-        },
-        "start": 44,
-        "end": 91
+                "end": 90,
+                "name": "d"
+              }
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 92
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -99,5 +98,7 @@
       "start": 0,
       "end": 43
     }
+  ],
+  "errors": [
   ]
 }

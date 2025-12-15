@@ -1,38 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 19,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 18,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 17,
           "expression": {
             "type": "FunctionExpression",
+            "start": 1,
+            "end": 16,
             "id": null,
             "generator": true,
             "async": false,
-            "params": [],
+            "params": [
+            ],
             "body": {
               "type": "BlockStatement",
-              "body": [],
               "start": 14,
-              "end": 16
+              "end": 16,
+              "body": [
+              ]
             },
-            "expression": false,
-            "start": 1,
-            "end": 16
-          },
-          "start": 0,
-          "end": 17
-        },
-        "start": 0,
-        "end": 18
+            "expression": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 19
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

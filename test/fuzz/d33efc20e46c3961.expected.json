@@ -1,45 +1,48 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 14,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": false,
+          "start": 0,
+          "end": 12,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "RestElement",
+              "start": 1,
+              "end": 5,
               "argument": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 4,
-                "end": 5
-              },
-              "start": 1,
-              "end": 5
+                "end": 5,
+                "name": "a"
+              }
             }
           ],
           "body": {
             "type": "BlockStatement",
-            "body": [],
             "start": 10,
-            "end": 12
+            "end": 12,
+            "body": [
+            ]
           },
-          "id": null,
-          "generator": false,
-          "start": 0,
-          "end": 12
-        },
-        "start": 0,
-        "end": 13
+          "expression": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 14
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

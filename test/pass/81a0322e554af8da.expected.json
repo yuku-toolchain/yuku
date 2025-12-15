@@ -1,91 +1,95 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 46,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 45,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 44,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 43,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 41,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 13,
+                "end": 41,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 39,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 19,
+                      "end": 38,
                       "callee": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 19,
-                        "end": 20
+                        "end": 20,
+                        "name": "a"
                       },
                       "arguments": [
                         {
                           "type": "BinaryExpression",
+                          "start": 21,
+                          "end": 37,
                           "left": {
                             "type": "UnaryExpression",
+                            "start": 21,
+                            "end": 29,
                             "operator": "typeof",
+                            "prefix": true,
                             "argument": {
                               "type": "Identifier",
-                              "name": "b",
                               "start": 28,
-                              "end": 29
-                            },
-                            "prefix": true,
-                            "start": 21,
-                            "end": 29
+                              "end": 29,
+                              "name": "b"
+                            }
                           },
                           "operator": "===",
                           "right": {
                             "type": "Literal",
-                            "value": "c",
-                            "raw": "'c'",
                             "start": 34,
-                            "end": 37
-                          },
-                          "start": 21,
-                          "end": 37
+                            "end": 37,
+                            "value": "c",
+                            "raw": "'c'"
+                          }
                         }
                       ],
-                      "optional": false,
-                      "start": 19,
-                      "end": 38
-                    },
-                    "start": 19,
-                    "end": 39
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 13,
-                "end": 41
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 41
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 43
-          },
-          "start": 0,
-          "end": 44
-        },
-        "start": 0,
-        "end": 45
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 46
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

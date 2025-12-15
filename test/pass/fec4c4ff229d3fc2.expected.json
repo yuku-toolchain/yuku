@@ -1,626 +1,635 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 217,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 23,
         "expression": {
           "type": "CallExpression",
+          "start": 0,
+          "end": 22,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 0,
-            "end": 1
+            "end": 1,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 2,
+              "end": 21,
               "left": {
                 "type": "BinaryExpression",
+                "start": 2,
+                "end": 15,
                 "left": {
                   "type": "BinaryExpression",
+                  "start": 2,
+                  "end": 9,
                   "left": {
                     "type": "CallExpression",
+                    "start": 2,
+                    "end": 5,
                     "callee": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 2,
-                      "end": 3
+                      "end": 3,
+                      "name": "b"
                     },
-                    "arguments": [],
-                    "optional": false,
-                    "start": 2,
-                    "end": 5
+                    "arguments": [
+                    ],
+                    "optional": false
                   },
                   "operator": "+",
                   "right": {
                     "type": "Literal",
-                    "value": 1,
-                    "raw": "1",
                     "start": 8,
-                    "end": 9
-                  },
-                  "start": 2,
-                  "end": 9
+                    "end": 9,
+                    "value": 1,
+                    "raw": "1"
+                  }
                 },
                 "operator": "+",
                 "right": {
                   "type": "Literal",
-                  "value": "c",
-                  "raw": "\"c\"",
                   "start": 12,
-                  "end": 15
-                },
-                "start": 2,
-                "end": 15
+                  "end": 15,
+                  "value": "c",
+                  "raw": "\"c\""
+                }
               },
               "operator": "+",
               "right": {
                 "type": "Literal",
-                "value": "d",
-                "raw": "\"d\"",
                 "start": 18,
-                "end": 21
-              },
-              "start": 2,
-              "end": 21
+                "end": 21,
+                "value": "d",
+                "raw": "\"d\""
+              }
             }
           ],
-          "optional": false,
-          "start": 0,
-          "end": 22
-        },
-        "start": 0,
-        "end": 23
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 24,
+        "end": 49,
         "expression": {
           "type": "CallExpression",
+          "start": 24,
+          "end": 48,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 24,
-            "end": 25
+            "end": 25,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 26,
+              "end": 47,
               "left": {
                 "type": "BinaryExpression",
+                "start": 26,
+                "end": 41,
                 "left": {
                   "type": "CallExpression",
+                  "start": 26,
+                  "end": 29,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 26,
-                    "end": 27
+                    "end": 27,
+                    "name": "b"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 26,
-                  "end": 29
+                  "arguments": [
+                  ],
+                  "optional": false
                 },
                 "operator": "+",
                 "right": {
                   "type": "ParenthesizedExpression",
+                  "start": 32,
+                  "end": 41,
                   "expression": {
                     "type": "BinaryExpression",
+                    "start": 33,
+                    "end": 40,
                     "left": {
                       "type": "Literal",
-                      "value": 2,
-                      "raw": "2",
                       "start": 33,
-                      "end": 34
+                      "end": 34,
+                      "value": 2,
+                      "raw": "2"
                     },
                     "operator": "+",
                     "right": {
                       "type": "Literal",
-                      "value": "c",
-                      "raw": "\"c\"",
                       "start": 37,
-                      "end": 40
-                    },
-                    "start": 33,
-                    "end": 40
-                  },
-                  "start": 32,
-                  "end": 41
-                },
-                "start": 26,
-                "end": 41
+                      "end": 40,
+                      "value": "c",
+                      "raw": "\"c\""
+                    }
+                  }
+                }
               },
               "operator": "+",
               "right": {
                 "type": "Literal",
-                "value": "d",
-                "raw": "\"d\"",
                 "start": 44,
-                "end": 47
-              },
-              "start": 26,
-              "end": 47
+                "end": 47,
+                "value": "d",
+                "raw": "\"d\""
+              }
             }
           ],
-          "optional": false,
-          "start": 24,
-          "end": 48
-        },
-        "start": 24,
-        "end": 49
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 50,
+        "end": 75,
         "expression": {
           "type": "CallExpression",
+          "start": 50,
+          "end": 74,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 50,
-            "end": 51
+            "end": 51,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 52,
+              "end": 73,
               "left": {
                 "type": "BinaryExpression",
+                "start": 52,
+                "end": 67,
                 "left": {
                   "type": "ParenthesizedExpression",
+                  "start": 52,
+                  "end": 61,
                   "expression": {
                     "type": "BinaryExpression",
+                    "start": 53,
+                    "end": 60,
                     "left": {
                       "type": "CallExpression",
+                      "start": 53,
+                      "end": 56,
                       "callee": {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 53,
-                        "end": 54
+                        "end": 54,
+                        "name": "b"
                       },
-                      "arguments": [],
-                      "optional": false,
-                      "start": 53,
-                      "end": 56
+                      "arguments": [
+                      ],
+                      "optional": false
                     },
                     "operator": "+",
                     "right": {
                       "type": "Literal",
-                      "value": 3,
-                      "raw": "3",
                       "start": 59,
-                      "end": 60
-                    },
-                    "start": 53,
-                    "end": 60
-                  },
-                  "start": 52,
-                  "end": 61
+                      "end": 60,
+                      "value": 3,
+                      "raw": "3"
+                    }
+                  }
                 },
                 "operator": "+",
                 "right": {
                   "type": "Literal",
-                  "value": "c",
-                  "raw": "\"c\"",
                   "start": 64,
-                  "end": 67
-                },
-                "start": 52,
-                "end": 67
+                  "end": 67,
+                  "value": "c",
+                  "raw": "\"c\""
+                }
               },
               "operator": "+",
               "right": {
                 "type": "Literal",
-                "value": "d",
-                "raw": "\"d\"",
                 "start": 70,
-                "end": 73
-              },
-              "start": 52,
-              "end": 73
+                "end": 73,
+                "value": "d",
+                "raw": "\"d\""
+              }
             }
           ],
-          "optional": false,
-          "start": 50,
-          "end": 74
-        },
-        "start": 50,
-        "end": 75
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 76,
+        "end": 113,
         "expression": {
           "type": "CallExpression",
+          "start": 76,
+          "end": 112,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 76,
-            "end": 77
+            "end": 77,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 78,
+              "end": 111,
               "left": {
                 "type": "BinaryExpression",
+                "start": 78,
+                "end": 97,
                 "left": {
                   "type": "BinaryExpression",
+                  "start": 78,
+                  "end": 91,
                   "left": {
                     "type": "BinaryExpression",
+                    "start": 78,
+                    "end": 85,
                     "left": {
                       "type": "CallExpression",
+                      "start": 78,
+                      "end": 81,
                       "callee": {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 78,
-                        "end": 79
+                        "end": 79,
+                        "name": "b"
                       },
-                      "arguments": [],
-                      "optional": false,
-                      "start": 78,
-                      "end": 81
+                      "arguments": [
+                      ],
+                      "optional": false
                     },
                     "operator": "+",
                     "right": {
                       "type": "Literal",
-                      "value": 4,
-                      "raw": "4",
                       "start": 84,
-                      "end": 85
-                    },
-                    "start": 78,
-                    "end": 85
+                      "end": 85,
+                      "value": 4,
+                      "raw": "4"
+                    }
                   },
                   "operator": "+",
                   "right": {
                     "type": "Literal",
-                    "value": "c",
-                    "raw": "\"c\"",
                     "start": 88,
-                    "end": 91
-                  },
-                  "start": 78,
-                  "end": 91
+                    "end": 91,
+                    "value": "c",
+                    "raw": "\"c\""
+                  }
                 },
                 "operator": "+",
                 "right": {
                   "type": "Literal",
-                  "value": "d",
-                  "raw": "\"d\"",
                   "start": 94,
-                  "end": 97
-                },
-                "start": 78,
-                "end": 97
+                  "end": 97,
+                  "value": "d",
+                  "raw": "\"d\""
+                }
               },
               "operator": "+",
               "right": {
                 "type": "ParenthesizedExpression",
+                "start": 100,
+                "end": 111,
                 "expression": {
                   "type": "BinaryExpression",
+                  "start": 101,
+                  "end": 110,
                   "left": {
                     "type": "Literal",
-                    "value": "e",
-                    "raw": "\"e\"",
                     "start": 101,
-                    "end": 104
+                    "end": 104,
+                    "value": "e",
+                    "raw": "\"e\""
                   },
                   "operator": "+",
                   "right": {
                     "type": "Literal",
-                    "value": "f",
-                    "raw": "\"f\"",
                     "start": 107,
-                    "end": 110
-                  },
-                  "start": 101,
-                  "end": 110
-                },
-                "start": 100,
-                "end": 111
-              },
-              "start": 78,
-              "end": 111
+                    "end": 110,
+                    "value": "f",
+                    "raw": "\"f\""
+                  }
+                }
+              }
             }
           ],
-          "optional": false,
-          "start": 76,
-          "end": 112
-        },
-        "start": 76,
-        "end": 113
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 114,
+        "end": 163,
         "expression": {
           "type": "CallExpression",
+          "start": 114,
+          "end": 162,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 114,
-            "end": 115
+            "end": 115,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 116,
+              "end": 161,
               "left": {
                 "type": "BinaryExpression",
+                "start": 116,
+                "end": 147,
                 "left": {
                   "type": "BinaryExpression",
+                  "start": 116,
+                  "end": 141,
                   "left": {
                     "type": "BinaryExpression",
+                    "start": 116,
+                    "end": 135,
                     "left": {
                       "type": "BinaryExpression",
+                      "start": 116,
+                      "end": 131,
                       "left": {
                         "type": "BinaryExpression",
+                        "start": 116,
+                        "end": 125,
                         "left": {
                           "type": "Literal",
-                          "value": "e",
-                          "raw": "\"e\"",
                           "start": 116,
-                          "end": 119
+                          "end": 119,
+                          "value": "e",
+                          "raw": "\"e\""
                         },
                         "operator": "+",
                         "right": {
                           "type": "Literal",
-                          "value": "f",
-                          "raw": "\"f\"",
                           "start": 122,
-                          "end": 125
-                        },
-                        "start": 116,
-                        "end": 125
+                          "end": 125,
+                          "value": "f",
+                          "raw": "\"f\""
+                        }
                       },
                       "operator": "+",
                       "right": {
                         "type": "CallExpression",
+                        "start": 128,
+                        "end": 131,
                         "callee": {
                           "type": "Identifier",
-                          "name": "b",
                           "start": 128,
-                          "end": 129
+                          "end": 129,
+                          "name": "b"
                         },
-                        "arguments": [],
-                        "optional": false,
-                        "start": 128,
-                        "end": 131
-                      },
-                      "start": 116,
-                      "end": 131
+                        "arguments": [
+                        ],
+                        "optional": false
+                      }
                     },
                     "operator": "+",
                     "right": {
                       "type": "Literal",
-                      "value": 5,
-                      "raw": "5",
                       "start": 134,
-                      "end": 135
-                    },
-                    "start": 116,
-                    "end": 135
+                      "end": 135,
+                      "value": 5,
+                      "raw": "5"
+                    }
                   },
                   "operator": "+",
                   "right": {
                     "type": "Literal",
-                    "value": "c",
-                    "raw": "\"c\"",
                     "start": 138,
-                    "end": 141
-                  },
-                  "start": 116,
-                  "end": 141
+                    "end": 141,
+                    "value": "c",
+                    "raw": "\"c\""
+                  }
                 },
                 "operator": "+",
                 "right": {
                   "type": "Literal",
-                  "value": "d",
-                  "raw": "\"d\"",
                   "start": 144,
-                  "end": 147
-                },
-                "start": 116,
-                "end": 147
+                  "end": 147,
+                  "value": "d",
+                  "raw": "\"d\""
+                }
               },
               "operator": "+",
               "right": {
                 "type": "ParenthesizedExpression",
+                "start": 150,
+                "end": 161,
                 "expression": {
                   "type": "BinaryExpression",
+                  "start": 151,
+                  "end": 160,
                   "left": {
                     "type": "Literal",
-                    "value": "e",
-                    "raw": "\"e\"",
                     "start": 151,
-                    "end": 154
+                    "end": 154,
+                    "value": "e",
+                    "raw": "\"e\""
                   },
                   "operator": "+",
                   "right": {
                     "type": "Literal",
-                    "value": "f",
-                    "raw": "\"f\"",
                     "start": 157,
-                    "end": 160
-                  },
-                  "start": 151,
-                  "end": 160
-                },
-                "start": 150,
-                "end": 161
-              },
-              "start": 116,
-              "end": 161
+                    "end": 160,
+                    "value": "f",
+                    "raw": "\"f\""
+                  }
+                }
+              }
             }
           ],
-          "optional": false,
-          "start": 114,
-          "end": 162
-        },
-        "start": 114,
-        "end": 163
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 164,
+        "end": 187,
         "expression": {
           "type": "CallExpression",
+          "start": 164,
+          "end": 186,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 164,
-            "end": 165
+            "end": 165,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 166,
+              "end": 185,
               "left": {
                 "type": "BinaryExpression",
+                "start": 166,
+                "end": 179,
                 "left": {
                   "type": "BinaryExpression",
+                  "start": 166,
+                  "end": 175,
                   "left": {
                     "type": "Literal",
-                    "value": "c",
-                    "raw": "\"c\"",
                     "start": 166,
-                    "end": 169
+                    "end": 169,
+                    "value": "c",
+                    "raw": "\"c\""
                   },
                   "operator": "+",
                   "right": {
                     "type": "CallExpression",
+                    "start": 172,
+                    "end": 175,
                     "callee": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 172,
-                      "end": 173
+                      "end": 173,
+                      "name": "b"
                     },
-                    "arguments": [],
-                    "optional": false,
-                    "start": 172,
-                    "end": 175
-                  },
-                  "start": 166,
-                  "end": 175
+                    "arguments": [
+                    ],
+                    "optional": false
+                  }
                 },
                 "operator": "+",
                 "right": {
                   "type": "Literal",
-                  "value": 6,
-                  "raw": "6",
                   "start": 178,
-                  "end": 179
-                },
-                "start": 166,
-                "end": 179
+                  "end": 179,
+                  "value": 6,
+                  "raw": "6"
+                }
               },
               "operator": "+",
               "right": {
                 "type": "Literal",
-                "value": "d",
-                "raw": "\"d\"",
                 "start": 182,
-                "end": 185
-              },
-              "start": 166,
-              "end": 185
+                "end": 185,
+                "value": "d",
+                "raw": "\"d\""
+              }
             }
           ],
-          "optional": false,
-          "start": 164,
-          "end": 186
-        },
-        "start": 164,
-        "end": 187
+          "optional": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 188,
+        "end": 217,
         "expression": {
           "type": "CallExpression",
+          "start": 188,
+          "end": 216,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 188,
-            "end": 189
+            "end": 189,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "BinaryExpression",
+              "start": 190,
+              "end": 215,
               "left": {
                 "type": "BinaryExpression",
+                "start": 190,
+                "end": 199,
                 "left": {
                   "type": "CallExpression",
+                  "start": 190,
+                  "end": 193,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 190,
-                    "end": 191
+                    "end": 191,
+                    "name": "b"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 190,
-                  "end": 193
+                  "arguments": [
+                  ],
+                  "optional": false
                 },
                 "operator": "+",
                 "right": {
                   "type": "Literal",
-                  "value": "e",
-                  "raw": "'e'",
                   "start": 196,
-                  "end": 199
-                },
-                "start": 190,
-                "end": 199
+                  "end": 199,
+                  "value": "e",
+                  "raw": "'e'"
+                }
               },
               "operator": "+",
               "right": {
                 "type": "ParenthesizedExpression",
+                "start": 202,
+                "end": 215,
                 "expression": {
                   "type": "BinaryExpression",
+                  "start": 203,
+                  "end": 214,
                   "left": {
                     "type": "Literal",
-                    "value": 7,
-                    "raw": "7",
                     "start": 203,
-                    "end": 204
+                    "end": 204,
+                    "value": 7,
+                    "raw": "7"
                   },
                   "operator": "+",
                   "right": {
                     "type": "CallExpression",
+                    "start": 207,
+                    "end": 214,
                     "callee": {
                       "type": "Identifier",
-                      "name": "g",
                       "start": 207,
-                      "end": 208
+                      "end": 208,
+                      "name": "g"
                     },
                     "arguments": [
                       {
                         "type": "Literal",
-                        "value": "10",
-                        "raw": "'10'",
                         "start": 209,
-                        "end": 213
+                        "end": 213,
+                        "value": "10",
+                        "raw": "'10'"
                       }
                     ],
-                    "optional": false,
-                    "start": 207,
-                    "end": 214
-                  },
-                  "start": 203,
-                  "end": 214
-                },
-                "start": 202,
-                "end": 215
-              },
-              "start": 190,
-              "end": 215
+                    "optional": false
+                  }
+                }
+              }
             }
           ],
-          "optional": false,
-          "start": 188,
-          "end": 216
-        },
-        "start": 188,
-        "end": 217
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 217
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

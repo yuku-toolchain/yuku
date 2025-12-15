@@ -1,86 +1,89 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 37,
+    "sourceType": "script",
     "body": [
       {
         "type": "TryStatement",
+        "start": 0,
+        "end": 36,
         "block": {
           "type": "BlockStatement",
+          "start": 4,
+          "end": 14,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 8,
+              "end": 12,
               "expression": {
                 "type": "CallExpression",
+                "start": 8,
+                "end": 11,
                 "callee": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 8,
-                  "end": 9
+                  "end": 9,
+                  "name": "a"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 8,
-                "end": 11
-              },
-              "start": 8,
-              "end": 12
+                "arguments": [
+                ],
+                "optional": false
+              }
             }
-          ],
-          "start": 4,
-          "end": 14
+          ]
         },
         "handler": {
           "type": "CatchClause",
+          "start": 15,
+          "end": 36,
           "param": {
             "type": "Identifier",
-            "name": "b",
             "start": 22,
-            "end": 23
+            "end": 23,
+            "name": "b"
           },
           "body": {
             "type": "BlockStatement",
+            "start": 25,
+            "end": 36,
             "body": [
               {
                 "type": "ExpressionStatement",
+                "start": 29,
+                "end": 34,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 29,
+                  "end": 33,
                   "callee": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 29,
-                    "end": 30
+                    "end": 30,
+                    "name": "c"
                   },
                   "arguments": [
                     {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 31,
-                      "end": 32
+                      "end": 32,
+                      "name": "b"
                     }
                   ],
-                  "optional": false,
-                  "start": 29,
-                  "end": 33
-                },
-                "start": 29,
-                "end": 34
+                  "optional": false
+                }
               }
-            ],
-            "start": 25,
-            "end": 36
-          },
-          "start": 15,
-          "end": 36
+            ]
+          }
         },
-        "finalizer": null,
-        "start": 0,
-        "end": 36
+        "finalizer": null
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 37
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

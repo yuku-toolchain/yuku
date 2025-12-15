@@ -1,81 +1,86 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 49,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 49,
         "init": null,
         "test": {
           "type": "CallExpression",
+          "start": 6,
+          "end": 9,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 6,
-            "end": 7
+            "end": 7,
+            "name": "a"
           },
-          "arguments": [],
-          "optional": false,
-          "start": 6,
-          "end": 9
+          "arguments": [
+          ],
+          "optional": false
         },
         "update": null,
         "body": {
           "type": "BlockStatement",
+          "start": 12,
+          "end": 49,
           "body": [
             {
               "type": "IfStatement",
+              "start": 18,
+              "end": 47,
               "test": {
                 "type": "CallExpression",
+                "start": 22,
+                "end": 25,
                 "callee": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 22,
-                  "end": 23
+                  "end": 23,
+                  "name": "b"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 22,
-                "end": 25
+                "arguments": [
+                ],
+                "optional": false
               },
               "consequent": {
                 "type": "ExpressionStatement",
+                "start": 27,
+                "end": 31,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 27,
+                  "end": 30,
                   "callee": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 27,
-                    "end": 28
+                    "end": 28,
+                    "name": "c"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 27,
-                  "end": 30
-                },
-                "start": 27,
-                "end": 31
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
               },
               "alternate": {
                 "type": "BreakStatement",
-                "label": null,
                 "start": 41,
-                "end": 47
-              },
-              "start": 18,
-              "end": 47
+                "end": 47,
+                "label": null
+              }
             }
-          ],
-          "start": 12,
-          "end": 49
-        },
-        "start": 0,
-        "end": 49
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 49
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

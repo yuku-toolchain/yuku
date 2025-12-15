@@ -1,67 +1,71 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 34,
+    "sourceType": "script",
     "body": [
       {
         "type": "DoWhileStatement",
+        "start": 0,
+        "end": 28,
         "body": {
           "type": "BlockStatement",
+          "start": 3,
+          "end": 13,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 7,
+              "end": 11,
               "expression": {
                 "type": "CallExpression",
+                "start": 7,
+                "end": 10,
                 "callee": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 7,
-                  "end": 8
+                  "end": 8,
+                  "name": "a"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 7,
-                "end": 10
-              },
-              "start": 7,
-              "end": 11
+                "arguments": [
+                ],
+                "optional": false
+              }
             }
-          ],
-          "start": 3,
-          "end": 13
+          ]
         },
         "test": {
           "type": "Literal",
-          "value": false,
-          "raw": "false",
           "start": 21,
-          "end": 26
-        },
-        "start": 0,
-        "end": 28
+          "end": 26,
+          "value": false,
+          "raw": "false"
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 29,
+        "end": 33,
         "expression": {
           "type": "CallExpression",
+          "start": 29,
+          "end": 32,
           "callee": {
             "type": "Identifier",
-            "name": "b",
             "start": 29,
-            "end": 30
+            "end": 30,
+            "name": "b"
           },
-          "arguments": [],
-          "optional": false,
-          "start": 29,
-          "end": 32
-        },
-        "start": 29,
-        "end": 33
+          "arguments": [
+          ],
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 34
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

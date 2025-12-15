@@ -1,82 +1,84 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 18,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 18,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 18,
           "expression": {
             "type": "AssignmentExpression",
+            "start": 1,
+            "end": 17,
             "operator": "=",
             "left": {
               "type": "ObjectPattern",
+              "start": 1,
+              "end": 13,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 2,
+                  "end": 12,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 2,
-                    "end": 3
+                    "end": 3,
+                    "name": "a"
                   },
                   "value": {
                     "type": "AssignmentPattern",
+                    "start": 5,
+                    "end": 12,
                     "left": {
                       "type": "ArrayPattern",
+                      "start": 5,
+                      "end": 8,
                       "elements": [
                         {
                           "type": "Identifier",
-                          "name": "b",
                           "start": 6,
-                          "end": 7
+                          "end": 7,
+                          "name": "b"
                         }
-                      ],
-                      "start": 5,
-                      "end": 8
+                      ]
                     },
                     "right": {
                       "type": "Literal",
-                      "value": 1,
-                      "raw": "1",
                       "start": 11,
-                      "end": 12
-                    },
-                    "start": 5,
-                    "end": 12
+                      "end": 12,
+                      "value": 1,
+                      "raw": "1"
+                    }
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 2,
-                  "end": 12
+                  "computed": false
                 }
-              ],
-              "start": 1,
-              "end": 13
+              ]
             },
             "right": {
               "type": "Literal",
-              "value": 2,
-              "raw": "2",
               "start": 16,
-              "end": 17
-            },
-            "start": 1,
-            "end": 17
-          },
-          "start": 0,
-          "end": 18
-        },
-        "start": 0,
-        "end": 18
+              "end": 17,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 18
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

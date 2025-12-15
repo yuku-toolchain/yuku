@@ -1,35 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "module",
     "body": [
       {
         "type": "ExportNamedDeclaration",
+        "start": 0,
+        "end": 21,
         "declaration": {
           "type": "FunctionDeclaration",
+          "start": 7,
+          "end": 21,
           "id": {
             "type": "Identifier",
-            "name": "a",
             "start": 16,
-            "end": 17
+            "end": 17,
+            "name": "a"
           },
           "generator": false,
           "async": false,
-          "params": [],
+          "params": [
+          ],
           "body": {
             "type": "BlockStatement",
-            "body": [],
             "start": 19,
-            "end": 21
+            "end": 21,
+            "body": [
+            ]
           },
-          "expression": false,
-          "start": 7,
-          "end": 21
+          "expression": false
         },
-        "specifiers": [],
+        "specifiers": [
+        ],
         "source": null,
-        "attributes": [],
-        "start": 0,
-        "end": 21
+        "attributes": [
+        ]
       },
       {
         "type": "EmptyStatement",
@@ -38,21 +45,20 @@
       },
       {
         "type": "ExpressionStatement",
+        "start": 22,
+        "end": 23,
         "expression": {
           "type": "Literal",
-          "value": 1,
-          "raw": "1",
           "start": 22,
-          "end": 23
-        },
-        "start": 22,
-        "end": 23
+          "end": 23,
+          "value": 1,
+          "raw": "1"
+        }
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

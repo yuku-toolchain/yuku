@@ -1,89 +1,93 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 54,
+    "sourceType": "script",
     "body": [
       {
         "type": "WhileStatement",
+        "start": 0,
+        "end": 53,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 7,
-          "end": 8
+          "end": 8,
+          "name": "a"
         },
         "body": {
           "type": "BlockStatement",
+          "start": 10,
+          "end": 53,
           "body": [
             {
               "type": "BlockStatement",
+              "start": 14,
+              "end": 44,
               "body": [
                 {
                   "type": "ExpressionStatement",
+                  "start": 20,
+                  "end": 24,
                   "expression": {
                     "type": "CallExpression",
+                    "start": 20,
+                    "end": 23,
                     "callee": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 20,
-                      "end": 21
+                      "end": 21,
+                      "name": "b"
                     },
-                    "arguments": [],
-                    "optional": false,
-                    "start": 20,
-                    "end": 23
-                  },
-                  "start": 20,
-                  "end": 24
+                    "arguments": [
+                    ],
+                    "optional": false
+                  }
                 },
                 {
                   "type": "WhileStatement",
+                  "start": 29,
+                  "end": 40,
                   "test": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 36,
-                    "end": 37
+                    "end": 37,
+                    "name": "a"
                   },
                   "body": {
                     "type": "EmptyStatement",
                     "start": 39,
                     "end": 40
-                  },
-                  "start": 29,
-                  "end": 40
+                  }
                 }
-              ],
-              "start": 14,
-              "end": 44
+              ]
             },
             {
               "type": "ExpressionStatement",
+              "start": 47,
+              "end": 51,
               "expression": {
                 "type": "CallExpression",
+                "start": 47,
+                "end": 50,
                 "callee": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 47,
-                  "end": 48
+                  "end": 48,
+                  "name": "b"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 47,
-                "end": 50
-              },
-              "start": 47,
-              "end": 51
+                "arguments": [
+                ],
+                "optional": false
+              }
             }
-          ],
-          "start": 10,
-          "end": 53
-        },
-        "start": 0,
-        "end": 53
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 54
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,85 +1,90 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "module",
     "body": [
       {
         "type": "ExportDefaultDeclaration",
+        "start": 0,
+        "end": 30,
         "declaration": {
           "type": "FunctionDeclaration",
+          "start": 15,
+          "end": 30,
           "id": {
             "type": "Identifier",
-            "name": "a",
             "start": 24,
-            "end": 25
+            "end": 25,
+            "name": "a"
           },
           "generator": false,
           "async": false,
-          "params": [],
+          "params": [
+          ],
           "body": {
             "type": "BlockStatement",
-            "body": [],
             "start": 28,
-            "end": 30
+            "end": 30,
+            "body": [
+            ]
           },
-          "expression": false,
-          "start": 15,
-          "end": 30
-        },
-        "start": 0,
-        "end": 30
+          "expression": false
+        }
       },
       {
         "type": "VariableDeclaration",
+        "start": 31,
+        "end": 37,
         "kind": "let",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 35,
+            "end": 36,
             "id": {
               "type": "Identifier",
-              "name": "b",
               "start": 35,
-              "end": 36
+              "end": 36,
+              "name": "b"
             },
-            "init": null,
-            "start": 35,
-            "end": 36
+            "init": null
           }
-        ],
-        "start": 31,
-        "end": 37
+        ]
       },
       {
         "type": "ExportNamedDeclaration",
+        "start": 38,
+        "end": 54,
         "declaration": null,
         "specifiers": [
           {
             "type": "ExportSpecifier",
+            "start": 46,
+            "end": 52,
             "local": {
               "type": "Identifier",
-              "name": "b",
               "start": 46,
-              "end": 47
+              "end": 47,
+              "name": "b"
             },
             "exported": {
               "type": "Identifier",
-              "name": "a",
               "start": 51,
-              "end": 52
-            },
-            "start": 46,
-            "end": 52
+              "end": 52,
+              "name": "a"
+            }
           }
         ],
         "source": null,
-        "attributes": [],
-        "start": 38,
-        "end": 54
+        "attributes": [
+        ]
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 55
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

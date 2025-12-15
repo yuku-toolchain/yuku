@@ -1,49 +1,48 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
     "body": [
       {
         "type": "WhileStatement",
+        "start": 0,
+        "end": 39,
         "test": {
           "type": "Literal",
-          "value": true,
-          "raw": "true",
           "start": 7,
-          "end": 11
+          "end": 11,
+          "value": true,
+          "raw": "true"
         },
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 39,
           "body": [
             {
               "type": "ContinueStatement",
-              "label": null,
               "start": 15,
-              "end": 23
+              "end": 23,
+              "label": null
             },
             {
               "type": "ExpressionStatement",
+              "start": 35,
+              "end": 37,
               "expression": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 35,
-                "end": 36
-              },
-              "start": 35,
-              "end": 37
+                "end": 36,
+                "name": "a"
+              }
             }
-          ],
-          "start": 13,
-          "end": 39
-        },
-        "start": 0,
-        "end": 39
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 39
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -51,5 +50,7 @@
       "start": 24,
       "end": 34
     }
+  ],
+  "errors": [
   ]
 }

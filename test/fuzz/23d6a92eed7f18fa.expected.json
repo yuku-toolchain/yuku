@@ -1,47 +1,49 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 18,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForInStatement",
+        "start": 0,
+        "end": 17,
         "left": {
           "type": "MemberExpression",
+          "start": 5,
+          "end": 9,
           "object": {
             "type": "Identifier",
-            "name": "a",
             "start": 5,
-            "end": 6
+            "end": 6,
+            "name": "a"
           },
           "property": {
             "type": "Identifier",
-            "name": "in",
             "start": 7,
-            "end": 9
+            "end": 9,
+            "name": "in"
           },
-          "optional": false,
           "computed": false,
-          "start": 5,
-          "end": 9
+          "optional": false
         },
         "right": {
           "type": "Identifier",
-          "name": "a",
           "start": 13,
-          "end": 14
+          "end": 14,
+          "name": "a"
         },
         "body": {
           "type": "EmptyStatement",
           "start": 16,
           "end": 17
-        },
-        "start": 0,
-        "end": 17
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 18
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

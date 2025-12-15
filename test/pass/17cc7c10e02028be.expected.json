@@ -1,41 +1,43 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 12,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 12,
         "test": {
           "type": "Literal",
-          "value": 1,
-          "raw": "1",
           "start": 3,
-          "end": 4
+          "end": 4,
+          "value": 1,
+          "raw": "1"
         },
         "consequent": {
           "type": "ExpressionStatement",
+          "start": 5,
+          "end": 12,
           "expression": {
             "type": "Literal",
+            "start": 5,
+            "end": 12,
             "value": {},
             "raw": "/  foo/",
             "regex": {
               "pattern": "  foo",
               "flags": ""
-            },
-            "start": 5,
-            "end": 12
-          },
-          "start": 5,
-          "end": 12
+            }
+          }
         },
-        "alternate": null,
-        "start": 0,
-        "end": 12
+        "alternate": null
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 12
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

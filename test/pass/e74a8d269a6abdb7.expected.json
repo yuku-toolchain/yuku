@@ -1,56 +1,58 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 30,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 30,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "private",
-              "start": 4,
-              "end": 11
-            },
-            "init": null,
             "start": 4,
-            "end": 11
+            "end": 11,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 11,
+              "name": "private"
+            },
+            "init": null
           },
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "protected",
-              "start": 13,
-              "end": 22
-            },
-            "init": null,
             "start": 13,
-            "end": 22
+            "end": 22,
+            "id": {
+              "type": "Identifier",
+              "start": 13,
+              "end": 22,
+              "name": "protected"
+            },
+            "init": null
           },
           {
             "type": "VariableDeclarator",
+            "start": 24,
+            "end": 30,
             "id": {
               "type": "Identifier",
-              "name": "public",
               "start": 24,
-              "end": 30
+              "end": 30,
+              "name": "public"
             },
-            "init": null,
-            "start": 24,
-            "end": 30
+            "init": null
           }
-        ],
-        "start": 0,
-        "end": 30
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 30
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

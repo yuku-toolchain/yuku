@@ -1,57 +1,60 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 26,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 26,
           "expression": {
             "type": "FunctionExpression",
+            "start": 1,
+            "end": 25,
             "id": null,
             "generator": true,
             "async": false,
-            "params": [],
+            "params": [
+            ],
             "body": {
               "type": "BlockStatement",
+              "start": 13,
+              "end": 25,
               "body": [
                 {
                   "type": "ExpressionStatement",
+                  "start": 15,
+                  "end": 23,
                   "expression": {
                     "type": "YieldExpression",
+                    "start": 15,
+                    "end": 22,
                     "delegate": false,
                     "argument": {
                       "type": "Literal",
-                      "value": 1,
-                      "raw": "1",
                       "start": 21,
-                      "end": 22
-                    },
-                    "start": 15,
-                    "end": 22
-                  },
-                  "start": 15,
-                  "end": 23
+                      "end": 22,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
                 }
-              ],
-              "start": 13,
-              "end": 25
+              ]
             },
-            "expression": false,
-            "start": 1,
-            "end": 25
-          },
-          "start": 0,
-          "end": 26
-        },
-        "start": 0,
-        "end": 26
+            "expression": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 27
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

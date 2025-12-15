@@ -1,47 +1,49 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 12,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
         "expression": {
           "type": "BinaryExpression",
+          "start": 0,
+          "end": 10,
           "left": {
             "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 3,
             "expression": {
               "type": "Literal",
-              "value": 1,
-              "raw": "1",
               "start": 1,
-              "end": 2
-            },
-            "start": 0,
-            "end": 3
+              "end": 2,
+              "value": 1,
+              "raw": "1"
+            }
           },
           "operator": "in",
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 7,
+            "end": 10,
             "expression": {
               "type": "Literal",
-              "value": 2,
-              "raw": "2",
               "start": 8,
-              "end": 9
-            },
-            "start": 7,
-            "end": 10
-          },
-          "start": 0,
-          "end": 10
-        },
-        "start": 0,
-        "end": 11
+              "end": 9,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 12
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

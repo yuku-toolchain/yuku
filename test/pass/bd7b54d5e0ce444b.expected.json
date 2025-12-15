@@ -1,262 +1,263 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 316,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 315,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 314,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 313,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 311,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 13,
+                "end": 311,
                 "body": [
                   {
                     "type": "LabeledStatement",
+                    "start": 30,
+                    "end": 309,
                     "label": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 30,
-                      "end": 31
+                      "end": 31,
+                      "name": "b"
                     },
                     "body": {
                       "type": "BlockStatement",
+                      "start": 33,
+                      "end": 309,
                       "body": [
                         {
                           "type": "IfStatement",
+                          "start": 43,
+                          "end": 58,
                           "test": {
                             "type": "Identifier",
-                            "name": "a",
                             "start": 47,
-                            "end": 48
+                            "end": 48,
+                            "name": "a"
                           },
                           "consequent": {
                             "type": "BreakStatement",
+                            "start": 50,
+                            "end": 58,
                             "label": {
                               "type": "Identifier",
-                              "name": "b",
                               "start": 56,
-                              "end": 57
-                            },
-                            "start": 50,
-                            "end": 58
+                              "end": 57,
+                              "name": "b"
+                            }
                           },
-                          "alternate": null,
-                          "start": 43,
-                          "end": 58
+                          "alternate": null
                         },
                         {
                           "type": "LabeledStatement",
-                          "label": {
-                            "type": "Identifier",
-                            "name": "c",
-                            "start": 82,
-                            "end": 83
-                          },
-                          "body": {
-                            "type": "BlockStatement",
-                            "body": [
-                              {
-                                "type": "IfStatement",
-                                "test": {
-                                  "type": "Identifier",
-                                  "name": "a",
-                                  "start": 103,
-                                  "end": 104
-                                },
-                                "consequent": {
-                                  "type": "BreakStatement",
-                                  "label": {
-                                    "type": "Identifier",
-                                    "name": "c",
-                                    "start": 112,
-                                    "end": 113
-                                  },
-                                  "start": 106,
-                                  "end": 114
-                                },
-                                "alternate": null,
-                                "start": 99,
-                                "end": 114
-                              },
-                              {
-                                "type": "IfStatement",
-                                "test": {
-                                  "type": "Identifier",
-                                  "name": "a",
-                                  "start": 131,
-                                  "end": 132
-                                },
-                                "consequent": {
-                                  "type": "BreakStatement",
-                                  "label": {
-                                    "type": "Identifier",
-                                    "name": "c",
-                                    "start": 140,
-                                    "end": 141
-                                  },
-                                  "start": 134,
-                                  "end": 142
-                                },
-                                "alternate": null,
-                                "start": 127,
-                                "end": 142
-                              },
-                              {
-                                "type": "IfStatement",
-                                "test": {
-                                  "type": "Identifier",
-                                  "name": "a",
-                                  "start": 159,
-                                  "end": 160
-                                },
-                                "consequent": {
-                                  "type": "BreakStatement",
-                                  "label": {
-                                    "type": "Identifier",
-                                    "name": "c",
-                                    "start": 168,
-                                    "end": 169
-                                  },
-                                  "start": 162,
-                                  "end": 170
-                                },
-                                "alternate": null,
-                                "start": 155,
-                                "end": 170
-                              }
-                            ],
-                            "start": 85,
-                            "end": 180
-                          },
                           "start": 82,
-                          "end": 180
-                        },
-                        {
-                          "type": "LabeledStatement",
+                          "end": 180,
                           "label": {
                             "type": "Identifier",
-                            "name": "c",
-                            "start": 204,
-                            "end": 205
+                            "start": 82,
+                            "end": 83,
+                            "name": "c"
                           },
                           "body": {
                             "type": "BlockStatement",
+                            "start": 85,
+                            "end": 180,
                             "body": [
                               {
                                 "type": "IfStatement",
+                                "start": 99,
+                                "end": 114,
                                 "test": {
                                   "type": "Identifier",
-                                  "name": "a",
-                                  "start": 225,
-                                  "end": 226
+                                  "start": 103,
+                                  "end": 104,
+                                  "name": "a"
                                 },
                                 "consequent": {
                                   "type": "BreakStatement",
+                                  "start": 106,
+                                  "end": 114,
                                   "label": {
                                     "type": "Identifier",
-                                    "name": "c",
-                                    "start": 234,
-                                    "end": 235
-                                  },
-                                  "start": 228,
-                                  "end": 236
+                                    "start": 112,
+                                    "end": 113,
+                                    "name": "c"
+                                  }
                                 },
-                                "alternate": null,
-                                "start": 221,
-                                "end": 236
+                                "alternate": null
                               },
                               {
                                 "type": "IfStatement",
+                                "start": 127,
+                                "end": 142,
                                 "test": {
                                   "type": "Identifier",
-                                  "name": "a",
-                                  "start": 253,
-                                  "end": 254
+                                  "start": 131,
+                                  "end": 132,
+                                  "name": "a"
                                 },
                                 "consequent": {
                                   "type": "BreakStatement",
+                                  "start": 134,
+                                  "end": 142,
                                   "label": {
                                     "type": "Identifier",
-                                    "name": "c",
-                                    "start": 262,
-                                    "end": 263
-                                  },
-                                  "start": 256,
-                                  "end": 264
+                                    "start": 140,
+                                    "end": 141,
+                                    "name": "c"
+                                  }
                                 },
-                                "alternate": null,
-                                "start": 249,
-                                "end": 264
+                                "alternate": null
                               },
                               {
                                 "type": "IfStatement",
+                                "start": 155,
+                                "end": 170,
                                 "test": {
                                   "type": "Identifier",
-                                  "name": "a",
-                                  "start": 281,
-                                  "end": 282
+                                  "start": 159,
+                                  "end": 160,
+                                  "name": "a"
                                 },
                                 "consequent": {
                                   "type": "BreakStatement",
+                                  "start": 162,
+                                  "end": 170,
                                   "label": {
                                     "type": "Identifier",
-                                    "name": "c",
-                                    "start": 290,
-                                    "end": 291
-                                  },
-                                  "start": 284,
-                                  "end": 292
+                                    "start": 168,
+                                    "end": 169,
+                                    "name": "c"
+                                  }
                                 },
-                                "alternate": null,
-                                "start": 277,
-                                "end": 292
+                                "alternate": null
                               }
-                            ],
-                            "start": 207,
-                            "end": 302
-                          },
+                            ]
+                          }
+                        },
+                        {
+                          "type": "LabeledStatement",
                           "start": 204,
-                          "end": 302
+                          "end": 302,
+                          "label": {
+                            "type": "Identifier",
+                            "start": 204,
+                            "end": 205,
+                            "name": "c"
+                          },
+                          "body": {
+                            "type": "BlockStatement",
+                            "start": 207,
+                            "end": 302,
+                            "body": [
+                              {
+                                "type": "IfStatement",
+                                "start": 221,
+                                "end": 236,
+                                "test": {
+                                  "type": "Identifier",
+                                  "start": 225,
+                                  "end": 226,
+                                  "name": "a"
+                                },
+                                "consequent": {
+                                  "type": "BreakStatement",
+                                  "start": 228,
+                                  "end": 236,
+                                  "label": {
+                                    "type": "Identifier",
+                                    "start": 234,
+                                    "end": 235,
+                                    "name": "c"
+                                  }
+                                },
+                                "alternate": null
+                              },
+                              {
+                                "type": "IfStatement",
+                                "start": 249,
+                                "end": 264,
+                                "test": {
+                                  "type": "Identifier",
+                                  "start": 253,
+                                  "end": 254,
+                                  "name": "a"
+                                },
+                                "consequent": {
+                                  "type": "BreakStatement",
+                                  "start": 256,
+                                  "end": 264,
+                                  "label": {
+                                    "type": "Identifier",
+                                    "start": 262,
+                                    "end": 263,
+                                    "name": "c"
+                                  }
+                                },
+                                "alternate": null
+                              },
+                              {
+                                "type": "IfStatement",
+                                "start": 277,
+                                "end": 292,
+                                "test": {
+                                  "type": "Identifier",
+                                  "start": 281,
+                                  "end": 282,
+                                  "name": "a"
+                                },
+                                "consequent": {
+                                  "type": "BreakStatement",
+                                  "start": 284,
+                                  "end": 292,
+                                  "label": {
+                                    "type": "Identifier",
+                                    "start": 290,
+                                    "end": 291,
+                                    "name": "c"
+                                  }
+                                },
+                                "alternate": null
+                              }
+                            ]
+                          }
                         }
-                      ],
-                      "start": 33,
-                      "end": 309
-                    },
-                    "start": 30,
-                    "end": 309
+                      ]
+                    }
                   }
-                ],
-                "start": 13,
-                "end": 311
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 311
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 313
-          },
-          "start": 0,
-          "end": 314
-        },
-        "start": 0,
-        "end": 315
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 316
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -276,5 +277,7 @@
       "start": 189,
       "end": 195
     }
+  ],
+  "errors": [
   ]
 }

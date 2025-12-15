@@ -1,126 +1,131 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 35,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 35,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 35,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 34,
             "properties": [
               {
                 "type": "Property",
+                "start": 2,
+                "end": 16,
                 "kind": "get",
                 "key": {
                   "type": "BinaryExpression",
+                  "start": 7,
+                  "end": 10,
                   "left": {
                     "type": "Literal",
-                    "value": 1,
-                    "raw": "1",
                     "start": 7,
-                    "end": 8
+                    "end": 8,
+                    "value": 1,
+                    "raw": "1"
                   },
                   "operator": "+",
                   "right": {
                     "type": "Literal",
-                    "value": 2,
-                    "raw": "2",
                     "start": 9,
-                    "end": 10
-                  },
-                  "start": 7,
-                  "end": 10
+                    "end": 10,
+                    "value": 2,
+                    "raw": "2"
+                  }
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 11,
+                  "end": 16,
                   "id": null,
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
-                    "body": [],
                     "start": 14,
-                    "end": 16
+                    "end": 16,
+                    "body": [
+                    ]
                   },
-                  "expression": false,
-                  "start": 11,
-                  "end": 16
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": true,
-                "start": 2,
-                "end": 16
+                "computed": true
               },
               {
                 "type": "Property",
+                "start": 18,
+                "end": 33,
                 "kind": "set",
                 "key": {
                   "type": "BinaryExpression",
+                  "start": 23,
+                  "end": 26,
                   "left": {
                     "type": "Literal",
-                    "value": 3,
-                    "raw": "3",
                     "start": 23,
-                    "end": 24
+                    "end": 24,
+                    "value": 3,
+                    "raw": "3"
                   },
                   "operator": "/",
                   "right": {
                     "type": "Literal",
-                    "value": 4,
-                    "raw": "4",
                     "start": 25,
-                    "end": 26
-                  },
-                  "start": 23,
-                  "end": 26
+                    "end": 26,
+                    "value": 4,
+                    "raw": "4"
+                  }
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 27,
+                  "end": 33,
                   "id": null,
                   "generator": false,
                   "async": false,
                   "params": [
                     {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 28,
-                      "end": 29
+                      "end": 29,
+                      "name": "a"
                     }
                   ],
                   "body": {
                     "type": "BlockStatement",
-                    "body": [],
                     "start": 31,
-                    "end": 33
+                    "end": 33,
+                    "body": [
+                    ]
                   },
-                  "expression": false,
-                  "start": 27,
-                  "end": 33
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": true,
-                "start": 18,
-                "end": 33
+                "computed": true
               }
-            ],
-            "start": 1,
-            "end": 34
-          },
-          "start": 0,
-          "end": 35
-        },
-        "start": 0,
-        "end": 35
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 35
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

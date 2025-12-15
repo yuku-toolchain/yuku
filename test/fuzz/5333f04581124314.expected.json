@@ -1,97 +1,100 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 79,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 78,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 4,
-          "end": 5
+          "end": 5,
+          "name": "a"
         },
         "consequent": {
           "type": "BlockStatement",
+          "start": 7,
+          "end": 62,
           "body": [
             {
               "type": "WithStatement",
+              "start": 11,
+              "end": 60,
               "object": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 17,
-                "end": 18
+                "end": 18,
+                "name": "b"
               },
               "body": {
                 "type": "BlockStatement",
+                "start": 20,
+                "end": 60,
                 "body": [
                   {
                     "type": "IfStatement",
+                    "start": 26,
+                    "end": 56,
                     "test": {
                       "type": "Identifier",
-                      "name": "c",
                       "start": 30,
-                      "end": 31
+                      "end": 31,
+                      "name": "c"
                     },
                     "consequent": {
                       "type": "BlockStatement",
+                      "start": 33,
+                      "end": 56,
                       "body": [
                         {
                           "type": "DebuggerStatement",
                           "start": 41,
                           "end": 50
                         }
-                      ],
-                      "start": 33,
-                      "end": 56
+                      ]
                     },
-                    "alternate": null,
-                    "start": 26,
-                    "end": 56
+                    "alternate": null
                   }
-                ],
-                "start": 20,
-                "end": 60
-              },
-              "start": 11,
-              "end": 60
+                ]
+              }
             }
-          ],
-          "start": 7,
-          "end": 62
+          ]
         },
         "alternate": {
           "type": "BlockStatement",
+          "start": 68,
+          "end": 78,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 72,
+              "end": 76,
               "expression": {
                 "type": "CallExpression",
+                "start": 72,
+                "end": 75,
                 "callee": {
                   "type": "Identifier",
-                  "name": "d",
                   "start": 72,
-                  "end": 73
+                  "end": 73,
+                  "name": "d"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 72,
-                "end": 75
-              },
-              "start": 72,
-              "end": 76
+                "arguments": [
+                ],
+                "optional": false
+              }
             }
-          ],
-          "start": 68,
-          "end": 78
-        },
-        "start": 0,
-        "end": 78
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 79
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

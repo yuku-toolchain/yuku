@@ -1,23 +1,25 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 2,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
         "expression": {
           "type": "Identifier",
-          "name": "𐀀",
           "start": 0,
-          "end": 2
-        },
-        "start": 0,
-        "end": 2
+          "end": 2,
+          "name": "𐀀"
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 2
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

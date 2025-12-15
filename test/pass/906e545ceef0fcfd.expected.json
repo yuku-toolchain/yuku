@@ -1,79 +1,83 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 50,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 49,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 48,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 47,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 45,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 12,
+                "end": 45,
                 "body": [
                   {
                     "type": "IfStatement",
+                    "start": 14,
+                    "end": 43,
                     "test": {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 18,
-                      "end": 19
+                      "end": 19,
+                      "name": "a"
                     },
                     "consequent": {
                       "type": "ThrowStatement",
+                      "start": 21,
+                      "end": 29,
                       "argument": {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 27,
-                        "end": 28
-                      },
-                      "start": 21,
-                      "end": 29
+                        "end": 28,
+                        "name": "b"
+                      }
                     },
                     "alternate": {
                       "type": "ThrowStatement",
+                      "start": 35,
+                      "end": 43,
                       "argument": {
                         "type": "Identifier",
-                        "name": "c",
                         "start": 41,
-                        "end": 42
-                      },
-                      "start": 35,
-                      "end": 43
-                    },
-                    "start": 14,
-                    "end": 43
+                        "end": 42,
+                        "name": "c"
+                      }
+                    }
                   }
-                ],
-                "start": 12,
-                "end": 45
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 45
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 47
-          },
-          "start": 0,
-          "end": 48
-        },
-        "start": 0,
-        "end": 49
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 50
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

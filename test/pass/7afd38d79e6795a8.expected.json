@@ -1,95 +1,100 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 64,
         "expression": {
           "type": "CallExpression",
+          "start": 0,
+          "end": 63,
           "callee": {
             "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 61,
             "expression": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 60,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 13,
+                "end": 60,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 26,
                     "expression": {
                       "type": "UnaryExpression",
+                      "start": 19,
+                      "end": 25,
                       "operator": "void",
+                      "prefix": true,
                       "argument": {
                         "type": "Literal",
-                        "value": 1,
-                        "raw": "1",
                         "start": 24,
-                        "end": 25
-                      },
-                      "prefix": true,
-                      "start": 19,
-                      "end": 25
-                    },
-                    "start": 19,
-                    "end": 26
+                        "end": 25,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
                   },
                   {
                     "type": "ExpressionStatement",
+                    "start": 31,
+                    "end": 49,
                     "expression": {
                       "type": "Literal",
-                      "value": "not a directive",
-                      "raw": "\"not a directive\"",
                       "start": 31,
-                      "end": 48
-                    },
-                    "start": 31,
-                    "end": 49
+                      "end": 48,
+                      "value": "not a directive",
+                      "raw": "\"not a directive\""
+                    }
                   },
                   {
                     "type": "ExpressionStatement",
+                    "start": 54,
+                    "end": 58,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 54,
+                      "end": 57,
                       "callee": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 54,
-                        "end": 55
+                        "end": 55,
+                        "name": "a"
                       },
-                      "arguments": [],
-                      "optional": false,
-                      "start": 54,
-                      "end": 57
-                    },
-                    "start": 54,
-                    "end": 58
+                      "arguments": [
+                      ],
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 13,
-                "end": 60
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 60
-            },
-            "start": 0,
-            "end": 61
+              "expression": false
+            }
           },
-          "arguments": [],
-          "optional": false,
-          "start": 0,
-          "end": 63
-        },
-        "start": 0,
-        "end": 64
+          "arguments": [
+          ],
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 65
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

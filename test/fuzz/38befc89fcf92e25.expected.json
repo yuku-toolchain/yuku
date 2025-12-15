@@ -1,58 +1,61 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 15,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 14,
         "expression": {
           "type": "BinaryExpression",
+          "start": 0,
+          "end": 13,
           "left": {
             "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 7,
             "expression": {
               "type": "UnaryExpression",
+              "start": 1,
+              "end": 6,
               "operator": "+",
+              "prefix": true,
               "argument": {
                 "type": "ParenthesizedExpression",
+                "start": 2,
+                "end": 6,
                 "expression": {
                   "type": "ObjectExpression",
-                  "properties": [],
                   "start": 3,
-                  "end": 5
-                },
-                "start": 2,
-                "end": 6
-              },
-              "prefix": true,
-              "start": 1,
-              "end": 6
-            },
-            "start": 0,
-            "end": 7
+                  "end": 5,
+                  "properties": [
+                  ]
+                }
+              }
+            }
           },
           "operator": "/",
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 10,
+            "end": 13,
             "expression": {
               "type": "Literal",
-              "value": 1,
-              "raw": "1",
               "start": 11,
-              "end": 12
-            },
-            "start": 10,
-            "end": 13
-          },
-          "start": 0,
-          "end": 13
-        },
-        "start": 0,
-        "end": 14
+              "end": 12,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 15
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

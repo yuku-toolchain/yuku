@@ -1,53 +1,75 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 53,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 52,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": {
           "type": "Identifier",
-          "name": "b",
           "start": 16,
-          "end": 17
+          "end": 17,
+          "name": "b"
         },
         "body": {
           "type": "ClassBody",
+          "start": 18,
+          "end": 52,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 22,
+              "end": 50,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 22,
-                "end": 23
+                "end": 23,
+                "name": "c"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 23,
+                "end": 50,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 26,
+                  "end": 50,
                   "body": [
                     {
                       "type": "ExpressionStatement",
+                      "start": 32,
+                      "end": 46,
                       "expression": {
                         "type": "AssignmentExpression",
+                        "start": 32,
+                        "end": 45,
                         "operator": "=",
                         "left": {
                           "type": "ArrayPattern",
+                          "start": 32,
+                          "end": 41,
                           "elements": [
                             {
                               "type": "MemberExpression",
+                              "start": 33,
+                              "end": 40,
                               "object": {
                                 "type": "Super",
                                 "start": 33,
@@ -55,57 +77,38 @@
                               },
                               "property": {
                                 "type": "Identifier",
-                                "name": "d",
                                 "start": 39,
-                                "end": 40
+                                "end": 40,
+                                "name": "d"
                               },
-                              "optional": false,
                               "computed": false,
-                              "start": 33,
-                              "end": 40
+                              "optional": false
                             }
-                          ],
-                          "start": 32,
-                          "end": 41
+                          ]
                         },
                         "right": {
                           "type": "Identifier",
-                          "name": "e",
                           "start": 44,
-                          "end": 45
-                        },
-                        "start": 32,
-                        "end": 45
-                      },
-                      "start": 32,
-                      "end": 46
+                          "end": 45,
+                          "name": "e"
+                        }
+                      }
                     }
-                  ],
-                  "start": 26,
-                  "end": 50
+                  ]
                 },
-                "expression": false,
-                "start": 23,
-                "end": 50
+                "expression": false
               },
               "kind": "method",
               "computed": false,
-              "static": false,
-              "start": 22,
-              "end": 50
+              "static": false
             }
-          ],
-          "start": 18,
-          "end": 52
-        },
-        "start": 0,
-        "end": 52
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 53
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

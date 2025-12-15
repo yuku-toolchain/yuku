@@ -1,165 +1,170 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 86,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 85,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 84,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 83,
             "callee": {
               "type": "ParenthesizedExpression",
+              "start": 1,
+              "end": 81,
               "expression": {
                 "type": "FunctionExpression",
+                "start": 2,
+                "end": 80,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 14,
+                  "end": 80,
                   "body": [
                     {
                       "type": "VariableDeclaration",
+                      "start": 18,
+                      "end": 24,
                       "kind": "var",
                       "declarations": [
                         {
                           "type": "VariableDeclarator",
+                          "start": 22,
+                          "end": 23,
                           "id": {
                             "type": "Identifier",
-                            "name": "a",
                             "start": 22,
-                            "end": 23
+                            "end": 23,
+                            "name": "a"
                           },
-                          "init": null,
-                          "start": 22,
-                          "end": 23
+                          "init": null
                         }
-                      ],
-                      "start": 18,
-                      "end": 24
+                      ]
                     },
                     {
                       "type": "ExpressionStatement",
+                      "start": 27,
+                      "end": 37,
                       "expression": {
                         "type": "CallExpression",
+                        "start": 27,
+                        "end": 36,
                         "callee": {
                           "type": "Identifier",
-                          "name": "eval",
                           "start": 27,
-                          "end": 31
+                          "end": 31,
+                          "name": "eval"
                         },
                         "arguments": [
                           {
                             "type": "Literal",
-                            "value": "a",
-                            "raw": "\"a\"",
                             "start": 32,
-                            "end": 35
+                            "end": 35,
+                            "value": "a",
+                            "raw": "\"a\""
                           }
                         ],
-                        "optional": false,
-                        "start": 27,
-                        "end": 36
-                      },
-                      "start": 27,
-                      "end": 37
+                        "optional": false
+                      }
                     },
                     {
                       "type": "FunctionDeclaration",
+                      "start": 40,
+                      "end": 78,
                       "id": {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 49,
-                        "end": 50
+                        "end": 50,
+                        "name": "b"
                       },
                       "generator": false,
                       "async": false,
-                      "params": [],
+                      "params": [
+                      ],
                       "body": {
                         "type": "BlockStatement",
+                        "start": 53,
+                        "end": 78,
                         "body": [
                           {
                             "type": "ExpressionStatement",
+                            "start": 59,
+                            "end": 74,
                             "expression": {
                               "type": "AssignmentExpression",
+                              "start": 59,
+                              "end": 73,
                               "operator": "=",
                               "left": {
                                 "type": "Identifier",
-                                "name": "a",
                                 "start": 59,
-                                "end": 60
+                                "end": 60,
+                                "name": "a"
                               },
                               "right": {
                                 "type": "ParenthesizedExpression",
+                                "start": 63,
+                                "end": 73,
                                 "expression": {
                                   "type": "AssignmentExpression",
+                                  "start": 64,
+                                  "end": 72,
                                   "operator": "+=",
                                   "left": {
                                     "type": "Identifier",
-                                    "name": "a",
                                     "start": 64,
-                                    "end": 65
+                                    "end": 65,
+                                    "name": "a"
                                   },
                                   "right": {
                                     "type": "ParenthesizedExpression",
+                                    "start": 69,
+                                    "end": 72,
                                     "expression": {
                                       "type": "Literal",
-                                      "value": 1,
-                                      "raw": "1",
                                       "start": 70,
-                                      "end": 71
-                                    },
-                                    "start": 69,
-                                    "end": 72
-                                  },
-                                  "start": 64,
-                                  "end": 72
-                                },
-                                "start": 63,
-                                "end": 73
-                              },
-                              "start": 59,
-                              "end": 73
-                            },
-                            "start": 59,
-                            "end": 74
+                                      "end": 71,
+                                      "value": 1,
+                                      "raw": "1"
+                                    }
+                                  }
+                                }
+                              }
+                            }
                           }
-                        ],
-                        "start": 53,
-                        "end": 78
+                        ]
                       },
-                      "expression": false,
-                      "start": 40,
-                      "end": 78
+                      "expression": false
                     }
-                  ],
-                  "start": 14,
-                  "end": 80
+                  ]
                 },
-                "expression": false,
-                "start": 2,
-                "end": 80
-              },
-              "start": 1,
-              "end": 81
+                "expression": false
+              }
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 83
-          },
-          "start": 0,
-          "end": 84
-        },
-        "start": 0,
-        "end": 85
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 86
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

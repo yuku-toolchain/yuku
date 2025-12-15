@@ -1,68 +1,70 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 22,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 22,
             "id": {
               "type": "ArrayPattern",
+              "start": 4,
+              "end": 18,
               "elements": [
                 {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 5,
-                  "end": 6
+                  "end": 6,
+                  "name": "a"
                 },
                 {
                   "type": "RestElement",
+                  "start": 8,
+                  "end": 17,
                   "argument": {
                     "type": "ArrayPattern",
+                    "start": 11,
+                    "end": 17,
                     "elements": [
                       {
                         "type": "Identifier",
-                        "name": "b",
                         "start": 12,
-                        "end": 13
+                        "end": 13,
+                        "name": "b"
                       },
                       {
                         "type": "Identifier",
-                        "name": "c",
                         "start": 15,
-                        "end": 16
+                        "end": 16,
+                        "name": "c"
                       }
-                    ],
-                    "start": 11,
-                    "end": 17
-                  },
-                  "start": 8,
-                  "end": 17
+                    ]
+                  }
                 }
-              ],
-              "start": 4,
-              "end": 18
+              ]
             },
             "init": {
               "type": "Identifier",
-              "name": "d",
               "start": 21,
-              "end": 22
-            },
-            "start": 4,
-            "end": 22
+              "end": 22,
+              "name": "d"
+            }
           }
-        ],
-        "start": 0,
-        "end": 22
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

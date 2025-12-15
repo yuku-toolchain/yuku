@@ -1,49 +1,52 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 36,
+    "sourceType": "script",
     "body": [
       {
         "type": "BlockStatement",
+        "start": 0,
+        "end": 35,
         "body": [
           {
             "type": "DoWhileStatement",
+            "start": 4,
+            "end": 24,
             "body": {
               "type": "BlockStatement",
-              "body": [],
               "start": 7,
-              "end": 9
+              "end": 9,
+              "body": [
+              ]
             },
             "test": {
               "type": "Literal",
-              "value": false,
-              "raw": "false",
               "start": 17,
-              "end": 22
-            },
-            "start": 4,
-            "end": 24
+              "end": 22,
+              "value": false,
+              "raw": "false"
+            }
           },
           {
             "type": "ExpressionStatement",
+            "start": 27,
+            "end": 33,
             "expression": {
               "type": "Literal",
-              "value": false,
-              "raw": "false",
               "start": 27,
-              "end": 32
-            },
-            "start": 27,
-            "end": 33
+              "end": 32,
+              "value": false,
+              "raw": "false"
+            }
           }
-        ],
-        "start": 0,
-        "end": 35
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 36
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

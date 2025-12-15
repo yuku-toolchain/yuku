@@ -1,28 +1,30 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 8,
         "expression": {
           "type": "Literal",
+          "start": 0,
+          "end": 7,
           "value": {},
           "raw": "/[-a-]/",
           "regex": {
             "pattern": "[-a-]",
             "flags": ""
-          },
-          "start": 0,
-          "end": 7
-        },
-        "start": 0,
-        "end": 8
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 9
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

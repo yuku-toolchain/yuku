@@ -1,42 +1,45 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
         "expression": {
           "type": "NewExpression",
+          "start": 0,
+          "end": 9,
           "callee": {
             "type": "MemberExpression",
+            "start": 4,
+            "end": 7,
             "object": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
             "property": {
               "type": "Identifier",
-              "name": "b",
               "start": 6,
-              "end": 7
+              "end": 7,
+              "name": "b"
             },
-            "optional": false,
             "computed": false,
-            "start": 4,
-            "end": 7
+            "optional": false
           },
-          "arguments": [],
-          "start": 0,
-          "end": 9
-        },
-        "start": 0,
-        "end": 9
+          "arguments": [
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 9
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

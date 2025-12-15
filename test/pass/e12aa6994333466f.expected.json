@@ -1,115 +1,115 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 99,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 6,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
-            "init": null,
-            "start": 4,
-            "end": 5
+            "init": null
           }
-        ],
-        "start": 0,
-        "end": 6
+        ]
       },
       {
         "type": "IfStatement",
+        "start": 58,
+        "end": 99,
         "test": {
           "type": "CallExpression",
+          "start": 62,
+          "end": 65,
           "callee": {
             "type": "Identifier",
-            "name": "b",
             "start": 62,
-            "end": 63
+            "end": 63,
+            "name": "b"
           },
-          "arguments": [],
-          "optional": false,
-          "start": 62,
-          "end": 65
+          "arguments": [
+          ],
+          "optional": false
         },
         "consequent": {
           "type": "BlockStatement",
+          "start": 67,
+          "end": 80,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 73,
+              "end": 78,
               "expression": {
                 "type": "CallExpression",
+                "start": 73,
+                "end": 77,
                 "callee": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 73,
-                  "end": 74
+                  "end": 74,
+                  "name": "a"
                 },
                 "arguments": [
                   {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 75,
-                    "end": 76
+                    "end": 76,
+                    "name": "c"
                   }
                 ],
-                "optional": false,
-                "start": 73,
-                "end": 77
-              },
-              "start": 73,
-              "end": 78
+                "optional": false
+              }
             }
-          ],
-          "start": 67,
-          "end": 80
+          ]
         },
         "alternate": {
           "type": "BlockStatement",
+          "start": 86,
+          "end": 99,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 92,
+              "end": 97,
               "expression": {
                 "type": "CallExpression",
+                "start": 92,
+                "end": 96,
                 "callee": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 92,
-                  "end": 93
+                  "end": 93,
+                  "name": "a"
                 },
                 "arguments": [
                   {
                     "type": "Identifier",
-                    "name": "d",
                     "start": 94,
-                    "end": 95
+                    "end": 95,
+                    "name": "d"
                   }
                 ],
-                "optional": false,
-                "start": 92,
-                "end": 96
-              },
-              "start": 92,
-              "end": 97
+                "optional": false
+              }
             }
-          ],
-          "start": 86,
-          "end": 99
-        },
-        "start": 58,
-        "end": 99
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 99
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -117,5 +117,7 @@
       "start": 7,
       "end": 57
     }
+  ],
+  "errors": [
   ]
 }

@@ -1,141 +1,143 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 12,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "a",
-              "start": 4,
-              "end": 5
-            },
-            "init": null,
             "start": 4,
-            "end": 5
+            "end": 5,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": null
           },
           {
             "type": "VariableDeclarator",
-            "id": {
-              "type": "Identifier",
-              "name": "b",
-              "start": 7,
-              "end": 8
-            },
-            "init": null,
             "start": 7,
-            "end": 8
+            "end": 8,
+            "id": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "b"
+            },
+            "init": null
           },
           {
             "type": "VariableDeclarator",
+            "start": 10,
+            "end": 11,
             "id": {
               "type": "Identifier",
-              "name": "c",
               "start": 10,
-              "end": 11
+              "end": 11,
+              "name": "c"
             },
-            "init": null,
-            "start": 10,
-            "end": 11
+            "init": null
           }
-        ],
-        "start": 0,
-        "end": 12
+        ]
       },
       {
         "type": "ExpressionStatement",
+        "start": 13,
+        "end": 41,
         "expression": {
           "type": "CallExpression",
+          "start": 13,
+          "end": 40,
           "callee": {
             "type": "Identifier",
-            "name": "d",
             "start": 13,
-            "end": 14
+            "end": 14,
+            "name": "d"
           },
           "arguments": [
             {
               "type": "CallExpression",
+              "start": 17,
+              "end": 21,
               "callee": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 17,
-                "end": 18
+                "end": 18,
+                "name": "a"
               },
               "arguments": [
                 {
                   "type": "Identifier",
-                  "name": "e",
                   "start": 19,
-                  "end": 20
+                  "end": 20,
+                  "name": "e"
                 }
               ],
-              "optional": false,
-              "start": 17,
-              "end": 21
+              "optional": false
             },
             {
               "type": "CallExpression",
+              "start": 24,
+              "end": 31,
               "callee": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 24,
-                "end": 25
+                "end": 25,
+                "name": "b"
               },
               "arguments": [
                 {
                   "type": "Identifier",
-                  "name": "e",
                   "start": 26,
-                  "end": 27
+                  "end": 27,
+                  "name": "e"
                 },
                 {
                   "type": "Identifier",
-                  "name": "e",
                   "start": 29,
-                  "end": 30
+                  "end": 30,
+                  "name": "e"
                 }
               ],
-              "optional": false,
-              "start": 24,
-              "end": 31
+              "optional": false
             },
             {
               "type": "CallExpression",
+              "start": 34,
+              "end": 38,
               "callee": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 34,
-                "end": 35
+                "end": 35,
+                "name": "c"
               },
               "arguments": [
                 {
                   "type": "Identifier",
-                  "name": "e",
                   "start": 36,
-                  "end": 37
+                  "end": 37,
+                  "name": "e"
                 }
               ],
-              "optional": false,
-              "start": 34,
-              "end": 38
+              "optional": false
             }
           ],
-          "optional": false,
-          "start": 13,
-          "end": 40
-        },
-        "start": 13,
-        "end": 41
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 41
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

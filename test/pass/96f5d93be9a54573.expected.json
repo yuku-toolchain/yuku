@@ -1,158 +1,160 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 9,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 8,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 7,
             "properties": [
               {
                 "type": "Property",
+                "start": 2,
+                "end": 3,
                 "kind": "init",
                 "key": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 2,
-                  "end": 3
+                  "end": 3,
+                  "name": "a"
                 },
                 "value": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 2,
-                  "end": 3
+                  "end": 3,
+                  "name": "a"
                 },
                 "method": false,
                 "shorthand": true,
-                "computed": false,
-                "start": 2,
-                "end": 3
+                "computed": false
               },
               {
                 "type": "Property",
+                "start": 5,
+                "end": 6,
                 "kind": "init",
                 "key": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 5,
-                  "end": 6
+                  "end": 6,
+                  "name": "b"
                 },
                 "value": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 5,
-                  "end": 6
+                  "end": 6,
+                  "name": "b"
                 },
                 "method": false,
                 "shorthand": true,
-                "computed": false,
-                "start": 5,
-                "end": 6
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 7
-          },
-          "start": 0,
-          "end": 8
-        },
-        "start": 0,
-        "end": 9
+            ]
+          }
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 10,
+        "end": 16,
         "expression": {
           "type": "ArrayExpression",
+          "start": 10,
+          "end": 15,
           "elements": [
             {
               "type": "ObjectExpression",
+              "start": 11,
+              "end": 14,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 12,
+                  "end": 13,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 12,
-                    "end": 13
+                    "end": 13,
+                    "name": "a"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 12,
-                    "end": 13
+                    "end": 13,
+                    "name": "a"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 12,
-                  "end": 13
+                  "computed": false
                 }
-              ],
-              "start": 11,
-              "end": 14
+              ]
             }
-          ],
-          "start": 10,
-          "end": 15
-        },
-        "start": 10,
-        "end": 16
+          ]
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 17,
+        "end": 24,
         "expression": {
           "type": "CallExpression",
+          "start": 17,
+          "end": 23,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 17,
-            "end": 18
+            "end": 18,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "ObjectExpression",
+              "start": 19,
+              "end": 22,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 20,
+                  "end": 21,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 20,
-                    "end": 21
+                    "end": 21,
+                    "name": "c"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 20,
-                    "end": 21
+                    "end": 21,
+                    "name": "c"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 20,
-                  "end": 21
+                  "computed": false
                 }
-              ],
-              "start": 19,
-              "end": 22
+              ]
             }
           ],
-          "optional": false,
-          "start": 17,
-          "end": 23
-        },
-        "start": 17,
-        "end": 24
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 24
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

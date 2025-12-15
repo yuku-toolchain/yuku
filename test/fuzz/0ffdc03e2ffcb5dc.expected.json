@@ -1,40 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 15,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 14,
         "expression": {
           "type": "UnaryExpression",
+          "start": 0,
+          "end": 13,
           "operator": "void",
+          "prefix": true,
           "argument": {
             "type": "ParenthesizedExpression",
+            "start": 5,
+            "end": 13,
             "expression": {
               "type": "Literal",
+              "start": 6,
+              "end": 12,
               "value": {},
               "raw": "/test/",
               "regex": {
                 "pattern": "test",
                 "flags": ""
-              },
-              "start": 6,
-              "end": 12
-            },
-            "start": 5,
-            "end": 13
-          },
-          "prefix": true,
-          "start": 0,
-          "end": 13
-        },
-        "start": 0,
-        "end": 14
+              }
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 15
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

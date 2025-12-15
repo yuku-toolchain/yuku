@@ -1,84 +1,88 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 38,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 37,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 36,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 34,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 13,
+                "end": 34,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 32,
                     "expression": {
                       "type": "AssignmentExpression",
+                      "start": 19,
+                      "end": 31,
                       "operator": "=",
                       "left": {
                         "type": "MemberExpression",
+                        "start": 19,
+                        "end": 27,
                         "object": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 19,
-                          "end": 20
+                          "end": 20,
+                          "name": "a"
                         },
                         "property": {
                           "type": "Literal",
-                          "value": "NaN",
-                          "raw": "'NaN'",
                           "start": 21,
-                          "end": 26
+                          "end": 26,
+                          "value": "NaN",
+                          "raw": "'NaN'"
                         },
-                        "optional": false,
                         "computed": true,
-                        "start": 19,
-                        "end": 27
+                        "optional": false
                       },
                       "right": {
                         "type": "Literal",
-                        "value": 1,
-                        "raw": "1",
                         "start": 30,
-                        "end": 31
-                      },
-                      "start": 19,
-                      "end": 31
-                    },
-                    "start": 19,
-                    "end": 32
+                        "end": 31,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
                   }
-                ],
-                "start": 13,
-                "end": 34
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 34
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 36
-          },
-          "start": 0,
-          "end": 37
-        },
-        "start": 0,
-        "end": 38
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 39
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,59 +1,61 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 52,
+    "sourceType": "script",
     "body": [
       {
         "type": "WhileStatement",
+        "start": 0,
+        "end": 51,
         "test": {
           "type": "Literal",
-          "value": true,
-          "raw": "true",
           "start": 7,
-          "end": 11
+          "end": 11,
+          "value": true,
+          "raw": "true"
         },
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 51,
           "body": [
             {
               "type": "IfStatement",
+              "start": 19,
+              "end": 49,
               "test": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 23,
-                "end": 24
+                "end": 24,
+                "name": "a"
               },
               "consequent": {
                 "type": "BreakStatement",
-                "label": null,
                 "start": 26,
-                "end": 37
+                "end": 37,
+                "label": null
               },
               "alternate": {
                 "type": "ExpressionStatement",
+                "start": 47,
+                "end": 49,
                 "expression": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 47,
-                  "end": 48
-                },
-                "start": 47,
-                "end": 49
-              },
-              "start": 19,
-              "end": 49
+                  "end": 48,
+                  "name": "b"
+                }
+              }
             }
-          ],
-          "start": 13,
-          "end": 51
-        },
-        "start": 0,
-        "end": 51
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 52
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

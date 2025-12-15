@@ -1,45 +1,50 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 19,
         "init": {
           "type": "SequenceExpression",
+          "start": 5,
+          "end": 14,
           "expressions": [
             {
               "type": "ParenthesizedExpression",
+              "start": 5,
+              "end": 11,
               "expression": {
                 "type": "SequenceExpression",
+                "start": 6,
+                "end": 10,
                 "expressions": [
                   {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 6,
-                    "end": 7
+                    "end": 7,
+                    "name": "a"
                   },
                   {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 9,
-                    "end": 10
+                    "end": 10,
+                    "name": "b"
                   }
-                ],
-                "start": 6,
-                "end": 10
-              },
-              "start": 5,
-              "end": 11
+                ]
+              }
             },
             {
               "type": "Identifier",
-              "name": "c",
               "start": 13,
-              "end": 14
+              "end": 14,
+              "name": "c"
             }
-          ],
-          "start": 5,
-          "end": 14
+          ]
         },
         "test": null,
         "update": null,
@@ -47,15 +52,12 @@
           "type": "EmptyStatement",
           "start": 18,
           "end": 19
-        },
-        "start": 0,
-        "end": 19
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 20
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

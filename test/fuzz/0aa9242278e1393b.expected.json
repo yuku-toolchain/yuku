@@ -1,47 +1,65 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 54,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 53,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": {
           "type": "Identifier",
-          "name": "b",
           "start": 16,
-          "end": 17
+          "end": 17,
+          "name": "b"
         },
         "body": {
           "type": "ClassBody",
+          "start": 18,
+          "end": 53,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 22,
+              "end": 51,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 22,
-                "end": 23
+                "end": 23,
+                "name": "c"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 23,
+                "end": 51,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 26,
+                  "end": 51,
                   "body": [
                     {
                       "type": "ReturnStatement",
+                      "start": 32,
+                      "end": 47,
                       "argument": {
                         "type": "MemberExpression",
+                        "start": 39,
+                        "end": 46,
                         "object": {
                           "type": "Super",
                           "start": 39,
@@ -49,44 +67,29 @@
                         },
                         "property": {
                           "type": "Identifier",
-                          "name": "d",
                           "start": 45,
-                          "end": 46
+                          "end": 46,
+                          "name": "d"
                         },
-                        "optional": false,
                         "computed": false,
-                        "start": 39,
-                        "end": 46
-                      },
-                      "start": 32,
-                      "end": 47
+                        "optional": false
+                      }
                     }
-                  ],
-                  "start": 26,
-                  "end": 51
+                  ]
                 },
-                "expression": false,
-                "start": 23,
-                "end": 51
+                "expression": false
               },
               "kind": "method",
               "computed": false,
-              "static": false,
-              "start": 22,
-              "end": 51
+              "static": false
             }
-          ],
-          "start": 18,
-          "end": 53
-        },
-        "start": 0,
-        "end": 53
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 54
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

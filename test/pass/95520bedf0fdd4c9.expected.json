@@ -1,95 +1,98 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 64,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 64,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 19,
+              "end": 25,
               "expression": {
                 "type": "SequenceExpression",
+                "start": 19,
+                "end": 24,
                 "expressions": [
                   {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 19,
-                    "end": 20
+                    "end": 20,
+                    "name": "b"
                   },
                   {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 21,
-                    "end": 22
+                    "end": 22,
+                    "name": "c"
                   },
                   {
                     "type": "Identifier",
-                    "name": "d",
                     "start": 23,
-                    "end": 24
+                    "end": 24,
+                    "name": "d"
                   }
-                ],
-                "start": 19,
-                "end": 24
-              },
-              "start": 19,
-              "end": 25
+                ]
+              }
             },
             {
               "type": "IfStatement",
+              "start": 30,
+              "end": 62,
               "test": {
                 "type": "Identifier",
-                "name": "e",
                 "start": 34,
-                "end": 35
+                "end": 35,
+                "name": "e"
               },
               "consequent": {
                 "type": "BlockStatement",
+                "start": 37,
+                "end": 62,
                 "body": [
                   {
                     "type": "ThrowStatement",
+                    "start": 47,
+                    "end": 56,
                     "argument": {
                       "type": "Literal",
-                      "value": "f",
-                      "raw": "'f'",
                       "start": 53,
-                      "end": 56
-                    },
-                    "start": 47,
-                    "end": 56
+                      "end": 56,
+                      "value": "f",
+                      "raw": "'f'"
+                    }
                   }
-                ],
-                "start": 37,
-                "end": 62
+                ]
               },
-              "alternate": null,
-              "start": 30,
-              "end": 62
+              "alternate": null
             }
-          ],
-          "start": 13,
-          "end": 64
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 64
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 65
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

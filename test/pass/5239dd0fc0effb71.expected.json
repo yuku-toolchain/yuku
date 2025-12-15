@@ -1,84 +1,84 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 77,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 17,
+        "end": 76,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 26,
-          "end": 27
+          "end": 27,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 30,
+          "end": 76,
           "body": [
             {
               "type": "VariableDeclaration",
+              "start": 36,
+              "end": 42,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 40,
+                  "end": 41,
                   "id": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 40,
-                    "end": 41
+                    "end": 41,
+                    "name": "b"
                   },
-                  "init": null,
-                  "start": 40,
-                  "end": 41
+                  "init": null
                 }
-              ],
-              "start": 36,
-              "end": 42
+              ]
             },
             {
               "type": "WithStatement",
+              "start": 47,
+              "end": 74,
               "object": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 53,
-                "end": 54
+                "end": 54,
+                "name": "c"
               },
               "body": {
                 "type": "BlockStatement",
+                "start": 56,
+                "end": 74,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 66,
+                    "end": 68,
                     "expression": {
                       "type": "Identifier",
-                      "name": "b",
                       "start": 66,
-                      "end": 67
-                    },
-                    "start": 66,
-                    "end": 68
+                      "end": 67,
+                      "name": "b"
+                    }
                   }
-                ],
-                "start": 56,
-                "end": 74
-              },
-              "start": 47,
-              "end": 74
+                ]
+              }
             }
-          ],
-          "start": 30,
-          "end": 76
+          ]
         },
-        "expression": false,
-        "start": 17,
-        "end": 76
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 77
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -86,5 +86,7 @@
       "start": 0,
       "end": 16
     }
+  ],
+  "errors": [
   ]
 }

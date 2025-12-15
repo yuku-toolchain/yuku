@@ -1,94 +1,100 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 44,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": null,
         "body": {
           "type": "ClassBody",
+          "start": 8,
+          "end": 44,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 12,
+              "end": 29,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 23,
-                "end": 24
+                "end": 24,
+                "name": "b"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 24,
+                "end": 29,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
-                  "body": [],
                   "start": 27,
-                  "end": 29
+                  "end": 29,
+                  "body": [
+                  ]
                 },
-                "expression": false,
-                "start": 24,
-                "end": 29
+                "expression": false
               },
               "kind": "get",
               "computed": false,
-              "static": true,
-              "start": 12,
-              "end": 29
+              "static": true
             },
             {
               "type": "MethodDefinition",
+              "start": 32,
+              "end": 42,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 36,
-                "end": 37
+                "end": 37,
+                "name": "b"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 37,
+                "end": 42,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
-                  "body": [],
                   "start": 40,
-                  "end": 42
+                  "end": 42,
+                  "body": [
+                  ]
                 },
-                "expression": false,
-                "start": 37,
-                "end": 42
+                "expression": false
               },
               "kind": "get",
               "computed": false,
-              "static": false,
-              "start": 32,
-              "end": 42
+              "static": false
             }
-          ],
-          "start": 8,
-          "end": 44
-        },
-        "start": 0,
-        "end": 44
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 45
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

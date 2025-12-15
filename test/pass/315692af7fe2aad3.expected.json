@@ -1,162 +1,165 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 11,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 10,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
             "init": {
               "type": "ObjectExpression",
-              "properties": [],
               "start": 8,
-              "end": 10
-            },
-            "start": 4,
-            "end": 10
+              "end": 10,
+              "properties": [
+              ]
+            }
           }
-        ],
-        "start": 0,
-        "end": 11
+        ]
       },
       {
         "type": "ExpressionStatement",
-        "expression": {
-          "type": "AssignmentExpression",
-          "operator": "=",
-          "left": {
-            "type": "MemberExpression",
-            "object": {
-              "type": "Identifier",
-              "name": "a",
-              "start": 12,
-              "end": 13
-            },
-            "property": {
-              "type": "Identifier",
-              "name": "b",
-              "start": 14,
-              "end": 15
-            },
-            "optional": false,
-            "computed": false,
-            "start": 12,
-            "end": 15
-          },
-          "right": {
-            "type": "Literal",
-            "value": 1,
-            "raw": "1",
-            "start": 18,
-            "end": 19
-          },
-          "start": 12,
-          "end": 19
-        },
         "start": 12,
-        "end": 20
-      },
-      {
-        "type": "ExpressionStatement",
+        "end": 20,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 12,
+          "end": 19,
           "operator": "=",
           "left": {
             "type": "MemberExpression",
+            "start": 12,
+            "end": 15,
             "object": {
               "type": "Identifier",
-              "name": "a",
-              "start": 21,
-              "end": 22
+              "start": 12,
+              "end": 13,
+              "name": "a"
             },
             "property": {
               "type": "Identifier",
-              "name": "c",
-              "start": 23,
-              "end": 24
+              "start": 14,
+              "end": 15,
+              "name": "b"
             },
-            "optional": false,
             "computed": false,
-            "start": 21,
-            "end": 24
+            "optional": false
           },
           "right": {
             "type": "Literal",
-            "value": 2,
-            "raw": "2",
-            "start": 27,
-            "end": 28
-          },
-          "start": 21,
-          "end": 28
-        },
-        "start": 21,
-        "end": 29
+            "start": 18,
+            "end": 19,
+            "value": 1,
+            "raw": "1"
+          }
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 21,
+        "end": 29,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 21,
+          "end": 28,
+          "operator": "=",
+          "left": {
+            "type": "MemberExpression",
+            "start": 21,
+            "end": 24,
+            "object": {
+              "type": "Identifier",
+              "start": 21,
+              "end": 22,
+              "name": "a"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 23,
+              "end": 24,
+              "name": "c"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "right": {
+            "type": "Literal",
+            "start": 27,
+            "end": 28,
+            "value": 2,
+            "raw": "2"
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 30,
+        "end": 39,
         "expression": {
           "type": "CallExpression",
+          "start": 30,
+          "end": 38,
           "callee": {
             "type": "MemberExpression",
+            "start": 30,
+            "end": 33,
             "object": {
               "type": "Identifier",
-              "name": "d",
               "start": 30,
-              "end": 31
+              "end": 31,
+              "name": "d"
             },
             "property": {
               "type": "Identifier",
-              "name": "e",
               "start": 32,
-              "end": 33
+              "end": 33,
+              "name": "e"
             },
-            "optional": false,
             "computed": false,
-            "start": 30,
-            "end": 33
+            "optional": false
           },
           "arguments": [
             {
               "type": "MemberExpression",
+              "start": 34,
+              "end": 37,
               "object": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 34,
-                "end": 35
+                "end": 35,
+                "name": "a"
               },
               "property": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 36,
-                "end": 37
+                "end": 37,
+                "name": "c"
               },
-              "optional": false,
               "computed": false,
-              "start": 34,
-              "end": 37
+              "optional": false
             }
           ],
-          "optional": false,
-          "start": 30,
-          "end": 38
-        },
-        "start": 30,
-        "end": 39
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 39
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

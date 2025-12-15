@@ -1,40 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 15,
         "init": {
           "type": "Identifier",
-          "name": "a",
           "start": 5,
-          "end": 6
+          "end": 6,
+          "name": "a"
         },
         "test": {
           "type": "Identifier",
-          "name": "b",
           "start": 8,
-          "end": 9
+          "end": 9,
+          "name": "b"
         },
         "update": {
           "type": "Identifier",
-          "name": "c",
           "start": 11,
-          "end": 12
+          "end": 12,
+          "name": "c"
         },
         "body": {
           "type": "EmptyStatement",
           "start": 14,
           "end": 15
-        },
-        "start": 0,
-        "end": 15
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 16
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

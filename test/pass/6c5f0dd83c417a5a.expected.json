@@ -1,120 +1,124 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 95,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 95,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 95,
           "body": [
             {
               "type": "TryStatement",
+              "start": 19,
+              "end": 79,
               "block": {
                 "type": "BlockStatement",
+                "start": 23,
+                "end": 43,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 33,
+                    "end": 37,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 33,
+                      "end": 36,
                       "callee": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 33,
-                        "end": 34
+                        "end": 34,
+                        "name": "a"
                       },
-                      "arguments": [],
-                      "optional": false,
-                      "start": 33,
-                      "end": 36
-                    },
-                    "start": 33,
-                    "end": 37
+                      "arguments": [
+                      ],
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 23,
-                "end": 43
+                ]
               },
               "handler": {
                 "type": "CatchClause",
+                "start": 44,
+                "end": 79,
                 "param": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 50,
-                  "end": 51
+                  "end": 51,
+                  "name": "b"
                 },
                 "body": {
                   "type": "BlockStatement",
+                  "start": 53,
+                  "end": 79,
                   "body": [
                     {
                       "type": "VariableDeclaration",
+                      "start": 63,
+                      "end": 73,
                       "kind": "var",
                       "declarations": [
                         {
                           "type": "VariableDeclarator",
+                          "start": 67,
+                          "end": 72,
                           "id": {
                             "type": "Identifier",
-                            "name": "c",
                             "start": 67,
-                            "end": 68
+                            "end": 68,
+                            "name": "c"
                           },
                           "init": {
                             "type": "Literal",
-                            "value": 1,
-                            "raw": "1",
                             "start": 71,
-                            "end": 72
-                          },
-                          "start": 67,
-                          "end": 72
+                            "end": 72,
+                            "value": 1,
+                            "raw": "1"
+                          }
                         }
-                      ],
-                      "start": 63,
-                      "end": 73
+                      ]
                     }
-                  ],
-                  "start": 53,
-                  "end": 79
-                },
-                "start": 44,
-                "end": 79
+                  ]
+                }
               },
-              "finalizer": null,
-              "start": 19,
-              "end": 79
+              "finalizer": null
             },
             {
               "type": "ReturnStatement",
+              "start": 84,
+              "end": 93,
               "argument": {
                 "type": "Identifier",
-                "name": "c",
                 "start": 91,
-                "end": 92
-              },
-              "start": 84,
-              "end": 93
+                "end": 92,
+                "name": "c"
+              }
             }
-          ],
-          "start": 13,
-          "end": 95
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 95
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 95
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

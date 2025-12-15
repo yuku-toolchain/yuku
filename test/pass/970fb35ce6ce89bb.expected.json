@@ -1,107 +1,111 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 76,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 75,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 75,
           "body": [
             {
               "type": "VariableDeclaration",
+              "start": 19,
+              "end": 29,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 23,
+                  "end": 28,
                   "id": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 23,
-                    "end": 24
+                    "end": 24,
+                    "name": "a"
                   },
                   "init": {
                     "type": "Literal",
-                    "value": 1,
-                    "raw": "1",
                     "start": 27,
-                    "end": 28
-                  },
-                  "start": 23,
-                  "end": 28
+                    "end": 28,
+                    "value": 1,
+                    "raw": "1"
+                  }
                 }
-              ],
-              "start": 19,
-              "end": 29
+              ]
             },
             {
               "type": "FunctionDeclaration",
+              "start": 34,
+              "end": 73,
               "id": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 43,
-                "end": 44
+                "end": 44,
+                "name": "b"
               },
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 47,
+                "end": 73,
                 "body": [
                   {
                     "type": "VariableDeclaration",
+                    "start": 57,
+                    "end": 67,
                     "kind": "var",
                     "declarations": [
                       {
                         "type": "VariableDeclarator",
+                        "start": 61,
+                        "end": 66,
                         "id": {
                           "type": "Identifier",
-                          "name": "c",
                           "start": 61,
-                          "end": 62
+                          "end": 62,
+                          "name": "c"
                         },
                         "init": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 65,
-                          "end": 66
-                        },
-                        "start": 61,
-                        "end": 66
+                          "end": 66,
+                          "name": "a"
+                        }
                       }
-                    ],
-                    "start": 57,
-                    "end": 67
+                    ]
                   }
-                ],
-                "start": 47,
-                "end": 73
+                ]
               },
-              "expression": false,
-              "start": 34,
-              "end": 73
+              "expression": false
             }
-          ],
-          "start": 13,
-          "end": 75
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 75
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 76
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

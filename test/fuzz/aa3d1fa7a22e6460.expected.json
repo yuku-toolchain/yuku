@@ -1,44 +1,46 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
     "body": [
       {
         "type": "WhileStatement",
+        "start": 0,
+        "end": 19,
         "test": {
           "type": "Literal",
-          "value": true,
-          "raw": "true",
           "start": 7,
-          "end": 11
+          "end": 11,
+          "value": true,
+          "raw": "true"
         },
         "body": {
           "type": "VariableDeclaration",
+          "start": 13,
+          "end": 19,
           "kind": "var",
           "declarations": [
             {
               "type": "VariableDeclarator",
+              "start": 17,
+              "end": 18,
               "id": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 17,
-                "end": 18
+                "end": 18,
+                "name": "a"
               },
-              "init": null,
-              "start": 17,
-              "end": 18
+              "init": null
             }
-          ],
-          "start": 13,
-          "end": 19
-        },
-        "start": 0,
-        "end": 19
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 20
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

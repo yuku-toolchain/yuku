@@ -1,49 +1,52 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 15,
         "kind": "let",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 14,
             "id": {
               "type": "ArrayPattern",
+              "start": 4,
+              "end": 7,
               "elements": [
                 {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 5,
-                  "end": 6
+                  "end": 6,
+                  "name": "a"
                 }
-              ],
-              "start": 4,
-              "end": 7
+              ]
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 10,
+              "end": 14,
               "expression": {
                 "type": "ArrayExpression",
-                "elements": [],
                 "start": 11,
-                "end": 13
-              },
-              "start": 10,
-              "end": 14
-            },
-            "start": 4,
-            "end": 14
+                "end": 13,
+                "elements": [
+                ]
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 15
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 16
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

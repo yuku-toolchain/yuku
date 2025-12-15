@@ -1,122 +1,125 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 50,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 50,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 50,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 49,
             "properties": [
               {
                 "type": "Property",
+                "start": 3,
+                "end": 23,
                 "kind": "get",
                 "key": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 7,
-                  "end": 8
+                  "end": 8,
+                  "name": "a"
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 8,
+                  "end": 23,
                   "id": null,
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
+                    "start": 11,
+                    "end": 23,
                     "body": [
                       {
                         "type": "ReturnStatement",
+                        "start": 13,
+                        "end": 21,
                         "argument": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 20,
-                          "end": 21
-                        },
-                        "start": 13,
-                        "end": 21
+                          "end": 21,
+                          "name": "a"
+                        }
                       }
-                    ],
-                    "start": 11,
-                    "end": 23
+                    ]
                   },
-                  "expression": false,
-                  "start": 8,
-                  "end": 23
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 3,
-                "end": 23
+                "computed": false
               },
               {
                 "type": "Property",
+                "start": 25,
+                "end": 47,
                 "kind": "set",
                 "key": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 29,
-                  "end": 30
+                  "end": 30,
+                  "name": "a"
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 30,
+                  "end": 47,
                   "id": null,
                   "generator": false,
                   "async": false,
                   "params": [
                     {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 31,
-                      "end": 32
+                      "end": 32,
+                      "name": "a"
                     }
                   ],
                   "body": {
                     "type": "BlockStatement",
+                    "start": 34,
+                    "end": 47,
                     "body": [
                       {
                         "type": "ReturnStatement",
+                        "start": 36,
+                        "end": 45,
                         "argument": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 43,
-                          "end": 44
-                        },
-                        "start": 36,
-                        "end": 45
+                          "end": 44,
+                          "name": "a"
+                        }
                       }
-                    ],
-                    "start": 34,
-                    "end": 47
+                    ]
                   },
-                  "expression": false,
-                  "start": 30,
-                  "end": 47
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": false,
-                "start": 25,
-                "end": 47
+                "computed": false
               }
-            ],
-            "start": 1,
-            "end": 49
-          },
-          "start": 0,
-          "end": 50
-        },
-        "start": 0,
-        "end": 50
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 50
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

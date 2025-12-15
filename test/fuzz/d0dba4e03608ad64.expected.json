@@ -1,52 +1,54 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 8,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 7,
         "expression": {
           "type": "TemplateLiteral",
+          "start": 0,
+          "end": 6,
           "quasis": [
             {
               "type": "TemplateElement",
+              "start": 1,
+              "end": 1,
               "value": {
                 "raw": "",
                 "cooked": ""
               },
-              "tail": false,
-              "start": 1,
-              "end": 1
+              "tail": false
             },
             {
               "type": "TemplateElement",
+              "start": 5,
+              "end": 5,
               "value": {
                 "raw": "",
                 "cooked": ""
               },
-              "tail": true,
-              "start": 5,
-              "end": 5
+              "tail": true
             }
           ],
           "expressions": [
             {
               "type": "Identifier",
-              "name": "a",
               "start": 3,
-              "end": 4
+              "end": 4,
+              "name": "a"
             }
-          ],
-          "start": 0,
-          "end": 6
-        },
-        "start": 0,
-        "end": 7
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 8
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

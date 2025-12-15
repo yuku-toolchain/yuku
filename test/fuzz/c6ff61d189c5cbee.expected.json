@@ -1,83 +1,85 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 21,
         "expression": {
           "type": "LogicalExpression",
+          "start": 0,
+          "end": 20,
           "left": {
             "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 6,
             "expression": {
               "type": "MemberExpression",
+              "start": 1,
+              "end": 5,
               "object": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 1,
-                "end": 2
+                "end": 2,
+                "name": "a"
               },
               "property": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 3,
-                "end": 4
+                "end": 4,
+                "name": "b"
               },
-              "optional": false,
               "computed": true,
-              "start": 1,
-              "end": 5
-            },
-            "start": 0,
-            "end": 6
+              "optional": false
+            }
           },
           "operator": "||",
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 10,
+            "end": 20,
             "expression": {
               "type": "AssignmentExpression",
+              "start": 11,
+              "end": 19,
               "operator": "=",
               "left": {
                 "type": "MemberExpression",
+                "start": 11,
+                "end": 15,
                 "object": {
                   "type": "Identifier",
-                  "name": "c",
                   "start": 11,
-                  "end": 12
+                  "end": 12,
+                  "name": "c"
                 },
                 "property": {
                   "type": "Identifier",
-                  "name": "d",
                   "start": 13,
-                  "end": 14
+                  "end": 14,
+                  "name": "d"
                 },
-                "optional": false,
                 "computed": true,
-                "start": 11,
-                "end": 15
+                "optional": false
               },
               "right": {
                 "type": "Identifier",
-                "name": "e",
                 "start": 18,
-                "end": 19
-              },
-              "start": 11,
-              "end": 19
-            },
-            "start": 10,
-            "end": 20
-          },
-          "start": 0,
-          "end": 20
-        },
-        "start": 0,
-        "end": 21
+                "end": 19,
+                "name": "e"
+              }
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 22
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

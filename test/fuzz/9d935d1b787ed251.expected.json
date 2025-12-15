@@ -1,6 +1,9 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 5,
+    "sourceType": "script",
     "body": [
       {
         "type": "EmptyStatement",
@@ -9,20 +12,19 @@
       },
       {
         "type": "ExpressionStatement",
+        "start": 2,
+        "end": 4,
         "expression": {
           "type": "Identifier",
-          "name": "a",
           "start": 2,
-          "end": 3
-        },
-        "start": 2,
-        "end": 4
+          "end": 3,
+          "name": "a"
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 5
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

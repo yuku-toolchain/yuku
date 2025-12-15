@@ -1,75 +1,78 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 40,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 40,
           "body": [
             {
               "type": "VariableDeclaration",
+              "start": 17,
+              "end": 38,
               "kind": "let",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 21,
+                  "end": 37,
                   "id": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 21,
-                    "end": 22
+                    "end": 22,
+                    "name": "b"
                   },
                   "init": {
                     "type": "ParenthesizedExpression",
+                    "start": 25,
+                    "end": 37,
                     "expression": {
                       "type": "MetaProperty",
+                      "start": 26,
+                      "end": 36,
                       "meta": {
                         "type": "Identifier",
-                        "name": "new",
                         "start": 26,
-                        "end": 29
+                        "end": 29,
+                        "name": "new"
                       },
                       "property": {
                         "type": "Identifier",
-                        "name": "target",
                         "start": 30,
-                        "end": 36
-                      },
-                      "start": 26,
-                      "end": 36
-                    },
-                    "start": 25,
-                    "end": 37
-                  },
-                  "start": 21,
-                  "end": 37
+                        "end": 36,
+                        "name": "target"
+                      }
+                    }
+                  }
                 }
-              ],
-              "start": 17,
-              "end": 38
+              ]
             }
-          ],
-          "start": 13,
-          "end": 40
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 40
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 41
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

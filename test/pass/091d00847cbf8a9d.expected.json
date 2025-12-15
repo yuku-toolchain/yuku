@@ -1,125 +1,127 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 24,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 23,
             "id": {
               "type": "ObjectPattern",
+              "start": 4,
+              "end": 10,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 5,
+                  "end": 6,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 5,
-                    "end": 6
+                    "end": 6,
+                    "name": "a"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 5,
-                    "end": 6
+                    "end": 6,
+                    "name": "a"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 5,
-                  "end": 6
+                  "computed": false
                 },
                 {
                   "type": "Property",
+                  "start": 8,
+                  "end": 9,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 8,
-                    "end": 9
+                    "end": 9,
+                    "name": "b"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 8,
-                    "end": 9
+                    "end": 9,
+                    "name": "b"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 8,
-                  "end": 9
+                  "computed": false
                 }
-              ],
-              "start": 4,
-              "end": 10
+              ]
             },
             "init": {
               "type": "ObjectExpression",
+              "start": 13,
+              "end": 23,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 14,
+                  "end": 17,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 14,
-                    "end": 15
+                    "end": 15,
+                    "name": "a"
                   },
                   "value": {
                     "type": "Literal",
-                    "value": 1,
-                    "raw": "1",
                     "start": 16,
-                    "end": 17
+                    "end": 17,
+                    "value": 1,
+                    "raw": "1"
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 14,
-                  "end": 17
+                  "computed": false
                 },
                 {
                   "type": "Property",
+                  "start": 19,
+                  "end": 22,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 19,
-                    "end": 20
+                    "end": 20,
+                    "name": "b"
                   },
                   "value": {
                     "type": "Literal",
-                    "value": 2,
-                    "raw": "2",
                     "start": 21,
-                    "end": 22
+                    "end": 22,
+                    "value": 2,
+                    "raw": "2"
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 19,
-                  "end": 22
+                  "computed": false
                 }
-              ],
-              "start": 13,
-              "end": 23
-            },
-            "start": 4,
-            "end": 23
+              ]
+            }
           }
-        ],
-        "start": 0,
-        "end": 24
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 24
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,90 +1,94 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 37,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 36,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 35,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 33,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 13,
+                "end": 33,
                 "body": [
                   {
                     "type": "VariableDeclaration",
+                    "start": 19,
+                    "end": 31,
                     "kind": "var",
                     "declarations": [
                       {
                         "type": "VariableDeclarator",
-                        "id": {
-                          "type": "Identifier",
-                          "name": "a",
-                          "start": 23,
-                          "end": 24
-                        },
-                        "init": null,
                         "start": 23,
-                        "end": 24
+                        "end": 24,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 23,
+                          "end": 24,
+                          "name": "a"
+                        },
+                        "init": null
                       },
                       {
                         "type": "VariableDeclarator",
-                        "id": {
-                          "type": "Identifier",
-                          "name": "b",
-                          "start": 26,
-                          "end": 27
-                        },
-                        "init": null,
                         "start": 26,
-                        "end": 27
+                        "end": 27,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 26,
+                          "end": 27,
+                          "name": "b"
+                        },
+                        "init": null
                       },
                       {
                         "type": "VariableDeclarator",
+                        "start": 29,
+                        "end": 30,
                         "id": {
                           "type": "Identifier",
-                          "name": "c",
                           "start": 29,
-                          "end": 30
+                          "end": 30,
+                          "name": "c"
                         },
-                        "init": null,
-                        "start": 29,
-                        "end": 30
+                        "init": null
                       }
-                    ],
-                    "start": 19,
-                    "end": 31
+                    ]
                   }
-                ],
-                "start": 13,
-                "end": 33
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 33
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 35
-          },
-          "start": 0,
-          "end": 36
-        },
-        "start": 0,
-        "end": 37
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 38
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

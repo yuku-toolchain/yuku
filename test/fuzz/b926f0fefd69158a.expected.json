@@ -1,77 +1,80 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 67,
+    "sourceType": "script",
     "body": [
       {
         "type": "SwitchStatement",
+        "start": 0,
+        "end": 66,
         "discriminant": {
           "type": "Identifier",
-          "name": "a",
           "start": 8,
-          "end": 9
+          "end": 9,
+          "name": "a"
         },
         "cases": [
           {
             "type": "SwitchCase",
+            "start": 15,
+            "end": 42,
             "test": {
               "type": "Literal",
-              "value": 1,
-              "raw": "1",
               "start": 20,
-              "end": 21
+              "end": 21,
+              "value": 1,
+              "raw": "1"
             },
             "consequent": [
               {
                 "type": "ExpressionStatement",
+                "start": 27,
+                "end": 31,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 27,
+                  "end": 30,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 27,
-                    "end": 28
+                    "end": 28,
+                    "name": "b"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 27,
-                  "end": 30
-                },
-                "start": 27,
-                "end": 31
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
               },
               {
                 "type": "BreakStatement",
-                "label": null,
                 "start": 36,
-                "end": 42
+                "end": 42,
+                "label": null
               }
-            ],
-            "start": 15,
-            "end": 42
+            ]
           },
           {
             "type": "SwitchCase",
+            "start": 45,
+            "end": 64,
             "test": null,
             "consequent": [
               {
                 "type": "BreakStatement",
-                "label": null,
                 "start": 58,
-                "end": 64
+                "end": 64,
+                "label": null
               }
-            ],
-            "start": 45,
-            "end": 64
+            ]
           }
-        ],
-        "start": 0,
-        "end": 66
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 67
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

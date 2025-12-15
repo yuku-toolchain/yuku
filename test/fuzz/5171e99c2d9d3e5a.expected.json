@@ -1,80 +1,82 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 54,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 53,
         "test": {
           "type": "Identifier",
-          "name": "a",
           "start": 4,
-          "end": 5
+          "end": 5,
+          "name": "a"
         },
         "consequent": {
           "type": "BlockStatement",
+          "start": 7,
+          "end": 35,
           "body": [
             {
               "type": "IfStatement",
+              "start": 11,
+              "end": 33,
               "test": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 15,
-                "end": 16
+                "end": 16,
+                "name": "b"
               },
               "consequent": {
                 "type": "BlockStatement",
+                "start": 18,
+                "end": 33,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 24,
+                    "end": 29,
                     "expression": {
                       "type": "Literal",
-                      "value": true,
-                      "raw": "true",
                       "start": 24,
-                      "end": 28
-                    },
-                    "start": 24,
-                    "end": 29
+                      "end": 28,
+                      "value": true,
+                      "raw": "true"
+                    }
                   }
-                ],
-                "start": 18,
-                "end": 33
+                ]
               },
-              "alternate": null,
-              "start": 11,
-              "end": 33
+              "alternate": null
             }
-          ],
-          "start": 7,
-          "end": 35
+          ]
         },
         "alternate": {
           "type": "BlockStatement",
+          "start": 41,
+          "end": 53,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 45,
+              "end": 51,
               "expression": {
                 "type": "Literal",
-                "value": false,
-                "raw": "false",
                 "start": 45,
-                "end": 50
-              },
-              "start": 45,
-              "end": 51
+                "end": 50,
+                "value": false,
+                "raw": "false"
+              }
             }
-          ],
-          "start": 41,
-          "end": 53
-        },
-        "start": 0,
-        "end": 53
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 54
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,81 +1,81 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 101,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 100,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 100,
           "body": [
             {
               "type": "IfStatement",
+              "start": 19,
+              "end": 98,
               "test": {
                 "type": "Literal",
-                "value": false,
-                "raw": "false",
                 "start": 23,
-                "end": 28
+                "end": 28,
+                "value": false,
+                "raw": "false"
               },
               "consequent": {
                 "type": "BlockStatement",
+                "start": 30,
+                "end": 98,
                 "body": [
                   {
                     "type": "VariableDeclaration",
+                    "start": 82,
+                    "end": 92,
                     "kind": "var",
                     "declarations": [
                       {
                         "type": "VariableDeclarator",
+                        "start": 86,
+                        "end": 91,
                         "id": {
                           "type": "Identifier",
-                          "name": "a",
                           "start": 86,
-                          "end": 87
+                          "end": 87,
+                          "name": "a"
                         },
                         "init": {
                           "type": "Literal",
-                          "value": 1,
-                          "raw": "1",
                           "start": 90,
-                          "end": 91
-                        },
-                        "start": 86,
-                        "end": 91
+                          "end": 91,
+                          "value": 1,
+                          "raw": "1"
+                        }
                       }
-                    ],
-                    "start": 82,
-                    "end": 92
+                    ]
                   }
-                ],
-                "start": 30,
-                "end": 98
+                ]
               },
-              "alternate": null,
-              "start": 19,
-              "end": 98
+              "alternate": null
             }
-          ],
-          "start": 13,
-          "end": 100
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 100
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 101
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -83,5 +83,7 @@
       "start": 40,
       "end": 73
     }
+  ],
+  "errors": [
   ]
 }

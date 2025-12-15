@@ -1,75 +1,77 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 22,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 0,
+          "end": 21,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "Identifier",
-              "name": "a",
               "start": 1,
-              "end": 2
+              "end": 2,
+              "name": "a"
             },
             {
               "type": "Identifier",
-              "name": "b",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "b"
             }
           ],
           "body": {
             "type": "ParenthesizedExpression",
+            "start": 10,
+            "end": 21,
             "expression": {
               "type": "BinaryExpression",
+              "start": 11,
+              "end": 20,
               "left": {
                 "type": "ParenthesizedExpression",
+                "start": 11,
+                "end": 14,
                 "expression": {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 12,
-                  "end": 13
-                },
-                "start": 11,
-                "end": 14
+                  "end": 13,
+                  "value": 1,
+                  "raw": "1"
+                }
               },
               "operator": "+",
               "right": {
                 "type": "ParenthesizedExpression",
+                "start": 17,
+                "end": 20,
                 "expression": {
                   "type": "Literal",
-                  "value": 2,
-                  "raw": "2",
                   "start": 18,
-                  "end": 19
-                },
-                "start": 17,
-                "end": 20
-              },
-              "start": 11,
-              "end": 20
-            },
-            "start": 10,
-            "end": 21
+                  "end": 19,
+                  "value": 2,
+                  "raw": "2"
+                }
+              }
+            }
           },
-          "id": null,
-          "generator": false,
-          "start": 0,
-          "end": 21
-        },
-        "start": 0,
-        "end": 22
+          "expression": true
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

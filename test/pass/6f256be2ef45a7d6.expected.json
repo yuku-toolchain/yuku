@@ -1,53 +1,55 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 44,
+    "sourceType": "script",
     "body": [
       {
         "type": "LabeledStatement",
+        "start": 0,
+        "end": 44,
         "label": {
           "type": "Identifier",
-          "name": "__proto__",
           "start": 0,
-          "end": 9
+          "end": 9,
+          "name": "__proto__"
         },
         "body": {
           "type": "WhileStatement",
+          "start": 11,
+          "end": 44,
           "test": {
             "type": "Literal",
-            "value": true,
-            "raw": "true",
             "start": 18,
-            "end": 22
+            "end": 22,
+            "value": true,
+            "raw": "true"
           },
           "body": {
             "type": "BlockStatement",
+            "start": 24,
+            "end": 44,
             "body": [
               {
                 "type": "BreakStatement",
+                "start": 26,
+                "end": 42,
                 "label": {
                   "type": "Identifier",
-                  "name": "__proto__",
                   "start": 32,
-                  "end": 41
-                },
-                "start": 26,
-                "end": 42
+                  "end": 41,
+                  "name": "__proto__"
+                }
               }
-            ],
-            "start": 24,
-            "end": 44
-          },
-          "start": 11,
-          "end": 44
-        },
-        "start": 0,
-        "end": 44
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 44
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

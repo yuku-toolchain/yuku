@@ -1,104 +1,109 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 40,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 39,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 38,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 37,
             "callee": {
               "type": "FunctionExpression",
+              "start": 1,
+              "end": 35,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 12,
+                "end": 35,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 18,
+                    "end": 33,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 18,
+                      "end": 32,
                       "callee": {
                         "type": "Identifier",
-                        "name": "a",
                         "start": 18,
-                        "end": 19
+                        "end": 19,
+                        "name": "a"
                       },
                       "arguments": [
                         {
                           "type": "ParenthesizedExpression",
+                          "start": 20,
+                          "end": 31,
                           "expression": {
                             "type": "SequenceExpression",
+                            "start": 21,
+                            "end": 30,
                             "expressions": [
                               {
                                 "type": "CallExpression",
+                                "start": 21,
+                                "end": 24,
                                 "callee": {
                                   "type": "Identifier",
-                                  "name": "b",
                                   "start": 21,
-                                  "end": 22
+                                  "end": 22,
+                                  "name": "b"
                                 },
-                                "arguments": [],
-                                "optional": false,
-                                "start": 21,
-                                "end": 24
+                                "arguments": [
+                                ],
+                                "optional": false
                               },
                               {
                                 "type": "Literal",
-                                "value": 1,
-                                "raw": "1",
                                 "start": 26,
-                                "end": 27
+                                "end": 27,
+                                "value": 1,
+                                "raw": "1"
                               },
                               {
                                 "type": "Literal",
-                                "value": 2,
-                                "raw": "2",
                                 "start": 29,
-                                "end": 30
+                                "end": 30,
+                                "value": 2,
+                                "raw": "2"
                               }
-                            ],
-                            "start": 21,
-                            "end": 30
-                          },
-                          "start": 20,
-                          "end": 31
+                            ]
+                          }
                         }
                       ],
-                      "optional": false,
-                      "start": 18,
-                      "end": 32
-                    },
-                    "start": 18,
-                    "end": 33
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 12,
-                "end": 35
+                ]
               },
-              "expression": false,
-              "start": 1,
-              "end": 35
+              "expression": false
             },
-            "arguments": [],
-            "optional": false,
-            "start": 1,
-            "end": 37
-          },
-          "start": 0,
-          "end": 38
-        },
-        "start": 0,
-        "end": 39
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 40
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

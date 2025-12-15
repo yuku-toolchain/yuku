@@ -1,81 +1,86 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
         "expression": {
           "type": "Literal",
-          "value": "use strict",
-          "raw": "'use strict'",
           "start": 0,
-          "end": 12
+          "end": 12,
+          "value": "use strict",
+          "raw": "'use strict'"
         },
-        "directive": "use strict",
-        "start": 0,
-        "end": 13
+        "directive": "use strict"
       },
       {
         "type": "VariableDeclaration",
+        "start": 13,
+        "end": 38,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 17,
+            "end": 38,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 17,
-              "end": 18
+              "end": 18,
+              "name": "a"
             },
             "init": {
               "type": "CallExpression",
+              "start": 21,
+              "end": 38,
               "callee": {
                 "type": "FunctionExpression",
+                "start": 21,
+                "end": 33,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
-                  "body": [],
                   "start": 31,
-                  "end": 33
+                  "end": 33,
+                  "body": [
+                  ]
                 },
-                "expression": false,
-                "start": 21,
-                "end": 33
+                "expression": false
               },
               "arguments": [
                 {
                   "type": "CallExpression",
+                  "start": 34,
+                  "end": 37,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 34,
-                    "end": 35
+                    "end": 35,
+                    "name": "b"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 34,
-                  "end": 37
+                  "arguments": [
+                  ],
+                  "optional": false
                 }
               ],
-              "optional": false,
-              "start": 21,
-              "end": 38
-            },
-            "start": 17,
-            "end": 38
+              "optional": false
+            }
           }
-        ],
-        "start": 13,
-        "end": 38
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 39
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

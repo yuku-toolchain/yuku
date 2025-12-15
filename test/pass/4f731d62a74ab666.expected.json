@@ -1,53 +1,55 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 11,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 10,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 10,
           "expression": {
             "type": "AssignmentExpression",
+            "start": 1,
+            "end": 9,
             "operator": "=",
             "left": {
               "type": "MemberExpression",
+              "start": 1,
+              "end": 7,
               "object": {
                 "type": "Identifier",
-                "name": "let",
                 "start": 1,
-                "end": 4
+                "end": 4,
+                "name": "let"
               },
               "property": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 5,
-                "end": 6
+                "end": 6,
+                "name": "a"
               },
-              "optional": false,
               "computed": true,
-              "start": 1,
-              "end": 7
+              "optional": false
             },
             "right": {
               "type": "Identifier",
-              "name": "b",
               "start": 8,
-              "end": 9
-            },
-            "start": 1,
-            "end": 9
-          },
-          "start": 0,
-          "end": 10
-        },
-        "start": 0,
-        "end": 10
+              "end": 9,
+              "name": "b"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 11
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,73 +1,76 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 19,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 18,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": false,
+          "start": 0,
+          "end": 17,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "ObjectPattern",
+              "start": 1,
+              "end": 4,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 2,
+                  "end": 3,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 2,
-                    "end": 3
+                    "end": 3,
+                    "name": "a"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 2,
-                    "end": 3
+                    "end": 3,
+                    "name": "a"
                   },
                   "method": false,
                   "shorthand": true,
-                  "computed": false,
-                  "start": 2,
-                  "end": 3
+                  "computed": false
                 }
-              ],
-              "start": 1,
-              "end": 4
+              ]
             },
             {
               "type": "RestElement",
+              "start": 6,
+              "end": 10,
               "argument": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 9,
-                "end": 10
-              },
-              "start": 6,
-              "end": 10
+                "end": 10,
+                "name": "b"
+              }
             }
           ],
           "body": {
             "type": "BlockStatement",
-            "body": [],
             "start": 15,
-            "end": 17
+            "end": 17,
+            "body": [
+            ]
           },
-          "id": null,
-          "generator": false,
-          "start": 0,
-          "end": 17
-        },
-        "start": 0,
-        "end": 18
+          "expression": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 19
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,67 +1,70 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 29,
+    "sourceType": "script",
     "body": [
       {
         "type": "TryStatement",
+        "start": 0,
+        "end": 28,
         "block": {
           "type": "BlockStatement",
-          "body": [],
           "start": 4,
-          "end": 6
+          "end": 6,
+          "body": [
+          ]
         },
         "handler": {
           "type": "CatchClause",
+          "start": 7,
+          "end": 28,
           "param": {
             "type": "Identifier",
-            "name": "a",
             "start": 14,
-            "end": 15
+            "end": 15,
+            "name": "a"
           },
           "body": {
             "type": "BlockStatement",
+            "start": 17,
+            "end": 28,
             "body": [
               {
                 "type": "ExpressionStatement",
+                "start": 21,
+                "end": 26,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 21,
+                  "end": 25,
                   "callee": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 21,
-                    "end": 22
+                    "end": 22,
+                    "name": "b"
                   },
                   "arguments": [
                     {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 23,
-                      "end": 24
+                      "end": 24,
+                      "name": "a"
                     }
                   ],
-                  "optional": false,
-                  "start": 21,
-                  "end": 25
-                },
-                "start": 21,
-                "end": 26
+                  "optional": false
+                }
               }
-            ],
-            "start": 17,
-            "end": 28
-          },
-          "start": 7,
-          "end": 28
+            ]
+          }
         },
-        "finalizer": null,
-        "start": 0,
-        "end": 28
+        "finalizer": null
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 29
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

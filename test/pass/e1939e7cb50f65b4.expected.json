@@ -1,109 +1,112 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 41,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 41,
           "expression": {
             "type": "FunctionExpression",
+            "start": 1,
+            "end": 40,
             "id": null,
             "generator": true,
             "async": false,
-            "params": [],
+            "params": [
+            ],
             "body": {
               "type": "BlockStatement",
+              "start": 13,
+              "end": 40,
               "body": [
                 {
                   "type": "ExpressionStatement",
+                  "start": 15,
+                  "end": 38,
                   "expression": {
                     "type": "AssignmentExpression",
+                    "start": 15,
+                    "end": 37,
                     "operator": "=",
                     "left": {
                       "type": "ArrayPattern",
+                      "start": 15,
+                      "end": 33,
                       "elements": [
                         {
                           "type": "RestElement",
+                          "start": 16,
+                          "end": 32,
                           "argument": {
                             "type": "ObjectPattern",
+                            "start": 19,
+                            "end": 32,
                             "properties": [
                               {
                                 "type": "Property",
+                                "start": 21,
+                                "end": 30,
                                 "kind": "init",
                                 "key": {
                                   "type": "Identifier",
-                                  "name": "a",
                                   "start": 21,
-                                  "end": 22
+                                  "end": 22,
+                                  "name": "a"
                                 },
                                 "value": {
                                   "type": "AssignmentPattern",
+                                  "start": 21,
+                                  "end": 30,
                                   "left": {
                                     "type": "Identifier",
-                                    "name": "a",
                                     "start": 21,
-                                    "end": 22
+                                    "end": 22,
+                                    "name": "a"
                                   },
                                   "right": {
                                     "type": "YieldExpression",
-                                    "delegate": false,
-                                    "argument": null,
                                     "start": 25,
-                                    "end": 30
-                                  },
-                                  "start": 21,
-                                  "end": 30
+                                    "end": 30,
+                                    "delegate": false,
+                                    "argument": null
+                                  }
                                 },
                                 "method": false,
                                 "shorthand": true,
-                                "computed": false,
-                                "start": 21,
-                                "end": 30
+                                "computed": false
                               }
-                            ],
-                            "start": 19,
-                            "end": 32
-                          },
-                          "start": 16,
-                          "end": 32
+                            ]
+                          }
                         }
-                      ],
-                      "start": 15,
-                      "end": 33
+                      ]
                     },
                     "right": {
                       "type": "Literal",
-                      "value": 1,
-                      "raw": "1",
                       "start": 36,
-                      "end": 37
-                    },
-                    "start": 15,
-                    "end": 37
-                  },
-                  "start": 15,
-                  "end": 38
+                      "end": 37,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
                 }
-              ],
-              "start": 13,
-              "end": 40
+              ]
             },
-            "expression": false,
-            "start": 1,
-            "end": 40
-          },
-          "start": 0,
-          "end": 41
-        },
-        "start": 0,
-        "end": 41
+            "expression": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 41
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

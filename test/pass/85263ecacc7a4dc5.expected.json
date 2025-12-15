@@ -1,73 +1,78 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 62,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 61,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 60,
           "expression": {
             "type": "FunctionExpression",
+            "start": 1,
+            "end": 59,
             "id": null,
             "generator": false,
             "async": false,
-            "params": [],
+            "params": [
+            ],
             "body": {
               "type": "BlockStatement",
+              "start": 13,
+              "end": 59,
               "body": [
                 {
                   "type": "ExpressionStatement",
+                  "start": 19,
+                  "end": 32,
                   "expression": {
                     "type": "Literal",
-                    "value": "use strict",
-                    "raw": "'use strict'",
                     "start": 19,
-                    "end": 31
+                    "end": 31,
+                    "value": "use strict",
+                    "raw": "'use strict'"
                   },
-                  "directive": "use strict",
-                  "start": 19,
-                  "end": 32
+                  "directive": "use strict"
                 },
                 {
                   "type": "FunctionDeclaration",
+                  "start": 37,
+                  "end": 57,
                   "id": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 46,
-                    "end": 47
+                    "end": 47,
+                    "name": "a"
                   },
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
-                    "body": [],
                     "start": 50,
-                    "end": 57
+                    "end": 57,
+                    "body": [
+                    ]
                   },
-                  "expression": false,
-                  "start": 37,
-                  "end": 57
+                  "expression": false
                 }
-              ],
-              "start": 13,
-              "end": 59
+              ]
             },
-            "expression": false,
-            "start": 1,
-            "end": 59
-          },
-          "start": 0,
-          "end": 60
-        },
-        "start": 0,
-        "end": 61
+            "expression": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 62
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

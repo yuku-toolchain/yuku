@@ -1,64 +1,67 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 37,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 37,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 14,
+              "end": 27,
               "expression": {
                 "type": "Literal",
-                "value": "use strict",
-                "raw": "'use strict'",
                 "start": 14,
-                "end": 26
+                "end": 26,
+                "value": "use strict",
+                "raw": "'use strict'"
               },
-              "directive": "use strict",
-              "start": 14,
-              "end": 27
+              "directive": "use strict"
             },
             {
               "type": "ReturnStatement",
+              "start": 27,
+              "end": 36,
               "argument": {
                 "type": "Literal",
-                "value": 1,
-                "raw": "1",
                 "start": 34,
-                "end": 35
-              },
-              "start": 27,
-              "end": 36
+                "end": 35,
+                "value": 1,
+                "raw": "1"
+              }
             }
-          ],
-          "start": 13,
-          "end": 37
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 37
+        "expression": false
       },
       {
         "type": "EmptyStatement",
         "start": 37,
         "end": 38
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 38
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

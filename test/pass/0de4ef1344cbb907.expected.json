@@ -1,58 +1,62 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 27,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 12,
+          "end": 27,
           "body": [
             {
               "type": "ReturnStatement",
+              "start": 13,
+              "end": 26,
               "argument": {
                 "type": "BinaryExpression",
+                "start": 20,
+                "end": 26,
                 "left": {
                   "type": "ObjectExpression",
-                  "properties": [],
                   "start": 20,
-                  "end": 22
+                  "end": 22,
+                  "properties": [
+                  ]
                 },
                 "operator": "/",
                 "right": {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 25,
-                  "end": 26
-                },
-                "start": 20,
-                "end": 26
-              },
-              "start": 13,
-              "end": 26
+                  "end": 26,
+                  "value": 1,
+                  "raw": "1"
+                }
+              }
             }
-          ],
-          "start": 12,
-          "end": 27
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 27
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 27
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

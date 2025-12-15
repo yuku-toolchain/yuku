@@ -1,23 +1,26 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 19,
+    "sourceType": "module",
     "body": [
       {
         "type": "ExportDefaultDeclaration",
+        "start": 0,
+        "end": 18,
         "declaration": {
           "type": "ArrayExpression",
-          "elements": [],
           "start": 15,
-          "end": 17
-        },
-        "start": 0,
-        "end": 18
+          "end": 17,
+          "elements": [
+          ]
+        }
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 19
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

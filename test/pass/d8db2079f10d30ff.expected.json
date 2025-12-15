@@ -1,42 +1,45 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
     "body": [
       {
         "type": "WhileStatement",
+        "start": 0,
+        "end": 16,
         "test": {
           "type": "Literal",
-          "value": true,
-          "raw": "true",
           "start": 7,
-          "end": 11
+          "end": 11,
+          "value": true,
+          "raw": "true"
         },
         "body": {
           "type": "ExpressionStatement",
+          "start": 13,
+          "end": 16,
           "expression": {
             "type": "CallExpression",
+            "start": 13,
+            "end": 16,
             "callee": {
               "type": "Identifier",
-              "name": "a",
               "start": 13,
-              "end": 14
+              "end": 14,
+              "name": "a"
             },
-            "arguments": [],
-            "optional": false,
-            "start": 13,
-            "end": 16
-          },
-          "start": 13,
-          "end": 16
-        },
-        "start": 0,
-        "end": 16
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 16
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

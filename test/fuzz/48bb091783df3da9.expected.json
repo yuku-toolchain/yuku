@@ -1,168 +1,173 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 87,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 15,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
-          "body": [],
           "start": 13,
-          "end": 15
+          "end": 15,
+          "body": [
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 15
+        "expression": false
       },
       {
         "type": "VariableDeclaration",
+        "start": 16,
+        "end": 53,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 20,
+            "end": 52,
             "id": {
               "type": "Identifier",
-              "name": "b",
               "start": 20,
-              "end": 21
+              "end": 21,
+              "name": "b"
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 24,
+              "end": 52,
               "expression": {
                 "type": "Literal",
-                "value": "is a valid variable name",
-                "raw": "\"is a valid variable name\"",
                 "start": 25,
-                "end": 51
-              },
-              "start": 24,
-              "end": 52
-            },
-            "start": 20,
-            "end": 52
+                "end": 51,
+                "value": "is a valid variable name",
+                "raw": "\"is a valid variable name\""
+              }
+            }
           }
-        ],
-        "start": 16,
-        "end": 53
+        ]
       },
       {
         "type": "ExpressionStatement",
+        "start": 54,
+        "end": 73,
         "expression": {
           "type": "AssignmentExpression",
+          "start": 54,
+          "end": 72,
           "operator": "=",
           "left": {
             "type": "Identifier",
-            "name": "b",
             "start": 54,
-            "end": 55
+            "end": 55,
+            "name": "b"
           },
           "right": {
             "type": "ParenthesizedExpression",
+            "start": 58,
+            "end": 72,
             "expression": {
               "type": "ObjectExpression",
+              "start": 59,
+              "end": 71,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 60,
+                  "end": 70,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 60,
-                    "end": 61
+                    "end": 61,
+                    "name": "b"
                   },
                   "value": {
                     "type": "Literal",
-                    "value": "is ok",
-                    "raw": "\"is ok\"",
                     "start": 63,
-                    "end": 70
+                    "end": 70,
+                    "value": "is ok",
+                    "raw": "\"is ok\""
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 60,
-                  "end": 70
+                  "computed": false
                 }
-              ],
-              "start": 59,
-              "end": 71
-            },
-            "start": 58,
-            "end": 72
-          },
-          "start": 54,
-          "end": 72
-        },
-        "start": 54,
-        "end": 73
+              ]
+            }
+          }
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 74,
+        "end": 78,
         "expression": {
           "type": "MemberExpression",
+          "start": 74,
+          "end": 77,
           "object": {
             "type": "Identifier",
-            "name": "c",
             "start": 74,
-            "end": 75
+            "end": 75,
+            "name": "c"
           },
           "property": {
             "type": "Identifier",
-            "name": "b",
             "start": 76,
-            "end": 77
+            "end": 77,
+            "name": "b"
           },
-          "optional": false,
           "computed": false,
-          "start": 74,
-          "end": 77
-        },
-        "start": 74,
-        "end": 78
+          "optional": false
+        }
       },
       {
         "type": "LabeledStatement",
+        "start": 79,
+        "end": 86,
         "label": {
           "type": "Identifier",
-          "name": "b",
           "start": 79,
-          "end": 80
+          "end": 80,
+          "name": "b"
         },
         "body": {
           "type": "ExpressionStatement",
+          "start": 82,
+          "end": 86,
           "expression": {
             "type": "CallExpression",
+            "start": 82,
+            "end": 85,
             "callee": {
               "type": "Identifier",
-              "name": "d",
               "start": 82,
-              "end": 83
+              "end": 83,
+              "name": "d"
             },
-            "arguments": [],
-            "optional": false,
-            "start": 82,
-            "end": 85
-          },
-          "start": 82,
-          "end": 86
-        },
-        "start": 79,
-        "end": 86
+            "arguments": [
+            ],
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 87
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

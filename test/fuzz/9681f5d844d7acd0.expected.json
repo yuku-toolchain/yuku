@@ -1,318 +1,322 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 115,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
-        "expression": {
-          "type": "ArrowFunctionExpression",
-          "expression": true,
-          "async": false,
-          "params": [
-            {
-              "type": "Identifier",
-              "name": "a",
-              "start": 0,
-              "end": 1
-            }
-          ],
-          "body": {
-            "type": "Identifier",
-            "name": "b",
-            "start": 5,
-            "end": 6
-          },
-          "id": null,
-          "generator": false,
-          "start": 0,
-          "end": 6
-        },
         "start": 0,
-        "end": 7
-      },
-      {
-        "type": "ExpressionStatement",
+        "end": 7,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 0,
+          "end": 6,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "Identifier",
-              "name": "a",
-              "start": 9,
-              "end": 10
-            },
-            {
-              "type": "Identifier",
-              "name": "b",
-              "start": 12,
-              "end": 13
+              "start": 0,
+              "end": 1,
+              "name": "a"
             }
           ],
           "body": {
             "type": "Identifier",
-            "name": "c",
-            "start": 18,
-            "end": 19
+            "start": 5,
+            "end": 6,
+            "name": "b"
           },
-          "id": null,
-          "generator": false,
-          "start": 8,
-          "end": 19
-        },
+          "expression": true
+        }
+      },
+      {
+        "type": "ExpressionStatement",
         "start": 8,
-        "end": 20
-      },
-      {
-        "type": "ExpressionStatement",
+        "end": 20,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 8,
+          "end": 19,
+          "id": null,
+          "generator": false,
           "async": false,
-          "params": [],
+          "params": [
+            {
+              "type": "Identifier",
+              "start": 9,
+              "end": 10,
+              "name": "a"
+            },
+            {
+              "type": "Identifier",
+              "start": 12,
+              "end": 13,
+              "name": "b"
+            }
+          ],
           "body": {
             "type": "Identifier",
-            "name": "b",
-            "start": 27,
-            "end": 28
+            "start": 18,
+            "end": 19,
+            "name": "c"
           },
-          "id": null,
-          "generator": false,
-          "start": 21,
-          "end": 28
-        },
+          "expression": true
+        }
+      },
+      {
+        "type": "ExpressionStatement",
         "start": 21,
-        "end": 29
+        "end": 29,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 21,
+          "end": 28,
+          "id": null,
+          "generator": false,
+          "async": false,
+          "params": [
+          ],
+          "body": {
+            "type": "Identifier",
+            "start": 27,
+            "end": 28,
+            "name": "b"
+          },
+          "expression": true
+        }
       },
       {
         "type": "ExpressionStatement",
-        "expression": {
-          "type": "ArrowFunctionExpression",
-          "expression": true,
-          "async": false,
-          "params": [
-            {
-              "type": "Identifier",
-              "name": "a",
-              "start": 30,
-              "end": 31
-            }
-          ],
-          "body": {
-            "type": "ParenthesizedExpression",
-            "expression": {
-              "type": "ArrowFunctionExpression",
-              "expression": true,
-              "async": false,
-              "params": [
-                {
-                  "type": "Identifier",
-                  "name": "b",
-                  "start": 36,
-                  "end": 37
-                }
-              ],
-              "body": {
-                "type": "Identifier",
-                "name": "c",
-                "start": 41,
-                "end": 42
-              },
-              "id": null,
-              "generator": false,
-              "start": 36,
-              "end": 42
-            },
-            "start": 35,
-            "end": 43
-          },
-          "id": null,
-          "generator": false,
-          "start": 30,
-          "end": 43
-        },
         "start": 30,
-        "end": 44
-      },
-      {
-        "type": "ExpressionStatement",
+        "end": 44,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 30,
+          "end": 43,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "Identifier",
-              "name": "a",
-              "start": 45,
-              "end": 46
+              "start": 30,
+              "end": 31,
+              "name": "a"
             }
           ],
           "body": {
             "type": "ParenthesizedExpression",
+            "start": 35,
+            "end": 43,
             "expression": {
               "type": "ArrowFunctionExpression",
-              "expression": true,
+              "start": 36,
+              "end": 42,
+              "id": null,
+              "generator": false,
               "async": false,
               "params": [
                 {
                   "type": "Identifier",
-                  "name": "b",
-                  "start": 51,
-                  "end": 52
+                  "start": 36,
+                  "end": 37,
+                  "name": "b"
                 }
               ],
               "body": {
                 "type": "Identifier",
-                "name": "c",
-                "start": 56,
-                "end": 57
+                "start": 41,
+                "end": 42,
+                "name": "c"
               },
-              "id": null,
-              "generator": false,
-              "start": 51,
-              "end": 57
-            },
-            "start": 50,
-            "end": 58
+              "expression": true
+            }
           },
-          "id": null,
-          "generator": false,
-          "start": 45,
-          "end": 58
-        },
-        "start": 45,
-        "end": 59
+          "expression": true
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 45,
+        "end": 59,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 45,
+          "end": 58,
+          "id": null,
+          "generator": false,
           "async": false,
-          "params": [],
+          "params": [
+            {
+              "type": "Identifier",
+              "start": 45,
+              "end": 46,
+              "name": "a"
+            }
+          ],
           "body": {
             "type": "ParenthesizedExpression",
+            "start": 50,
+            "end": 58,
             "expression": {
               "type": "ArrowFunctionExpression",
-              "expression": true,
+              "start": 51,
+              "end": 57,
+              "id": null,
+              "generator": false,
               "async": false,
               "params": [
                 {
                   "type": "Identifier",
-                  "name": "b",
+                  "start": 51,
+                  "end": 52,
+                  "name": "b"
+                }
+              ],
+              "body": {
+                "type": "Identifier",
+                "start": 56,
+                "end": 57,
+                "name": "c"
+              },
+              "expression": true
+            }
+          },
+          "expression": true
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 60,
+        "end": 80,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 60,
+          "end": 79,
+          "id": null,
+          "generator": false,
+          "async": false,
+          "params": [
+          ],
+          "body": {
+            "type": "ParenthesizedExpression",
+            "start": 66,
+            "end": 79,
+            "expression": {
+              "type": "ArrowFunctionExpression",
+              "start": 67,
+              "end": 78,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [
+                {
+                  "type": "Identifier",
                   "start": 68,
-                  "end": 69
+                  "end": 69,
+                  "name": "b"
                 },
                 {
                   "type": "Identifier",
-                  "name": "c",
                   "start": 71,
-                  "end": 72
+                  "end": 72,
+                  "name": "c"
                 }
               ],
               "body": {
                 "type": "Identifier",
-                "name": "d",
                 "start": 77,
-                "end": 78
+                "end": 78,
+                "name": "d"
               },
-              "id": null,
-              "generator": false,
-              "start": 67,
-              "end": 78
-            },
-            "start": 66,
-            "end": 79
+              "expression": true
+            }
           },
-          "id": null,
-          "generator": false,
-          "start": 60,
-          "end": 79
-        },
-        "start": 60,
-        "end": 80
+          "expression": true
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 81,
+        "end": 102,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": false,
+          "start": 81,
+          "end": 101,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "Identifier",
-              "name": "a",
               "start": 81,
-              "end": 82
+              "end": 82,
+              "name": "a"
             }
           ],
           "body": {
             "type": "BlockStatement",
+            "start": 86,
+            "end": 101,
             "body": [
               {
                 "type": "ReturnStatement",
+                "start": 90,
+                "end": 99,
                 "argument": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 97,
-                  "end": 98
-                },
-                "start": 90,
-                "end": 99
+                  "end": 98,
+                  "name": "b"
+                }
               }
-            ],
-            "start": 86,
-            "end": 101
+            ]
           },
-          "id": null,
-          "generator": false,
-          "start": 81,
-          "end": 101
-        },
-        "start": 81,
-        "end": 102
+          "expression": false
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 103,
+        "end": 114,
         "expression": {
           "type": "ArrowFunctionExpression",
-          "expression": true,
+          "start": 103,
+          "end": 113,
+          "id": null,
+          "generator": false,
           "async": false,
           "params": [
             {
               "type": "Identifier",
-              "name": "a",
               "start": 103,
-              "end": 104
+              "end": 104,
+              "name": "a"
             }
           ],
           "body": {
             "type": "ParenthesizedExpression",
+            "start": 108,
+            "end": 113,
             "expression": {
               "type": "Literal",
-              "value": "e",
-              "raw": "\"e\"",
               "start": 109,
-              "end": 112
-            },
-            "start": 108,
-            "end": 113
+              "end": 112,
+              "value": "e",
+              "raw": "\"e\""
+            }
           },
-          "id": null,
-          "generator": false,
-          "start": 103,
-          "end": 113
-        },
-        "start": 103,
-        "end": 114
+          "expression": true
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 115
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

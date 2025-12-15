@@ -1,132 +1,135 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 60,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 59,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 10,
-          "end": 11
+          "end": 11,
+          "name": "a"
         },
         "generator": true,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 14,
+          "end": 59,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 18,
+              "end": 57,
               "expression": {
                 "type": "SequenceExpression",
+                "start": 18,
+                "end": 56,
                 "expressions": [
                   {
                     "type": "ParenthesizedExpression",
+                    "start": 18,
+                    "end": 53,
                     "expression": {
                       "type": "SequenceExpression",
+                      "start": 19,
+                      "end": 52,
                       "expressions": [
                         {
                           "type": "ParenthesizedExpression",
+                          "start": 19,
+                          "end": 34,
                           "expression": {
                             "type": "YieldExpression",
+                            "start": 20,
+                            "end": 33,
                             "delegate": false,
                             "argument": {
                               "type": "ParenthesizedExpression",
+                              "start": 26,
+                              "end": 33,
                               "expression": {
                                 "type": "AssignmentExpression",
+                                "start": 27,
+                                "end": 32,
                                 "operator": "=",
                                 "left": {
                                   "type": "Identifier",
-                                  "name": "b",
                                   "start": 27,
-                                  "end": 28
+                                  "end": 28,
+                                  "name": "b"
                                 },
                                 "right": {
                                   "type": "Identifier",
-                                  "name": "c",
                                   "start": 31,
-                                  "end": 32
-                                },
-                                "start": 27,
-                                "end": 32
-                              },
-                              "start": 26,
-                              "end": 33
-                            },
-                            "start": 20,
-                            "end": 33
-                          },
-                          "start": 19,
-                          "end": 34
+                                  "end": 32,
+                                  "name": "c"
+                                }
+                              }
+                            }
+                          }
                         },
                         {
                           "type": "ParenthesizedExpression",
+                          "start": 36,
+                          "end": 52,
                           "expression": {
                             "type": "YieldExpression",
+                            "start": 37,
+                            "end": 51,
                             "delegate": true,
                             "argument": {
                               "type": "ParenthesizedExpression",
+                              "start": 44,
+                              "end": 51,
                               "expression": {
                                 "type": "AssignmentExpression",
+                                "start": 45,
+                                "end": 50,
                                 "operator": "=",
                                 "left": {
                                   "type": "Identifier",
-                                  "name": "d",
                                   "start": 45,
-                                  "end": 46
+                                  "end": 46,
+                                  "name": "d"
                                 },
                                 "right": {
                                   "type": "Identifier",
-                                  "name": "e",
                                   "start": 49,
-                                  "end": 50
-                                },
-                                "start": 45,
-                                "end": 50
-                              },
-                              "start": 44,
-                              "end": 51
-                            },
-                            "start": 37,
-                            "end": 51
-                          },
-                          "start": 36,
-                          "end": 52
+                                  "end": 50,
+                                  "name": "e"
+                                }
+                              }
+                            }
+                          }
                         }
-                      ],
-                      "start": 19,
-                      "end": 52
-                    },
-                    "start": 18,
-                    "end": 53
+                      ]
+                    }
                   },
                   {
                     "type": "Identifier",
-                    "name": "f",
                     "start": 55,
-                    "end": 56
+                    "end": 56,
+                    "name": "f"
                   }
-                ],
-                "start": 18,
-                "end": 56
-              },
-              "start": 18,
-              "end": 57
+                ]
+              }
             }
-          ],
-          "start": 14,
-          "end": 59
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 59
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 60
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

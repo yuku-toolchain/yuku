@@ -1,47 +1,49 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
+        "start": 0,
+        "end": 44,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 4,
+            "end": 43,
             "id": {
               "type": "Identifier",
-              "name": "a",
               "start": 4,
-              "end": 5
+              "end": 5,
+              "name": "a"
             },
             "init": {
               "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 43,
               "expression": {
                 "type": "Literal",
+                "start": 9,
+                "end": 42,
                 "value": {},
                 "raw": "/[\\uD834\\uDF06-\\uD834\\uDF08a-z]/u",
                 "regex": {
                   "pattern": "[\\uD834\\uDF06-\\uD834\\uDF08a-z]",
                   "flags": "u"
-                },
-                "start": 9,
-                "end": 42
-              },
-              "start": 8,
-              "end": 43
-            },
-            "start": 4,
-            "end": 43
+                }
+              }
+            }
           }
-        ],
-        "start": 0,
-        "end": 44
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 45
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

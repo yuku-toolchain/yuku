@@ -1,116 +1,121 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 73,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 73,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
+          "start": 13,
+          "end": 73,
           "body": [
             {
               "type": "ClassDeclaration",
+              "start": 19,
+              "end": 34,
               "decorators": [],
               "id": {
                 "type": "Identifier",
-                "name": "b",
                 "start": 25,
-                "end": 26
+                "end": 26,
+                "name": "b"
               },
               "superClass": null,
               "body": {
                 "type": "ClassBody",
-                "body": [],
                 "start": 27,
-                "end": 34
-              },
-              "start": 19,
-              "end": 34
+                "end": 34,
+                "body": [
+                ]
+              }
             },
             {
               "type": "VariableDeclaration",
+              "start": 39,
+              "end": 48,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 43,
+                  "end": 48,
                   "id": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 43,
-                    "end": 44
+                    "end": 44,
+                    "name": "c"
                   },
                   "init": {
                     "type": "Identifier",
-                    "name": "b",
                     "start": 47,
-                    "end": 48
-                  },
-                  "start": 43,
-                  "end": 48
+                    "end": 48,
+                    "name": "b"
+                  }
                 }
-              ],
-              "start": 39,
-              "end": 48
+              ]
             },
             {
               "type": "VariableDeclaration",
+              "start": 53,
+              "end": 71,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 57,
+                  "end": 71,
                   "id": {
                     "type": "Identifier",
-                    "name": "d",
                     "start": 57,
-                    "end": 58
+                    "end": 58,
+                    "name": "d"
                   },
                   "init": {
                     "type": "ClassExpression",
+                    "start": 61,
+                    "end": 71,
                     "decorators": [],
                     "id": {
                       "type": "Identifier",
-                      "name": "e",
                       "start": 67,
-                      "end": 68
+                      "end": 68,
+                      "name": "e"
                     },
                     "superClass": null,
                     "body": {
                       "type": "ClassBody",
-                      "body": [],
                       "start": 69,
-                      "end": 71
-                    },
-                    "start": 61,
-                    "end": 71
-                  },
-                  "start": 57,
-                  "end": 71
+                      "end": 71,
+                      "body": [
+                      ]
+                    }
+                  }
                 }
-              ],
-              "start": 53,
-              "end": 71
+              ]
             }
-          ],
-          "start": 13,
-          "end": 73
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 73
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 73
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

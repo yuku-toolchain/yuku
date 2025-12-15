@@ -1,74 +1,76 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
     "body": [
       {
         "type": "BlockStatement",
+        "start": 0,
+        "end": 23,
         "body": [
           {
             "type": "VariableDeclaration",
+            "start": 2,
+            "end": 18,
             "kind": "var",
             "declarations": [
               {
                 "type": "VariableDeclarator",
+                "start": 6,
+                "end": 11,
                 "id": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 6,
-                  "end": 7
+                  "end": 7,
+                  "name": "a"
                 },
                 "init": {
                   "type": "Literal",
-                  "value": 1,
-                  "raw": "1",
                   "start": 10,
-                  "end": 11
-                },
-                "start": 6,
-                "end": 11
+                  "end": 11,
+                  "value": 1,
+                  "raw": "1"
+                }
               },
               {
                 "type": "VariableDeclarator",
+                "start": 13,
+                "end": 18,
                 "id": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 13,
-                  "end": 14
+                  "end": 14,
+                  "name": "b"
                 },
                 "init": {
                   "type": "Literal",
-                  "value": 2,
-                  "raw": "2",
                   "start": 17,
-                  "end": 18
-                },
-                "start": 13,
-                "end": 18
+                  "end": 18,
+                  "value": 2,
+                  "raw": "2"
+                }
               }
-            ],
-            "start": 2,
-            "end": 18
+            ]
           },
           {
             "type": "ExpressionStatement",
+            "start": 19,
+            "end": 21,
             "expression": {
               "type": "Identifier",
-              "name": "c",
               "start": 19,
-              "end": 20
-            },
-            "start": 19,
-            "end": 21
+              "end": 20,
+              "name": "c"
+            }
           }
-        ],
-        "start": 0,
-        "end": 23
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

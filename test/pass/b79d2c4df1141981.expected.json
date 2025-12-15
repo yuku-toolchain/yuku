@@ -1,107 +1,107 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 105,
+    "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 105,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 9,
-          "end": 10
+          "end": 10,
+          "name": "a"
         },
         "generator": false,
         "async": false,
         "params": [
           {
             "type": "ArrayPattern",
+            "start": 11,
+            "end": 14,
             "elements": [
               {
                 "type": "Identifier",
-                "name": "b",
                 "start": 12,
-                "end": 13
+                "end": 13,
+                "name": "b"
               }
-            ],
-            "start": 11,
-            "end": 14
+            ]
           }
         ],
         "body": {
           "type": "BlockStatement",
+          "start": 16,
+          "end": 105,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 22,
+              "end": 26,
               "expression": {
                 "type": "CallExpression",
+                "start": 22,
+                "end": 25,
                 "callee": {
                   "type": "Identifier",
-                  "name": "c",
                   "start": 22,
-                  "end": 23
+                  "end": 23,
+                  "name": "c"
                 },
-                "arguments": [],
-                "optional": false,
-                "start": 22,
-                "end": 25
-              },
-              "start": 22,
-              "end": 26
+                "arguments": [
+                ],
+                "optional": false
+              }
             },
             {
               "type": "VariableDeclaration",
-              "kind": "var",
-              "declarations": [
-                {
-                  "type": "VariableDeclarator",
-                  "id": {
-                    "type": "Identifier",
-                    "name": "d",
-                    "start": 35,
-                    "end": 36
-                  },
-                  "init": null,
-                  "start": 35,
-                  "end": 36
-                }
-              ],
               "start": 31,
-              "end": 37
-            },
-            {
-              "type": "VariableDeclaration",
+              "end": 37,
               "kind": "var",
               "declarations": [
                 {
                   "type": "VariableDeclarator",
+                  "start": 35,
+                  "end": 36,
                   "id": {
                     "type": "Identifier",
-                    "name": "b",
-                    "start": 46,
-                    "end": 47
+                    "start": 35,
+                    "end": 36,
+                    "name": "d"
                   },
-                  "init": null,
-                  "start": 46,
-                  "end": 47
+                  "init": null
                 }
-              ],
+              ]
+            },
+            {
+              "type": "VariableDeclaration",
               "start": 42,
-              "end": 48
+              "end": 48,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 46,
+                  "end": 47,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 46,
+                    "end": 47,
+                    "name": "b"
+                  },
+                  "init": null
+                }
+              ]
             }
-          ],
-          "start": 16,
-          "end": 105
+          ]
         },
-        "expression": false,
-        "start": 0,
-        "end": 105
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 105
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -109,5 +109,7 @@
       "start": 50,
       "end": 103
     }
+  ],
+  "errors": [
   ]
 }

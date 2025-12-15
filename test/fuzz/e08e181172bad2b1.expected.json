@@ -1,146 +1,151 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 50,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 49,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 48,
           "expression": {
             "type": "ObjectExpression",
+            "start": 1,
+            "end": 47,
             "properties": [
               {
                 "type": "Property",
+                "start": 2,
+                "end": 22,
                 "kind": "get",
                 "key": {
                   "type": "BinaryExpression",
+                  "start": 7,
+                  "end": 16,
                   "left": {
                     "type": "ParenthesizedExpression",
+                    "start": 7,
+                    "end": 10,
                     "expression": {
                       "type": "Literal",
-                      "value": 1,
-                      "raw": "1",
                       "start": 8,
-                      "end": 9
-                    },
-                    "start": 7,
-                    "end": 10
+                      "end": 9,
+                      "value": 1,
+                      "raw": "1"
+                    }
                   },
                   "operator": "+",
                   "right": {
                     "type": "ParenthesizedExpression",
+                    "start": 13,
+                    "end": 16,
                     "expression": {
                       "type": "Literal",
-                      "value": 2,
-                      "raw": "2",
                       "start": 14,
-                      "end": 15
-                    },
-                    "start": 13,
-                    "end": 16
-                  },
-                  "start": 7,
-                  "end": 16
+                      "end": 15,
+                      "value": 2,
+                      "raw": "2"
+                    }
+                  }
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 17,
+                  "end": 22,
                   "id": null,
                   "generator": false,
                   "async": false,
-                  "params": [],
+                  "params": [
+                  ],
                   "body": {
                     "type": "BlockStatement",
-                    "body": [],
                     "start": 20,
-                    "end": 22
+                    "end": 22,
+                    "body": [
+                    ]
                   },
-                  "expression": false,
-                  "start": 17,
-                  "end": 22
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": true,
-                "start": 2,
-                "end": 22
+                "computed": true
               },
               {
                 "type": "Property",
+                "start": 24,
+                "end": 46,
                 "kind": "set",
                 "key": {
                   "type": "BinaryExpression",
+                  "start": 29,
+                  "end": 38,
                   "left": {
                     "type": "ParenthesizedExpression",
+                    "start": 29,
+                    "end": 32,
                     "expression": {
                       "type": "Literal",
-                      "value": 3,
-                      "raw": "3",
                       "start": 30,
-                      "end": 31
-                    },
-                    "start": 29,
-                    "end": 32
+                      "end": 31,
+                      "value": 3,
+                      "raw": "3"
+                    }
                   },
                   "operator": "/",
                   "right": {
                     "type": "ParenthesizedExpression",
+                    "start": 35,
+                    "end": 38,
                     "expression": {
                       "type": "Literal",
-                      "value": 4,
-                      "raw": "4",
                       "start": 36,
-                      "end": 37
-                    },
-                    "start": 35,
-                    "end": 38
-                  },
-                  "start": 29,
-                  "end": 38
+                      "end": 37,
+                      "value": 4,
+                      "raw": "4"
+                    }
+                  }
                 },
                 "value": {
                   "type": "FunctionExpression",
+                  "start": 40,
+                  "end": 46,
                   "id": null,
                   "generator": false,
                   "async": false,
                   "params": [
                     {
                       "type": "Identifier",
-                      "name": "a",
                       "start": 41,
-                      "end": 42
+                      "end": 42,
+                      "name": "a"
                     }
                   ],
                   "body": {
                     "type": "BlockStatement",
-                    "body": [],
                     "start": 44,
-                    "end": 46
+                    "end": 46,
+                    "body": [
+                    ]
                   },
-                  "expression": false,
-                  "start": 40,
-                  "end": 46
+                  "expression": false
                 },
                 "method": false,
                 "shorthand": false,
-                "computed": true,
-                "start": 24,
-                "end": 46
+                "computed": true
               }
-            ],
-            "start": 1,
-            "end": 47
-          },
-          "start": 0,
-          "end": 48
-        },
-        "start": 0,
-        "end": 49
+            ]
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 50
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

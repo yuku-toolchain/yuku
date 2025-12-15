@@ -1,72 +1,74 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 36,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
         "expression": {
           "type": "Literal",
-          "value": "use strict",
-          "raw": "\"use strict\"",
           "start": 0,
-          "end": 12
+          "end": 12,
+          "value": "use strict",
+          "raw": "\"use strict\""
         },
-        "directive": "use strict",
-        "start": 0,
-        "end": 13
+        "directive": "use strict"
       },
       {
         "type": "VariableDeclaration",
+        "start": 14,
+        "end": 35,
         "kind": "var",
         "declarations": [
           {
             "type": "VariableDeclarator",
+            "start": 18,
+            "end": 34,
             "id": {
               "type": "ObjectPattern",
+              "start": 18,
+              "end": 30,
               "properties": [
                 {
                   "type": "Property",
+                  "start": 20,
+                  "end": 28,
                   "kind": "init",
                   "key": {
                     "type": "Identifier",
-                    "name": "yield",
                     "start": 20,
-                    "end": 25
+                    "end": 25,
+                    "name": "yield"
                   },
                   "value": {
                     "type": "Identifier",
-                    "name": "a",
                     "start": 27,
-                    "end": 28
+                    "end": 28,
+                    "name": "a"
                   },
                   "method": false,
                   "shorthand": false,
-                  "computed": false,
-                  "start": 20,
-                  "end": 28
+                  "computed": false
                 }
-              ],
-              "start": 18,
-              "end": 30
+              ]
             },
             "init": {
               "type": "Identifier",
-              "name": "b",
               "start": 33,
-              "end": 34
-            },
-            "start": 18,
-            "end": 34
+              "end": 34,
+              "name": "b"
+            }
           }
-        ],
-        "start": 14,
-        "end": 35
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 36
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

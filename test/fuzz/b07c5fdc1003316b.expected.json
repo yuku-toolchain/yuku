@@ -1,77 +1,80 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 69,
+    "sourceType": "script",
     "body": [
       {
         "type": "SwitchStatement",
+        "start": 0,
+        "end": 68,
         "discriminant": {
           "type": "Identifier",
-          "name": "a",
           "start": 8,
-          "end": 9
+          "end": 9,
+          "name": "a"
         },
         "cases": [
           {
             "type": "SwitchCase",
+            "start": 15,
+            "end": 44,
             "test": {
               "type": "Literal",
-              "value": "b",
-              "raw": "\"b\"",
               "start": 20,
-              "end": 23
+              "end": 23,
+              "value": "b",
+              "raw": "\"b\""
             },
             "consequent": [
               {
                 "type": "ExpressionStatement",
+                "start": 29,
+                "end": 33,
                 "expression": {
                   "type": "CallExpression",
+                  "start": 29,
+                  "end": 32,
                   "callee": {
                     "type": "Identifier",
-                    "name": "c",
                     "start": 29,
-                    "end": 30
+                    "end": 30,
+                    "name": "c"
                   },
-                  "arguments": [],
-                  "optional": false,
-                  "start": 29,
-                  "end": 32
-                },
-                "start": 29,
-                "end": 33
+                  "arguments": [
+                  ],
+                  "optional": false
+                }
               },
               {
                 "type": "BreakStatement",
-                "label": null,
                 "start": 38,
-                "end": 44
+                "end": 44,
+                "label": null
               }
-            ],
-            "start": 15,
-            "end": 44
+            ]
           },
           {
             "type": "SwitchCase",
+            "start": 47,
+            "end": 66,
             "test": null,
             "consequent": [
               {
                 "type": "BreakStatement",
-                "label": null,
                 "start": 60,
-                "end": 66
+                "end": 66,
+                "label": null
               }
-            ],
-            "start": 47,
-            "end": 66
+            ]
           }
-        ],
-        "start": 0,
-        "end": 68
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 69
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

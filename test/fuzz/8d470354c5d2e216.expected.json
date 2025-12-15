@@ -1,6 +1,9 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 18,
+    "sourceType": "script",
     "body": [
       {
         "type": "EmptyStatement",
@@ -9,30 +12,31 @@
       },
       {
         "type": "FunctionDeclaration",
+        "start": 2,
+        "end": 17,
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 11,
-          "end": 12
+          "end": 12,
+          "name": "a"
         },
         "generator": false,
         "async": false,
-        "params": [],
+        "params": [
+        ],
         "body": {
           "type": "BlockStatement",
-          "body": [],
           "start": 15,
-          "end": 17
+          "end": 17,
+          "body": [
+          ]
         },
-        "expression": false,
-        "start": 2,
-        "end": 17
+        "expression": false
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 18
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

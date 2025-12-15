@@ -1,113 +1,117 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 55,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": {
           "type": "Identifier",
-          "name": "b",
           "start": 16,
-          "end": 17
+          "end": 17,
+          "name": "b"
         },
         "body": {
           "type": "ClassBody",
+          "start": 18,
+          "end": 55,
           "body": [
             {
               "type": "MethodDefinition",
+              "start": 20,
+              "end": 53,
               "decorators": [],
               "key": {
                 "type": "Identifier",
-                "name": "constructor",
                 "start": 20,
-                "end": 31
+                "end": 31,
+                "name": "constructor"
               },
               "value": {
                 "type": "FunctionExpression",
+                "start": 31,
+                "end": 53,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
+                  "start": 34,
+                  "end": 53,
                   "body": [
                     {
                       "type": "ExpressionStatement",
+                      "start": 36,
+                      "end": 51,
                       "expression": {
                         "type": "ParenthesizedExpression",
+                        "start": 36,
+                        "end": 50,
                         "expression": {
                           "type": "ObjectExpression",
+                          "start": 37,
+                          "end": 49,
                           "properties": [
                             {
                               "type": "Property",
+                              "start": 38,
+                              "end": 48,
                               "kind": "init",
                               "key": {
                                 "type": "Identifier",
-                                "name": "c",
                                 "start": 38,
-                                "end": 39
+                                "end": 39,
+                                "name": "c"
                               },
                               "value": {
                                 "type": "CallExpression",
+                                "start": 41,
+                                "end": 48,
                                 "callee": {
                                   "type": "Super",
                                   "start": 41,
                                   "end": 46
                                 },
-                                "arguments": [],
-                                "optional": false,
-                                "start": 41,
-                                "end": 48
+                                "arguments": [
+                                ],
+                                "optional": false
                               },
                               "method": false,
                               "shorthand": false,
-                              "computed": false,
-                              "start": 38,
-                              "end": 48
+                              "computed": false
                             }
-                          ],
-                          "start": 37,
-                          "end": 49
-                        },
-                        "start": 36,
-                        "end": 50
-                      },
-                      "start": 36,
-                      "end": 51
+                          ]
+                        }
+                      }
                     }
-                  ],
-                  "start": 34,
-                  "end": 53
+                  ]
                 },
-                "expression": false,
-                "start": 31,
-                "end": 53
+                "expression": false
               },
               "kind": "constructor",
               "computed": false,
-              "static": false,
-              "start": 20,
-              "end": 53
+              "static": false
             }
-          ],
-          "start": 18,
-          "end": 55
-        },
-        "start": 0,
-        "end": 55
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 55
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

@@ -1,12 +1,19 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
     "body": [
       {
         "type": "BlockStatement",
+        "start": 0,
+        "end": 26,
         "body": [
           {
             "type": "DoWhileStatement",
+            "start": 1,
+            "end": 19,
             "body": {
               "type": "EmptyStatement",
               "start": 4,
@@ -14,35 +21,30 @@
             },
             "test": {
               "type": "Literal",
-              "value": false,
-              "raw": "false",
               "start": 12,
-              "end": 17
-            },
-            "start": 1,
-            "end": 19
+              "end": 17,
+              "value": false,
+              "raw": "false"
+            }
           },
           {
             "type": "ExpressionStatement",
+            "start": 20,
+            "end": 25,
             "expression": {
               "type": "Literal",
-              "value": false,
-              "raw": "false",
               "start": 20,
-              "end": 25
-            },
-            "start": 20,
-            "end": 25
+              "end": 25,
+              "value": false,
+              "raw": "false"
+            }
           }
-        ],
-        "start": 0,
-        "end": 26
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 26
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

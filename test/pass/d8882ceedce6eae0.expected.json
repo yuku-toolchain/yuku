@@ -1,66 +1,65 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 132,
+    "sourceType": "script",
     "body": [
       {
         "type": "LabeledStatement",
+        "start": 101,
+        "end": 131,
         "label": {
           "type": "Identifier",
-          "name": "c",
           "start": 101,
-          "end": 102
+          "end": 102,
+          "name": "c"
         },
         "body": {
           "type": "ForInStatement",
+          "start": 104,
+          "end": 131,
           "left": {
             "type": "VariableDeclaration",
+            "start": 108,
+            "end": 113,
             "kind": "var",
             "declarations": [
               {
                 "type": "VariableDeclarator",
+                "start": 112,
+                "end": 113,
                 "id": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 112,
-                  "end": 113
+                  "end": 113,
+                  "name": "a"
                 },
-                "init": null,
-                "start": 112,
-                "end": 113
+                "init": null
               }
-            ],
-            "start": 108,
-            "end": 113
+            ]
           },
           "right": {
             "type": "Identifier",
-            "name": "b",
             "start": 117,
-            "end": 118
+            "end": 118,
+            "name": "b"
           },
           "body": {
             "type": "ContinueStatement",
+            "start": 120,
+            "end": 131,
             "label": {
               "type": "Identifier",
-              "name": "c",
               "start": 129,
-              "end": 130
-            },
-            "start": 120,
-            "end": 131
-          },
-          "start": 104,
-          "end": 131
-        },
-        "start": 101,
-        "end": 131
+              "end": 130,
+              "name": "c"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 132
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -74,5 +73,7 @@
       "start": 40,
       "end": 100
     }
+  ],
+  "errors": [
   ]
 }

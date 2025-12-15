@@ -1,72 +1,76 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 29,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 28,
         "expression": {
           "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 27,
           "expression": {
             "type": "CallExpression",
+            "start": 1,
+            "end": 26,
             "callee": {
               "type": "ParenthesizedExpression",
+              "start": 1,
+              "end": 17,
               "expression": {
                 "type": "FunctionExpression",
+                "start": 2,
+                "end": 16,
                 "id": null,
                 "generator": false,
                 "async": false,
-                "params": [],
+                "params": [
+                ],
                 "body": {
                   "type": "BlockStatement",
-                  "body": [],
                   "start": 14,
-                  "end": 16
+                  "end": 16,
+                  "body": [
+                  ]
                 },
-                "expression": false,
-                "start": 2,
-                "end": 16
-              },
-              "start": 1,
-              "end": 17
+                "expression": false
+              }
             },
             "arguments": [
               {
                 "type": "Literal",
-                "value": 1,
-                "raw": "1",
                 "start": 18,
-                "end": 19
+                "end": 19,
+                "value": 1,
+                "raw": "1"
               },
               {
                 "type": "Literal",
-                "value": 2,
-                "raw": "2",
                 "start": 21,
-                "end": 22
+                "end": 22,
+                "value": 2,
+                "raw": "2"
               },
               {
                 "type": "Literal",
-                "value": 3,
-                "raw": "3",
                 "start": 24,
-                "end": 25
+                "end": 25,
+                "value": 3,
+                "raw": "3"
               }
             ],
-            "optional": false,
-            "start": 1,
-            "end": 26
-          },
-          "start": 0,
-          "end": 27
-        },
-        "start": 0,
-        "end": 28
+            "optional": false
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 29
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

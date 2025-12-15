@@ -1,62 +1,65 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "module",
     "body": [
       {
         "type": "ImportDeclaration",
+        "start": 0,
+        "end": 24,
         "specifiers": [
           {
             "type": "ImportSpecifier",
+            "start": 9,
+            "end": 10,
             "imported": {
               "type": "Identifier",
-              "name": "a",
               "start": 9,
-              "end": 10
+              "end": 10,
+              "name": "a"
             },
             "local": {
               "type": "Identifier",
-              "name": "a",
               "start": 9,
-              "end": 10
-            },
-            "start": 9,
-            "end": 10
+              "end": 10,
+              "name": "a"
+            }
           },
           {
             "type": "ImportSpecifier",
+            "start": 12,
+            "end": 13,
             "imported": {
               "type": "Identifier",
-              "name": "b",
               "start": 12,
-              "end": 13
+              "end": 13,
+              "name": "b"
             },
             "local": {
               "type": "Identifier",
-              "name": "b",
               "start": 12,
-              "end": 13
-            },
-            "start": 12,
-            "end": 13
+              "end": 13,
+              "name": "b"
+            }
           }
         ],
         "source": {
           "type": "Literal",
-          "value": "c",
-          "raw": "\"c\"",
           "start": 21,
-          "end": 24
+          "end": 24,
+          "value": "c",
+          "raw": "\"c\""
         },
         "phase": null,
-        "attributes": [],
-        "start": 0,
-        "end": 24
+        "attributes": [
+        ]
       }
-    ],
-    "sourceType": "module",
-    "start": 0,
-    "end": 24
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

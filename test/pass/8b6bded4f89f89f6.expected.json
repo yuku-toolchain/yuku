@@ -1,197 +1,203 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 107,
+    "sourceType": "script",
     "body": [
       {
         "type": "IfStatement",
+        "start": 0,
+        "end": 74,
         "test": {
           "type": "CallExpression",
+          "start": 4,
+          "end": 33,
           "callee": {
             "type": "ParenthesizedExpression",
+            "start": 4,
+            "end": 31,
             "expression": {
               "type": "FunctionExpression",
+              "start": 5,
+              "end": 30,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 15,
+                "end": 30,
                 "body": [
                   {
                     "type": "ReturnStatement",
+                    "start": 17,
+                    "end": 28,
                     "argument": {
                       "type": "Literal",
-                      "value": true,
-                      "raw": "true",
                       "start": 24,
-                      "end": 28
-                    },
-                    "start": 17,
-                    "end": 28
+                      "end": 28,
+                      "value": true,
+                      "raw": "true"
+                    }
                   }
-                ],
-                "start": 15,
-                "end": 30
+                ]
               },
-              "expression": false,
-              "start": 5,
-              "end": 30
-            },
-            "start": 4,
-            "end": 31
+              "expression": false
+            }
           },
-          "arguments": [],
-          "optional": false,
-          "start": 4,
-          "end": 33
+          "arguments": [
+          ],
+          "optional": false
         },
         "consequent": {
           "type": "BlockStatement",
+          "start": 35,
+          "end": 51,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 41,
+              "end": 49,
               "expression": {
                 "type": "CallExpression",
+                "start": 41,
+                "end": 48,
                 "callee": {
                   "type": "Identifier",
-                  "name": "a",
                   "start": 41,
-                  "end": 42
+                  "end": 42,
+                  "name": "a"
                 },
                 "arguments": [
                   {
                     "type": "Literal",
-                    "value": true,
-                    "raw": "true",
                     "start": 43,
-                    "end": 47
+                    "end": 47,
+                    "value": true,
+                    "raw": "true"
                   }
                 ],
-                "optional": false,
-                "start": 41,
-                "end": 48
-              },
-              "start": 41,
-              "end": 49
+                "optional": false
+              }
             }
-          ],
-          "start": 35,
-          "end": 51
+          ]
         },
         "alternate": {
           "type": "BlockStatement",
+          "start": 57,
+          "end": 74,
           "body": [
             {
               "type": "ExpressionStatement",
+              "start": 63,
+              "end": 72,
               "expression": {
                 "type": "CallExpression",
+                "start": 63,
+                "end": 71,
                 "callee": {
                   "type": "Identifier",
-                  "name": "b",
                   "start": 63,
-                  "end": 64
+                  "end": 64,
+                  "name": "b"
                 },
                 "arguments": [
                   {
                     "type": "Literal",
-                    "value": false,
-                    "raw": "false",
                     "start": 65,
-                    "end": 70
+                    "end": 70,
+                    "value": false,
+                    "raw": "false"
                   }
                 ],
-                "optional": false,
-                "start": 63,
-                "end": 71
-              },
-              "start": 63,
-              "end": 72
+                "optional": false
+              }
             }
-          ],
-          "start": 57,
-          "end": 74
-        },
-        "start": 0,
-        "end": 74
+          ]
+        }
       },
       {
         "type": "ExpressionStatement",
+        "start": 75,
+        "end": 107,
         "expression": {
           "type": "CallExpression",
+          "start": 75,
+          "end": 106,
           "callee": {
             "type": "ParenthesizedExpression",
+            "start": 75,
+            "end": 104,
             "expression": {
               "type": "FunctionExpression",
+              "start": 76,
+              "end": 103,
               "id": null,
               "generator": false,
               "async": false,
-              "params": [],
+              "params": [
+              ],
               "body": {
                 "type": "BlockStatement",
+                "start": 86,
+                "end": 103,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 92,
+                    "end": 101,
                     "expression": {
                       "type": "CallExpression",
+                      "start": 92,
+                      "end": 100,
                       "callee": {
                         "type": "MemberExpression",
+                        "start": 92,
+                        "end": 95,
                         "object": {
                           "type": "Identifier",
-                          "name": "c",
                           "start": 92,
-                          "end": 93
+                          "end": 93,
+                          "name": "c"
                         },
                         "property": {
                           "type": "Identifier",
-                          "name": "d",
                           "start": 94,
-                          "end": 95
+                          "end": 95,
+                          "name": "d"
                         },
-                        "optional": false,
                         "computed": false,
-                        "start": 92,
-                        "end": 95
+                        "optional": false
                       },
                       "arguments": [
                         {
                           "type": "Literal",
-                          "value": "e",
-                          "raw": "\"e\"",
                           "start": 96,
-                          "end": 99
+                          "end": 99,
+                          "value": "e",
+                          "raw": "\"e\""
                         }
                       ],
-                      "optional": false,
-                      "start": 92,
-                      "end": 100
-                    },
-                    "start": 92,
-                    "end": 101
+                      "optional": false
+                    }
                   }
-                ],
-                "start": 86,
-                "end": 103
+                ]
               },
-              "expression": false,
-              "start": 76,
-              "end": 103
-            },
-            "start": 75,
-            "end": 104
+              "expression": false
+            }
           },
-          "arguments": [],
-          "optional": false,
-          "start": 75,
-          "end": 106
-        },
-        "start": 75,
-        "end": 107
+          "arguments": [
+          ],
+          "optional": false
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 107
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

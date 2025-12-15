@@ -1,43 +1,42 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 124,
+    "sourceType": "script",
     "body": [
       {
         "type": "LabeledStatement",
+        "start": 101,
+        "end": 123,
         "label": {
           "type": "Identifier",
-          "name": "a",
           "start": 101,
-          "end": 102
+          "end": 102,
+          "name": "a"
         },
         "body": {
           "type": "ForStatement",
+          "start": 104,
+          "end": 123,
           "init": null,
           "test": null,
           "update": null,
           "body": {
             "type": "ContinueStatement",
+            "start": 112,
+            "end": 123,
             "label": {
               "type": "Identifier",
-              "name": "a",
               "start": 121,
-              "end": 122
-            },
-            "start": 112,
-            "end": 123
-          },
-          "start": 104,
-          "end": 123
-        },
-        "start": 101,
-        "end": 123
+              "end": 122,
+              "name": "a"
+            }
+          }
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 124
+    ]
   },
-  "errors": [],
   "comments": [
     {
       "type": "Line",
@@ -51,5 +50,7 @@
       "start": 40,
       "end": 100
     }
+  ],
+  "errors": [
   ]
 }

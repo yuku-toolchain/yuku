@@ -1,47 +1,49 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
     "body": [
       {
         "type": "ExpressionStatement",
+        "start": 0,
+        "end": 15,
         "expression": {
           "type": "NewExpression",
+          "start": 0,
+          "end": 14,
           "callee": {
             "type": "Identifier",
-            "name": "a",
             "start": 4,
-            "end": 5
+            "end": 5,
+            "name": "a"
           },
           "arguments": [
             {
               "type": "SpreadElement",
+              "start": 6,
+              "end": 13,
               "argument": {
                 "type": "ParenthesizedExpression",
+                "start": 9,
+                "end": 13,
                 "expression": {
                   "type": "Literal",
-                  "value": 0.5,
-                  "raw": ".5",
                   "start": 10,
-                  "end": 12
-                },
-                "start": 9,
-                "end": 13
-              },
-              "start": 6,
-              "end": 13
+                  "end": 12,
+                  "value": 0.5,
+                  "raw": ".5"
+                }
+              }
             }
-          ],
-          "start": 0,
-          "end": 14
-        },
-        "start": 0,
-        "end": 15
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 16
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

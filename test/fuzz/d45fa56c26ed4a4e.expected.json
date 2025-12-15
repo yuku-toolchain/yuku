@@ -1,42 +1,45 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
     "body": [
       {
         "type": "ClassDeclaration",
+        "start": 0,
+        "end": 22,
         "decorators": [],
         "id": {
           "type": "Identifier",
-          "name": "a",
           "start": 6,
-          "end": 7
+          "end": 7,
+          "name": "a"
         },
         "superClass": {
           "type": "ParenthesizedExpression",
+          "start": 16,
+          "end": 19,
           "expression": {
             "type": "Literal",
-            "value": 1,
-            "raw": "1",
             "start": 17,
-            "end": 18
-          },
-          "start": 16,
-          "end": 19
+            "end": 18,
+            "value": 1,
+            "raw": "1"
+          }
         },
         "body": {
           "type": "ClassBody",
-          "body": [],
           "start": 20,
-          "end": 22
-        },
-        "start": 0,
-        "end": 22
+          "end": 22,
+          "body": [
+          ]
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 23
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

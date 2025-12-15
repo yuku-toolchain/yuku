@@ -1,56 +1,58 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 46,
+    "sourceType": "script",
     "body": [
       {
         "type": "SwitchStatement",
+        "start": 0,
+        "end": 45,
         "discriminant": {
           "type": "Identifier",
-          "name": "a",
           "start": 8,
-          "end": 9
+          "end": 9,
+          "name": "a"
         },
         "cases": [
           {
             "type": "SwitchCase",
+            "start": 15,
+            "end": 43,
             "test": {
               "type": "Identifier",
-              "name": "b",
               "start": 20,
-              "end": 21
+              "end": 21,
+              "name": "b"
             },
             "consequent": [
               {
                 "type": "BlockStatement",
+                "start": 27,
+                "end": 43,
                 "body": [
                   {
                     "type": "ExpressionStatement",
+                    "start": 35,
+                    "end": 37,
                     "expression": {
                       "type": "Identifier",
-                      "name": "c",
                       "start": 35,
-                      "end": 36
-                    },
-                    "start": 35,
-                    "end": 37
+                      "end": 36,
+                      "name": "c"
+                    }
                   }
-                ],
-                "start": 27,
-                "end": 43
+                ]
               }
-            ],
-            "start": 15,
-            "end": 43
+            ]
           }
-        ],
-        "start": 0,
-        "end": 45
+        ]
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 46
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }

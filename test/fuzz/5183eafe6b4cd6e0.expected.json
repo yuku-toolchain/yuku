@@ -1,54 +1,56 @@
 {
   "program": {
     "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
     "body": [
       {
         "type": "ForStatement",
+        "start": 0,
+        "end": 19,
         "init": {
           "type": "VariableDeclaration",
+          "start": 5,
+          "end": 10,
           "kind": "var",
           "declarations": [
             {
               "type": "VariableDeclarator",
+              "start": 9,
+              "end": 10,
               "id": {
                 "type": "Identifier",
-                "name": "a",
                 "start": 9,
-                "end": 10
+                "end": 10,
+                "name": "a"
               },
-              "init": null,
-              "start": 9,
-              "end": 10
+              "init": null
             }
-          ],
-          "start": 5,
-          "end": 10
+          ]
         },
         "test": {
           "type": "Identifier",
-          "name": "b",
           "start": 12,
-          "end": 13
+          "end": 13,
+          "name": "b"
         },
         "update": {
           "type": "Identifier",
-          "name": "c",
           "start": 15,
-          "end": 16
+          "end": 16,
+          "name": "c"
         },
         "body": {
           "type": "EmptyStatement",
           "start": 18,
           "end": 19
-        },
-        "start": 0,
-        "end": 19
+        }
       }
-    ],
-    "sourceType": "script",
-    "start": 0,
-    "end": 20
+    ]
   },
-  "errors": [],
-  "comments": []
+  "comments": [
+  ],
+  "errors": [
+  ]
 }
