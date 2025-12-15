@@ -653,12 +653,12 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
 }
 
 pub fn parseArrayExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
-    const saved_flag = parser.state.cover_has_init_name;
-    parser.state.cover_has_init_name = false;
-
     const cover = try array.parseCover(parser) orelse return null;
     const needs_validation = enable_validation and parser.state.cover_has_init_name;
-    parser.state.cover_has_init_name = saved_flag or needs_validation;
+
+    if(enable_validation) {
+        parser.state.cover_has_init_name = false;
+    }
 
     if (
     // means this array is part of assignment expression/pattern
@@ -674,12 +674,12 @@ pub fn parseArrayExpression(parser: *Parser, enable_validation: bool) Error!?ast
 }
 
 pub fn parseObjectExpression(parser: *Parser, enable_validation: bool) Error!?ast.NodeIndex {
-    const saved_flag = parser.state.cover_has_init_name;
-    parser.state.cover_has_init_name = false;
-
     const cover = try object.parseCover(parser) orelse return null;
     const needs_validation = enable_validation and parser.state.cover_has_init_name;
-    parser.state.cover_has_init_name = saved_flag or needs_validation;
+
+    if(enable_validation) {
+        parser.state.cover_has_init_name = false;
+    }
 
     if (
     // means this object is part of assignment expression/pattern

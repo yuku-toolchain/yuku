@@ -94,6 +94,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     var kind: ast.PropertyKind = .init;
     var computed = false;
     var key: ast.NodeIndex = ast.null_node;
+    var is_key_reserved = false;
 
     // check for async, consume it, then decide if it's a modifier or key based on what follows
     if (parser.current_token.type == .async) {
@@ -146,12 +147,10 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
                 return null;
             }
         } else if (parser.current_token.type.isIdentifierLike()) {
-            const key_token = parser.current_token;
-            try parser.advance();
-            key = try parser.addNode(
-                .{ .identifier_name = .{ .name_start = key_token.span.start, .name_len = @intCast(key_token.lexeme.len) } },
-                key_token.span,
-            );
+            if(parser.current_token.type.isReserved()) {
+                is_key_reserved = true;
+            }
+            key = try literals.parseIdentifierName(parser);
         } else if (parser.current_token.type == .string_literal) {
             key = try literals.parseStringLiteral(parser) orelse return null;
         } else if (parser.current_token.type.isNumericLiteral()) {
@@ -236,7 +235,6 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         );
     }
 
-    // shorthand property: { a }
     if (computed) {
         try parser.report(
             key_span,
@@ -246,7 +244,21 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
+    // shorthand property: { a }
+
+    if (is_key_reserved) {
+        const key_name = parser.source[key_span.start..key_span.end];
+        try parser.reportFmt(
+            key_span,
+            "Reserved word '{s}' cannot be used in shorthand property",
+            .{key_name},
+            .{ .help = "Use the full property syntax with ':' instead. For example: '{s}: value' in object literals, or '{s}: variableName' in destructuring." },
+        );
+        return null;
+    }
+
     const key_data = parser.getData(key);
+
     if (key_data != .identifier_name) {
         try parser.report(
             key_span,
@@ -388,35 +400,16 @@ fn parseObjectMethodProperty(
 /// convert object cover to ObjectExpression.
 /// validates that does not contain CoverInitializedName when validate=true.
 pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Error!?ast.NodeIndex {
-    if (validate) {
-        for (cover.properties) |prop| {
-            if (ast.isNull(prop)) continue;
-
-            const prop_data = parser.getData(prop);
-            switch (prop_data) {
-                .object_property => |obj_prop| {
-                    if (obj_prop.shorthand and grammar.isCoverInitializedName(parser, obj_prop.value)) {
-                        try grammar.reportCoverInitializedNameError(parser, prop);
-                        return null;
-                    }
-                    if (!try grammar.validateNoInvalidCoverSyntax(parser, obj_prop.value)) {
-                        return null;
-                    }
-                },
-                .spread_element => |spread| {
-                    if (!try grammar.validateNoInvalidCoverSyntax(parser, spread.argument)) {
-                        return null;
-                    }
-                },
-                else => {},
-            }
-        }
-    }
-
-    return try parser.addNode(
+    const object_expression = try parser.addNode(
         .{ .object_expression = .{ .properties = try parser.addExtra(cover.properties) } },
         .{ .start = cover.start, .end = cover.end },
     );
+
+    if (validate and !try grammar.validateNoInvalidCoverSyntax(parser, object_expression)) {
+        return null;
+    }
+
+    return object_expression;
 }
 
 /// convert object cover to ObjectPattern.

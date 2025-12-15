@@ -1,6 +1,7 @@
 const Parser = @import("parser.zig").Parser;
 const Error = @import("parser.zig").Error;
 const ast = @import("ast.zig");
+const std = @import("std");
 
 const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");
@@ -25,6 +26,7 @@ pub fn validateNoInvalidCoverSyntax(parser: *Parser, expr: ast.NodeIndex) Error!
                 if (ast.isNull(prop)) continue;
 
                 const prop_data = parser.getData(prop);
+
                 switch (prop_data) {
                     .object_property => |obj_prop| {
                         if (obj_prop.shorthand and isCoverInitializedName(parser, obj_prop.value)) {
@@ -52,6 +54,12 @@ pub fn validateNoInvalidCoverSyntax(parser: *Parser, expr: ast.NodeIndex) Error!
                 if (!try validateNoInvalidCoverSyntax(parser, elem)) {
                     return false;
                 }
+            }
+        },
+        .object_property => |obj_prop| {
+            if (obj_prop.shorthand and isCoverInitializedName(parser, obj_prop.value)) {
+                try reportCoverInitializedNameError(parser, expr);
+                return false;
             }
         },
         .spread_element => |spread| {
