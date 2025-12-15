@@ -314,7 +314,7 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
         // convert identifier_name to binding_identifier
         const id_data = imported_data.identifier_name;
 
-        try parser.setData(imported, .{
+        parser.setData(imported, .{
             .binding_identifier = .{
                 .name_start = id_data.name_start,
                 .name_len = id_data.name_len,
