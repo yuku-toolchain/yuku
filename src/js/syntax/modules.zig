@@ -512,16 +512,13 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         attributes = try parseWithClause(parser);
         end = parser.getSpan(source).end;
     } else {
-        // local export: export { foo }
-        // validate that all specifiers are valid local references (not string literals)
-        // and check for strict mode reserved words using the captured token types
         const specs = parser.getExtra(specifiers);
-        for (specs, 0..) |spec_idx, i| {
-            const spec = parser.getData(spec_idx).export_specifier;
-            const local_data = parser.getData(spec.local);
-            const local_span = parser.getSpan(spec.local);
 
-            // check for string literal local - not allowed without 'from'
+        for (specs, 0..) |spec_idx, i| {
+            const specifier = parser.getData(spec_idx).export_specifier;
+            const local_data = parser.getData(specifier.local);
+            const local_span = parser.getSpan(specifier.local);
+
             if (local_data == .string_literal) {
                 try parser.report(local_span, "A string literal cannot be used as an exported binding without 'from'", .{
                     .help = "Use: export { \"name\" } from 'some-module' or export { localName as \"name\" }",
@@ -529,10 +526,11 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
                 return null;
             }
 
-            // check for strict mode reserved words using the captured token type
             const local_token_type: token.TokenType = @enumFromInt(result.local_token_types[i]);
+
             if (local_token_type.isStrictModeReserved()) {
-                const local_name = parser.source[local_data.identifier_name.name_start..][0..local_data.identifier_name.name_len];
+                const local_name = parser.getSourceText(local_data.identifier_name.name_start, local_data.identifier_name.name_len);
+
                 try parser.reportFmt(
                     local_span,
                     "A reserved word cannot be used as an exported binding without 'from'",
@@ -593,16 +591,12 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
     }, .{ .start = start, .end = parser.getSpan(declaration).end });
 }
 
-/// Result of parsing export specifiers - includes token types for validation
 const ExportSpecifiersResult = struct {
     specifiers: ast.IndexRange,
-    /// Token types of each local name (parallel to specifiers)
-    /// Stored as u32 values of token.TokenType enum
     local_token_types: []const u32,
 };
 
-/// Parse export specifiers: { foo, bar as baz }
-/// Also tracks token types of local names for strict mode reserved word validation
+/// export specifiers: { foo, bar as baz }
 fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     const checkpoint = parser.scratch_a.begin();
     const token_checkpoint = parser.scratch_b.begin();
@@ -610,7 +604,6 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     if (!try parser.expect(.left_brace, "Expected '{' to start export specifiers", null)) return null;
 
     while (parser.current_token.type != .right_brace and parser.current_token.type != .eof) {
-        // Capture the token type of the local name BEFORE parsing
         const local_token_type = parser.current_token.type;
 
         const spec = try parseExportSpecifier(parser) orelse {
@@ -618,8 +611,9 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
             parser.scratch_b.reset(token_checkpoint);
             return null;
         };
+
         try parser.scratch_a.append(parser.allocator(), spec);
-        // Store token type as u32 (same size as NodeIndex)
+
         try parser.scratch_b.append(parser.allocator(), @intFromEnum(local_token_type));
 
         if (parser.current_token.type == .comma) {
