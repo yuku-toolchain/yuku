@@ -68,7 +68,7 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(test262);
 
-    const test262_step = b.step("Run Test262 parser tests suite", "");
+    const test262_step = b.step("test262", "Run Test262 parser tests suite");
     const run_test262 = b.addRunArtifact(test262);
     run_test262.step.dependOn(b.getInstallStep());
     test262_step.dependOn(&run_test262.step);
