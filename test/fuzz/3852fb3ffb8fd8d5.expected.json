@@ -1,0 +1,47 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "IfStatement",
+        "test": {
+          "type": "Literal",
+          "value": true,
+          "raw": "true",
+          "start": 4,
+          "end": 8
+        },
+        "consequent": {
+          "type": "ExpressionStatement",
+          "expression": {
+            "type": "CallExpression",
+            "callee": {
+              "type": "Identifier",
+              "name": "a",
+              "start": 10,
+              "end": 11
+            },
+            "arguments": [],
+            "optional": false,
+            "start": 10,
+            "end": 13
+          },
+          "start": 10,
+          "end": 14
+        },
+        "alternate": {
+          "type": "EmptyStatement",
+          "start": 20,
+          "end": 21
+        },
+        "start": 0,
+        "end": 21
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 22
+  },
+  "errors": [],
+  "comments": []
+}

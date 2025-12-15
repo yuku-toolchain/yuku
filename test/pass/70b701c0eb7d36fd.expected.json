@@ -1,0 +1,36 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "IfStatement",
+        "test": {
+          "type": "UnaryExpression",
+          "operator": "!",
+          "argument": {
+            "type": "Identifier",
+            "name": "a",
+            "start": 5,
+            "end": 6
+          },
+          "prefix": true,
+          "start": 4,
+          "end": 6
+        },
+        "consequent": {
+          "type": "DebuggerStatement",
+          "start": 8,
+          "end": 17
+        },
+        "alternate": null,
+        "start": 0,
+        "end": 17
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 18
+  },
+  "errors": [],
+  "comments": []
+}

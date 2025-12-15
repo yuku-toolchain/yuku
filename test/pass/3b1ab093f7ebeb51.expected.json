@@ -1,0 +1,40 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "declaration": {
+          "type": "VariableDeclaration",
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "id": {
+                "type": "Identifier",
+                "name": "a",
+                "start": 11,
+                "end": 12
+              },
+              "init": null,
+              "start": 11,
+              "end": 12
+            }
+          ],
+          "start": 7,
+          "end": 13
+        },
+        "specifiers": [],
+        "source": null,
+        "attributes": [],
+        "start": 0,
+        "end": 13
+      }
+    ],
+    "sourceType": "module",
+    "start": 0,
+    "end": 14
+  },
+  "errors": [],
+  "comments": []
+}

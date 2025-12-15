@@ -1,0 +1,40 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "AssignmentExpression",
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "name": "ⅣⅡ",
+            "start": 0,
+            "end": 2
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "expression": {
+              "type": "ArrayExpression",
+              "elements": [],
+              "start": 6,
+              "end": 8
+            },
+            "start": 5,
+            "end": 9
+          },
+          "start": 0,
+          "end": 9
+        },
+        "start": 0,
+        "end": 10
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 11
+  },
+  "errors": [],
+  "comments": []
+}

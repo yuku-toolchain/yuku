@@ -1,0 +1,43 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "Identifier",
+            "name": "a",
+            "start": 0,
+            "end": 1
+          },
+          "arguments": [
+            {
+              "type": "Identifier",
+              "name": "b",
+              "start": 2,
+              "end": 3
+            },
+            {
+              "type": "Identifier",
+              "name": "c",
+              "start": 5,
+              "end": 6
+            }
+          ],
+          "optional": false,
+          "start": 0,
+          "end": 7
+        },
+        "start": 0,
+        "end": 8
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 9
+  },
+  "errors": [],
+  "comments": []
+}

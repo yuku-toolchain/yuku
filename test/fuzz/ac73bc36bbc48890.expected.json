@@ -1,0 +1,59 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "Literal",
+          "value": "use strict",
+          "raw": "\"use\\x20strict\"",
+          "start": 0,
+          "end": 15
+        },
+        "directive": "use\\x20strict",
+        "start": 0,
+        "end": 16
+      },
+      {
+        "type": "WithStatement",
+        "object": {
+          "type": "Identifier",
+          "name": "a",
+          "start": 23,
+          "end": 24
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+              "type": "Identifier",
+              "name": "b",
+              "start": 26,
+              "end": 27
+            },
+            "right": {
+              "type": "Identifier",
+              "name": "c",
+              "start": 30,
+              "end": 31
+            },
+            "start": 26,
+            "end": 31
+          },
+          "start": 26,
+          "end": 32
+        },
+        "start": 17,
+        "end": 32
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 33
+  },
+  "errors": [],
+  "comments": []
+}

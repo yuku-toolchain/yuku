@@ -1,0 +1,37 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ForStatement",
+        "init": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "Identifier",
+            "name": "let",
+            "start": 4,
+            "end": 7
+          },
+          "arguments": [],
+          "optional": false,
+          "start": 4,
+          "end": 9
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 12,
+          "end": 13
+        },
+        "start": 0,
+        "end": 13
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 13
+  },
+  "errors": [],
+  "comments": []
+}

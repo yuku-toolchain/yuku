@@ -1,0 +1,27 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "specifiers": [],
+        "source": {
+          "type": "Literal",
+          "value": "a",
+          "raw": "\"a\"",
+          "start": 7,
+          "end": 10
+        },
+        "phase": null,
+        "attributes": [],
+        "start": 0,
+        "end": 11
+      }
+    ],
+    "sourceType": "module",
+    "start": 0,
+    "end": 12
+  },
+  "errors": [],
+  "comments": []
+}

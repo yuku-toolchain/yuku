@@ -1,0 +1,30 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "UpdateExpression",
+          "operator": "--",
+          "prefix": false,
+          "argument": {
+            "type": "Identifier",
+            "name": "a",
+            "start": 0,
+            "end": 1
+          },
+          "start": 0,
+          "end": 3
+        },
+        "start": 0,
+        "end": 4
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 5
+  },
+  "errors": [],
+  "comments": []
+}

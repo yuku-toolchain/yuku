@@ -1,7 +1,7 @@
 const std = @import("std");
 const js = @import("js");
 
-const folders = [_][]const u8{"test/pass"};
+const folders = [_][]const u8{"test/pass", "test/fuzz"};
 
 fn readFile(allocator: std.mem.Allocator, dir: std.fs.Dir, file_name: []const u8) ![]const u8 {
     const file = try dir.openFile(file_name, .{});

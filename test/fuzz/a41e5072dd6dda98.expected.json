@@ -1,0 +1,34 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "WithStatement",
+        "object": {
+          "type": "Identifier",
+          "name": "a",
+          "start": 6,
+          "end": 7
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "expression": {
+            "type": "Identifier",
+            "name": "b",
+            "start": 9,
+            "end": 10
+          },
+          "start": 9,
+          "end": 11
+        },
+        "start": 0,
+        "end": 11
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 12
+  },
+  "errors": [],
+  "comments": []
+}

@@ -1,0 +1,37 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "Literal",
+          "value": "use strict",
+          "raw": "\"use strict\"",
+          "start": 0,
+          "end": 12
+        },
+        "directive": "use strict",
+        "start": 0,
+        "end": 13
+      },
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "Literal",
+          "value": 0,
+          "raw": "0",
+          "start": 14,
+          "end": 15
+        },
+        "start": 14,
+        "end": 16
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 17
+  },
+  "errors": [],
+  "comments": []
+}

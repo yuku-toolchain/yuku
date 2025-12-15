@@ -1,0 +1,23 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExportDefaultDeclaration",
+        "declaration": {
+          "type": "Identifier",
+          "name": "a",
+          "start": 15,
+          "end": 16
+        },
+        "start": 0,
+        "end": 17
+      }
+    ],
+    "sourceType": "module",
+    "start": 0,
+    "end": 18
+  },
+  "errors": [],
+  "comments": []
+}

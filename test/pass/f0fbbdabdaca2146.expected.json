@@ -1,0 +1,32 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "let",
+              "start": 4,
+              "end": 7
+            },
+            "init": null,
+            "start": 4,
+            "end": 7
+          }
+        ],
+        "start": 0,
+        "end": 8
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 9
+  },
+  "errors": [],
+  "comments": []
+}

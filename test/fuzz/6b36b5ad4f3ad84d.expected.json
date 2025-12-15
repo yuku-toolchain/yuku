@@ -1,0 +1,53 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "AssignmentExpression",
+          "operator": "=",
+          "left": {
+            "type": "MemberExpression",
+            "object": {
+              "type": "Identifier",
+              "name": "let",
+              "start": 0,
+              "end": 3
+            },
+            "property": {
+              "type": "Identifier",
+              "name": "let",
+              "start": 4,
+              "end": 7
+            },
+            "optional": false,
+            "computed": false,
+            "start": 0,
+            "end": 7
+          },
+          "right": {
+            "type": "Identifier",
+            "name": "a",
+            "start": 10,
+            "end": 11
+          },
+          "start": 0,
+          "end": 11
+        },
+        "start": 0,
+        "end": 11
+      },
+      {
+        "type": "EmptyStatement",
+        "start": 11,
+        "end": 12
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 13
+  },
+  "errors": [],
+  "comments": []
+}

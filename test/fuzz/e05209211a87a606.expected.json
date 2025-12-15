@@ -1,0 +1,17 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "DebuggerStatement",
+        "start": 0,
+        "end": 9
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 10
+  },
+  "errors": [],
+  "comments": []
+}

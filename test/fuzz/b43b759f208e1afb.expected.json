@@ -1,0 +1,48 @@
+{
+  "program": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "WhileStatement",
+        "test": {
+          "type": "Literal",
+          "value": true,
+          "raw": "true",
+          "start": 7,
+          "end": 11
+        },
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "BreakStatement",
+              "label": null,
+              "start": 17,
+              "end": 23
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "Identifier",
+                "name": "a",
+                "start": 26,
+                "end": 27
+              },
+              "start": 26,
+              "end": 28
+            }
+          ],
+          "start": 13,
+          "end": 30
+        },
+        "start": 0,
+        "end": 30
+      }
+    ],
+    "sourceType": "script",
+    "start": 0,
+    "end": 31
+  },
+  "errors": [],
+  "comments": []
+}
