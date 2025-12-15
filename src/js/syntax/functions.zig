@@ -9,7 +9,7 @@ const ParseFunctionOpts = packed struct {
     is_async: bool = false,
     is_expression: bool = false,
     is_declare: bool = false,
-    /// For export default function - allows optional name but produces FunctionDeclaration
+    /// for export default function, allows optional name but produces FunctionDeclaration
     is_default_export: bool = false,
 };
 
@@ -55,9 +55,9 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     else
         ast.null_node;
 
-    // Name is required for regular function declarations, but optional for:
-    // - function expressions (is_expression = true)
-    // - export default function (is_default_export = true)
+    // name is required for regular function declarations, but optional for:
+    // - function expressions
+    // - export default function
     if (!opts.is_expression and !opts.is_default_export and ast.isNull(id)) {
         try parser.report(
             parser.current_token.span,

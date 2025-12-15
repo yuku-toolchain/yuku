@@ -173,24 +173,12 @@ inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span 
 }
 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    // Check for reserved words that can never be used as identifiers
     if (parser.current_token.type.isReserved()) {
         try parser.reportFmt(
             parser.current_token.span,
             "'{s}' is a reserved word and cannot be used as an identifier",
             .{parser.current_token.lexeme},
             .{},
-        );
-        return null;
-    }
-
-    // Check for strict mode reserved words (modules are always strict)
-    if (parser.strict_mode and parser.current_token.type.isStrictModeReserved()) {
-        try parser.reportFmt(
-            parser.current_token.span,
-            "'{s}' is a reserved word in strict mode and cannot be used as an identifier",
-            .{parser.current_token.lexeme},
-            .{ .help = "In strict mode (including ES modules), this word is reserved." },
         );
         return null;
     }
@@ -228,24 +216,12 @@ pub fn parseIdentifierName(parser: *Parser) Error!ast.NodeIndex {
 }
 
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    // Check for reserved words that can never be used as labels
     if (parser.current_token.type.isReserved()) {
         try parser.reportFmt(
             parser.current_token.span,
             "'{s}' is a reserved word and cannot be used as a label",
             .{parser.current_token.lexeme},
             .{},
-        );
-        return null;
-    }
-
-    // Check for strict mode reserved words (modules are always strict)
-    if (parser.strict_mode and parser.current_token.type.isStrictModeReserved()) {
-        try parser.reportFmt(
-            parser.current_token.span,
-            "'{s}' is a reserved word in strict mode and cannot be used as a label",
-            .{parser.current_token.lexeme},
-            .{ .help = "In strict mode (including ES modules), this word is reserved." },
         );
         return null;
     }

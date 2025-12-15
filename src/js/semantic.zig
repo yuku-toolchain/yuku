@@ -34,12 +34,6 @@
 // It is a Syntax Error if the BoundNames of ForDeclaration contains any duplicate entries.
 // In strict mode code, functions can only be declared at top level or inside a block
 //
-// =============================================================================
-// Module System Semantic Errors (TODO)
-// https://tc39.es/ecma262/#sec-imports
-// https://tc39.es/ecma262/#sec-exports
-// =============================================================================
-//
 // ImportDeclaration:
 // - It is a Syntax Error if the BoundNames of ImportDeclaration contains any duplicate entries.
 //
@@ -53,15 +47,10 @@
 //   "implements", "interface", "let", "package", "private", "protected", "public", or "static".
 //   Note: This is already checked in parser during export parsing for local exports without 'from'.
 //
-// Module-level semantic checks:
+// module-level semantic checks:
 // - It is a Syntax Error if the LexicallyDeclaredNames of ModuleItemList contains any duplicate entries.
 // - It is a Syntax Error if any element of the LexicallyDeclaredNames of ModuleItemList also occurs in the VarDeclaredNames of ModuleItemList.
 // - It is a Syntax Error if the ExportedBindings of ModuleItemList does not also occur in the VarDeclaredNames of ModuleItemList,
 //   or the LexicallyDeclaredNames of ModuleItemList, or the ImportedLocalNames of ModuleItemList.
 // - It is a Syntax Error if ModuleItemList Contains super.
 // - It is a Syntax Error if ModuleItemList Contains NewTarget (except in functions).
-//
-// Import/Export resolution (runtime):
-// - Check that all imported bindings are actually exported from the source module.
-// - Check for circular import issues.
-// - Namespace imports: verify all requested exports exist.

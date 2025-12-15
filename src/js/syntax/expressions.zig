@@ -303,7 +303,7 @@ fn parseImportExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     return switch (parser.current_token.type) {
         .dot => parseImportMetaOrPhaseImport(parser, name),
-        .left_paren => parseDynamicImport(parser, name),
+        .left_paren => module.parseDynamicImport(parser, name, null),
         else => {
             try parser.report(
                 parser.current_token.span,
@@ -321,17 +321,18 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: u32) Error!?ast.NodeIndex
 
     const name_span = parser.getSpan(name);
 
-    // Check for phase imports: import.source() or import.defer()
+    // import.source() or import.defer()
     if (parser.current_token.type == .source) {
         try parser.advance(); // consume 'source'
         return module.parseDynamicImport(parser, name, .source);
     }
+
     if (parser.current_token.type == .@"defer") {
         try parser.advance(); // consume 'defer'
         return module.parseDynamicImport(parser, name, .@"defer");
     }
 
-    // Check for import.meta
+    // import.meta
     if (parser.current_token.type != .identifier or !std.mem.eql(u8, parser.current_token.lexeme, "meta")) {
         try parser.report(
             parser.current_token.span,
@@ -347,11 +348,6 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: u32) Error!?ast.NodeIndex
         .{ .meta_property = .{ .meta = name, .property = property } },
         .{ .start = name_span.start, .end = parser.getSpan(property).end },
     );
-}
-
-/// `import(source)` or `import(source, options)`
-fn parseDynamicImport(parser: *Parser, name: u32) Error!?ast.NodeIndex {
-    return module.parseDynamicImport(parser, name, null);
 }
 
 /// `new.target`

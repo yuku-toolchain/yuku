@@ -12,7 +12,7 @@ const statements = @import("statements.zig");
 
 pub const ParseClassOpts = packed struct {
     is_expression: bool = false,
-    /// For export default class - allows optional name but produces ClassDeclaration
+    /// for export default class, allows optional name but produces ClassDeclaration
     is_default_export: bool = false,
 };
 
@@ -34,9 +34,9 @@ pub fn parseClass(parser: *Parser, opts: ParseClassOpts, start_from_param: ?u32)
         id = try patterns.parseBindingIdentifier(parser) orelse ast.null_node;
     }
 
-    // Name is required for regular class declarations, but optional for:
-    // - class expressions (is_expression = true)
-    // - export default class (is_default_export = true)
+    // name is required for regular class declarations, but optional for:
+    // - class expressions
+    // - export default class
     if (!opts.is_expression and !opts.is_default_export and ast.isNull(id)) {
         try parser.report(
             parser.current_token.span,
