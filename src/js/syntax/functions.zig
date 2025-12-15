@@ -16,11 +16,6 @@ const ParseFunctionOpts = packed struct {
 pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
 
-    const saved_async = parser.context.in_async;
-    const saved_generator = parser.context.in_generator;
-
-    parser.context.in_async = opts.is_async;
-
     if (!try parser.expect(
         .function,
         "Expected 'function' keyword",
@@ -43,6 +38,10 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         try parser.advance();
     }
 
+    const saved_async = parser.context.in_async;
+    const saved_generator = parser.context.in_generator;
+
+    parser.context.in_async = opts.is_async;
     parser.context.in_generator = is_generator;
 
     defer {
@@ -195,6 +194,15 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
 }
 
 pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
+    if(parser.current_token.type == .yield and parser.context.in_generator) {
+        try parser.report(
+            parser.current_token.span,
+            "'yield' cannot be used as a parameter name in a generator function",
+            .{},
+        );
+        return null;
+    }
+
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
     if (parser.current_token.type == .assign) {

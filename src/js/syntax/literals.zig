@@ -173,13 +173,7 @@ inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span 
 }
 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.type.isReserved()) {
-        try parser.reportFmt(
-            parser.current_token.span,
-            "'{s}' is a reserved word and cannot be used as an identifier",
-            .{parser.current_token.lexeme},
-            .{},
-        );
+    if (!try validateIdentifier(parser, "an identifier")) {
         return null;
     }
 
@@ -216,13 +210,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!ast.NodeIndex {
 }
 
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.type.isReserved()) {
-        try parser.reportFmt(
-            parser.current_token.span,
-            "'{s}' is a reserved word and cannot be used as a label",
-            .{parser.current_token.lexeme},
-            .{},
-        );
+    if (!try validateIdentifier(parser, "a label")) {
         return null;
     }
 
@@ -234,4 +222,30 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
             .name_len = @intCast(current.lexeme.len),
         },
     }, current.span);
+}
+
+pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8) Error!bool {
+    if (parser.current_token.type.isReserved()) {
+        try parser.reportFmt(
+            parser.current_token.span,
+            "'{s}' is a reserved word and cannot be used as {s}",
+            .{parser.current_token.lexeme, as_what},
+            .{},
+        );
+
+        return false;
+    }
+
+    if (parser.current_token.type == .await and (parser.isModule() or parser.context.in_async)) {
+           try parser.reportFmt(
+               parser.current_token.span,
+               "{s} jsjs",
+               .{parser.current_token.lexeme},
+               .{},
+           );
+
+           return false;
+    }
+
+    return true;
 }

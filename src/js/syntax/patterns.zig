@@ -38,13 +38,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    if (parser.current_token.type.isReserved()) {
-        try parser.reportFmt(
-            parser.current_token.span,
-            "'{s}' is a reserved word and cannot be used as an identifier",
-            .{parser.current_token.lexeme},
-            .{},
-        );
+    if (!try literals.validateIdentifier(parser, "an identifier")) {
         return null;
     }
 

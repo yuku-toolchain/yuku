@@ -112,14 +112,14 @@ pub const TokenType = enum(u32) {
 
     function = 82 | Mask.IsReserved | Mask.IsIdentifierLike, // "function"
     @"return" = 83 | Mask.IsReserved | Mask.IsIdentifierLike, // "return"
-    async = 84 | Mask.IsIdentifierLike, // "async" - contextual keyword
-    await = 85 | Mask.IsIdentifierLike, // "await" - contextual keyword
+    async = 84 | Mask.IsIdentifierLike, // "async"
+    await = 85 | Mask.IsIdentifierLike, // "await"
     yield = 86 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "yield"
 
     @"var" = 87 | Mask.IsReserved | Mask.IsIdentifierLike, // "var"
     let = 88 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "let"
     @"const" = 89 | Mask.IsReserved | Mask.IsIdentifierLike, // "const"
-    using = 90 | Mask.IsIdentifierLike, // "using" - contextual keyword
+    using = 90 | Mask.IsIdentifierLike, // "using"
 
     class = 91 | Mask.IsReserved | Mask.IsIdentifierLike, // "class"
     extends = 92 | Mask.IsReserved | Mask.IsIdentifierLike, // "extends"
@@ -135,12 +135,12 @@ pub const TokenType = enum(u32) {
 
     import = 102 | Mask.IsReserved | Mask.IsIdentifierLike, // "import"
     @"export" = 103 | Mask.IsReserved | Mask.IsIdentifierLike, // "export"
-    from = 104 | Mask.IsIdentifierLike, // "from" - contextual keyword
-    as = 105 | Mask.IsIdentifierLike, // "as" - contextual keyword
-    namespace = 106 | Mask.IsIdentifierLike, // "namespace" - contextual keyword
-    assert = 107 | Mask.IsIdentifierLike, // "assert" - contextual keyword (import assertions)
-    source = 108 | Mask.IsIdentifierLike, // "source" - contextual keyword (source phase imports)
-    @"defer" = 109 | Mask.IsIdentifierLike, // "defer" - contextual keyword (deferred imports)
+    from = 104 | Mask.IsIdentifierLike, // "from"
+    as = 105 | Mask.IsIdentifierLike, // "as"
+    namespace = 106 | Mask.IsIdentifierLike, // "namespace"
+    assert = 107 | Mask.IsIdentifierLike, // "assert" (import assertions)
+    source = 108 | Mask.IsIdentifierLike, // "source" (source phase imports)
+    @"defer" = 109 | Mask.IsIdentifierLike, // "defer" (deferred imports)
 
     @"try" = 110 | Mask.IsReserved | Mask.IsIdentifierLike, // "try"
     @"catch" = 111 | Mask.IsReserved | Mask.IsIdentifierLike, // "catch"
@@ -152,7 +152,7 @@ pub const TokenType = enum(u32) {
     typeof = 116 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "typeof"
     instanceof = 117 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "instanceof"
     in = 118 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "in"
-    of = 119 | Mask.IsIdentifierLike, // "of" - contextual keyword
+    of = 119 | Mask.IsIdentifierLike, // "of"
     delete = 120 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "delete"
     void = 121 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "void"
     with = 122 | Mask.IsReserved | Mask.IsIdentifierLike, // "with"
