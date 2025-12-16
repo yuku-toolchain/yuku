@@ -17,6 +17,7 @@ pub const LexicalError = error{
     InvalidHexEscape,
     InvalidOctalEscape,
     OctalEscapeInStrict,
+    OctalLiteralInStrict,
     InvalidBinaryLiteral,
     InvalidOctalLiteralDigit,
     InvalidHexLiteral,
@@ -51,9 +52,9 @@ pub const Lexer = struct {
     allocator: std.mem.Allocator,
     source_type: parser.SourceType,
 
-    pub fn init(source: []const u8, allocator: std.mem.Allocator, source_type: parser.SourceType) error{OutOfMemory}!Lexer {
+    pub fn init(source: []const u8, allocator: std.mem.Allocator, source_type: parser.SourceType, strict_mode: bool) error{OutOfMemory}!Lexer {
         return .{
-            .strict_mode = false,
+            .strict_mode = strict_mode,
             .source = source,
             .source_len = @intCast(source.len),
             .token_start = 0,
@@ -958,6 +959,10 @@ pub const Lexer = struct {
                             break;
                         }
                     }
+
+                    if (is_legacy_octal and self.strict_mode) {
+                        return error.OctalLiteralInStrict;
+                    }
                 },
                 else => {
                     try self.consumeDecimalDigits();
@@ -1335,6 +1340,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.InvalidUnicodeEscape => "Invalid Unicode escape sequence",
         error.InvalidOctalEscape => "Invalid octal escape sequence",
         error.OctalEscapeInStrict => "Octal escape sequences are not allowed in strict mode",
+        error.OctalLiteralInStrict => "Octal literals are not allowed in strict mode",
         error.InvalidBinaryLiteral => "Binary literal must contain at least one binary digit",
         error.InvalidOctalLiteralDigit => "Octal literal must contain at least one octal digit",
         error.InvalidHexLiteral => "Hexadecimal literal must contain at least one hex digit",
@@ -1362,6 +1368,7 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.InvalidUnicodeEscape => "Try using \\uHHHH (4 hex digits) or \\u{HHHHHH} (1-6 hex digits) here",
         error.InvalidOctalEscape => "Try using a valid octal sequence here (\\0-7, \\00-77, or \\000-377)",
         error.OctalEscapeInStrict => "Try replacing this octal escape with \\xHH (hex) or \\uHHHH (unicode) instead",
+        error.OctalLiteralInStrict => "Try replacing this octal literal with a decimal number, or use 0xHH (hex) or 0bBB (binary) instead",
         error.InvalidBinaryLiteral => "Try adding at least one binary digit (0 or 1) here after '0b'",
         error.InvalidOctalLiteralDigit => "Try adding at least one octal digit (0-7) here after '0o'",
         error.InvalidHexLiteral => "Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'",
