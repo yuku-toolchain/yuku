@@ -11,7 +11,7 @@ const array = @import("syntax/array.zig");
 /// without validation. validation is deferred until the top-level context is known:
 /// - if parent becomes an expression -> validate at top level
 /// - if parent becomes a pattern -> no validation needed
-pub fn parseCoverExpression(parser: *Parser, precedence: u5) Error!?ast.NodeIndex {
+pub inline fn parseCoverExpression(parser: *Parser, precedence: u5) Error!?ast.NodeIndex {
     return expressions.parseExpression(parser, precedence, .{ .enable_validation = false });
 }
 
@@ -108,31 +108,6 @@ pub fn expressionToPattern(
     expr: ast.NodeIndex,
     context: PatternContext,
 ) Error!?ast.NodeIndex {
-    const opts: ExpressionToPatternOpts = switch (context) {
-        .binding => .{
-            .allow_member_expressions = false,
-            .allow_parenthesis = false,
-        },
-        .assignable => .{
-            .allow_member_expressions = true,
-            .allow_parenthesis = true,
-        },
-    };
-
-    return expressionToPatternImpl(parser, expr, context, opts);
-}
-
-const ExpressionToPatternOpts = struct {
-    allow_member_expressions: bool,
-    allow_parenthesis: bool,
-};
-
-fn expressionToPatternImpl(
-    parser: *Parser,
-    expr: ast.NodeIndex,
-    context: PatternContext,
-    opts: ExpressionToPatternOpts,
-) Error!?ast.NodeIndex {
     const data = parser.getData(expr);
 
     switch (data) {
@@ -154,7 +129,7 @@ fn expressionToPatternImpl(
                 return null;
             }
 
-            const left_pattern = try expressionToPatternImpl(parser, assign.left, context, opts) orelse return null;
+            const left_pattern = try expressionToPattern(parser, assign.left, context) orelse return null;
 
             parser.setData(expr, .{ .assignment_pattern = .{
                 .left = left_pattern,
@@ -181,7 +156,7 @@ fn expressionToPatternImpl(
                 return null;
             }
 
-            if (!opts.allow_member_expressions) {
+            if (context != .assignable) {
                 try parser.report(
                     parser.getSpan(expr),
                     "Member expression is not allowed in binding pattern",
@@ -194,7 +169,7 @@ fn expressionToPatternImpl(
         },
 
         .parenthesized_expression => |paren| {
-            if (!opts.allow_parenthesis) {
+            if (context != .assignable) {
                 try parser.report(
                     parser.getSpan(expr),
                     "Parentheses are not allowed in this binding pattern",
@@ -212,7 +187,7 @@ fn expressionToPatternImpl(
                 return null;
             }
 
-            const inner_pattern = try expressionToPatternImpl(parser, paren.expression, context, opts) orelse return null;
+            const inner_pattern = try expressionToPattern(parser, paren.expression, context) orelse return null;
 
             parser.setData(expr, parser.getData(inner_pattern));
             parser.setSpan(expr, parser.getSpan(inner_pattern));
