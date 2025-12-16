@@ -1,6 +1,6 @@
 const ast = @import("../ast.zig");
 const lexer = @import("../lexer.zig");
-const TokenType = @import("../token.zig").TokenType;
+const Token = @import("../token.zig").Token;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const expressions = @import("expressions.zig");
@@ -174,7 +174,7 @@ inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span 
 }
 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "an identifier", parser.current_token.type)) {
+    if (!try validateIdentifier(parser, "an identifier", parser.current_token)) {
         return null;
     }
 
@@ -211,7 +211,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!ast.NodeIndex {
 }
 
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "a label", parser.current_token.type)) {
+    if (!try validateIdentifier(parser, "a label", parser.current_token)) {
         return null;
     }
 
@@ -225,23 +225,23 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     }, current.span);
 }
 
-pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token_type: TokenType) Error!bool {
-    if (token_type.isReserved()) {
+pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!bool {
+    if (token.type.isReserved()) {
         try parser.reportFmt(
-            parser.current_token.span,
+            token.span,
             "'{s}' is a reserved word and cannot be used as {s}",
-            .{ parser.current_token.lexeme, as_what },
+            .{ token.lexeme, as_what },
             .{},
         );
 
         return false;
     }
 
-    if (token_type == .yield and parser.context.in_generator) {
+    if (token.type == .yield and parser.context.in_generator) {
         try parser.reportFmt(
-            parser.current_token.span,
-            "{s} {s} jsjs",
-            .{ parser.current_token.lexeme, as_what },
+            token.span,
+            "Cannot use 'yield' as {s} in a generator context",
+            .{as_what},
             .{},
         );
 

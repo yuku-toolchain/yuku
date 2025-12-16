@@ -96,7 +96,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     var computed = false;
 
     var key: ast.NodeIndex = ast.null_node;
-    var key_identifier_token_type: ?token.TokenType = null;
+    var key_identifier_token: ?token.Token = null;
 
     // check for async, consume it, then decide if it's a modifier or key based on what follows
     if (parser.current_token.type == .async) {
@@ -149,7 +149,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
                 return null;
             }
         } else if (parser.current_token.type.isIdentifierLike()) {
-            key_identifier_token_type = parser.current_token.type;
+            key_identifier_token = parser.current_token;
             key = try literals.parseIdentifierName(parser);
         } else if (parser.current_token.type == .string_literal) {
             key = try literals.parseStringLiteral(parser) orelse return null;
@@ -246,8 +246,8 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
     // shorthand property: { a }
 
-    if (key_identifier_token_type) |key_token| {
-        if (!try literals.validateIdentifier(parser, "as a shorthand property", key_token)) {
+    if (key_identifier_token) |key_token| {
+        if (!try literals.validateIdentifier(parser, "an identifier", key_token)) {
             return null;
         }
     }

@@ -38,7 +38,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    if (!try literals.validateIdentifier(parser, "an identifier", parser.current_token.type)) {
+    if (!try literals.validateIdentifier(parser, "an identifier", parser.current_token)) {
         return null;
     }
 
