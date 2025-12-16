@@ -408,17 +408,17 @@ pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Er
 }
 
 /// convert object cover to ObjectPattern.
-pub fn coverToPattern(parser: *Parser, cover: ObjectCover) Error!?ast.NodeIndex {
+pub fn coverToPattern(parser: *Parser, cover: ObjectCover, context: grammar.PatternContext) Error!?ast.NodeIndex {
     const properties_range = try parser.addExtra(cover.properties);
-    return toObjectPatternImpl(parser, null, properties_range, .{ .start = cover.start, .end = cover.end });
+    return toObjectPatternImpl(parser, null, properties_range, .{ .start = cover.start, .end = cover.end }, context);
 }
 
-/// convert ObjectExpression to ObjectPattern (mutates in-place).
-pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_range: ast.IndexRange) Error!?ast.NodeIndex {
-    return toObjectPatternImpl(parser, expr_node, properties_range, undefined);
+/// convert ObjectExpression to ObjectPattern.
+pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_range: ast.IndexRange, context: grammar.PatternContext) Error!?ast.NodeIndex {
+    return toObjectPatternImpl(parser, expr_node, properties_range, undefined, context);
 }
 
-fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span) Error!?ast.NodeIndex {
+fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, context: grammar.PatternContext) Error!?ast.NodeIndex {
     const properties = parser.getExtra(properties_range);
 
     var rest: ast.NodeIndex = ast.null_node;
@@ -437,6 +437,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
 
             const arg = prop_data.spread_element.argument;
             const arg_data = parser.getData(arg);
+
             if (arg_data != .identifier_reference) {
                 try parser.report(parser.getSpan(arg), "Rest element argument must be an identifier", .{
                     .help = "Object rest patterns only accept simple identifiers, not nested patterns.",
@@ -476,7 +477,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
             return null;
         }
 
-        const value_pattern = try grammar.expressionToBindingPattern(parser, obj_prop.value, .{}) orelse return null;
+        const value_pattern = try grammar.expressionToPattern(parser, obj_prop.value, context) orelse return null;
 
         parser.setData(prop, .{ .binding_property = .{
             .key = obj_prop.key,
@@ -495,5 +496,6 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
         parser.setData(node, pattern_data);
         return node;
     }
+
     return try parser.addNode(pattern_data, span);
 }

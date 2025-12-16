@@ -94,14 +94,45 @@ pub inline fn reportCoverInitializedNameError(parser: *Parser, node: ast.NodeInd
     );
 }
 
-const ExpressionToBindingPatternOpts = struct { allow_parenthesis: bool = true };
+pub const PatternContext = enum {
+    /// binding patterns for function parameters, variable declarations, etc.
+    binding,
+    /// assignable patterns for assignment expressions.
+    assignable,
+};
 
-/// Convert an expression node to a binding pattern.
-/// - IdentifierReference -> BindingIdentifier
-/// - ArrayExpression -> ArrayPattern
-/// - ObjectExpression -> ObjectPattern
-/// - AssignmentExpression -> AssignmentPattern
-pub fn expressionToBindingPattern(parser: *Parser, expr: ast.NodeIndex, opts: ExpressionToBindingPatternOpts) Error!?ast.NodeIndex {
+/// convert an expression node to a destructuring pattern.
+/// the context determines what syntax is allowed.
+pub fn expressionToPattern(
+    parser: *Parser,
+    expr: ast.NodeIndex,
+    context: PatternContext,
+) Error!?ast.NodeIndex {
+    const opts: ExpressionToPatternOpts = switch (context) {
+        .binding => .{
+            .allow_member_expressions = false,
+            .allow_parenthesis = false,
+        },
+        .assignable => .{
+            .allow_member_expressions = true,
+            .allow_parenthesis = true,
+        },
+    };
+
+    return expressionToPatternImpl(parser, expr, context, opts);
+}
+
+const ExpressionToPatternOpts = struct {
+    allow_member_expressions: bool,
+    allow_parenthesis: bool,
+};
+
+fn expressionToPatternImpl(
+    parser: *Parser,
+    expr: ast.NodeIndex,
+    context: PatternContext,
+    opts: ExpressionToPatternOpts,
+) Error!?ast.NodeIndex {
     const data = parser.getData(expr);
 
     switch (data) {
@@ -123,7 +154,7 @@ pub fn expressionToBindingPattern(parser: *Parser, expr: ast.NodeIndex, opts: Ex
                 return null;
             }
 
-            const left_pattern = try expressionToBindingPattern(parser, assign.left, opts) orelse return null;
+            const left_pattern = try expressionToPatternImpl(parser, assign.left, context, opts) orelse return null;
 
             parser.setData(expr, .{ .assignment_pattern = .{
                 .left = left_pattern,
@@ -133,11 +164,11 @@ pub fn expressionToBindingPattern(parser: *Parser, expr: ast.NodeIndex, opts: Ex
         },
 
         .array_expression => |arr| {
-            return array.toArrayPattern(parser, expr, arr.elements);
+            return array.toArrayPattern(parser, expr, arr.elements, context);
         },
 
         .object_expression => |obj| {
-            return object.toObjectPattern(parser, expr, obj.properties);
+            return object.toObjectPattern(parser, expr, obj.properties, context);
         },
 
         .member_expression => |member| {
@@ -146,6 +177,15 @@ pub fn expressionToBindingPattern(parser: *Parser, expr: ast.NodeIndex, opts: Ex
                     parser.getSpan(expr),
                     "Optional chaining is not allowed in destructuring pattern",
                     .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
+                );
+                return null;
+            }
+
+            if (!opts.allow_member_expressions) {
+                try parser.report(
+                    parser.getSpan(expr),
+                    "Member expression is not allowed in binding pattern",
+                    .{ .help = "Function parameters and variable declarations can only bind to identifiers, not member expressions like 'obj.prop' or 'obj[key]'. Use a simple identifier instead." },
                 );
                 return null;
             }
@@ -172,7 +212,7 @@ pub fn expressionToBindingPattern(parser: *Parser, expr: ast.NodeIndex, opts: Ex
                 return null;
             }
 
-            const inner_pattern = try expressionToBindingPattern(parser, paren.expression, opts) orelse return null;
+            const inner_pattern = try expressionToPatternImpl(parser, paren.expression, context, opts) orelse return null;
 
             parser.setData(expr, parser.getData(inner_pattern));
             parser.setSpan(expr, parser.getSpan(inner_pattern));

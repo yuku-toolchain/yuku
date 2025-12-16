@@ -107,17 +107,17 @@ pub fn coverToExpression(parser: *Parser, cover: ArrayCover, validate: bool) Err
 }
 
 /// convert array cover to ArrayPattern.
-pub fn coverToPattern(parser: *Parser, cover: ArrayCover) Error!?ast.NodeIndex {
+pub fn coverToPattern(parser: *Parser, cover: ArrayCover, context: grammar.PatternContext) Error!?ast.NodeIndex {
     const elements_range = try parser.addExtra(cover.elements);
-    return toArrayPatternImpl(parser, null, elements_range, .{ .start = cover.start, .end = cover.end });
+    return toArrayPatternImpl(parser, null, elements_range, .{ .start = cover.start, .end = cover.end }, context);
 }
 
 /// convert ArrayExpression to ArrayPattern (mutates in-place).
-pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range: ast.IndexRange) Error!?ast.NodeIndex {
-    return toArrayPatternImpl(parser, expr_node, elements_range, undefined);
+pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range: ast.IndexRange, context: grammar.PatternContext) Error!?ast.NodeIndex {
+    return toArrayPatternImpl(parser, expr_node, elements_range, undefined, context);
 }
 
-fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span) Error!?ast.NodeIndex {
+fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, context: grammar.PatternContext) Error!?ast.NodeIndex {
     const elements = parser.getExtra(elements_range);
 
     var rest: ast.NodeIndex = ast.null_node;
@@ -135,7 +135,7 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
                 return null;
             }
 
-            const pattern = try grammar.expressionToBindingPattern(parser, elem_data.spread_element.argument, .{}) orelse return null;
+            const pattern = try grammar.expressionToPattern(parser, elem_data.spread_element.argument, context) orelse return null;
 
             parser.setData(elem, .{ .binding_rest_element = .{ .argument = pattern } });
             rest = elem;
@@ -143,7 +143,7 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
             break;
         }
 
-        _ = try grammar.expressionToBindingPattern(parser, elem, .{}) orelse return null;
+        _ = try grammar.expressionToPattern(parser, elem, context) orelse return null;
     }
 
     const pattern_data: ast.NodeData = .{ .array_pattern = .{

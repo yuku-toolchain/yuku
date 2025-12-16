@@ -528,14 +528,14 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
             return null;
         }
 
-        const pattern = try grammar.expressionToBindingPattern(parser, expr, .{}) orelse return null;
+        const pattern = try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
 
         return parseForInStatementRest(parser, start, pattern);
     }
 
     if (parser.current_token.type == .of) {
         // for (expr of ...)
-        const pattern = try grammar.expressionToBindingPattern(parser, expr, .{}) orelse return null;
+        const pattern = try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
         return parseForOfStatementRest(parser, start, pattern, is_await);
     }
 

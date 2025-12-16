@@ -667,7 +667,8 @@ pub fn parseArrayExpression(parser: *Parser, enable_validation: bool) Error!?ast
         parser.current_token.type == .in or parser.current_token.type == .of
         // so convert to pattern
     ) {
-        return try array.coverToPattern(parser, cover);
+        // since it's part og assignment expression, we covert to pattern as assignable context
+        return try array.coverToPattern(parser, cover, .assignable);
     }
 
     return array.coverToExpression(parser, cover, needs_validation);
@@ -688,7 +689,8 @@ pub fn parseObjectExpression(parser: *Parser, enable_validation: bool) Error!?as
         parser.current_token.type == .in or parser.current_token.type == .of
         // so convert to pattern
     ) {
-        return try object.coverToPattern(parser, cover);
+        // since it's part og assignment expression, we covert to pattern as assignable context
+        return try object.coverToPattern(parser, cover, .assignable);
     }
 
     return object.coverToExpression(parser, cover, needs_validation);
