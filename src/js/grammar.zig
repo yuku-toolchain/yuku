@@ -146,16 +146,16 @@ pub fn expressionToPattern(
             return object.toObjectPattern(parser, expr, obj.properties, context);
         },
 
-        .member_expression => |member| {
-            if (member.optional) {
-                try parser.report(
-                    parser.getSpan(expr),
-                    "Optional chaining is not allowed in destructuring pattern",
-                    .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
-                );
-                return null;
-            }
+        .chain_expression => {
+            try parser.report(
+                parser.getSpan(expr),
+                "Optional chaining is not allowed in destructuring pattern",
+                .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
+            );
+            return null;
+        },
 
+        .member_expression => {
             if (context != .assignable) {
                 try parser.report(
                     parser.getSpan(expr),

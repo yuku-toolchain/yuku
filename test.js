@@ -1,3 +1,3 @@
 function *a() {
-  (yield)
+  ({nice: nice?.cool} = x)
 }
