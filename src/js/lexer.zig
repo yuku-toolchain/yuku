@@ -125,6 +125,11 @@ pub const Lexer = struct {
         return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
     }
 
+    inline fn makePunctuationToken(self: *Lexer, len: u32, token_type: token.TokenType, start: u32) token.Token {
+        self.cursor += len;
+        return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
+    }
+
     fn scanPunctuation(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         const c0 = self.source[self.cursor];
@@ -134,233 +139,83 @@ pub const Lexer = struct {
 
         return switch (c0) {
             '+' => switch (c1) {
-                '+' => blk: {
-                    self.cursor += 2;
-                    break :blk self.createToken(.increment, self.source[start..self.cursor], start, self.cursor);
-                },
-                '=' => blk: {
-                    self.cursor += 2;
-                    break :blk self.createToken(.plus_assign, self.source[start..self.cursor], start, self.cursor);
-                },
-                else => blk: {
-                    self.cursor += 1;
-                    break :blk self.createToken(.plus, self.source[start..self.cursor], start, self.cursor);
-                },
+                '+' => self.makePunctuationToken(2, .increment, start),
+                '=' => self.makePunctuationToken(2, .plus_assign, start),
+                else => self.makePunctuationToken(1, .plus, start),
             },
             '-' => switch (c1) {
-                '-' => blk: {
-                    self.cursor += 2;
-                    break :blk self.createToken(.decrement, self.source[start..self.cursor], start, self.cursor);
-                },
-                '=' => blk: {
-                    self.cursor += 2;
-                    break :blk self.createToken(.minus_assign, self.source[start..self.cursor], start, self.cursor);
-                },
-                else => blk: {
-                    self.cursor += 1;
-                    break :blk self.createToken(.minus, self.source[start..self.cursor], start, self.cursor);
-                },
+                '-' => self.makePunctuationToken(2, .decrement, start),
+                '=' => self.makePunctuationToken(2, .minus_assign, start),
+                else => self.makePunctuationToken(1, .minus, start),
             },
-            '*' => blk: {
-                if (c1 == '*' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.exponent_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '*' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.exponent, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.star_assign, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.star, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '*' => if (c1 == '*' and c2 == '=')
+                self.makePunctuationToken(3, .exponent_assign, start)
+            else switch (c1) {
+                '*' => self.makePunctuationToken(2, .exponent, start),
+                '=' => self.makePunctuationToken(2, .star_assign, start),
+                else => self.makePunctuationToken(1, .star, start),
             },
-            '/' => blk: {
-                if (c1 == '=') {
-                    self.cursor += 2;
-                    break :blk self.createToken(.slash_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-
-                self.cursor += 1;
-
-                break :blk self.createToken(.slash, self.source[start..self.cursor], start, self.cursor);
-            },
+            '/' => if (c1 == '=') self.makePunctuationToken(2, .slash_assign, start) else self.makePunctuationToken(1, .slash, start),
             '%' => switch (c1) {
-                '=' => blk: {
-                    self.cursor += 2;
-                    break :blk self.createToken(.percent_assign, self.source[start..self.cursor], start, self.cursor);
-                },
-                else => blk: {
-                    self.cursor += 1;
-                    break :blk self.createToken(.percent, self.source[start..self.cursor], start, self.cursor);
-                },
+                '=' => self.makePunctuationToken(2, .percent_assign, start),
+                else => self.makePunctuationToken(1, .percent, start),
             },
-            '<' => blk: {
-                if (c1 == '<' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.left_shift_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '<' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.left_shift, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.less_than_equal, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.less_than, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '<' => if (c1 == '<' and c2 == '=')
+                self.makePunctuationToken(3, .left_shift_assign, start)
+            else switch (c1) {
+                '<' => self.makePunctuationToken(2, .left_shift, start),
+                '=' => self.makePunctuationToken(2, .less_than_equal, start),
+                else => self.makePunctuationToken(1, .less_than, start),
             },
-            '>' => blk: {
-                if (c1 == '>' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.right_shift_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-                if (c1 == '>' and c2 == '>') {
-                    if (c3 == '=') {
-                        self.cursor += 4;
-                        break :blk self.createToken(.unsigned_right_shift_assign, self.source[start..self.cursor], start, self.cursor);
-                    } else {
-                        self.cursor += 3;
-                        break :blk self.createToken(.unsigned_right_shift, self.source[start..self.cursor], start, self.cursor);
-                    }
-                }
-                break :blk switch (c1) {
-                    '>' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.right_shift, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.greater_than_equal, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.greater_than, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '>' => if (c1 == '>' and c2 == '=')
+                self.makePunctuationToken(3, .right_shift_assign, start)
+            else if (c1 == '>' and c2 == '>')
+                if (c3 == '=') self.makePunctuationToken(4, .unsigned_right_shift_assign, start) else self.makePunctuationToken(3, .unsigned_right_shift, start)
+            else switch (c1) {
+                '>' => self.makePunctuationToken(2, .right_shift, start),
+                '=' => self.makePunctuationToken(2, .greater_than_equal, start),
+                else => self.makePunctuationToken(1, .greater_than, start),
             },
-            '=' => blk: {
-                if (c1 == '=' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.strict_equal, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.equal, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '>' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.arrow, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.assign, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '=' => if (c1 == '=' and c2 == '=')
+                self.makePunctuationToken(3, .strict_equal, start)
+            else switch (c1) {
+                '=' => self.makePunctuationToken(2, .equal, start),
+                '>' => self.makePunctuationToken(2, .arrow, start),
+                else => self.makePunctuationToken(1, .assign, start),
             },
-            '!' => blk: {
-                if (c1 == '=' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.strict_not_equal, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.not_equal, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.logical_not, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '!' => if (c1 == '=' and c2 == '=')
+                self.makePunctuationToken(3, .strict_not_equal, start)
+            else switch (c1) {
+                '=' => self.makePunctuationToken(2, .not_equal, start),
+                else => self.makePunctuationToken(1, .logical_not, start),
             },
-            '&' => blk: {
-                if (c1 == '&' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.logical_and_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '&' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.logical_and, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.bitwise_and_assign, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.bitwise_and, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '&' => if (c1 == '&' and c2 == '=')
+                self.makePunctuationToken(3, .logical_and_assign, start)
+            else switch (c1) {
+                '&' => self.makePunctuationToken(2, .logical_and, start),
+                '=' => self.makePunctuationToken(2, .bitwise_and_assign, start),
+                else => self.makePunctuationToken(1, .bitwise_and, start),
             },
-            '|' => blk: {
-                if (c1 == '|' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.logical_or_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '|' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.logical_or, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '=' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.bitwise_or_assign, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.bitwise_or, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '|' => if (c1 == '|' and c2 == '=')
+                self.makePunctuationToken(3, .logical_or_assign, start)
+            else switch (c1) {
+                '|' => self.makePunctuationToken(2, .logical_or, start),
+                '=' => self.makePunctuationToken(2, .bitwise_or_assign, start),
+                else => self.makePunctuationToken(1, .bitwise_or, start),
             },
             '^' => switch (c1) {
-                '=' => blk: {
-                    self.cursor += 2;
-                    break :blk self.createToken(.bitwise_xor_assign, self.source[start..self.cursor], start, self.cursor);
-                },
-                else => blk: {
-                    self.cursor += 1;
-                    break :blk self.createToken(.bitwise_xor, self.source[start..self.cursor], start, self.cursor);
-                },
+                '=' => self.makePunctuationToken(2, .bitwise_xor_assign, start),
+                else => self.makePunctuationToken(1, .bitwise_xor, start),
             },
-            '?' => blk: {
-                if (c1 == '?' and c2 == '=') {
-                    self.cursor += 3;
-                    break :blk self.createToken(.nullish_assign, self.source[start..self.cursor], start, self.cursor);
-                }
-                break :blk switch (c1) {
-                    '?' => blk2: {
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.nullish_coalescing, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    '.' => blk2: {
-                        // if next char is a digit, this is not optional chaining
-                        // it's ? followed by a decimal number like .5
-                        if (std.ascii.isDigit(c2)) {
-                            self.cursor += 1;
-                            break :blk2 self.createToken(.question, self.source[start..self.cursor], start, self.cursor);
-                        }
-                        self.cursor += 2;
-                        break :blk2 self.createToken(.optional_chaining, self.source[start..self.cursor], start, self.cursor);
-                    },
-                    else => blk2: {
-                        self.cursor += 1;
-                        break :blk2 self.createToken(.question, self.source[start..self.cursor], start, self.cursor);
-                    },
-                };
+            '?' => if (c1 == '?' and c2 == '=')
+                self.makePunctuationToken(3, .nullish_assign, start)
+            else switch (c1) {
+                '?' => self.makePunctuationToken(2, .nullish_coalescing, start),
+                '.' => if (std.ascii.isDigit(c2))
+                    self.makePunctuationToken(1, .question, start)
+                else
+                    self.makePunctuationToken(2, .optional_chaining, start),
+                else => self.makePunctuationToken(1, .question, start),
             },
             else => unreachable,
         };
@@ -634,6 +489,7 @@ pub const Lexer = struct {
     }
 
     fn scanDot(self: *Lexer) LexicalError!token.Token {
+        const start = self.cursor;
         const c1 = self.peek(1);
         const c2 = self.peek(2);
 
@@ -641,13 +497,9 @@ pub const Lexer = struct {
             return self.scanNumber();
         }
         if (c1 == '.' and c2 == '.') {
-            const start = self.cursor;
-            self.cursor += 3;
-            return self.createToken(.spread, self.source[start..self.cursor], start, self.cursor);
+            return self.makePunctuationToken(3, .spread, start);
         }
-        const start = self.cursor;
-        self.cursor += 1;
-        return self.createToken(.dot, self.source[start..self.cursor], start, self.cursor);
+        return self.makePunctuationToken(1, .dot, start);
     }
 
     inline fn scanIdentifierBody(self: *Lexer) !void {
