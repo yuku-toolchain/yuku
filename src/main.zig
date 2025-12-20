@@ -37,7 +37,7 @@ pub fn main() !void {
 
     defer allocator.free(json);
 
-    std.debug.print("\n{s}\n", .{json});
+    // std.debug.print("\n{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {

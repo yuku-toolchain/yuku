@@ -13,9 +13,32 @@ const class = @import("class.zig");
 const grammar = @import("../grammar.zig");
 const modules = @import("modules.zig");
 
-pub fn parseStatement(parser: *Parser) Error!?ast.NodeIndex {
+const ParseStatementOpts = packed struct {
+    disallow_lexical_declarations: bool = false,
+};
+
+pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
-        .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(parser),
+        .@"var", .@"const", .let, .using => blk: {
+            const current_token = parser.current_token;
+
+            if (opts.disallow_lexical_declarations and (current_token.type == .let or current_token.type == .@"const")) {
+                @branchHint(.unlikely);
+
+                const keyword = if (current_token.type == .let) "let" else "const";
+
+                try parser.reportFmt(
+                    current_token.span,
+                    "'{s}' declarations are only allowed inside block statements",
+                    .{keyword},
+                    .{ .help = "Wrap the declaration in braces to create a block statement" },
+                );
+
+                return null;
+            }
+
+            break :blk try variables.parseVariableDeclaration(parser);
+        },
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
         .async => blk: {
@@ -121,7 +144,7 @@ fn parseLabeledStatementRest(parser: *Parser, identifier: ast.NodeIndex) Error!?
 
     try parser.advance(); // consume ':'
 
-    const body = try parseStatement(parser) orelse {
+    const body = try parseStatement(parser, .{}) orelse {
         try parser.report(parser.current_token.span, "Expected statement after label", .{});
         return null;
     };
@@ -227,7 +250,7 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         parser.current_token.type != .right_brace and
         parser.current_token.type != .eof)
     {
-        if (try parseStatement(parser)) |stmt| {
+        if (try parseStatement(parser, .{})) |stmt| {
             try parser.scratch_b.append(parser.allocator(), stmt);
         } else {
             break;
@@ -248,14 +271,14 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_paren, "Expected ')' after if condition", null)) return null;
 
-    const consequent = try parseStatement(parser) orelse return null;
+    const consequent = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
 
     var end = parser.getSpan(consequent).end;
     var alternate: ast.NodeIndex = ast.null_node;
 
     if (parser.current_token.type == .@"else") {
         try parser.advance(); // consume 'else'
-        alternate = try parseStatement(parser) orelse return null;
+        alternate = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
         end = parser.getSpan(alternate).end;
     }
 
@@ -279,7 +302,7 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
 
-    const body = try parseStatement(parser) orelse return null;
+    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
 
     return try parser.addNode(.{
         .while_statement = .{
@@ -294,7 +317,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance(); // consume 'do'
 
-    const body = try parseStatement(parser) orelse return null;
+    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
 
     if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) return null;
     if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
@@ -331,7 +354,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_paren, "Expected ')' after with expression", null)) return null;
 
-    const body = try parseStatement(parser) orelse return null;
+    const body = try parseStatement(parser, .{}) orelse return null;
 
     return try parser.addNode(.{
         .with_statement = .{
@@ -558,7 +581,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-loop update", null)) return null;
 
-    const body = try parseStatement(parser) orelse return null;
+    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
 
     return try parser.addNode(.{
         .for_statement = .{
@@ -578,7 +601,7 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex) Err
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-in expression", null)) return null;
 
-    const body = try parseStatement(parser) orelse return null;
+    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
 
     return try parser.addNode(.{
         .for_in_statement = .{
@@ -598,7 +621,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-of expression", null)) return null;
 
-    const body = try parseStatement(parser) orelse return null;
+    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
 
     return try parser.addNode(.{
         .for_of_statement = .{
