@@ -1,1 +1,1 @@
-'use strict'; `\00`;
+while (1) {let x = 10};

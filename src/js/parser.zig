@@ -104,11 +104,13 @@ pub const ParseTree = struct {
     }
 };
 
-const ParserContext = struct {
+const ParserContext = packed struct {
     in_async: bool,
     in_generator: bool,
     allow_in: bool,
     in_function: bool,
+    in_block: bool,
+    at_top_level: bool,
 };
 
 const ParserState = struct {
