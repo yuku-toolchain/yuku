@@ -27,6 +27,7 @@ pub const LexicalError = error{
     ConsecutiveNumericSeparators,
     MultipleDecimalPoints,
     InvalidBigIntSuffix,
+    IdentifierAfterNumericLiteral,
     InvalidUtf8,
     OutOfMemory,
 };
@@ -842,6 +843,12 @@ pub const Lexer = struct {
             token_type = .bigint_literal;
         }
 
+        // identifier cannot immediately follow a numeric literal
+        if (self.cursor < self.source_len) {
+            const c = self.source[self.cursor];
+            if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
+        }
+
         return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
     }
 
@@ -1130,6 +1137,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.ConsecutiveNumericSeparators => "Numeric literal cannot contain consecutive separators",
         error.MultipleDecimalPoints => "Numeric literal cannot contain multiple decimal points",
         error.InvalidBigIntSuffix => "BigInt literal cannot contain decimal point or exponent",
+        error.IdentifierAfterNumericLiteral => "Identifier cannot immediately follow a numeric literal",
         error.InvalidUtf8 => "Invalid UTF-8 byte sequence",
         error.OutOfMemory => "Out of memory",
     };
@@ -1159,6 +1167,7 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.ConsecutiveNumericSeparators => "Try removing one of the consecutive underscores here",
         error.MultipleDecimalPoints => "Try removing the extra decimal point here",
         error.InvalidBigIntSuffix => "Try removing the 'n' suffix here, or remove the decimal point/exponent from the number",
+        error.IdentifierAfterNumericLiteral => "Try adding whitespace here between the number and identifier",
         error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the file is saved with valid UTF-8 encoding",
         error.OutOfMemory => "The system ran out of memory while parsing",
     };
