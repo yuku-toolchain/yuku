@@ -30,6 +30,21 @@ pub fn parseVariableDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.getSpan(declarator).end;
     }
 
+    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) };
+
+    // lexical declarations are only allowed inside block statements
+    if (parser.context.in_single_statement_context and (kind == .let or kind == .@"const")) {
+        @branchHint(.unlikely);
+
+        try parser.report(
+            span,
+            "Lexical declaration cannot appear in a single-statement context",
+            .{ .help = "Wrap this declaration in a block statement" },
+        );
+
+        return null;
+    }
+
     return try parser.addNode(
         .{
             .variable_declaration = .{
@@ -37,7 +52,7 @@ pub fn parseVariableDeclaration(parser: *Parser) Error!?ast.NodeIndex {
                 .kind = kind,
             },
         },
-        .{ .start = start, .end = try parser.eatSemicolon(end) },
+        span,
     );
 }
 

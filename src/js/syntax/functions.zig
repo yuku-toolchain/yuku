@@ -104,6 +104,16 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     const end = if (!ast.isNull(body)) parser.getSpan(body).end else params_end;
 
+    if (parser.context.in_single_statement_context and is_generator) {
+        @branchHint(.unlikely);
+        try parser.report(
+            .{ .start = start, .end = params_end },
+            "Generators can only be declared at the top level or inside a block",
+            .{},
+        );
+        return null;
+    }
+
     return try parser.addNode(.{
         .function = .{
             .type = function_type,

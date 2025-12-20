@@ -54,3 +54,6 @@
 //   or the LexicallyDeclaredNames of ModuleItemList, or the ImportedLocalNames of ModuleItemList.
 // - It is a Syntax Error if ModuleItemList Contains super.
 // - It is a Syntax Error if ModuleItemList Contains NewTarget (except in functions).
+// 'let' is reserved in strict mode code.
+// export statements cannot be outside of a module.
+// 'default' case cannot appear more than once in a switch statement.

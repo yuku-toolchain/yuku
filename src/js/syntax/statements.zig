@@ -14,31 +14,24 @@ const grammar = @import("../grammar.zig");
 const modules = @import("modules.zig");
 
 const ParseStatementOpts = packed struct {
-    disallow_lexical_declarations: bool = false,
+    can_be_single_statement_context: bool = false,
 };
 
 pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.NodeIndex {
-    return switch (parser.current_token.type) {
-        .@"var", .@"const", .let, .using => blk: {
-            const current_token = parser.current_token;
+    parser.context.in_single_statement_context = false;
 
-            if (opts.disallow_lexical_declarations and (current_token.type == .let or current_token.type == .@"const")) {
-                @branchHint(.unlikely);
+    if (parser.current_token.type == .left_brace) {
+        return parseBlockStatement(parser);
+    }
 
-                const keyword = if (current_token.type == .let) "let" else "const";
+    // if it's not a block statement and can be a single statement context
+    // then we are in single statement context
+    if (opts.can_be_single_statement_context) {
+        parser.context.in_single_statement_context = true;
+    }
 
-                try parser.reportFmt(
-                    current_token.span,
-                    "'{s}' declarations are only allowed inside block statements",
-                    .{keyword},
-                    .{ .help = "Wrap the declaration in braces to create a block statement" },
-                );
-
-                return null;
-            }
-
-            break :blk try variables.parseVariableDeclaration(parser);
-        },
+    const statement = switch (parser.current_token.type) {
+        .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(parser),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
         .async => blk: {
@@ -74,7 +67,6 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
 
             break :blk modules.parseExportDeclaration(parser);
         },
-        .left_brace => parseBlockStatement(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
         .@"for" => parseForStatement(parser, false),
@@ -90,6 +82,10 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .semicolon => parseEmptyStatement(parser),
         else => parseExpressionStatementOrLabeledOrDirective(parser),
     };
+
+    parser.context.in_single_statement_context = false;
+
+    return statement;
 }
 
 fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.NodeIndex {
@@ -99,7 +95,7 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
 
     // labeled statement: identifier ':'
     if (expression_data == .identifier_reference and parser.current_token.type == .colon) {
-        return parseLabeledStatementRest(parser, expression);
+        return parseLabeledStatement(parser, expression);
     }
 
     if (parser.current_token.type != .semicolon and !canInsertSemicolon(parser)) {
@@ -130,7 +126,7 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
 }
 
 /// https://tc39.es/ecma262/#sec-labelled-statements
-fn parseLabeledStatementRest(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.NodeIndex {
+fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.NodeIndex {
     const id_data = parser.getData(identifier);
     const id_span = parser.getSpan(identifier);
 
@@ -144,10 +140,7 @@ fn parseLabeledStatementRest(parser: *Parser, identifier: ast.NodeIndex) Error!?
 
     try parser.advance(); // consume ':'
 
-    const body = try parseStatement(parser, .{}) orelse {
-        try parser.report(parser.current_token.span, "Expected statement after label", .{});
-        return null;
-    };
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     return try parser.addNode(.{
         .labeled_statement = .{ .label = label, .body = body },
@@ -271,14 +264,14 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_paren, "Expected ')' after if condition", null)) return null;
 
-    const consequent = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+    const consequent = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     var end = parser.getSpan(consequent).end;
     var alternate: ast.NodeIndex = ast.null_node;
 
     if (parser.current_token.type == .@"else") {
         try parser.advance(); // consume 'else'
-        alternate = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+        alternate = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
         end = parser.getSpan(alternate).end;
     }
 
@@ -302,7 +295,7 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
 
-    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     return try parser.addNode(.{
         .while_statement = .{
@@ -317,7 +310,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance(); // consume 'do'
 
-    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) return null;
     if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
@@ -581,7 +574,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-loop update", null)) return null;
 
-    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     return try parser.addNode(.{
         .for_statement = .{
@@ -601,7 +594,7 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex) Err
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-in expression", null)) return null;
 
-    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     return try parser.addNode(.{
         .for_in_statement = .{
@@ -621,7 +614,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-of expression", null)) return null;
 
-    const body = try parseStatement(parser, .{ .disallow_lexical_declarations = true }) orelse return null;
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     return try parser.addNode(.{
         .for_of_statement = .{

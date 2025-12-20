@@ -109,6 +109,12 @@ const ParserContext = struct {
     in_generator: bool,
     allow_in: bool,
     in_function: bool,
+    /// Whether we're parsing a single statement.
+    /// example:
+    /// if(test) 30;
+    ///          ~~
+    ///           ^ this is in a single statement context
+    in_single_statement_context: bool,
 };
 
 const ParserState = struct {
@@ -153,7 +159,7 @@ pub const Parser = struct {
             .strict_mode = options.is_strict or options.source_type == .module,
             .lexer = undefined,
             .current_token = undefined,
-            .context = .{ .in_async = false, .in_generator = false, .allow_in = true, .in_function = false },
+            .context = .{ .in_async = false, .in_generator = false, .allow_in = true, .in_function = false, .in_single_statement_context = false },
         };
     }
 
