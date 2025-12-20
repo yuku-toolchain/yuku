@@ -500,7 +500,7 @@ pub const Lexer = struct {
                 try self.consumeHex();
             },
             'u' => {
-                _ = try self.consumeUnicodeEscape();
+                try self.consumeUnicodeEscape();
             },
             '1'...'7' => {
                 if (self.strict_mode) return error.OctalEscapeInStrict;
@@ -540,7 +540,7 @@ pub const Lexer = struct {
         self.cursor += 3;
     }
 
-    fn consumeUnicodeEscape(self: *Lexer) LexicalError!u32 {
+    fn consumeUnicodeEscape(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip 'u'
 
         if (self.cursor < self.source_len and self.source[self.cursor] == '{') {
@@ -579,7 +579,6 @@ pub const Lexer = struct {
             }
 
             self.cursor = @intCast(end + 1);
-            return value;
         } else {
             // \uXXXX format
             const end = self.cursor + 4;
@@ -587,22 +586,13 @@ pub const Lexer = struct {
                 return error.InvalidUnicodeEscape;
             }
 
-            var value: u32 = 0;
             for (self.source[self.cursor..end]) |c| {
                 if (!std.ascii.isHex(c)) {
                     return error.InvalidUnicodeEscape;
                 }
-                const digit: u32 = switch (c) {
-                    '0'...'9' => c - '0',
-                    'a'...'f' => c - 'a' + 10,
-                    'A'...'F' => c - 'A' + 10,
-                    else => unreachable,
-                };
-                value = (value << 4) | digit;
             }
 
             self.cursor = end;
-            return value;
         }
     }
 
@@ -709,10 +699,7 @@ pub const Lexer = struct {
                         return error.InvalidUnicodeEscape;
                     }
                     self.cursor += 1; // consume backslash to get to 'u'
-                    const cp = try self.consumeUnicodeEscape();
-                    if (!util.UnicodeId.canContinueIdentifier(cp)) {
-                        return error.InvalidUnicodeEscape;
-                    }
+                    try self.consumeUnicodeEscape();
                 } else {
                     if ((c >= 'a' and c <= 'z') or
                         (c >= 'A' and c <= 'Z') or
@@ -752,10 +739,7 @@ pub const Lexer = struct {
                     return error.InvalidUnicodeEscape;
                 }
                 self.cursor += 1; // consume backslash to get to 'u'
-                const cp = try self.consumeUnicodeEscape();
-                if (!util.UnicodeId.canStartIdentifier(cp)) {
-                    return error.InvalidUnicodeEscape;
-                }
+                try self.consumeUnicodeEscape();
             } else {
                 if (!((first_char >= 'a' and first_char <= 'z') or
                     (first_char >= 'A' and first_char <= 'Z') or
