@@ -60,6 +60,9 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         // comma or end
         if (parser.current_token.type == .comma) {
             try parser.advance();
+            if(parser.current_token.type == .right_bracket) {
+                parser.state.array_cover_has_trailing_comma = true;
+            }
         } else if (parser.current_token.type != .right_bracket) {
             try parser.report(
                 parser.current_token.span,
@@ -114,7 +117,11 @@ pub fn coverToPattern(parser: *Parser, cover: ArrayCover, context: grammar.Patte
 
 /// convert ArrayExpression to ArrayPattern (mutates in-place).
 pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range: ast.IndexRange, context: grammar.PatternContext) Error!?ast.NodeIndex {
-    return toArrayPatternImpl(parser, expr_node, elements_range, undefined, context);
+    const pattern = try toArrayPatternImpl(parser, expr_node, elements_range, undefined, context);
+
+    parser.state.array_cover_has_trailing_comma = false;
+
+    return pattern;
 }
 
 fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, context: grammar.PatternContext) Error!?ast.NodeIndex {
@@ -132,6 +139,12 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
                 try parser.report(parser.getSpan(elem), "Rest element must be the last element", .{
                     .help = "No elements can follow the rest element in a destructuring pattern.",
                 });
+                return null;
+            } else if (parser.state.array_cover_has_trailing_comma) {
+                try parser.report(parser.getSpan(elem), "Rest element cannot have a trailing comma in array destructuring.", .{
+                    .help = "Remove the trailing comma after the rest element",
+                });
+
                 return null;
             }
 

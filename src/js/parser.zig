@@ -105,21 +105,22 @@ pub const ParseTree = struct {
 };
 
 const ParserContext = struct {
-    in_async: bool,
-    in_generator: bool,
-    allow_in: bool,
-    in_function: bool,
+    in_async: bool = false,
+    in_generator: bool = false,
+    allow_in: bool = true,
+    in_function: bool = false,
     /// Whether we're parsing a single statement.
     /// example:
     /// if(test) 30;
     ///          ~~
     ///           ^ this is in a single statement context
-    in_single_statement_context: bool,
+    in_single_statement_context: bool = false,
 };
 
 const ParserState = struct {
     /// tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
+    array_cover_has_trailing_comma: bool = false,
     /// tracks if we're still in the directive prologue of a function/script body.
     in_directive_prologue: bool = true,
 };
@@ -143,7 +144,7 @@ pub const Parser = struct {
     scratch_b: ScratchBuffer = .{},
     //
 
-    context: ParserContext,
+    context: ParserContext = .{},
     state: ParserState = .{},
 
     strict_mode: bool,
@@ -159,7 +160,6 @@ pub const Parser = struct {
             .strict_mode = options.is_strict or options.source_type == .module,
             .lexer = undefined,
             .current_token = undefined,
-            .context = .{ .in_async = false, .in_generator = false, .allow_in = true, .in_function = false, .in_single_statement_context = false },
         };
     }
 
