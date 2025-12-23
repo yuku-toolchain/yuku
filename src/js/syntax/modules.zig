@@ -14,11 +14,11 @@ const variables = @import("variables.zig");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     if (!parser.isModule()) {
-                    try parser.report(parser.current_token.span, "'import' statement is only valid in module mode", .{
-                        .help = "Use dynamic import() for script mode",
-                    });
-                    return null;
-                }
+        try parser.report(parser.current_token.span, "'import' statement is only valid in module mode", .{
+            .help = "Use dynamic import() for script mode",
+        });
+        return null;
+    }
 
     const start = parser.current_token.span.start;
     try parser.advance(); // consume 'import'

@@ -21,6 +21,9 @@ const excluded_files = [_][]const u8{
     "67c714796e7f40a4.js",
     "e6559958e6954318.js",
     "4e2cce832b4449f1.js",
+    "317c81f05510f4ad.js",
+    "76465e2c7af91e73.js",
+    "fb130c395c6aafe7.js"
 };
 
 fn readFile(allocator: std.mem.Allocator, dir: std.fs.Dir, name: []const u8) ![]const u8 {

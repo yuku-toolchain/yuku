@@ -1,2 +1,1 @@
-const nice = async
-nice => {}
+function* g() { return (yield[x]).cool; }

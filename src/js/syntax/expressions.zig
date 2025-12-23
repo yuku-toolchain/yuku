@@ -25,7 +25,7 @@ const ParseExpressionOpts = packed struct {
 };
 
 pub fn parseExpression(parser: *Parser, precedence: u5, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
-    var left = try parsePrefix(parser, opts) orelse return null;
+    var left = try parsePrefix(parser, opts, precedence) orelse return null;
 
     while (true) {
         const current_type = parser.current_token.type;
@@ -87,7 +87,7 @@ fn parseInfix(parser: *Parser, precedence: u5, left: ast.NodeIndex) Error!?ast.N
     return null;
 }
 
-fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
+fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u5) Error!?ast.NodeIndex {
     const token_type = parser.current_token.type;
 
     if (token_type == .increment or token_type == .decrement) {
@@ -106,7 +106,9 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts) Error!?ast.NodeIndex 
         return parseAwaitExpression(parser);
     }
 
-    if (token_type == .yield and parser.context.in_generator) {
+    // only parse 'yield' as yield expression when we're looking for low-precedence expressions
+    // (precedence 0-2: sequence, assignment/yield, ternary)
+    if (token_type == .yield and parser.context.in_generator and precedence <= 2) {
         return parseYieldExpression(parser);
     }
 
@@ -288,6 +290,11 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     if (delegate and ast.isNull(argument)) {
         try parser.report(parser.current_token.span, "Expected expression after 'yield*'", .{});
+        return null;
+    }
+
+    if (parser.current_token.type == .dot) {
+        try parser.report(parser.current_token.span, "Cannot use member access directly on yield expression", .{ .help = "Wrap the yield expression in parentheses: (yield).property or (yield expr).property" });
         return null;
     }
 
@@ -508,6 +515,7 @@ fn parseBinaryExpression(parser: *Parser, precedence: u5, left: ast.NodeIndex) E
     const operator = ast.BinaryOperator.fromToken(operator_token.type);
     try parser.advance();
 
+    // '**' is right-associative
     const next_precedence = if (operator == .exponent) precedence else precedence + 1;
     const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
