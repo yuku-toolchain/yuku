@@ -21,7 +21,13 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     const start = parser.current_token.span.start;
-    try parser.advance(); // consume 'import'
+    const import_name = try literals.parseIdentifierName(parser);
+
+    // then it's a import expression or meta property
+    if(parser.current_token.type == .left_paren or parser.current_token.type == .dot) {
+        const expression = try expressions.parseImportExpression(parser, import_name) orelse return null;
+        return try parser.addNode(.{ .expression_statement = .{ .expression = expression } }, parser.getSpan(expression));
+    }
 
     // side-effect import: import 'module'
     if (parser.current_token.type == .string_literal) {

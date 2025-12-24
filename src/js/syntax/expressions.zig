@@ -117,7 +117,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u5) Error
     }
 
     if (token_type == .import) {
-        return parseImportExpression(parser);
+        return parseImportExpression(parser, null);
     }
 
     return parsePrimaryExpression(parser, opts);
@@ -327,8 +327,8 @@ fn parseSuperExpression(parser: *Parser) Error!?ast.NodeIndex {
 /// `import.meta` or `import(...)`
 /// https://tc39.es/ecma262/#prod-ImportCall
 /// https://tc39.es/ecma262/#prod-ImportMeta
-fn parseImportExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const name = try literals.parseIdentifierName(parser);
+pub fn parseImportExpression(parser: *Parser, name_from_param: ?u32) Error!?ast.NodeIndex {
+    const name = name_from_param orelse try literals.parseIdentifierName(parser);
 
     return switch (parser.current_token.type) {
         .dot => parseImportMetaOrPhaseImport(parser, name),
@@ -951,7 +951,7 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
         }
 
         if (parser.current_token.type == .import) {
-            break :blk try parseImportExpression(parser) orelse return null;
+            break :blk try parseImportExpression(parser, null) orelse return null;
         }
 
         break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
