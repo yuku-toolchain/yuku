@@ -216,7 +216,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // [no LineTerminator here] => ConciseBody
     // arrow function's precedence is 2
-    if (parser.current_token.type == .identifier and !parser.current_token.has_line_terminator_before and precedence <= 2) {
+    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.has_line_terminator_before and precedence <= 2) {
         const id = try literals.parseIdentifier(parser) orelse return null;
 
         if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
