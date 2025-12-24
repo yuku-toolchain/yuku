@@ -27,3 +27,11 @@ const nice = async
 const nice = async
 nice => {}
 ```
+
+```ts
+import defer from "wow"
+```
+
+```ts
+import defer * as nice from "wow"
+```

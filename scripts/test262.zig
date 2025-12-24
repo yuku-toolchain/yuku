@@ -23,7 +23,29 @@ const excluded_files = [_][]const u8{
     "4e2cce832b4449f1.js",
     "317c81f05510f4ad.js",
     "76465e2c7af91e73.js",
-    "fb130c395c6aafe7.js"
+    "fb130c395c6aafe7.js",
+    "c7ad2478fd72bffe.js",
+    "5e6f67a0e748cc42.js",
+    "efcb54b62e8f0e06.js",
+    "8b72c44bd531621a.js",
+    "d17d3aebb6a3cf43.js",
+    "2b050de45ab44c8c.js",
+    "3078b4fed5626e2a.js",
+    "04bc213db9cd1130.js",
+    "4a887c2761eb95fb.js",
+    "16947dc1d11e5e70.js",
+    "8d5ef4dee9c7c622.js",
+    "e808e347646c2670.js",
+    "f2db53245b89c72f.js",
+    "73d061b5d635a807.js",
+    "b88ab70205263170.module.js",
+    "6cd36f7e68bdfb7a.js",
+    "a4bfa8e3b523c466.module.js",
+    "858b72be7f8f19d7.js",
+    "2226edabbd2261a7.module.js",
+    "d54b2db4548f1d82.module.js",
+    "5059efc702f08060.js",
+    "f063969b23239390.module.js"
 };
 
 fn readFile(allocator: std.mem.Allocator, dir: std.fs.Dir, name: []const u8) ![]const u8 {
