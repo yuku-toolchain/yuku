@@ -3,10 +3,6 @@ const token = @import("token.zig");
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
 
-const expressions = @import("syntax/expressions.zig");
-const literals = @import("syntax/literals.zig");
-const variables = @import("syntax/variables.zig");
-const functions = @import("syntax/functions.zig");
 const statements = @import("syntax/statements.zig");
 
 pub const Severity = enum {

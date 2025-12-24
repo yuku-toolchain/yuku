@@ -1,10 +1,9 @@
-const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
+const Precedence = @import("../token.zig").Precedence;
 
 const grammar = @import("../grammar.zig");
-const expressions = @import("expressions.zig");
 
 /// result from parsing array cover grammar: [a, b, ...c]
 pub const ArrayCover = struct {
@@ -36,7 +35,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         if (parser.current_token.type == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance();
-            const argument = try grammar.parseCoverExpression(parser, 2) orelse {
+            const argument = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };
@@ -49,7 +48,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             end = spread_end;
         } else {
             // regular element - parse as cover element
-            const element = try grammar.parseCoverExpression(parser, 2) orelse {
+            const element = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };

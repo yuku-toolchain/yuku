@@ -1,6 +1,7 @@
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
+const Precedence = @import("../token.zig").Precedence;
 
 const array = @import("array.zig");
 const object = @import("object.zig");
@@ -74,7 +75,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     try parser.advance();
 
     // right side is AssignmentExpression, not Expression (so 2)
-    const right = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+    const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
     return try parser.addNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },

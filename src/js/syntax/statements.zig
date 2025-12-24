@@ -1,7 +1,9 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
+const token = @import("../token.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
+const Precedence = @import("../token.zig").Precedence;
 
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
@@ -74,7 +76,7 @@ fn parseAsyncFunction(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.NodeIndex {
-    const expression = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     const expression_span = parser.getSpan(expression);
     const expression_data = parser.getData(expression);
 
@@ -162,7 +164,7 @@ pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'switch'", null)) return null;
 
-    const discriminant = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const discriminant = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after switch expression", null)) return null;
     if (!try parser.expect(.left_brace, "Expected '{' to start switch body", null)) return null;
@@ -200,7 +202,7 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
     var test_expr: ast.NodeIndex = ast.null_node;
 
     if (!is_default) {
-        test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+        test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
     const colon_end = parser.current_token.span.end;
@@ -245,7 +247,7 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'if'", null)) return null;
 
-    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after if condition", null)) return null;
 
@@ -276,7 +278,7 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
 
-    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
 
@@ -300,7 +302,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     if (!try parser.expect(.@"while", "Expected 'while' after do statement body", null)) return null;
     if (!try parser.expect(.left_paren, "Expected '(' after 'while'", null)) return null;
 
-    const test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const rparen_end = parser.current_token.span.end;
     if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
@@ -328,7 +330,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'with'", null)) return null;
 
-    const object = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const object = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after with expression", null)) return null;
 
@@ -510,7 +512,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_await: bool) Error!?as
     // disable 'in' as binary operator while parsing for-loop initializer
     const saved_allow_in = parser.context.allow_in;
     parser.context.allow_in = false;
-    const expr = try expressions.parseExpression(parser, 0, .{}) orelse {
+    const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse {
         parser.context.allow_in = saved_allow_in;
         return null;
     };
@@ -546,7 +548,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error
     var test_expr: ast.NodeIndex = ast.null_node;
 
     if (parser.current_token.type != .semicolon) {
-        test_expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+        test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop condition", null)) return null;
@@ -554,7 +556,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error
     var update: ast.NodeIndex = ast.null_node;
 
     if (parser.current_token.type != .right_paren) {
-        update = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+        update = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-loop update", null)) return null;
@@ -575,7 +577,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex) Error
 fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance(); // consume 'in'
 
-    const right = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const right = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-in expression", null)) return null;
 
@@ -595,7 +597,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
     try parser.advance(); // consume 'of'
 
     // for-of right side is AssignmentExpression, not Expression (no comma)
-    const right = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+    const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
     if (!try parser.expect(.right_paren, "Expected ')' after for-of expression", null)) return null;
 
@@ -631,7 +633,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     // return [no LineTerminator here] Expression?
     if (!canInsertSemicolon(parser) and parser.current_token.type != .semicolon) {
-        argument = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+        argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         end = parser.getSpan(argument).end;
     }
 
@@ -653,7 +655,7 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    const argument = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+    const argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const end = try parser.eatSemicolon(parser.getSpan(argument).end);
 
@@ -752,7 +754,7 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
 
     if (parser.current_token.type == .assign) {
         try parser.advance();
-        init = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+        init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(init).end;
     }
 

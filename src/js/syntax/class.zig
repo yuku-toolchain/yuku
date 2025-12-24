@@ -3,6 +3,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const token = @import("../token.zig");
+const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
@@ -248,7 +249,7 @@ fn parseClassElementKey(parser: *Parser) Error!KeyResult {
     // computed key
     if (parser.current_token.type == .left_bracket) {
         try parser.advance(); // consume '['
-        const key = try expressions.parseExpression(parser, 2, .{}) orelse return .{ .key = null, .computed = true };
+        const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return .{ .key = null, .computed = true };
         if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
             return .{ .key = null, .computed = true };
         }
@@ -426,7 +427,7 @@ fn parsePropertyDefinition(
 
     if (parser.current_token.type == .assign) {
         try parser.advance(); // consume '='
-        value = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+        value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(value).end;
     }
 

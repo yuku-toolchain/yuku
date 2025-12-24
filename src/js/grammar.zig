@@ -1,7 +1,6 @@
 const Parser = @import("parser.zig").Parser;
 const Error = @import("parser.zig").Error;
 const ast = @import("ast.zig");
-const std = @import("std");
 
 const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");

@@ -1,6 +1,8 @@
 const ast = @import("../ast.zig");
+const token = @import("../token.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
+const Precedence = @import("../token.zig").Precedence;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 
@@ -85,7 +87,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     // initializer if present
     if (parser.current_token.type == .assign) {
         try parser.advance();
-        init = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+        init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(init).end;
     } else if (patterns.isDestructuringPattern(parser, id)) {
         try parser.report(

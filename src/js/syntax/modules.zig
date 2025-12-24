@@ -3,6 +3,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const token = @import("../token.zig");
+const Precedence = @import("../token.zig").Precedence;
 
 const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
@@ -405,7 +406,7 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
 fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance(); // consume '='
 
-    const expression = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+    const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
     const end = try parser.eatSemicolon(parser.getSpan(expression).end);
 
     return try parser.addNode(.{
@@ -462,7 +463,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
                 .has_line_terminator_before = false,
             };
 
-            declaration = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+            declaration = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         }
     }
 
@@ -473,7 +474,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
     }
     // export default expression
     else {
-        declaration = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+        declaration = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
     }
 
     const decl_span = parser.getSpan(declaration);
@@ -801,7 +802,7 @@ pub fn parseDynamicImport(parser: *Parser, import_keyword: ast.NodeIndex, phase:
     if (!try parser.expect(.left_paren, "Expected '(' after import", null)) return null;
 
     // source expression
-    const source = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+    const source = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
     var options: ast.NodeIndex = ast.null_node;
 
@@ -811,7 +812,7 @@ pub fn parseDynamicImport(parser: *Parser, import_keyword: ast.NodeIndex, phase:
         try parser.advance(); // consume ','
 
         if (parser.current_token.type != .right_paren) {
-            options = try expressions.parseExpression(parser, 2, .{}) orelse return null;
+            options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
             // allow trailing comma after options
             if (parser.current_token.type == .comma) {

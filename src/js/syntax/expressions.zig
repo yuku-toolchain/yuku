@@ -3,6 +3,7 @@ const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const token = @import("../token.zig");
 const std = @import("std");
+const Precedence = @import("../token.zig").Precedence;
 
 const statements = @import("statements.zig");
 const array = @import("array.zig");
@@ -106,9 +107,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseAwaitExpression(parser);
     }
 
-    // only parse 'yield' as yield expression when we're looking for low-precedence expressions
-    // (precedence 0-2: sequence, assignment/yield, ternary)
-    if (token_type == .yield and parser.context.in_generator and precedence <= 2) {
+    if (token_type == .yield and parser.context.in_generator and precedence <= Precedence.Assignment) {
         return parseYieldExpression(parser);
     }
 
@@ -176,8 +175,8 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool, arrow_star
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
     // [no LineTerminator here] => ConciseBody
-    // arrow function's precedence is 2
-    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before and precedence <= 2) {
+    // arrow function's precedence is 2, assignment level
+    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before and precedence <= Precedence.Assignment) {
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
 
@@ -216,7 +215,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // [no LineTerminator here] => ConciseBody
     // arrow function's precedence is 2
-    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.has_line_terminator_before and precedence <= 2) {
+    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.has_line_terminator_before and precedence <= Precedence.Assignment) {
         const id = try literals.parseIdentifier(parser) orelse return null;
 
         if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
@@ -284,7 +283,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
     if (!statements.canInsertSemicolon(parser) and
         parser.current_token.type != .semicolon)
     {
-        if (try parseExpression(parser, 2, .{ .optional = true })) |expr| {
+        if (try parseExpression(parser, Precedence.Assignment, .{ .optional = true })) |expr| {
             argument = expr;
             end = parser.getSpan(argument).end;
         }
@@ -426,7 +425,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         // otherwise, start with a primary expression
-        break :blk try parsePrimaryExpression(parser, .{}, 0) orelse return null;
+        break :blk try parsePrimaryExpression(parser, .{}, Precedence.Lowest) orelse return null;
     };
 
     // member expression chain (. [] and tagged templates)
@@ -780,7 +779,7 @@ fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, op
 
     const saved_allow_in = parser.context.allow_in;
     parser.context.allow_in = true;
-    const property = try parseExpression(parser, 0, .{}) orelse {
+    const property = try parseExpression(parser, Precedence.Lowest, .{}) orelse {
         parser.context.allow_in = saved_allow_in;
         return null;
     };
@@ -852,7 +851,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
         const arg = if (parser.current_token.type == .spread) blk: {
             const spread_start = parser.current_token.span.start;
             try parser.advance(); // consume '...'
-            const argument = try parseExpression(parser, 2, .{}) orelse {
+            const argument = try parseExpression(parser, Precedence.Assignment, .{}) orelse {
                 parser.context.allow_in = saved_allow_in;
                 return null;
             };
@@ -860,7 +859,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
             break :blk try parser.addNode(.{
                 .spread_element = .{ .argument = argument },
             }, .{ .start = spread_start, .end = arg_span.end });
-        } else try parseExpression(parser, 2, .{}) orelse {
+        } else try parseExpression(parser, Precedence.Assignment, .{}) orelse {
             parser.context.allow_in = saved_allow_in;
             return null;
         };
@@ -986,7 +985,7 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
             break :blk try parseImportExpression(parser, null) orelse return null;
         }
 
-        break :blk try parsePrimaryExpression(parser, .{}, 0) orelse return null;
+        break :blk try parsePrimaryExpression(parser, .{}, Precedence.Lowest) orelse return null;
     };
 
     // chain LeftHandSide operations: member access, calls, optional chaining

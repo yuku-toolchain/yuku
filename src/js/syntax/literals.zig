@@ -1,6 +1,7 @@
 const ast = @import("../ast.zig");
 const lexer = @import("../lexer.zig");
 const Token = @import("../token.zig").Token;
+const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const expressions = @import("expressions.zig");
@@ -114,7 +115,7 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     var end: u32 = undefined;
     while (true) {
-        const expr = try expressions.parseExpression(parser, 0, .{}) orelse return null;
+        const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         try parser.scratch_b.append(parser.allocator(), expr);
 
         const token = parser.current_token;

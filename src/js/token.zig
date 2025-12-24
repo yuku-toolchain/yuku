@@ -1,3 +1,25 @@
+pub const Precedence = struct {
+    pub const Lowest: u8 = 0;
+    pub const Sequence: u8 = 1;
+    pub const Assignment: u8 = 2;
+    pub const Conditional: u8 = 3;
+    pub const Nullish: u8 = 4;
+    pub const LogicalOr: u8 = 5;
+    pub const LogicalAnd: u8 = 6;
+    pub const BitwiseOr: u8 = 7;
+    pub const BitwiseXor: u8 = 8;
+    pub const BitwiseAnd: u8 = 9;
+    pub const Equality: u8 = 10;
+    pub const Relational: u8 = 11;
+    pub const Shift: u8 = 12;
+    pub const Additive: u8 = 13;
+    pub const Multiplicative: u8 = 14;
+    pub const Exponent: u8 = 15;
+    pub const Unary: u8 = 16;
+    pub const Postfix: u8 = 17;
+    pub const Member: u8 = 18;
+};
+
 pub const Mask = struct {
     pub const IsNumericLiteral: u32 = 1 << 12;
     pub const IsBinaryOp: u32 = 1 << 13;
@@ -33,56 +55,56 @@ pub const TokenType = enum(u32) {
     false = 13 | Mask.IsReserved | Mask.IsIdentifierLike, // "false"
     null_literal = 14 | Mask.IsReserved | Mask.IsIdentifierLike, // "null"
 
-    plus = 15 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // "+"
-    minus = 16 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // "-"
-    star = 17 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // "*"
-    slash = 18 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // "/"
-    percent = 19 | (12 << Mask.PrecShift) | Mask.IsBinaryOp, // "%"
-    exponent = 20 | (13 << Mask.PrecShift) | Mask.IsBinaryOp, // "**"
+    plus = 15 | (Precedence.Additive << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // "+"
+    minus = 16 | (Precedence.Additive << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // "-"
+    star = 17 | (Precedence.Multiplicative << Mask.PrecShift) | Mask.IsBinaryOp, // "*"
+    slash = 18 | (Precedence.Multiplicative << Mask.PrecShift) | Mask.IsBinaryOp, // "/"
+    percent = 19 | (Precedence.Multiplicative << Mask.PrecShift) | Mask.IsBinaryOp, // "%"
+    exponent = 20 | (Precedence.Exponent << Mask.PrecShift) | Mask.IsBinaryOp, // "**"
 
-    assign = 21 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "="
-    plus_assign = 22 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "+="
-    minus_assign = 23 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "-="
-    star_assign = 24 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "*="
-    slash_assign = 25 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "/="
-    percent_assign = 26 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "%="
-    exponent_assign = 27 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "**="
+    assign = 21 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "="
+    plus_assign = 22 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "+="
+    minus_assign = 23 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "-="
+    star_assign = 24 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "*="
+    slash_assign = 25 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "/="
+    percent_assign = 26 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "%="
+    exponent_assign = 27 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "**="
 
-    increment = 28 | (15 << Mask.PrecShift), // "++"
-    decrement = 29 | (15 << Mask.PrecShift), // "--"
+    increment = 28 | (Precedence.Postfix << Mask.PrecShift), // "++"
+    decrement = 29 | (Precedence.Postfix << Mask.PrecShift), // "--"
 
-    equal = 30 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // "=="
-    not_equal = 31 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // "!="
-    strict_equal = 32 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // "==="
-    strict_not_equal = 33 | (8 << Mask.PrecShift) | Mask.IsBinaryOp, // "!=="
-    less_than = 34 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // "<"
-    greater_than = 35 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // ">"
-    less_than_equal = 36 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // "<="
-    greater_than_equal = 37 | (9 << Mask.PrecShift) | Mask.IsBinaryOp, // ">="
+    equal = 30 | (Precedence.Equality << Mask.PrecShift) | Mask.IsBinaryOp, // "=="
+    not_equal = 31 | (Precedence.Equality << Mask.PrecShift) | Mask.IsBinaryOp, // "!="
+    strict_equal = 32 | (Precedence.Equality << Mask.PrecShift) | Mask.IsBinaryOp, // "==="
+    strict_not_equal = 33 | (Precedence.Equality << Mask.PrecShift) | Mask.IsBinaryOp, // "!=="
+    less_than = 34 | (Precedence.Relational << Mask.PrecShift) | Mask.IsBinaryOp, // "<"
+    greater_than = 35 | (Precedence.Relational << Mask.PrecShift) | Mask.IsBinaryOp, // ">"
+    less_than_equal = 36 | (Precedence.Relational << Mask.PrecShift) | Mask.IsBinaryOp, // "<="
+    greater_than_equal = 37 | (Precedence.Relational << Mask.PrecShift) | Mask.IsBinaryOp, // ">="
 
-    logical_and = 38 | (4 << Mask.PrecShift) | Mask.IsLogicalOp, // "&&"
-    logical_or = 39 | (3 << Mask.PrecShift) | Mask.IsLogicalOp, // "||"
-    logical_not = 40 | (14 << Mask.PrecShift) | Mask.IsUnaryOp, // "!"
+    logical_and = 38 | (Precedence.LogicalAnd << Mask.PrecShift) | Mask.IsLogicalOp, // "&&"
+    logical_or = 39 | (Precedence.LogicalOr << Mask.PrecShift) | Mask.IsLogicalOp, // "||"
+    logical_not = 40 | (Precedence.Unary << Mask.PrecShift) | Mask.IsUnaryOp, // "!"
 
-    bitwise_and = 41 | (7 << Mask.PrecShift) | Mask.IsBinaryOp, // "&"
-    bitwise_or = 42 | (5 << Mask.PrecShift) | Mask.IsBinaryOp, // "|"
-    bitwise_xor = 43 | (6 << Mask.PrecShift) | Mask.IsBinaryOp, // "^"
-    bitwise_not = 44 | (14 << Mask.PrecShift) | Mask.IsUnaryOp, // "~"
-    left_shift = 45 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // "<<"
-    right_shift = 46 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // ">>"
-    unsigned_right_shift = 47 | (10 << Mask.PrecShift) | Mask.IsBinaryOp, // ">>>"
+    bitwise_and = 41 | (Precedence.BitwiseAnd << Mask.PrecShift) | Mask.IsBinaryOp, // "&"
+    bitwise_or = 42 | (Precedence.BitwiseOr << Mask.PrecShift) | Mask.IsBinaryOp, // "|"
+    bitwise_xor = 43 | (Precedence.BitwiseXor << Mask.PrecShift) | Mask.IsBinaryOp, // "^"
+    bitwise_not = 44 | (Precedence.Unary << Mask.PrecShift) | Mask.IsUnaryOp, // "~"
+    left_shift = 45 | (Precedence.Shift << Mask.PrecShift) | Mask.IsBinaryOp, // "<<"
+    right_shift = 46 | (Precedence.Shift << Mask.PrecShift) | Mask.IsBinaryOp, // ">>"
+    unsigned_right_shift = 47 | (Precedence.Shift << Mask.PrecShift) | Mask.IsBinaryOp, // ">>>"
 
-    bitwise_and_assign = 48 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "&="
-    bitwise_or_assign = 49 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "|="
-    bitwise_xor_assign = 50 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "^="
-    left_shift_assign = 51 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "<<="
-    right_shift_assign = 52 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // ">>="
-    unsigned_right_shift_assign = 53 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // ">>>="
+    bitwise_and_assign = 48 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "&="
+    bitwise_or_assign = 49 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "|="
+    bitwise_xor_assign = 50 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "^="
+    left_shift_assign = 51 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "<<="
+    right_shift_assign = 52 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // ">>="
+    unsigned_right_shift_assign = 53 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // ">>>="
 
-    nullish_coalescing = 54 | (3 << Mask.PrecShift) | Mask.IsLogicalOp, // "??"
-    nullish_assign = 55 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "??="
-    logical_and_assign = 56 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "&&="
-    logical_or_assign = 57 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "||="
+    nullish_coalescing = 54 | (Precedence.Nullish << Mask.PrecShift) | Mask.IsLogicalOp, // "??"
+    nullish_assign = 55 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "??="
+    logical_and_assign = 56 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "&&="
+    logical_or_assign = 57 | (Precedence.Assignment << Mask.PrecShift) | Mask.IsAssignmentOp, // "||="
     optional_chaining = 58, // "?."
 
     left_paren = 59, // "("
@@ -92,11 +114,11 @@ pub const TokenType = enum(u32) {
     left_bracket = 63, // "["
     right_bracket = 64, // "]"
     semicolon = 65, // ";"
-    comma = 66 | (1 << Mask.PrecShift), // ","
+    comma = 66 | (Precedence.Sequence << Mask.PrecShift), // ","
     dot = 67, // "."
     spread = 68, // "..."
     arrow = 69, // "=>"
-    question = 70 | (2 << Mask.PrecShift), // "?"
+    question = 70 | (Precedence.Conditional << Mask.PrecShift), // "?"
     colon = 71, // ":"
 
     @"if" = 72 | Mask.IsReserved | Mask.IsIdentifierLike, // "if"
@@ -149,12 +171,12 @@ pub const TokenType = enum(u32) {
 
     new = 114 | Mask.IsReserved | Mask.IsIdentifierLike, // "new"
     this = 115 | Mask.IsReserved | Mask.IsIdentifierLike, // "this"
-    typeof = 116 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "typeof"
-    instanceof = 117 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "instanceof"
-    in = 118 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "in"
+    typeof = 116 | (Precedence.Unary << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "typeof"
+    instanceof = 117 | (Precedence.Relational << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "instanceof"
+    in = 118 | (Precedence.Relational << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "in"
     of = 119 | Mask.IsIdentifierLike, // "of"
-    delete = 120 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "delete"
-    void = 121 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "void"
+    delete = 120 | (Precedence.Unary << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "delete"
+    void = 121 | (Precedence.Unary << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsReserved | Mask.IsIdentifierLike, // "void"
     with = 122 | Mask.IsReserved | Mask.IsIdentifierLike, // "with"
     debugger = 123 | Mask.IsReserved | Mask.IsIdentifierLike, // "debugger"
 
@@ -393,11 +415,11 @@ pub const Token = struct {
         }
 
         return switch (self.type) {
-            .dot, .optional_chaining, .left_bracket, .left_paren => 17,
+            .dot, .optional_chaining, .left_bracket, .left_paren => Precedence.Member,
             // tagged template: only when no line terminator before the template
-            .template_head, .no_substitution_template => if (!self.has_line_terminator_before) 17 else 0,
-            .comma => 1,
-            .question => 2,
+            .template_head, .no_substitution_template => if (!self.has_line_terminator_before) Precedence.Member else 0,
+            .comma => Precedence.Sequence,
+            .question => Precedence.Conditional,
             else => 0, // can't be infix
         };
     }
