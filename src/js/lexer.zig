@@ -320,22 +320,8 @@ pub const Lexer = struct {
 
         const c = self.source[self.cursor];
 
-        // LineTerminatorSequence :: <LF> | <CR> [lookahead != <LF>] | <LS> | <PS> | <CR><LF>
-        if (c == '\r') {
-            self.cursor += 1;
-            // consume optional \n after \r
-            if (self.cursor < self.source_len and self.source[self.cursor] == '\n') {
-                self.cursor += 1;
-            }
-            return;
-        }
-        if (c == '\n') {
-            self.cursor += 1;
-            return;
-        }
-
-        // multi-byte line terminators (LS U+2028, PS U+2029)
         const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
+
         if (lt_len > 0) {
             self.cursor += lt_len;
             return;
@@ -446,19 +432,27 @@ pub const Lexer = struct {
         var in_class = false;
 
         while (self.cursor < self.source_len) {
-            const c = self.source[self.cursor];
-
             if (util.Utf.isLineTerminator(self.source, self.cursor)) {
                 return error.InvalidRegexLineTerminator;
             }
 
+            const c = self.source[self.cursor];
+
             if (c == '\\') {
-                self.cursor += 1; // skip backslash
-                if (self.cursor < self.source_len) {
-                    self.cursor += 1; // skip escaped char
+                self.cursor += 1; // consume '\'
+
+                if (self.cursor >= self.source_len) {
+                    return error.UnterminatedRegexLiteral;
                 }
+
+                if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+                    return error.InvalidRegexLineTerminator;
+                }
+
+                self.cursor += 1; // consume escaped char
                 continue;
             }
+
             if (c == '[') {
                 in_class = true;
                 self.cursor += 1;
@@ -923,37 +917,47 @@ pub const Lexer = struct {
     }
 
     inline fn skipSkippable(self: *Lexer) LexicalError!void {
-        // track if we're at a logical line start (start of file OR after newline)
-        // this persists through whitespace/comment skipping for HTML close comment detection
+        // track if we're at a logical line start (start of file OR after a line terminator)
+        // this persists through whitespace/comment skipping for HTML close comment detection.
         var at_line_start = self.cursor == 0 or self.has_line_terminator_before;
 
         while (self.cursor < self.source_len) {
+            // consume any ECMAScript LineTerminatorSequence (LF, CR, CRLF, LS, PS)
+            const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
+
+            if (lt_len > 0) {
+                self.has_line_terminator_before = true;
+                at_line_start = true;
+                self.cursor += lt_len;
+                continue;
+            }
+
             const c = self.source[self.cursor];
 
             if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
+
                 switch (c) {
                     ' ', '\t', '\u{000B}', '\u{000C}' => {
                         self.cursor += 1;
                         continue;
                     },
-                    '\n', '\r' => {
-                        self.has_line_terminator_before = true;
-                        at_line_start = true;
-                        self.cursor += 1;
-                        continue;
-                    },
+
                     '/' => {
                         const next = self.peek(1);
                         if (next == '/') {
                             try self.scanLineComment();
+                            // scanLineComment stops before the line terminator; next loop iteration consumes it
                             continue;
                         } else if (next == '*') {
                             try self.scanBlockComment();
+                            // scanBlockComment updates has_line_terminator_before if it saw any
+                            if (self.has_line_terminator_before) at_line_start = true;
                             continue;
                         }
                         break;
                     },
+
                     '<' => {
                         // HTML-style comments (<!-- ... -->) are only valid in script mode
                         if (self.source_type == .script) {
@@ -962,45 +966,41 @@ pub const Lexer = struct {
                             const c3 = self.peek(3);
                             if (c1 == '!' and c2 == '-' and c3 == '-') {
                                 try self.scanHtmlComment();
+                                // scanHtmlComment stops before the line terminator (or consumes -->)
                                 continue;
                             }
                         }
                         break;
                     },
+
                     '-' => {
                         // HTML-style close comment --> is only valid at line start in script mode
-                        // "line start" means start of file or after newline, with only whitespace/comments before
+                        // "line start" means start of file or after a line terminator,
+                        // with only whitespace/comments before it.
                         if (self.source_type == .script and at_line_start) {
                             const c1 = self.peek(1);
                             const c2 = self.peek(2);
                             if (c1 == '-' and c2 == '>') {
                                 try self.scanHtmlCloseComment();
+                                // stops before the line terminator; next loop consumes it
                                 continue;
                             }
                         }
                         break;
                     },
+
                     else => break,
                 }
             } else {
                 @branchHint(.unlikely);
 
-                const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
-                if (lt_len > 0) {
-                    self.has_line_terminator_before = true;
-                    self.cursor += lt_len;
-                    continue;
-                }
-
-                // multi-byte space character
                 const cp = try util.Utf.codePointAt(self.source, self.cursor);
                 if (util.Utf.isMultiByteSpace(cp.value)) {
                     self.cursor += cp.len;
                     continue;
                 }
+                break;
             }
-
-            break;
         }
     }
 
@@ -1010,9 +1010,7 @@ pub const Lexer = struct {
         self.cursor += 2; // skip '//'
 
         while (self.cursor < self.source_len) {
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
-                break;
-            }
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
             self.cursor += 1;
         }
 
@@ -1031,8 +1029,11 @@ pub const Lexer = struct {
         while (self.cursor < self.source_len) {
             const c = self.source[self.cursor];
 
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+            const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
+            if (lt_len > 0) {
                 self.has_line_terminator_before = true;
+                self.cursor += lt_len;
+                continue;
             }
 
             if (c == '*' and self.peek(1) == '/') {
@@ -1070,9 +1071,7 @@ pub const Lexer = struct {
                 return;
             }
 
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
-                break;
-            }
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
 
             self.cursor += 1;
         }
@@ -1091,9 +1090,7 @@ pub const Lexer = struct {
         self.cursor += 3; // skip '-->'
 
         while (self.cursor < self.source_len) {
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
-                break;
-            }
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
             self.cursor += 1;
         }
 
