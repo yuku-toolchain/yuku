@@ -286,7 +286,7 @@ fn parseClassElementKey(parser: *Parser) Error!KeyResult {
     try parser.reportFmt(
         parser.current_token.span,
         "Unexpected token '{s}' as class element key",
-        .{parser.current_token.lexeme},
+        .{ parser.describeToken(parser.current_token) },
         .{ .help = "Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr]." },
     );
 
@@ -434,7 +434,7 @@ fn parsePropertyDefinition(
     if (parser.current_token.type == .semicolon) {
         end = parser.current_token.span.end;
         try parser.advance();
-    } else if (!statements.canInsertSemicolon(parser) and parser.current_token.type != .right_brace) {
+    } else if (!parser.canInsertSemicolon() and parser.current_token.type != .right_brace) {
         try parser.report(
             parser.current_token.span,
             "Expected ';' after class field",

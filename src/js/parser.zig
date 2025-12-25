@@ -318,15 +318,45 @@ pub const Parser = struct {
         return false;
     }
 
-    pub inline fn eatSemicolon(self: *Parser, end: u32) Error!u32 {
-        // consume optional semicolon and adjust span
+    pub inline fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
+        if (self.current_token.type == .semicolon) {
+            const semicolon_end = self.current_token.span.end;
+            try self.advance();
+            return semicolon_end;
+        } else {
+            if (!self.canInsertSemicolon()) {
+                try self.reportFmt(self.current_token.span, "Expected a semicolon or an implicit semicolon after a statement, but found '{s}'", .{self.describeToken(self.current_token)}, .{ .help = "Try inserting a semicolon here" });
+                return null;
+            }
+        }
+
+        return end;
+    }
+
+    /// lenient semicolon consumption for statements with special ASI exceptions.
+    ///
+    /// ES2015+ ASI rule: "The previous token is ) and the inserted semicolon would
+    /// then be parsed as the terminating semicolon of a do-while statement (14.7.2)"
+    ///
+    /// allows `do {} while (false) foo()`, semicolon optional after the `)`.
+    pub inline fn eatSemicolonLenient(self: *Parser, end: u32) Error!u32 {
         if (self.current_token.type == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance();
             return semicolon_end;
         }
-
         return end;
+    }
+
+    /// https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion
+    pub inline fn canInsertSemicolon(self: *Parser) bool {
+        const current_token = self.current_token;
+        return current_token.type == .eof or current_token.has_line_terminator_before or current_token.type == .right_brace;
+    }
+
+    pub inline fn describeToken(self: *Parser, tok: token.Token) []const u8 {
+        _ = self;
+        return if(tok.type == .eof) "none" else tok.lexeme;
     }
 
     pub const ReportOptions = struct {

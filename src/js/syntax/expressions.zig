@@ -92,7 +92,7 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
     try parser.reportFmt(
         current.span,
         "Unexpected token '{s}' in expression",
-        .{current.lexeme},
+        .{ parser.describeToken(current) },
         .{ .help = "This token cannot be used here. Expected an operator, semicolon, or end of expression." },
     );
     return null;
@@ -160,7 +160,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
                 try parser.reportFmt(
                     tok.span,
                     "Unexpected token '{s}'",
-                    .{tok.lexeme},
+                    .{ parser.describeToken(tok) },
                     .{ .help = "Expected an expression" },
                 );
             }
@@ -290,7 +290,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var argument: ast.NodeIndex = ast.null_node;
 
-    if (!statements.canInsertSemicolon(parser) and
+    if (!parser.canInsertSemicolon() and
         parser.current_token.type != .semicolon)
     {
         if (try parseExpression(parser, Precedence.Assignment, .{ .optional = true })) |expr| {

@@ -71,7 +71,7 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     // parse optional 'with' clause
     const attributes = try parseWithClause(parser);
 
-    const end = try parser.eatSemicolon(parser.getSpan(source).end);
+    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
     return try parser.addNode(.{
         .import_declaration = .{
@@ -87,7 +87,7 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
 fn parseSideEffectImport(parser: *Parser, start: u32, phase: ?ast.ImportPhase) Error!?ast.NodeIndex {
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
-    const end = try parser.eatSemicolon(parser.getSpan(source).end);
+    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
     return try parser.addNode(.{
         .import_declaration = .{
@@ -124,7 +124,7 @@ fn parseSourcePhaseImport(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     // source phase imports do not support import attributes
 
-    const end = try parser.eatSemicolon(parser.getSpan(source).end);
+    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
     return try parser.addNode(.{
         .import_declaration = .{
@@ -167,7 +167,7 @@ fn parseDeferPhaseImport(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     // defer phase imports do not support import attributes
 
-    const end = try parser.eatSemicolon(parser.getSpan(source).end);
+    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
     return try parser.addNode(.{
         .import_declaration = .{
@@ -414,7 +414,7 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance(); // consume '='
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-    const end = try parser.eatSemicolon(parser.getSpan(expression).end);
+    const end = try parser.eatSemicolon(parser.getSpan(expression).end) orelse return null;
 
     return try parser.addNode(.{
         .ts_export_assignment = .{ .expression = expression },
@@ -433,7 +433,7 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     try parser.advance(); // consume 'namespace'
 
     const id = try literals.parseIdentifierName(parser);
-    const end = try parser.eatSemicolon(parser.getSpan(id).end);
+    const end = try parser.eatSemicolon(parser.getSpan(id).end) orelse return null;
 
     return try parser.addNode(.{
         .ts_namespace_export_declaration = .{ .id = id },
@@ -490,7 +490,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
     const end = if (is_decl)
         decl_span.end
     else
-        try parser.eatSemicolon(decl_span.end);
+        try parser.eatSemicolon(decl_span.end) orelse return null;
 
     return try parser.addNode(.{
         .export_default_declaration = .{ .declaration = declaration },
@@ -520,7 +520,7 @@ fn parseExportAllDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
-    const end = try parser.eatSemicolon(parser.getSpan(source).end);
+    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
     return try parser.addNode(.{
         .export_all_declaration = .{
@@ -577,7 +577,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         }
     }
 
-    end = try parser.eatSemicolon(end);
+    end = try parser.eatSemicolon(end) orelse return null;
 
     return try parser.addNode(.{
         .export_named_declaration = .{

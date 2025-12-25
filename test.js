@@ -1,1 +1,3 @@
-export let[a] = 0 export let[b] = 0
+do {
+  a();
+} while (false) b()

@@ -85,13 +85,8 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
         return parseLabeledStatement(parser, expression);
     }
 
-    if (parser.current_token.type != .semicolon and !canInsertSemicolon(parser)) {
-        try parser.report(.{ .start = expression_span.end, .end = expression_span.end }, "Expected a semicolon or an implicit semicolon after a statement, but found none", .{ .help = "Try inserting a semicolon here" });
-        return null;
-    }
-
     const start = expression_span.start;
-    const end = try parser.eatSemicolon(expression_span.end);
+    const end = try parser.eatSemicolon(expression_span.end) orelse return null;
 
     if (expression_data == .string_literal and parser.state.in_directive_prologue) {
         const value_start = expression_data.string_literal.raw_start + 1;
@@ -307,7 +302,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
     const rparen_end = parser.current_token.span.end;
     if (!try parser.expect(.right_paren, "Expected ')' after while condition", null)) return null;
 
-    const end = try parser.eatSemicolon(rparen_end);
+    const end = try parser.eatSemicolonLenient(rparen_end);
 
     return try parser.addNode(.{
         .do_while_statement = .{
@@ -360,13 +355,13 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
     var label: ast.NodeIndex = ast.null_node;
 
     // break [no LineTerminator here] LabelIdentifier;
-    if (!canInsertSemicolon(parser) and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertSemicolon() and parser.current_token.type != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
         end = parser.getSpan(label_node).end;
     }
 
-    end = try parser.eatSemicolon(end);
+    end = try parser.eatSemicolon(end) orelse return null;
 
     return try parser.addNode(.{ .break_statement = .{ .label = label } }, .{ .start = start, .end = end });
 }
@@ -380,13 +375,13 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
     var label: ast.NodeIndex = ast.null_node;
 
     // continue [no LineTerminator here] LabelIdentifier;
-    if (!canInsertSemicolon(parser) and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertSemicolon() and parser.current_token.type != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
         end = parser.getSpan(label_node).end;
     }
 
-    end = try parser.eatSemicolon(end);
+    end = try parser.eatSemicolon(end) orelse return null;
 
     return try parser.addNode(.{ .continue_statement = .{ .label = label } }, .{ .start = start, .end = end });
 }
@@ -632,12 +627,12 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     var argument: ast.NodeIndex = ast.null_node;
 
     // return [no LineTerminator here] Expression?
-    if (!canInsertSemicolon(parser) and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertSemicolon() and parser.current_token.type != .semicolon) {
         argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         end = parser.getSpan(argument).end;
     }
 
-    end = try parser.eatSemicolon(end);
+    end = try parser.eatSemicolon(end) orelse return null;
 
     return try parser.addNode(.{ .return_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
 }
@@ -657,7 +652,7 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
-    const end = try parser.eatSemicolon(parser.getSpan(argument).end);
+    const end = try parser.eatSemicolon(parser.getSpan(argument).end) orelse return null;
 
     return try parser.addNode(.{ .throw_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
 }
@@ -727,7 +722,7 @@ fn parseDebuggerStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
     try parser.advance(); // consume 'debugger'
-    end = try parser.eatSemicolon(end);
+    end = try parser.eatSemicolon(end) orelse return null;
     return try parser.addNode(.debugger_statement, .{ .start = start, .end = end });
 }
 
@@ -772,9 +767,4 @@ fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: 
             .kind = kind,
         },
     }, .{ .start = decl_start, .end = decl_end });
-}
-
-pub inline fn canInsertSemicolon(parser: *Parser) bool {
-    const current_token = parser.current_token;
-    return current_token.type == .eof or current_token.has_line_terminator_before or current_token.type == .right_brace;
 }

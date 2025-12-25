@@ -20,7 +20,7 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
             try parser.reportFmt(
                 parser.current_token.span,
                 "Unexpected token '{s}' in binding pattern",
-                .{parser.current_token.lexeme},
+                .{ parser.describeToken(parser.current_token) },
                 .{ .help = "Expected an identifier, array pattern ([a, b]), or object pattern ({a, b})." },
             );
             return null;

@@ -167,7 +167,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             try parser.reportFmt(
                 parser.current_token.span,
                 "Unexpected token '{s}' as property key",
-                .{parser.current_token.lexeme},
+                .{ parser.describeToken(parser.current_token) },
                 .{ .help = "Property keys must be identifiers, strings, numbers, or computed expressions [expr]." },
             );
             return null;

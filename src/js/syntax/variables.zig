@@ -32,7 +32,7 @@ pub fn parseVariableDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.getSpan(declarator).end;
     }
 
-    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) };
+    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
 
     // lexical declarations are only allowed inside block statements
     if (parser.context.in_single_statement_context and (kind == .let or kind == .@"const")) {

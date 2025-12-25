@@ -232,7 +232,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         try parser.reportFmt(
             token.span,
             "Expected identifier {s}, found '{s}'",
-            .{ as_what, token.lexeme },
+            .{ as_what, parser.describeToken(token) },
             .{ .help = "Identifiers must start with a letter, underscore (_), or dollar sign ($)" },
         );
 
