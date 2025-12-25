@@ -14,10 +14,8 @@ const object = @import("object.zig");
 /// cover grammar result for parenthesized expressions and arrow parameters.
 /// https://tc39.es/ecma262/#prod-CoverParenthesizedExpressionAndArrowParameterList
 pub const ParenthesizedCover = struct {
-    /// parsed elements (expressions that may become parameters)
+    /// parsed elements (expressions + spread elements)
     elements: []const ast.NodeIndex,
-    /// rest element if any (for arrow function rest param)
-    rest: ast.NodeIndex,
     start: u32,
     end: u32,
     /// trailing comma present (valid for arrow params, not for parenthesized expr)
@@ -33,7 +31,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     const checkpoint = parser.scratch_cover.begin();
     errdefer parser.scratch_cover.reset(checkpoint);
 
-    var rest: ast.NodeIndex = ast.null_node;
     var end = start + 1;
     var has_trailing_comma = false;
 
@@ -43,7 +40,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         try parser.advance();
         return .{
             .elements = parser.scratch_cover.take(checkpoint),
-            .rest = rest,
             .start = start,
             .end = end,
             .has_trailing_comma = false,
@@ -63,18 +59,21 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
             const spread_end = parser.getSpan(argument).end;
 
             // for now, store as spread_element; will convert to rest param for arrow functions
-            rest = try parser.addNode(
+            const rest = try parser.addNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
             );
+
+            try parser.scratch_cover.append(parser.allocator(), rest);
+
             end = spread_end;
 
-            // rest must be last (can have trailing comma in some cases)
             if (parser.current_token.type == .comma) {
                 try parser.advance();
                 has_trailing_comma = true;
             }
-            break;
+
+            continue;
         }
 
         // regular element
@@ -84,6 +83,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         };
 
         try parser.scratch_cover.append(parser.allocator(), element);
+
         end = parser.getSpan(element).end;
 
         // comma or end
@@ -119,17 +119,31 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
     return .{
         .elements = parser.scratch_cover.take(checkpoint),
-        .rest = rest,
         .start = start,
         .end = end,
         .has_trailing_comma = has_trailing_comma,
     };
 }
 
+/// convert cover to CallExpression.
+pub fn coverToCallExpression(parser: *Parser, cover: ParenthesizedCover, callee: ast.NodeIndex) Error!?ast.NodeIndex {
+    // validate no CoverInitializedName in nested objects
+    for (cover.elements) |elem| {
+        if (!try grammar.validateNoInvalidCoverSyntax(parser, elem)) {
+            return null;
+        }
+    }
+
+    return try parser.addNode(
+        .{ .call_expression = .{ .callee = callee, .arguments = try parser.addExtra(cover.elements), .optional = false } },
+        .{ .start = parser.getSpan(callee).start, .end = cover.end },
+    );
+}
+
 /// convert cover to ParenthesizedExpression.
-pub fn coverToExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
+pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
     // empty parens () without arrow is invalid
-    if (cover.elements.len == 0 and ast.isNull(cover.rest)) {
+    if (cover.elements.len == 0) {
         try parser.report(
             .{ .start = cover.start, .end = cover.end },
             "Empty parentheses are only valid as arrow function parameters",
@@ -138,17 +152,6 @@ pub fn coverToExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.
         return null;
     }
 
-    // rest element without arrow is a spread, which is invalid in parenthesized expr
-    if (!ast.isNull(cover.rest)) {
-        try parser.report(
-            parser.getSpan(cover.rest),
-            "Rest element is not allowed in parenthesized expression",
-            .{ .help = "Spread in parentheses is only valid for arrow function parameters." },
-        );
-        return null;
-    }
-
-    // trailing comma is invalid in parenthesized expressions
     if (cover.has_trailing_comma) {
         try parser.report(
             .{ .start = cover.start, .end = cover.end },
@@ -160,6 +163,16 @@ pub fn coverToExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.
 
     // validate no CoverInitializedName in nested objects
     for (cover.elements) |elem| {
+        if (parser.getData(elem) == .spread_element) {
+            try parser.report(
+                parser.getSpan(elem),
+                "Rest element is not allowed in parenthesized expression",
+                .{ .help = "Spread in parentheses is only valid for arrow function parameters." },
+            );
+
+            return null;
+        }
+
         if (!try grammar.validateNoInvalidCoverSyntax(parser, elem)) {
             return null;
         }
@@ -282,25 +295,40 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
     const checkpoint = parser.scratch_cover.begin();
     errdefer parser.scratch_cover.reset(checkpoint);
 
+    var rest: ast.NodeIndex = ast.null_node;
+
     for (cover.elements) |elem| {
+        if (!ast.isNull(rest)) {
+            try parser.report(
+                parser.getSpan(rest),
+                "Rest parameter must be last formal parameter",
+                .{ .help = "Move the rest parameter to the end of the parameter list" },
+            );
+
+            return null;
+        }
+
+        if (parser.getData(elem) == .spread_element) {
+            const spread_data = parser.getData(elem).spread_element;
+
+            const pattern = try grammar.expressionToPattern(parser, spread_data.argument, .binding) orelse {
+                parser.scratch_cover.reset(checkpoint);
+                return null;
+            };
+
+            parser.setData(elem, .{ .binding_rest_element = .{ .argument = pattern } });
+
+            rest = elem;
+
+            continue;
+        }
+
         const param = try convertToFormalParameter(parser, elem) orelse {
             parser.scratch_cover.reset(checkpoint);
             return null;
         };
+
         try parser.scratch_cover.append(parser.allocator(), param);
-    }
-
-    // handle rest parameter
-    var rest: ast.NodeIndex = ast.null_node;
-
-    if (!ast.isNull(cover.rest)) {
-        const spread_data = parser.getData(cover.rest).spread_element;
-        const pattern = try grammar.expressionToPattern(parser, spread_data.argument, .binding) orelse {
-            parser.scratch_cover.reset(checkpoint);
-            return null;
-        };
-        parser.setData(cover.rest, .{ .binding_rest_element = .{ .argument = pattern } });
-        rest = cover.rest;
     }
 
     const items = try parser.addExtra(parser.scratch_cover.take(checkpoint));

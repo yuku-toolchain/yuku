@@ -24,6 +24,14 @@ const nice = async
 ```
 
 ```ts
+const nice = async()
+```
+
+```ts
+const nice = async(wow, ...)
+```
+
+```ts
 const nice = async
 nice => {}
 ```
@@ -66,4 +74,12 @@ import(wow)
 
 ```ts
 import(hey)()
+```
+
+```ts
+const nice = async(wow, ...wow) => {}
+```
+
+```ts
+const nice = async(wow, ...wow, ...nice) => {}
 ```

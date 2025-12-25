@@ -1,1 +1,1 @@
-import source from 'cool';
+const nice = async(wow, ...wow)
