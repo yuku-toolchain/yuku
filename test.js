@@ -1,1 +1,1 @@
-import defer from "cool";
+var a = /[\]/]/

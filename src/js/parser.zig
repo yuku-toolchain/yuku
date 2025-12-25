@@ -133,6 +133,7 @@ pub const Parser = struct {
     nodes: std.MultiArrayList(ast.Node) = .empty,
     extra: std.ArrayList(ast.NodeIndex) = .empty,
     current_token: token.Token,
+    next_token: ?token.Token = null,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -283,20 +284,36 @@ pub const Parser = struct {
         return self.source[start..][0..len];
     }
 
-    pub fn advance(self: *Parser) Error!void {
-        self.current_token = self.lexer.nextToken() catch |e| blk: {
+    inline fn nextTokenOrEof(self: *Parser) Error!token.Token {
+        return self.lexer.nextToken() catch |e| blk: {
             if (e == error.OutOfMemory) return error.OutOfMemory;
-
             const lex_err: lexer.LexicalError = @errorCast(e);
-
             try self.diagnostics.append(self.allocator(), .{
                 .message = lexer.getLexicalErrorMessage(lex_err),
                 .span = .{ .start = self.lexer.token_start, .end = self.lexer.cursor },
                 .help = lexer.getLexicalErrorHelp(lex_err),
             });
-
             break :blk token.Token.eof(0);
         };
+    }
+
+    pub fn advance(self: *Parser) Error!void {
+        if (self.next_token) |tok| {
+            self.current_token = tok;
+            self.next_token = null;
+        } else {
+            self.current_token = try self.nextTokenOrEof();
+        }
+
+        // prefetch next token
+        if (self.current_token.type != .eof) {
+            self.next_token = try self.nextTokenOrEof();
+            if (self.next_token.?.type == .eof) self.next_token = null;
+        }
+    }
+
+    pub inline fn lookAhead(self: *Parser) token.Token {
+        return self.next_token orelse token.Token.eof(0);
     }
 
     pub inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) Error!void {

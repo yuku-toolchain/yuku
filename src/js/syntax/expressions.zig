@@ -115,14 +115,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     if (token_type == .await and (parser.context.in_async or parser.isModule())) {
-        const start = parser.current_token.span.start;
-        try parser.advance(); // consume 'await'
-
-        if(parser.current_token.type == .using) {
-            return variables.parseVariableDeclaration(parser, true);
-        }
-
-        return parseAwaitExpression(parser, start);
+        return parseAwaitExpression(parser);
     }
 
     if (token_type == .yield and parser.context.in_generator and precedence <= Precedence.Assignment) {
@@ -270,7 +263,10 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `await expression`
 /// https://tc39.es/ecma262/#sec-await
-fn parseAwaitExpression(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+fn parseAwaitExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance(); // consume 'await'
+
     const argument = try parseExpression(parser, 14, .{}) orelse return null;
 
     return try parser.addNode(

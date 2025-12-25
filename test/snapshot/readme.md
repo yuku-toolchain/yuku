@@ -59,3 +59,11 @@ export using nice = Bun;
 ```ts
 export default using nice = Bun;
 ```
+
+```ts
+import(wow)
+```
+
+```ts
+import(hey)()
+```
