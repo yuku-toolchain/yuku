@@ -40,6 +40,22 @@ import defer * as nice from "wow"
 t?.pass``;
 ```
 
-```
+```ts
 t.pass``;
+```
+
+```ts
+await using nice = Bun;
+```
+
+```ts
+using nice = Bun;
+```
+
+```ts
+export using nice = Bun;
+```
+
+```ts
+export default using nice = Bun;
 ```

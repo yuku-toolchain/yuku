@@ -6,6 +6,7 @@ const std = @import("std");
 const Precedence = @import("../token.zig").Precedence;
 
 const statements = @import("statements.zig");
+const variables = @import("variables.zig");
 const array = @import("array.zig");
 const object = @import("object.zig");
 const literals = @import("literals.zig");
@@ -114,7 +115,14 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     if (token_type == .await and (parser.context.in_async or parser.isModule())) {
-        return parseAwaitExpression(parser);
+        const start = parser.current_token.span.start;
+        try parser.advance(); // consume 'await'
+
+        if(parser.current_token.type == .using) {
+            return variables.parseVariableDeclaration(parser, true);
+        }
+
+        return parseAwaitExpression(parser, start);
     }
 
     if (token_type == .yield and parser.context.in_generator and precedence <= Precedence.Assignment) {
@@ -262,10 +270,7 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `await expression`
 /// https://tc39.es/ecma262/#sec-await
-fn parseAwaitExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    try parser.advance(); // consume 'await'
-
+fn parseAwaitExpression(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const argument = try parseExpression(parser, 14, .{}) orelse return null;
 
     return try parser.addNode(

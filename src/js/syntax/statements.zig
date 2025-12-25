@@ -33,7 +33,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     }
 
     const statement = switch (parser.current_token.type) {
-        .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(parser),
+        .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(parser, false),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
         .async => parseAsyncFunction(parser),

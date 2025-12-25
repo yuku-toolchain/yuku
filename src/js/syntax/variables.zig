@@ -6,9 +6,9 @@ const Precedence = @import("../token.zig").Precedence;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 
-pub fn parseVariableDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    const kind = parseVariableKind(parser) orelse return null;
+    const kind = parseVariableKind(parser, await_using) orelse return null;
 
     const checkpoint = parser.scratch_a.begin();
 
@@ -58,7 +58,7 @@ pub fn parseVariableDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn parseVariableKind(parser: *Parser) ?ast.VariableKind {
+inline fn parseVariableKind(parser: *Parser, await_using: bool) ?ast.VariableKind {
     const token_type = parser.current_token.type;
     parser.advance() catch return null;
 
@@ -66,13 +66,13 @@ inline fn parseVariableKind(parser: *Parser) ?ast.VariableKind {
         .let => .let,
         .@"const" => .@"const",
         .@"var" => .@"var",
-        .using => .using,
-
-        .await => if (parser.current_token.type == .using) blk: {
-            parser.advance() catch return null;
-            break :blk .await_using;
-        } else null,
-
+        .using => blk: {
+            if (await_using) {
+                break :blk .await_using;
+            } else {
+                break :blk .using;
+            }
+        },
         else => null,
     };
 }

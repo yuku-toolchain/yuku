@@ -246,10 +246,6 @@ pub const Parser = struct {
 
     // utils
 
-    pub fn lookAhead(self: *Parser) ?token.Token {
-        return self.current_token;
-    }
-
     pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
         const index: ast.NodeIndex = @intCast(self.nodes.len);
         try self.nodes.append(self.allocator(), .{ .data = data, .span = span });

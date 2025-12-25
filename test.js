@@ -1,5 +1,1 @@
-const test = require('ava');
-
-test('test', (t) => {
-    t?.pass``;
-});
+const nice = async()

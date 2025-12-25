@@ -595,7 +595,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
 
     switch (parser.current_token.type) {
         .@"var", .@"const", .let => {
-            declaration = try variables.parseVariableDeclaration(parser) orelse return null;
+            declaration = try variables.parseVariableDeclaration(parser, false) orelse return null;
         },
         .function => {
             declaration = try functions.parseFunction(parser, .{}, null) orelse return null;
