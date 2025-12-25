@@ -336,7 +336,7 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
         // convert identifier_name to binding_identifier
         // since it is now a binding identifier, we need to validate like reserved words, etc.
-        if(!try literals.validateIdentifier(parser, "an imported binding", imported_token)) {
+        if (!try literals.validateIdentifier(parser, "an imported binding", imported_token)) {
             return null;
         }
 

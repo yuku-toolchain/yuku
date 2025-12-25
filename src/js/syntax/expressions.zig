@@ -92,7 +92,7 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
     try parser.reportFmt(
         current.span,
         "Unexpected token '{s}' in expression",
-        .{ parser.describeToken(current) },
+        .{parser.describeToken(current)},
         .{ .help = "This token cannot be used here. Expected an operator, semicolon, or end of expression." },
     );
     return null;
@@ -160,7 +160,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
                 try parser.reportFmt(
                     tok.span,
                     "Unexpected token '{s}'",
-                    .{ parser.describeToken(tok) },
+                    .{parser.describeToken(tok)},
                     .{ .help = "Expected an expression" },
                 );
             }
@@ -916,7 +916,7 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
     // first optional operation
     var expr = try parseOptionalChainElement(parser, left, true) orelse return null;
 
-    // Continue parsing the chain
+    // continue parsing the chain
     while (true) {
         switch (parser.current_token.type) {
             .dot => expr = try parseStaticMemberExpression(parser, expr, false) orelse return null,
@@ -925,6 +925,18 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
             .optional_chaining => {
                 try parser.advance();
                 expr = try parseOptionalChainElement(parser, expr, true) orelse return null;
+            },
+            .template_head, .no_substitution_template => {
+                // tagged template in optional chain, not allowed (unless line terminator separates)
+                if (!parser.current_token.has_line_terminator_before) {
+                    try parser.report(
+                        parser.current_token.span,
+                        "Tagged template expressions are not permitted in an optional chain",
+                        .{ .help = "Remove the optional chaining operator '?.' before the template literal or add parentheses." },
+                    );
+                    return null;
+                }
+                break;
             },
             else => break,
         }
@@ -947,6 +959,14 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
     return switch (tok_type) {
         .left_bracket => parseComputedMemberExpression(parser, object_node, optional),
         .left_paren => parseCallExpression(parser, object_node, optional),
+        .template_head, .no_substitution_template => {
+            try parser.report(
+                parser.current_token.span,
+                "Tagged template expressions are not permitted in an optional chain",
+                .{ .help = "Remove the optional chaining operator '?.' before the template literal." },
+            );
+            return null;
+        },
         else => {
             try parser.report(
                 parser.current_token.span,

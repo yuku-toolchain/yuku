@@ -35,3 +35,11 @@ import defer from "wow"
 ```ts
 import defer * as nice from "wow"
 ```
+
+```ts
+t?.pass``;
+```
+
+```
+t.pass``;
+```
