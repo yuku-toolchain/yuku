@@ -29,19 +29,19 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         return parseSideEffectImport(parser, start, null);
     }
 
-    // check for import phase: source or defer
     var phase: ?ast.ImportPhase = null;
 
     const next = try parser.lookAhead();
 
+    // import source X from "X"
     if (parser.current_token.type == .source and next.type.isIdentifierLike() and next.type != .from) {
         phase = .source;
-        try parser.advance(); // consume 'source'
-        return parseSourcePhaseImport(parser, start);
-    } else if (parser.current_token.type == .@"defer" and next.type == .star) {
+        try parser.advance();
+    }
+    // import defer * as X from "X"
+    else if (parser.current_token.type == .@"defer" and next.type == .star) {
         phase = .@"defer";
-        try parser.advance(); // consume 'defer'
-        return parseDeferPhaseImport(parser, start);
+        try parser.advance();
     }
 
     // regular import, parse import clause (specifiers)
@@ -69,86 +69,6 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
             .source = source,
             .attributes = attributes,
             .phase = phase,
-        },
-    }, .{ .start = start, .end = end });
-}
-
-/// source phase import: import source X from "X"
-/// source phase imports must have exactly one ImportDefaultSpecifier
-fn parseSourcePhaseImport(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    // parse the default binding
-    const default_specifier = try parseImportDefaultSpecifier(parser) orelse return null;
-
-    // store in specifiers array
-    const checkpoint = parser.scratch_a.begin();
-    try parser.scratch_a.append(parser.allocator(), default_specifier);
-
-    const specifiers = try parser.addExtra(parser.scratch_a.take(checkpoint));
-
-    if (parser.current_token.type != .from) {
-        try parser.report(parser.current_token.span, "Expected 'from' after source phase import binding", .{
-            .help = "Source phase imports require 'from': import source x from 'module'",
-        });
-        return null;
-    }
-
-    try parser.advance(); // consume 'from'
-
-    const source = try parseModuleSpecifier(parser) orelse return null;
-
-    // source phase imports do not support import attributes
-
-    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
-
-    return try parser.addNode(.{
-        .import_declaration = .{
-            .specifiers = specifiers,
-            .source = source,
-            .attributes = ast.IndexRange.empty,
-            .phase = .source,
-        },
-    }, .{ .start = start, .end = end });
-}
-
-/// defer phase import: import defer * as X from "X"
-/// defer phase imports must have exactly one ImportNamespaceSpecifier
-fn parseDeferPhaseImport(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    // defer imports require namespace import: * as name
-    if (parser.current_token.type != .star) {
-        try parser.report(parser.current_token.span, "Expected '*' for defer phase import", .{
-            .help = "Defer phase imports must use namespace form: import defer * as name from 'module'",
-        });
-        return null;
-    }
-
-    const ns_specifier = try parseImportNamespaceSpecifier(parser) orelse return null;
-
-    // store in specifiers array
-    const checkpoint = parser.scratch_a.begin();
-    try parser.scratch_a.append(parser.allocator(), ns_specifier);
-    const specifiers = try parser.addExtra(parser.scratch_a.take(checkpoint));
-
-    if (parser.current_token.type != .from) {
-        try parser.report(parser.current_token.span, "Expected 'from' after defer phase import binding", .{
-            .help = "Defer phase imports require 'from': import defer * as x from 'module'",
-        });
-        return null;
-    }
-
-    try parser.advance();
-
-    const source = try parseModuleSpecifier(parser) orelse return null;
-
-    // defer phase imports do not support import attributes
-
-    const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
-
-    return try parser.addNode(.{
-        .import_declaration = .{
-            .specifiers = specifiers,
-            .source = source,
-            .attributes = ast.IndexRange.empty,
-            .phase = .@"defer",
         },
     }, .{ .start = start, .end = end });
 }
