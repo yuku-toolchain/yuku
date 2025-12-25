@@ -418,8 +418,9 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    // this is very basic now
     fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!void {
+        try self.advance();
+
         while (self.current_token.type != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {
@@ -431,9 +432,11 @@ pub const Parser = struct {
                 return;
             }
 
-            switch (self.current_token.type) {
-                .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using => return,
-                else => {},
+            if (self.current_token.has_line_terminator_before) {
+                switch (self.current_token.type) {
+                    .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .@"throw", .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => return,
+                    else => {},
+                }
             }
 
             try self.advance();
