@@ -1,0 +1,40 @@
+{
+  "name": "ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "oxlint",
+    "format": "oxfmt"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.0.0",
+    "@heroicons/react": "^2.2.0",
+    "@hugeicons-pro/core-solid-rounded": "^3.1.0",
+    "@hugeicons/react": "^1.1.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "next": "16.0.0",
+    "next-themes": "^0.4.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-markdown": "^10.1.0",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "oxfmt": "^0.20.0",
+    "oxlint": "^1.35.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2"
+  }
+}

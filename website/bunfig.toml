@@ -1,0 +1,5 @@
+[install]
+linker = "isolated"
+
+[install.scopes]
+@hugeicons-pro = { token = "$HUGEICONS_UNIVERSAL_LICENSE_KEY", url = "https://npm.hugeicons.com/" }
