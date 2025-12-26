@@ -1,3 +1,193 @@
-export function parse(): string {
-	return "Welcome to Yuku!"
+export enum SourceType {
+  Script = 0,
+  Module = 1,
+}
+
+export enum Lang {
+  JS = 0,
+  TS = 1,
+  JSX = 2,
+  TSX = 3,
+  DTS = 4,
+}
+
+export interface ParseOptions {
+  sourceType?: 'script' | 'module';
+  lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts';
+}
+
+export interface YukuNode {
+  type: string;
+  [key: string]: unknown;
+}
+
+export type YukuAST = YukuNode;
+
+interface WasmExports {
+  alloc: (size: number) => number;
+  free: (ptr: number, size: number) => void;
+  parse: (
+    sourcePtr: number,
+    sourceLen: number,
+    sourceType: number,
+    lang: number
+  ) => number;
+  memory: WebAssembly.Memory;
+}
+
+let wasmInstance: WasmExports | null = null;
+
+async function getWasmInstance(): Promise<WasmExports> {
+  if (wasmInstance) return wasmInstance;
+
+  const wasmUrl = new URL('./yuku.wasm', import.meta.url);
+  const wasmBuffer = await fetch(wasmUrl).then((r) => r.arrayBuffer());
+  const wasmModule = await WebAssembly.instantiate(wasmBuffer);
+
+  wasmInstance = wasmModule.instance.exports as unknown as WasmExports;
+  return wasmInstance;
+}
+
+function normalizeSourceType(sourceType?: 'script' | 'module'): SourceType {
+  return sourceType === 'script' ? SourceType.Script : SourceType.Module;
+}
+
+function normalizeLang(lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts'): Lang {
+  switch (lang) {
+    case 'ts':
+      return Lang.TS;
+    case 'jsx':
+      return Lang.JSX;
+    case 'tsx':
+      return Lang.TSX;
+    case 'dts':
+      return Lang.DTS;
+    default:
+      return Lang.JS;
+  }
+}
+
+function readLengthPrefixedData(
+  memory: WebAssembly.Memory,
+  ptr: number
+): { length: number; dataPtr: number } {
+  const view = new DataView(memory.buffer);
+  const length = view.getUint32(ptr, true);
+  const dataPtr = ptr + 4;
+  return { length, dataPtr };
+}
+
+function parseInternal(
+  wasm: WasmExports,
+  source: string,
+  options: ParseOptions
+): YukuAST {
+  const encoder = new TextEncoder();
+  const sourceBytes = encoder.encode(source);
+  const sourceLen = sourceBytes.length;
+
+  const sourcePtr = wasm.alloc(sourceLen);
+  if (!sourcePtr) {
+    throw new Error('Failed to allocate memory for source code');
+  }
+
+  try {
+    const wasmMemory = new Uint8Array(wasm.memory.buffer, sourcePtr, sourceLen);
+    wasmMemory.set(sourceBytes);
+
+    const sourceType = normalizeSourceType(options.sourceType);
+    const lang = normalizeLang(options.lang);
+
+    const resultPtr = wasm.parse(sourcePtr, sourceLen, sourceType, lang);
+
+    if (resultPtr === 0) {
+      throw new Error('Failed to parse source code');
+    }
+
+    const { length: jsonLen, dataPtr: jsonDataPtr } = readLengthPrefixedData(
+      wasm.memory,
+      resultPtr
+    );
+
+    try {
+      const decoder = new TextDecoder();
+      const jsonBytes = new Uint8Array(wasm.memory.buffer, jsonDataPtr, jsonLen);
+      const jsonStr = decoder.decode(jsonBytes);
+
+      return JSON.parse(jsonStr) as YukuAST;
+    } finally {
+      wasm.free(resultPtr, jsonLen + 4);
+    }
+  } finally {
+    wasm.free(sourcePtr, sourceLen);
+  }
+}
+
+/**
+ * Parse JavaScript/TypeScript source code into a Yuku AST.
+ *
+ * @param source - Source code to parse
+ * @param options - Parse options
+ * @returns Yuku AST
+ * @throws Error if parsing fails
+ *
+ * @example
+ * ```ts
+ * const ast = await parse('const x = 5;', {
+ *   sourceType: 'module',
+ *   lang: 'js'
+ * });
+ * ```
+ */
+export async function parse(
+  source: string,
+  options: ParseOptions = {}
+): Promise<YukuAST> {
+  const wasm = await getWasmInstance();
+  return parseInternal(wasm, source, options);
+}
+
+/**
+ * Synchronous parse function (requires WASM to be preloaded).
+ * Use `parse()` for most cases.
+ *
+ * @param source - Source code to parse
+ * @param options - Parse options
+ * @returns Yuku AST
+ * @throws Error if WASM not loaded or parsing fails
+ *
+ * @example
+ * ```ts
+ * await preload(); // Load WASM first
+ * const ast = parseSync('const x = 5;', {
+ *   sourceType: 'module',
+ *   lang: 'js'
+ * });
+ * ```
+ */
+export function parseSync(
+  source: string,
+  options: ParseOptions = {}
+): YukuAST {
+  if (!wasmInstance) {
+    throw new Error(
+      'WASM not loaded. Call parse() first or manually call preload()'
+    );
+  }
+  return parseInternal(wasmInstance, source, options);
+}
+
+/**
+ * Preload WASM module (optional).
+ * Useful if you want to load WASM before first parse.
+ *
+ * @example
+ * ```ts
+ * await preload();
+ * // Now you can use parseSync()
+ * const ast = parseSync('const x = 5;');
+ * ```
+ */
+export async function preload(): Promise<void> {
+  await getWasmInstance();
 }
