@@ -1,0 +1,145 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 62,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 61,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 31,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 11,
+              "end": 15,
+              "expression": {
+                "type": "CallExpression",
+                "start": 11,
+                "end": 14,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 11,
+                  "end": 12,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 18,
+              "end": 22,
+              "expression": {
+                "type": "CallExpression",
+                "start": 18,
+                "end": 21,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 18,
+                  "end": 19,
+                  "name": "c"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 25,
+              "end": 29,
+              "expression": {
+                "type": "CallExpression",
+                "start": 25,
+                "end": 28,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 25,
+                  "end": 26,
+                  "name": "d"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 37,
+          "end": 61,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 41,
+              "end": 45,
+              "expression": {
+                "type": "CallExpression",
+                "start": 41,
+                "end": 44,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 41,
+                  "end": 42,
+                  "name": "e"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 48,
+              "end": 52,
+              "expression": {
+                "type": "CallExpression",
+                "start": 48,
+                "end": 51,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 48,
+                  "end": 49,
+                  "name": "f"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 55,
+              "end": 59,
+              "expression": {
+                "type": "CallExpression",
+                "start": 55,
+                "end": 58,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 56,
+                  "name": "g"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

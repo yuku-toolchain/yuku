@@ -1,0 +1,77 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 13,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "SequenceExpression",
+          "start": 0,
+          "end": 13,
+          "expressions": [
+            {
+              "type": "TemplateLiteral",
+              "start": 0,
+              "end": 8,
+              "quasis": [
+                {
+                  "type": "TemplateElement",
+                  "start": 1,
+                  "end": 2,
+                  "value": {
+                    "raw": "{",
+                    "cooked": "{"
+                  },
+                  "tail": false
+                },
+                {
+                  "type": "TemplateElement",
+                  "start": 6,
+                  "end": 7,
+                  "value": {
+                    "raw": "}",
+                    "cooked": "}"
+                  },
+                  "tail": true
+                }
+              ],
+              "expressions": [
+                {
+                  "type": "Identifier",
+                  "start": 4,
+                  "end": 5,
+                  "name": "a"
+                }
+              ]
+            },
+            {
+              "type": "TemplateLiteral",
+              "start": 10,
+              "end": 13,
+              "quasis": [
+                {
+                  "type": "TemplateElement",
+                  "start": 11,
+                  "end": 12,
+                  "value": {
+                    "raw": "}",
+                    "cooked": "}"
+                  },
+                  "tail": true
+                }
+              ],
+              "expressions": []
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

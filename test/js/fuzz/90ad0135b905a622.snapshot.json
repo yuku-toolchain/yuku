@@ -1,0 +1,154 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 61,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 60,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 60,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 17,
+              "end": 29,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 21,
+                  "end": 28,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 21,
+                    "end": 22,
+                    "name": "b"
+                  },
+                  "init": {
+                    "type": "ParenthesizedExpression",
+                    "start": 25,
+                    "end": 28,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 26,
+                      "end": 27,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 32,
+              "end": 58,
+              "expression": {
+                "type": "LogicalExpression",
+                "start": 32,
+                "end": 57,
+                "left": {
+                  "type": "Identifier",
+                  "start": 32,
+                  "end": 33,
+                  "name": "c"
+                },
+                "operator": "&&",
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 37,
+                  "end": 57,
+                  "expression": {
+                    "type": "SequenceExpression",
+                    "start": 38,
+                    "end": 56,
+                    "expressions": [
+                      {
+                        "type": "ParenthesizedExpression",
+                        "start": 38,
+                        "end": 53,
+                        "expression": {
+                          "type": "SequenceExpression",
+                          "start": 39,
+                          "end": 52,
+                          "expressions": [
+                            {
+                              "type": "ParenthesizedExpression",
+                              "start": 39,
+                              "end": 49,
+                              "expression": {
+                                "type": "SequenceExpression",
+                                "start": 40,
+                                "end": 48,
+                                "expressions": [
+                                  {
+                                    "type": "ParenthesizedExpression",
+                                    "start": 40,
+                                    "end": 43,
+                                    "expression": {
+                                      "type": "Literal",
+                                      "start": 41,
+                                      "end": 42,
+                                      "value": 2,
+                                      "raw": "2"
+                                    }
+                                  },
+                                  {
+                                    "type": "ParenthesizedExpression",
+                                    "start": 45,
+                                    "end": 48,
+                                    "expression": {
+                                      "type": "Literal",
+                                      "start": 46,
+                                      "end": 47,
+                                      "value": 3,
+                                      "raw": "3"
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Identifier",
+                              "start": 51,
+                              "end": 52,
+                              "name": "d"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "Identifier",
+                        "start": 55,
+                        "end": 56,
+                        "name": "b"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

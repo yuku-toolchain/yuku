@@ -1,0 +1,65 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 33,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 32,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 31,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 30,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 28,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 28,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 26,
+                    "expression": {
+                      "type": "UnaryExpression",
+                      "start": 19,
+                      "end": 25,
+                      "operator": "void",
+                      "prefix": true,
+                      "argument": {
+                        "type": "Literal",
+                        "start": 24,
+                        "end": 25,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

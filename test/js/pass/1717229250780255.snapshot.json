@@ -1,0 +1,87 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 51,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 51,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 51,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 19,
+              "end": 33,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 19,
+                "end": 32,
+                "expression": {
+                  "type": "ClassExpression",
+                  "start": 20,
+                  "end": 31,
+                  "decorators": [],
+                  "id": {
+                    "type": "Identifier",
+                    "start": 26,
+                    "end": 27,
+                    "name": "b"
+                  },
+                  "superClass": null,
+                  "body": {
+                    "type": "ClassBody",
+                    "start": 28,
+                    "end": 31,
+                    "body": []
+                  }
+                }
+              }
+            },
+            {
+              "type": "ClassDeclaration",
+              "start": 38,
+              "end": 48,
+              "decorators": [],
+              "id": {
+                "type": "Identifier",
+                "start": 44,
+                "end": 45,
+                "name": "c"
+              },
+              "superClass": null,
+              "body": {
+                "type": "ClassBody",
+                "start": 46,
+                "end": 48,
+                "body": []
+              }
+            },
+            {
+              "type": "EmptyStatement",
+              "start": 48,
+              "end": 49
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

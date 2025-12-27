@@ -1,0 +1,87 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 20,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 20,
+          "expression": {
+            "type": "AssignmentExpression",
+            "start": 1,
+            "end": 19,
+            "operator": "=",
+            "left": {
+              "type": "ObjectPattern",
+              "start": 1,
+              "end": 15,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 2,
+                  "end": 14,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 2,
+                    "end": 3,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "AssignmentPattern",
+                    "start": 5,
+                    "end": 14,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 5,
+                      "end": 6,
+                      "name": "b"
+                    },
+                    "right": {
+                      "type": "AssignmentExpression",
+                      "start": 9,
+                      "end": 14,
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "start": 9,
+                        "end": 10,
+                        "name": "c"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "start": 13,
+                        "end": 14,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            },
+            "right": {
+              "type": "Literal",
+              "start": 18,
+              "end": 19,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

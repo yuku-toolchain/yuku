@@ -1,0 +1,129 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 119,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 31,
+        "end": 74,
+        "label": {
+          "type": "Identifier",
+          "start": 31,
+          "end": 32,
+          "name": "c"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 34,
+          "end": 74,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 46,
+              "end": 53,
+              "expression": {
+                "type": "CallExpression",
+                "start": 46,
+                "end": 52,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 46,
+                  "end": 47,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 48,
+                    "end": 51,
+                    "value": "b",
+                    "raw": "\"b\""
+                  }
+                ],
+                "optional": false
+              }
+            },
+            {
+              "type": "BreakStatement",
+              "start": 64,
+              "end": 72,
+              "label": {
+                "type": "Identifier",
+                "start": 70,
+                "end": 71,
+                "name": "c"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "LabeledStatement",
+        "start": 75,
+        "end": 118,
+        "label": {
+          "type": "Identifier",
+          "start": 75,
+          "end": 76,
+          "name": "c"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 78,
+          "end": 118,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 90,
+              "end": 97,
+              "expression": {
+                "type": "CallExpression",
+                "start": 90,
+                "end": 96,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 90,
+                  "end": 91,
+                  "name": "a"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 92,
+                    "end": 95,
+                    "value": "b",
+                    "raw": "\"b\""
+                  }
+                ],
+                "optional": false
+              }
+            },
+            {
+              "type": "BreakStatement",
+              "start": 108,
+              "end": 116,
+              "label": {
+                "type": "Identifier",
+                "start": 114,
+                "end": 115,
+                "name": "c"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " mangle to the same name 'a'",
+      "start": 0,
+      "end": 30
+    }
+  ],
+  "errors": []
+}

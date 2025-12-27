@@ -1,0 +1,89 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 30,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 30,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 30,
+          "expression": {
+            "type": "ClassExpression",
+            "start": 1,
+            "end": 29,
+            "decorators": [],
+            "id": null,
+            "superClass": null,
+            "body": {
+              "type": "ClassBody",
+              "start": 7,
+              "end": 29,
+              "body": [
+                {
+                  "type": "MethodDefinition",
+                  "start": 8,
+                  "end": 28,
+                  "decorators": [],
+                  "key": {
+                    "type": "Identifier",
+                    "start": 8,
+                    "end": 9,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "FunctionExpression",
+                    "start": 9,
+                    "end": 28,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [
+                      {
+                        "type": "Identifier",
+                        "start": 10,
+                        "end": 11,
+                        "name": "b"
+                      }
+                    ],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 13,
+                      "end": 28,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 14,
+                          "end": 27,
+                          "expression": {
+                            "type": "Literal",
+                            "start": 14,
+                            "end": 26,
+                            "value": "use strict",
+                            "raw": "'use strict'"
+                          },
+                          "directive": "use strict"
+                        }
+                      ]
+                    },
+                    "expression": false
+                  },
+                  "kind": "method",
+                  "computed": false,
+                  "static": false
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

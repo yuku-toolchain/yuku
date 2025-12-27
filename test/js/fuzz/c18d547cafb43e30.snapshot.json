@@ -1,0 +1,22 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 6,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 5,
+        "expression": {
+          "type": "ThisExpression",
+          "start": 0,
+          "end": 4
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

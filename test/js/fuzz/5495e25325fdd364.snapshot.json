@@ -1,0 +1,51 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 21,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 20,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "AssignmentPattern",
+            "start": 11,
+            "end": 16,
+            "left": {
+              "type": "Identifier",
+              "start": 11,
+              "end": 12,
+              "name": "b"
+            },
+            "right": {
+              "type": "Identifier",
+              "start": 15,
+              "end": 16,
+              "name": "c"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 18,
+          "end": 20,
+          "body": []
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

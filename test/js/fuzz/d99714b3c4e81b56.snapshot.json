@@ -1,0 +1,81 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 44,
+        "init": null,
+        "test": {
+          "type": "CallExpression",
+          "start": 7,
+          "end": 10,
+          "callee": {
+            "type": "Identifier",
+            "start": 7,
+            "end": 8,
+            "name": "a"
+          },
+          "arguments": [],
+          "optional": false
+        },
+        "update": null,
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 44,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 17,
+              "end": 42,
+              "test": {
+                "type": "CallExpression",
+                "start": 21,
+                "end": 24,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 21,
+                  "end": 22,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
+              },
+              "consequent": {
+                "type": "ExpressionStatement",
+                "start": 26,
+                "end": 30,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 26,
+                  "end": 29,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 26,
+                    "end": 27,
+                    "name": "c"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              },
+              "alternate": {
+                "type": "BreakStatement",
+                "start": 36,
+                "end": 42,
+                "label": null
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

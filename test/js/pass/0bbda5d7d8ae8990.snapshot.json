@@ -1,0 +1,85 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 65,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 65,
+          "body": [
+            {
+              "type": "WhileStatement",
+              "start": 30,
+              "end": 46,
+              "test": {
+                "type": "Literal",
+                "start": 37,
+                "end": 41,
+                "value": true,
+                "raw": "true"
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 43,
+                "end": 46,
+                "body": []
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 57,
+              "end": 63,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 61,
+                  "end": 62,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 61,
+                    "end": 62,
+                    "name": "b"
+                  },
+                  "init": null
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " infinite ",
+      "start": 15,
+      "end": 29
+    },
+    {
+      "type": "Block",
+      "value": " bar ",
+      "start": 47,
+      "end": 56
+    }
+  ],
+  "errors": []
+}

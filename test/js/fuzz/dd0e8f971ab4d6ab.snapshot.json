@@ -1,0 +1,123 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 54,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 53,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 52,
+            "callee": {
+              "type": "ParenthesizedExpression",
+              "start": 1,
+              "end": 50,
+              "expression": {
+                "type": "FunctionExpression",
+                "start": 2,
+                "end": 49,
+                "id": {
+                  "type": "Identifier",
+                  "start": 11,
+                  "end": 12,
+                  "name": "a"
+                },
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 15,
+                  "end": 49,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 19,
+                      "end": 47,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 19,
+                        "end": 46,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 19,
+                          "end": 20,
+                          "name": "b"
+                        },
+                        "arguments": [
+                          {
+                            "type": "BinaryExpression",
+                            "start": 21,
+                            "end": 45,
+                            "left": {
+                              "type": "ParenthesizedExpression",
+                              "start": 21,
+                              "end": 35,
+                              "expression": {
+                                "type": "UnaryExpression",
+                                "start": 22,
+                                "end": 34,
+                                "operator": "typeof",
+                                "prefix": true,
+                                "argument": {
+                                  "type": "ParenthesizedExpression",
+                                  "start": 29,
+                                  "end": 34,
+                                  "expression": {
+                                    "type": "CallExpression",
+                                    "start": 30,
+                                    "end": 33,
+                                    "callee": {
+                                      "type": "Identifier",
+                                      "start": 30,
+                                      "end": 31,
+                                      "name": "a"
+                                    },
+                                    "arguments": [],
+                                    "optional": false
+                                  }
+                                }
+                              }
+                            },
+                            "operator": "===",
+                            "right": {
+                              "type": "ParenthesizedExpression",
+                              "start": 40,
+                              "end": 45,
+                              "expression": {
+                                "type": "Literal",
+                                "start": 41,
+                                "end": 44,
+                                "value": "c",
+                                "raw": "\"c\""
+                              }
+                            }
+                          }
+                        ],
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              }
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

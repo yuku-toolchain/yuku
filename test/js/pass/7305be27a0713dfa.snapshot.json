@@ -1,0 +1,97 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 79,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "DoWhileStatement",
+        "start": 0,
+        "end": 78,
+        "body": {
+          "type": "BlockStatement",
+          "start": 3,
+          "end": 67,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 31,
+              "end": 65,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 31,
+                "end": 64,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 32,
+                  "end": 63,
+                  "callee": {
+                    "type": "FunctionExpression",
+                    "start": 32,
+                    "end": 61,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 44,
+                      "end": 61,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 50,
+                          "end": 57,
+                          "expression": {
+                            "type": "CallExpression",
+                            "start": 50,
+                            "end": 56,
+                            "callee": {
+                              "type": "Identifier",
+                              "start": 50,
+                              "end": 51,
+                              "name": "a"
+                            },
+                            "arguments": [
+                              {
+                                "type": "Literal",
+                                "start": 52,
+                                "end": 55,
+                                "value": "b",
+                                "raw": "'b'"
+                              }
+                            ],
+                            "optional": false
+                          }
+                        }
+                      ]
+                    },
+                    "expression": false
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              }
+            }
+          ]
+        },
+        "test": {
+          "type": "Identifier",
+          "start": 75,
+          "end": 76,
+          "name": "c"
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " do not optimize it",
+      "start": 7,
+      "end": 28
+    }
+  ],
+  "errors": []
+}

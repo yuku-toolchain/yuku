@@ -1,0 +1,142 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 76,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 75,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 75,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 17,
+              "end": 21,
+              "expression": {
+                "type": "CallExpression",
+                "start": 17,
+                "end": 20,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 17,
+                  "end": 18,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 24,
+              "end": 28,
+              "expression": {
+                "type": "CallExpression",
+                "start": 24,
+                "end": 27,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 24,
+                  "end": 25,
+                  "name": "c"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 31,
+              "end": 39,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 31,
+                "end": 38,
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "start": 31,
+                  "end": 32,
+                  "name": "d"
+                },
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 35,
+                  "end": 38,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 36,
+                    "end": 37,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ReturnStatement",
+              "start": 42,
+              "end": 49,
+              "argument": null
+            },
+            {
+              "type": "IfStatement",
+              "start": 52,
+              "end": 73,
+              "test": {
+                "type": "Identifier",
+                "start": 56,
+                "end": 57,
+                "name": "d"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 59,
+                "end": 73,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 65,
+                    "end": 69,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 65,
+                      "end": 68,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 65,
+                        "end": 66,
+                        "name": "e"
+                      },
+                      "arguments": [],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

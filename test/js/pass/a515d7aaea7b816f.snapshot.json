@@ -1,0 +1,75 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 59,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 58,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 57,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 56,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 54,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 54,
+                "body": [
+                  {
+                    "type": "IfStatement",
+                    "start": 19,
+                    "end": 52,
+                    "test": {
+                      "type": "Identifier",
+                      "start": 23,
+                      "end": 24,
+                      "name": "a"
+                    },
+                    "consequent": {
+                      "type": "ReturnStatement",
+                      "start": 26,
+                      "end": 35,
+                      "argument": {
+                        "type": "Literal",
+                        "start": 33,
+                        "end": 34,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    },
+                    "alternate": {
+                      "type": "ReturnStatement",
+                      "start": 45,
+                      "end": 52,
+                      "argument": null
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

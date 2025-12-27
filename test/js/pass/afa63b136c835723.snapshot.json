@@ -1,0 +1,122 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 32,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 32,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 32,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 31,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 2,
+                "end": 5,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 2,
+                  "end": 3,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "Literal",
+                  "start": 4,
+                  "end": 5,
+                  "value": 1,
+                  "raw": "1"
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 7,
+                "end": 18,
+                "kind": "get",
+                "key": {
+                  "type": "Literal",
+                  "start": 11,
+                  "end": 14,
+                  "value": "b",
+                  "raw": "'b'"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 14,
+                  "end": 18,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 16,
+                    "end": 18,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 20,
+                "end": 30,
+                "kind": "set",
+                "key": {
+                  "type": "Literal",
+                  "start": 24,
+                  "end": 25,
+                  "value": 3,
+                  "raw": "3"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 25,
+                  "end": 30,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 26,
+                      "end": 27,
+                      "name": "c"
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 28,
+                    "end": 30,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

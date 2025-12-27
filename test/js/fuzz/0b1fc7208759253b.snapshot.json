@@ -1,0 +1,41 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 273,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 272,
+        "expression": {
+          "type": "BinaryExpression",
+          "start": 0,
+          "end": 271,
+          "left": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 267,
+            "expression": {
+              "type": "Literal",
+              "start": 1,
+              "end": 266,
+              "value": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ",
+              "raw": "\"\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\\b\\t\\n\\v\\f\\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f !\\\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþ\""
+            }
+          },
+          "operator": "+",
+          "right": {
+            "type": "Identifier",
+            "start": 270,
+            "end": 271,
+            "name": "a"
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

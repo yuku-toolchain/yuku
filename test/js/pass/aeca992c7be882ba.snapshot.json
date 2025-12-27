@@ -1,0 +1,85 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 73,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 72,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 71,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 70,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 68,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 12,
+                "end": 68,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 18,
+                    "end": 26,
+                    "expression": {
+                      "type": "SequenceExpression",
+                      "start": 18,
+                      "end": 25,
+                      "expressions": [
+                        {
+                          "type": "Identifier",
+                          "start": 18,
+                          "end": 19,
+                          "name": "a"
+                        },
+                        {
+                          "type": "Literal",
+                          "start": 21,
+                          "end": 22,
+                          "value": 1,
+                          "raw": "1"
+                        },
+                        {
+                          "type": "Literal",
+                          "start": 24,
+                          "end": 25,
+                          "value": 2,
+                          "raw": "2"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " 'i' should remain (global variable)",
+      "start": 28,
+      "end": 66
+    }
+  ],
+  "errors": []
+}

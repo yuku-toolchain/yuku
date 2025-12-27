@@ -1,0 +1,37 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 37,
+        "end": 38,
+        "expression": {
+          "type": "Literal",
+          "start": 37,
+          "end": 38,
+          "value": 1,
+          "raw": "1"
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Hello, world!",
+      "start": 0,
+      "end": 16
+    },
+    {
+      "type": "Line",
+      "value": "   Another hello",
+      "start": 18,
+      "end": 36
+    }
+  ],
+  "errors": []
+}

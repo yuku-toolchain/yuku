@@ -1,0 +1,60 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 16,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 15,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 0,
+          "end": 14,
+          "id": null,
+          "generator": false,
+          "async": false,
+          "params": [
+            {
+              "type": "ArrayPattern",
+              "start": 1,
+              "end": 4,
+              "elements": [
+                {
+                  "type": "Identifier",
+                  "start": 2,
+                  "end": 3,
+                  "name": "a"
+                }
+              ]
+            }
+          ],
+          "body": {
+            "type": "ParenthesizedExpression",
+            "start": 9,
+            "end": 14,
+            "expression": {
+              "type": "ArrayExpression",
+              "start": 10,
+              "end": 13,
+              "elements": [
+                {
+                  "type": "Literal",
+                  "start": 11,
+                  "end": 12,
+                  "value": 1,
+                  "raw": "1"
+                }
+              ]
+            }
+          },
+          "expression": true
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

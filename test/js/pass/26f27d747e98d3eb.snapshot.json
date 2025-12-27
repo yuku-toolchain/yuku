@@ -1,0 +1,133 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 95,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 95,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 95,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 19,
+              "end": 93,
+              "test": {
+                "type": "Identifier",
+                "start": 23,
+                "end": 24,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 26,
+                "end": 93,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 36,
+                    "end": 42,
+                    "kind": "let",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 40,
+                        "end": 41,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 40,
+                          "end": 41,
+                          "name": "c"
+                        },
+                        "init": null
+                      }
+                    ]
+                  },
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 51,
+                    "end": 57,
+                    "kind": "let",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 55,
+                        "end": 56,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 55,
+                          "end": 56,
+                          "name": "d"
+                        },
+                        "init": null
+                      }
+                    ]
+                  },
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 66,
+                    "end": 72,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 70,
+                        "end": 71,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 70,
+                          "end": 71,
+                          "name": "e"
+                        },
+                        "init": null
+                      }
+                    ]
+                  },
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 81,
+                    "end": 87,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 85,
+                        "end": 86,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 85,
+                          "end": 86,
+                          "name": "f"
+                        },
+                        "init": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

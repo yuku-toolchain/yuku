@@ -1,0 +1,48 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 11,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 10,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 0,
+          "end": 9,
+          "operator": "=",
+          "left": {
+            "type": "ArrayPattern",
+            "start": 0,
+            "end": 3,
+            "elements": [
+              {
+                "type": "Identifier",
+                "start": 1,
+                "end": 2,
+                "name": "a"
+              }
+            ]
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 6,
+            "end": 9,
+            "expression": {
+              "type": "Literal",
+              "start": 7,
+              "end": 8,
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

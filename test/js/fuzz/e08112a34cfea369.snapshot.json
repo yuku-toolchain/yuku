@@ -1,0 +1,170 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 69,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForInStatement",
+        "start": 0,
+        "end": 23,
+        "left": {
+          "type": "VariableDeclaration",
+          "start": 5,
+          "end": 15,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 9,
+              "end": 15,
+              "id": {
+                "type": "ArrayPattern",
+                "start": 9,
+                "end": 15,
+                "elements": [
+                  {
+                    "type": "Identifier",
+                    "start": 10,
+                    "end": 11,
+                    "name": "a"
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 13,
+                    "end": 14,
+                    "name": "b"
+                  }
+                ]
+              },
+              "init": null
+            }
+          ]
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 19,
+          "end": 20,
+          "name": "c"
+        },
+        "body": {
+          "type": "EmptyStatement",
+          "start": 22,
+          "end": 23
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 24,
+        "end": 47,
+        "init": {
+          "type": "VariableDeclaration",
+          "start": 29,
+          "end": 42,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 33,
+              "end": 42,
+              "id": {
+                "type": "ArrayPattern",
+                "start": 33,
+                "end": 36,
+                "elements": [
+                  {
+                    "type": "Identifier",
+                    "start": 34,
+                    "end": 35,
+                    "name": "d"
+                  }
+                ]
+              },
+              "init": {
+                "type": "ParenthesizedExpression",
+                "start": 39,
+                "end": 42,
+                "expression": {
+                  "type": "Literal",
+                  "start": 40,
+                  "end": 41,
+                  "value": 1,
+                  "raw": "1"
+                }
+              }
+            }
+          ]
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 46,
+          "end": 47
+        }
+      },
+      {
+        "type": "ForOfStatement",
+        "start": 48,
+        "end": 68,
+        "left": {
+          "type": "VariableDeclaration",
+          "start": 53,
+          "end": 60,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 57,
+              "end": 60,
+              "id": {
+                "type": "ObjectPattern",
+                "start": 57,
+                "end": 60,
+                "properties": [
+                  {
+                    "type": "Property",
+                    "start": 58,
+                    "end": 59,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 58,
+                      "end": 59,
+                      "name": "e"
+                    },
+                    "value": {
+                      "type": "Identifier",
+                      "start": 58,
+                      "end": 59,
+                      "name": "e"
+                    },
+                    "method": false,
+                    "shorthand": true,
+                    "computed": false
+                  }
+                ]
+              },
+              "init": null
+            }
+          ]
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 64,
+          "end": 65,
+          "name": "f"
+        },
+        "body": {
+          "type": "EmptyStatement",
+          "start": 67,
+          "end": 68
+        },
+        "await": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

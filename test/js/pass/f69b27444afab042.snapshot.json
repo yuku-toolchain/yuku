@@ -1,0 +1,188 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 156,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 155,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 154,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 153,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 151,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 151,
+                "body": [
+                  {
+                    "type": "LabeledStatement",
+                    "start": 30,
+                    "end": 136,
+                    "label": {
+                      "type": "Identifier",
+                      "start": 30,
+                      "end": 31,
+                      "name": "b"
+                    },
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 33,
+                      "end": 136,
+                      "body": [
+                        {
+                          "type": "IfStatement",
+                          "start": 43,
+                          "end": 58,
+                          "test": {
+                            "type": "Identifier",
+                            "start": 47,
+                            "end": 48,
+                            "name": "a"
+                          },
+                          "consequent": {
+                            "type": "BreakStatement",
+                            "start": 50,
+                            "end": 58,
+                            "label": {
+                              "type": "Identifier",
+                              "start": 56,
+                              "end": 57,
+                              "name": "b"
+                            }
+                          },
+                          "alternate": null
+                        },
+                        {
+                          "type": "IfStatement",
+                          "start": 67,
+                          "end": 82,
+                          "test": {
+                            "type": "Identifier",
+                            "start": 71,
+                            "end": 72,
+                            "name": "a"
+                          },
+                          "consequent": {
+                            "type": "BreakStatement",
+                            "start": 74,
+                            "end": 82,
+                            "label": {
+                              "type": "Identifier",
+                              "start": 80,
+                              "end": 81,
+                              "name": "b"
+                            }
+                          },
+                          "alternate": null
+                        },
+                        {
+                          "type": "IfStatement",
+                          "start": 91,
+                          "end": 106,
+                          "test": {
+                            "type": "Identifier",
+                            "start": 95,
+                            "end": 96,
+                            "name": "a"
+                          },
+                          "consequent": {
+                            "type": "BreakStatement",
+                            "start": 98,
+                            "end": 106,
+                            "label": {
+                              "type": "Identifier",
+                              "start": 104,
+                              "end": 105,
+                              "name": "b"
+                            }
+                          },
+                          "alternate": null
+                        },
+                        {
+                          "type": "IfStatement",
+                          "start": 115,
+                          "end": 130,
+                          "test": {
+                            "type": "Identifier",
+                            "start": 119,
+                            "end": 120,
+                            "name": "a"
+                          },
+                          "consequent": {
+                            "type": "BreakStatement",
+                            "start": 122,
+                            "end": 130,
+                            "label": {
+                              "type": "Identifier",
+                              "start": 128,
+                              "end": 129,
+                              "name": "b"
+                            }
+                          },
+                          "alternate": null
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 141,
+                    "end": 149,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 141,
+                      "end": 148,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 141,
+                        "end": 145,
+                        "name": "eval"
+                      },
+                      "arguments": [
+                        {
+                          "type": "Identifier",
+                          "start": 146,
+                          "end": 147,
+                          "name": "c"
+                        }
+                      ],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " 'a'",
+      "start": 19,
+      "end": 25
+    }
+  ],
+  "errors": []
+}

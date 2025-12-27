@@ -1,0 +1,94 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 47,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 46,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 46,
+          "body": [
+            {
+              "type": "WithStatement",
+              "start": 17,
+              "end": 44,
+              "object": {
+                "type": "SequenceExpression",
+                "start": 23,
+                "end": 40,
+                "expressions": [
+                  {
+                    "type": "ParenthesizedExpression",
+                    "start": 23,
+                    "end": 28,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 24,
+                      "end": 27,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 24,
+                        "end": 25,
+                        "name": "a"
+                      },
+                      "arguments": [],
+                      "optional": false
+                    }
+                  },
+                  {
+                    "type": "ParenthesizedExpression",
+                    "start": 30,
+                    "end": 40,
+                    "expression": {
+                      "type": "UnaryExpression",
+                      "start": 31,
+                      "end": 39,
+                      "operator": "void",
+                      "prefix": true,
+                      "argument": {
+                        "type": "ParenthesizedExpression",
+                        "start": 36,
+                        "end": 39,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 37,
+                          "end": 38,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 42,
+                "end": 44,
+                "body": []
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

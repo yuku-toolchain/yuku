@@ -1,0 +1,23 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 13,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 13,
+          "name": "price_9̶9̶_89"
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

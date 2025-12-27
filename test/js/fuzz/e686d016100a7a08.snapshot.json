@@ -1,0 +1,103 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 53,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 52,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 16,
+          "end": 17,
+          "name": "b"
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 18,
+          "end": 52,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 22,
+              "end": 50,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 22,
+                "end": 23,
+                "name": "c"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 23,
+                "end": 50,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 26,
+                  "end": 50,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 32,
+                      "end": 46,
+                      "expression": {
+                        "type": "NewExpression",
+                        "start": 32,
+                        "end": 45,
+                        "callee": {
+                          "type": "ParenthesizedExpression",
+                          "start": 36,
+                          "end": 45,
+                          "expression": {
+                            "type": "MemberExpression",
+                            "start": 37,
+                            "end": 44,
+                            "object": {
+                              "type": "Super",
+                              "start": 37,
+                              "end": 42
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "start": 43,
+                              "end": 44,
+                              "name": "d"
+                            },
+                            "computed": false,
+                            "optional": false
+                          }
+                        },
+                        "arguments": []
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,84 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 27,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 15,
+        "expression": {
+          "type": "CallExpression",
+          "start": 0,
+          "end": 14,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 12,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 1,
+              "end": 11,
+              "object": {
+                "type": "Identifier",
+                "start": 1,
+                "end": 9,
+                "name": "Infinity"
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 10,
+                "end": 11,
+                "name": "a"
+              },
+              "computed": false,
+              "optional": false
+            }
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 16,
+        "end": 26,
+        "expression": {
+          "type": "CallExpression",
+          "start": 16,
+          "end": 25,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 16,
+            "end": 23,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 17,
+              "end": 22,
+              "object": {
+                "type": "Identifier",
+                "start": 17,
+                "end": 20,
+                "name": "NaN"
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 21,
+                "end": 22,
+                "name": "a"
+              },
+              "computed": false,
+              "optional": false
+            }
+          },
+          "arguments": [],
+          "optional": false
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,87 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 35,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 34,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 33,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 33,
+              "expression": {
+                "type": "ObjectExpression",
+                "start": 9,
+                "end": 32,
+                "properties": [
+                  {
+                    "type": "Property",
+                    "start": 10,
+                    "end": 22,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 10,
+                      "end": 19,
+                      "name": "arguments"
+                    },
+                    "value": {
+                      "type": "Literal",
+                      "start": 21,
+                      "end": 22,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  },
+                  {
+                    "type": "Property",
+                    "start": 24,
+                    "end": 31,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 24,
+                      "end": 28,
+                      "name": "eval"
+                    },
+                    "value": {
+                      "type": "Literal",
+                      "start": 30,
+                      "end": 31,
+                      "value": 2,
+                      "raw": "2"
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

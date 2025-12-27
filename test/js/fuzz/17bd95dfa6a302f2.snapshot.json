@@ -1,0 +1,47 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 17,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForInStatement",
+        "start": 0,
+        "end": 16,
+        "left": {
+          "type": "MemberExpression",
+          "start": 5,
+          "end": 8,
+          "object": {
+            "type": "Identifier",
+            "start": 5,
+            "end": 6,
+            "name": "a"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 7,
+            "end": 8,
+            "name": "b"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "right": {
+          "type": "Identifier",
+          "start": 12,
+          "end": 13,
+          "name": "c"
+        },
+        "body": {
+          "type": "EmptyStatement",
+          "start": 15,
+          "end": 16
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

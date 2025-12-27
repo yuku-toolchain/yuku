@@ -1,0 +1,65 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 91,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 44,
+        "end": 90,
+        "label": {
+          "type": "Identifier",
+          "start": 44,
+          "end": 45,
+          "name": "a"
+        },
+        "body": {
+          "type": "DoWhileStatement",
+          "start": 47,
+          "end": 90,
+          "body": {
+            "type": "DoWhileStatement",
+            "start": 50,
+            "end": 77,
+            "body": {
+              "type": "ContinueStatement",
+              "start": 53,
+              "end": 64,
+              "label": {
+                "type": "Identifier",
+                "start": 62,
+                "end": 63,
+                "name": "a"
+              }
+            },
+            "test": {
+              "type": "Literal",
+              "start": 71,
+              "end": 75,
+              "value": true,
+              "raw": "true"
+            }
+          },
+          "test": {
+            "type": "Literal",
+            "start": 84,
+            "end": 88,
+            "value": true,
+            "raw": "true"
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " ContinueStatement should not be removed.",
+      "start": 0,
+      "end": 43
+    }
+  ],
+  "errors": []
+}

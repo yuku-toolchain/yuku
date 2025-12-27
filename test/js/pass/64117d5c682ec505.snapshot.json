@@ -1,0 +1,72 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 45,
+        "test": {
+          "type": "Identifier",
+          "start": 7,
+          "end": 8,
+          "name": "a"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 10,
+          "end": 45,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 16,
+              "end": 20,
+              "expression": {
+                "type": "CallExpression",
+                "start": 16,
+                "end": 19,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 16,
+                  "end": 17,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 25,
+              "end": 29,
+              "expression": {
+                "type": "CallExpression",
+                "start": 25,
+                "end": 28,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 25,
+                  "end": 26,
+                  "name": "c"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            },
+            {
+              "type": "ContinueStatement",
+              "start": 34,
+              "end": 43,
+              "label": null
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

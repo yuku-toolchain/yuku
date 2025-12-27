@@ -1,0 +1,91 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 48,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 48,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 47,
+          "expression": {
+            "type": "ClassExpression",
+            "start": 1,
+            "end": 46,
+            "decorators": [],
+            "id": null,
+            "superClass": {
+              "type": "Identifier",
+              "start": 15,
+              "end": 16,
+              "name": "a"
+            },
+            "body": {
+              "type": "ClassBody",
+              "start": 17,
+              "end": 46,
+              "body": [
+                {
+                  "type": "MethodDefinition",
+                  "start": 19,
+                  "end": 44,
+                  "decorators": [],
+                  "key": {
+                    "type": "Identifier",
+                    "start": 19,
+                    "end": 30,
+                    "name": "constructor"
+                  },
+                  "value": {
+                    "type": "FunctionExpression",
+                    "start": 30,
+                    "end": 44,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 33,
+                      "end": 44,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 35,
+                          "end": 42,
+                          "expression": {
+                            "type": "CallExpression",
+                            "start": 35,
+                            "end": 42,
+                            "callee": {
+                              "type": "Super",
+                              "start": 35,
+                              "end": 40
+                            },
+                            "arguments": [],
+                            "optional": false
+                          }
+                        }
+                      ]
+                    },
+                    "expression": false
+                  },
+                  "kind": "constructor",
+                  "computed": false,
+                  "static": false
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

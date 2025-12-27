@@ -1,0 +1,24 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 96,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 95,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 95,
+          "value": null,
+          "raw": "1e100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

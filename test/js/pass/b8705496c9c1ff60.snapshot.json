@@ -1,0 +1,139 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 268,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 267,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 266,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 265,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 263,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 263,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 19,
+                    "end": 31,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 23,
+                        "end": 30,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 23,
+                          "end": 24,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "ObjectExpression",
+                          "start": 27,
+                          "end": 30,
+                          "properties": []
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "WithStatement",
+                    "start": 36,
+                    "end": 103,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 42,
+                      "end": 43,
+                      "name": "a"
+                    },
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 45,
+                      "end": 103,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 55,
+                          "end": 64,
+                          "expression": {
+                            "type": "CallExpression",
+                            "start": 55,
+                            "end": 63,
+                            "callee": {
+                              "type": "ParenthesizedExpression",
+                              "start": 55,
+                              "end": 61,
+                              "expression": {
+                                "type": "SequenceExpression",
+                                "start": 56,
+                                "end": 60,
+                                "expressions": [
+                                  {
+                                    "type": "Literal",
+                                    "start": 56,
+                                    "end": 57,
+                                    "value": 1,
+                                    "raw": "1"
+                                  },
+                                  {
+                                    "type": "Identifier",
+                                    "start": 59,
+                                    "end": 60,
+                                    "name": "b"
+                                  }
+                                ]
+                              }
+                            },
+                            "arguments": [],
+                            "optional": false
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Don't transform it to test()",
+      "start": 66,
+      "end": 97
+    },
+    {
+      "type": "Block",
+      "value": "\n * var obj = {\n *   test: function() {\n *     print(obj === this);\n *   }\n * };\n * with (obj) {\n *   test();  // true\n *   (0, test)();  // false\n * }\n ",
+      "start": 104,
+      "end": 261
+    }
+  ],
+  "errors": []
+}

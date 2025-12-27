@@ -1,0 +1,96 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 27,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "AssignmentPattern",
+            "start": 11,
+            "end": 23,
+            "left": {
+              "type": "ObjectPattern",
+              "start": 11,
+              "end": 14,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 12,
+                  "end": 13,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 12,
+                    "end": 13,
+                    "name": "b"
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 12,
+                    "end": 13,
+                    "name": "b"
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false
+                }
+              ]
+            },
+            "right": {
+              "type": "ObjectExpression",
+              "start": 17,
+              "end": 23,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 18,
+                  "end": 22,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 18,
+                    "end": 19,
+                    "name": "b"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 21,
+                    "end": 22,
+                    "value": 1,
+                    "raw": "1"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 25,
+          "end": 27,
+          "body": []
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

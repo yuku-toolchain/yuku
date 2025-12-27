@@ -1,0 +1,115 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 44,
+        "init": {
+          "type": "VariableDeclaration",
+          "start": 5,
+          "end": 30,
+          "kind": "var",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 9,
+              "end": 23,
+              "id": {
+                "type": "Identifier",
+                "start": 9,
+                "end": 10,
+                "name": "a"
+              },
+              "init": {
+                "type": "ParenthesizedExpression",
+                "start": 13,
+                "end": 23,
+                "expression": {
+                  "type": "BinaryExpression",
+                  "start": 14,
+                  "end": 22,
+                  "left": {
+                    "type": "Literal",
+                    "start": 14,
+                    "end": 17,
+                    "value": "b",
+                    "raw": "\"b\""
+                  },
+                  "operator": "in",
+                  "right": {
+                    "type": "Identifier",
+                    "start": 21,
+                    "end": 22,
+                    "name": "c"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclarator",
+              "start": 25,
+              "end": 30,
+              "id": {
+                "type": "Identifier",
+                "start": 25,
+                "end": 26,
+                "name": "d"
+              },
+              "init": {
+                "type": "Literal",
+                "start": 29,
+                "end": 30,
+                "value": 1,
+                "raw": "1"
+              }
+            }
+          ]
+        },
+        "test": {
+          "type": "BinaryExpression",
+          "start": 32,
+          "end": 37,
+          "left": {
+            "type": "Identifier",
+            "start": 32,
+            "end": 33,
+            "name": "d"
+          },
+          "operator": "<",
+          "right": {
+            "type": "Literal",
+            "start": 36,
+            "end": 37,
+            "value": 2,
+            "raw": "2"
+          }
+        },
+        "update": {
+          "type": "UpdateExpression",
+          "start": 39,
+          "end": 42,
+          "operator": "++",
+          "prefix": true,
+          "argument": {
+            "type": "Identifier",
+            "start": 41,
+            "end": 42,
+            "name": "d"
+          }
+        },
+        "body": {
+          "type": "EmptyStatement",
+          "start": 43,
+          "end": 44
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,93 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 101,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 100,
+        "init": null,
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BlockStatement",
+          "start": 9,
+          "end": 100,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 13,
+              "end": 98,
+              "test": {
+                "type": "Identifier",
+                "start": 17,
+                "end": 18,
+                "name": "a"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 20,
+                "end": 81,
+                "body": [
+                  {
+                    "type": "IfStatement",
+                    "start": 26,
+                    "end": 77,
+                    "test": {
+                      "type": "Identifier",
+                      "start": 30,
+                      "end": 31,
+                      "name": "b"
+                    },
+                    "consequent": {
+                      "type": "BlockStatement",
+                      "start": 33,
+                      "end": 56,
+                      "body": [
+                        {
+                          "type": "ContinueStatement",
+                          "start": 41,
+                          "end": 50,
+                          "label": null
+                        }
+                      ]
+                    },
+                    "alternate": {
+                      "type": "BlockStatement",
+                      "start": 62,
+                      "end": 77,
+                      "body": [
+                        {
+                          "type": "EmptyStatement",
+                          "start": 70,
+                          "end": 71
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "alternate": {
+                "type": "BlockStatement",
+                "start": 87,
+                "end": 98,
+                "body": [
+                  {
+                    "type": "EmptyStatement",
+                    "start": 93,
+                    "end": 94
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

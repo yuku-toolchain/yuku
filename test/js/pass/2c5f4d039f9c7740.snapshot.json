@@ -1,0 +1,91 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 66,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 65,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 65,
+          "body": [
+            {
+              "type": "WithStatement",
+              "start": 19,
+              "end": 63,
+              "object": {
+                "type": "ParenthesizedExpression",
+                "start": 25,
+                "end": 38,
+                "expression": {
+                  "type": "SequenceExpression",
+                  "start": 26,
+                  "end": 37,
+                  "expressions": [
+                    {
+                      "type": "CallExpression",
+                      "start": 26,
+                      "end": 29,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 26,
+                        "end": 27,
+                        "name": "a"
+                      },
+                      "arguments": [],
+                      "optional": false
+                    },
+                    {
+                      "type": "UnaryExpression",
+                      "start": 31,
+                      "end": 37,
+                      "operator": "void",
+                      "prefix": true,
+                      "argument": {
+                        "type": "Literal",
+                        "start": 36,
+                        "end": 37,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  ]
+                }
+              },
+              "body": {
+                "type": "BlockStatement",
+                "start": 40,
+                "end": 63,
+                "body": []
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " code",
+      "start": 50,
+      "end": 57
+    }
+  ],
+  "errors": []
+}

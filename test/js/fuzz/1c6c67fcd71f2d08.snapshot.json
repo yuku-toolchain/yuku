@@ -1,0 +1,79 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 21,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 20,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 19,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 2,
+                "end": 18,
+                "kind": "set",
+                "key": {
+                  "type": "Identifier",
+                  "start": 6,
+                  "end": 7,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 8,
+                  "end": 18,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "AssignmentPattern",
+                      "start": 9,
+                      "end": 14,
+                      "left": {
+                        "type": "Identifier",
+                        "start": 9,
+                        "end": 10,
+                        "name": "b"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "start": 13,
+                        "end": 14,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 16,
+                    "end": 18,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

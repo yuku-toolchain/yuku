@@ -1,0 +1,49 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 17,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 16,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 0,
+          "end": 16,
+          "operator": "void",
+          "prefix": true,
+          "argument": {
+            "type": "ParenthesizedExpression",
+            "start": 5,
+            "end": 16,
+            "expression": {
+              "type": "BinaryExpression",
+              "start": 6,
+              "end": 15,
+              "left": {
+                "type": "Literal",
+                "start": 6,
+                "end": 9,
+                "value": "a",
+                "raw": "'a'"
+              },
+              "operator": "+",
+              "right": {
+                "type": "Literal",
+                "start": 12,
+                "end": 15,
+                "value": "a",
+                "raw": "'a'"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

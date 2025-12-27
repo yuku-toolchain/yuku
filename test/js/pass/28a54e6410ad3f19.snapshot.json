@@ -1,0 +1,100 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 177,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 42,
+        "end": 176,
+        "init": null,
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BlockStatement",
+          "start": 51,
+          "end": 176,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 57,
+              "end": 174,
+              "test": {
+                "type": "Identifier",
+                "start": 61,
+                "end": 62,
+                "name": "a"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 64,
+                "end": 151,
+                "body": [
+                  {
+                    "type": "IfStatement",
+                    "start": 74,
+                    "end": 145,
+                    "test": {
+                      "type": "Identifier",
+                      "start": 78,
+                      "end": 79,
+                      "name": "b"
+                    },
+                    "consequent": {
+                      "type": "BlockStatement",
+                      "start": 81,
+                      "end": 114,
+                      "body": [
+                        {
+                          "type": "ContinueStatement",
+                          "start": 95,
+                          "end": 104,
+                          "label": null
+                        }
+                      ]
+                    },
+                    "alternate": {
+                      "type": "BlockStatement",
+                      "start": 120,
+                      "end": 145,
+                      "body": [
+                        {
+                          "type": "EmptyStatement",
+                          "start": 134,
+                          "end": 135
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "alternate": {
+                "type": "BlockStatement",
+                "start": 157,
+                "end": 174,
+                "body": [
+                  {
+                    "type": "EmptyStatement",
+                    "start": 167,
+                    "end": 168
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " Surpress reducing because of alternate",
+      "start": 0,
+      "end": 41
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,153 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 89,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 89,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 89,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ObjectExpression",
+              "start": 8,
+              "end": 89,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 14,
+                  "end": 21,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 14,
+                    "end": 15,
+                    "name": "b"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 17,
+                    "end": 21,
+                    "value": null,
+                    "raw": "null"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },
+                {
+                  "type": "Property",
+                  "start": 27,
+                  "end": 43,
+                  "kind": "set",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 31,
+                    "end": 32,
+                    "name": "c"
+                  },
+                  "value": {
+                    "type": "FunctionExpression",
+                    "start": 32,
+                    "end": 43,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [
+                      {
+                        "type": "Identifier",
+                        "start": 33,
+                        "end": 34,
+                        "name": "d"
+                      }
+                    ],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 36,
+                      "end": 43,
+                      "body": []
+                    },
+                    "expression": false
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },
+                {
+                  "type": "Property",
+                  "start": 49,
+                  "end": 87,
+                  "kind": "get",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 53,
+                    "end": 54,
+                    "name": "c"
+                  },
+                  "value": {
+                    "type": "FunctionExpression",
+                    "start": 54,
+                    "end": 87,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 57,
+                      "end": 87,
+                      "body": [
+                        {
+                          "type": "ReturnStatement",
+                          "start": 67,
+                          "end": 81,
+                          "argument": {
+                            "type": "MemberExpression",
+                            "start": 74,
+                            "end": 80,
+                            "object": {
+                              "type": "ThisExpression",
+                              "start": 74,
+                              "end": 78
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "start": 79,
+                              "end": 80,
+                              "name": "b"
+                            },
+                            "computed": false,
+                            "optional": false
+                          }
+                        }
+                      ]
+                    },
+                    "expression": false
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

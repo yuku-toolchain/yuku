@@ -1,0 +1,102 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 44,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 8,
+          "end": 44,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 12,
+              "end": 42,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 12,
+                "end": 13,
+                "name": "b"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 13,
+                "end": 42,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 16,
+                  "end": 42,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 22,
+                      "end": 38,
+                      "expression": {
+                        "type": "ArrowFunctionExpression",
+                        "start": 22,
+                        "end": 37,
+                        "id": null,
+                        "generator": false,
+                        "async": false,
+                        "params": [],
+                        "body": {
+                          "type": "ParenthesizedExpression",
+                          "start": 28,
+                          "end": 37,
+                          "expression": {
+                            "type": "MemberExpression",
+                            "start": 29,
+                            "end": 36,
+                            "object": {
+                              "type": "Super",
+                              "start": 29,
+                              "end": 34
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "start": 35,
+                              "end": 36,
+                              "name": "c"
+                            },
+                            "computed": false,
+                            "optional": false
+                          }
+                        },
+                        "expression": true
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

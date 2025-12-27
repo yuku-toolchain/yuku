@@ -1,0 +1,82 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 21,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 0,
+          "end": 20,
+          "operator": "-",
+          "prefix": true,
+          "argument": {
+            "type": "ParenthesizedExpression",
+            "start": 1,
+            "end": 20,
+            "expression": {
+              "type": "BinaryExpression",
+              "start": 2,
+              "end": 19,
+              "left": {
+                "type": "ParenthesizedExpression",
+                "start": 2,
+                "end": 13,
+                "expression": {
+                  "type": "BinaryExpression",
+                  "start": 3,
+                  "end": 12,
+                  "left": {
+                    "type": "ParenthesizedExpression",
+                    "start": 3,
+                    "end": 6,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 4,
+                      "end": 5,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  },
+                  "operator": "-",
+                  "right": {
+                    "type": "ParenthesizedExpression",
+                    "start": 9,
+                    "end": 12,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 10,
+                      "end": 11,
+                      "value": 2,
+                      "raw": "2"
+                    }
+                  }
+                }
+              },
+              "operator": "-",
+              "right": {
+                "type": "ParenthesizedExpression",
+                "start": 16,
+                "end": 19,
+                "expression": {
+                  "type": "Literal",
+                  "start": 17,
+                  "end": 18,
+                  "value": 3,
+                  "raw": "3"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,39 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "module",
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 22,
+        "specifiers": [
+          {
+            "type": "ImportNamespaceSpecifier",
+            "start": 7,
+            "end": 13,
+            "local": {
+              "type": "Identifier",
+              "start": 12,
+              "end": 13,
+              "name": "a"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 19,
+          "end": 22,
+          "value": "a",
+          "raw": "\"a\""
+        },
+        "phase": null,
+        "attributes": []
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,79 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 18,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 18,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 17,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 4,
+              "end": 13,
+              "elements": [
+                {
+                  "type": "ObjectPattern",
+                  "start": 5,
+                  "end": 12,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 6,
+                      "end": 11,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 6,
+                        "end": 7,
+                        "name": "a"
+                      },
+                      "value": {
+                        "type": "AssignmentPattern",
+                        "start": 6,
+                        "end": 11,
+                        "left": {
+                          "type": "Identifier",
+                          "start": 6,
+                          "end": 7,
+                          "name": "a"
+                        },
+                        "right": {
+                          "type": "Literal",
+                          "start": 10,
+                          "end": 11,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            "init": {
+              "type": "Literal",
+              "start": 16,
+              "end": 17,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,266 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 216,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 215,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 214,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 213,
+            "callee": {
+              "type": "ParenthesizedExpression",
+              "start": 1,
+              "end": 211,
+              "expression": {
+                "type": "FunctionExpression",
+                "start": 2,
+                "end": 210,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 14,
+                  "end": 210,
+                  "body": [
+                    {
+                      "type": "LabeledStatement",
+                      "start": 18,
+                      "end": 208,
+                      "label": {
+                        "type": "Identifier",
+                        "start": 18,
+                        "end": 19,
+                        "name": "b"
+                      },
+                      "body": {
+                        "type": "BlockStatement",
+                        "start": 21,
+                        "end": 208,
+                        "body": [
+                          {
+                            "type": "IfStatement",
+                            "start": 27,
+                            "end": 42,
+                            "test": {
+                              "type": "Identifier",
+                              "start": 31,
+                              "end": 32,
+                              "name": "a"
+                            },
+                            "consequent": {
+                              "type": "BreakStatement",
+                              "start": 34,
+                              "end": 42,
+                              "label": {
+                                "type": "Identifier",
+                                "start": 40,
+                                "end": 41,
+                                "name": "b"
+                              }
+                            },
+                            "alternate": null
+                          },
+                          {
+                            "type": "LabeledStatement",
+                            "start": 47,
+                            "end": 123,
+                            "label": {
+                              "type": "Identifier",
+                              "start": 47,
+                              "end": 48,
+                              "name": "c"
+                            },
+                            "body": {
+                              "type": "BlockStatement",
+                              "start": 50,
+                              "end": 123,
+                              "body": [
+                                {
+                                  "type": "IfStatement",
+                                  "start": 58,
+                                  "end": 73,
+                                  "test": {
+                                    "type": "Identifier",
+                                    "start": 62,
+                                    "end": 63,
+                                    "name": "a"
+                                  },
+                                  "consequent": {
+                                    "type": "BreakStatement",
+                                    "start": 65,
+                                    "end": 73,
+                                    "label": {
+                                      "type": "Identifier",
+                                      "start": 71,
+                                      "end": 72,
+                                      "name": "c"
+                                    }
+                                  },
+                                  "alternate": null
+                                },
+                                {
+                                  "type": "IfStatement",
+                                  "start": 80,
+                                  "end": 95,
+                                  "test": {
+                                    "type": "Identifier",
+                                    "start": 84,
+                                    "end": 85,
+                                    "name": "a"
+                                  },
+                                  "consequent": {
+                                    "type": "BreakStatement",
+                                    "start": 87,
+                                    "end": 95,
+                                    "label": {
+                                      "type": "Identifier",
+                                      "start": 93,
+                                      "end": 94,
+                                      "name": "c"
+                                    }
+                                  },
+                                  "alternate": null
+                                },
+                                {
+                                  "type": "IfStatement",
+                                  "start": 102,
+                                  "end": 117,
+                                  "test": {
+                                    "type": "Identifier",
+                                    "start": 106,
+                                    "end": 107,
+                                    "name": "a"
+                                  },
+                                  "consequent": {
+                                    "type": "BreakStatement",
+                                    "start": 109,
+                                    "end": 117,
+                                    "label": {
+                                      "type": "Identifier",
+                                      "start": 115,
+                                      "end": 116,
+                                      "name": "c"
+                                    }
+                                  },
+                                  "alternate": null
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "LabeledStatement",
+                            "start": 128,
+                            "end": 204,
+                            "label": {
+                              "type": "Identifier",
+                              "start": 128,
+                              "end": 129,
+                              "name": "c"
+                            },
+                            "body": {
+                              "type": "BlockStatement",
+                              "start": 131,
+                              "end": 204,
+                              "body": [
+                                {
+                                  "type": "IfStatement",
+                                  "start": 139,
+                                  "end": 154,
+                                  "test": {
+                                    "type": "Identifier",
+                                    "start": 143,
+                                    "end": 144,
+                                    "name": "a"
+                                  },
+                                  "consequent": {
+                                    "type": "BreakStatement",
+                                    "start": 146,
+                                    "end": 154,
+                                    "label": {
+                                      "type": "Identifier",
+                                      "start": 152,
+                                      "end": 153,
+                                      "name": "c"
+                                    }
+                                  },
+                                  "alternate": null
+                                },
+                                {
+                                  "type": "IfStatement",
+                                  "start": 161,
+                                  "end": 176,
+                                  "test": {
+                                    "type": "Identifier",
+                                    "start": 165,
+                                    "end": 166,
+                                    "name": "a"
+                                  },
+                                  "consequent": {
+                                    "type": "BreakStatement",
+                                    "start": 168,
+                                    "end": 176,
+                                    "label": {
+                                      "type": "Identifier",
+                                      "start": 174,
+                                      "end": 175,
+                                      "name": "c"
+                                    }
+                                  },
+                                  "alternate": null
+                                },
+                                {
+                                  "type": "IfStatement",
+                                  "start": 183,
+                                  "end": 198,
+                                  "test": {
+                                    "type": "Identifier",
+                                    "start": 187,
+                                    "end": 188,
+                                    "name": "a"
+                                  },
+                                  "consequent": {
+                                    "type": "BreakStatement",
+                                    "start": 190,
+                                    "end": 198,
+                                    "label": {
+                                      "type": "Identifier",
+                                      "start": 196,
+                                      "end": 197,
+                                      "name": "c"
+                                    }
+                                  },
+                                  "alternate": null
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              }
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

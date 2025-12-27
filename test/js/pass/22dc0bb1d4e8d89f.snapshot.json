@@ -1,0 +1,62 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 24,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "ObjectPattern",
+            "start": 11,
+            "end": 21,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 12,
+                "end": 20,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 12,
+                  "end": 17,
+                  "name": "yield"
+                },
+                "value": {
+                  "type": "Identifier",
+                  "start": 19,
+                  "end": 20,
+                  "name": "b"
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 22,
+          "end": 24,
+          "body": []
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,98 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
+        "expression": {
+          "type": "TaggedTemplateExpression",
+          "start": 0,
+          "end": 10,
+          "tag": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 5,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 1,
+              "end": 4,
+              "object": {
+                "type": "Identifier",
+                "start": 1,
+                "end": 2,
+                "name": "a"
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 3,
+                "end": 4,
+                "name": "b"
+              },
+              "computed": false,
+              "optional": false
+            }
+          },
+          "quasi": {
+            "type": "TemplateLiteral",
+            "start": 5,
+            "end": 10,
+            "quasis": [
+              {
+                "type": "TemplateElement",
+                "start": 6,
+                "end": 9,
+                "value": {
+                  "raw": "foo",
+                  "cooked": "foo"
+                },
+                "tail": true
+              }
+            ],
+            "expressions": []
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 19,
+        "expression": {
+          "type": "TaggedTemplateExpression",
+          "start": 12,
+          "end": 18,
+          "tag": {
+            "type": "Identifier",
+            "start": 12,
+            "end": 13,
+            "name": "c"
+          },
+          "quasi": {
+            "type": "TemplateLiteral",
+            "start": 13,
+            "end": 18,
+            "quasis": [
+              {
+                "type": "TemplateElement",
+                "start": 14,
+                "end": 17,
+                "value": {
+                  "raw": "bar",
+                  "cooked": "bar"
+                },
+                "tail": true
+              }
+            ],
+            "expressions": []
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,116 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 73,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 73,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 73,
+          "body": [
+            {
+              "type": "ClassDeclaration",
+              "start": 19,
+              "end": 34,
+              "decorators": [],
+              "id": {
+                "type": "Identifier",
+                "start": 25,
+                "end": 26,
+                "name": "b"
+              },
+              "superClass": null,
+              "body": {
+                "type": "ClassBody",
+                "start": 27,
+                "end": 34,
+                "body": []
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 39,
+              "end": 48,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 43,
+                  "end": 48,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 43,
+                    "end": 44,
+                    "name": "c"
+                  },
+                  "init": {
+                    "type": "Identifier",
+                    "start": 47,
+                    "end": 48,
+                    "name": "b"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 53,
+              "end": 71,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 57,
+                  "end": 71,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 57,
+                    "end": 58,
+                    "name": "d"
+                  },
+                  "init": {
+                    "type": "ClassExpression",
+                    "start": 61,
+                    "end": 71,
+                    "decorators": [],
+                    "id": {
+                      "type": "Identifier",
+                      "start": 67,
+                      "end": 68,
+                      "name": "e"
+                    },
+                    "superClass": null,
+                    "body": {
+                      "type": "ClassBody",
+                      "start": 69,
+                      "end": 71,
+                      "body": []
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

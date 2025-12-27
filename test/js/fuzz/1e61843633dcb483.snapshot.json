@@ -1,0 +1,80 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 53,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 52,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 51,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 50,
+            "callee": {
+              "type": "ParenthesizedExpression",
+              "start": 1,
+              "end": 48,
+              "expression": {
+                "type": "FunctionExpression",
+                "start": 2,
+                "end": 47,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 14,
+                  "end": 47,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 18,
+                      "end": 32,
+                      "expression": {
+                        "type": "Literal",
+                        "start": 18,
+                        "end": 31,
+                        "value": "use\nstrict",
+                        "raw": "\"use\\nstrict\""
+                      },
+                      "directive": "use\\nstrict"
+                    },
+                    {
+                      "type": "WithStatement",
+                      "start": 35,
+                      "end": 45,
+                      "object": {
+                        "type": "Identifier",
+                        "start": 41,
+                        "end": 42,
+                        "name": "a"
+                      },
+                      "body": {
+                        "type": "EmptyStatement",
+                        "start": 44,
+                        "end": 45
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              }
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

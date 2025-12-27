@@ -1,0 +1,108 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 52,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 51,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 50,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 49,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 47,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 47,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 19,
+                    "end": 29,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 23,
+                        "end": 28,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 23,
+                          "end": 24,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 27,
+                          "end": 28,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 34,
+                    "end": 45,
+                    "expression": {
+                      "type": "AssignmentExpression",
+                      "start": 34,
+                      "end": 44,
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "start": 34,
+                        "end": 35,
+                        "name": "a"
+                      },
+                      "right": {
+                        "type": "AssignmentExpression",
+                        "start": 38,
+                        "end": 44,
+                        "operator": "+=",
+                        "left": {
+                          "type": "Identifier",
+                          "start": 38,
+                          "end": 39,
+                          "name": "a"
+                        },
+                        "right": {
+                          "type": "Literal",
+                          "start": 43,
+                          "end": 44,
+                          "value": 2,
+                          "raw": "2"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

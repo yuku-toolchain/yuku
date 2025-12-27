@@ -1,0 +1,138 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 75,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 74,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 73,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 72,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 70,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 12,
+                "end": 70,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 16,
+                    "end": 26,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 20,
+                        "end": 25,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 20,
+                          "end": 21,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 24,
+                          "end": 25,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 29,
+                    "end": 31,
+                    "expression": {
+                      "type": "Identifier",
+                      "start": 29,
+                      "end": 30,
+                      "name": "a"
+                    }
+                  },
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 34,
+                    "end": 44,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 38,
+                        "end": 43,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 38,
+                          "end": 39,
+                          "name": "b"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 42,
+                          "end": 43,
+                          "value": 2,
+                          "raw": "2"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "WithStatement",
+                    "start": 47,
+                    "end": 68,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 53,
+                      "end": 54,
+                      "name": "c"
+                    },
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 56,
+                      "end": 68,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 62,
+                          "end": 64,
+                          "expression": {
+                            "type": "Identifier",
+                            "start": 62,
+                            "end": 63,
+                            "name": "b"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

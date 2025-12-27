@@ -1,0 +1,127 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 51,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 51,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 51,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 19,
+              "end": 34,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 23,
+                  "end": 33,
+                  "id": {
+                    "type": "ObjectPattern",
+                    "start": 23,
+                    "end": 29,
+                    "properties": [
+                      {
+                        "type": "Property",
+                        "start": 24,
+                        "end": 25,
+                        "kind": "init",
+                        "key": {
+                          "type": "Identifier",
+                          "start": 24,
+                          "end": 25,
+                          "name": "b"
+                        },
+                        "value": {
+                          "type": "Identifier",
+                          "start": 24,
+                          "end": 25,
+                          "name": "b"
+                        },
+                        "method": false,
+                        "shorthand": true,
+                        "computed": false
+                      },
+                      {
+                        "type": "Property",
+                        "start": 27,
+                        "end": 28,
+                        "kind": "init",
+                        "key": {
+                          "type": "Identifier",
+                          "start": 27,
+                          "end": 28,
+                          "name": "c"
+                        },
+                        "value": {
+                          "type": "Identifier",
+                          "start": 27,
+                          "end": 28,
+                          "name": "c"
+                        },
+                        "method": false,
+                        "shorthand": true,
+                        "computed": false
+                      }
+                    ]
+                  },
+                  "init": {
+                    "type": "Identifier",
+                    "start": 32,
+                    "end": 33,
+                    "name": "a"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "VariableDeclaration",
+              "start": 39,
+              "end": 49,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 43,
+                  "end": 48,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 43,
+                    "end": 44,
+                    "name": "d"
+                  },
+                  "init": {
+                    "type": "Identifier",
+                    "start": 47,
+                    "end": 48,
+                    "name": "a"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

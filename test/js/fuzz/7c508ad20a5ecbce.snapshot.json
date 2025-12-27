@@ -1,0 +1,131 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 59,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 58,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 16,
+          "end": 17,
+          "name": "b"
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 18,
+          "end": 58,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 22,
+              "end": 56,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 22,
+                "end": 23,
+                "name": "c"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 23,
+                "end": 56,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 26,
+                  "end": 56,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 32,
+                      "end": 52,
+                      "expression": {
+                        "type": "ParenthesizedExpression",
+                        "start": 32,
+                        "end": 51,
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "start": 33,
+                          "end": 50,
+                          "operator": "=",
+                          "left": {
+                            "type": "ObjectPattern",
+                            "start": 33,
+                            "end": 46,
+                            "properties": [
+                              {
+                                "type": "Property",
+                                "start": 34,
+                                "end": 45,
+                                "kind": "init",
+                                "key": {
+                                  "type": "Identifier",
+                                  "start": 34,
+                                  "end": 35,
+                                  "name": "d"
+                                },
+                                "value": {
+                                  "type": "MemberExpression",
+                                  "start": 37,
+                                  "end": 45,
+                                  "object": {
+                                    "type": "Super",
+                                    "start": 37,
+                                    "end": 42
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "start": 43,
+                                    "end": 44,
+                                    "name": "e"
+                                  },
+                                  "computed": true,
+                                  "optional": false
+                                },
+                                "method": false,
+                                "shorthand": false,
+                                "computed": false
+                              }
+                            ]
+                          },
+                          "right": {
+                            "type": "Identifier",
+                            "start": 49,
+                            "end": 50,
+                            "name": "f"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

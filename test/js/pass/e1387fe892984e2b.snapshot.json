@@ -1,0 +1,169 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 54,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 54,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "ObjectPattern",
+            "start": 11,
+            "end": 37,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 13,
+                "end": 24,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 13,
+                  "end": 14,
+                  "name": "b"
+                },
+                "value": {
+                  "type": "ObjectPattern",
+                  "start": 16,
+                  "end": 24,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 18,
+                      "end": 19,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 18,
+                        "end": 19,
+                        "name": "c"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 18,
+                        "end": 19,
+                        "name": "c"
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    },
+                    {
+                      "type": "Property",
+                      "start": 21,
+                      "end": 22,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 21,
+                        "end": 22,
+                        "name": "a"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 21,
+                        "end": 22,
+                        "name": "a"
+                      },
+                      "method": false,
+                      "shorthand": true,
+                      "computed": false
+                    }
+                  ]
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 26,
+                "end": 35,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 26,
+                  "end": 27,
+                  "name": "d"
+                },
+                "value": {
+                  "type": "ArrayPattern",
+                  "start": 29,
+                  "end": 35,
+                  "elements": [
+                    {
+                      "type": "Identifier",
+                      "start": 30,
+                      "end": 31,
+                      "name": "e"
+                    },
+                    {
+                      "type": "Identifier",
+                      "start": 33,
+                      "end": 34,
+                      "name": "f"
+                    }
+                  ]
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          },
+          {
+            "type": "RestElement",
+            "start": 39,
+            "end": 51,
+            "argument": {
+              "type": "ArrayPattern",
+              "start": 42,
+              "end": 51,
+              "elements": [
+                {
+                  "type": "Identifier",
+                  "start": 43,
+                  "end": 44,
+                  "name": "b"
+                },
+                {
+                  "type": "Identifier",
+                  "start": 46,
+                  "end": 47,
+                  "name": "d"
+                },
+                {
+                  "type": "Identifier",
+                  "start": 49,
+                  "end": 50,
+                  "name": "g"
+                }
+              ]
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 52,
+          "end": 54,
+          "body": []
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

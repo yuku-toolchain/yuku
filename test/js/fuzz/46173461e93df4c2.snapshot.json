@@ -1,0 +1,61 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 19,
+        "init": {
+          "type": "SequenceExpression",
+          "start": 5,
+          "end": 14,
+          "expressions": [
+            {
+              "type": "ParenthesizedExpression",
+              "start": 5,
+              "end": 11,
+              "expression": {
+                "type": "SequenceExpression",
+                "start": 6,
+                "end": 10,
+                "expressions": [
+                  {
+                    "type": "Identifier",
+                    "start": 6,
+                    "end": 7,
+                    "name": "a"
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 9,
+                    "end": 10,
+                    "name": "b"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Identifier",
+              "start": 13,
+              "end": 14,
+              "name": "c"
+            }
+          ]
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 18,
+          "end": 19
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,242 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 165,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 30,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 7,
+          "end": 22,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 11,
+              "end": 20,
+              "test": {
+                "type": "Identifier",
+                "start": 15,
+                "end": 16,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "ExpressionStatement",
+                "start": 18,
+                "end": 20,
+                "expression": {
+                  "type": "Identifier",
+                  "start": 18,
+                  "end": 19,
+                  "name": "c"
+                }
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 28,
+          "end": 30,
+          "expression": {
+            "type": "Identifier",
+            "start": 28,
+            "end": 29,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 31,
+        "end": 67,
+        "test": {
+          "type": "Identifier",
+          "start": 35,
+          "end": 36,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 38,
+          "end": 59,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 42,
+              "end": 57,
+              "test": {
+                "type": "Identifier",
+                "start": 46,
+                "end": 47,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "ThrowStatement",
+                "start": 49,
+                "end": 57,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 55,
+                  "end": 56,
+                  "name": "c"
+                }
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 65,
+          "end": 67,
+          "expression": {
+            "type": "Identifier",
+            "start": 65,
+            "end": 66,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 68,
+        "end": 113,
+        "test": {
+          "type": "Identifier",
+          "start": 72,
+          "end": 73,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 75,
+          "end": 105,
+          "body": [
+            {
+              "type": "WithStatement",
+              "start": 79,
+              "end": 103,
+              "object": {
+                "type": "Identifier",
+                "start": 85,
+                "end": 86,
+                "name": "a"
+              },
+              "body": {
+                "type": "IfStatement",
+                "start": 88,
+                "end": 103,
+                "test": {
+                  "type": "Identifier",
+                  "start": 92,
+                  "end": 93,
+                  "name": "b"
+                },
+                "consequent": {
+                  "type": "ThrowStatement",
+                  "start": 95,
+                  "end": 103,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 101,
+                    "end": 102,
+                    "name": "c"
+                  }
+                },
+                "alternate": null
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 111,
+          "end": 113,
+          "expression": {
+            "type": "Identifier",
+            "start": 111,
+            "end": 112,
+            "name": "d"
+          }
+        }
+      },
+      {
+        "type": "IfStatement",
+        "start": 114,
+        "end": 164,
+        "test": {
+          "type": "Identifier",
+          "start": 118,
+          "end": 119,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 121,
+          "end": 156,
+          "body": [
+            {
+              "type": "DoWhileStatement",
+              "start": 125,
+              "end": 154,
+              "body": {
+                "type": "IfStatement",
+                "start": 128,
+                "end": 143,
+                "test": {
+                  "type": "Identifier",
+                  "start": 132,
+                  "end": 133,
+                  "name": "b"
+                },
+                "consequent": {
+                  "type": "ThrowStatement",
+                  "start": 135,
+                  "end": 143,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 141,
+                    "end": 142,
+                    "name": "c"
+                  }
+                },
+                "alternate": null
+              },
+              "test": {
+                "type": "Identifier",
+                "start": 151,
+                "end": 152,
+                "name": "a"
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 162,
+          "end": 164,
+          "expression": {
+            "type": "Identifier",
+            "start": 162,
+            "end": 163,
+            "name": "d"
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

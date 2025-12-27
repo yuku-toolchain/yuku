@@ -1,0 +1,286 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 130,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 4,
+        "expression": {
+          "type": "CallExpression",
+          "start": 0,
+          "end": 3,
+          "callee": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 1,
+            "name": "a"
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 5,
+        "end": 9,
+        "expression": {
+          "type": "CallExpression",
+          "start": 5,
+          "end": 8,
+          "callee": {
+            "type": "Identifier",
+            "start": 5,
+            "end": 6,
+            "name": "b"
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 10,
+        "end": 26,
+        "init": null,
+        "test": {
+          "type": "Literal",
+          "start": 17,
+          "end": 22,
+          "value": false,
+          "raw": "false"
+        },
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 25,
+          "end": 26
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 27,
+        "end": 31,
+        "expression": {
+          "type": "CallExpression",
+          "start": 27,
+          "end": 30,
+          "callee": {
+            "type": "Identifier",
+            "start": 27,
+            "end": 28,
+            "name": "a"
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 32,
+        "end": 36,
+        "expression": {
+          "type": "CallExpression",
+          "start": 32,
+          "end": 35,
+          "callee": {
+            "type": "Identifier",
+            "start": 32,
+            "end": 33,
+            "name": "b"
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 37,
+        "end": 60,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 42,
+          "end": 49,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 42,
+            "end": 43,
+            "name": "c"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 46,
+            "end": 49,
+            "expression": {
+              "type": "Literal",
+              "start": 47,
+              "end": 48,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        },
+        "test": {
+          "type": "Literal",
+          "start": 51,
+          "end": 56,
+          "value": false,
+          "raw": "false"
+        },
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 59,
+          "end": 60
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 61,
+        "end": 74,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 61,
+          "end": 73,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 61,
+            "end": 62,
+            "name": "c"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 65,
+            "end": 73,
+            "expression": {
+              "type": "BinaryExpression",
+              "start": 66,
+              "end": 72,
+              "left": {
+                "type": "Identifier",
+                "start": 66,
+                "end": 67,
+                "name": "a"
+              },
+              "operator": "in",
+              "right": {
+                "type": "Identifier",
+                "start": 71,
+                "end": 72,
+                "name": "b"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 75,
+        "end": 91,
+        "init": null,
+        "test": {
+          "type": "Literal",
+          "start": 82,
+          "end": 87,
+          "value": false,
+          "raw": "false"
+        },
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 90,
+          "end": 91
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 92,
+        "end": 105,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 92,
+          "end": 104,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 92,
+            "end": 93,
+            "name": "c"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 96,
+            "end": 104,
+            "expression": {
+              "type": "BinaryExpression",
+              "start": 97,
+              "end": 103,
+              "left": {
+                "type": "Identifier",
+                "start": 97,
+                "end": 98,
+                "name": "a"
+              },
+              "operator": "in",
+              "right": {
+                "type": "Identifier",
+                "start": 102,
+                "end": 103,
+                "name": "b"
+              }
+            }
+          }
+        }
+      },
+      {
+        "type": "ForStatement",
+        "start": 106,
+        "end": 129,
+        "init": {
+          "type": "AssignmentExpression",
+          "start": 111,
+          "end": 118,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 111,
+            "end": 112,
+            "name": "d"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 115,
+            "end": 118,
+            "expression": {
+              "type": "Literal",
+              "start": 116,
+              "end": 117,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        },
+        "test": {
+          "type": "Literal",
+          "start": 120,
+          "end": 125,
+          "value": false,
+          "raw": "false"
+        },
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 128,
+          "end": 129
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,114 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 28,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
+        "expression": {
+          "type": "CallExpression",
+          "start": 0,
+          "end": 10,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 8,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 1,
+              "end": 7,
+              "expressions": [
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 1,
+                  "end": 4,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 2,
+                    "end": 3,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                },
+                {
+                  "type": "Identifier",
+                  "start": 6,
+                  "end": 7,
+                  "name": "a"
+                }
+              ]
+            }
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 12,
+        "end": 27,
+        "expression": {
+          "type": "CallExpression",
+          "start": 12,
+          "end": 26,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 12,
+            "end": 24,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 13,
+              "end": 23,
+              "expressions": [
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 13,
+                  "end": 16,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 14,
+                    "end": 15,
+                    "value": 2,
+                    "raw": "2"
+                  }
+                },
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 18,
+                  "end": 23,
+                  "expression": {
+                    "type": "MemberExpression",
+                    "start": 19,
+                    "end": 22,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 19,
+                      "end": 20,
+                      "name": "b"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 21,
+                      "end": 22,
+                      "name": "a"
+                    },
+                    "computed": false,
+                    "optional": false
+                  }
+                }
+              ]
+            }
+          },
+          "arguments": [],
+          "optional": false
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

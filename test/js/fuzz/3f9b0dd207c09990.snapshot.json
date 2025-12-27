@@ -1,0 +1,232 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 137,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "SwitchStatement",
+        "start": 0,
+        "end": 136,
+        "discriminant": {
+          "type": "BinaryExpression",
+          "start": 8,
+          "end": 17,
+          "left": {
+            "type": "ParenthesizedExpression",
+            "start": 8,
+            "end": 11,
+            "expression": {
+              "type": "Literal",
+              "start": 9,
+              "end": 10,
+              "value": 1,
+              "raw": "1"
+            }
+          },
+          "operator": "+",
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 14,
+            "end": 17,
+            "expression": {
+              "type": "Literal",
+              "start": 15,
+              "end": 16,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        },
+        "cases": [
+          {
+            "type": "SwitchCase",
+            "start": 23,
+            "end": 50,
+            "test": {
+              "type": "Literal",
+              "start": 28,
+              "end": 29,
+              "value": 3,
+              "raw": "3"
+            },
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 35,
+                "end": 39,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 35,
+                  "end": 38,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 35,
+                    "end": 36,
+                    "name": "a"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              },
+              {
+                "type": "BreakStatement",
+                "start": 44,
+                "end": 50,
+                "label": null
+              }
+            ]
+          },
+          {
+            "type": "SwitchCase",
+            "start": 53,
+            "end": 88,
+            "test": {
+              "type": "BinaryExpression",
+              "start": 58,
+              "end": 67,
+              "left": {
+                "type": "ParenthesizedExpression",
+                "start": 58,
+                "end": 61,
+                "expression": {
+                  "type": "Literal",
+                  "start": 59,
+                  "end": 60,
+                  "value": 4,
+                  "raw": "4"
+                }
+              },
+              "operator": "+",
+              "right": {
+                "type": "ParenthesizedExpression",
+                "start": 64,
+                "end": 67,
+                "expression": {
+                  "type": "Literal",
+                  "start": 65,
+                  "end": 66,
+                  "value": 5,
+                  "raw": "5"
+                }
+              }
+            },
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 73,
+                "end": 77,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 73,
+                  "end": 76,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 73,
+                    "end": 74,
+                    "name": "b"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              },
+              {
+                "type": "BreakStatement",
+                "start": 82,
+                "end": 88,
+                "label": null
+              }
+            ]
+          },
+          {
+            "type": "SwitchCase",
+            "start": 91,
+            "end": 134,
+            "test": {
+              "type": "BinaryExpression",
+              "start": 96,
+              "end": 113,
+              "left": {
+                "type": "ParenthesizedExpression",
+                "start": 96,
+                "end": 107,
+                "expression": {
+                  "type": "BinaryExpression",
+                  "start": 97,
+                  "end": 106,
+                  "left": {
+                    "type": "ParenthesizedExpression",
+                    "start": 97,
+                    "end": 100,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 98,
+                      "end": 99,
+                      "value": 6,
+                      "raw": "6"
+                    }
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "ParenthesizedExpression",
+                    "start": 103,
+                    "end": 106,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 104,
+                      "end": 105,
+                      "value": 7,
+                      "raw": "7"
+                    }
+                  }
+                }
+              },
+              "operator": "+",
+              "right": {
+                "type": "ParenthesizedExpression",
+                "start": 110,
+                "end": 113,
+                "expression": {
+                  "type": "Literal",
+                  "start": 111,
+                  "end": 112,
+                  "value": 8,
+                  "raw": "8"
+                }
+              }
+            },
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 119,
+                "end": 123,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 119,
+                  "end": 122,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 119,
+                    "end": 120,
+                    "name": "c"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              },
+              {
+                "type": "BreakStatement",
+                "start": 128,
+                "end": 134,
+                "label": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

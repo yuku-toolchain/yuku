@@ -1,0 +1,54 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 9,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 8,
+        "expression": {
+          "type": "ConditionalExpression",
+          "start": 0,
+          "end": 8,
+          "test": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 4,
+            "expression": {
+              "type": "UnaryExpression",
+              "start": 1,
+              "end": 3,
+              "operator": "!",
+              "prefix": true,
+              "argument": {
+                "type": "Identifier",
+                "start": 2,
+                "end": 3,
+                "name": "a"
+              }
+            }
+          },
+          "consequent": {
+            "type": "Literal",
+            "start": 5,
+            "end": 6,
+            "value": 1,
+            "raw": "1"
+          },
+          "alternate": {
+            "type": "Literal",
+            "start": 7,
+            "end": 8,
+            "value": 2,
+            "raw": "2"
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,29 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 7,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 7,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 7,
+          "expression": {
+            "type": "Literal",
+            "start": 1,
+            "end": 6,
+            "value": "\u0001",
+            "raw": "'\\01'"
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

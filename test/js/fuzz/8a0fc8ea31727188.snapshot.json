@@ -1,0 +1,26 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 21,
+    "sourceType": "module",
+    "body": [
+      {
+        "type": "ExportAllDeclaration",
+        "start": 0,
+        "end": 20,
+        "exported": null,
+        "source": {
+          "type": "Literal",
+          "start": 14,
+          "end": 19,
+          "value": "foo",
+          "raw": "\"foo\""
+        },
+        "attributes": []
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

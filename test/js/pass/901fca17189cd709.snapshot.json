@@ -1,0 +1,96 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 36,
+        "id": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 11,
+          "name": "a"
+        },
+        "generator": true,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 36,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 14,
+              "end": 35,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 14,
+                "end": 35,
+                "expression": {
+                  "type": "ClassExpression",
+                  "start": 15,
+                  "end": 34,
+                  "decorators": [],
+                  "id": null,
+                  "superClass": null,
+                  "body": {
+                    "type": "ClassBody",
+                    "start": 21,
+                    "end": 34,
+                    "body": [
+                      {
+                        "type": "MethodDefinition",
+                        "start": 22,
+                        "end": 33,
+                        "decorators": [],
+                        "key": {
+                          "type": "YieldExpression",
+                          "start": 23,
+                          "end": 28,
+                          "delegate": false,
+                          "argument": null
+                        },
+                        "value": {
+                          "type": "FunctionExpression",
+                          "start": 29,
+                          "end": 33,
+                          "id": null,
+                          "generator": false,
+                          "async": false,
+                          "params": [],
+                          "body": {
+                            "type": "BlockStatement",
+                            "start": 31,
+                            "end": 33,
+                            "body": []
+                          },
+                          "expression": false
+                        },
+                        "kind": "method",
+                        "computed": true,
+                        "static": false
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "EmptyStatement",
+        "start": 36,
+        "end": 37
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

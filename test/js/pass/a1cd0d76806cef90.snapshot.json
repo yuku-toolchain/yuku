@@ -1,0 +1,84 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 46,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 45,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 45,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 44,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 42,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 11,
+                "end": 42,
+                "body": [
+                  {
+                    "type": "ReturnStatement",
+                    "start": 15,
+                    "end": 40,
+                    "argument": {
+                      "type": "BinaryExpression",
+                      "start": 22,
+                      "end": 39,
+                      "left": {
+                        "type": "UnaryExpression",
+                        "start": 22,
+                        "end": 32,
+                        "operator": "typeof",
+                        "prefix": true,
+                        "argument": {
+                          "type": "CallExpression",
+                          "start": 29,
+                          "end": 32,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 29,
+                            "end": 30,
+                            "name": "a"
+                          },
+                          "arguments": [],
+                          "optional": false
+                        }
+                      },
+                      "operator": "!=",
+                      "right": {
+                        "type": "Literal",
+                        "start": 36,
+                        "end": 39,
+                        "value": "b",
+                        "raw": "\"b\""
+                      }
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

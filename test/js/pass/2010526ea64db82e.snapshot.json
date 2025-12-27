@@ -1,0 +1,86 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 47,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 47,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 16,
+          "end": 17,
+          "name": "b"
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 18,
+          "end": 47,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 20,
+              "end": 45,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 20,
+                "end": 31,
+                "name": "constructor"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 31,
+                "end": 45,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 34,
+                  "end": 45,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 36,
+                      "end": 43,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 36,
+                        "end": 43,
+                        "callee": {
+                          "type": "Super",
+                          "start": 36,
+                          "end": 41
+                        },
+                        "arguments": [],
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "kind": "constructor",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

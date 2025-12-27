@@ -1,0 +1,56 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 23,
+        "id": {
+          "type": "Identifier",
+          "start": 10,
+          "end": 11,
+          "name": "a"
+        },
+        "generator": true,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 23,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 14,
+              "end": 22,
+              "expression": {
+                "type": "YieldExpression",
+                "start": 14,
+                "end": 22,
+                "delegate": false,
+                "argument": {
+                  "type": "Literal",
+                  "start": 19,
+                  "end": 22,
+                  "value": {},
+                  "raw": "/a/",
+                  "regex": {
+                    "pattern": "a",
+                    "flags": ""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

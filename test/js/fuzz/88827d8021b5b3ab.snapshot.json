@@ -1,0 +1,44 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 31,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 30,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 29,
+          "callee": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "a"
+          },
+          "arguments": [
+            {
+              "type": "Literal",
+              "start": 6,
+              "end": 14,
+              "value": "aa, bb",
+              "raw": "\"aa, bb\""
+            },
+            {
+              "type": "Literal",
+              "start": 16,
+              "end": 28,
+              "value": "return aa;",
+              "raw": "\"return aa;\""
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,53 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 45,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 12,
+          "end": 45,
+          "body": [
+            {
+              "type": "ReturnStatement",
+              "start": 26,
+              "end": 33,
+              "argument": null
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": "Jupiter",
+      "start": 14,
+      "end": 25
+    },
+    {
+      "type": "Block",
+      "value": "Saturn",
+      "start": 34,
+      "end": 44
+    }
+  ],
+  "errors": []
+}

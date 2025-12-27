@@ -10,7 +10,7 @@ await preload()
 
 console.clear()
 
-type TestType = "ast" | "should_pass" | "should_fail" | "snapshot"
+type TestType = "should_pass" | "should_fail" | "snapshot"
 type Language = "js" | "ts" | "jsx" | "tsx" | "dts"
 
 interface TestConfig {
@@ -21,8 +21,8 @@ interface TestConfig {
 }
 
 const configs: TestConfig[] = [
-  { path: "test/js/pass", type: "ast", languages: ["js"] },
-  { path: "test/js/fuzz", type: "ast", languages: ["js"] },
+  { path: "test/js/pass", type: "snapshot", languages: ["js"] },
+  { path: "test/js/fuzz", type: "snapshot", languages: ["js"] },
   { path: "test/js/fail", type: "should_fail", languages: ["js"],
     exclude: [
       // these are the semantic tests, remove these from the list
@@ -64,9 +64,18 @@ interface TestResult {
   failed: number
   total: number
   failures: string[]
+  parseTime: number
+  parsedFiles: number
 }
 
 const results = new Map<string, TestResult>()
+
+const formatTime = (ms: number): string => {
+  if (ms >= 1000) {
+    return `${(ms / 1000).toFixed(2)}s`
+  }
+  return `${ms.toFixed(2)}ms`
+}
 
 const getLanguage = (path: string): Language => {
   if (path.endsWith(".tsx")) return "tsx"
@@ -84,7 +93,6 @@ const getBaseName = (file: string): string => {
 
 const isTestArtifact = (path: string): boolean => {
   return (
-    path.endsWith(".expected.json") ||
     path.endsWith(".snapshot.json") ||
     path.includes(".snap")
   )
@@ -92,7 +100,6 @@ const isTestArtifact = (path: string): boolean => {
 
 const isExcluded = (path: string, excludePatterns: string[] = []): boolean => {
   return excludePatterns.some(pattern => {
-    // Support both exact filename matches and partial path matches
     return path.includes(pattern) || basename(path) === pattern
   })
 }
@@ -114,7 +121,12 @@ const runTest = async (
     const lang = getLanguage(file)
     const sourceType = file.includes(".module.") ? "module" : "script"
 
+    const parseStart = performance.now()
     const parsed = parseSync(content, { sourceType, lang })
+    const parseEnd = performance.now()
+
+    result.parseTime += parseEnd - parseStart
+    result.parsedFiles++
 
     const hasErrors = parsed.errors && parsed.errors.length > 0
 
@@ -132,31 +144,6 @@ const runTest = async (
         result.failures.push(file)
         return
       }
-      result.passed++
-      return
-    }
-
-    if (type === "ast") {
-      const dir = dirname(file)
-      const base = getBaseName(file)
-      const expectedFile = join(dir, `${base}.expected.json`)
-
-      const expectedExists = await Bun.file(expectedFile).exists()
-
-      if (!expectedExists) {
-        result.failures.push(`${file} (missing expected.json)`)
-        return
-      }
-
-      const expected = await Bun.file(expectedFile).json()
-
-      if (!hasErrors && !equal(parsed, expected)) {
-        const difference = diff(expected, parsed, { contextLines: 2 })
-        console.log(`\nx ${file}\n${difference}\n`)
-        result.failures.push(file)
-        return
-      }
-
       result.passed++
       return
     }
@@ -190,7 +177,7 @@ const runTest = async (
 }
 
 const runCategory = async (config: TestConfig) => {
-  const result: TestResult = { passed: 0, failed: 0, total: 0, failures: [] }
+  const result: TestResult = { passed: 0, failed: 0, total: 0, failures: [], parseTime: 0, parsedFiles: 0 }
   results.set(config.path, result)
 
   const pattern = `${config.path}/**/*`
@@ -226,25 +213,34 @@ const runCategory = async (config: TestConfig) => {
 
 console.log("Running tests...\n")
 
+const totalStart = performance.now()
+
 for (const config of configs) {
   await runCategory(config)
 }
 
-console.log("\nSummary:")
+const totalEnd = performance.now()
 
 let totalPassed = 0
 let totalFailed = 0
 let totalTests = 0
+let totalParseTime = 0
+let totalParsedFiles = 0
 
-for (const [path, result] of results) {
+for (const [, result] of results) {
   if (result.total === 0) continue
-  console.log(`  ${path}: ${result.passed}/${result.total}`)
   totalPassed += result.passed
   totalFailed += result.failed
   totalTests += result.total
+  totalParseTime += result.parseTime
+  totalParsedFiles += result.parsedFiles
 }
 
-console.log(`\nTotal: ${totalPassed}/${totalTests}`)
+const passRate = ((totalPassed / totalTests) * 100).toFixed(2)
+const avgParseTime = totalParsedFiles > 0 ? totalParseTime / totalParsedFiles : 0
+const totalTime = totalEnd - totalStart
+
+console.log(`\n${totalPassed}/${totalTests} (${passRate}%) • ${formatTime(totalTime)} total • ${formatTime(totalParseTime)} parse • ${formatTime(avgParseTime)} avg`)
 
 if (totalFailed > 0) {
   process.exit(1)

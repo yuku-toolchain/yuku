@@ -1,0 +1,89 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 24,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 24,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 23,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 3,
+                "end": 7,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 3,
+                  "end": 4,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "Literal",
+                  "start": 6,
+                  "end": 7,
+                  "value": 1,
+                  "raw": "1"
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 9,
+                "end": 21,
+                "kind": "set",
+                "key": {
+                  "type": "Identifier",
+                  "start": 13,
+                  "end": 14,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 14,
+                  "end": 21,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 15,
+                      "end": 16,
+                      "name": "b"
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 18,
+                    "end": 21,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

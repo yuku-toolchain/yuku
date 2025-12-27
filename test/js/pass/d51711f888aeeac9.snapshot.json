@@ -1,0 +1,37 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 53,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 22,
+        "test": {
+          "type": "Literal",
+          "start": 7,
+          "end": 11,
+          "value": true,
+          "raw": "true"
+        },
+        "body": {
+          "type": "ContinueStatement",
+          "start": 13,
+          "end": 22,
+          "label": null
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " should be empty statement",
+      "start": 24,
+      "end": 52
+    }
+  ],
+  "errors": []
+}

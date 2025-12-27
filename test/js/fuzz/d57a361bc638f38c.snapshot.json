@@ -1,0 +1,127 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 33,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 15,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 7,
+            "end": 8,
+            "id": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "b"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 10,
+            "end": 11,
+            "id": {
+              "type": "Identifier",
+              "start": 10,
+              "end": 11,
+              "name": "c"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 13,
+            "end": 14,
+            "id": {
+              "type": "Identifier",
+              "start": 13,
+              "end": 14,
+              "name": "d"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 16,
+        "end": 32,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 16,
+          "end": 31,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 16,
+            "end": 17,
+            "name": "a"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 20,
+            "end": 31,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 21,
+              "end": 30,
+              "expressions": [
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 21,
+                  "end": 27,
+                  "expression": {
+                    "type": "SequenceExpression",
+                    "start": 22,
+                    "end": 26,
+                    "expressions": [
+                      {
+                        "type": "Identifier",
+                        "start": 22,
+                        "end": 23,
+                        "name": "b"
+                      },
+                      {
+                        "type": "Identifier",
+                        "start": 25,
+                        "end": 26,
+                        "name": "c"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "Identifier",
+                  "start": 29,
+                  "end": 30,
+                  "name": "d"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

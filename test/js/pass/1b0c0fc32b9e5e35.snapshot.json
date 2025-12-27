@@ -1,0 +1,152 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 196,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 27,
+        "end": 195,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 27,
+          "end": 194,
+          "operator": "void",
+          "prefix": true,
+          "argument": {
+            "type": "CallExpression",
+            "start": 32,
+            "end": 194,
+            "callee": {
+              "type": "MemberExpression",
+              "start": 32,
+              "end": 188,
+              "object": {
+                "type": "FunctionExpression",
+                "start": 32,
+                "end": 186,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 44,
+                  "end": 186,
+                  "body": [
+                    {
+                      "type": "VariableDeclaration",
+                      "start": 48,
+                      "end": 54,
+                      "kind": "var",
+                      "declarations": [
+                        {
+                          "type": "VariableDeclarator",
+                          "start": 52,
+                          "end": 53,
+                          "id": {
+                            "type": "Identifier",
+                            "start": 52,
+                            "end": 53,
+                            "name": "a"
+                          },
+                          "init": null
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 88,
+                      "end": 184,
+                      "expression": {
+                        "type": "AssignmentExpression",
+                        "start": 88,
+                        "end": 183,
+                        "operator": "=",
+                        "left": {
+                          "type": "Identifier",
+                          "start": 88,
+                          "end": 89,
+                          "name": "a"
+                        },
+                        "right": {
+                          "type": "FunctionExpression",
+                          "start": 92,
+                          "end": 183,
+                          "id": null,
+                          "generator": false,
+                          "async": false,
+                          "params": [],
+                          "body": {
+                            "type": "BlockStatement",
+                            "start": 104,
+                            "end": 183,
+                            "body": [
+                              {
+                                "type": "ReturnStatement",
+                                "start": 170,
+                                "end": 179,
+                                "argument": {
+                                  "type": "Literal",
+                                  "start": 177,
+                                  "end": 178,
+                                  "value": 1,
+                                  "raw": "1"
+                                }
+                              }
+                            ]
+                          },
+                          "expression": false
+                        }
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 187,
+                "end": 188,
+                "name": "b"
+              },
+              "computed": false,
+              "optional": false
+            },
+            "arguments": [
+              {
+                "type": "ThisExpression",
+                "start": 189,
+                "end": 193
+              }
+            ],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " reported from issue #60",
+      "start": 0,
+      "end": 26
+    },
+    {
+      "type": "Line",
+      "value": " this foo should be dropped",
+      "start": 56,
+      "end": 85
+    },
+    {
+      "type": "Line",
+      "value": " this should be transformed to non-assignment expression",
+      "start": 107,
+      "end": 165
+    }
+  ],
+  "errors": []
+}

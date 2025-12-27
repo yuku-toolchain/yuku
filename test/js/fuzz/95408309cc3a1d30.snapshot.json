@@ -1,0 +1,153 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 85,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 84,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 84,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 17,
+              "end": 74,
+              "test": {
+                "type": "UnaryExpression",
+                "start": 21,
+                "end": 29,
+                "operator": "void",
+                "prefix": true,
+                "argument": {
+                  "type": "ParenthesizedExpression",
+                  "start": 26,
+                  "end": 29,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 27,
+                    "end": 28,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 31,
+                "end": 53,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 37,
+                    "end": 49,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 41,
+                        "end": 48,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 41,
+                          "end": 42,
+                          "name": "b"
+                        },
+                        "init": {
+                          "type": "ParenthesizedExpression",
+                          "start": 45,
+                          "end": 48,
+                          "expression": {
+                            "type": "Literal",
+                            "start": 46,
+                            "end": 47,
+                            "value": 2,
+                            "raw": "2"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "alternate": {
+                "type": "BlockStatement",
+                "start": 59,
+                "end": 74,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 65,
+                    "end": 70,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 65,
+                      "end": 69,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 65,
+                        "end": 66,
+                        "name": "c"
+                      },
+                      "arguments": [
+                        {
+                          "type": "Identifier",
+                          "start": 67,
+                          "end": 68,
+                          "name": "a"
+                        }
+                      ],
+                      "optional": false
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 77,
+              "end": 82,
+              "expression": {
+                "type": "CallExpression",
+                "start": 77,
+                "end": 81,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 77,
+                  "end": 78,
+                  "name": "c"
+                },
+                "arguments": [
+                  {
+                    "type": "Identifier",
+                    "start": 79,
+                    "end": 80,
+                    "name": "b"
+                  }
+                ],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

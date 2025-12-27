@@ -1,0 +1,98 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 45,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 45,
+        "expression": {
+          "type": "CallExpression",
+          "start": 0,
+          "end": 45,
+          "callee": {
+            "type": "MemberExpression",
+            "start": 0,
+            "end": 39,
+            "object": {
+              "type": "ParenthesizedExpression",
+              "start": 0,
+              "end": 37,
+              "expression": {
+                "type": "FunctionExpression",
+                "start": 1,
+                "end": 36,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 11,
+                  "end": 36,
+                  "body": [
+                    {
+                      "type": "VariableDeclaration",
+                      "start": 13,
+                      "end": 23,
+                      "kind": "var",
+                      "declarations": [
+                        {
+                          "type": "VariableDeclarator",
+                          "start": 17,
+                          "end": 22,
+                          "id": {
+                            "type": "Identifier",
+                            "start": 17,
+                            "end": 18,
+                            "name": "a"
+                          },
+                          "init": {
+                            "type": "Literal",
+                            "start": 21,
+                            "end": 22,
+                            "value": 1,
+                            "raw": "1"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "expression": false
+              }
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 38,
+              "end": 39,
+              "name": "b"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "arguments": [
+            {
+              "type": "ThisExpression",
+              "start": 40,
+              "end": 44
+            }
+          ],
+          "optional": false
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Block",
+      "value": " sync ",
+      "start": 24,
+      "end": 34
+    }
+  ],
+  "errors": []
+}

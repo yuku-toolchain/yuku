@@ -1,0 +1,90 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 44,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 43,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 43,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 42,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 3,
+                "end": 20,
+                "kind": "init",
+                "key": {
+                  "type": "Literal",
+                  "start": 3,
+                  "end": 14,
+                  "value": "__proto__",
+                  "raw": "\"__proto__\""
+                },
+                "value": {
+                  "type": "Literal",
+                  "start": 16,
+                  "end": 20,
+                  "value": null,
+                  "raw": "null"
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 22,
+                "end": 40,
+                "kind": "set",
+                "key": {
+                  "type": "Identifier",
+                  "start": 26,
+                  "end": 35,
+                  "name": "__proto__"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 35,
+                  "end": 40,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 36,
+                      "end": 37,
+                      "name": "a"
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 38,
+                    "end": 40,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": false,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,87 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 101,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 100,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 100,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 19,
+              "end": 98,
+              "test": {
+                "type": "Literal",
+                "start": 23,
+                "end": 28,
+                "value": false,
+                "raw": "false"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 30,
+                "end": 98,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 82,
+                    "end": 92,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 86,
+                        "end": 91,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 86,
+                          "end": 87,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 90,
+                          "end": 91,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " because test is not referenced",
+      "start": 40,
+      "end": 73
+    }
+  ],
+  "errors": []
+}

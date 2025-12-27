@@ -1,0 +1,41 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 24,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "TryStatement",
+        "start": 0,
+        "end": 24,
+        "block": {
+          "type": "BlockStatement",
+          "start": 4,
+          "end": 7,
+          "body": []
+        },
+        "handler": {
+          "type": "CatchClause",
+          "start": 8,
+          "end": 24,
+          "param": {
+            "type": "Identifier",
+            "start": 15,
+            "end": 19,
+            "name": "eval"
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 21,
+            "end": 24,
+            "body": []
+          }
+        },
+        "finalizer": null
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

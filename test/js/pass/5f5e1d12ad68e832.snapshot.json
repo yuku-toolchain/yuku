@@ -1,0 +1,210 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 66,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 66,
+        "test": {
+          "type": "LogicalExpression",
+          "start": 4,
+          "end": 10,
+          "left": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "a"
+          },
+          "operator": "&&",
+          "right": {
+            "type": "Identifier",
+            "start": 9,
+            "end": 10,
+            "name": "b"
+          }
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 12,
+          "end": 38,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 18,
+              "end": 36,
+              "expression": {
+                "type": "AssignmentExpression",
+                "start": 18,
+                "end": 35,
+                "operator": "=",
+                "left": {
+                  "type": "MemberExpression",
+                  "start": 18,
+                  "end": 29,
+                  "object": {
+                    "type": "MemberExpression",
+                    "start": 18,
+                    "end": 27,
+                    "object": {
+                      "type": "MemberExpression",
+                      "start": 18,
+                      "end": 25,
+                      "object": {
+                        "type": "CallExpression",
+                        "start": 18,
+                        "end": 22,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 18,
+                          "end": 19,
+                          "name": "c"
+                        },
+                        "arguments": [
+                          {
+                            "type": "Identifier",
+                            "start": 20,
+                            "end": 21,
+                            "name": "a"
+                          }
+                        ],
+                        "optional": false
+                      },
+                      "property": {
+                        "type": "Literal",
+                        "start": 23,
+                        "end": 24,
+                        "value": 1,
+                        "raw": "1"
+                      },
+                      "computed": true,
+                      "optional": false
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 26,
+                      "end": 27,
+                      "name": "b"
+                    },
+                    "computed": false,
+                    "optional": false
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 28,
+                    "end": 29,
+                    "name": "d"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "right": {
+                  "type": "CallExpression",
+                  "start": 32,
+                  "end": 35,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 32,
+                    "end": 33,
+                    "name": "e"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 48,
+          "end": 66,
+          "expression": {
+            "type": "AssignmentExpression",
+            "start": 48,
+            "end": 65,
+            "operator": "=",
+            "left": {
+              "type": "MemberExpression",
+              "start": 48,
+              "end": 59,
+              "object": {
+                "type": "MemberExpression",
+                "start": 48,
+                "end": 57,
+                "object": {
+                  "type": "MemberExpression",
+                  "start": 48,
+                  "end": 55,
+                  "object": {
+                    "type": "CallExpression",
+                    "start": 48,
+                    "end": 52,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 48,
+                      "end": 49,
+                      "name": "c"
+                    },
+                    "arguments": [
+                      {
+                        "type": "Identifier",
+                        "start": 50,
+                        "end": 51,
+                        "name": "a"
+                      }
+                    ],
+                    "optional": false
+                  },
+                  "property": {
+                    "type": "Literal",
+                    "start": 53,
+                    "end": 54,
+                    "value": 2,
+                    "raw": "2"
+                  },
+                  "computed": true,
+                  "optional": false
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 56,
+                  "end": 57,
+                  "name": "b"
+                },
+                "computed": false,
+                "optional": false
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 58,
+                "end": 59,
+                "name": "d"
+              },
+              "computed": false,
+              "optional": false
+            },
+            "right": {
+              "type": "CallExpression",
+              "start": 62,
+              "end": 65,
+              "callee": {
+                "type": "Identifier",
+                "start": 62,
+                "end": 63,
+                "name": "f"
+              },
+              "arguments": [],
+              "optional": false
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

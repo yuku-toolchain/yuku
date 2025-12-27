@@ -1,0 +1,92 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 36,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 35,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 34,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 34,
+              "expression": {
+                "type": "ObjectExpression",
+                "start": 9,
+                "end": 33,
+                "properties": [
+                  {
+                    "type": "Property",
+                    "start": 10,
+                    "end": 32,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 12,
+                      "end": 13,
+                      "name": "b"
+                    },
+                    "value": {
+                      "type": "FunctionExpression",
+                      "start": 14,
+                      "end": 32,
+                      "id": null,
+                      "generator": true,
+                      "async": false,
+                      "params": [],
+                      "body": {
+                        "type": "BlockStatement",
+                        "start": 17,
+                        "end": 32,
+                        "body": [
+                          {
+                            "type": "ExpressionStatement",
+                            "start": 21,
+                            "end": 30,
+                            "expression": {
+                              "type": "YieldExpression",
+                              "start": 21,
+                              "end": 29,
+                              "delegate": true,
+                              "argument": {
+                                "type": "Identifier",
+                                "start": 28,
+                                "end": 29,
+                                "name": "c"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "expression": false
+                    },
+                    "method": true,
+                    "shorthand": false,
+                    "computed": true
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

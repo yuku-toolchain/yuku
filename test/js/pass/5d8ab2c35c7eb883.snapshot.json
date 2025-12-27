@@ -1,0 +1,100 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 46,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 6,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "IfStatement",
+        "start": 7,
+        "end": 46,
+        "test": {
+          "type": "CallExpression",
+          "start": 11,
+          "end": 14,
+          "callee": {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "b"
+          },
+          "arguments": [],
+          "optional": false
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 16,
+          "end": 28,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 22,
+              "end": 26,
+              "expression": {
+                "type": "CallExpression",
+                "start": 22,
+                "end": 25,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 22,
+                  "end": 23,
+                  "name": "a"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "alternate": {
+          "type": "BlockStatement",
+          "start": 34,
+          "end": 46,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 40,
+              "end": 44,
+              "expression": {
+                "type": "CallExpression",
+                "start": 40,
+                "end": 43,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 40,
+                  "end": 41,
+                  "name": "a"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

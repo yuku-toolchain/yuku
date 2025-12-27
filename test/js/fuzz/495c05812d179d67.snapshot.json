@@ -1,0 +1,28 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 14,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 12,
+          "value": {},
+          "raw": "/[a-z]/gimuy",
+          "regex": {
+            "pattern": "[a-z]",
+            "flags": "gimuy"
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

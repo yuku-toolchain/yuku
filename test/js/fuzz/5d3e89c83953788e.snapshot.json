@@ -1,0 +1,70 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 37,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 37,
+          "body": [
+            {
+              "type": "ForInStatement",
+              "start": 17,
+              "end": 35,
+              "left": {
+                "type": "VariableDeclaration",
+                "start": 22,
+                "end": 27,
+                "kind": "var",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "start": 26,
+                    "end": 27,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 26,
+                      "end": 27,
+                      "name": "b"
+                    },
+                    "init": null
+                  }
+                ]
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 31,
+                "end": 32,
+                "name": "c"
+              },
+              "body": {
+                "type": "EmptyStatement",
+                "start": 34,
+                "end": 35
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

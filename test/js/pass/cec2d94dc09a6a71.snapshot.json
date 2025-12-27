@@ -1,0 +1,98 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 38,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 0,
+          "end": 38,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 1,
+            "name": "a"
+          },
+          "right": {
+            "type": "ObjectExpression",
+            "start": 4,
+            "end": 38,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 10,
+                "end": 20,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 10,
+                  "end": 15,
+                  "name": "catch"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 15,
+                  "end": 20,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 18,
+                    "end": 20,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": true,
+                "shorthand": false,
+                "computed": false
+              },
+              {
+                "type": "Property",
+                "start": 26,
+                "end": 36,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 26,
+                  "end": 31,
+                  "name": "throw"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 31,
+                  "end": 36,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 34,
+                    "end": 36,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "method": true,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

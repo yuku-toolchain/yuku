@@ -1,0 +1,83 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 22,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 21,
+        "expression": {
+          "type": "LogicalExpression",
+          "start": 0,
+          "end": 20,
+          "left": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 6,
+            "expression": {
+              "type": "MemberExpression",
+              "start": 1,
+              "end": 5,
+              "object": {
+                "type": "Identifier",
+                "start": 1,
+                "end": 2,
+                "name": "a"
+              },
+              "property": {
+                "type": "Identifier",
+                "start": 3,
+                "end": 4,
+                "name": "b"
+              },
+              "computed": true,
+              "optional": false
+            }
+          },
+          "operator": "||",
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 10,
+            "end": 20,
+            "expression": {
+              "type": "AssignmentExpression",
+              "start": 11,
+              "end": 19,
+              "operator": "=",
+              "left": {
+                "type": "MemberExpression",
+                "start": 11,
+                "end": 15,
+                "object": {
+                  "type": "Identifier",
+                  "start": 11,
+                  "end": 12,
+                  "name": "c"
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 13,
+                  "end": 14,
+                  "name": "d"
+                },
+                "computed": true,
+                "optional": false
+              },
+              "right": {
+                "type": "Identifier",
+                "start": 18,
+                "end": 19,
+                "name": "e"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

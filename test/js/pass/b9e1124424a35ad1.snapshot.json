@@ -1,0 +1,105 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 69,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 68,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 68,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 19,
+              "end": 56,
+              "test": {
+                "type": "Literal",
+                "start": 23,
+                "end": 28,
+                "value": false,
+                "raw": "false"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 30,
+                "end": 56,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 40,
+                    "end": 50,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 44,
+                        "end": 49,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 44,
+                          "end": 45,
+                          "name": "b"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 48,
+                          "end": 49,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "alternate": null
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 61,
+              "end": 66,
+              "expression": {
+                "type": "CallExpression",
+                "start": 61,
+                "end": 65,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 61,
+                  "end": 62,
+                  "name": "c"
+                },
+                "arguments": [
+                  {
+                    "type": "Identifier",
+                    "start": 63,
+                    "end": 64,
+                    "name": "b"
+                  }
+                ],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,109 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 96,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 95,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 94,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 93,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 91,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 91,
+                "body": [
+                  {
+                    "type": "FunctionDeclaration",
+                    "start": 19,
+                    "end": 39,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 28,
+                      "end": 29,
+                      "name": "a"
+                    },
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 32,
+                      "end": 39,
+                      "body": []
+                    },
+                    "expression": false
+                  },
+                  {
+                    "type": "FunctionDeclaration",
+                    "start": 44,
+                    "end": 64,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 53,
+                      "end": 54,
+                      "name": "b"
+                    },
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 57,
+                      "end": 64,
+                      "body": []
+                    },
+                    "expression": false
+                  },
+                  {
+                    "type": "FunctionDeclaration",
+                    "start": 69,
+                    "end": 89,
+                    "id": {
+                      "type": "Identifier",
+                      "start": 78,
+                      "end": 79,
+                      "name": "c"
+                    },
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 82,
+                      "end": 89,
+                      "body": []
+                    },
+                    "expression": false
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

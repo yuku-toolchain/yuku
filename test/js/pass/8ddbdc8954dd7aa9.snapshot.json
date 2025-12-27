@@ -1,0 +1,143 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 104,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 103,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 103,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 19,
+              "end": 88,
+              "test": {
+                "type": "Literal",
+                "start": 23,
+                "end": 28,
+                "value": false,
+                "raw": "false"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 30,
+                "end": 56,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 40,
+                    "end": 50,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 44,
+                        "end": 49,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 44,
+                          "end": 45,
+                          "name": "b"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 48,
+                          "end": 49,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "alternate": {
+                "type": "BlockStatement",
+                "start": 62,
+                "end": 88,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 72,
+                    "end": 82,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 76,
+                        "end": 81,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 76,
+                          "end": 77,
+                          "name": "c"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 80,
+                          "end": 81,
+                          "value": 2,
+                          "raw": "2"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 93,
+              "end": 101,
+              "expression": {
+                "type": "CallExpression",
+                "start": 93,
+                "end": 100,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 93,
+                  "end": 94,
+                  "name": "d"
+                },
+                "arguments": [
+                  {
+                    "type": "Identifier",
+                    "start": 95,
+                    "end": 96,
+                    "name": "c"
+                  },
+                  {
+                    "type": "Identifier",
+                    "start": 98,
+                    "end": 99,
+                    "name": "b"
+                  }
+                ],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

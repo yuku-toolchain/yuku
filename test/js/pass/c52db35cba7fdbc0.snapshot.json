@@ -1,0 +1,121 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 121,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 120,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 119,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 118,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 116,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 12,
+                "end": 116,
+                "body": [
+                  {
+                    "type": "TryStatement",
+                    "start": 18,
+                    "end": 77,
+                    "block": {
+                      "type": "BlockStatement",
+                      "start": 22,
+                      "end": 48,
+                      "body": [
+                        {
+                          "type": "ThrowStatement",
+                          "start": 32,
+                          "end": 42,
+                          "argument": {
+                            "type": "Literal",
+                            "start": 38,
+                            "end": 41,
+                            "value": "a",
+                            "raw": "'a'"
+                          }
+                        }
+                      ]
+                    },
+                    "handler": null,
+                    "finalizer": {
+                      "type": "BlockStatement",
+                      "start": 57,
+                      "end": 77,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 67,
+                          "end": 71,
+                          "expression": {
+                            "type": "CallExpression",
+                            "start": 67,
+                            "end": 70,
+                            "callee": {
+                              "type": "Identifier",
+                              "start": 67,
+                              "end": 68,
+                              "name": "b"
+                            },
+                            "arguments": [],
+                            "optional": false
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 82,
+                    "end": 86,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 82,
+                      "end": 85,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 82,
+                        "end": 83,
+                        "name": "c"
+                      },
+                      "arguments": [],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " This should be removed.",
+      "start": 88,
+      "end": 114
+    }
+  ],
+  "errors": []
+}

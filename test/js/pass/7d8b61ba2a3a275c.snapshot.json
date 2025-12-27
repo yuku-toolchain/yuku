@@ -1,0 +1,90 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 70,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "WithStatement",
+        "start": 0,
+        "end": 69,
+        "object": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "body": {
+          "type": "ExpressionStatement",
+          "start": 35,
+          "end": 69,
+          "expression": {
+            "type": "ParenthesizedExpression",
+            "start": 35,
+            "end": 68,
+            "expression": {
+              "type": "CallExpression",
+              "start": 36,
+              "end": 67,
+              "callee": {
+                "type": "FunctionExpression",
+                "start": 36,
+                "end": 65,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 48,
+                  "end": 65,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 54,
+                      "end": 61,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 54,
+                        "end": 60,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 54,
+                          "end": 55,
+                          "name": "b"
+                        },
+                        "arguments": [
+                          {
+                            "type": "Literal",
+                            "start": 56,
+                            "end": 59,
+                            "value": "c",
+                            "raw": "'c'"
+                          }
+                        ],
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "arguments": [],
+              "optional": false
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " do not optimize it",
+      "start": 11,
+      "end": 32
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,103 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 46,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 45,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 44,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 43,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 41,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 41,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 19,
+                    "end": 25,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 23,
+                        "end": 24,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 23,
+                          "end": 24,
+                          "name": "a"
+                        },
+                        "init": null
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 30,
+                    "end": 39,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 30,
+                      "end": 38,
+                      "callee": {
+                        "type": "ParenthesizedExpression",
+                        "start": 30,
+                        "end": 36,
+                        "expression": {
+                          "type": "SequenceExpression",
+                          "start": 31,
+                          "end": 35,
+                          "expressions": [
+                            {
+                              "type": "Literal",
+                              "start": 31,
+                              "end": 32,
+                              "value": 1,
+                              "raw": "1"
+                            },
+                            {
+                              "type": "Identifier",
+                              "start": 34,
+                              "end": 35,
+                              "name": "a"
+                            }
+                          ]
+                        }
+                      },
+                      "arguments": [],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

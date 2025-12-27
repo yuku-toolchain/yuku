@@ -1,0 +1,88 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 26,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 26,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 1,
+            "end": 25,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "ObjectPattern",
+                "start": 10,
+                "end": 22,
+                "properties": [
+                  {
+                    "type": "Property",
+                    "start": 11,
+                    "end": 15,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 11,
+                      "end": 12,
+                      "name": "a"
+                    },
+                    "value": {
+                      "type": "Identifier",
+                      "start": 14,
+                      "end": 15,
+                      "name": "b"
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  },
+                  {
+                    "type": "Property",
+                    "start": 17,
+                    "end": 21,
+                    "kind": "init",
+                    "key": {
+                      "type": "Identifier",
+                      "start": 17,
+                      "end": 18,
+                      "name": "a"
+                    },
+                    "value": {
+                      "type": "Identifier",
+                      "start": 20,
+                      "end": 21,
+                      "name": "c"
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  }
+                ]
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 23,
+              "end": 25,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,99 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 19,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 19,
+        "expression": {
+          "type": "TemplateLiteral",
+          "start": 0,
+          "end": 19,
+          "quasis": [
+            {
+              "type": "TemplateElement",
+              "start": 1,
+              "end": 1,
+              "value": {
+                "raw": "",
+                "cooked": ""
+              },
+              "tail": false
+            },
+            {
+              "type": "TemplateElement",
+              "start": 18,
+              "end": 18,
+              "value": {
+                "raw": "",
+                "cooked": ""
+              },
+              "tail": true
+            }
+          ],
+          "expressions": [
+            {
+              "type": "MemberExpression",
+              "start": 3,
+              "end": 17,
+              "object": {
+                "type": "CallExpression",
+                "start": 3,
+                "end": 14,
+                "callee": {
+                  "type": "MemberExpression",
+                  "start": 3,
+                  "end": 9,
+                  "object": {
+                    "type": "Literal",
+                    "start": 3,
+                    "end": 7,
+                    "value": {},
+                    "raw": "/\\d/",
+                    "regex": {
+                      "pattern": "\\d",
+                      "flags": ""
+                    }
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 8,
+                    "end": 9,
+                    "name": "a"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 10,
+                    "end": 13,
+                    "value": "1",
+                    "raw": "'1'"
+                  }
+                ],
+                "optional": false
+              },
+              "property": {
+                "type": "Literal",
+                "start": 15,
+                "end": 16,
+                "value": 1,
+                "raw": "1"
+              },
+              "computed": true,
+              "optional": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

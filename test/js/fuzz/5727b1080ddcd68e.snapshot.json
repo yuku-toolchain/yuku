@@ -1,0 +1,40 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 12,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 11,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 0,
+          "end": 10,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 3,
+            "name": "日本語"
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 6,
+            "end": 10,
+            "expression": {
+              "type": "ArrayExpression",
+              "start": 7,
+              "end": 9,
+              "elements": []
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

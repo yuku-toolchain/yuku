@@ -1,0 +1,78 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 31,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 30,
+        "init": {
+          "type": "VariableDeclaration",
+          "start": 5,
+          "end": 25,
+          "kind": "let",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "start": 9,
+              "end": 16,
+              "id": {
+                "type": "Identifier",
+                "start": 9,
+                "end": 10,
+                "name": "a"
+              },
+              "init": {
+                "type": "ParenthesizedExpression",
+                "start": 13,
+                "end": 16,
+                "expression": {
+                  "type": "Literal",
+                  "start": 14,
+                  "end": 15,
+                  "value": 1,
+                  "raw": "1"
+                }
+              }
+            },
+            {
+              "type": "VariableDeclarator",
+              "start": 18,
+              "end": 25,
+              "id": {
+                "type": "Identifier",
+                "start": 18,
+                "end": 19,
+                "name": "b"
+              },
+              "init": {
+                "type": "ParenthesizedExpression",
+                "start": 22,
+                "end": 25,
+                "expression": {
+                  "type": "Literal",
+                  "start": 23,
+                  "end": 24,
+                  "value": 2,
+                  "raw": "2"
+                }
+              }
+            }
+          ]
+        },
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "EmptyStatement",
+          "start": 29,
+          "end": 30
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

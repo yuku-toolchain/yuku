@@ -1,0 +1,130 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 82,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "SwitchStatement",
+        "start": 0,
+        "end": 81,
+        "discriminant": {
+          "type": "Identifier",
+          "start": 8,
+          "end": 9,
+          "name": "a"
+        },
+        "cases": [
+          {
+            "type": "SwitchCase",
+            "start": 15,
+            "end": 79,
+            "test": {
+              "type": "Literal",
+              "start": 20,
+              "end": 21,
+              "value": 1,
+              "raw": "1"
+            },
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 27,
+                "end": 67,
+                "expression": {
+                  "type": "ParenthesizedExpression",
+                  "start": 27,
+                  "end": 66,
+                  "expression": {
+                    "type": "CallExpression",
+                    "start": 28,
+                    "end": 65,
+                    "callee": {
+                      "type": "ParenthesizedExpression",
+                      "start": 28,
+                      "end": 63,
+                      "expression": {
+                        "type": "FunctionExpression",
+                        "start": 29,
+                        "end": 62,
+                        "id": null,
+                        "generator": false,
+                        "async": false,
+                        "params": [],
+                        "body": {
+                          "type": "BlockStatement",
+                          "start": 41,
+                          "end": 62,
+                          "body": [
+                            {
+                              "type": "ExpressionStatement",
+                              "start": 49,
+                              "end": 56,
+                              "expression": {
+                                "type": "CallExpression",
+                                "start": 49,
+                                "end": 55,
+                                "callee": {
+                                  "type": "Identifier",
+                                  "start": 49,
+                                  "end": 50,
+                                  "name": "b"
+                                },
+                                "arguments": [
+                                  {
+                                    "type": "Literal",
+                                    "start": 51,
+                                    "end": 54,
+                                    "value": "c",
+                                    "raw": "\"c\""
+                                  }
+                                ],
+                                "optional": false
+                              }
+                            }
+                          ]
+                        },
+                        "expression": false
+                      }
+                    },
+                    "arguments": [],
+                    "optional": false
+                  }
+                }
+              },
+              {
+                "type": "ExpressionStatement",
+                "start": 72,
+                "end": 79,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 72,
+                  "end": 78,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 72,
+                    "end": 73,
+                    "name": "b"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Literal",
+                      "start": 74,
+                      "end": 77,
+                      "value": "d",
+                      "raw": "\"d\""
+                    }
+                  ],
+                  "optional": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

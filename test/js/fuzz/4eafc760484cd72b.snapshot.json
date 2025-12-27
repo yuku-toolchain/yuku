@@ -1,0 +1,97 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 71,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 70,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 70,
+          "body": [
+            {
+              "type": "FunctionDeclaration",
+              "start": 17,
+              "end": 32,
+              "id": {
+                "type": "Identifier",
+                "start": 26,
+                "end": 27,
+                "name": "b"
+              },
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 30,
+                "end": 32,
+                "body": []
+              },
+              "expression": false
+            },
+            {
+              "type": "FunctionDeclaration",
+              "start": 35,
+              "end": 50,
+              "id": {
+                "type": "Identifier",
+                "start": 44,
+                "end": 45,
+                "name": "c"
+              },
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 48,
+                "end": 50,
+                "body": []
+              },
+              "expression": false
+            },
+            {
+              "type": "FunctionDeclaration",
+              "start": 53,
+              "end": 68,
+              "id": {
+                "type": "Identifier",
+                "start": 62,
+                "end": 63,
+                "name": "d"
+              },
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 66,
+                "end": 68,
+                "body": []
+              },
+              "expression": false
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

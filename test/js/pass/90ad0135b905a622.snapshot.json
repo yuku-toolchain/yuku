@@ -1,0 +1,115 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 54,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 54,
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "start": 19,
+              "end": 29,
+              "kind": "var",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "start": 23,
+                  "end": 28,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 23,
+                    "end": 24,
+                    "name": "b"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "start": 27,
+                    "end": 28,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 34,
+              "end": 52,
+              "expression": {
+                "type": "LogicalExpression",
+                "start": 34,
+                "end": 51,
+                "left": {
+                  "type": "Identifier",
+                  "start": 34,
+                  "end": 35,
+                  "name": "c"
+                },
+                "operator": "&&",
+                "right": {
+                  "type": "ParenthesizedExpression",
+                  "start": 39,
+                  "end": 51,
+                  "expression": {
+                    "type": "SequenceExpression",
+                    "start": 40,
+                    "end": 50,
+                    "expressions": [
+                      {
+                        "type": "Literal",
+                        "start": 40,
+                        "end": 41,
+                        "value": 2,
+                        "raw": "2"
+                      },
+                      {
+                        "type": "Literal",
+                        "start": 43,
+                        "end": 44,
+                        "value": 3,
+                        "raw": "3"
+                      },
+                      {
+                        "type": "Identifier",
+                        "start": 46,
+                        "end": 47,
+                        "name": "d"
+                      },
+                      {
+                        "type": "Identifier",
+                        "start": 49,
+                        "end": 50,
+                        "name": "b"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

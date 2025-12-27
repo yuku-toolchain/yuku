@@ -1,0 +1,223 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 81,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 81,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 81,
+          "expression": {
+            "type": "ParenthesizedExpression",
+            "start": 1,
+            "end": 80,
+            "expression": {
+              "type": "ParenthesizedExpression",
+              "start": 2,
+              "end": 79,
+              "expression": {
+                "type": "ParenthesizedExpression",
+                "start": 3,
+                "end": 78,
+                "expression": {
+                  "type": "ParenthesizedExpression",
+                  "start": 4,
+                  "end": 77,
+                  "expression": {
+                    "type": "ParenthesizedExpression",
+                    "start": 5,
+                    "end": 76,
+                    "expression": {
+                      "type": "ParenthesizedExpression",
+                      "start": 6,
+                      "end": 75,
+                      "expression": {
+                        "type": "ParenthesizedExpression",
+                        "start": 7,
+                        "end": 74,
+                        "expression": {
+                          "type": "ParenthesizedExpression",
+                          "start": 8,
+                          "end": 73,
+                          "expression": {
+                            "type": "ParenthesizedExpression",
+                            "start": 9,
+                            "end": 72,
+                            "expression": {
+                              "type": "ParenthesizedExpression",
+                              "start": 10,
+                              "end": 71,
+                              "expression": {
+                                "type": "ParenthesizedExpression",
+                                "start": 11,
+                                "end": 70,
+                                "expression": {
+                                  "type": "ParenthesizedExpression",
+                                  "start": 12,
+                                  "end": 69,
+                                  "expression": {
+                                    "type": "ParenthesizedExpression",
+                                    "start": 13,
+                                    "end": 68,
+                                    "expression": {
+                                      "type": "ParenthesizedExpression",
+                                      "start": 14,
+                                      "end": 67,
+                                      "expression": {
+                                        "type": "ParenthesizedExpression",
+                                        "start": 15,
+                                        "end": 66,
+                                        "expression": {
+                                          "type": "ParenthesizedExpression",
+                                          "start": 16,
+                                          "end": 65,
+                                          "expression": {
+                                            "type": "ParenthesizedExpression",
+                                            "start": 17,
+                                            "end": 64,
+                                            "expression": {
+                                              "type": "ParenthesizedExpression",
+                                              "start": 18,
+                                              "end": 63,
+                                              "expression": {
+                                                "type": "ParenthesizedExpression",
+                                                "start": 19,
+                                                "end": 62,
+                                                "expression": {
+                                                  "type": "ParenthesizedExpression",
+                                                  "start": 20,
+                                                  "end": 61,
+                                                  "expression": {
+                                                    "type": "ParenthesizedExpression",
+                                                    "start": 21,
+                                                    "end": 60,
+                                                    "expression": {
+                                                      "type": "ParenthesizedExpression",
+                                                      "start": 22,
+                                                      "end": 59,
+                                                      "expression": {
+                                                        "type": "ParenthesizedExpression",
+                                                        "start": 23,
+                                                        "end": 58,
+                                                        "expression": {
+                                                          "type": "ParenthesizedExpression",
+                                                          "start": 24,
+                                                          "end": 57,
+                                                          "expression": {
+                                                            "type": "ParenthesizedExpression",
+                                                            "start": 25,
+                                                            "end": 56,
+                                                            "expression": {
+                                                              "type": "ParenthesizedExpression",
+                                                              "start": 26,
+                                                              "end": 55,
+                                                              "expression": {
+                                                                "type": "ParenthesizedExpression",
+                                                                "start": 27,
+                                                                "end": 54,
+                                                                "expression": {
+                                                                  "type": "ParenthesizedExpression",
+                                                                  "start": 28,
+                                                                  "end": 53,
+                                                                  "expression": {
+                                                                    "type": "ParenthesizedExpression",
+                                                                    "start": 29,
+                                                                    "end": 52,
+                                                                    "expression": {
+                                                                      "type": "ParenthesizedExpression",
+                                                                      "start": 30,
+                                                                      "end": 51,
+                                                                      "expression": {
+                                                                        "type": "ParenthesizedExpression",
+                                                                        "start": 31,
+                                                                        "end": 50,
+                                                                        "expression": {
+                                                                          "type": "ParenthesizedExpression",
+                                                                          "start": 32,
+                                                                          "end": 49,
+                                                                          "expression": {
+                                                                            "type": "ParenthesizedExpression",
+                                                                            "start": 33,
+                                                                            "end": 48,
+                                                                            "expression": {
+                                                                              "type": "ParenthesizedExpression",
+                                                                              "start": 34,
+                                                                              "end": 47,
+                                                                              "expression": {
+                                                                                "type": "ParenthesizedExpression",
+                                                                                "start": 35,
+                                                                                "end": 46,
+                                                                                "expression": {
+                                                                                  "type": "ParenthesizedExpression",
+                                                                                  "start": 36,
+                                                                                  "end": 45,
+                                                                                  "expression": {
+                                                                                    "type": "ParenthesizedExpression",
+                                                                                    "start": 37,
+                                                                                    "end": 44,
+                                                                                    "expression": {
+                                                                                      "type": "ParenthesizedExpression",
+                                                                                      "start": 38,
+                                                                                      "end": 43,
+                                                                                      "expression": {
+                                                                                        "type": "ParenthesizedExpression",
+                                                                                        "start": 39,
+                                                                                        "end": 42,
+                                                                                        "expression": {
+                                                                                          "type": "Identifier",
+                                                                                          "start": 40,
+                                                                                          "end": 41,
+                                                                                          "name": "a"
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

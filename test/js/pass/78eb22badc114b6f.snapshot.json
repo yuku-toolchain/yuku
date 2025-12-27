@@ -1,0 +1,109 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 81,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 81,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 81,
+          "body": [
+            {
+              "type": "TryStatement",
+              "start": 19,
+              "end": 79,
+              "block": {
+                "type": "BlockStatement",
+                "start": 23,
+                "end": 43,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 33,
+                    "end": 37,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 33,
+                      "end": 36,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 33,
+                        "end": 34,
+                        "name": "a"
+                      },
+                      "arguments": [],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "handler": {
+                "type": "CatchClause",
+                "start": 44,
+                "end": 79,
+                "param": {
+                  "type": "Identifier",
+                  "start": 50,
+                  "end": 51,
+                  "name": "b"
+                },
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 53,
+                  "end": 79,
+                  "body": [
+                    {
+                      "type": "VariableDeclaration",
+                      "start": 63,
+                      "end": 73,
+                      "kind": "var",
+                      "declarations": [
+                        {
+                          "type": "VariableDeclarator",
+                          "start": 67,
+                          "end": 72,
+                          "id": {
+                            "type": "Identifier",
+                            "start": 67,
+                            "end": 68,
+                            "name": "c"
+                          },
+                          "init": {
+                            "type": "Literal",
+                            "start": 71,
+                            "end": 72,
+                            "value": 1,
+                            "raw": "1"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "finalizer": null
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

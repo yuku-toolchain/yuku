@@ -1,0 +1,114 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 54,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 53,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 52,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 51,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 49,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 49,
+                "body": [
+                  {
+                    "type": "ForStatement",
+                    "start": 19,
+                    "end": 47,
+                    "init": {
+                      "type": "VariableDeclaration",
+                      "start": 24,
+                      "end": 33,
+                      "kind": "var",
+                      "declarations": [
+                        {
+                          "type": "VariableDeclarator",
+                          "start": 28,
+                          "end": 33,
+                          "id": {
+                            "type": "Identifier",
+                            "start": 28,
+                            "end": 29,
+                            "name": "a"
+                          },
+                          "init": {
+                            "type": "Literal",
+                            "start": 32,
+                            "end": 33,
+                            "value": 1,
+                            "raw": "1"
+                          }
+                        }
+                      ]
+                    },
+                    "test": {
+                      "type": "BinaryExpression",
+                      "start": 35,
+                      "end": 40,
+                      "left": {
+                        "type": "Identifier",
+                        "start": 35,
+                        "end": 36,
+                        "name": "a"
+                      },
+                      "operator": "<",
+                      "right": {
+                        "type": "Literal",
+                        "start": 39,
+                        "end": 40,
+                        "value": 2,
+                        "raw": "2"
+                      }
+                    },
+                    "update": {
+                      "type": "UpdateExpression",
+                      "start": 42,
+                      "end": 45,
+                      "operator": "++",
+                      "prefix": true,
+                      "argument": {
+                        "type": "Identifier",
+                        "start": 44,
+                        "end": 45,
+                        "name": "a"
+                      }
+                    },
+                    "body": {
+                      "type": "EmptyStatement",
+                      "start": 46,
+                      "end": 47
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

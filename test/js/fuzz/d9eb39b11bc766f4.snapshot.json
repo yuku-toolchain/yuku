@@ -1,0 +1,50 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 23,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 22,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 0,
+          "end": 21,
+          "elements": [
+            null,
+            null,
+            {
+              "type": "Literal",
+              "start": 5,
+              "end": 6,
+              "value": 1,
+              "raw": "1"
+            },
+            null,
+            null,
+            {
+              "type": "Literal",
+              "start": 12,
+              "end": 13,
+              "value": 2,
+              "raw": "2"
+            },
+            {
+              "type": "Literal",
+              "start": 15,
+              "end": 16,
+              "value": 3,
+              "raw": "3"
+            },
+            null
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

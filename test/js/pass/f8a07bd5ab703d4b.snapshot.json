@@ -1,0 +1,77 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 91,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 90,
+        "init": null,
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BlockStatement",
+          "start": 9,
+          "end": 90,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 15,
+              "end": 47,
+              "test": {
+                "type": "Identifier",
+                "start": 19,
+                "end": 20,
+                "name": "a"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 22,
+                "end": 47,
+                "body": [
+                  {
+                    "type": "ContinueStatement",
+                    "start": 32,
+                    "end": 41,
+                    "label": null
+                  }
+                ]
+              },
+              "alternate": null
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 52,
+              "end": 56,
+              "expression": {
+                "type": "CallExpression",
+                "start": 52,
+                "end": 55,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 52,
+                  "end": 53,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " This should not be removed.",
+      "start": 58,
+      "end": 88
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,139 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 125,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 124,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 123,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 122,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 120,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 120,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 19,
+                    "end": 29,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 23,
+                        "end": 28,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 23,
+                          "end": 24,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "Literal",
+                          "start": 27,
+                          "end": 28,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 76,
+                    "end": 118,
+                    "expression": {
+                      "type": "ParenthesizedExpression",
+                      "start": 76,
+                      "end": 117,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 77,
+                        "end": 116,
+                        "callee": {
+                          "type": "FunctionExpression",
+                          "start": 77,
+                          "end": 114,
+                          "id": null,
+                          "generator": false,
+                          "async": false,
+                          "params": [],
+                          "body": {
+                            "type": "BlockStatement",
+                            "start": 89,
+                            "end": 114,
+                            "body": [
+                              {
+                                "type": "ExpressionStatement",
+                                "start": 99,
+                                "end": 108,
+                                "expression": {
+                                  "type": "CallExpression",
+                                  "start": 99,
+                                  "end": 107,
+                                  "callee": {
+                                    "type": "Identifier",
+                                    "start": 99,
+                                    "end": 103,
+                                    "name": "eval"
+                                  },
+                                  "arguments": [
+                                    {
+                                      "type": "Literal",
+                                      "start": 104,
+                                      "end": 106,
+                                      "value": "",
+                                      "raw": "''"
+                                    }
+                                  ],
+                                  "optional": false
+                                }
+                              }
+                            ]
+                          },
+                          "expression": false
+                        },
+                        "arguments": [],
+                        "optional": false
+                      }
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " hoist this, but it is very difficult.",
+      "start": 31,
+      "end": 71
+    }
+  ],
+  "errors": []
+}

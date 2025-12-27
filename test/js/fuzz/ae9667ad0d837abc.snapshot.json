@@ -1,0 +1,162 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 42,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 18,
+        "expression": {
+          "type": "CallExpression",
+          "start": 0,
+          "end": 17,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 0,
+            "end": 15,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 1,
+              "end": 14,
+              "expressions": [
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 1,
+                  "end": 11,
+                  "expression": {
+                    "type": "SequenceExpression",
+                    "start": 2,
+                    "end": 10,
+                    "expressions": [
+                      {
+                        "type": "ParenthesizedExpression",
+                        "start": 2,
+                        "end": 5,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 3,
+                          "end": 4,
+                          "value": 1,
+                          "raw": "1"
+                        }
+                      },
+                      {
+                        "type": "ParenthesizedExpression",
+                        "start": 7,
+                        "end": 10,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 8,
+                          "end": 9,
+                          "value": 2,
+                          "raw": "2"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "Identifier",
+                  "start": 13,
+                  "end": 14,
+                  "name": "a"
+                }
+              ]
+            }
+          },
+          "arguments": [],
+          "optional": false
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 19,
+        "end": 41,
+        "expression": {
+          "type": "CallExpression",
+          "start": 19,
+          "end": 40,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 19,
+            "end": 38,
+            "expression": {
+              "type": "SequenceExpression",
+              "start": 20,
+              "end": 37,
+              "expressions": [
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 20,
+                  "end": 30,
+                  "expression": {
+                    "type": "SequenceExpression",
+                    "start": 21,
+                    "end": 29,
+                    "expressions": [
+                      {
+                        "type": "ParenthesizedExpression",
+                        "start": 21,
+                        "end": 24,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 22,
+                          "end": 23,
+                          "value": 3,
+                          "raw": "3"
+                        }
+                      },
+                      {
+                        "type": "ParenthesizedExpression",
+                        "start": 26,
+                        "end": 29,
+                        "expression": {
+                          "type": "Literal",
+                          "start": 27,
+                          "end": 28,
+                          "value": 4,
+                          "raw": "4"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "ParenthesizedExpression",
+                  "start": 32,
+                  "end": 37,
+                  "expression": {
+                    "type": "MemberExpression",
+                    "start": 33,
+                    "end": 36,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 33,
+                      "end": 34,
+                      "name": "b"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 35,
+                      "end": 36,
+                      "name": "a"
+                    },
+                    "computed": false,
+                    "optional": false
+                  }
+                }
+              ]
+            }
+          },
+          "arguments": [],
+          "optional": false
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,95 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 57,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 56,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 55,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 54,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 52,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 52,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 19,
+                    "end": 50,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 23,
+                        "end": 49,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 23,
+                          "end": 24,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "ObjectExpression",
+                          "start": 27,
+                          "end": 49,
+                          "properties": [
+                            {
+                              "type": "Property",
+                              "start": 37,
+                              "end": 43,
+                              "kind": "init",
+                              "key": {
+                                "type": "Literal",
+                                "start": 37,
+                                "end": 40,
+                                "value": "b",
+                                "raw": "'b'"
+                              },
+                              "value": {
+                                "type": "Literal",
+                                "start": 42,
+                                "end": 43,
+                                "value": 1,
+                                "raw": "1"
+                              },
+                              "method": false,
+                              "shorthand": false,
+                              "computed": false
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

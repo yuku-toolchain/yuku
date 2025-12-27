@@ -1,0 +1,178 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 96,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "WhileStatement",
+        "start": 0,
+        "end": 45,
+        "test": {
+          "type": "Identifier",
+          "start": 7,
+          "end": 8,
+          "name": "a"
+        },
+        "body": {
+          "type": "BlockStatement",
+          "start": 10,
+          "end": 45,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 16,
+              "end": 29,
+              "test": {
+                "type": "Identifier",
+                "start": 20,
+                "end": 21,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "BreakStatement",
+                "start": 23,
+                "end": 29,
+                "label": null
+              },
+              "alternate": null
+            },
+            {
+              "type": "ExpressionStatement",
+              "start": 34,
+              "end": 43,
+              "expression": {
+                "type": "CallExpression",
+                "start": 34,
+                "end": 42,
+                "callee": {
+                  "type": "MemberExpression",
+                  "start": 34,
+                  "end": 37,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 34,
+                    "end": 35,
+                    "name": "c"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 36,
+                    "end": 37,
+                    "name": "d"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 38,
+                    "end": 41,
+                    "value": "a",
+                    "raw": "\"a\""
+                  }
+                ],
+                "optional": false
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "LabeledStatement",
+        "start": 46,
+        "end": 96,
+        "label": {
+          "type": "Identifier",
+          "start": 46,
+          "end": 47,
+          "name": "e"
+        },
+        "body": {
+          "type": "WhileStatement",
+          "start": 49,
+          "end": 96,
+          "test": {
+            "type": "Identifier",
+            "start": 56,
+            "end": 57,
+            "name": "a"
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 59,
+            "end": 96,
+            "body": [
+              {
+                "type": "IfStatement",
+                "start": 65,
+                "end": 80,
+                "test": {
+                  "type": "Identifier",
+                  "start": 69,
+                  "end": 70,
+                  "name": "b"
+                },
+                "consequent": {
+                  "type": "BreakStatement",
+                  "start": 72,
+                  "end": 80,
+                  "label": {
+                    "type": "Identifier",
+                    "start": 78,
+                    "end": 79,
+                    "name": "e"
+                  }
+                },
+                "alternate": null
+              },
+              {
+                "type": "ExpressionStatement",
+                "start": 85,
+                "end": 94,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 85,
+                  "end": 93,
+                  "callee": {
+                    "type": "MemberExpression",
+                    "start": 85,
+                    "end": 88,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 85,
+                      "end": 86,
+                      "name": "c"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 87,
+                      "end": 88,
+                      "name": "d"
+                    },
+                    "computed": false,
+                    "optional": false
+                  },
+                  "arguments": [
+                    {
+                      "type": "Literal",
+                      "start": 89,
+                      "end": 92,
+                      "value": "a",
+                      "raw": "\"a\""
+                    }
+                  ],
+                  "optional": false
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

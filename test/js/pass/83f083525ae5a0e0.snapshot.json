@@ -1,0 +1,97 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 54,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 53,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 52,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 50,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 50,
+                "body": [
+                  {
+                    "type": "IfStatement",
+                    "start": 19,
+                    "end": 48,
+                    "test": {
+                      "type": "UnaryExpression",
+                      "start": 23,
+                      "end": 26,
+                      "operator": "!",
+                      "prefix": true,
+                      "argument": {
+                        "type": "UnaryExpression",
+                        "start": 24,
+                        "end": 26,
+                        "operator": "!",
+                        "prefix": true,
+                        "argument": {
+                          "type": "Identifier",
+                          "start": 25,
+                          "end": 26,
+                          "name": "a"
+                        }
+                      }
+                    },
+                    "consequent": {
+                      "type": "BlockStatement",
+                      "start": 28,
+                      "end": 48,
+                      "body": [
+                        {
+                          "type": "ExpressionStatement",
+                          "start": 38,
+                          "end": 42,
+                          "expression": {
+                            "type": "CallExpression",
+                            "start": 38,
+                            "end": 41,
+                            "callee": {
+                              "type": "Identifier",
+                              "start": 38,
+                              "end": 39,
+                              "name": "b"
+                            },
+                            "arguments": [],
+                            "optional": false
+                          }
+                        }
+                      ]
+                    },
+                    "alternate": null
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

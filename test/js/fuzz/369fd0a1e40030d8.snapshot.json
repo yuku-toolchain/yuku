@@ -1,0 +1,93 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 54,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 7,
+          "name": "a"
+        },
+        "superClass": {
+          "type": "Identifier",
+          "start": 16,
+          "end": 17,
+          "name": "b"
+        },
+        "body": {
+          "type": "ClassBody",
+          "start": 18,
+          "end": 54,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 22,
+              "end": 52,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 22,
+                "end": 23,
+                "name": "c"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 23,
+                "end": 52,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 26,
+                  "end": 52,
+                  "body": [
+                    {
+                      "type": "ReturnStatement",
+                      "start": 32,
+                      "end": 48,
+                      "argument": {
+                        "type": "MemberExpression",
+                        "start": 39,
+                        "end": 47,
+                        "object": {
+                          "type": "Super",
+                          "start": 39,
+                          "end": 44
+                        },
+                        "property": {
+                          "type": "Literal",
+                          "start": 45,
+                          "end": 46,
+                          "value": 1,
+                          "raw": "1"
+                        },
+                        "computed": true,
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

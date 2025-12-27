@@ -1,0 +1,29 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 25,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 25,
+          "callee": {
+            "type": "Identifier",
+            "start": 24,
+            "end": 25,
+            "name": "a"
+          },
+          "arguments": []
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

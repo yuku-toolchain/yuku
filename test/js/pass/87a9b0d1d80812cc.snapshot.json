@@ -1,0 +1,104 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 40,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 39,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 38,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 37,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 35,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 12,
+                "end": 35,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 18,
+                    "end": 33,
+                    "expression": {
+                      "type": "CallExpression",
+                      "start": 18,
+                      "end": 32,
+                      "callee": {
+                        "type": "Identifier",
+                        "start": 18,
+                        "end": 19,
+                        "name": "a"
+                      },
+                      "arguments": [
+                        {
+                          "type": "ParenthesizedExpression",
+                          "start": 20,
+                          "end": 31,
+                          "expression": {
+                            "type": "SequenceExpression",
+                            "start": 21,
+                            "end": 30,
+                            "expressions": [
+                              {
+                                "type": "CallExpression",
+                                "start": 21,
+                                "end": 24,
+                                "callee": {
+                                  "type": "Identifier",
+                                  "start": 21,
+                                  "end": 22,
+                                  "name": "b"
+                                },
+                                "arguments": [],
+                                "optional": false
+                              },
+                              {
+                                "type": "Literal",
+                                "start": 26,
+                                "end": 27,
+                                "value": 1,
+                                "raw": "1"
+                              },
+                              {
+                                "type": "Literal",
+                                "start": 29,
+                                "end": 30,
+                                "value": 2,
+                                "raw": "2"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,187 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 78,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "LabeledStatement",
+        "start": 0,
+        "end": 77,
+        "label": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "b"
+        },
+        "body": {
+          "type": "ForStatement",
+          "start": 3,
+          "end": 77,
+          "init": {
+            "type": "VariableDeclaration",
+            "start": 8,
+            "end": 19,
+            "kind": "var",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "start": 12,
+                "end": 19,
+                "id": {
+                  "type": "Identifier",
+                  "start": 12,
+                  "end": 13,
+                  "name": "a"
+                },
+                "init": {
+                  "type": "ParenthesizedExpression",
+                  "start": 16,
+                  "end": 19,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 17,
+                    "end": 18,
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
+            ]
+          },
+          "test": {
+            "type": "BinaryExpression",
+            "start": 21,
+            "end": 28,
+            "left": {
+              "type": "Identifier",
+              "start": 21,
+              "end": 22,
+              "name": "a"
+            },
+            "operator": "<",
+            "right": {
+              "type": "ParenthesizedExpression",
+              "start": 25,
+              "end": 28,
+              "expression": {
+                "type": "Literal",
+                "start": 26,
+                "end": 27,
+                "value": 2,
+                "raw": "2"
+              }
+            }
+          },
+          "update": {
+            "type": "UpdateExpression",
+            "start": 30,
+            "end": 33,
+            "operator": "++",
+            "prefix": true,
+            "argument": {
+              "type": "Identifier",
+              "start": 32,
+              "end": 33,
+              "name": "a"
+            }
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 35,
+            "end": 77,
+            "body": [
+              {
+                "type": "IfStatement",
+                "start": 39,
+                "end": 63,
+                "test": {
+                  "type": "BinaryExpression",
+                  "start": 43,
+                  "end": 50,
+                  "left": {
+                    "type": "Identifier",
+                    "start": 43,
+                    "end": 44,
+                    "name": "a"
+                  },
+                  "operator": "<",
+                  "right": {
+                    "type": "ParenthesizedExpression",
+                    "start": 47,
+                    "end": 50,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 48,
+                      "end": 49,
+                      "value": 3,
+                      "raw": "3"
+                    }
+                  }
+                },
+                "consequent": {
+                  "type": "ContinueStatement",
+                  "start": 52,
+                  "end": 63,
+                  "label": {
+                    "type": "Identifier",
+                    "start": 61,
+                    "end": 62,
+                    "name": "b"
+                  }
+                },
+                "alternate": null
+              },
+              {
+                "type": "ExpressionStatement",
+                "start": 66,
+                "end": 75,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 66,
+                  "end": 74,
+                  "callee": {
+                    "type": "ParenthesizedExpression",
+                    "start": 66,
+                    "end": 71,
+                    "expression": {
+                      "type": "MemberExpression",
+                      "start": 67,
+                      "end": 70,
+                      "object": {
+                        "type": "Identifier",
+                        "start": 67,
+                        "end": 68,
+                        "name": "c"
+                      },
+                      "property": {
+                        "type": "Identifier",
+                        "start": 69,
+                        "end": 70,
+                        "name": "d"
+                      },
+                      "computed": false,
+                      "optional": false
+                    }
+                  },
+                  "arguments": [
+                    {
+                      "type": "Identifier",
+                      "start": 72,
+                      "end": 73,
+                      "name": "a"
+                    }
+                  ],
+                  "optional": false
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,94 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 47,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 24,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 23,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 1,
+            "end": 22,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "Identifier",
+                "start": 11,
+                "end": 12,
+                "name": "a"
+              },
+              {
+                "type": "RestElement",
+                "start": 14,
+                "end": 18,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 17,
+                  "end": 18,
+                  "name": "b"
+                }
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 20,
+              "end": 22,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 25,
+        "end": 46,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 25,
+          "end": 45,
+          "expression": {
+            "type": "FunctionExpression",
+            "start": 26,
+            "end": 44,
+            "id": null,
+            "generator": false,
+            "async": false,
+            "params": [
+              {
+                "type": "RestElement",
+                "start": 36,
+                "end": 40,
+                "argument": {
+                  "type": "Identifier",
+                  "start": 39,
+                  "end": 40,
+                  "name": "c"
+                }
+              }
+            ],
+            "body": {
+              "type": "BlockStatement",
+              "start": 42,
+              "end": 44,
+              "body": []
+            },
+            "expression": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,100 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 44,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 43,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 42,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 41,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 39,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 39,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 37,
+                    "expression": {
+                      "type": "BinaryExpression",
+                      "start": 19,
+                      "end": 37,
+                      "left": {
+                        "type": "Literal",
+                        "start": 19,
+                        "end": 23,
+                        "value": null,
+                        "raw": "null"
+                      },
+                      "operator": "!=",
+                      "right": {
+                        "type": "ParenthesizedExpression",
+                        "start": 25,
+                        "end": 37,
+                        "expression": {
+                          "type": "ConditionalExpression",
+                          "start": 26,
+                          "end": 36,
+                          "test": {
+                            "type": "Identifier",
+                            "start": 26,
+                            "end": 27,
+                            "name": "a"
+                          },
+                          "consequent": {
+                            "type": "UnaryExpression",
+                            "start": 28,
+                            "end": 34,
+                            "operator": "void",
+                            "prefix": true,
+                            "argument": {
+                              "type": "Literal",
+                              "start": 33,
+                              "end": 34,
+                              "value": 1,
+                              "raw": "1"
+                            }
+                          },
+                          "alternate": {
+                            "type": "Identifier",
+                            "start": 35,
+                            "end": 36,
+                            "name": "b"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

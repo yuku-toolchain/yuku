@@ -1,0 +1,59 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 20,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 5,
+          "name": "a"
+        },
+        "consequent": {
+          "type": "ExpressionStatement",
+          "start": 7,
+          "end": 11,
+          "expression": {
+            "type": "CallExpression",
+            "start": 7,
+            "end": 10,
+            "callee": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "b"
+            },
+            "arguments": [],
+            "optional": false
+          }
+        },
+        "alternate": {
+          "type": "ExpressionStatement",
+          "start": 17,
+          "end": 20,
+          "expression": {
+            "type": "CallExpression",
+            "start": 17,
+            "end": 20,
+            "callee": {
+              "type": "Identifier",
+              "start": 17,
+              "end": 18,
+              "name": "c"
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

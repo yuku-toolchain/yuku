@@ -1,0 +1,102 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 12,
+          "value": "use strict",
+          "raw": "\"use strict\""
+        },
+        "directive": "use strict"
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 14,
+        "end": 38,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 18,
+            "end": 37,
+            "id": {
+              "type": "Identifier",
+              "start": 18,
+              "end": 19,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 22,
+              "end": 37,
+              "expression": {
+                "type": "ObjectExpression",
+                "start": 23,
+                "end": 36,
+                "properties": [
+                  {
+                    "type": "Property",
+                    "start": 24,
+                    "end": 29,
+                    "kind": "init",
+                    "key": {
+                      "type": "Literal",
+                      "start": 24,
+                      "end": 26,
+                      "value": 10,
+                      "raw": "10"
+                    },
+                    "value": {
+                      "type": "Literal",
+                      "start": 28,
+                      "end": 29,
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  },
+                  {
+                    "type": "Property",
+                    "start": 31,
+                    "end": 35,
+                    "kind": "init",
+                    "key": {
+                      "type": "Literal",
+                      "start": 31,
+                      "end": 32,
+                      "value": 0,
+                      "raw": "0"
+                    },
+                    "value": {
+                      "type": "Literal",
+                      "start": 34,
+                      "end": 35,
+                      "value": 2,
+                      "raw": "2"
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

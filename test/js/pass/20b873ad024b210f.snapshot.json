@@ -1,0 +1,36 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 10,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 10,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 10,
+          "expression": {
+            "type": "ClassExpression",
+            "start": 1,
+            "end": 9,
+            "decorators": [],
+            "id": null,
+            "superClass": null,
+            "body": {
+              "type": "ClassBody",
+              "start": 7,
+              "end": 9,
+              "body": []
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

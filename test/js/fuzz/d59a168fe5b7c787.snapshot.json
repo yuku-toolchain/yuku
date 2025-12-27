@@ -1,0 +1,65 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 21,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 20,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 19,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 19,
+              "expression": {
+                "type": "MemberExpression",
+                "start": 9,
+                "end": 18,
+                "object": {
+                  "type": "ParenthesizedExpression",
+                  "start": 9,
+                  "end": 16,
+                  "expression": {
+                    "type": "Literal",
+                    "start": 10,
+                    "end": 15,
+                    "value": {},
+                    "raw": "/42/g",
+                    "regex": {
+                      "pattern": "42",
+                      "flags": "g"
+                    }
+                  }
+                },
+                "property": {
+                  "type": "Identifier",
+                  "start": 17,
+                  "end": 18,
+                  "name": "b"
+                },
+                "computed": false,
+                "optional": false
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

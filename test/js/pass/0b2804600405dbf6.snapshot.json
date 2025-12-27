@@ -1,0 +1,155 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 44,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 15,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 5,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 7,
+            "end": 8,
+            "id": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 8,
+              "name": "b"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 10,
+            "end": 11,
+            "id": {
+              "type": "Identifier",
+              "start": 10,
+              "end": 11,
+              "name": "c"
+            },
+            "init": null
+          },
+          {
+            "type": "VariableDeclarator",
+            "start": 13,
+            "end": 14,
+            "id": {
+              "type": "Identifier",
+              "start": 13,
+              "end": 14,
+              "name": "d"
+            },
+            "init": null
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 16,
+        "end": 44,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 16,
+          "end": 43,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 16,
+            "end": 17,
+            "name": "a"
+          },
+          "right": {
+            "type": "ConditionalExpression",
+            "start": 20,
+            "end": 43,
+            "test": {
+              "type": "ParenthesizedExpression",
+              "start": 20,
+              "end": 35,
+              "expression": {
+                "type": "SequenceExpression",
+                "start": 21,
+                "end": 34,
+                "expressions": [
+                  {
+                    "type": "CallExpression",
+                    "start": 21,
+                    "end": 24,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 21,
+                      "end": 22,
+                      "name": "b"
+                    },
+                    "arguments": [],
+                    "optional": false
+                  },
+                  {
+                    "type": "CallExpression",
+                    "start": 26,
+                    "end": 29,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 26,
+                      "end": 27,
+                      "name": "c"
+                    },
+                    "arguments": [],
+                    "optional": false
+                  },
+                  {
+                    "type": "CallExpression",
+                    "start": 31,
+                    "end": 34,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 31,
+                      "end": 32,
+                      "name": "d"
+                    },
+                    "arguments": [],
+                    "optional": false
+                  }
+                ]
+              }
+            },
+            "consequent": {
+              "type": "Literal",
+              "start": 38,
+              "end": 39,
+              "value": 1,
+              "raw": "1"
+            },
+            "alternate": {
+              "type": "Literal",
+              "start": 42,
+              "end": 43,
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

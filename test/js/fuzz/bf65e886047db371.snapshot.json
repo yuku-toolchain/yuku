@@ -1,0 +1,83 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 38,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 37,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 36,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 36,
+              "expression": {
+                "type": "FunctionExpression",
+                "start": 9,
+                "end": 35,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "RestElement",
+                    "start": 19,
+                    "end": 23,
+                    "argument": {
+                      "type": "Identifier",
+                      "start": 22,
+                      "end": 23,
+                      "name": "b"
+                    }
+                  }
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 25,
+                  "end": 35,
+                  "body": [
+                    {
+                      "type": "ExpressionStatement",
+                      "start": 29,
+                      "end": 33,
+                      "expression": {
+                        "type": "CallExpression",
+                        "start": 29,
+                        "end": 32,
+                        "callee": {
+                          "type": "Identifier",
+                          "start": 29,
+                          "end": 30,
+                          "name": "c"
+                        },
+                        "arguments": [],
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "expression": false
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

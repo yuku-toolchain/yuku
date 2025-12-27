@@ -1,0 +1,104 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 58,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 57,
+        "expression": {
+          "type": "NewExpression",
+          "start": 0,
+          "end": 56,
+          "callee": {
+            "type": "ParenthesizedExpression",
+            "start": 4,
+            "end": 56,
+            "expression": {
+              "type": "FunctionExpression",
+              "start": 5,
+              "end": 55,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 17,
+                "end": 55,
+                "body": [
+                  {
+                    "type": "VariableDeclaration",
+                    "start": 21,
+                    "end": 33,
+                    "kind": "var",
+                    "declarations": [
+                      {
+                        "type": "VariableDeclarator",
+                        "start": 25,
+                        "end": 32,
+                        "id": {
+                          "type": "Identifier",
+                          "start": 25,
+                          "end": 26,
+                          "name": "a"
+                        },
+                        "init": {
+                          "type": "ParenthesizedExpression",
+                          "start": 29,
+                          "end": 32,
+                          "expression": {
+                            "type": "Literal",
+                            "start": 30,
+                            "end": 31,
+                            "value": 1,
+                            "raw": "1"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 36,
+                    "end": 53,
+                    "expression": {
+                      "type": "MemberExpression",
+                      "start": 36,
+                      "end": 52,
+                      "object": {
+                        "type": "ParenthesizedExpression",
+                        "start": 36,
+                        "end": 42,
+                        "expression": {
+                          "type": "ThisExpression",
+                          "start": 37,
+                          "end": 41
+                        }
+                      },
+                      "property": {
+                        "type": "Identifier",
+                        "start": 43,
+                        "end": 52,
+                        "name": "arguments"
+                      },
+                      "computed": false,
+                      "optional": false
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            }
+          },
+          "arguments": []
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

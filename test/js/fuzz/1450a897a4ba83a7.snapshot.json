@@ -1,0 +1,79 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 34,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 13,
+        "expression": {
+          "type": "Literal",
+          "start": 0,
+          "end": 12,
+          "value": "use strict",
+          "raw": "\"use strict\""
+        },
+        "directive": "use strict"
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 14,
+        "end": 33,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 18,
+            "end": 32,
+            "id": {
+              "type": "Identifier",
+              "start": 18,
+              "end": 19,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 22,
+              "end": 32,
+              "expression": {
+                "type": "ObjectExpression",
+                "start": 23,
+                "end": 31,
+                "properties": [
+                  {
+                    "type": "Property",
+                    "start": 24,
+                    "end": 30,
+                    "kind": "init",
+                    "key": {
+                      "type": "Literal",
+                      "start": 24,
+                      "end": 25,
+                      "value": 0,
+                      "raw": "0"
+                    },
+                    "value": {
+                      "type": "Literal",
+                      "start": 27,
+                      "end": 30,
+                      "value": "b",
+                      "raw": "\"b\""
+                    },
+                    "method": false,
+                    "shorthand": false,
+                    "computed": false
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

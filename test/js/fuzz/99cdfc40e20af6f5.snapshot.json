@@ -1,0 +1,78 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 33,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 32,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 31,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 31,
+              "expression": {
+                "type": "CallExpression",
+                "start": 9,
+                "end": 30,
+                "callee": {
+                  "type": "ParenthesizedExpression",
+                  "start": 9,
+                  "end": 25,
+                  "expression": {
+                    "type": "FunctionExpression",
+                    "start": 10,
+                    "end": 24,
+                    "id": null,
+                    "generator": false,
+                    "async": false,
+                    "params": [],
+                    "body": {
+                      "type": "BlockStatement",
+                      "start": 22,
+                      "end": 24,
+                      "body": []
+                    },
+                    "expression": false
+                  }
+                },
+                "arguments": [
+                  {
+                    "type": "CallExpression",
+                    "start": 26,
+                    "end": 29,
+                    "callee": {
+                      "type": "Identifier",
+                      "start": 26,
+                      "end": 27,
+                      "name": "b"
+                    },
+                    "arguments": [],
+                    "optional": false
+                  }
+                ],
+                "optional": false
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

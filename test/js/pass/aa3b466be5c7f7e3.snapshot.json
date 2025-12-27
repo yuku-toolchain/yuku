@@ -1,0 +1,51 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 48,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 47,
+        "init": null,
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "BlockStatement",
+          "start": 9,
+          "end": 47,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 15,
+              "end": 31,
+              "test": {
+                "type": "Identifier",
+                "start": 19,
+                "end": 20,
+                "name": "a"
+              },
+              "consequent": {
+                "type": "ContinueStatement",
+                "start": 22,
+                "end": 31,
+                "label": null
+              },
+              "alternate": null
+            },
+            {
+              "type": "ContinueStatement",
+              "start": 36,
+              "end": 45,
+              "label": null
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

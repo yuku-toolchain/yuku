@@ -1,0 +1,141 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 65,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 65,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "b"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 14,
+          "end": 65,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 20,
+              "end": 63,
+              "test": {
+                "type": "Identifier",
+                "start": 24,
+                "end": 25,
+                "name": "c"
+              },
+              "consequent": {
+                "type": "ForStatement",
+                "start": 27,
+                "end": 63,
+                "init": {
+                  "type": "VariableDeclaration",
+                  "start": 32,
+                  "end": 52,
+                  "kind": "var",
+                  "declarations": [
+                    {
+                      "type": "VariableDeclarator",
+                      "start": 36,
+                      "end": 41,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 36,
+                        "end": 37,
+                        "name": "d"
+                      },
+                      "init": {
+                        "type": "Literal",
+                        "start": 40,
+                        "end": 41,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    },
+                    {
+                      "type": "VariableDeclarator",
+                      "start": 43,
+                      "end": 52,
+                      "id": {
+                        "type": "Identifier",
+                        "start": 43,
+                        "end": 44,
+                        "name": "e"
+                      },
+                      "init": {
+                        "type": "CallExpression",
+                        "start": 47,
+                        "end": 52,
+                        "callee": {
+                          "type": "MemberExpression",
+                          "start": 47,
+                          "end": 50,
+                          "object": {
+                            "type": "Identifier",
+                            "start": 47,
+                            "end": 48,
+                            "name": "b"
+                          },
+                          "property": {
+                            "type": "Identifier",
+                            "start": 49,
+                            "end": 50,
+                            "name": "f"
+                          },
+                          "computed": false,
+                          "optional": false
+                        },
+                        "arguments": [],
+                        "optional": false
+                      }
+                    }
+                  ]
+                },
+                "test": null,
+                "update": {
+                  "type": "UpdateExpression",
+                  "start": 56,
+                  "end": 59,
+                  "operator": "++",
+                  "prefix": false,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 56,
+                    "end": 57,
+                    "name": "d"
+                  }
+                },
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 61,
+                  "end": 63,
+                  "body": []
+                }
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

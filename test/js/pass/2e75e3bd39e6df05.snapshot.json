@@ -1,0 +1,208 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 64,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 10,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 0,
+          "end": 9,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 1,
+            "name": "a"
+          },
+          "right": {
+            "type": "MemberExpression",
+            "start": 4,
+            "end": 9,
+            "object": {
+              "type": "Literal",
+              "start": 4,
+              "end": 7,
+              "value": "b",
+              "raw": "\"b\""
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 8,
+              "end": 9,
+              "name": "c"
+            },
+            "computed": false,
+            "optional": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 11,
+        "end": 38,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 11,
+          "end": 37,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "a"
+          },
+          "right": {
+            "type": "MemberExpression",
+            "start": 15,
+            "end": 37,
+            "object": {
+              "type": "ParenthesizedExpression",
+              "start": 15,
+              "end": 26,
+              "expression": {
+                "type": "BinaryExpression",
+                "start": 16,
+                "end": 25,
+                "left": {
+                  "type": "Literal",
+                  "start": 16,
+                  "end": 19,
+                  "value": "b",
+                  "raw": "\"b\""
+                },
+                "operator": "+",
+                "right": {
+                  "type": "Literal",
+                  "start": 22,
+                  "end": 25,
+                  "value": "d",
+                  "raw": "\"d\""
+                }
+              }
+            },
+            "property": {
+              "type": "BinaryExpression",
+              "start": 27,
+              "end": 36,
+              "left": {
+                "type": "Literal",
+                "start": 27,
+                "end": 30,
+                "value": "e",
+                "raw": "\"e\""
+              },
+              "operator": "+",
+              "right": {
+                "type": "Literal",
+                "start": 33,
+                "end": 36,
+                "value": "f",
+                "raw": "\"f\""
+              }
+            },
+            "computed": true,
+            "optional": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 39,
+        "end": 47,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 39,
+          "end": 46,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 39,
+            "end": 40,
+            "name": "a"
+          },
+          "right": {
+            "type": "MemberExpression",
+            "start": 43,
+            "end": 46,
+            "object": {
+              "type": "Identifier",
+              "start": 43,
+              "end": 44,
+              "name": "g"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 45,
+              "end": 46,
+              "name": "c"
+            },
+            "computed": false,
+            "optional": false
+          }
+        }
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 48,
+        "end": 64,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 48,
+          "end": 63,
+          "operator": "=",
+          "left": {
+            "type": "Identifier",
+            "start": 48,
+            "end": 49,
+            "name": "a"
+          },
+          "right": {
+            "type": "MemberExpression",
+            "start": 52,
+            "end": 63,
+            "object": {
+              "type": "ParenthesizedExpression",
+              "start": 52,
+              "end": 61,
+              "expression": {
+                "type": "BinaryExpression",
+                "start": 53,
+                "end": 60,
+                "left": {
+                  "type": "Literal",
+                  "start": 53,
+                  "end": 56,
+                  "value": "b",
+                  "raw": "\"b\""
+                },
+                "operator": "+",
+                "right": {
+                  "type": "Identifier",
+                  "start": 59,
+                  "end": 60,
+                  "name": "g"
+                }
+              }
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 62,
+              "end": 63,
+              "name": "c"
+            },
+            "computed": false,
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

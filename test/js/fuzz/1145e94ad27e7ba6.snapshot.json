@@ -1,0 +1,119 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 56,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 23,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 13,
+          "end": 23,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 17,
+              "end": 21,
+              "expression": {
+                "type": "CallExpression",
+                "start": 17,
+                "end": 20,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 17,
+                  "end": 18,
+                  "name": "b"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "expression": false
+      },
+      {
+        "type": "IfStatement",
+        "start": 24,
+        "end": 55,
+        "test": {
+          "type": "LogicalExpression",
+          "start": 28,
+          "end": 43,
+          "left": {
+            "type": "ParenthesizedExpression",
+            "start": 28,
+            "end": 33,
+            "expression": {
+              "type": "CallExpression",
+              "start": 29,
+              "end": 32,
+              "callee": {
+                "type": "Identifier",
+                "start": 29,
+                "end": 30,
+                "name": "a"
+              },
+              "arguments": [],
+              "optional": false
+            }
+          },
+          "operator": "||",
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 37,
+            "end": 43,
+            "expression": {
+              "type": "Literal",
+              "start": 38,
+              "end": 42,
+              "value": true,
+              "raw": "true"
+            }
+          }
+        },
+        "consequent": {
+          "type": "BlockStatement",
+          "start": 45,
+          "end": 55,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 49,
+              "end": 53,
+              "expression": {
+                "type": "CallExpression",
+                "start": 49,
+                "end": 52,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 49,
+                  "end": 50,
+                  "name": "c"
+                },
+                "arguments": [],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "alternate": null
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

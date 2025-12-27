@@ -1,0 +1,76 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 41,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "TryStatement",
+        "start": 0,
+        "end": 41,
+        "block": {
+          "type": "BlockStatement",
+          "start": 4,
+          "end": 6,
+          "body": []
+        },
+        "handler": {
+          "type": "CatchClause",
+          "start": 7,
+          "end": 41,
+          "param": {
+            "type": "Identifier",
+            "start": 14,
+            "end": 15,
+            "name": "a"
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 17,
+            "end": 41,
+            "body": [
+              {
+                "type": "IfStatement",
+                "start": 19,
+                "end": 39,
+                "test": {
+                  "type": "Literal",
+                  "start": 22,
+                  "end": 23,
+                  "value": 1,
+                  "raw": "1"
+                },
+                "consequent": {
+                  "type": "FunctionDeclaration",
+                  "start": 25,
+                  "end": 39,
+                  "id": {
+                    "type": "Identifier",
+                    "start": 34,
+                    "end": 35,
+                    "name": "a"
+                  },
+                  "generator": false,
+                  "async": false,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 37,
+                    "end": 39,
+                    "body": []
+                  },
+                  "expression": false
+                },
+                "alternate": null
+              }
+            ]
+          }
+        },
+        "finalizer": null
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

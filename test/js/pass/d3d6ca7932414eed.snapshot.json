@@ -1,0 +1,203 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 91,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 21,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "AssignmentPattern",
+            "start": 11,
+            "end": 16,
+            "left": {
+              "type": "Identifier",
+              "start": 11,
+              "end": 12,
+              "name": "b"
+            },
+            "right": {
+              "type": "Literal",
+              "start": 15,
+              "end": 16,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 18,
+          "end": 21,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 22,
+        "end": 49,
+        "id": {
+          "type": "Identifier",
+          "start": 31,
+          "end": 32,
+          "name": "c"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "AssignmentPattern",
+            "start": 33,
+            "end": 44,
+            "left": {
+              "type": "Identifier",
+              "start": 33,
+              "end": 34,
+              "name": "b"
+            },
+            "right": {
+              "type": "ParenthesizedExpression",
+              "start": 37,
+              "end": 44,
+              "expression": {
+                "type": "BinaryExpression",
+                "start": 38,
+                "end": 43,
+                "left": {
+                  "type": "Literal",
+                  "start": 38,
+                  "end": 39,
+                  "value": 2,
+                  "raw": "2"
+                },
+                "operator": "+",
+                "right": {
+                  "type": "Literal",
+                  "start": 42,
+                  "end": 43,
+                  "value": 3,
+                  "raw": "3"
+                }
+              }
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 46,
+          "end": 49,
+          "body": []
+        },
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "start": 50,
+        "end": 91,
+        "id": {
+          "type": "Identifier",
+          "start": 59,
+          "end": 60,
+          "name": "d"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "AssignmentPattern",
+            "start": 61,
+            "end": 71,
+            "left": {
+              "type": "ObjectPattern",
+              "start": 61,
+              "end": 66,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 63,
+                  "end": 64,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 63,
+                    "end": 64,
+                    "name": "e"
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 63,
+                    "end": 64,
+                    "name": "e"
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false
+                }
+              ]
+            },
+            "right": {
+              "type": "ObjectExpression",
+              "start": 69,
+              "end": 71,
+              "properties": []
+            }
+          },
+          {
+            "type": "AssignmentPattern",
+            "start": 73,
+            "end": 86,
+            "left": {
+              "type": "ArrayPattern",
+              "start": 73,
+              "end": 78,
+              "elements": [
+                {
+                  "type": "Identifier",
+                  "start": 75,
+                  "end": 76,
+                  "name": "f"
+                }
+              ]
+            },
+            "right": {
+              "type": "ArrayExpression",
+              "start": 81,
+              "end": 86,
+              "elements": [
+                {
+                  "type": "Literal",
+                  "start": 83,
+                  "end": 84,
+                  "value": 4,
+                  "raw": "4"
+                }
+              ]
+            }
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 88,
+          "end": 91,
+          "body": []
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

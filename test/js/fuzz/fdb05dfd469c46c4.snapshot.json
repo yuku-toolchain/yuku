@@ -1,0 +1,146 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 55,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 13,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 12,
+            "id": {
+              "type": "Identifier",
+              "start": 4,
+              "end": 5,
+              "name": "a"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 8,
+              "end": 12,
+              "expression": {
+                "type": "ObjectExpression",
+                "start": 9,
+                "end": 11,
+                "properties": []
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ExpressionStatement",
+        "start": 14,
+        "end": 25,
+        "expression": {
+          "type": "AssignmentExpression",
+          "start": 14,
+          "end": 24,
+          "operator": "=",
+          "left": {
+            "type": "MemberExpression",
+            "start": 14,
+            "end": 18,
+            "object": {
+              "type": "Identifier",
+              "start": 14,
+              "end": 15,
+              "name": "a"
+            },
+            "property": {
+              "type": "Identifier",
+              "start": 16,
+              "end": 18,
+              "name": "你好"
+            },
+            "computed": false,
+            "optional": false
+          },
+          "right": {
+            "type": "ParenthesizedExpression",
+            "start": 21,
+            "end": 24,
+            "expression": {
+              "type": "Literal",
+              "start": 22,
+              "end": 23,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        }
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 26,
+        "end": 40,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 30,
+            "end": 39,
+            "id": {
+              "type": "Identifier",
+              "start": 30,
+              "end": 33,
+              "name": "ↂωↂ"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 36,
+              "end": 39,
+              "expression": {
+                "type": "Literal",
+                "start": 37,
+                "end": 38,
+                "value": 2,
+                "raw": "2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "VariableDeclaration",
+        "start": 41,
+        "end": 54,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 45,
+            "end": 53,
+            "id": {
+              "type": "Identifier",
+              "start": 45,
+              "end": 47,
+              "name": "l০"
+            },
+            "init": {
+              "type": "ParenthesizedExpression",
+              "start": 50,
+              "end": 53,
+              "expression": {
+                "type": "Literal",
+                "start": 51,
+                "end": 52,
+                "value": 3,
+                "raw": "3"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

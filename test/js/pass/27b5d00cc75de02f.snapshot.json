@@ -1,0 +1,84 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 83,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 83,
+        "id": {
+          "type": "Identifier",
+          "start": 9,
+          "end": 10,
+          "name": "a"
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 11,
+            "end": 12,
+            "name": "b"
+          }
+        ],
+        "body": {
+          "type": "BlockStatement",
+          "start": 14,
+          "end": 83,
+          "body": [
+            {
+              "type": "IfStatement",
+              "start": 20,
+              "end": 81,
+              "test": {
+                "type": "Identifier",
+                "start": 24,
+                "end": 25,
+                "name": "b"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "start": 27,
+                "end": 50,
+                "body": [
+                  {
+                    "type": "ReturnStatement",
+                    "start": 37,
+                    "end": 44,
+                    "argument": null
+                  }
+                ]
+              },
+              "alternate": {
+                "type": "BlockStatement",
+                "start": 56,
+                "end": 81,
+                "body": [
+                  {
+                    "type": "ReturnStatement",
+                    "start": 66,
+                    "end": 75,
+                    "argument": {
+                      "type": "Literal",
+                      "start": 73,
+                      "end": 74,
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

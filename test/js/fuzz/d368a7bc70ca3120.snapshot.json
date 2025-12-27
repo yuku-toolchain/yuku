@@ -1,0 +1,94 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 26,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 25,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 24,
+          "expression": {
+            "type": "ObjectExpression",
+            "start": 1,
+            "end": 23,
+            "properties": [
+              {
+                "type": "Property",
+                "start": 2,
+                "end": 22,
+                "kind": "init",
+                "key": {
+                  "type": "Identifier",
+                  "start": 2,
+                  "end": 3,
+                  "name": "a"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "start": 3,
+                  "end": 22,
+                  "id": null,
+                  "generator": false,
+                  "async": false,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "start": 4,
+                      "end": 5,
+                      "name": "b"
+                    },
+                    {
+                      "type": "Identifier",
+                      "start": 7,
+                      "end": 8,
+                      "name": "c"
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "start": 10,
+                    "end": 22,
+                    "body": [
+                      {
+                        "type": "VariableDeclaration",
+                        "start": 14,
+                        "end": 20,
+                        "kind": "let",
+                        "declarations": [
+                          {
+                            "type": "VariableDeclarator",
+                            "start": 18,
+                            "end": 19,
+                            "id": {
+                              "type": "Identifier",
+                              "start": 18,
+                              "end": 19,
+                              "name": "d"
+                            },
+                            "init": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "expression": false
+                },
+                "method": true,
+                "shorthand": false,
+                "computed": false
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

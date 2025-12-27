@@ -1,0 +1,27 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 20,
+    "sourceType": "module",
+    "body": [
+      {
+        "type": "ExportNamedDeclaration",
+        "start": 0,
+        "end": 19,
+        "declaration": null,
+        "specifiers": [],
+        "source": {
+          "type": "Literal",
+          "start": 15,
+          "end": 18,
+          "value": "a",
+          "raw": "\"a\""
+        },
+        "attributes": []
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

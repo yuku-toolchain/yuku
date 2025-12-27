@@ -1,0 +1,171 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 112,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "SwitchStatement",
+        "start": 0,
+        "end": 112,
+        "discriminant": {
+          "type": "Literal",
+          "start": 8,
+          "end": 9,
+          "value": 1,
+          "raw": "1"
+        },
+        "cases": [
+          {
+            "type": "SwitchCase",
+            "start": 15,
+            "end": 69,
+            "test": {
+              "type": "Literal",
+              "start": 20,
+              "end": 21,
+              "value": 2,
+              "raw": "2"
+            },
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 27,
+                "end": 31,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 27,
+                  "end": 30,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 27,
+                    "end": 28,
+                    "name": "a"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              },
+              {
+                "type": "IfStatement",
+                "start": 36,
+                "end": 49,
+                "test": {
+                  "type": "Identifier",
+                  "start": 40,
+                  "end": 41,
+                  "name": "b"
+                },
+                "consequent": {
+                  "type": "BreakStatement",
+                  "start": 43,
+                  "end": 49,
+                  "label": null
+                },
+                "alternate": null
+              },
+              {
+                "type": "ExpressionStatement",
+                "start": 54,
+                "end": 58,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 54,
+                  "end": 57,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 54,
+                    "end": 55,
+                    "name": "c"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              },
+              {
+                "type": "BreakStatement",
+                "start": 63,
+                "end": 69,
+                "label": null
+              }
+            ]
+          },
+          {
+            "type": "SwitchCase",
+            "start": 72,
+            "end": 90,
+            "test": {
+              "type": "BinaryExpression",
+              "start": 77,
+              "end": 80,
+              "left": {
+                "type": "Literal",
+                "start": 77,
+                "end": 78,
+                "value": 3,
+                "raw": "3"
+              },
+              "operator": "+",
+              "right": {
+                "type": "Literal",
+                "start": 79,
+                "end": 80,
+                "value": 4,
+                "raw": "4"
+              }
+            },
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 86,
+                "end": 90,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 86,
+                  "end": 89,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 86,
+                    "end": 87,
+                    "name": "d"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              }
+            ]
+          },
+          {
+            "type": "SwitchCase",
+            "start": 93,
+            "end": 110,
+            "test": null,
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 106,
+                "end": 110,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 106,
+                  "end": 109,
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 106,
+                    "end": 107,
+                    "name": "e"
+                  },
+                  "arguments": [],
+                  "optional": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

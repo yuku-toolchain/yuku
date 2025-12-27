@@ -1,0 +1,100 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 85,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "SwitchStatement",
+        "start": 0,
+        "end": 84,
+        "discriminant": {
+          "type": "Identifier",
+          "start": 8,
+          "end": 9,
+          "name": "a"
+        },
+        "cases": [
+          {
+            "type": "SwitchCase",
+            "start": 13,
+            "end": 82,
+            "test": null,
+            "consequent": [
+              {
+                "type": "ExpressionStatement",
+                "start": 48,
+                "end": 82,
+                "expression": {
+                  "type": "ParenthesizedExpression",
+                  "start": 48,
+                  "end": 81,
+                  "expression": {
+                    "type": "CallExpression",
+                    "start": 49,
+                    "end": 80,
+                    "callee": {
+                      "type": "FunctionExpression",
+                      "start": 49,
+                      "end": 78,
+                      "id": null,
+                      "generator": false,
+                      "async": false,
+                      "params": [],
+                      "body": {
+                        "type": "BlockStatement",
+                        "start": 61,
+                        "end": 78,
+                        "body": [
+                          {
+                            "type": "ExpressionStatement",
+                            "start": 67,
+                            "end": 74,
+                            "expression": {
+                              "type": "CallExpression",
+                              "start": 67,
+                              "end": 73,
+                              "callee": {
+                                "type": "Identifier",
+                                "start": 67,
+                                "end": 68,
+                                "name": "b"
+                              },
+                              "arguments": [
+                                {
+                                  "type": "Literal",
+                                  "start": 69,
+                                  "end": 72,
+                                  "value": "c",
+                                  "raw": "'c'"
+                                }
+                              ],
+                              "optional": false
+                            }
+                          }
+                        ]
+                      },
+                      "expression": false
+                    },
+                    "arguments": [],
+                    "optional": false
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " do not optimize it",
+      "start": 24,
+      "end": 45
+    }
+  ],
+  "errors": []
+}

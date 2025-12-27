@@ -1,0 +1,88 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 37,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 37,
+        "kind": "var",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 4,
+            "end": 36,
+            "id": {
+              "type": "ArrayPattern",
+              "start": 4,
+              "end": 32,
+              "elements": [
+                {
+                  "type": "ObjectPattern",
+                  "start": 5,
+                  "end": 31,
+                  "properties": [
+                    {
+                      "type": "Property",
+                      "start": 6,
+                      "end": 17,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 6,
+                        "end": 15,
+                        "name": "__proto__"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 16,
+                        "end": 17,
+                        "name": "a"
+                      },
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    },
+                    {
+                      "type": "Property",
+                      "start": 19,
+                      "end": 30,
+                      "kind": "init",
+                      "key": {
+                        "type": "Identifier",
+                        "start": 19,
+                        "end": 28,
+                        "name": "__proto__"
+                      },
+                      "value": {
+                        "type": "Identifier",
+                        "start": 29,
+                        "end": 30,
+                        "name": "b"
+                      },
+                      "method": false,
+                      "shorthand": false,
+                      "computed": false
+                    }
+                  ]
+                }
+              ]
+            },
+            "init": {
+              "type": "Literal",
+              "start": 35,
+              "end": 36,
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

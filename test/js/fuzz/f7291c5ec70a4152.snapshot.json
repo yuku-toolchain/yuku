@@ -1,0 +1,113 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 33,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 32,
+        "expression": {
+          "type": "ArrowFunctionExpression",
+          "start": 0,
+          "end": 31,
+          "id": null,
+          "generator": false,
+          "async": false,
+          "params": [
+            {
+              "type": "ObjectPattern",
+              "start": 1,
+              "end": 10,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 2,
+                  "end": 6,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 2,
+                    "end": 3,
+                    "name": "a"
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 5,
+                    "end": 6,
+                    "name": "b"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },
+                {
+                  "type": "Property",
+                  "start": 8,
+                  "end": 9,
+                  "kind": "init",
+                  "key": {
+                    "type": "Identifier",
+                    "start": 8,
+                    "end": 9,
+                    "name": "c"
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 8,
+                    "end": 9,
+                    "name": "c"
+                  },
+                  "method": false,
+                  "shorthand": true,
+                  "computed": false
+                }
+              ]
+            },
+            {
+              "type": "ArrayPattern",
+              "start": 12,
+              "end": 18,
+              "elements": [
+                {
+                  "type": "Identifier",
+                  "start": 13,
+                  "end": 14,
+                  "name": "d"
+                },
+                {
+                  "type": "Identifier",
+                  "start": 16,
+                  "end": 17,
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "type": "RestElement",
+              "start": 20,
+              "end": 24,
+              "argument": {
+                "type": "Identifier",
+                "start": 23,
+                "end": 24,
+                "name": "f"
+              }
+            }
+          ],
+          "body": {
+            "type": "BlockStatement",
+            "start": 29,
+            "end": 31,
+            "body": []
+          },
+          "expression": false
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

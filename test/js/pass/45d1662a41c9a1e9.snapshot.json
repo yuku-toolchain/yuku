@@ -1,0 +1,33 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 49,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ForStatement",
+        "start": 0,
+        "end": 18,
+        "init": null,
+        "test": null,
+        "update": null,
+        "body": {
+          "type": "ContinueStatement",
+          "start": 9,
+          "end": 18,
+          "label": null
+        }
+      }
+    ]
+  },
+  "comments": [
+    {
+      "type": "Line",
+      "value": " should be empty statement",
+      "start": 20,
+      "end": 48
+    }
+  ],
+  "errors": []
+}

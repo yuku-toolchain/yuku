@@ -1,0 +1,84 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 38,
+        "expression": {
+          "type": "ParenthesizedExpression",
+          "start": 0,
+          "end": 37,
+          "expression": {
+            "type": "CallExpression",
+            "start": 1,
+            "end": 36,
+            "callee": {
+              "type": "FunctionExpression",
+              "start": 1,
+              "end": 34,
+              "id": null,
+              "generator": false,
+              "async": false,
+              "params": [],
+              "body": {
+                "type": "BlockStatement",
+                "start": 13,
+                "end": 34,
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "start": 19,
+                    "end": 32,
+                    "expression": {
+                      "type": "AssignmentExpression",
+                      "start": 19,
+                      "end": 31,
+                      "operator": "=",
+                      "left": {
+                        "type": "MemberExpression",
+                        "start": 19,
+                        "end": 27,
+                        "object": {
+                          "type": "Identifier",
+                          "start": 19,
+                          "end": 20,
+                          "name": "a"
+                        },
+                        "property": {
+                          "type": "Literal",
+                          "start": 21,
+                          "end": 26,
+                          "value": "NaN",
+                          "raw": "'NaN'"
+                        },
+                        "computed": true,
+                        "optional": false
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "start": 30,
+                        "end": 31,
+                        "value": 1,
+                        "raw": "1"
+                      }
+                    }
+                  }
+                ]
+              },
+              "expression": false
+            },
+            "arguments": [],
+            "optional": false
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

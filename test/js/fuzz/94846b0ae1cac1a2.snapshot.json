@@ -1,0 +1,64 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 29,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 28,
+        "expression": {
+          "type": "UnaryExpression",
+          "start": 0,
+          "end": 27,
+          "operator": "void",
+          "prefix": true,
+          "argument": {
+            "type": "ParenthesizedExpression",
+            "start": 5,
+            "end": 27,
+            "expression": {
+              "type": "UnaryExpression",
+              "start": 6,
+              "end": 26,
+              "operator": "void",
+              "prefix": true,
+              "argument": {
+                "type": "ParenthesizedExpression",
+                "start": 11,
+                "end": 26,
+                "expression": {
+                  "type": "UnaryExpression",
+                  "start": 12,
+                  "end": 25,
+                  "operator": "void",
+                  "prefix": true,
+                  "argument": {
+                    "type": "ParenthesizedExpression",
+                    "start": 17,
+                    "end": 25,
+                    "expression": {
+                      "type": "Literal",
+                      "start": 18,
+                      "end": 24,
+                      "value": {},
+                      "raw": "/test/",
+                      "regex": {
+                        "pattern": "test",
+                        "flags": ""
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

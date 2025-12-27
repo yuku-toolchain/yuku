@@ -1,0 +1,23 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 2,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 2,
+        "expression": {
+          "type": "ArrayExpression",
+          "start": 0,
+          "end": 2,
+          "elements": []
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}
