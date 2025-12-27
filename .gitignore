@@ -4,3 +4,4 @@ zig-out/
 .DS_Store
 ast-reference.ts
 operator-precedence.md
+**/dist

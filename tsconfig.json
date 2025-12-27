@@ -23,6 +23,6 @@
 		"noPropertyAccessFromIndexSignature": false
 	},
 
-	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "bunup.config.ts"]
+	"include": ["npm/**/*"],
+	"exclude": ["node_modules", "npm/dist", "bunup.config.ts"]
 }

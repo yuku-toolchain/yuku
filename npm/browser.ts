@@ -21,9 +21,11 @@ export interface YukuNode {
   [key: string]: unknown;
 }
 
+// we will expand it later
 export type YukuAST = YukuNode;
 
 interface WasmExports {
+  // allocate in wasm memory
   alloc: (size: number) => number;
   free: (ptr: number, size: number) => void;
   parse: (
@@ -31,7 +33,7 @@ interface WasmExports {
     sourceLen: number,
     sourceType: number,
     lang: number
-  ) => number;
+  ) => number; // returns [length (4 bytes), ...jsonDataPtr]
   memory: WebAssembly.Memory;
 }
 
@@ -48,31 +50,14 @@ async function getWasmInstance(): Promise<WasmExports> {
   return wasmInstance;
 }
 
-function normalizeSourceType(sourceType?: 'script' | 'module'): SourceType {
-  return sourceType === 'script' ? SourceType.Script : SourceType.Module;
-}
-
-function normalizeLang(lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts'): Lang {
-  switch (lang) {
-    case 'ts':
-      return Lang.TS;
-    case 'jsx':
-      return Lang.JSX;
-    case 'tsx':
-      return Lang.TSX;
-    case 'dts':
-      return Lang.DTS;
-    default:
-      return Lang.JS;
-  }
-}
-
+// read the length of the ast json, and pointer to the json string in memory
 function readLengthPrefixedData(
   memory: WebAssembly.Memory,
   ptr: number
 ): { length: number; dataPtr: number } {
   const view = new DataView(memory.buffer);
   const length = view.getUint32(ptr, true);
+  // first 4 bytes are length, then the json string
   const dataPtr = ptr + 4;
   return { length, dataPtr };
 }
@@ -86,7 +71,9 @@ function parseInternal(
   const sourceBytes = encoder.encode(source);
   const sourceLen = sourceBytes.length;
 
+  // allocate source code buffer
   const sourcePtr = wasm.alloc(sourceLen);
+
   if (!sourcePtr) {
     throw new Error('Failed to allocate memory for source code');
   }
@@ -95,6 +82,7 @@ function parseInternal(
     const wasmMemory = new Uint8Array(wasm.memory.buffer, sourcePtr, sourceLen);
     wasmMemory.set(sourceBytes);
 
+    // options are numbers, so normalize them to pass to wasm
     const sourceType = normalizeSourceType(options.sourceType);
     const lang = normalizeLang(options.lang);
 
@@ -110,6 +98,8 @@ function parseInternal(
     );
 
     try {
+      // decode the json to string that can be parsed by JSON.parse
+      // the json bytes are already null terminated from wasm, so the decoder.decode knows where to stop.
       const decoder = new TextDecoder();
       const jsonBytes = new Uint8Array(wasm.memory.buffer, jsonDataPtr, jsonLen);
       const jsonStr = decoder.decode(jsonBytes);
@@ -190,4 +180,23 @@ export function parseSync(
  */
 export async function preload(): Promise<void> {
   await getWasmInstance();
+}
+
+function normalizeSourceType(sourceType?: 'script' | 'module'): SourceType {
+  return sourceType === 'script' ? SourceType.Script : SourceType.Module;
+}
+
+function normalizeLang(lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts'): Lang {
+  switch (lang) {
+    case 'ts':
+      return Lang.TS;
+    case 'jsx':
+      return Lang.JSX;
+    case 'tsx':
+      return Lang.TSX;
+    case 'dts':
+      return Lang.DTS;
+    default:
+      return Lang.JS;
+  }
 }

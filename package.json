@@ -8,13 +8,8 @@
   ],
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "browser": "./dist/browser.js",
   "exports": {
     ".": {
-      "browser": {
-        "types": "./dist/browser.d.ts",
-        "default": "./dist/browser.js"
-      },
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"

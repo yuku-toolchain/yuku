@@ -4,12 +4,14 @@ import { copy } from 'bunup/plugins';
 export default defineConfig([
   {
     name: "node",
-    entry: "src/index.ts",
+    entry: "npm/index.ts",
+    outDir: "npm/dist"
   },
   {
     name: "browser",
-    entry: "src/browser.ts",
+    entry: "npm/browser.ts",
     target: "browser",
-    plugins: [copy("../zig-out/yuku_js.wasm").to("yuku.wasm")]
+    outDir: "npm/dist",
+    plugins: [copy("zig-out/yuku_js.wasm").to("yuku.wasm")]
   },
 ])
