@@ -22,7 +22,7 @@ jobs:
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
         with:
-          version: master
+          version: 0.16.0-dev.731+958faa703
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
