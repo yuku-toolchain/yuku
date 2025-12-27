@@ -4,7 +4,8 @@
   "scripts": {
     "build:npm": "zig build && bun run --filter './npm' build",
     "type-check": "bun run --filter '*' type-check",
-    "test": "bun run build:npm && bun test/run.ts"
+    "test": "bun run build:npm && bun test/run.ts",
+    "release:npm": "bumpp -r --commit --push --tag"
   },
   "devDependencies": {
     "@types/bun": "^1.3.5",
