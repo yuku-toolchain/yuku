@@ -35,7 +35,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         if (parser.current_token.type == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance();
-            const argument = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
+            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };
@@ -48,7 +48,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             end = spread_end;
         } else {
             // regular element - parse as cover element
-            const element = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
+            const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };
@@ -98,18 +98,18 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 }
 
 /// convert array cover to ArrayExpression.
-/// validates that does not contain CoverInitializedName when validate=true.
+/// validates that the expression does not contain CoverInitializedName when validate=true.
 pub fn coverToExpression(parser: *Parser, cover: ArrayCover, validate: bool) Error!?ast.NodeIndex {
-    if (validate) {
-        for (cover.elements) |elem| {
-            if (ast.isNull(elem)) continue;
-            if (!try grammar.validateNoCoverInitializedSyntax(parser, elem)) return null;
-        }
-    }
-    return try parser.addNode(
+    const array_expression = try parser.addNode(
         .{ .array_expression = .{ .elements = try parser.addExtra(cover.elements) } },
         .{ .start = cover.start, .end = cover.end },
     );
+
+    if (validate and !try grammar.validateNoCoverInitializedSyntax(parser, array_expression)) {
+        return null;
+    }
+
+    return array_expression;
 }
 
 /// convert array cover to ArrayPattern.

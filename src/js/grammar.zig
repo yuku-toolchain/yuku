@@ -6,12 +6,10 @@ const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");
 const array = @import("syntax/array.zig");
 
-/// parse an element within a cover grammar context (used for nested arrays/objects).
-/// without validation. validation is deferred until the top-level context is known:
-/// - if parent becomes an expression -> validate at top level
-/// - if parent becomes a pattern -> no validation needed
-pub inline fn parseCoverExpression(parser: *Parser, precedence: u8) Error!?ast.NodeIndex {
-    return expressions.parseExpression(parser, precedence, .{ .enable_validation = false });
+/// parse an expression within a cover grammar context without validation.
+/// validation is deferred until the top-level context is known.
+pub inline fn parseExpressionInCover(parser: *Parser, precedence: u8) Error!?ast.NodeIndex {
+    return expressions.parseExpression(parser, precedence, .{ .in_cover = true });
 }
 
 /// validate that an expression doesn't contain CoverInitializedName.

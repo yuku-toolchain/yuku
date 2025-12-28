@@ -435,7 +435,7 @@ pub const Parser = struct {
             // these are recovery points when they appear after a line terminator
             if (self.current_token.has_line_terminator_before) {
                 switch (self.current_token.type) {
-                    .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .@"throw", .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => return,
+                    .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => return,
                     else => {},
                 }
             }
@@ -444,7 +444,7 @@ pub const Parser = struct {
             // block starts are always safe recovery points
             switch (self.current_token.type) {
                 .left_brace => return,
-                .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .@"throw", .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => {
+                .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => {
                     // if we've advanced past the error location, statement-starting keywords
                     // are likely the start of a new statement and safe to stop at
                     if (has_advanced) {

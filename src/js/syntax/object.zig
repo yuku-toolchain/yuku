@@ -33,7 +33,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
         if (parser.current_token.type == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance();
-            const argument = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
+            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };
@@ -152,7 +152,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         if (parser.current_token.type == .left_bracket) {
             computed = true;
             try parser.advance();
-            key = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse return null;
+            key = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
                 return null;
             }
@@ -194,7 +194,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     // regular property: key: value
     if (parser.current_token.type == .colon) {
         try parser.advance();
-        const value = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse return null;
+        const value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
         return try parser.addNode(
             .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = false, .computed = computed } },
             .{ .start = prop_start, .end = parser.getSpan(value).end },
@@ -223,7 +223,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         try parser.advance();
-        const default_value = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse return null;
+        const default_value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
 
         const id_ref = try parser.addNode(
             .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
@@ -401,7 +401,7 @@ fn parseObjectMethodProperty(
 }
 
 /// convert object cover to ObjectExpression.
-/// validates that does not contain CoverInitializedName when validate=true.
+/// validates that the expression does not contain CoverInitializedName when validate=true.
 pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Error!?ast.NodeIndex {
     const object_expression = try parser.addNode(
         .{ .object_expression = .{ .properties = try parser.addExtra(cover.properties) } },

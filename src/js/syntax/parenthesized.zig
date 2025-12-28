@@ -52,7 +52,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
             const spread_start = parser.current_token.span.start;
             try parser.advance();
 
-            const argument = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
+            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
                 parser.scratch_cover.reset(checkpoint);
                 return null;
             };
@@ -77,7 +77,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         }
 
         // regular element
-        const element = try grammar.parseCoverExpression(parser, Precedence.Assignment) orelse {
+        const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
             parser.scratch_cover.reset(checkpoint);
             return null;
         };

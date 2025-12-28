@@ -45,7 +45,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         }
     }
 
-    if(parser.current_token.type == .async) {
+    if (parser.current_token.type == .async) {
         const next = try parser.lookAhead();
         if (next.type == .function and !next.has_line_terminator_before) {
             const start = parser.current_token.span.start;
@@ -96,7 +96,7 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
         const value_start = expression_data.string_literal.raw_start + 1;
         const value_len: u16 = expression_data.string_literal.raw_len - 2;
 
-        if(std.mem.eql(u8, parser.getSourceText(value_start, value_len), "use strict")) {
+        if (std.mem.eql(u8, parser.getSourceText(value_start, value_len), "use strict")) {
             parser.strict_mode = true;
             parser.lexer.strict_mode = true;
         }
