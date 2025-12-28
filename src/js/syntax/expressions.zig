@@ -520,10 +520,10 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
     try parser.advance();
 
     if (prefix) {
-        const argument = try parseExpression(parser, 14, .{}) orelse return null;
+        const argument = try parseExpression(parser, Precedence.Multiplicative, .{}) orelse return null;
         const span = parser.getSpan(argument);
 
-        const unwrapped = parenthesized.unwrapParenthesized(parser, argument);
+        const unwrapped = parenthesized.unwrapParens(parser, argument);
 
         if (!isSimpleAssignmentTarget(parser, unwrapped)) {
             try parser.report(
@@ -540,7 +540,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
         );
     }
 
-    const unwrapped = parenthesized.unwrapParenthesized(parser, left);
+    const unwrapped = parenthesized.unwrapParens(parser, left);
 
     if (!isSimpleAssignmentTarget(parser, unwrapped)) {
         const span = parser.getSpan(left);
