@@ -35,16 +35,46 @@ pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
     }
 
     // LS (U+2028) / PS (U+2029) encoded as UTF-8: E2 80 A8 / E2 80 A9
-    if (c == 0xE2 and pos + 2 < source.len and source[pos + 1] == 0x80) {
-        const c2 = source[pos + 2];
-        if (c2 == 0xA8 or c2 == 0xA9) return 3;
+    return isUnicodeSeparator(source, pos);
+}
+
+/// normalize line terminators to LF (\n) in the output buffer
+/// this handles CR, CRLF, and converts them all to LF
+/// returns the number of bytes consumed from source
+pub fn normalizeLineEnding(source: []const u8, pos: usize) struct { len: u8, normalized: u8 } {
+    const c = source[pos];
+
+    // CRLF -> LF
+    if (c == '\r') {
+        if (pos + 1 < source.len and source[pos + 1] == '\n') {
+            return .{ .len = 2, .normalized = '\n' };
+        }
+        // standalone CR -> LF
+        return .{ .len = 1, .normalized = '\n' };
     }
 
-    return 0;
+    // already LF, pass through
+    if (c == '\n') {
+        return .{ .len = 1, .normalized = '\n' };
+    }
+
+    // not a line ending
+    return .{ .len = 1, .normalized = c };
 }
 
 pub inline fn isLineTerminator(source: []const u8, pos: usize) bool {
     return lineTerminatorLen(source, pos) > 0;
+}
+
+/// check if the byte sequence at `pos` is U+2028 (Line Separator) or U+2029 (Paragraph Separator)
+/// returns the length (3 bytes) if true, otherwise 0
+pub fn isUnicodeSeparator(source: []const u8, pos: usize) u8 {
+    if (pos + 2 < source.len and source[pos] == 0xE2 and source[pos + 1] == 0x80) {
+        if (source[pos + 2] == 0xA8 or source[pos + 2] == 0xA9) {
+            return 3;
+        }
+    }
+    return 0;
 }
 
 pub fn isMultiByteSpace(cp: u21) bool {

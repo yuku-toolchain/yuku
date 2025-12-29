@@ -77,6 +77,10 @@ const formatTime = (ms: number): string => {
   if (ms >= 1000) {
     return `${(ms / 1000).toFixed(2)}s`
   }
+
+  if(ms <= 1)
+    return `${ms.toFixed(3)}ms`
+
   return `${ms.toFixed(2)}ms`
 }
 
@@ -258,7 +262,7 @@ const passRate = ((totalPassed / totalTests) * 100).toFixed(2)
 const avgParseTime = totalParsedFiles > 0 ? totalParseTime / totalParsedFiles : 0
 const totalTime = totalEnd - totalStart
 
-console.log(`\n${totalPassed}/${totalTests} (${passRate}%) • ${formatTime(totalTime)} total • ${formatTime(totalParseTime)} parse • ${formatTime(avgParseTime)} avg`)
+console.log(`\n${totalPassed}/${totalTests} (${passRate}%) • ${formatTime(totalTime)} total • ${formatTime(totalParseTime)} for parsing ${totalParsedFiles} files • ${formatTime(avgParseTime)} to parse per file`)
 
 if (totalFailed > 0) {
   process.exit(1)

@@ -559,29 +559,21 @@ pub const Serializer = struct {
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
         const raw = self.tree.source[data.raw_start..][0..data.raw_len];
 
-        // normalize line endings in raw values (per ECMAScript spec):
+        // normalize line endings in raw values (per spec):
         // CRLF (\r\n) -> LF (\n)
         // standalone CR (\r) -> LF (\n)
+
         self.scratch.clearRetainingCapacity();
+
         var i: usize = 0;
         while (i < raw.len) {
-            if (raw[i] == '\r') {
-                if (i + 1 < raw.len and raw[i + 1] == '\n') {
-                    // CRLF -> LF
-                    try self.scratch.append(self.allocator, '\n');
-                    i += 2;
-                } else {
-                    // standalone CR -> LF
-                    try self.scratch.append(self.allocator, '\n');
-                    i += 1;
-                }
-            } else {
-                try self.scratch.append(self.allocator, raw[i]);
-                i += 1;
-            }
+            const result = util.Utf.normalizeLineEnding(raw, i);
+            try self.scratch.append(self.allocator, result.normalized);
+            i += result.len;
         }
 
         const normalized_raw = self.scratch.items;
+
         try self.beginObject();
         try self.fieldType("TemplateElement");
         try self.fieldSpan(span);
@@ -1313,13 +1305,9 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
             break;
         }
 
-        // check for U+2028 or U+2029 after backslash - skip them (invalid escape sequence)
-        // these are line terminators and should not appear in string values when escaped
-        if (i + 2 < input.len and input[i] == 0xE2 and input[i + 1] == 0x80) {
-            if (input[i + 2] == 0xA8 or input[i + 2] == 0xA9) {
-                i += 3;
-                continue;
-            }
+        if (util.Utf.isUnicodeSeparator(input, i) > 0) {
+            i += 3;
+            continue;
         }
 
         switch (input[i]) {
@@ -1348,7 +1336,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                 i += 1;
             },
             '0' => {
-                if (i + 1 < input.len and input[i + 1] >= '0' and input[i + 1] <= '9') {
+                if (i + 1 < input.len and util.Utf.isOctalDigit(input[i + 1])) {
                     const r = util.Utf.parseOctal(input, i);
                     try appendUtf8(out, allocator, r.value);
                     i = r.end;
@@ -1391,11 +1379,11 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                     try out.append(allocator, 'u');
                 }
             },
-            '\r' => {
-                i += 1;
-                if (i < input.len and input[i] == '\n') i += 1;
+            '\r', '\n' => {
+                // line continuation in string literals, consume line terminator
+                const len = util.Utf.lineTerminatorLen(input, i);
+                i += len;
             },
-            '\n' => i += 1,
             else => |c| {
                 try out.append(allocator, c);
                 i += 1;
