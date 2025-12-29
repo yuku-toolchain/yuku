@@ -738,13 +738,13 @@ pub fn parseArrayExpression(parser: *Parser, in_cover: bool) Error!?ast.NodeInde
     const cover = try array.parseCover(parser) orelse return null;
 
     const needs_validation =
-    // only validate if are at the top level and not in a cover context
-    !in_cover and
-    // and also only if we found a init name when parsing this cover
-    parser.state.cover_has_init_name and
-    // and also only if we are not in a pattern context, because this is going to be a pattern, so don't
-    // validate it as an expression
-    !isPartOfPattern(parser);
+        // only validate if are at the top level and not in a cover context
+        !in_cover and
+        // and also only if we found a init name when parsing this cover
+        parser.state.cover_has_init_name and
+        // and also only if we are not in a pattern context, because this is going to be a pattern, so don't
+        // validate it as an expression
+        !isPartOfPattern(parser);
 
     if (!in_cover) {
         parser.state.cover_has_init_name = false;
@@ -757,13 +757,13 @@ pub fn parseObjectExpression(parser: *Parser, in_cover: bool) Error!?ast.NodeInd
     const cover = try object.parseCover(parser) orelse return null;
 
     const needs_validation =
-    // only validate if are at the top level and not in a cover context
-    !in_cover and
-    // and also only if we found a init name when parsing this cover
-    parser.state.cover_has_init_name and
-    // and also only if we are not in a pattern context, because this is going to be a pattern, so don't
-    // validate it as an expression
-    !isPartOfPattern(parser);
+        // only validate if are at the top level and not in a cover context
+        !in_cover and
+        // and also only if we found a init name when parsing this cover
+        parser.state.cover_has_init_name and
+        // and also only if we are not in a pattern context, because this is going to be a pattern, so don't
+        // validate it as an expression
+        !isPartOfPattern(parser);
 
     if (!in_cover) {
         parser.state.cover_has_init_name = false;

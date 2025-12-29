@@ -25,14 +25,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-
     const lib = b.addLibrary(.{
-          .name = name,
-          .root_module = lib_module,
-          .linkage = .static,
-      });
+        .name = name,
+        .root_module = lib_module,
+        .linkage = .static,
+    });
 
-        b.installArtifact(lib);
+    b.installArtifact(lib);
 
     const util_module = b.addModule("util", .{
         .root_source_file = b.path("src/util/root.zig"),
@@ -113,7 +112,7 @@ pub fn build(b: *std.Build) void {
         js_wasm.entry = .disabled;
         js_wasm.rdynamic = true;
         js_wasm.initial_memory = 64 * 1024 * 1024; // 64MB initial
-        js_wasm.max_memory = 256 * 1024 * 1024;   // 256MB max
+        js_wasm.max_memory = 256 * 1024 * 1024; // 256MB max
         js_wasm.stack_size = 1024 * 1024;
 
         b.installArtifact(js_wasm);

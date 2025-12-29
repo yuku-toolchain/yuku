@@ -184,7 +184,6 @@ pub fn expressionToPattern(
                 return null;
             }
 
-
             parser.setData(expr, parser.getData(paren.expression));
             parser.setSpan(expr, parser.getSpan(paren.expression));
         },

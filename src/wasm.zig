@@ -45,7 +45,7 @@ pub export fn parse(
     };
     defer parse_tree.deinit();
 
-    const json_str = js.estree.toJSON(&parse_tree, wasm_allocator, .{}) catch {
+    const json_str = js.estree.toJSON(&parse_tree, wasm_allocator, .{ .pretty = false }) catch {
         return 0;
     };
     // note: json_str is now owned by us, we'll embed it in the result buffer
