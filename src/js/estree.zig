@@ -36,7 +36,7 @@ pub const Serializer = struct {
             .allocator = allocator,
             .options = options,
             .scratch = try .initCapacity(allocator, 256),
-            .isTs = switch (tree.getLang()) {
+            .isTs = switch (tree.lang) {
                 .ts, .tsx, .dts => true,
                 else => false,
             },
@@ -171,7 +171,7 @@ pub const Serializer = struct {
         try self.fieldType("ExpressionStatement");
         try self.fieldSpan(span);
         try self.fieldNode("expression", data.expression);
-        try self.fieldString("directive", self.tree.source[data.value_start..][0..data.value_len]);
+        try self.fieldString("directive", self.tree.getSourceText(data.value_start, data.value_len));
         try self.endObject();
     }
 
@@ -557,7 +557,7 @@ pub const Serializer = struct {
     }
 
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
-        const raw = self.tree.source[data.raw_start..][0..data.raw_len];
+        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
 
         // normalize line endings in raw values (per spec):
         // CRLF (\r\n) -> LF (\n)
@@ -588,7 +588,7 @@ pub const Serializer = struct {
     }
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
-        const raw = self.tree.source[data.raw_start..][0..data.raw_len];
+        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
@@ -599,7 +599,7 @@ pub const Serializer = struct {
     }
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
-        const raw = self.tree.source[data.raw_start..][0..data.raw_len];
+        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
         const numeric = try util.Number.parseJSNumeric(raw);
 
         try self.beginObject();
@@ -617,7 +617,7 @@ pub const Serializer = struct {
     }
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
-        const raw = self.tree.source[data.raw_start..][0..data.raw_len];
+        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
@@ -646,8 +646,8 @@ pub const Serializer = struct {
     }
 
     fn writeRegExpLiteral(self: *Self, data: ast.RegExpLiteral, span: ast.Span) !void {
-        const pattern = self.tree.source[data.pattern_start..][0..data.pattern_len];
-        const flags = self.tree.source[data.flags_start..][0..data.flags_len];
+        const pattern = self.tree.getSourceText(data.pattern_start, data.pattern_len);
+        const flags = self.tree.getSourceText(data.flags_start, data.flags_len);
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
@@ -672,12 +672,12 @@ pub const Serializer = struct {
         try self.fieldType("Identifier");
         try self.fieldSpan(span);
         try self.field("name");
-        try self.writeDecodedString(self.tree.source[data.name_start..][0..data.name_len]);
+        try self.writeDecodedString(self.tree.getSourceText(data.name_start, data.name_len));
         try self.endObject();
     }
 
     fn writePrivateIdentifier(self: *Self, data: ast.PrivateIdentifier, span: ast.Span) !void {
-        const name = self.tree.source[data.name_start..][0..data.name_len];
+        const name = self.tree.getSourceText(data.name_start, data.name_len);
         try self.beginObject();
         try self.fieldType("PrivateIdentifier");
         try self.fieldSpan(span);

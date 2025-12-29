@@ -63,6 +63,7 @@ pub const ParseTree = struct {
     /// Language variant (js, ts, jsx, tsx, dts)
     lang: Lang,
 
+    /// Returns true if the parse tree contains any errors.
     pub inline fn hasErrors(self: ParseTree) bool {
         for (self.diagnostics.items) |d| {
             if (d.severity == .@"error") return true;
@@ -70,32 +71,34 @@ pub const ParseTree = struct {
         return false;
     }
 
+    /// Returns true if the parse tree contains any diagnostics (errors, warnings, etc.).
     pub inline fn hasDiagnostics(self: ParseTree) bool {
         return self.diagnostics.items.len > 0;
     }
 
+    /// Frees all memory allocated by this parse tree.
     pub fn deinit(self: *const ParseTree) void {
         self.arena.deinit();
     }
 
+    /// Gets the data for the node at the given index.
     pub inline fn getData(self: *const ParseTree, index: ast.NodeIndex) ast.NodeData {
         return self.nodes.items(.data)[index];
     }
 
+    /// Gets the span for the node at the given index.
     pub inline fn getSpan(self: *const ParseTree, index: ast.NodeIndex) ast.Span {
         return self.nodes.items(.span)[index];
     }
 
+    /// Gets the extra node indices for the given range.
     pub inline fn getExtra(self: *const ParseTree, range: ast.IndexRange) []const ast.NodeIndex {
         return self.extra.items[range.start..][0..range.len];
     }
 
-    pub inline fn getSourceType(self: *const ParseTree) SourceType {
-        return self.source_type;
-    }
-
-    pub inline fn getLang(self: *const ParseTree) Lang {
-        return self.lang;
+    /// Gets a slice of the source text at the given position.
+    pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
+        return self.source[start..][0..len];
     }
 };
 
