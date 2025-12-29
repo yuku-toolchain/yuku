@@ -29,7 +29,6 @@ export type YukuAST = {
 };
 
 interface WasmExports {
-  // allocate in wasm memory
   alloc: (size: number) => number;
   free: (ptr: number, size: number) => void;
   parse: (
@@ -37,8 +36,7 @@ interface WasmExports {
     sourceLen: number,
     sourceType: number,
     lang: number
-  ) => number; // returns pointer to JSON string (0 on failure)
-  get_result_len: () => number; // returns length of last parse result
+  ) => bigint; // returns packed u64: high 32 bits = length, low 32 bits = pointer
   memory: WebAssembly.Memory;
 }
 
@@ -80,15 +78,17 @@ function parseInternal(
     const sourceType = normalizeSourceType(options.sourceType);
     const lang = normalizeLang(options.lang);
 
-    const resultPtr = wasm.parse(sourcePtr, sourceLen, sourceType, lang);
+    const result = wasm.parse(sourcePtr, sourceLen, sourceType, lang);
 
-    if (resultPtr === 0) {
+    if (result === 0n) {
       throw new Error('Failed to parse source code');
     }
 
-    const jsonLen = wasm.get_result_len();
+    // unpack u64: high 32 bits = length, low 32 bits = pointer
+    const resultPtr = Number(result & 0xFFFFFFFFn);
+    const jsonLen = Number(result >> 32n);
 
-    if (!Number.isInteger(resultPtr) || resultPtr < 0 || resultPtr + jsonLen > wasm.memory.buffer.byteLength) {
+    if (resultPtr + jsonLen > wasm.memory.buffer.byteLength) {
       throw new Error('Invalid result pointer from WASM parser');
     }
 

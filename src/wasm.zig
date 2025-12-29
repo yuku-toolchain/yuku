@@ -11,25 +11,15 @@ pub export fn free(ptr: [*]u8, size: usize) void {
     wasm_allocator.free(ptr[0..size]);
 }
 
-/// returns pointer to json string (caller owns the memory).
-/// use get_result_len() after parse() to get the length.
+/// returns packed u64: high 32 bits = length, low 32 bits = pointer.
 /// returns 0 if parsing failed.
-/// caller must free with: free(ptr, get_result_len())
-///
-var last_result_len: u32 = 0;
-
-pub export fn get_result_len() u32 {
-    return last_result_len;
-}
-
+/// caller must free with: free(ptr, len)
 pub export fn parse(
     source_bytes: [*]const u8,
     len: u32,
     source_type: u32,
     lang: u32,
-) u32 {
-    last_result_len = 0;
-
+) u64 {
     const source: []const u8 = if (len == 0) &[_]u8{} else source_bytes[0..len];
 
     const st: js.SourceType = if (source_type == 0) .script else .module;
@@ -56,7 +46,8 @@ pub export fn parse(
         return 0;
     };
 
-    last_result_len = @intCast(json_str.len);
+    const ptr: u64 = @intFromPtr(json_str.ptr);
+    const json_len: u64 = json_str.len;
 
-    return @intCast(@intFromPtr(json_str.ptr));
+    return (json_len << 32) | ptr;
 }
