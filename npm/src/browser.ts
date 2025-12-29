@@ -37,7 +37,8 @@ interface WasmExports {
     sourceLen: number,
     sourceType: number,
     lang: number
-  ) => number; // returns [length (4 bytes), ...jsonDataPtr]
+  ) => number; // returns pointer to JSON string (0 on failure)
+  get_result_len: () => number; // returns length of last parse result
   memory: WebAssembly.Memory;
 }
 
@@ -51,18 +52,6 @@ async function getWasmInstance(): Promise<WasmExports> {
   wasmInstance = wasmModule.instance.exports as unknown as WasmExports;
 
   return wasmInstance;
-}
-
-// read the length of the ast json, and pointer to the json string in memory
-function readLengthPrefixedData(
-  memory: WebAssembly.Memory,
-  ptr: number
-): { length: number; dataPtr: number } {
-  const view = new DataView(memory.buffer);
-  const length = view.getUint32(ptr, true);
-  // first 4 bytes are length, then the json string
-  const dataPtr = ptr + 4;
-  return { length, dataPtr };
 }
 
 function parseInternal(
@@ -97,30 +86,22 @@ function parseInternal(
       throw new Error('Failed to parse source code');
     }
 
-    if (!Number.isInteger(resultPtr) || resultPtr < 0 || resultPtr >= wasm.memory.buffer.byteLength || resultPtr + 4 > wasm.memory.buffer.byteLength) {
-      throw new Error('Invalid result pointer from WASM parser');
-    }
+    const jsonLen = wasm.get_result_len();
 
-    const { length: jsonLen, dataPtr: jsonDataPtr } = readLengthPrefixedData(
-      wasm.memory,
-      resultPtr
-    );
-
-    if (!Number.isInteger(jsonDataPtr) || jsonDataPtr < 0 || jsonDataPtr >= wasm.memory.buffer.byteLength || jsonDataPtr + jsonLen > wasm.memory.buffer.byteLength) {
-      wasm.free(resultPtr, jsonLen + 4);
+    if (!Number.isInteger(resultPtr) || resultPtr < 0 || resultPtr + jsonLen > wasm.memory.buffer.byteLength) {
       throw new Error('Invalid result pointer from WASM parser');
     }
 
     try {
-      // decode the json to string that can be parsed by JSON.parse
-      // the json bytes are already null terminated from wasm, so the decoder.decode knows where to stop.
       const decoder = new TextDecoder();
-      const jsonBytes = new Uint8Array(wasm.memory.buffer, jsonDataPtr, jsonLen);
+
+      const jsonBytes = new Uint8Array(wasm.memory.buffer, resultPtr, jsonLen);
+
       const jsonStr = decoder.decode(jsonBytes);
 
       return JSON.parse(jsonStr) as YukuAST;
     } finally {
-      wasm.free(resultPtr, jsonLen + 4);
+      wasm.free(resultPtr, jsonLen);
     }
   } finally {
     if (sourceLen > 0 && sourcePtr) {

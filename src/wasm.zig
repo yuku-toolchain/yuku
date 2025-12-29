@@ -11,18 +11,25 @@ pub export fn free(ptr: [*]u8, size: usize) void {
     wasm_allocator.free(ptr[0..size]);
 }
 
-/// memory layout of returned pointer:
-/// [0..4]   = length (u32, little-endian)
-/// [4..len] = JSON string data
-///
+/// returns pointer to json string (caller owns the memory).
+/// use get_result_len() after parse() to get the length.
 /// returns 0 if parsing failed.
-/// caller must free with: free(ptr, length + 4)
+/// caller must free with: free(ptr, get_result_len())
+///
+var last_result_len: u32 = 0;
+
+pub export fn get_result_len() u32 {
+    return last_result_len;
+}
+
 pub export fn parse(
     source_bytes: [*]const u8,
     len: u32,
     source_type: u32,
     lang: u32,
 ) u32 {
+    last_result_len = 0;
+
     const source: []const u8 = if (len == 0) &[_]u8{} else source_bytes[0..len];
 
     const st: js.SourceType = if (source_type == 0) .script else .module;
@@ -48,23 +55,8 @@ pub export fn parse(
     const json_str = js.estree.toJSON(&parse_tree, wasm_allocator, .{ .pretty = false }) catch {
         return 0;
     };
-    // note: json_str is now owned by us, we'll embed it in the result buffer
 
-    // [4 bytes for length][json_str bytes]
-    const total_size = @sizeOf(u32) + json_str.len;
-    const result_buf = wasm_allocator.alloc(u8, total_size) catch {
-        wasm_allocator.free(json_str);
-        return 0;
-    };
+    last_result_len = @intCast(json_str.len);
 
-    // write length in first 4 bytes (little-endian)
-    const json_len: u32 = @intCast(json_str.len);
-    std.mem.writeInt(u32, result_buf[0..4], json_len, .little);
-
-    // copy json string after the length
-    @memcpy(result_buf[4..], json_str);
-
-    wasm_allocator.free(json_str);
-
-    return @intCast(@intFromPtr(result_buf.ptr));
+    return @intCast(@intFromPtr(json_str.ptr));
 }
