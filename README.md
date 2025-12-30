@@ -23,6 +23,7 @@ A high-performance JavaScript/TypeScript parser written in Zig, enabling JavaScr
 - [ ] TypeScript Support
 - [ ] SIMD Optimizations
 - [ ] Best-in-class Visitor and Traverser
+- [ ] Node (NAPI) Bindings
 
 <br/>
 
