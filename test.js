@@ -1,1 +1,1 @@
-async ([(a) = []] = []) => {}
+const async = 'async';
