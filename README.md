@@ -12,6 +12,10 @@
 
 A high-performance JavaScript/TypeScript parser written in Zig, enabling JavaScript tooling within the Zig ecosystem.
 
+</div>
+
+<br/>
+
 - [x] JavaScript Parser
 - [x] WASM (try it here: https://yuku-parser.vercel.app/playground)
 - [ ] Cleanups and Refinement (Post JavaScript Parser)
@@ -19,8 +23,6 @@ A high-performance JavaScript/TypeScript parser written in Zig, enabling JavaScr
 - [ ] TypeScript Support
 - [ ] SIMD Optimizations
 - [ ] Best-in-class Visitor and Traverser
-
-</div>
 
 <br/>
 
@@ -31,6 +33,6 @@ A high-performance JavaScript/TypeScript parser written in Zig, enabling JavaScr
 
 <br/>
 
-## How We Tested AST Accuracy
+### How We Tested AST Accuracy
 
 We ensured that Yuku delivers both correctness and performance. We tested over 3,900+ JavaScript files (marked as `pass` and `pass-explicit`) from the [Test262](https://github.com/tc39/test262) suite. First, we used Oxc to generate the expected ASTs for each file, then parsed the same files with Yuku and compared the ASTs. Yuku passed 100% of the tests.
