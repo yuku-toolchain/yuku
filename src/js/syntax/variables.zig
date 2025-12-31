@@ -1,5 +1,4 @@
 const ast = @import("../ast.zig");
-const token = @import("../token.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const Precedence = @import("../token.zig").Precedence;

@@ -19,7 +19,6 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     try parser.advance(); // consume [
 
     const checkpoint = parser.scratch_cover.begin();
-    errdefer parser.scratch_cover.reset(checkpoint);
 
     var end = start + 1;
 

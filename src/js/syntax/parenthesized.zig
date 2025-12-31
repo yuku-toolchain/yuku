@@ -28,7 +28,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     try parser.advance(); // consume (
 
     const checkpoint = parser.scratch_cover.begin();
-    errdefer parser.scratch_cover.reset(checkpoint);
 
     var end = start + 1;
     var has_trailing_comma = false;
@@ -292,7 +291,6 @@ fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
 
 fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
     const checkpoint = parser.scratch_cover.begin();
-    errdefer parser.scratch_cover.reset(checkpoint);
 
     var rest: ast.NodeIndex = ast.null_node;
 
