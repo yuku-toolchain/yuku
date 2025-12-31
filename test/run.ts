@@ -242,14 +242,12 @@ let totalParseTime = 0
 let totalParsedFiles = 0
 
 for (const [, result] of results) {
-  if (result.failures.length > 0) {
-    const status = result.failed === 0 ? "✓" : "x"
+  const status = result.failed === 0 ? "✓" : "x"
 
-    console.log(`${status} ${result.path} ${result.passed}/${result.total}`)
+  console.log(`${status} ${result.path} ${result.passed}/${result.total}`)
 
-    result.failures.forEach(f => console.log(`  x ${f}`))
-    console.log('')
-  }
+  result.failures.forEach(f => console.log(`  x ${f}`))
+  console.log('')
 
   if (result.total === 0) continue
   totalPassed += result.passed

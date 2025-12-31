@@ -1380,7 +1380,6 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                 }
             },
             '\r', '\n' => {
-                // line continuation in string literals, consume line terminator
                 const len = util.Utf.lineTerminatorLen(input, i);
                 i += len;
             },
