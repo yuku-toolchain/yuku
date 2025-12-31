@@ -4,4 +4,5 @@ zig-out/
 .DS_Store
 ast-reference.ts
 operator-precedence.md
+jsx-roadmap.md
 **/dist

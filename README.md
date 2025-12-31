@@ -17,12 +17,12 @@ A high-performance JavaScript/TypeScript parser written in Zig, enabling JavaScr
 <br/>
 
 - [x] JavaScript Parser
-- [x] WASM (try it here: https://yuku-parser.vercel.app/playground)
-- [ ] Cleanups and Refinement (Post JavaScript Parser)
-- [ ] TypeScript Support
+- [x] WASM (try here: https://yuku-parser.vercel.app/playground)
 - [ ] JSX Support
-- [ ] SIMD Optimizations
 - [ ] Best-in-class Visitor and Traverser
+- [ ] Semantic Checks (and add extra babel js test fixtures)
+- [ ] TypeScript Support
+- [ ] Some possible SIMD Optimizations
 - [ ] Node (NAPI) Bindings
 
 <br/>
