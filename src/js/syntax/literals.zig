@@ -115,7 +115,11 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     var end: u32 = undefined;
     while (true) {
-        const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+        const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse {
+            parser.scratch_a.reset(quasis_checkpoint);
+            parser.scratch_b.reset(exprs_checkpoint);
+            return null;
+        };
         try parser.scratch_b.append(parser.allocator(), expr);
 
         const token = parser.current_token;

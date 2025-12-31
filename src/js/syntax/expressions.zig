@@ -895,6 +895,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
             try parser.advance(); // consume '...'
             const argument = try parseExpression(parser, Precedence.Assignment, .{}) orelse {
                 parser.context.allow_in = saved_allow_in;
+                parser.scratch_a.reset(checkpoint);
                 return null;
             };
             const arg_span = parser.getSpan(argument);
@@ -903,6 +904,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
             }, .{ .start = spread_start, .end = arg_span.end });
         } else try parseExpression(parser, Precedence.Assignment, .{}) orelse {
             parser.context.allow_in = saved_allow_in;
+            parser.scratch_a.reset(checkpoint);
             return null;
         };
 

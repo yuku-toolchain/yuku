@@ -31,7 +31,10 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
         end = parser.getSpan(declarator).end;
     }
 
-    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
+    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse {
+        parser.scratch_a.reset(checkpoint);
+        return null;
+    } };
 
     // lexical declarations are only allowed inside block statements
     if (parser.context.in_single_statement_context and (kind == .let or kind == .@"const")) {
@@ -43,6 +46,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
             .{ .help = "Wrap this declaration in a block statement" },
         );
 
+        parser.scratch_a.reset(checkpoint);
         return null;
     }
 
