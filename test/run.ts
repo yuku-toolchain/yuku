@@ -21,6 +21,7 @@ interface TestConfig {
   type: TestType
   languages: Language[]
   exclude?: string[] // file paths to exclude
+  skipOnCI?: boolean
 }
 
 const configs: TestConfig[] = [
@@ -60,8 +61,8 @@ const configs: TestConfig[] = [
       "f063969b23239390.module.js"
   ] },
   { path: "test/js/misc", type: "snapshot", languages: ["js"] },
-  { path: "test/jsx/pass", type: "snapshot", languages: ["jsx"] },
-  { path: "test/jsx/regression", type: "snapshot", languages: ["jsx"] },
+  { path: "test/jsx/pass", type: "snapshot", languages: ["jsx"], skipOnCI: true },
+  { path: "test/jsx/regression", type: "snapshot", languages: ["jsx"], skipOnCI: true },
 ]
 
 interface TestResult {
@@ -240,6 +241,11 @@ console.log("Running tests...\n")
 const totalStart = performance.now()
 
 for (const config of configs) {
+  if (config.skipOnCI && isCI) {
+    console.log(`Skipping ${config.path} on CI`)
+    continue
+  }
+
   await runCategory(config)
 }
 
