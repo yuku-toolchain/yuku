@@ -14,16 +14,18 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 
 </div>
 
+## Features
+
 - **Correctness**: Full ECMAScript spec compliance. Passes all parser tests from [Test262](https://github.com/tc39/test262).
 - **Performance**: Exceptionally fast through meticulous performance engineering and data-oriented design, competitive with established parsers like Oxc.
 - **Modern**: Supports modern and experimental JavaScript features, including decorators, source and defer imports, and more.
 - **Compliance**: [Rigorously tested](#how-we-tested-ast-accuracy) for 100% accurate ESTree + TypeScript-ESTree AST compatibility in the Node package, while a performance-focused AST internally (in Zig).
 
-### How We Tested AST Accuracy
+## How We Tested AST Accuracy
 
 We ensured that Yuku delivers both correctness and performance. We tested over 3,900+ JavaScript files (marked as `pass` and `pass-explicit`) from the [Test262](https://github.com/tc39/test262) suite. First, we used Oxc to generate the expected ASTs for each file, then parsed the same files with Yuku and compared the ASTs. Yuku passed 100% of the tests.
 
-### Roadmap
+## Roadmap
 
 - [x] JavaScript Parser
 - [x] WASM (try here: https://yuku-parser.vercel.app/playground)
