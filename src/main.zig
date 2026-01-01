@@ -6,7 +6,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file_path = "test.js";
+    const file_path = "test.jsx";
 
     const file = try std.fs.cwd().openFile(file_path, .{});
     defer file.close();
@@ -17,7 +17,7 @@ pub fn main() !void {
     defer allocator.free(contents);
 
     var start = try std.time.Timer.start();
-    const tree = try js.parse(std.heap.page_allocator, contents, .{ .source_type = .module });
+    const tree = try js.parse(std.heap.page_allocator, contents, .{ .lang = .jsx });
     defer tree.deinit();
 
     const taken = start.read();
@@ -37,7 +37,7 @@ pub fn main() !void {
 
     defer allocator.free(json);
 
-    // std.debug.print("\n{s}\n", .{json});
+    std.debug.print("\n{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {
