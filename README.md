@@ -10,7 +10,7 @@
   [![NPM Version](https://img.shields.io/npm/v/yuku?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku)
   [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
-A high-performance JavaScript/TypeScript parser written in Zig, enabling JavaScript tooling within the Zig ecosystem.
+A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
 
 </div>
 
@@ -31,4 +31,4 @@ We ensured that Yuku delivers both correctness and performance. We tested over 3
 - [ ] TypeScript Support
 - [ ] Best-in-class Visitor and Traverser
 - [ ] Node (NAPI) Bindings
-- [ ] TypeScript Declarations Bundler (hopefully waiting for `typescript-go` to release public APIs)
+- [ ] TypeScript Declarations Transpiler (hopefully waiting for `typescript-go` to release public APIs)
