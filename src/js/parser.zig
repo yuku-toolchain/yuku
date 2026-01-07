@@ -418,10 +418,8 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    // TODO(arshad): this is still not that much better, will improve it later
+    // TODO(arshad): this is not that much better, make it better
     fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!void {
-        var has_advanced = false;
-
         while (self.current_token.type != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {
@@ -433,31 +431,14 @@ pub const Parser = struct {
                 return;
             }
 
-            // check for statement-starting keywords at statement boundaries
-            // these are recovery points when they appear after a line terminator
-            if (self.current_token.has_line_terminator_before) {
-                switch (self.current_token.type) {
-                    .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => return,
-                    else => {},
-                }
-            }
-
-            // also check for statement-starting keywords and block starts
-            // block starts are always safe recovery points
             switch (self.current_token.type) {
-                .left_brace => return,
-                .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => {
-                    // if we've advanced past the error location, statement-starting keywords
-                    // are likely the start of a new statement and safe to stop at
-                    if (has_advanced) {
-                        return;
-                    }
+                .left_brace, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .using, .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => {
+                    return;
                 },
                 else => {},
             }
 
             try self.advance();
-            has_advanced = true;
         }
     }
 
@@ -465,7 +446,14 @@ pub const Parser = struct {
         if (self.nodes.capacity > 0) return;
 
         const alloc = self.allocator();
-        const estimated_nodes = @max(1024, (self.source.len * 3) / 4);
+
+        const estimated_nodes = if (self.source.len < 10_000)
+            @max(1024, (self.source.len * 3) / 4)
+        else if (self.source.len < 100_000)
+            self.source.len / 2
+        else
+            self.source.len / 3;
+
         const estimated_extra = estimated_nodes / 2;
 
         try self.nodes.ensureTotalCapacity(alloc, estimated_nodes);
