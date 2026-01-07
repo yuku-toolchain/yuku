@@ -24,7 +24,7 @@ pub const Serializer = struct {
     const max_depth = 512;
 
     pub fn serialize(tree: *const parser.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
-        var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.source.len * 3);
+        var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.source.len * 4);
         errdefer buffer.deinit(allocator);
 
         const pos_map = try util.Utf.buildUtf16PosMap(allocator, tree.source);
@@ -35,7 +35,7 @@ pub const Serializer = struct {
             .buffer = &buffer,
             .allocator = allocator,
             .options = options,
-            .scratch = try .initCapacity(allocator, 256),
+            .scratch = try .initCapacity(allocator, 512),
             .isTs = switch (tree.lang) {
                 .ts, .tsx, .dts => true,
                 else => false,
@@ -566,10 +566,26 @@ pub const Serializer = struct {
         self.scratch.clearRetainingCapacity();
 
         var i: usize = 0;
+        var start: usize = 0;
         while (i < raw.len) {
             const result = util.Utf.normalizeLineEnding(raw, i);
-            try self.scratch.append(self.allocator, result.normalized);
+            if (result.len > 1 or result.normalized != raw[i]) {
+                // Write accumulated unchanged chars
+                if (i > start) {
+                    try self.scratch.appendSlice(self.allocator, raw[start..i]);
+                }
+                try self.scratch.append(self.allocator, result.normalized);
+                start = i + result.len;
+            }
             i += result.len;
+        }
+
+        // Write remaining unchanged chars
+        if (start < raw.len) {
+            try self.scratch.appendSlice(self.allocator, raw[start..]);
+        } else if (start == 0 and raw.len > 0) {
+            // No normalization needed, use original
+            try self.scratch.appendSlice(self.allocator, raw);
         }
 
         const normalized_raw = self.scratch.items;
@@ -1119,7 +1135,7 @@ pub const Serializer = struct {
         }
     }
 
-    fn sep(self: *Self) !void {
+    inline fn sep(self: *Self) !void {
         if (self.needsComma()) try self.writeByte(',');
         self.setNeedsComma(true);
     }
@@ -1154,19 +1170,30 @@ pub const Serializer = struct {
         try self.writeByte(']');
     }
 
-    fn field(self: *Self, key: []const u8) !void {
-        try self.sep();
-        if (self.options.pretty) {
+    inline fn field(self: *Self, key: []const u8) !void {
+        if (self.needsComma()) {
+            if (self.options.pretty) {
+                try self.write(",\n");
+                try self.writeIndent();
+            } else {
+                try self.writeByte(',');
+            }
+        } else if (self.options.pretty) {
             try self.writeByte('\n');
             try self.writeIndent();
         }
+        self.setNeedsComma(true);
+
         try self.writeByte('"');
         try self.write(key);
-        try self.write("\":");
-        if (self.options.pretty) try self.writeByte(' ');
+        if (self.options.pretty) {
+            try self.write("\": ");
+        } else {
+            try self.write("\":");
+        }
     }
 
-    fn fieldType(self: *Self, type_name: []const u8) !void {
+    inline fn fieldType(self: *Self, type_name: []const u8) !void {
         try self.field("type");
         try self.writeString(type_name);
     }
@@ -1181,17 +1208,17 @@ pub const Serializer = struct {
         try self.writeInt(self.pos_map[@min(byte_pos, self.pos_map.len - 1)]);
     }
 
-    fn fieldNode(self: *Self, key: []const u8, node: ast.NodeIndex) !void {
+    inline fn fieldNode(self: *Self, key: []const u8, node: ast.NodeIndex) !void {
         try self.field(key);
         try self.writeNode(node);
     }
 
-    fn fieldBool(self: *Self, key: []const u8, value: bool) !void {
+    inline fn fieldBool(self: *Self, key: []const u8, value: bool) !void {
         try self.field(key);
         try self.write(if (value) "true" else "false");
     }
 
-    fn fieldString(self: *Self, key: []const u8, value: []const u8) !void {
+    inline fn fieldString(self: *Self, key: []const u8, value: []const u8) !void {
         try self.field(key);
         try self.writeString(value);
     }
@@ -1232,38 +1259,74 @@ pub const Serializer = struct {
         try self.writeNode(node);
     }
 
-    fn writeString(self: *Self, s: []const u8) !void {
+    inline fn writeString(self: *Self, s: []const u8) !void {
         try self.writeByte('"');
         try self.writeJsonEscaped(s);
         try self.writeByte('"');
     }
 
     fn writeJsonEscaped(self: *Self, s: []const u8) !void {
-        for (s) |c| {
-            switch (c) {
-                '"' => try self.write("\\\""),
-                '\\' => try self.write("\\\\"),
-                '\n' => try self.write("\\n"),
-                '\r' => try self.write("\\r"),
-                '\t' => try self.write("\\t"),
-                0x08 => try self.write("\\b"),
-                0x0C => try self.write("\\f"),
-                else => if (c < 0x20) {
-                    var buf: [6]u8 = undefined;
-                    try self.write(std.fmt.bufPrint(&buf, "\\u{x:0>4}", .{c}) catch unreachable);
-                } else {
-                    try self.writeByte(c);
-                },
+        var start: usize = 0;
+        var i: usize = 0;
+
+        while (i < s.len) {
+            const c = s[i];
+            const needs_escape = switch (c) {
+                '"', '\\', '\n', '\r', '\t', 0x08, 0x0C => true,
+                else => c < 0x20,
+            };
+
+            if (needs_escape) {
+                // Write accumulated safe characters
+                if (i > start) {
+                    try self.write(s[start..i]);
+                }
+
+                // Write escape sequence
+                switch (c) {
+                    '"' => try self.write("\\\""),
+                    '\\' => try self.write("\\\\"),
+                    '\n' => try self.write("\\n"),
+                    '\r' => try self.write("\\r"),
+                    '\t' => try self.write("\\t"),
+                    0x08 => try self.write("\\b"),
+                    0x0C => try self.write("\\f"),
+                    else => {
+                        var buf: [6]u8 = undefined;
+                        try self.write(std.fmt.bufPrint(&buf, "\\u{x:0>4}", .{c}) catch unreachable);
+                    },
+                }
+                start = i + 1;
             }
+            i += 1;
+        }
+
+        // Write remaining safe characters
+        if (start < s.len) {
+            try self.write(s[start..]);
         }
     }
 
     fn writeInt(self: *Self, value: u32) !void {
-        var buf: [16]u8 = undefined;
-        try self.write(std.fmt.bufPrint(&buf, "{d}", .{value}) catch unreachable);
+        var buf: [10]u8 = undefined;
+        var n = value;
+        var i: usize = buf.len;
+
+        if (n == 0) {
+            try self.writeByte('0');
+            return;
+        }
+
+        while (n > 0) {
+            i -= 1;
+            buf[i] = @intCast('0' + (n % 10));
+            n /= 10;
+        }
+
+        try self.write(buf[i..]);
     }
 
-    fn writeNull(self: *Self) !void {
+    inline fn writeNull(self: *Self) !void {
         try self.write("null");
     }
 
@@ -1292,11 +1355,17 @@ pub const Serializer = struct {
 
 fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.Allocator) !void {
     var i: usize = 0;
+    var start: usize = 0;
+
     while (i < input.len) {
         if (input[i] != '\\') {
-            try out.append(allocator, input[i]);
             i += 1;
             continue;
+        }
+
+        // Write accumulated non-escape characters
+        if (i > start) {
+            try out.appendSlice(allocator, input[start..i]);
         }
 
         i += 1;
@@ -1307,6 +1376,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
 
         if (util.Utf.isUnicodeSeparator(input, i) > 0) {
             i += 3;
+            start = i;
             continue;
         }
 
@@ -1355,6 +1425,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                 if (util.Utf.parseHex2(input, i)) |r| {
                     try appendUtf8(out, allocator, r.value);
                     i = r.end;
+                    start = i;
                     continue;
                 }
                 try out.append(allocator, 'x');
@@ -1367,6 +1438,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                         if (r.has_digits and r.end < input.len and input[r.end] == '}') {
                             try appendUtf8(out, allocator, r.value);
                             i = r.end + 1;
+                            start = i;
                             continue;
                         }
                     }
@@ -1374,6 +1446,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                 } else if (util.Utf.parseHex4(input, i)) |r| {
                     try appendUtf8(out, allocator, r.value);
                     i = r.end;
+                    start = i;
                     continue;
                 } else {
                     try out.append(allocator, 'u');
@@ -1388,6 +1461,12 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                 i += 1;
             },
         }
+        start = i;
+    }
+
+    // Write remaining non-escape characters
+    if (start < input.len) {
+        try out.appendSlice(allocator, input[start..]);
     }
 }
 
