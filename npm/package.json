@@ -1,7 +1,7 @@
 {
   "name": "yuku",
   "description": "A very fast JavaScript/TypeScript parser written in Zig",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "files": [
     "dist"
