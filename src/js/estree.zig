@@ -1,3 +1,8 @@
+// converts the parsed tree to an typescript-estree compatible json string.
+// used for testing/ast inspection purposes, like snapshot tests (test folder).
+// also used for wasm, we convert to a json string first and pass to js, where js uses JSON.parse().
+// for NAPI, we will use a different approach rather than converting to a json string first and using JSON.parse() in js, which is slow.
+
 const std = @import("std");
 const ast = @import("ast.zig");
 const parser = @import("parser.zig");
