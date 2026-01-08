@@ -26,6 +26,10 @@
     "build": "bunup",
     "type-check": "tsc --noEmit"
   },
+  "repository": {
+		"type": "git",
+		"url": "git+https://github.com/arshad-yaseen/yuku.git"
+	},
   "devDependencies": {
     "@types/bun": "^1.3.5",
     "bunup": "^0.16.14",
