@@ -424,12 +424,12 @@ pub const Parser = struct {
                 if (self.current_token.type == t) return;
             }
 
-            if(self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
+            if (self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
                 try self.advance() orelse return null;
                 return;
             }
 
-            if(self.current_token.has_line_terminator_before) {
+            if (self.current_token.has_line_terminator_before) {
                 const can_start_statement = switch (self.current_token.type) {
                     .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => true,
                     else => false,

@@ -61,14 +61,12 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     };
 
-    try parser.replaceTokenAndAdvance(
-        parser.lexer.createToken(
-            .regex_literal,
-            parser.source[regex.span.start..regex.span.end],
-            regex.span.start,
-            regex.span.end,
-        )
-    ) orelse return null;
+    try parser.replaceTokenAndAdvance(parser.lexer.createToken(
+        .regex_literal,
+        parser.source[regex.span.start..regex.span.end],
+        regex.span.start,
+        regex.span.end,
+    )) orelse return null;
 
     return try parser.addNode(.{
         .regexp_literal = .{
