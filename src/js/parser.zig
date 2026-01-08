@@ -229,7 +229,7 @@ pub const Parser = struct {
                 }
             } else {
                 self.state.in_directive_prologue = false;
-                try self.synchronize(terminator);
+                try self.synchronize(terminator) orelse break;
             }
         }
 
@@ -415,18 +415,17 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!void {
-        // skip errored token, otherwise we will stuck bro
-        try self.advance() orelse return;
-
+    // returning null here means, break the top level statement parsing loop
+    // otherwise continue
+    fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!?void {
         while (self.current_token.type != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {
                 if (self.current_token.type == t) return;
             }
 
-            if(self.current_token.type == .semicolon) {
-                try self.advance() orelse return;
+            if(self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
+                try self.advance() orelse return null;
                 return;
             }
 
@@ -440,6 +439,8 @@ pub const Parser = struct {
                     return;
                 }
             }
+
+            try self.advance() orelse return null;
         }
     }
 
