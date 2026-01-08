@@ -287,24 +287,27 @@ pub const Parser = struct {
         return self.source[start..][0..len];
     }
 
-    inline fn nextTokenOrEof(self: *Parser) Error!token.Token {
+    inline fn nextToken(self: *Parser) Error!?token.Token {
         return self.lexer.nextToken() catch |e| blk: {
             if (e == error.OutOfMemory) return error.OutOfMemory;
+
             const lex_err: lexer.LexicalError = @errorCast(e);
+
             try self.diagnostics.append(self.allocator(), .{
                 .message = lexer.getLexicalErrorMessage(lex_err),
                 .span = .{ .start = self.lexer.token_start, .end = self.lexer.cursor },
                 .help = lexer.getLexicalErrorHelp(lex_err),
             });
-            break :blk token.Token.eof(0);
+
+            break :blk null;
         };
     }
 
-    pub fn advance(self: *Parser) Error!void {
+    pub fn advance(self: *Parser) Error!?void {
         const new_token = if (self.next_token) |tok| blk: {
             self.next_token = null;
             break :blk tok;
-        } else try self.nextTokenOrEof();
+        } else try self.nextToken() orelse return null;
 
         if (new_token.type == .left_brace) {
             self.state.scope_depth += 1;
@@ -318,33 +321,24 @@ pub const Parser = struct {
     // lazy next token prefetching for lookahead.
     // if lookahead has already cached the next token, `advance` will use it,
     // so there's no extra cost for lookAhead.
-    pub fn lookAhead(self: *Parser) Error!token.Token {
+    pub fn lookAhead(self: *Parser) Error!?token.Token {
         if (self.next_token) |tok| {
             return tok;
         }
 
-        if (self.current_token.type == .eof) {
-            return token.Token.eof(0);
-        }
+        self.next_token = try self.nextToken() orelse return null;
 
-        self.next_token = try self.nextTokenOrEof();
-
-        if (self.next_token.?.type == .eof) {
-            self.next_token = null;
-            return token.Token.eof(0);
-        }
-
-        return self.next_token.?;
+        return self.next_token;
     }
 
-    pub inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) Error!void {
+    pub inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) Error!?void {
         self.current_token = tok;
-        try self.advance();
+        try self.advance() orelse return null;
     }
 
     pub inline fn expect(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) Error!bool {
         if (self.current_token.type == token_type) {
-            try self.advance();
+            try self.advance() orelse return false;
             return true;
         }
 
@@ -356,7 +350,7 @@ pub const Parser = struct {
     pub inline fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
         if (self.current_token.type == .semicolon) {
             const semicolon_end = self.current_token.span.end;
-            try self.advance();
+            try self.advance() orelse return null;
             return semicolon_end;
         } else {
             if (!self.canInsertSemicolon()) {
@@ -374,10 +368,10 @@ pub const Parser = struct {
     /// then be parsed as the terminating semicolon of a do-while statement (14.7.2)"
     ///
     /// allows `do {} while (false) foo()`, semicolon optional after the `)`.
-    pub inline fn eatSemicolonLenient(self: *Parser, end: u32) Error!u32 {
+    pub inline fn eatSemicolonLenient(self: *Parser, end: u32) Error!?u32 {
         if (self.current_token.type == .semicolon) {
             const semicolon_end = self.current_token.span.end;
-            try self.advance();
+            try self.advance() orelse return null;
             return semicolon_end;
         }
         return end;
