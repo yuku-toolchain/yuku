@@ -4,14 +4,7 @@
     "start": 0,
     "end": 28,
     "sourceType": "script",
-    "body": [
-      {
-        "type": "BlockStatement",
-        "start": 25,
-        "end": 27,
-        "body": []
-      }
-    ]
+    "body": []
   },
   "comments": [],
   "errors": [

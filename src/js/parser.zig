@@ -123,7 +123,6 @@ const ParserState = struct {
     cover_has_init_name: bool = false,
     /// tracks if we're still in the directive prologue of a function/script body.
     in_directive_prologue: bool = true,
-    scope_depth: u32 = 0,
 };
 
 pub const Error = error{OutOfMemory};
@@ -311,12 +310,6 @@ pub const Parser = struct {
             break :blk tok;
         } else try self.nextToken() orelse return null;
 
-        if (new_token.type == .left_brace) {
-            self.state.scope_depth += 1;
-        } else if (new_token.type == .right_brace) {
-            self.state.scope_depth -= 1;
-        }
-
         self.current_token = new_token;
     }
 
@@ -423,7 +416,7 @@ pub const Parser = struct {
     }
 
     fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!void {
-        // skip errored token
+        // skip errored token, otherwise we will stuck bro
         try self.advance() orelse return;
 
         while (self.current_token.type != .eof) {
@@ -432,16 +425,20 @@ pub const Parser = struct {
                 if (self.current_token.type == t) return;
             }
 
-            const can_start_statement = switch (self.current_token.type) {
-                .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => true,
-                else => false,
-            };
-
-            const is_semi_colon = self.current_token.type == .semicolon;
-
-            if (is_semi_colon or can_start_statement) {
-                if(is_semi_colon) try self.advance() orelse return;
+            if(self.current_token.type == .semicolon) {
+                try self.advance() orelse return;
                 return;
+            }
+
+            if(self.current_token.has_line_terminator_before) {
+                const can_start_statement = switch (self.current_token.type) {
+                    .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => true,
+                    else => false,
+                };
+
+                if (can_start_statement) {
+                    return;
+                }
             }
         }
     }
