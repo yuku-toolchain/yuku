@@ -21,15 +21,25 @@
     },
     "./package.json": "./package.json"
   },
-  "license": "MIT",
   "scripts": {
     "build": "bunup",
     "type-check": "tsc --noEmit"
   },
-  "repository": {
+  "license": "MIT",
+	"author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
+	"maintainers": [
+		{
+			"name": "Arshad Yaseen",
+			"email": "arshadpyaseen@gmail.com",
+			"url": "https://arshad.fyi"
+		}
+	],
+	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/arshad-yaseen/yuku.git"
 	},
+	"funding": "https://github.com/sponsors/arshad-yaseen",
+	"homepage": "https://yuku.fyi",
   "devDependencies": {
     "@types/bun": "^1.3.5",
     "bunup": "^0.16.14",
