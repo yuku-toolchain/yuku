@@ -1,13 +1,16 @@
 {
   "name": "yuku",
-  "description": "A very fast JavaScript/TypeScript parser written in Zig",
   "version": "0.2.7",
-  "type": "module",
-  "files": [
-    "dist"
-  ],
+  "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arshad-yaseen/yuku.git"
+  },
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "devDependencies": {
+    "@types/bun": "^1.3.5",
+    "@typescript/native-preview": "^7.0.0-dev.20260109.1"
+  },
   "exports": {
     ".": {
       "import": {
@@ -21,36 +24,28 @@
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-    "build": "bunup",
-    "type-check": "tsc --noEmit"
-  },
+  "description": "A very fast JavaScript/TypeScript parser written in Zig",
+  "files": [
+    "dist"
+  ],
+  "funding": "https://github.com/sponsors/arshad-yaseen",
+  "homepage": "https://yuku.fyi",
   "license": "MIT",
-	"author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
-	"maintainers": [
-		{
-			"name": "Arshad Yaseen",
-			"email": "arshadpyaseen@gmail.com",
-			"url": "https://arshad.fyi"
-		}
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/arshad-yaseen/yuku.git"
-	},
-	"funding": "https://github.com/sponsors/arshad-yaseen",
-	"homepage": "https://yuku.fyi",
-  "devDependencies": {
-    "@types/bun": "^1.3.5",
-    "bunup": "^0.16.14",
-    "typescript": "^5.9.3"
-  },
-  "peerDependencies": {
-    "typescript": ">=4.5.0"
-  },
+  "maintainers": [
+    {
+      "name": "Arshad Yaseen",
+      "email": "arshadpyaseen@gmail.com",
+      "url": "https://arshad.fyi"
+    }
+  ],
   "peerDependenciesMeta": {
     "typescript": {
       "optional": true
     }
-  }
+  },
+  "scripts": {
+    "build": "tsgo"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts"
 }

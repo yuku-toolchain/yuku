@@ -1,13 +1,13 @@
 {
 	"compilerOptions": {
 		"target": "ES2023",
-		"module": "Preserve",
+		"module": "esnext",
 		"moduleDetection": "force",
 
 		"moduleResolution": "bundler",
-		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
-		"noEmit": true,
+		"esModuleInterop": true,
+		"composite": false,
 
 		"strict": true,
 		"skipLibCheck": true,
@@ -20,9 +20,10 @@
 
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"noPropertyAccessFromIndexSignature": false
+		"noPropertyAccessFromIndexSignature": false,
+		"outDir": "dist"
 	},
 
 	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "bunup.config.ts"]
+	"exclude": ["node_modules", "dist"]
 }
