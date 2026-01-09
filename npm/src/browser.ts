@@ -16,13 +16,13 @@ export interface ParseOptions {
   lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts';
 }
 
-export interface YukuNode {
+interface YukuNode {
   type: string;
   [key: string]: unknown;
 }
 
 // we will expand it later
-export type YukuAST = {
+type YukuAST = {
   program: YukuNode[];
   errors: Record<string, unknown>[];
   comments: Record<string, unknown>[];
