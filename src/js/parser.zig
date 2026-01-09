@@ -123,6 +123,7 @@ const ParserState = struct {
     cover_has_init_name: bool = false,
     /// tracks if we're still in the directive prologue of a function/script body.
     in_directive_prologue: bool = true,
+    /// current scope identified by depth
     current_scope_id: u32 = 0,
 };
 
@@ -441,7 +442,7 @@ pub const Parser = struct {
 
                 if (self.state.current_scope_id <= errored_scope_id and self.current_token.has_line_terminator_before) {
                     const can_start_statement = switch (self.current_token.type) {
-                        .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import => true,
+                        .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
                         else => false,
                     };
 

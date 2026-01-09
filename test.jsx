@@ -1,5 +1,5 @@
 function cool() {
-  const nice = "cool"
+  break;
 }
 
-const nice = "cool"
+const randomNumber = ""
