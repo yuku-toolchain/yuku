@@ -221,6 +221,7 @@ pub const Parser = struct {
         const statements_checkpoint = self.scratch_statements.begin();
 
         self.state.in_directive_prologue = true;
+        self.state.current_scope_id += 1;
 
         while (!self.isAtBodyEnd(terminator)) {
             if (try statements.parseStatement(self, .{})) |statement| {
@@ -234,6 +235,8 @@ pub const Parser = struct {
                 try self.synchronize(terminator) orelse break;
             }
         }
+
+        self.state.current_scope_id -= 1;
 
         return self.addExtra(self.scratch_statements.take(statements_checkpoint));
     }
@@ -311,12 +314,6 @@ pub const Parser = struct {
             self.next_token = null;
             break :blk tok;
         } else try self.nextToken() orelse return null;
-
-        if (self.current_token.type == .left_brace) {
-            self.state.current_scope_id += 1;
-        } else if (self.current_token.type == .right_brace) {
-            self.state.current_scope_id -= 1;
-        }
 
         self.current_token = new_token;
     }
