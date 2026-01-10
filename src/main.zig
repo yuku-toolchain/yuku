@@ -33,17 +33,17 @@ pub fn main() !void {
 
     const mb_per_sec = (@as(f64, @floatFromInt(contents.len)) / 1_000_000.0) / (taken_ms / 1000.0);
 
-    var json_start = try std.time.Timer.start();
-    const json = try js.estree.toJSON(&tree, allocator, .{});
-    const json_taken = json_start.read();
+    // var json_start = try std.time.Timer.start();
+    // const json = try js.estree.toJSON(&tree, allocator, .{});
+    // const json_taken = json_start.read();
 
-    const json_taken_ms = @as(f64, @floatFromInt(json_taken)) / ns_to_ms;
+    // const json_taken_ms = @as(f64, @floatFromInt(json_taken)) / ns_to_ms;
 
-    defer allocator.free(json);
+    // defer allocator.free(json);
 
-    std.debug.print("\n{s}\n", .{json});
+    // std.debug.print("\n{s}\n", .{json});
 
-    std.debug.print("estree time taken {d:.2}\n", .{json_taken_ms});
+    // std.debug.print("estree time taken {d:.2}\n", .{json_taken_ms});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {
