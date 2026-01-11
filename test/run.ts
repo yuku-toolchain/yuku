@@ -61,8 +61,8 @@ const configs: TestConfig[] = [
       "f063969b23239390.module.js"
   ] },
   { path: "test/js/misc", type: "snapshot", languages: ["js"] },
-  // { path: "test/jsx/pass", type: "snapshot", languages: ["jsx"], skipOnCI: true },
-  // { path: "test/jsx/regression", type: "snapshot", languages: ["jsx"], skipOnCI: true },
+  { path: "test/jsx/pass", type: "snapshot", languages: ["jsx"], skipOnCI: true },
+  { path: "test/jsx/regression", type: "snapshot", languages: ["jsx"], skipOnCI: true },
 ]
 
 interface TestResult {
