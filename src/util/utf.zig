@@ -22,7 +22,9 @@ pub fn isOctalDigit(digit: u8) bool {
     return digit >= '0' and digit <= '7';
 }
 
-pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
+/// returns the length of ascii line terminators (\n, \r, \r\n)
+/// returns 0 if no ascii line terminator is found at the position
+pub fn asciiLineTerminatorLen(source: []const u8, pos: usize) u8 {
     if (pos >= source.len) return 0;
 
     const c = source[pos];
@@ -35,11 +37,19 @@ pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
         return if (pos + 1 < source.len and source[pos + 1] == '\n') 2 else 1;
     }
 
-    return isUnicodeSeparator(source, pos);
+    return 0;
+}
+
+pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
+    const ascii_len = asciiLineTerminatorLen(source, pos);
+
+    if (ascii_len > 0) return ascii_len;
+
+    return unicodeSeparatorLen(source, pos);
 }
 
 /// check if the byte sequence at `pos` is U+2028 (Line Separator) or U+2029 (Paragraph Separator)
-pub fn isUnicodeSeparator(source: []const u8, pos: usize) u8 {
+pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     if (pos + 2 < source.len and source[pos] == 0xE2 and source[pos + 1] == 0x80) {
         if (source[pos + 2] == 0xA8 or source[pos + 2] == 0xA9) {
             return 3;

@@ -320,13 +320,6 @@ pub const Lexer = struct {
 
         const c = self.source[self.cursor];
 
-        const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
-
-        if (lt_len > 0) {
-            self.cursor += lt_len;
-            return;
-        }
-
         brk: switch (c) {
             '0' => {
                 const c1 = self.peek(1);
@@ -353,7 +346,17 @@ pub const Lexer = struct {
                 if (self.strict_mode) return error.InvalidOctalEscape;
                 self.cursor += 1;
             },
+            '\n', '\r' => {
+                self.cursor += util.Utf.asciiLineTerminatorLen(self.source, self.cursor);
+            },
             else => {
+                const us_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
+
+                if (us_len > 0) {
+                    self.cursor += us_len;
+                    break :brk;
+                }
+
                 self.cursor += 1;
             },
         }
@@ -982,15 +985,13 @@ pub const Lexer = struct {
             } else {
                 @branchHint(.unlikely);
 
-                if (c == 0xE2) {
-                    const len = util.Utf.isUnicodeSeparator(self.source, self.cursor);
+                const us_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
 
-                    if (len > 0) {
-                        self.has_line_terminator_before = true;
-                        can_be_html_close_comment = true;
-                        self.cursor += len;
-                        continue;
-                    }
+                if (us_len > 0) {
+                    self.has_line_terminator_before = true;
+                    can_be_html_close_comment = true;
+                    self.cursor += us_len;
+                    continue;
                 }
 
                 const cp = try util.Utf.codePointAt(self.source, self.cursor);
@@ -1030,6 +1031,7 @@ pub const Lexer = struct {
             const c = self.source[self.cursor];
 
             const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
+
             if (lt_len > 0) {
                 self.has_line_terminator_before = true;
                 self.cursor += lt_len;

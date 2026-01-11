@@ -1331,7 +1331,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
             break;
         }
 
-        if (util.Utf.isUnicodeSeparator(input, i) > 0) {
+        if (util.Utf.unicodeSeparatorLen(input, i) > 0) {
             i += 3;
             continue;
         }
@@ -1406,7 +1406,7 @@ fn decodeEscapes(input: []const u8, out: *std.ArrayList(u8), allocator: std.mem.
                 }
             },
             '\r', '\n' => {
-                const len = util.Utf.lineTerminatorLen(input, i);
+                const len = util.Utf.asciiLineTerminatorLen(input, i);
                 i += len;
             },
             else => |c| {
