@@ -1,17 +1,17 @@
 pub const Mask = struct {
-    pub const IsNumericLiteral: u32 = 1 << 12;
-    pub const IsBinaryOp: u32 = 1 << 13;
-    pub const IsLogicalOp: u32 = 1 << 14;
-    pub const IsUnaryOp: u32 = 1 << 15;
-    pub const IsAssignmentOp: u32 = 1 << 16;
-    pub const IsIdentifierLike: u32 = 1 << 17;
+    pub const IsNumericLiteral: u32 = 1 << 13;
+    pub const IsBinaryOp: u32 = 1 << 14;
+    pub const IsLogicalOp: u32 = 1 << 15;
+    pub const IsUnaryOp: u32 = 1 << 16;
+    pub const IsAssignmentOp: u32 = 1 << 17;
+    pub const IsIdentifierLike: u32 = 1 << 18;
     /// reserved words that are always reserved
-    pub const IsReserved: u32 = 1 << 18;
+    pub const IsReserved: u32 = 1 << 19;
     /// reserved words that are only reserved in strict mode
-    pub const IsStrictModeReserved: u32 = 1 << 19;
+    pub const IsStrictModeReserved: u32 = 1 << 20;
 
-    pub const PrecShift: u32 = 7;
-    pub const PrecOverlap: u32 = 31;
+    pub const PrecShift: u32 = 8;
+    pub const PrecOverlap: u32 = 0b11111;
 };
 
 pub const TokenType = enum(u32) {
@@ -164,7 +164,11 @@ pub const TokenType = enum(u32) {
     // typescript
     declare = 126 | Mask.IsIdentifierLike, // "declare"
 
-    eof = 127, // end of file
+    // jsx
+    jsx_identifier = 127,
+    jsx_text = 128,
+
+    eof = 129, // end of file
 
     pub fn precedence(self: TokenType) u5 {
         return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
@@ -360,6 +364,8 @@ pub const TokenType = enum(u32) {
             .template_tail,
             .identifier,
             .private_identifier,
+            .jsx_identifier,
+            .jsx_text,
             => null,
         };
     }
