@@ -6,7 +6,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const file_path = "test.jsx";
+    const file_path = "test.tsx";
 
     const file = try std.fs.cwd().openFile(file_path, .{});
     defer file.close();
@@ -17,7 +17,7 @@ pub fn main() !void {
     defer allocator.free(contents);
 
     var start = try std.time.Timer.start();
-    const tree = try js.parse(std.heap.page_allocator, contents, .{ .lang = .jsx });
+    const tree = try js.parse(std.heap.page_allocator, contents, .{ .lang = .tsx });
     defer tree.deinit();
 
     const taken = start.read();
@@ -33,31 +33,31 @@ pub fn main() !void {
 
     const mb_per_sec = (@as(f64, @floatFromInt(contents.len)) / 1_000_000.0) / (taken_ms / 1000.0);
 
-    // var json_start = try std.time.Timer.start();
-    // const json = try js.estree.toJSON(&tree, allocator, .{});
-    // const json_taken = json_start.read();
+    var json_start = try std.time.Timer.start();
+    const json = try js.estree.toJSON(&tree, allocator, .{});
+    const json_taken = json_start.read();
 
-    // const json_taken_ms = @as(f64, @floatFromInt(json_taken)) / ns_to_ms;
+    const json_taken_ms = @as(f64, @floatFromInt(json_taken)) / ns_to_ms;
 
-    // defer allocator.free(json);
+    defer allocator.free(json);
 
-    // std.debug.print("\n{s}\n", .{json});
+    std.debug.print("\n{s}\n", .{json});
 
-    // std.debug.print("estree time taken {d:.2}\n", .{json_taken_ms});
+    std.debug.print("estree time taken {d:.2}\n", .{json_taken_ms});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics.items) |err| {
             const start_pos = getLineAndColumn(contents, err.span.start);
             const end_pos = getLineAndColumn(contents, err.span.end);
 
-            std.debug.print("\nError: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
+            std.debug.print("\nError: {s} at test.tsx:{d}:{d} to test.tsx:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
             if (err.help) |help| std.debug.print("  Help: {s}\n\n", .{help});
             if (err.labels.len > 0) {
                 for (err.labels) |label| {
                     const label_start_pos = getLineAndColumn(contents, label.span.start);
                     const label_end_pos = getLineAndColumn(contents, label.span.end);
 
-                    std.debug.print("  Label: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ label.message, label_start_pos.line, label_start_pos.col, label_end_pos.line, label_end_pos.col });
+                    std.debug.print("  Label: {s} at test.tsx:{d}:{d} to test.tsx:{d}:{d}\n", .{ label.message, label_start_pos.line, label_start_pos.col, label_end_pos.line, label_end_pos.col });
                 }
             }
         }
