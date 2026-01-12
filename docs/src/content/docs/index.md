@@ -7,7 +7,7 @@ description: High-performance JavaScript/TypeScript toolchain in Zig.
 
 <h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku</h1>
 
-A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
+A high-performance JavaScript/TypeScript compiler written in Zig, featuring a fast parser, visitor/traverser, and transpiler.
 
 <br />
 
