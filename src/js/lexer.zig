@@ -522,6 +522,32 @@ pub const Lexer = struct {
         return self.makePuncToken(1, .dot, start);
     }
 
+    fn scanJsxText(self: *Lexer) token.Token {
+        const c = self.source[self.cursor];
+
+        const start = self.cursor;
+
+        while (true) {
+            switch (c) {
+                '<' => {
+                    self.state.in_jsx_identifier = true;
+                    self.state.in_jsx_text = false;
+                    break;
+                },
+                '{' => {
+                    self.state.in_jsx_identifier = false;
+                    self.state.in_jsx_text = false;
+                    break;
+                },
+                else => {}
+            }
+
+            self.cursor += 1;
+        }
+
+        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
+    }
+
     inline fn scanIdentifierBody(self: *Lexer) !void {
         while (self.cursor < self.source_len) {
             const c = self.source[self.cursor];
@@ -534,7 +560,6 @@ pub const Lexer = struct {
                     }
                     const c2 = self.peek(2);
                     if (c2 != '{') {
-                        // \uXXXX format - decode and validate
                         if (util.Utf.parseHex4(self.source, self.cursor + 2)) |r| {
                             if (!util.UnicodeId.canContinueIdentifier(r.value)) {
                                 return error.InvalidIdentifierContinue;
@@ -566,32 +591,6 @@ pub const Lexer = struct {
                 }
             }
         }
-    }
-
-    fn scanJsxText(self: *Lexer) token.Token {
-        const c = self.source[self.cursor];
-
-        const start = self.cursor;
-
-        while (true) {
-            switch (c) {
-                '<' => {
-                    self.state.in_jsx_identifier = true;
-                    self.state.in_jsx_text = false;
-                    break;
-                },
-                '{' => {
-                    self.state.in_jsx_identifier = false;
-                    self.state.in_jsx_text = false;
-                    break;
-                },
-                else => {}
-            }
-
-            self.cursor += 1;
-        }
-
-        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
     }
 
     fn scanIdentifierOrKeyword(self: *Lexer) !token.Token {
