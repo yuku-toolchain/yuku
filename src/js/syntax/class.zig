@@ -341,9 +341,10 @@ fn parseMethodDefinition(
         return null;
     }
 
-    // Save and set context
+    // save and set context
     const saved_async = parser.context.in_async;
     const saved_generator = parser.context.in_generator;
+
     parser.context.in_async = is_async;
     parser.context.in_generator = is_generator;
 
