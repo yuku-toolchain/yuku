@@ -20,7 +20,7 @@ _**Yuku includes:**_
 
 - **Spec Compliance**: Fully implements the ECMAScript specification. Passes all parser tests from [Test262](https://github.com/tc39/test262).
 - **Exceptional Performance**: Engineered for speed and efficiency using data-oriented design. Competitive with leading parsers like Oxc.
-- **Cutting-edge Support**: Parses modern and experimental JavaScript features—including decorators, source and defer imports, and more.
+- **Cutting-edge Support**: Parses modern and experimental JavaScript features, including decorators, source and defer imports, and more.
 - **Accurate ASTs**: Produces rigorously tested, 100% accurate ESTree and TypeScript-ESTree ASTs.
 
 ### Current Status
