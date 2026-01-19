@@ -9,9 +9,9 @@ pub fn parseJsxElement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consome '<'
+    parser.setLexerMode(.jsx_identifier);
 
-    parser.lexer.state.in_jsx_identifier = true;
+    try parser.advance() orelse return null; // consume '<'
 
     if(parser.current_token.type == .jsx_identifier) {}
 

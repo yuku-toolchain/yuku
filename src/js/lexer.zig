@@ -35,12 +35,15 @@ pub const LexicalError = error{
 // TODO:
 // [ ] some simd optimizations
 
+pub const LexerMode = enum {
+    normal,
+    jsx_text,
+    jsx_identifier
+};
+
 const LexerState = struct {
     has_line_terminator_before: bool = false,
-    // <>...</>
-    in_jsx_text: bool = false,
-    // <...></...>
-    in_jsx_identifier: bool = false,
+    mode: LexerMode = .normal,
 };
 
 pub const Lexer = struct {
@@ -56,7 +59,6 @@ pub const Lexer = struct {
 
     strict_mode: bool,
     source: []const u8,
-    source_len: u32,
     /// token start position, retained for lexical error recovery if scan fails
     token_start: u32,
     /// current byte index being scanned in the source
@@ -67,7 +69,6 @@ pub const Lexer = struct {
         return .{
             .strict_mode = strict_mode,
             .source = source,
-            .source_len = @intCast(source.len),
             .template_depth = 0,
 
             .state = .{},
@@ -82,32 +83,13 @@ pub const Lexer = struct {
         };
     }
 
-    inline fn peek(self: *const Lexer, offset: u32) u8 {
-        if (offset > self.source_len or self.cursor >= self.source_len - offset) {
-            return 0;
-        }
-        return self.source[self.cursor + offset];
-    }
-
-    inline fn canStartIdentifierAscii(c: u8) bool {
-        return (c >= 'a' and c <= 'z') or
-            (c >= 'A' and c <= 'Z') or
-            c == '_' or c == '$';
-    }
-
-    inline fn canContinueIdentifierAscii(c: u8, is_jsx: bool) bool {
-        return (c >= 'a' and c <= 'z') or
-            (c >= 'A' and c <= 'Z') or
-            (c >= '0' and c <= '9') or
-            c == '_' or c == '$' or
-            // <elem-name></elem-name>
-            (is_jsx and c == '-');
-    }
-
     pub fn nextToken(self: *Lexer) LexicalError!token.Token {
-        try self.skipSkippable();
+        // jsx text allows whitespaces and comments, as is as text
+        if(self.state.mode != .jsx_text) {
+            try self.skipWsAndComments();
+        }
 
-        if (self.cursor >= self.source_len) {
+        if (self.cursor >= self.source.len) {
             return self.createToken(.eof, "", self.cursor, self.cursor);
         }
 
@@ -123,7 +105,7 @@ pub const Lexer = struct {
             '~', '(', ')', '{', '[', ']', ';', ',', ':' => self.scanSimplePunctuation(),
             '}' => self.handleRightBrace(),
             else => {
-                if (self.state.in_jsx_text) {
+                if (self.state.mode == .jsx_text) {
                     return self.scanJsxText();
                 }
 
@@ -255,12 +237,34 @@ pub const Lexer = struct {
         };
     }
 
+    inline fn peek(self: *const Lexer, offset: u32) u8 {
+        if (offset > self.source.len or self.cursor >= self.source.len - offset) {
+            return 0;
+        }
+        return self.source[self.cursor + offset];
+    }
+
+    inline fn canStartIdentifierAscii(c: u8) bool {
+        return (c >= 'a' and c <= 'z') or
+            (c >= 'A' and c <= 'Z') or
+            c == '_' or c == '$';
+    }
+
+    inline fn canContinueIdentifierAscii(c: u8, allow_hyphen: bool) bool {
+        return (c >= 'a' and c <= 'z') or
+            (c >= 'A' and c <= 'Z') or
+            (c >= '0' and c <= '9') or
+            c == '_' or c == '$' or
+            // <elem-name></elem-name>
+            (allow_hyphen and c == '-');
+    }
+
     fn scanString(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         const quote = self.source[start];
         self.cursor += 1;
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
             if (c == '\\') {
@@ -287,7 +291,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 1;
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
             if (c == '\\') {
@@ -320,7 +324,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 1;
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (c == '\\') {
                 try self.consumeEscape();
@@ -347,7 +351,7 @@ pub const Lexer = struct {
     fn consumeEscape(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip backslash
 
-        if (self.cursor >= self.source_len) {
+        if (self.cursor >= self.source.len) {
             return error.UnterminatedString;
         }
 
@@ -414,7 +418,7 @@ pub const Lexer = struct {
     fn consumeUnicodeEscape(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip 'u'
 
-        if (self.cursor < self.source_len and self.source[self.cursor] == '{') {
+        if (self.cursor < self.source.len and self.source[self.cursor] == '{') {
             // \u{XXXXX}
             self.cursor += 1;
             const start = self.cursor;
@@ -467,7 +471,7 @@ pub const Lexer = struct {
         self.cursor += 1; // consume '/'
         var in_class = false;
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             if (util.Utf.isLineTerminator(self.source, self.cursor)) {
                 return error.InvalidRegexLineTerminator;
             }
@@ -477,7 +481,7 @@ pub const Lexer = struct {
             if (c == '\\') {
                 self.cursor += 1; // consume '\'
 
-                if (self.cursor >= self.source_len) {
+                if (self.cursor >= self.source.len) {
                     return error.UnterminatedRegexLiteral;
                 }
 
@@ -504,7 +508,7 @@ pub const Lexer = struct {
 
                 closing_delimeter_pos = self.cursor;
 
-                while (self.cursor < self.source_len and
+                while (self.cursor < self.source.len and
                     std.ascii.isAlphabetic(self.source[self.cursor]))
                 {
                     self.cursor += 1;
@@ -538,33 +542,30 @@ pub const Lexer = struct {
     }
 
     fn scanJsxText(self: *Lexer) token.Token {
-        const c = self.source[self.cursor];
-
         const start = self.cursor;
 
-        while (true) {
+        while (self.cursor < self.source.len) {
+            const c = self.source[self.cursor];
+
             switch (c) {
                 '<' => {
-                    self.state.in_jsx_identifier = true;
-                    self.state.in_jsx_text = false;
+                    self.state.mode = .jsx_identifier;
                     break;
                 },
                 '{' => {
-                    self.state.in_jsx_identifier = false;
-                    self.state.in_jsx_text = false;
+                    // we are back to expressions, so normal
+                    self.state.mode = .normal;
                     break;
                 },
-                else => {},
+                else => self.cursor += 1,
             }
-
-            self.cursor += 1;
         }
 
         return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
     }
 
     inline fn scanIdentifierBody(self: *Lexer) !void {
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
@@ -584,7 +585,7 @@ pub const Lexer = struct {
                     self.cursor += 1; // consume backslash to get to 'u'
                     try self.consumeUnicodeEscape();
                 } else {
-                    if (canContinueIdentifierAscii(c, self.state.in_jsx_identifier)) {
+                    if (canContinueIdentifierAscii(c, self.state.mode == .jsx_identifier)) {
                         self.cursor += 1;
                     } else {
                         break;
@@ -648,7 +649,7 @@ pub const Lexer = struct {
 
         const lexeme = self.source[start..self.cursor];
 
-        const token_type: token.TokenType = if (self.state.in_jsx_identifier) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
+        const token_type: token.TokenType = if (self.state.mode == .jsx_identifier) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
 
         return self.createToken(token_type, lexeme, start, self.cursor);
     }
@@ -860,7 +861,7 @@ pub const Lexer = struct {
 
         // handle decimal point only for regular numbers, not legacy octals
         if (token_type == .numeric_literal and
-            self.cursor < self.source_len and self.source[self.cursor] == '.')
+            self.cursor < self.source.len and self.source[self.cursor] == '.')
         {
             const next = self.peek(1);
             if (next == '_') return error.NumericSeparatorMisuse;
@@ -874,7 +875,7 @@ pub const Lexer = struct {
         }
 
         // handle exponent (only for regular numbers)
-        if (token_type == .numeric_literal and self.cursor < self.source_len) {
+        if (token_type == .numeric_literal and self.cursor < self.source.len) {
             const exp_char = std.ascii.toLower(self.source[self.cursor]);
             if (exp_char == 'e') {
                 try self.consumeExponent();
@@ -882,7 +883,7 @@ pub const Lexer = struct {
         }
 
         // handle bigint suffix 'n'
-        if (self.cursor < self.source_len and self.source[self.cursor] == 'n') {
+        if (self.cursor < self.source.len and self.source[self.cursor] == 'n') {
             // bigint cannot have decimal point or exponent
             if (token_type == .numeric_literal) {
                 const lexeme = self.source[start..self.cursor];
@@ -898,7 +899,7 @@ pub const Lexer = struct {
         }
 
         // identifier cannot immediately follow a numeric literal
-        if (self.cursor < self.source_len) {
+        if (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
         }
@@ -909,7 +910,7 @@ pub const Lexer = struct {
     inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
         var last_was_separator = false;
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (isValidDigit(c)) {
                 self.cursor += 1;
@@ -954,7 +955,7 @@ pub const Lexer = struct {
     fn consumeExponent(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip 'e' or 'E'
 
-        if (self.cursor >= self.source_len) {
+        if (self.cursor >= self.source.len) {
             return error.InvalidExponentPart;
         }
 
@@ -972,10 +973,10 @@ pub const Lexer = struct {
         }
     }
 
-    inline fn skipSkippable(self: *Lexer) LexicalError!void {
+    inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
         var can_be_html_close_comment = self.cursor == 0 or self.state.has_line_terminator_before;
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
             if (std.ascii.isAscii(c)) {
@@ -1064,7 +1065,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 2; // skip '//'
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
             self.cursor += 1;
         }
@@ -1081,7 +1082,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 2; // skip '/*'
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
             const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
@@ -1113,7 +1114,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 4; // skip '<!--'
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
             // check for early termination with -->
@@ -1145,7 +1146,7 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 3; // skip '-->'
 
-        while (self.cursor < self.source_len) {
+        while (self.cursor < self.source.len) {
             if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
             self.cursor += 1;
         }

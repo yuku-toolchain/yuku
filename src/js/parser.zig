@@ -256,6 +256,12 @@ pub const Parser = struct {
 
     // utils
 
+    pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
+        // clear lookahead, so parser will fetch fresh next token with new mode
+        self.clearLookAhead();
+        self.lexer.state.mode = mode;
+    }
+
     pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
         const index: ast.NodeIndex = @intCast(self.nodes.len);
         try self.nodes.append(self.allocator(), .{ .data = data, .span = span });
@@ -329,6 +335,10 @@ pub const Parser = struct {
         self.next_token = try self.nextToken() orelse return null;
 
         return self.next_token;
+    }
+
+    pub inline fn clearLookAhead(self: *Parser) void {
+        self.next_token = null;
     }
 
     pub inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) Error!?void {
