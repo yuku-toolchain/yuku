@@ -162,6 +162,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
     var end: u32 = parser.current_token.span.end;
 
     const params_checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(params_checkpoint);
 
     var rest = ast.null_node;
 
@@ -180,8 +181,6 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
                     "Rest parameter must be the last parameter",
                     .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
                 );
-
-                parser.scratch_a.reset(params_checkpoint);
 
                 return null;
             }

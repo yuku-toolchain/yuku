@@ -101,7 +101,9 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const quasis_checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(quasis_checkpoint);
     const exprs_checkpoint = parser.scratch_b.begin();
+    defer parser.scratch_b.reset(exprs_checkpoint);
 
     const head = parser.current_token;
     const head_span = getTemplateElementSpan(head);
@@ -118,11 +120,7 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     var end: u32 = undefined;
     while (true) {
-        const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse {
-            parser.scratch_a.reset(quasis_checkpoint);
-            parser.scratch_b.reset(exprs_checkpoint);
-            return null;
-        };
+        const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         try parser.scratch_b.append(parser.allocator(), expr);
 
         const token = parser.current_token;
@@ -152,8 +150,6 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
                     "Unexpected token in template literal expression",
                     .{ .help = "Template expressions must be followed by '}' to continue the template string. Check for unmatched braces." },
                 );
-                parser.scratch_a.reset(quasis_checkpoint);
-                parser.scratch_b.reset(exprs_checkpoint);
                 return null;
             },
         }

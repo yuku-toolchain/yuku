@@ -144,7 +144,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     // jsx element
-    if(token_type == .less_than and parser.isJsx()) {
+    if (token_type == .less_than and parser.isJsx()) {
         return jsx.parseJsxElement(parser);
     }
 
@@ -611,15 +611,13 @@ fn parseLogicalExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) 
 /// `a, b, c` - comma operator / sequence expression
 fn parseSequenceExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
     try parser.scratch_a.append(parser.allocator(), left);
 
     while (parser.current_token.type == .comma) {
         try parser.advance() orelse return null; // consume ','
 
-        const expr = try parseExpression(parser, precedence + 1, .{}) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
+        const expr = try parseExpression(parser, precedence + 1, .{}) orelse return null;
         try parser.scratch_a.append(parser.allocator(), expr);
     }
 
@@ -881,12 +879,12 @@ fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bo
 /// function call arguments
 fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     const saved_allow_in = parser.context.allow_in;
     parser.context.allow_in = true;
 
     while (parser.current_token.type != .right_paren and parser.current_token.type != .eof) {
-
         const arg = if (parser.current_token.type == .spread) blk: {
             const spread_start = parser.current_token.span.start;
 
@@ -894,7 +892,6 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
 
             const argument = try parseExpression(parser, Precedence.Assignment, .{}) orelse {
                 parser.context.allow_in = saved_allow_in;
-                parser.scratch_a.reset(checkpoint);
                 return null;
             };
 
@@ -903,11 +900,8 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
             break :blk try parser.addNode(.{
                 .spread_element = .{ .argument = argument },
             }, .{ .start = spread_start, .end = arg_span.end });
-
         } else try parseExpression(parser, Precedence.Assignment, .{}) orelse {
             parser.context.allow_in = saved_allow_in;
-
-            parser.scratch_a.reset(checkpoint);
 
             return null;
         };

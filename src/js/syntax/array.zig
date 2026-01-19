@@ -19,6 +19,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     try parser.advance() orelse return null; // consume [
 
     const checkpoint = parser.scratch_cover.begin();
+    defer parser.scratch_cover.reset(checkpoint);
 
     var end = start + 1;
 
@@ -34,10 +35,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         if (parser.current_token.type == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
-            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
-                parser.scratch_cover.reset(checkpoint);
-                return null;
-            };
+            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             const spread_end = parser.getSpan(argument).end;
             const spread = try parser.addNode(
                 .{ .spread_element = .{ .argument = argument } },
@@ -47,10 +45,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             end = spread_end;
         } else {
             // regular element - parse as cover element
-            const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
-                parser.scratch_cover.reset(checkpoint);
-                return null;
-            };
+            const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             try parser.scratch_cover.append(parser.allocator(), element);
             end = parser.getSpan(element).end;
         }
@@ -68,7 +63,6 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
                 "Expected ',' or ']' in array",
                 .{ .help = "Add a comma between elements or close the array with ']'." },
             );
-            parser.scratch_cover.reset(checkpoint);
             return null;
         }
     }
@@ -82,7 +76,6 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
                 .labels = try parser.makeLabels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
             },
         );
-        parser.scratch_cover.reset(checkpoint);
         return null;
     }
 

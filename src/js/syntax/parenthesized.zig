@@ -28,6 +28,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     try parser.advance() orelse return null; // consume (
 
     const checkpoint = parser.scratch_cover.begin();
+    defer parser.scratch_cover.reset(checkpoint);
 
     var end = start + 1;
     var has_trailing_comma = false;
@@ -50,10 +51,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
 
-            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
-                parser.scratch_cover.reset(checkpoint);
-                return null;
-            };
+            const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             const spread_end = parser.getSpan(argument).end;
 
             // for now, store as spread_element; will convert to rest param for arrow functions
@@ -75,10 +73,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         }
 
         // regular element
-        const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse {
-            parser.scratch_cover.reset(checkpoint);
-            return null;
-        };
+        const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
 
         try parser.scratch_cover.append(parser.allocator(), element);
 
@@ -94,7 +89,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
                 "Expected ',' or ')' in parenthesized expression",
                 .{ .help = "Add a comma between elements or close with ')'." },
             );
-            parser.scratch_cover.reset(checkpoint);
             return null;
         }
     }
@@ -108,7 +102,6 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
                 .labels = try parser.makeLabels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
             },
         );
-        parser.scratch_cover.reset(checkpoint);
         return null;
     }
 
@@ -291,6 +284,7 @@ fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
 
 fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
     const checkpoint = parser.scratch_cover.begin();
+    defer parser.scratch_cover.reset(checkpoint);
 
     var rest: ast.NodeIndex = ast.null_node;
 
@@ -308,10 +302,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
         if (parser.getData(elem) == .spread_element) {
             const spread_data = parser.getData(elem).spread_element;
 
-            try grammar.expressionToPattern(parser, spread_data.argument, .binding) orelse {
-                parser.scratch_cover.reset(checkpoint);
-                return null;
-            };
+            try grammar.expressionToPattern(parser, spread_data.argument, .binding) orelse return null;
 
             parser.setData(elem, .{ .binding_rest_element = .{ .argument = spread_data.argument } });
 
@@ -320,10 +311,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             continue;
         }
 
-        const param = try convertToFormalParameter(parser, elem) orelse {
-            parser.scratch_cover.reset(checkpoint);
-            return null;
-        };
+        const param = try convertToFormalParameter(parser, elem) orelse return null;
 
         try parser.scratch_cover.append(parser.allocator(), param);
     }

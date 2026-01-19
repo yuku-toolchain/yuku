@@ -193,6 +193,7 @@ pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
 
 fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     while (parser.current_token.type == .case or parser.current_token.type == .default) {
         const case_node = try parseSwitchCase(parser) orelse continue;
@@ -233,6 +234,7 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
 
 fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
     const checkpoint = parser.scratch_b.begin();
+    defer parser.scratch_b.reset(checkpoint);
 
     while (parser.current_token.type != .case and
         parser.current_token.type != .default and
@@ -476,16 +478,14 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_await: bool) Error!?a
     var end = first_end;
 
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
     // additional declarators: for (let a = 1, b = 2; ...)
     while (parser.current_token.type == .comma) {
         try parser.advance() orelse return null;
-        const declarator = try parseForLoopDeclarator(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
+        const declarator = try parseForLoopDeclarator(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
         end = parser.getSpan(declarator).end;
     }
@@ -778,6 +778,7 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
 /// create a variable declaration with a single declarator
 fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: ast.NodeIndex, decl_start: u32, decl_end: u32) Error!ast.NodeIndex {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
     try parser.scratch_a.append(parser.allocator(), declarator);
 
     return try parser.addNode(.{

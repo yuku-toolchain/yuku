@@ -219,6 +219,7 @@ pub const Parser = struct {
 
     pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
         const statements_checkpoint = self.scratch_statements.begin();
+        defer self.scratch_statements.reset(statements_checkpoint);
 
         self.state.in_directive_prologue = true;
         self.state.current_scope_id += 1;

@@ -79,6 +79,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     )) return null;
 
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     while (parser.current_token.type != .right_brace and parser.current_token.type != .eof) {
         // empty statement (semicolon)
@@ -87,10 +88,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
             continue;
         }
 
-        const element = try parseClassElement(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
+        const element = try parseClassElement(parser) orelse return null;
 
         try parser.scratch_a.append(parser.allocator(), element);
     }
@@ -102,7 +100,6 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
         "Expected '}' to close class body",
         "Add a closing brace '}' to complete the class, or check for unbalanced braces inside.",
     )) {
-        parser.scratch_a.reset(checkpoint);
         return null;
     }
 

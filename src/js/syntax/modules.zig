@@ -96,13 +96,11 @@ fn parseSideEffectImport(parser: *Parser, start: u32, phase: ?ast.ImportPhase) E
 ///   ImportedDefaultBinding , NamedImports
 fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     // namespace import: * as name
     if (parser.current_token.type == .star) {
-        const ns = try parseImportNamespaceSpecifier(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
+        const ns = try parseImportNamespaceSpecifier(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), ns);
         return try parser.addExtra(parser.scratch_a.take(checkpoint));
     }
@@ -113,10 +111,7 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
     }
 
     // default import: import foo from 'module'
-    const default_import = try parseImportDefaultSpecifier(parser) orelse {
-        parser.scratch_a.reset(checkpoint);
-        return null;
-    };
+    const default_import = try parseImportDefaultSpecifier(parser) orelse return null;
 
     try parser.scratch_a.append(parser.allocator(), default_import);
 
@@ -126,23 +121,16 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
         try parser.advance() orelse return null; // consume ','
 
         if (parser.current_token.type == .star) {
-            const ns = try parseImportNamespaceSpecifier(parser) orelse {
-                parser.scratch_a.reset(checkpoint);
-                return null;
-            };
+            const ns = try parseImportNamespaceSpecifier(parser) orelse return null;
             try parser.scratch_a.append(parser.allocator(), ns);
         } else if (parser.current_token.type == .left_brace) {
-            const named = try parseNamedImports(parser) orelse {
-                parser.scratch_a.reset(checkpoint);
-                return null;
-            };
+            const named = try parseNamedImports(parser) orelse return null;
             // append all named imports
             for (parser.getExtra(named)) |spec| {
                 try parser.scratch_a.append(parser.allocator(), spec);
             }
         } else {
             try parser.report(parser.current_token.span, "Expected namespace import (* as name) or named imports ({...}) after ','", .{});
-            parser.scratch_a.reset(checkpoint);
             return null;
         }
     }
@@ -188,14 +176,12 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 /// named imports: { foo, bar as baz }
 fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     if (!try parser.expect(.left_brace, "Expected '{' to start named imports", null)) return null;
 
     while (parser.current_token.type != .right_brace and parser.current_token.type != .eof) {
-        const spec = try parseImportSpecifier(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
+        const spec = try parseImportSpecifier(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), spec);
 
         if (parser.current_token.type == .comma) {
@@ -206,7 +192,6 @@ fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     }
 
     if (!try parser.expect(.right_brace, "Expected '}' to close named imports", null)) {
-        parser.scratch_a.reset(checkpoint);
         return null;
     }
 
@@ -542,18 +527,16 @@ const ExportSpecifiersResult = struct {
 /// export specifiers: { foo, bar as baz }
 fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
     const token_checkpoint = parser.scratch_b.begin();
+    defer parser.scratch_b.reset(token_checkpoint);
 
     if (!try parser.expect(.left_brace, "Expected '{' to start export specifiers", null)) return null;
 
     while (parser.current_token.type != .right_brace and parser.current_token.type != .eof) {
         const local_token_type = parser.current_token.type;
 
-        const spec = try parseExportSpecifier(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            parser.scratch_b.reset(token_checkpoint);
-            return null;
-        };
+        const spec = try parseExportSpecifier(parser) orelse return null;
 
         try parser.scratch_a.append(parser.allocator(), spec);
 
@@ -567,8 +550,6 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     }
 
     if (!try parser.expect(.right_brace, "Expected '}' to close export specifiers", null)) {
-        parser.scratch_a.reset(checkpoint);
-        parser.scratch_b.reset(token_checkpoint);
         return null;
     }
 
@@ -649,12 +630,10 @@ fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
     }
 
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
     while (parser.current_token.type != .right_brace and parser.current_token.type != .eof) {
-        const attr = try parseImportAttribute(parser) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return ast.IndexRange.empty;
-        };
+        const attr = try parseImportAttribute(parser) orelse return ast.IndexRange.empty;
         try parser.scratch_a.append(parser.allocator(), attr);
 
         if (parser.current_token.type == .comma) {
@@ -665,7 +644,6 @@ fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
     }
 
     if (!try parser.expect(.right_brace, "Expected '}' to close import attributes", null)) {
-        parser.scratch_a.reset(checkpoint);
         return ast.IndexRange.empty;
     }
 

@@ -11,11 +11,9 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
     const kind = try parseVariableKind(parser, await_using) orelse return null;
 
     const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
 
-    const first_declarator = try parseVariableDeclarator(parser, kind) orelse {
-        parser.scratch_a.reset(checkpoint);
-        return null;
-    };
+    const first_declarator = try parseVariableDeclarator(parser, kind) orelse return null;
 
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
@@ -24,18 +22,12 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
     // additional declarators: let a, b, c;
     while (parser.current_token.type == .comma) {
         try parser.advance() orelse return null;
-        const declarator = try parseVariableDeclarator(parser, kind) orelse {
-            parser.scratch_a.reset(checkpoint);
-            return null;
-        };
+        const declarator = try parseVariableDeclarator(parser, kind) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
         end = parser.getSpan(declarator).end;
     }
 
-    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse {
-        parser.scratch_a.reset(checkpoint);
-        return null;
-    } };
+    const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
 
     // lexical declarations are only allowed inside block statements
     if (parser.context.in_single_statement_context and (kind == .let or kind == .@"const")) {
@@ -47,7 +39,6 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
             .{ .help = "Wrap this declaration in a block statement" },
         );
 
-        parser.scratch_a.reset(checkpoint);
         return null;
     }
 
