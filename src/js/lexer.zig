@@ -35,11 +35,7 @@ pub const LexicalError = error{
 // TODO:
 // [ ] some simd optimizations
 
-pub const LexerMode = enum {
-    normal,
-    jsx_text,
-    jsx_identifier
-};
+pub const LexerMode = enum { normal, jsx_text, jsx_identifier };
 
 const LexerState = struct {
     has_line_terminator_before: bool = false,
@@ -83,7 +79,7 @@ pub const Lexer = struct {
 
     pub fn nextToken(self: *Lexer) LexicalError!token.Token {
         // jsx text allows whitespaces and comments, as is as text
-        if(self.state.mode == .jsx_text) {
+        if (self.state.mode == .jsx_text) {
             return self.scanJsxText();
         }
 
