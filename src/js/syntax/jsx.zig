@@ -2,10 +2,12 @@
 
 const std = @import("std");
 const ast = @import("../ast.zig");
+const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 
 const literals = @import("literals.zig");
+const expressions = @import("expressions.zig");
 
 pub fn parseJsxElement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
@@ -38,9 +40,7 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
-    if (!try parser.expect(.greater_than, "Expected '>' to close JSX opening element", "Add '>' to close the JSX tag")) {
-        return null;
-    }
+    if (!try parser.expect(.greater_than, "Expected '>' to close JSX opening element", "Add '>' to close the JSX tag")) return null;
 
     const end = parser.current_token.span.end;
 
@@ -114,6 +114,15 @@ pub fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
         .string_literal => literals.parseStringLiteral(parser),
+        .left_brace => {
+            parser.setLexerMode(.normal);
+
+            _ = try parseJsxExpressionContainer(parser) orelse return null;
+
+            // validate, empty expression not allowed as attribute value
+
+            parser.setLexerMode(.jsx_identifier);
+        },
         else => {
             try parser.reportFmt(
                 parser.current_token.span,
@@ -124,6 +133,29 @@ pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         },
     };
+}
+
+pub fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    try parser.advance() orelse return null; // consume '{'
+
+    // empty expression
+    if (parser.current_token.type == .right_brace) {
+        const end = parser.current_token.span.end;
+
+        try parser.advance() orelse return null;
+
+        return try parser.addNode(.{ .jsx_empty_expression = .{} }, .{ .start = start, .end = end });
+    }
+
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+
+    const end = parser.current_token.span.end;
+
+    if (!try parser.expect(.right_brace, "", "")) return null;
+
+    return try parser.addNode(.{ .jsx_expression_container = .{ .expression = expression } }, .{ .start = start, .end = end });
 }
 
 // https://facebook.github.io/jsx/#prod-JSXElementName
