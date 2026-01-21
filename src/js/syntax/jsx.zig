@@ -122,6 +122,8 @@ pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
             // validate, empty expression not allowed as attribute value
 
             parser.setLexerMode(.jsx_identifier);
+
+            return null;
         },
         else => {
             try parser.reportFmt(
