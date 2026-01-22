@@ -220,7 +220,6 @@ const runCategory = async (config: TestConfig) => {
   if (result.total === 0) return
 
   for (const file of files) {
-    console.log(`Running ${file}`)
     await runTest(file, config.type, result)
   }
 
@@ -229,18 +228,14 @@ const runCategory = async (config: TestConfig) => {
 
 console.log("Running tests...\n")
 
-const totalStart = performance.now()
-
 for (const config of configs) {
   if (config.skipOnCI && isCI) {
-    console.log(`Skipping ${config.path} on CI`)
+    console.log(`\nSkipping ${config.path} on CI`)
     continue
   }
 
   await runCategory(config)
 }
-
-const totalEnd = performance.now()
 
 let totalPassed = 0
 let totalFailed = 0
