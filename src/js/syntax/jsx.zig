@@ -1,5 +1,3 @@
-// WIP WIP WIP
-
 const std = @import("std");
 const ast = @import("../ast.zig");
 const Precedence = @import("../token.zig").Precedence;
@@ -8,26 +6,6 @@ const Error = @import("../parser.zig").Error;
 
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
-
-// jsx text parsing
-//
-// jsx content like "<div>@hello</div>" needs special handling because '@' is not valid
-// javascript - the lexer would fail trying to tokenize it as an identifier.
-//
-// we handle this with two mechanisms:
-//
-// 1. advanceIntoJsxContent() sets lexer to .jsx_text mode before advancing past '>'.
-//    this makes the lexer treat the next token as raw text instead of code.
-//
-// 2. parseJsxChildren tracks a byte position (scanJsxTextFrom) and calls
-//    lexer.scanJsxText() directly to read text between children.
-
-/// advances past '>' and into jsx content, ensuring the next token is lexed as text
-fn advanceIntoJsxContent(parser: *Parser, err_msg: []const u8, help: []const u8) Error!bool {
-    parser.setLexerMode(.jsx_text);
-    defer parser.setLexerMode(.normal);
-    return parser.expect(.greater_than, err_msg, help);
-}
 
 // https://facebook.github.io/jsx/#prod-JSXElement
 pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
@@ -106,7 +84,7 @@ pub fn parseJsxClosingFragment(parser: *Parser) Error!?ast.NodeIndex {
 // https://facebook.github.io/jsx/#prod-JSXSelfClosingElement
 // https://facebook.github.io/jsx/#prod-JSXOpeningElement
 pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
-    parser.setLexerMode(.jsx_identifier);
+    parser.setLexerMode(.jsx_tag);
 
     const start = parser.current_token.span.start;
 
@@ -136,9 +114,16 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
+/// advances past '>' and into jsx content, ensuring the next token is lexed as text
+fn advanceIntoJsxContent(parser: *Parser, err_msg: []const u8, help: []const u8) Error!bool {
+    parser.setLexerMode(.jsx_text);
+    defer parser.setLexerMode(.normal);
+    return parser.expect(.greater_than, err_msg, help);
+}
+
 // https://facebook.github.io/jsx/#prod-JSXClosingElement
 pub fn parseJsxClosingElement(parser: *Parser) Error!?ast.NodeIndex {
-    parser.setLexerMode(.jsx_identifier);
+    parser.setLexerMode(.jsx_tag);
 
     const start = parser.current_token.span.start;
 
@@ -212,7 +197,7 @@ pub fn parseJsxChildren(
                     continue;
                 }
 
-                const expression_container = try parseJsxExpressionContainer(parser) orelse return null;
+                const expression_container = try parseJsxExpressionContainer(parser, .child) orelse return null;
 
                 scanJsxTextFrom = parser.getSpan(expression_container).end; // scan from end of expression
 
@@ -225,11 +210,10 @@ pub fn parseJsxChildren(
     return try parser.addExtra(parser.scratch_b.take(children_checkpoint));
 }
 
-const SpreadContext = enum { attribute, child };
+const SpreadContext = enum { tag, child };
 
 pub fn parseJsxSpread(parser: *Parser, context: SpreadContext) Error!?ast.NodeIndex {
     parser.setLexerMode(.normal);
-    defer parser.setLexerMode(if (context == .attribute) .jsx_identifier else .normal);
 
     const start = parser.current_token.span.start;
 
@@ -240,6 +224,8 @@ pub fn parseJsxSpread(parser: *Parser, context: SpreadContext) Error!?ast.NodeIn
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const end = parser.current_token.span.end;
+
+    parser.setLexerMode(if (context == .tag) .jsx_tag else .normal);
 
     if (!try parser.expect(.right_brace, "Expected '}' to close JSX spread", "Add '}' to close the spread expression")) return null;
 
@@ -268,7 +254,7 @@ pub fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 // https://facebook.github.io/jsx/#prod-JSXAttribute
 pub fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.type == .left_brace) {
-        return try parseJsxSpread(parser, .attribute);
+        return try parseJsxSpread(parser, .tag);
     }
 
     const name = try parseJsxAttributeName(parser) orelse return null;
@@ -322,9 +308,7 @@ pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     return switch (parser.current_token.type) {
         .string_literal => literals.parseStringLiteral(parser),
         .left_brace => {
-            parser.setLexerMode(.normal);
-
-            const expression_container = try parseJsxExpressionContainer(parser) orelse return null;
+            const expression_container = try parseJsxExpressionContainer(parser, .tag) orelse return null;
 
             if (parser.getData(parser.getData(expression_container).jsx_expression_container.expression) == .jsx_empty_expression) {
                 try parser.report(
@@ -335,11 +319,15 @@ pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
                 return null;
             }
 
-            parser.setLexerMode(.jsx_identifier);
-
             return expression_container;
         },
-        .less_than => parseJsxExpression(parser),
+        .less_than => {
+            const jsx_expression = try parseJsxExpression(parser) orelse return null;
+
+            parser.setLexerMode(.jsx_tag);
+
+            return jsx_expression;
+        },
         else => {
             try parser.reportFmt(
                 parser.current_token.span,
@@ -352,7 +340,11 @@ pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-pub fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
+const ExpressionContainerContext = enum { tag, child };
+
+pub fn parseJsxExpressionContainer(parser: *Parser, context: ExpressionContainerContext) Error!?ast.NodeIndex {
+    parser.setLexerMode(.normal);
+
     const start = parser.current_token.span.start;
 
     try parser.advance() orelse return null; // consume '{'
@@ -371,6 +363,8 @@ pub fn parseJsxExpressionContainer(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const end = parser.current_token.span.end;
+
+    parser.setLexerMode(if (context == .tag) .jsx_tag else .normal);
 
     if (!try parser.expect(.right_brace, "Expected '}' to close JSX expression", "Add '}' to close the expression")) return null;
 

@@ -38,8 +38,8 @@ pub const LexicalError = error{
 pub const LexerMode = enum {
     /// normal javascript mode
     normal,
-    /// jsx tag context: allows hyphens in identifiers, emits jsx_identifier tokens
-    jsx_identifier,
+    // allows hyphens in identifiers and emits jsx_identifier, and also won't process escapes in attribute string value
+    jsx_tag,
     /// jsx text context: next token will be scanned as raw text (used once after '>')
     jsx_text,
 };
@@ -189,7 +189,7 @@ pub const Lexer = struct {
                     // in jsx, <div attr=<elem></elem>></div>
                     //                               ~~
                     //                               this should be interepted as separate '>' tokens for ease of parsing
-                    if (self.state.mode == .jsx_identifier) {
+                    if (self.state.mode == .jsx_tag) {
                         return self.makePuncToken(1, .greater_than, start);
                     } else {
                         return self.makePuncToken(2, .right_shift, start);
@@ -278,7 +278,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
-            if (c == '\\') {
+            if (c == '\\' and self.state.mode != .jsx_tag) {
                 try self.consumeEscape();
                 continue;
             }
@@ -590,7 +590,7 @@ pub const Lexer = struct {
                     self.cursor += 1; // consume backslash to get to 'u'
                     try self.consumeUnicodeEscape();
                 } else {
-                    if (canContinueIdentifierAscii(c, self.state.mode == .jsx_identifier)) {
+                    if (canContinueIdentifierAscii(c, self.state.mode == .jsx_tag)) {
                         self.cursor += 1;
                     } else {
                         break;
@@ -654,7 +654,7 @@ pub const Lexer = struct {
 
         const lexeme = self.source[start..self.cursor];
 
-        const token_type: token.TokenType = if (self.state.mode == .jsx_identifier) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
+        const token_type: token.TokenType = if (self.state.mode == .jsx_tag) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
 
         return self.createToken(token_type, lexeme, start, self.cursor);
     }
