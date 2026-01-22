@@ -14,15 +14,18 @@ pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     const opening_element = try parseJsxOpeningElement(parser) orelse return null;
 
+    const opening_element_end = parser.getSpan(opening_element).end;
+
     var children = ast.IndexRange.empty;
+    const closing_element = ast.null_node;
 
     if (!parser.getData(opening_element).jsx_opening_element.self_closing) {
-        children = try parseJsxChildren(parser, parser.getSpan(opening_element).end) orelse return null;
+        children = try parseJsxChildren(parser, opening_element_end) orelse return null;
     }
 
-    const end = parser.current_token.span.end;
+    const end = if (!ast.isNull(closing_element)) parser.getSpan(closing_element).end else opening_element_end;
 
-    return try parser.addNode(.{ .jsx_element = .{ .opening_element = opening_element, .children = children, .closing_element = ast.null_node } }, .{ .start = start, .end = end });
+    return try parser.addNode(.{ .jsx_element = .{ .opening_element = opening_element, .children = children, .closing_element = closing_element } }, .{ .start = start, .end = end });
 }
 
 pub fn parseJsxChildren(
