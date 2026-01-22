@@ -14,7 +14,11 @@ pub fn parseJsxElement(parser: *Parser) Error!?ast.NodeIndex {
 
     const opening_element = try parseJsxOpeningElement(parser) orelse return null;
 
-    const children = try parseJsxChildren(parser) orelse return null;
+    var children = ast.IndexRange.empty;
+
+    if(!parser.getData(opening_element).jsx_opening_element.self_closing) {
+        children = try parseJsxChildren(parser) orelse return null;
+    }
 
     const end = parser.current_token.span.end;
 
@@ -22,19 +26,17 @@ pub fn parseJsxElement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
-    const children_checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(children_checkpoint);
+    const children_checkpoint = parser.scratch_b.begin();
+    defer parser.scratch_b.reset(children_checkpoint);
 
     while (parser.current_token.type != .eof) {
         switch (parser.current_token.type) {
             .jsx_text => {
                 const jsx_text = try parser.addNode(.{ .jsx_text = .{ .raw_start = parser.current_token.span.start, .raw_len = @intCast(parser.current_token.lexeme.len) } }, parser.current_token.span);
 
-                try parser.scratch_a.append(parser.allocator(), jsx_text);
+                try parser.scratch_b.append(parser.allocator(), jsx_text);
 
                 parser.setLexerMode(.normal);
-
-                try parser.advance() orelse return null;
             },
             .less_than => {
                 // parser.setLexerMode(.jsx_identifier);
@@ -44,17 +46,33 @@ pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
                 return null;
             },
             .left_brace => {
-                // parser.setLexerMode(.normal);
+                parser.setLexerMode(.normal);
 
-                //
-                //
-                return null;
+                const next = try parser.lookAhead() orelse return null;
+
+                if(next.type == .spread) {
+                    try parser.advance() orelse return null; // consume '{'
+
+                    const jsx_spread_child = try parseJsxSpread(parser, .child) orelse return null;
+
+                    if (!try parser.expect(.right_brace, "", "")) return null;
+
+                    try parser.scratch_b.append(parser.allocator(), jsx_spread_child);
+                }
+
+                const expression_container = try parseJsxExpressionContainer(parser) orelse return null;
+
+                try parser.scratch_b.append(parser.allocator(), expression_container);
+
+                parser.setLexerMode(.jsx_text);
             },
             else => break,
         }
+
+        try parser.advance() orelse return null;
     }
 
-    return try parser.addExtra(parser.scratch_a.take(children_checkpoint));
+    return try parser.addExtra(parser.scratch_b.take(children_checkpoint));
 }
 
 // https://facebook.github.io/jsx/#prod-JSXOpeningElement
@@ -93,11 +111,31 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
+const SpreadContext = enum {
+    attribute,
+    child
+};
+
+pub fn parseJsxSpread(parser: *Parser, context: SpreadContext) Error!?ast.NodeIndex {
+    parser.setLexerMode(.normal);
+    defer parser.setLexerMode(if (context == .attribute) .jsx_identifier else .jsx_text);
+
+    if (!try parser.expect(.spread, "", "")) return null;
+
+    const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
+
+    if(context == .child) {
+        return try parser.addNode(.{ .jsx_spread_child = .{ .expression = expression } }, parser.getSpan(expression));
+    }
+
+    return try parser.addNode(.{ .jsx_spread_attribute = .{ .argument = expression } }, parser.getSpan(expression));
+}
+
 pub fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
     const attributes_checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(attributes_checkpoint);
 
-    while (parser.current_token.type == .jsx_identifier) {
+    while (parser.current_token.type == .jsx_identifier or parser.current_token.type == .left_brace) {
         const attribute = try parseJsxAttribute(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), attribute);
     }
@@ -106,6 +144,16 @@ pub fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 }
 
 pub fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
+    if(parser.current_token.type == .left_brace) {
+        try parser.advance() orelse return null; // consume '{'
+
+        const jsx_spread_attribute = try parseJsxSpread(parser, .attribute) orelse return null;
+
+        if (!try parser.expect(.right_brace, "", "")) return null;
+
+        return jsx_spread_attribute;
+    }
+
     const name = try parseJsxAttributeName(parser) orelse return null;
 
     // null for boolean-like attributes
@@ -145,7 +193,7 @@ pub fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 
         try parser.advance() orelse return null;
 
-        name = try parser.addNode(.{ .jsx_namespaced_name = .{ .namespace = name, .name = namespace_name } }, .{ .start = parser.getSpan(name).start, .end = parser.current_token.span.end });
+        name = try parser.addNode(.{ .jsx_namespaced_name = .{ .namespace = name, .name = namespace_name } }, .{ .start = parser.getSpan(name).start, .end = parser.getSpan(namespace_name).end });
     }
 
     return name;

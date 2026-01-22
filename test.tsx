@@ -1,1 +1,1 @@
-<div nice={{cool}} />
+<div {...cool}>cool {nice} {cool} nice
