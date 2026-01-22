@@ -37,6 +37,8 @@ pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
                 try parser.scratch_b.append(parser.allocator(), jsx_text);
 
                 parser.setLexerMode(.normal);
+
+                try parser.advance() orelse return null;
             },
             .less_than => {
                 // parser.setLexerMode(.jsx_identifier);
@@ -55,9 +57,13 @@ pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
 
                     const jsx_spread_child = try parseJsxSpread(parser, .child) orelse return null;
 
+                    parser.setLexerMode(.jsx_text);
+
                     if (!try parser.expect(.right_brace, "", "")) return null;
 
                     try parser.scratch_b.append(parser.allocator(), jsx_spread_child);
+
+                    continue;
                 }
 
                 const expression_container = try parseJsxExpressionContainer(parser) orelse return null;
@@ -68,8 +74,6 @@ pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
             },
             else => break,
         }
-
-        try parser.advance() orelse return null;
     }
 
     return try parser.addExtra(parser.scratch_b.take(children_checkpoint));
@@ -220,7 +224,7 @@ pub fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
 
             return expression_container;
         },
-        .less_than => parseJsxElement(parser),
+        .less_than => parseJsxExpression(parser),
         else => {
             try parser.reportFmt(
                 parser.current_token.span,
