@@ -1194,7 +1194,8 @@ pub const JSXEmptyExpression = struct {};
 /// text content inside JSX elements
 pub const JSXText = struct {
     raw_start: u32,
-    raw_len: u16,
+    // len of the jsx text is u32 to prevent overflow, unlike other nodes len property which is u16 and enough
+    raw_len: u32,
 };
 
 /// `{...children}`
