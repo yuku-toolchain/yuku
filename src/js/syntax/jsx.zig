@@ -9,7 +9,7 @@ const Error = @import("../parser.zig").Error;
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
 
-pub fn parseJsxElement(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const opening_element = try parseJsxOpeningElement(parser) orelse return null;
