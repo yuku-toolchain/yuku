@@ -138,13 +138,13 @@ pub fn parseJsxSpread(parser: *Parser, context: SpreadContext) Error!?ast.NodeIn
 
     try parser.advance() orelse return null; // consume '{'
 
-    if (!try parser.expect(.spread, "", "")) return null;
+    if (!try parser.expect(.spread, "Expected '...' after '{' in JSX spread", "Add '...' to spread the expression")) return null;
 
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
     const end = parser.current_token.span.end;
 
-    if (!try parser.expect(.right_brace, "", "")) return null;
+    if (!try parser.expect(.right_brace, "Expected '}' to close JSX spread", "Add '}' to close the spread expression")) return null;
 
     const span = ast.Span{ .start = start, .end = end };
 
