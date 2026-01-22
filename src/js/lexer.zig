@@ -35,7 +35,12 @@ pub const LexicalError = error{
 // TODO:
 // [ ] some simd optimizations
 
-pub const LexerMode = enum { normal, jsx_text, jsx_identifier };
+pub const LexerMode = enum {
+    // normal javascript mode
+    normal,
+    // when in this mode, allows hyphens in identifiers and interepts as jsx_identifier token
+    jsx_identifier,
+};
 
 const LexerState = struct {
     has_line_terminator_before: bool = false,
@@ -78,11 +83,6 @@ pub const Lexer = struct {
     }
 
     pub fn nextToken(self: *Lexer) LexicalError!token.Token {
-        // jsx text allows whitespaces and comments, as is as text
-        if (self.state.mode == .jsx_text) {
-            return self.scanJsxText();
-        }
-
         try self.skipWsAndComments();
 
         if (self.cursor >= self.source.len) {
@@ -255,6 +255,11 @@ pub const Lexer = struct {
             c == '_' or c == '$' or
             // <elem-name></elem-name>
             (allow_hyphen and c == '-');
+    }
+
+    pub inline fn resetToCursor(self: *Lexer, cursor: u32) void {
+        self.cursor = cursor;
+        self.state.has_line_terminator_before = false;
     }
 
     fn scanString(self: *Lexer) LexicalError!token.Token {
@@ -461,8 +466,25 @@ pub const Lexer = struct {
         return self.createToken(.right_brace, self.source[start..self.cursor], start, self.cursor);
     }
 
+    pub fn reScanAsJsxText(self: *Lexer, initial_cursor: u32) token.Token {
+        self.resetToCursor(initial_cursor);
+
+        const start = self.cursor;
+
+        while (self.cursor < self.source.len) {
+            const c = self.source[self.cursor];
+
+            switch (c) {
+                '<', '{' => break,
+                else => self.cursor += 1,
+            }
+        }
+
+        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
+    }
+
     pub fn reScanAsRegex(self: *Lexer, slash_token: token.Token) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
-        self.cursor = slash_token.span.start;
+        self.resetToCursor(slash_token.span.start);
 
         const start = self.cursor;
         var closing_delimeter_pos: u32 = 0;
@@ -537,21 +559,6 @@ pub const Lexer = struct {
             return self.makePuncToken(3, .spread, start);
         }
         return self.makePuncToken(1, .dot, start);
-    }
-
-    fn scanJsxText(self: *Lexer) token.Token {
-        const start = self.cursor;
-
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-
-            switch (c) {
-                '<', '{' => break,
-                else => self.cursor += 1,
-            }
-        }
-
-        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
     }
 
     inline fn scanIdentifierBody(self: *Lexer) !void {

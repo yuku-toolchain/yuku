@@ -1,1 +1,1 @@
-<div {...cool}>cool {nice} {cool} nice
+<div {...cool}> cool {nice} <cool />

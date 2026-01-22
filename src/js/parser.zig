@@ -340,6 +340,10 @@ pub const Parser = struct {
 
     pub inline fn clearLookAhead(self: *Parser) void {
         self.next_token = null;
+        // reset lexer's cursor to the current token's end
+        // because cursor was incremented past for prefetching next token when lookAhead
+        // when clearing lookahead, we need to revert the cursor
+        self.lexer.resetToCursor(self.current_token.span.end);
     }
 
     pub inline fn replaceTokenAndAdvance(self: *Parser, tok: token.Token) Error!?void {

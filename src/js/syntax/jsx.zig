@@ -16,8 +16,8 @@ pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var children = ast.IndexRange.empty;
 
-    if(!parser.getData(opening_element).jsx_opening_element.self_closing) {
-        children = try parseJsxChildren(parser) orelse return null;
+    if (!parser.getData(opening_element).jsx_opening_element.self_closing) {
+        children = try parseJsxChildren(parser, parser.getSpan(opening_element).end) orelse return null;
     }
 
     const end = parser.current_token.span.end;
@@ -25,41 +25,52 @@ pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{ .jsx_element = .{ .opening_element = opening_element, .children = children, .closing_element = ast.null_node } }, .{ .start = start, .end = end });
 }
 
-pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
+pub fn parseJsxChildren(
+    parser: *Parser,
+    // exact the start of the jsx_text
+    // means, right after the > without skipping whitespaces
+    start: u32,
+) Error!?ast.IndexRange {
     const children_checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(children_checkpoint);
 
+    // track from where we should start scanning jsx text, including whitespace
+    // because, if we use parser.current_token.start, the current_token maybe after skipped whitespace
+    // so we use the end of the opening element, or while scanning, end of expression container, end of jsx_element, etc.
+    var scanJsxTextFrom = start;
+
     while (parser.current_token.type != .eof) {
+        const jsx_text_token = parser.lexer.reScanAsJsxText(scanJsxTextFrom);
+
+        const jsx_text = try parser.addNode(.{ .jsx_text = .{ .raw_start = jsx_text_token.span.start, .raw_len = @intCast(jsx_text_token.lexeme.len) } }, jsx_text_token.span);
+
+        try parser.scratch_b.append(parser.allocator(), jsx_text);
+
+        try parser.replaceTokenAndAdvance(jsx_text_token) orelse return null;
+
         switch (parser.current_token.type) {
-            .jsx_text => {
-                const jsx_text = try parser.addNode(.{ .jsx_text = .{ .raw_start = parser.current_token.span.start, .raw_len = @intCast(parser.current_token.lexeme.len) } }, parser.current_token.span);
-
-                try parser.scratch_b.append(parser.allocator(), jsx_text);
-
-                parser.setLexerMode(.normal);
-
-                try parser.advance() orelse return null;
-            },
             .less_than => {
-                // parser.setLexerMode(.jsx_identifier);
-
-                //
-                //
-                return null;
-            },
-            .left_brace => {
-                parser.setLexerMode(.normal);
-
                 const next = try parser.lookAhead() orelse return null;
 
-                if(next.type == .spread) {
-                    try parser.advance() orelse return null; // consume '{'
+                // then it's a closing element start, so break the children loop
+                if(next.type == .slash) {
+                    break;
+                }
 
+                // otherwise it's a child jsx element/fragment
+
+                const jsx_expression = try parseJsxExpression(parser) orelse return null;
+
+                try parser.scratch_b.append(parser.allocator(), jsx_expression);
+            },
+            .left_brace => {
+                const next = try parser.lookAhead() orelse return null;
+
+                if (next.type == .spread) {
                     const jsx_spread_child = try parseJsxSpread(parser, .child) orelse return null;
 
-                    parser.setLexerMode(.jsx_text);
-
-                    if (!try parser.expect(.right_brace, "", "")) return null;
+                    // rigth after '}'
+                    scanJsxTextFrom = parser.getSpan(jsx_spread_child).end;
 
                     try parser.scratch_b.append(parser.allocator(), jsx_spread_child);
 
@@ -68,9 +79,10 @@ pub fn parseJsxChildren(parser: *Parser) Error!?ast.IndexRange {
 
                 const expression_container = try parseJsxExpressionContainer(parser) orelse return null;
 
-                try parser.scratch_b.append(parser.allocator(), expression_container);
+                // rigth after '}'
+                scanJsxTextFrom = parser.getSpan(expression_container).end;
 
-                parser.setLexerMode(.jsx_text);
+                try parser.scratch_b.append(parser.allocator(), expression_container);
             },
             else => break,
         }
@@ -100,9 +112,8 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = parser.current_token.span.end;
 
-    // if the element is self closed, which means, we are done with the jsx element and back to normal javascript
-    // otherwise, it just a opening of a jsx element, and the next is jsx children (so to start, set lexer mode to jsx_text)
-    parser.setLexerMode(if (self_closing) .normal else .jsx_text);
+    // we are done with attributes parsing, set lexer mode back to normal
+    parser.setLexerMode(.normal);
 
     if (!try parser.expect(.greater_than, "Expected '>' to close JSX opening element", "Add '>' to close the JSX tag")) return null;
 
@@ -115,24 +126,35 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-const SpreadContext = enum {
-    attribute,
-    child
-};
+const SpreadContext = enum { attribute, child };
 
 pub fn parseJsxSpread(parser: *Parser, context: SpreadContext) Error!?ast.NodeIndex {
     parser.setLexerMode(.normal);
-    defer parser.setLexerMode(if (context == .attribute) .jsx_identifier else .jsx_text);
+    defer parser.setLexerMode(if (context == .attribute) .jsx_identifier else .normal);
+
+    const start = parser.current_token.span.start;
+
+    try parser.advance() orelse return null; // consume '{'
 
     if (!try parser.expect(.spread, "", "")) return null;
 
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
 
-    if(context == .child) {
-        return try parser.addNode(.{ .jsx_spread_child = .{ .expression = expression } }, parser.getSpan(expression));
+    const end = parser.current_token.span.end;
+
+    if (!try parser.expect(.right_brace, "", "")) return null;
+
+    const span = ast.Span{
+        .start = start,
+        .end = end
+    };
+
+    if (context == .child) {
+        return try parser.addNode(.{ .jsx_spread_child = .{ .expression = expression } }, span);
     }
 
-    return try parser.addNode(.{ .jsx_spread_attribute = .{ .argument = expression } }, parser.getSpan(expression));
+
+    return try parser.addNode(.{ .jsx_spread_attribute = .{ .argument = expression } }, span);
 }
 
 pub fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
@@ -148,14 +170,8 @@ pub fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 }
 
 pub fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
-    if(parser.current_token.type == .left_brace) {
-        try parser.advance() orelse return null; // consume '{'
-
-        const jsx_spread_attribute = try parseJsxSpread(parser, .attribute) orelse return null;
-
-        if (!try parser.expect(.right_brace, "", "")) return null;
-
-        return jsx_spread_attribute;
+    if (parser.current_token.type == .left_brace) {
+        return try parseJsxSpread(parser, .attribute);
     }
 
     const name = try parseJsxAttributeName(parser) orelse return null;
