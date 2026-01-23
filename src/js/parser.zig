@@ -258,7 +258,7 @@ pub const Parser = struct {
     // utils
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
-        // so parser will fetch fresh next token with new mode
+        // clear prefetched token, so parser will fetch fresh next token with new mode
         // otherwise, `advance` method may use already prefetched/cached next token which maybe scanned with previous mode
         self.clearLookAhead();
         self.lexer.state.mode = mode;
