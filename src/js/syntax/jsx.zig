@@ -183,9 +183,8 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
             try parser.scratch_b.append(parser.allocator(), text_node);
         }
 
-        // advance jsx_text and get the delimiter token ('<' or '{')
-        parser.replaceToken(text_token);
-        try parser.advance() orelse return null;
+        // advance past jsx_text to get the delimiter token ('<' or '{')
+        try parser.advanceWithRescannedToken(text_token) orelse return null;
 
         switch (parser.current_token.type) {
             .less_than => {

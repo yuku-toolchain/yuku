@@ -61,14 +61,12 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     };
 
-    parser.replaceToken(parser.lexer.createToken(
+    try parser.advanceWithRescannedToken(parser.lexer.createToken(
         .regex_literal,
         parser.source[regex.span.start..regex.span.end],
         regex.span.start,
         regex.span.end,
-    ));
-
-    try parser.advance() orelse return null;
+    )) orelse return null;
 
     return try parser.addNode(.{
         .regexp_literal = .{
@@ -155,15 +153,13 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
             },
         }, span));
 
-        parser.replaceToken(template_token);
-
         if (is_tail) {
             end = template_token.span.end;
-            try parser.advance() orelse return null;
+            try parser.advanceWithRescannedToken(template_token) orelse return null;
             break;
         }
 
-        try parser.advance() orelse return null;
+        try parser.advanceWithRescannedToken(template_token) orelse return null;
     }
 
     return try parser.addNode(.{
