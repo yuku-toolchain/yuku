@@ -438,6 +438,7 @@ pub const Lexer = struct {
         return self.createToken(.right_brace, self.source[start..self.cursor], start, self.cursor);
     }
 
+    // used by parser to scan text content between '<' and '{' in JSX children
     pub fn scanJsxText(self: *Lexer, initial_cursor: u32) token.Token {
         self.resetToCursor(initial_cursor);
 
@@ -455,6 +456,7 @@ pub const Lexer = struct {
         return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
     }
 
+    // used by parser to re-scan a slash token as a regex literal
     pub fn reScanAsRegex(self: *Lexer, slash_token: token.Token) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
         self.resetToCursor(slash_token.span.start);
 
