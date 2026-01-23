@@ -41,10 +41,6 @@ pub const LexerMode = enum {
     /// jsx tag context: allows hyphens in identifiers, emits jsx_identifier,
     /// and doesn't process escapes in attribute string values
     jsx_tag,
-    /// transitional mode used when advancing past '>' into jsx content.
-    /// ensures the first token after '>' is scanned as raw text, handling
-    /// characters that would be invalid in normal JS (like '@' in '<div>@test</div>')
-    jsx_content_start,
 };
 
 const LexerState = struct {
@@ -96,13 +92,7 @@ pub const Lexer = struct {
             '`' => self.scanTemplateLiteral(),
             '~', '(', ')', '{', '[', ']', ';', ',', ':' => self.scanSimplePunctuation(),
             '}' => self.handleRightBrace(),
-            else => {
-                if (self.state.mode == .jsx_content_start) {
-                    return self.scanJsxText(self.cursor);
-                }
-
-                return self.scanIdentifierOrKeyword();
-            },
+            else => self.scanIdentifierOrKeyword(),
         };
     }
 

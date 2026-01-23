@@ -59,9 +59,13 @@ pub fn parseJsxOpeningFragment(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume '<'
 
-    const end = parser.current_token.span.end;
+    if (parser.current_token.type != .greater_than) {
+        try parser.report(parser.current_token.span, "Expected '>' to close JSX opening fragment", .{ .help = "Add '>' to complete the fragment opening tag" });
+        return null;
+    }
 
-    if (!try consumeTagClose(parser, "Expected '>' to close JSX opening fragment", "Add '>' to complete the fragment opening tag")) return null;
+    const end = parser.current_token.span.end;
+    // don't advance - parseJsxChildren will scan from here
 
     return try parser.addNode(.{ .jsx_opening_fragment = .{} }, .{ .start = start, .end = end });
 }
@@ -101,9 +105,19 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
+    if (parser.current_token.type != .greater_than) {
+        try parser.report(parser.current_token.span, "Expected '>' to close JSX opening element", .{ .help = "Add '>' to close the JSX tag" });
+        return null;
+    }
+
     const end = parser.current_token.span.end;
 
-    if (!try consumeTagClose(parser, "Expected '>' to close JSX opening element", "Add '>' to close the JSX tag")) return null;
+    if (self_closing) {
+        // self-closing: advance past '>' normally
+        parser.setLexerMode(.normal);
+        try parser.advance() orelse return null;
+    }
+    // non-self-closing: don't advance - parseJsxChildren will scan from here
 
     return try parser.addNode(.{
         .jsx_opening_element = .{
@@ -112,21 +126,6 @@ pub fn parseJsxOpeningElement(parser: *Parser) Error!?ast.NodeIndex {
             .self_closing = self_closing,
         },
     }, .{ .start = start, .end = end });
-}
-
-/// Consumes '>' and transitions into JSX content parsing mode.
-///
-/// After '>', JSX content can contain arbitrary text including characters
-/// that aren't valid token starts in normal JS (like '@' in '<div>@test</div>').
-/// This function temporarily sets jsx_content_start mode so the lexer scans
-/// the first token as raw text, then resets to normal mode.
-///
-/// parseJsxChildren will re-scan from the exact position after '>' to get
-/// precise text boundaries.
-fn consumeTagClose(parser: *Parser, err_msg: []const u8, help: []const u8) Error!bool {
-    parser.setLexerMode(.jsx_content_start);
-    defer parser.setLexerMode(.normal);
-    return parser.expect(.greater_than, err_msg, help);
 }
 
 // https://facebook.github.io/jsx/#prod-JSXClosingElement
@@ -155,72 +154,51 @@ pub fn parseJsxClosingElement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 // https://facebook.github.io/jsx/#prod-JSXChildren
-/// Parses JSX children (text, elements, and expression containers).
-///
-/// This function manually scans JSX text using scanJsxText() rather than relying
-/// on normal tokenization. This is necessary because:
-/// 1. JSX text can contain characters invalid in normal JS (like '@')
-/// 2. We need to preserve exact whitespace between children
-/// 3. Normal tokenization would skip whitespace and fail on invalid chars
-///
-/// The 'start' parameter is the byte position right after '>' from the opening tag.
-/// consumeTagClose() has already advanced past '>' with jsx_content_start mode to handle
-/// the initial token, and this function re-scans from 'start' to get the exact text.
+/// Parses JSX children (text, elements, expression containers).
+/// Called when current token is '>' from the opening tag.
 pub fn parseJsxChildren(
     parser: *Parser,
-    start: u32,
+    gt_end: u32, // byte position of '>' end (where to start scanning text)
 ) Error!?ast.IndexRange {
     const children_checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(children_checkpoint);
 
-    // tracks where to start next text scan. updated after each child to preserve all text/whitespace.
-    var scanJsxTextFrom = start;
+    parser.setLexerMode(.normal);
 
-    while (parser.current_token.type != .eof) {
-        // scan jsx text from tracked position (stops at '<' or '{')
-        const jsx_text_token = parser.lexer.scanJsxText(scanJsxTextFrom);
+    // scan position tracks where to start next text scan
+    var scan_from = gt_end;
+
+    while (true) {
+        // scan jsx text from current position (stops at '<' or '{')
+        const jsx_text_token = parser.lexer.scanJsxText(scan_from);
 
         if (jsx_text_token.lexeme.len > 0) {
             const jsx_text = try parser.addNode(.{ .jsx_text = .{ .raw_start = jsx_text_token.span.start, .raw_len = @intCast(jsx_text_token.lexeme.len) } }, jsx_text_token.span);
             try parser.scratch_b.append(parser.allocator(), jsx_text);
         }
 
-        // replace current token with the scanned text and advance to '<' or '{'
+        // set current token and advance to get '<' or '{' or eof
         parser.replaceToken(jsx_text_token);
         try parser.advance() orelse return null;
 
         switch (parser.current_token.type) {
             .less_than => {
                 const next = try parser.lookAhead() orelse return null;
+                if (next.type == .slash) break; // closing element
 
-                if (next.type == .slash) {
-                    break; // closing element
-                }
-
-                const jsx_expression = try parseJsxExpression(parser) orelse return null;
-
-                scanJsxTextFrom = parser.getSpan(jsx_expression).end; //  scan from end of element
-
-                try parser.scratch_b.append(parser.allocator(), jsx_expression);
+                const child = try parseJsxExpression(parser) orelse return null;
+                scan_from = parser.getSpan(child).end;
+                try parser.scratch_b.append(parser.allocator(), child);
             },
             .left_brace => {
                 const next = try parser.lookAhead() orelse return null;
+                const child = if (next.type == .spread)
+                    try parseJsxSpread(parser, .child) orelse return null
+                else
+                    try parseJsxExpressionContainer(parser, .child) orelse return null;
 
-                if (next.type == .spread) {
-                    const jsx_spread_child = try parseJsxSpread(parser, .child) orelse return null;
-
-                    scanJsxTextFrom = parser.getSpan(jsx_spread_child).end; // scan from end of spread
-
-                    try parser.scratch_b.append(parser.allocator(), jsx_spread_child);
-
-                    continue;
-                }
-
-                const expression_container = try parseJsxExpressionContainer(parser, .child) orelse return null;
-
-                scanJsxTextFrom = parser.getSpan(expression_container).end; // scan from end of expression
-
-                try parser.scratch_b.append(parser.allocator(), expression_container);
+                scan_from = parser.getSpan(child).end;
+                try parser.scratch_b.append(parser.allocator(), child);
             },
             else => break,
         }
