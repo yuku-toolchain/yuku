@@ -258,14 +258,10 @@ pub const Parser = struct {
     // utils
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
-        // only clear lookahead if mode is actually changing
-        // this prevents re-scanning comments/whitespace when mode stays the same
-        if (self.lexer.state.mode != mode) {
-            // so parser will fetch fresh next token with new mode
-            // otherwise, `advance` method may use already prefetched/cached next token which maybe scanned with previous mode
-            self.clearLookAhead();
-            self.lexer.state.mode = mode;
-        }
+        // so parser will fetch fresh next token with new mode
+        // otherwise, `advance` method may use already prefetched/cached next token which maybe scanned with previous mode
+        self.clearLookAhead();
+        self.lexer.state.mode = mode;
     }
 
     pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
