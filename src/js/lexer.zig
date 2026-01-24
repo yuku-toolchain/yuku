@@ -258,14 +258,15 @@ pub const Lexer = struct {
 
     // functions exclusively called by the parser for context-specific lexing
 
-    /// scans template_middle or template_tail starting from current position.
+    /// scans template_middle or template_tail.
     /// called by the parser when it expects a template continuation after parsing
     /// an expression inside ${}.
-    pub fn scanTemplateContinuation(self: *Lexer, expression_end: u32) LexicalError!token.Token {
-        self.rewindTo(expression_end);
+    pub fn reScanTemplateContinuation(self: *Lexer, right_brace_start: u32) LexicalError!token.Token {
+        self.rewindTo(right_brace_start);
 
         const start = self.cursor;
 
+        // consume '}' of the expression
         self.cursor += 1;
 
         while (self.cursor < self.source.len) {
@@ -291,7 +292,7 @@ pub const Lexer = struct {
 
     /// scans JSX text content between '<' and '{' in JSX children.
     /// called by the parser when parsing JSX element children.
-    pub fn rescanJsxText(self: *Lexer, initial_cursor: u32) token.Token {
+    pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) token.Token {
         self.rewindTo(initial_cursor);
 
         const start = self.cursor;
@@ -311,7 +312,7 @@ pub const Lexer = struct {
     /// re-scans a slash token as a regex literal
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
-    pub fn rescanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
+    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;

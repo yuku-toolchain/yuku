@@ -157,6 +157,7 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
     const start = parser.current_token.span.start;
 
     parser.setLexerMode(.jsx_tag);
+
     try parser.advance() orelse return null; // consume '<'
 
     if (!try parser.expect(.slash, "Expected '/' in JSX closing element", "Add '/' after '<' to close the element")) return null;
@@ -165,6 +166,7 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
     const end = parser.current_token.span.end;
 
     parser.setLexerMode(.normal);
+
     if (!try parser.expect(.greater_than, "Expected '>' to close JSX closing element", "Add '>' to complete the closing tag")) return null;
 
     if (!jsxNamesMatch(parser, opening_name, name)) {
@@ -212,7 +214,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
 
     while (true) {
         // scan text content until '<' or '{'
-        const text_token = parser.lexer.rescanJsxText(scan_from);
+        const text_token = parser.lexer.reScanJsxText(scan_from);
 
         if (text_token.lexeme.len > 0) {
             const text_node = try parser.addNode(.{

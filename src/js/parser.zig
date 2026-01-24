@@ -137,7 +137,6 @@ pub const Parser = struct {
     nodes: ast.NodeList = .empty,
     extra: std.ArrayList(ast.NodeIndex) = .empty,
     current_token: token.Token,
-    next_token: ?token.Token = null,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -258,9 +257,6 @@ pub const Parser = struct {
     // utils
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
-        // clear prefetched token, so parser will fetch fresh next token with new mode
-        // otherwise, `advance` method may use already prefetched/cached next token which maybe scanned with previous mode
-        self.clearLookAhead();
         self.lexer.state.mode = mode;
     }
 
@@ -317,45 +313,33 @@ pub const Parser = struct {
         };
     }
 
-    pub fn advance(self: *Parser) Error!?void {
-        const new_token = if (self.next_token) |tok| blk: {
-            self.next_token = null;
-            break :blk tok;
-        } else try self.nextToken() orelse return null;
-
-        self.current_token = new_token;
+    pub inline fn advance(self: *Parser) Error!?void {
+        self.current_token = try self.nextToken() orelse return null;
     }
 
-    // lazy next token prefetching for lookahead.
-    // if lookahead has already cached the next token, `advance` will use it,
-    // so there's no extra cost for lookAhead.
     pub fn lookAhead(self: *Parser) Error!?token.Token {
-        if (self.next_token) |tok| {
-            return tok;
-        }
+        // these are the changing states in lexer
+        const prev_state = self.lexer.state;
+        const prev_cursor = self.lexer.cursor;
+        const prev_comments = self.lexer.comments;
 
-        self.next_token = try self.nextToken() orelse return null;
+        const next_token = try self.nextToken() orelse return null;
 
-        return self.next_token;
-    }
+        self.lexer.state = prev_state;
+        self.lexer.cursor = prev_cursor;
+        self.lexer.comments = prev_comments;
 
-    pub inline fn clearLookAhead(self: *Parser) void {
-        self.next_token = null;
-        // also reset the lexer's cursor to the current token's end,
-        // because the cursor was incremented further when prefetching the next token during lookAhead.
-        // When clearing the lookahead/prefetched token, we need to revert the cursor as well.
-        self.lexer.rewindTo(self.current_token.span.end);
+        return next_token;
     }
 
     /// sets current token from a re-scanned token and advances to the next token.
-    /// use after lexer re-scan functions (rescanJsxText, scanTemplateContinuation, etc.)
+    /// use after lexer re-scan functions (reScanJsxText, reScanTemplateContinuation, etc.)
     pub inline fn advanceWithRescannedToken(self: *Parser, tok: token.Token) Error!?void {
         self.current_token = tok;
-        self.next_token = null;
         return self.advance();
     }
 
-    pub inline fn expect(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) Error!bool {
+    pub fn expect(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) Error!bool {
         if (self.current_token.type == token_type) {
             try self.advance() orelse return false;
             return true;
@@ -366,7 +350,7 @@ pub const Parser = struct {
         return false;
     }
 
-    pub inline fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
+    pub fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
         if (self.current_token.type == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance() orelse return null;
@@ -387,7 +371,7 @@ pub const Parser = struct {
     /// then be parsed as the terminating semicolon of a do-while statement (14.7.2)"
     ///
     /// allows `do {} while (false) foo()`, semicolon optional after the `)`.
-    pub inline fn eatSemicolonLenient(self: *Parser, end: u32) Error!?u32 {
+    pub fn eatSemicolonLenient(self: *Parser, end: u32) Error!?u32 {
         if (self.current_token.type == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance() orelse return null;
@@ -412,7 +396,7 @@ pub const Parser = struct {
         labels: []const Label = &.{},
     };
 
-    pub inline fn report(self: *Parser, span: ast.Span, message: []const u8, opts: ReportOptions) Error!void {
+    pub fn report(self: *Parser, span: ast.Span, message: []const u8, opts: ReportOptions) Error!void {
         try self.diagnostics.append(self.allocator(), .{
             .severity = opts.severity,
             .message = message,
@@ -422,12 +406,12 @@ pub const Parser = struct {
         });
     }
 
-    pub inline fn reportFmt(self: *Parser, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Error!void {
+    pub fn reportFmt(self: *Parser, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Error!void {
         const message = try std.fmt.allocPrint(self.allocator(), format, args);
         try self.report(span, message, opts);
     }
 
-    pub inline fn label(_: *Parser, span: ast.Span, message: []const u8) Label {
+    pub fn label(_: *Parser, span: ast.Span, message: []const u8) Label {
         return .{ .span = span, .message = message };
     }
 

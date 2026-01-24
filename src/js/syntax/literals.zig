@@ -56,7 +56,7 @@ pub fn parseBigIntLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
 
-    const regex = parser.lexer.rescanAsRegex(token.span.start) catch |e| {
+    const regex = parser.lexer.reScanAsRegex(token.span.start) catch |e| {
         try parser.report(token.span, lexer.getLexicalErrorMessage(e), .{ .help = lexer.getLexicalErrorHelp(e) });
         return null;
     };
@@ -134,11 +134,12 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
+
+        // now scan template continuation from right after right_brace
+
         const right_brace = parser.current_token;
 
-        // now scan template continuation right after right_brace
-
-        const template_token = parser.lexer.scanTemplateContinuation(right_brace.span.start) catch |e| {
+        const template_token = parser.lexer.reScanTemplateContinuation(right_brace.span.start) catch |e| {
             try parser.report(right_brace.span, lexer.getLexicalErrorMessage(e), .{ .help = lexer.getLexicalErrorHelp(e) });
             return null;
         };
