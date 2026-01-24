@@ -37,6 +37,9 @@ pub const LexicalError = error{
 
 // TODO:
 // [ ] some simd optimizations
+//      [ ] comments start and end
+//      [ ] whitespace skipping
+//      [ ] scanning jsx text
 
 pub const LexerMode = enum {
     /// normal javascript mode
@@ -253,6 +256,124 @@ pub const Lexer = struct {
         self.state.has_line_terminator_before = false;
     }
 
+    // functions exclusively called by the parser for context-specific lexing
+
+    /// scans template_middle or template_tail starting from current position.
+    /// called by the parser when it expects a template continuation after parsing
+    /// an expression inside ${}.
+    pub fn rescanTemplateContinuation(self: *Lexer) LexicalError!token.Token {
+        const start = self.cursor;
+        self.cursor += 1;
+
+        while (self.cursor < self.source.len) {
+            const c = self.source[self.cursor];
+            if (c == '\\') {
+                try self.consumeEscape();
+                continue;
+            }
+            if (c == '`') {
+                self.cursor += 1;
+                const end = self.cursor;
+                return self.createToken(.template_tail, self.source[start..end], start, end);
+            }
+            if (c == '$' and self.peek(1) == '{') {
+                self.cursor += 2;
+                const end = self.cursor;
+                return self.createToken(.template_middle, self.source[start..end], start, end);
+            }
+            self.cursor += 1;
+        }
+        return error.NonTerminatedTemplateLiteral;
+    }
+
+    /// scans JSX text content between '<' and '{' in JSX children.
+    /// called by the parser when parsing JSX element children.
+    pub fn rescanJsxText(self: *Lexer, initial_cursor: u32) token.Token {
+        self.rewindTo(initial_cursor);
+
+        const start = self.cursor;
+
+        while (self.cursor < self.source.len) {
+            const c = self.source[self.cursor];
+
+            switch (c) {
+                '<', '{' => break,
+                else => self.cursor += 1,
+            }
+        }
+
+        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
+    }
+
+    /// re-scans a slash token as a regex literal
+    /// called by the parser when context determines that a '/' token should be interpreted
+    /// as the start of a regular expression rather than a division operator
+    pub fn rescanAsRegex(self: *Lexer, slash_token: token.Token) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
+        self.rewindTo(slash_token.span.start);
+
+        const start = self.cursor;
+        var closing_delimeter_pos: u32 = 0;
+        self.cursor += 1; // consume '/'
+        var in_class = false;
+
+        while (self.cursor < self.source.len) {
+            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+                return error.InvalidRegexLineTerminator;
+            }
+
+            const c = self.source[self.cursor];
+
+            if (c == '\\') {
+                self.cursor += 1; // consume '\'
+
+                if (self.cursor >= self.source.len) {
+                    return error.UnterminatedRegexLiteral;
+                }
+
+                if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+                    return error.InvalidRegexLineTerminator;
+                }
+
+                self.cursor += 1; // consume escaped char
+                continue;
+            }
+
+            if (c == '[') {
+                in_class = true;
+                self.cursor += 1;
+                continue;
+            }
+            if (c == ']' and in_class) {
+                in_class = false;
+                self.cursor += 1;
+                continue;
+            }
+            if (c == '/' and !in_class) {
+                self.cursor += 1;
+
+                closing_delimeter_pos = self.cursor;
+
+                while (self.cursor < self.source.len and
+                    std.ascii.isAlphabetic(self.source[self.cursor]))
+                {
+                    self.cursor += 1;
+                }
+
+                const end = self.cursor;
+
+                const pattern = self.source[start + 1 .. closing_delimeter_pos - 1];
+                const flags = self.source[closing_delimeter_pos..end];
+
+                return .{ .span = .{ .start = start, .end = end }, .lexeme = self.source[start..end], .pattern = pattern, .flags = flags };
+            }
+
+            self.cursor += 1;
+        }
+        return error.UnterminatedRegexLiteral;
+    }
+
+    //
+
     fn scanString(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
         const quote = self.source[start];
@@ -271,7 +392,7 @@ pub const Lexer = struct {
                 return self.createToken(.string_literal, self.source[start..self.cursor], start, self.cursor);
             }
 
-            // In jsx tag mode, strings can contain newlines (for multi-line attribute values)
+            // in jsx tag mode, strings can contain newlines (for multi-line attribute values)
             if ((c == '\n' or c == '\r') and self.state.mode != .jsx_tag) {
                 return error.UnterminatedString;
             }
@@ -309,34 +430,6 @@ pub const Lexer = struct {
             self.cursor += 1;
         }
 
-        return error.NonTerminatedTemplateLiteral;
-    }
-
-    /// scans for template_middle or template_tail starting from current position.
-    /// called by the parser when it expects a template continuation after parsing
-    /// an expression inside ${}.
-    pub fn scanTemplateMiddleOrTail(self: *Lexer) LexicalError!token.Token {
-        const start = self.cursor;
-        self.cursor += 1;
-
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-            if (c == '\\') {
-                try self.consumeEscape();
-                continue;
-            }
-            if (c == '`') {
-                self.cursor += 1;
-                const end = self.cursor;
-                return self.createToken(.template_tail, self.source[start..end], start, end);
-            }
-            if (c == '$' and self.peek(1) == '{') {
-                self.cursor += 2;
-                const end = self.cursor;
-                return self.createToken(.template_middle, self.source[start..end], start, end);
-            }
-            self.cursor += 1;
-        }
         return error.NonTerminatedTemplateLiteral;
     }
 
@@ -440,89 +533,6 @@ pub const Lexer = struct {
         const start = self.cursor;
         self.cursor += 1;
         return self.createToken(.right_brace, self.source[start..self.cursor], start, self.cursor);
-    }
-
-    // used by parser to scan text content between '<' and '{' in JSX children
-    pub fn scanJsxText(self: *Lexer, initial_cursor: u32) token.Token {
-        self.rewindTo(initial_cursor);
-
-        const start = self.cursor;
-
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-
-            switch (c) {
-                '<', '{' => break,
-                else => self.cursor += 1,
-            }
-        }
-
-        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
-    }
-
-    // used by parser to re-scan a slash token as a regex literal
-    pub fn reScanAsRegex(self: *Lexer, slash_token: token.Token) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
-        self.rewindTo(slash_token.span.start);
-
-        const start = self.cursor;
-        var closing_delimeter_pos: u32 = 0;
-        self.cursor += 1; // consume '/'
-        var in_class = false;
-
-        while (self.cursor < self.source.len) {
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
-                return error.InvalidRegexLineTerminator;
-            }
-
-            const c = self.source[self.cursor];
-
-            if (c == '\\') {
-                self.cursor += 1; // consume '\'
-
-                if (self.cursor >= self.source.len) {
-                    return error.UnterminatedRegexLiteral;
-                }
-
-                if (util.Utf.isLineTerminator(self.source, self.cursor)) {
-                    return error.InvalidRegexLineTerminator;
-                }
-
-                self.cursor += 1; // consume escaped char
-                continue;
-            }
-
-            if (c == '[') {
-                in_class = true;
-                self.cursor += 1;
-                continue;
-            }
-            if (c == ']' and in_class) {
-                in_class = false;
-                self.cursor += 1;
-                continue;
-            }
-            if (c == '/' and !in_class) {
-                self.cursor += 1;
-
-                closing_delimeter_pos = self.cursor;
-
-                while (self.cursor < self.source.len and
-                    std.ascii.isAlphabetic(self.source[self.cursor]))
-                {
-                    self.cursor += 1;
-                }
-
-                const end = self.cursor;
-
-                const pattern = self.source[start + 1 .. closing_delimeter_pos - 1];
-                const flags = self.source[closing_delimeter_pos..end];
-
-                return .{ .span = .{ .start = start, .end = end }, .lexeme = self.source[start..end], .pattern = pattern, .flags = flags };
-            }
-
-            self.cursor += 1;
-        }
-        return error.UnterminatedRegexLiteral;
     }
 
     fn scanDot(self: *Lexer) LexicalError!token.Token {

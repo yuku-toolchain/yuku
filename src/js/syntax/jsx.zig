@@ -54,6 +54,7 @@ fn parseJsxElement(parser: *Parser, context: JsxElementContext) Error!?ast.NodeI
 
     // element with children: <elem>...</elem>
     const children = try parseJsxChildren(parser, opening_end) orelse return null;
+
     const closing = try parseJsxClosingElement(parser, opening_data.name) orelse return null;
 
     return try parser.addNode(.{
@@ -204,14 +205,14 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(checkpoint);
 
-    // we're after '>' of opening tag, switch to normal mode for children
+    // switch to normal mode for children
     parser.setLexerMode(.normal);
 
     var scan_from = gt_end;
 
     while (true) {
         // scan text content until '<' or '{'
-        const text_token = parser.lexer.scanJsxText(scan_from);
+        const text_token = parser.lexer.rescanJsxText(scan_from);
 
         if (text_token.lexeme.len > 0) {
             const text_node = try parser.addNode(.{

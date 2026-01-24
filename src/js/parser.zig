@@ -348,7 +348,7 @@ pub const Parser = struct {
     }
 
     /// sets current token from a re-scanned token and advances to the next token.
-    /// use after lexer re-scan functions (scanJsxText, scanTemplateMiddleOrTail, etc.)
+    /// use after lexer re-scan functions (rescanJsxText, rescanTemplateContinuation, etc.)
     pub inline fn advanceWithRescannedToken(self: *Parser, tok: token.Token) Error!?void {
         self.current_token = tok;
         self.next_token = null;
