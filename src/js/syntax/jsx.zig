@@ -17,6 +17,14 @@ const JsxElementContext = enum {
     attribute,
 };
 
+inline fn enterJsxTag(parser: *Parser) void {
+    parser.setLexerMode(.jsx_tag);
+}
+
+inline fn exitJsxTag(parser: *Parser) void {
+    parser.setLexerMode(.normal);
+}
+
 // https://facebook.github.io/jsx/#prod-JSXElement
 pub fn parseJsxExpression(parser: *Parser) Error!?ast.NodeIndex {
     return parseJsxElement(parser, .top_level);
@@ -103,7 +111,7 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
 fn parseJsxOpeningElement(parser: *Parser, context: JsxElementContext) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    parser.setLexerMode(.jsx_tag);
+    enterJsxTag(parser);
     try parser.advance() orelse return null; // consume '<'
 
     const name = try parseJsxElementName(parser) orelse return null;
@@ -127,10 +135,10 @@ fn parseJsxOpeningElement(parser: *Parser, context: JsxElementContext) Error!?as
     // - non-self-closing: stay in current mode (will switch in parseJsxChildren), don't advance
     if (self_closing) {
         if (context == .attribute) {
-            parser.setLexerMode(.jsx_tag);
+            enterJsxTag(parser);
             try parser.advance() orelse return null;
         } else {
-            parser.setLexerMode(.normal);
+            exitJsxTag(parser);
             if (context == .top_level) {
                 try parser.advance() orelse return null;
             }
@@ -150,7 +158,7 @@ fn parseJsxOpeningElement(parser: *Parser, context: JsxElementContext) Error!?as
 fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    parser.setLexerMode(.jsx_tag);
+    enterJsxTag(parser);
 
     try parser.advance() orelse return null; // consume '<'
 
@@ -159,7 +167,7 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
     const name = try parseJsxElementName(parser) orelse return null;
     const end = parser.current_token.span.end;
 
-    parser.setLexerMode(.normal);
+    exitJsxTag(parser);
 
     if (!try parser.expect(.greater_than, "Expected '>' to close JSX closing element", "Add '>' to complete the closing tag")) return null;
 
@@ -202,7 +210,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
     defer parser.scratch_b.reset(checkpoint);
 
     // switch to normal mode for children
-    parser.setLexerMode(.normal);
+    exitJsxTag(parser);
 
     var scan_from = gt_end;
 
@@ -387,7 +395,7 @@ fn parseJsxExpressionContainer(parser: *Parser, context: JsxExprContext) Error!?
     // switch to normal mode for JS expression parsing
     // (only matters when called from tag context, already normal in child context)
     if (context == .tag) {
-        parser.setLexerMode(.normal);
+        exitJsxTag(parser);
     }
 
     try parser.advance() orelse return null; // consume '{'
@@ -396,7 +404,7 @@ fn parseJsxExpressionContainer(parser: *Parser, context: JsxExprContext) Error!?
     if (parser.current_token.type == .right_brace) {
         const end = parser.current_token.span.end;
         if (context == .tag) {
-            parser.setLexerMode(.jsx_tag);
+            enterJsxTag(parser);
         }
         try parser.advance() orelse return null;
 
@@ -409,7 +417,7 @@ fn parseJsxExpressionContainer(parser: *Parser, context: JsxExprContext) Error!?
 
     // restore mode before consuming '}'
     if (context == .tag) {
-        parser.setLexerMode(.jsx_tag);
+        enterJsxTag(parser);
     }
 
     if (!try parser.expect(.right_brace, "Expected '}' to close JSX expression", "Add '}' to close the expression")) return null;
@@ -421,7 +429,7 @@ fn parseJsxExpressionContainer(parser: *Parser, context: JsxExprContext) Error!?
 fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    parser.setLexerMode(.normal);
+    exitJsxTag(parser);
 
     try parser.advance() orelse return null; // consume '{'
 
@@ -430,7 +438,7 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     const end = parser.current_token.span.end;
 
-    parser.setLexerMode(.jsx_tag);
+    enterJsxTag(parser);
 
     if (!try parser.expect(.right_brace, "Expected '}' to close JSX spread", "Add '}' to close the spread expression")) return null;
 
