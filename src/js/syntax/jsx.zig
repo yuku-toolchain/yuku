@@ -54,7 +54,7 @@ fn parseJsxElement(parser: *Parser, context: JsxElementContext) Error!?ast.NodeI
 
     // element with children: <elem>...</elem>
     const children = try parseJsxChildren(parser, opening_end) orelse return null;
-    const closing = try parseJsxClosingElement(parser) orelse return null;
+    const closing = try parseJsxClosingElement(parser, opening_data.name) orelse return null;
 
     return try parser.addNode(.{
         .jsx_element = .{
@@ -126,11 +126,12 @@ fn parseJsxOpeningElement(parser: *Parser, context: JsxElementContext) Error!?as
     const end = parser.current_token.span.end;
 
     // mode and advance handling depends on context and self-closing status:
-    // - self-closing top-level: switch to normal, advance past '>'
-    // - self-closing child/attribute: switch to normal, don't advance (caller handles it)
-    // - non-self-closing: stay in jsx_tag (will switch in parseJsxChildren), don't advance
+    // - self-closing attribute: switch to jsx_tag (resume attribute parsing), advance past '>'
+    // - self-closing top-level: switch to normal (expression complete), advance past '>'
+    // - self-closing child: switch to normal (resume children parsing), don't advance (parseJsxChildren continues)
+    // - non-self-closing: stay in current mode (will switch in parseJsxChildren), don't advance
     if (self_closing) {
-        if(context == .attribute) {
+        if (context == .attribute) {
             parser.setLexerMode(.jsx_tag);
             try parser.advance() orelse return null;
         } else {
@@ -151,7 +152,7 @@ fn parseJsxOpeningElement(parser: *Parser, context: JsxElementContext) Error!?as
 }
 
 // https://facebook.github.io/jsx/#prod-JSXClosingElement
-fn parseJsxClosingElement(parser: *Parser) Error!?ast.NodeIndex {
+fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     parser.setLexerMode(.jsx_tag);
@@ -165,7 +166,37 @@ fn parseJsxClosingElement(parser: *Parser) Error!?ast.NodeIndex {
     parser.setLexerMode(.normal);
     if (!try parser.expect(.greater_than, "Expected '>' to close JSX closing element", "Add '>' to complete the closing tag")) return null;
 
+    if (!jsxNamesMatch(parser, opening_name, name)) {
+        const opening_span = parser.getSpan(opening_name);
+        const closing_span = parser.getSpan(name);
+
+        try parser.report(closing_span, try parser.formatMessage(
+            "Expected closing tag for '<{s}>' but found '</{s}>'",
+            .{ parser.source[opening_span.start..opening_span.end], parser.source[closing_span.start..closing_span.end] },
+        ), .{
+            .help = "JSX opening and closing tags must have matching names",
+            .labels = try parser.makeLabels(&.{parser.label(opening_span, "opening tag")}),
+        });
+
+        return null;
+    }
+
     return try parser.addNode(.{ .jsx_closing_element = .{ .name = name } }, .{ .start = start, .end = end });
+}
+
+fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool {
+    const span_a = parser.getSpan(a);
+    const span_b = parser.getSpan(b);
+
+    const len_a = span_a.end - span_a.start;
+    const len_b = span_b.end - span_b.start;
+
+    if (len_a != len_b) return false;
+
+    const text_a = parser.source[span_a.start..span_a.end];
+    const text_b = parser.source[span_b.start..span_b.end];
+
+    return std.mem.eql(u8, text_a, text_b);
 }
 
 // https://facebook.github.io/jsx/#prod-JSXChildren

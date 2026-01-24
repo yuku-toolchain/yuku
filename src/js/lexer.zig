@@ -30,6 +30,9 @@ pub const LexicalError = error{
     IdentifierAfterNumericLiteral,
     InvalidUtf8,
     OutOfMemory,
+    // jsx-specific errors
+    JsxIdentifierCannotContainEscapes,
+    JsxIdentifierCannotStartWithBackslash,
 };
 
 // TODO:
@@ -535,16 +538,22 @@ pub const Lexer = struct {
         return self.makePuncToken(1, .dot, start);
     }
 
-    inline fn scanIdentifierBody(self: *Lexer) !void {
+    inline fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !void {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
                 if (c == '\\') {
                     @branchHint(.cold);
+                    // JSX tag names don't support escape sequences
+                    if (is_jsx_tag) {
+                        return error.JsxIdentifierCannotContainEscapes;
+                    }
+
                     if (self.peek(1) != 'u') {
                         return error.InvalidUnicodeEscape;
                     }
+
                     const c2 = self.peek(2);
                     if (c2 != '{') {
                         if (util.Utf.parseHex4(self.source, self.cursor + 2)) |r| {
@@ -553,10 +562,11 @@ pub const Lexer = struct {
                             }
                         }
                     }
+
                     self.cursor += 1; // consume backslash to get to 'u'
                     try self.consumeUnicodeEscape();
                 } else {
-                    if (canContinueIdentifierAscii(c, self.state.mode == .jsx_tag)) {
+                    if (canContinueIdentifierAscii(c, is_jsx_tag)) {
                         self.cursor += 1;
                     } else {
                         break;
@@ -576,6 +586,7 @@ pub const Lexer = struct {
 
     fn scanIdentifierOrKeyword(self: *Lexer) !token.Token {
         const start = self.cursor;
+        const is_jsx_tag = self.state.mode == .jsx_tag;
 
         const is_private = self.source[self.cursor] == '#';
 
@@ -587,6 +598,10 @@ pub const Lexer = struct {
         if (std.ascii.isAscii(first_char)) {
             @branchHint(.likely);
             if (first_char == '\\') {
+                // JSX tag names don't support escape sequences
+                if (is_jsx_tag) {
+                    return error.JsxIdentifierCannotStartWithBackslash;
+                }
                 if (self.peek(1) != 'u') {
                     return error.InvalidUnicodeEscape;
                 }
@@ -607,7 +622,7 @@ pub const Lexer = struct {
                 }
                 self.cursor += 1;
             }
-            try self.scanIdentifierBody();
+            try self.scanIdentifierBody(is_jsx_tag);
         } else {
             @branchHint(.cold);
             const c_cp = try util.Utf.codePointAt(self.source, self.cursor);
@@ -615,12 +630,12 @@ pub const Lexer = struct {
                 return error.InvalidIdentifierStart;
             }
             self.cursor += c_cp.len;
-            try self.scanIdentifierBody();
+            try self.scanIdentifierBody(is_jsx_tag);
         }
 
         const lexeme = self.source[start..self.cursor];
 
-        const token_type: token.TokenType = if (self.state.mode == .jsx_tag) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
+        const token_type: token.TokenType = if (is_jsx_tag) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
 
         return self.createToken(token_type, lexeme, start, self.cursor);
     }
@@ -1169,6 +1184,8 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.IdentifierAfterNumericLiteral => "Identifier cannot immediately follow a numeric literal",
         error.InvalidUtf8 => "Invalid UTF-8 byte sequence",
         error.OutOfMemory => "Out of memory",
+        error.JsxIdentifierCannotContainEscapes => "JSX tag names cannot contain escape sequences",
+        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names cannot start with a backslash",
     };
 }
 
@@ -1199,5 +1216,7 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.IdentifierAfterNumericLiteral => "Try adding whitespace here between the number and identifier",
         error.InvalidUtf8 => "The source file contains invalid UTF-8 encoding. Ensure the file is saved with valid UTF-8 encoding",
         error.OutOfMemory => "The system ran out of memory while parsing",
+        error.JsxIdentifierCannotContainEscapes => "Remove the escape sequence and use the literal character instead",
+        error.JsxIdentifierCannotStartWithBackslash => "JSX tag names must be plain identifiers without escape sequences",
     };
 }
