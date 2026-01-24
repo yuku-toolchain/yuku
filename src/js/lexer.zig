@@ -603,6 +603,10 @@ pub const Lexer = struct {
 
         if (is_private) {
             self.cursor += 1;
+            // check if we've reached end-of-file after '#'
+            if (self.cursor >= self.source.len) {
+                return error.InvalidIdentifierStart;
+            }
         }
 
         const first_char = self.source[self.cursor];
