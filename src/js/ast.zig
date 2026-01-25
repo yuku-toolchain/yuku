@@ -49,10 +49,6 @@ pub const SourceType = enum {
     /// - `.cjs`, `.cts` are treated as scripts (CommonJS)
     /// - All other files default to module (modern default)
     pub fn fromPath(path: []const u8) SourceType {
-        if (std.mem.endsWith(u8, path, ".mjs") or std.mem.endsWith(u8, path, ".mts")) {
-            return .module;
-        }
-
         if (std.mem.endsWith(u8, path, ".cjs") or std.mem.endsWith(u8, path, ".cts")) {
             return .script;
         }
@@ -77,21 +73,22 @@ pub const Lang = enum {
     /// - `.jsx` → `jsx` (JavaScript with JSX)
     /// - `.js`, `.mjs`, `.cjs` or unknown → `js` (JavaScript)
     pub fn fromPath(path: []const u8) Lang {
-        if (std.mem.endsWith(u8, path, ".ts")) {
-            return .ts;
-        } else if (std.mem.endsWith(u8, path, ".tsx")) {
-            return .tsx;
-        } else if (std.mem.endsWith(u8, path, ".jsx")) {
-            return .jsx;
-        } else if (std.mem.endsWith(u8, path, ".d.ts") or std.mem.endsWith(u8, path, ".d.mts") or std.mem.endsWith(u8, path, ".d.cts")) {
+        if (std.mem.endsWith(u8, path, ".d.ts") or
+            std.mem.endsWith(u8, path, ".d.mts") or
+            std.mem.endsWith(u8, path, ".d.cts"))
+        {
             return .dts;
-        } else if (std.mem.endsWith(u8, path, ".mts") or std.mem.endsWith(u8, path, ".cts")) {
-            return .ts;
-        } else if (std.mem.endsWith(u8, path, ".mjs") or std.mem.endsWith(u8, path, ".cjs")) {
-            return .js;
-        } else {
-            return .js;
         }
+
+        if (std.mem.endsWith(u8, path, ".tsx")) return .tsx;
+
+        if (std.mem.endsWith(u8, path, ".ts") or
+            std.mem.endsWith(u8, path, ".mts") or
+            std.mem.endsWith(u8, path, ".cts")) return .ts;
+
+        if (std.mem.endsWith(u8, path, ".jsx")) return .jsx;
+
+        return .js;
     }
 };
 

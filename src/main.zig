@@ -18,7 +18,8 @@ pub fn main() !void {
 
     var start = try std.time.Timer.start();
 
-    const tree = try js.parse(std.heap.page_allocator, contents, .{ .lang = .jsx });
+    const tree = try js.parse(std.heap.page_allocator, contents, .{ .lang = js.Lang.fromPath(file_path), .source_type = js.SourceType.fromPath(file_path) });
+
     defer tree.deinit();
 
     const taken = start.read();
