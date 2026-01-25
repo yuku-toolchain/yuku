@@ -6,7 +6,11 @@ const ast = @import("ast.zig");
 const statements = @import("syntax/statements.zig");
 
 pub const Options = struct {
+    /// Source type determines how the code is parsed and evaluated.
+    /// Defaults to `.module` (ES module semantics, strict mode enabled).
     source_type: ast.SourceType = .module,
+    /// Language variant determines which syntax features are enabled.
+    /// Defaults to `.js` (plain JavaScript).
     lang: ast.Lang = .js,
 };
 

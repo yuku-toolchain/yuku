@@ -30,6 +30,9 @@ pub const Diagnostic = struct {
     labels: []const Label = &.{},
 };
 
+/// Source type of a JavaScript/TypeScript file.
+/// Determines how the code is parsed and evaluated.
+/// https://tc39.es/ecma262/#sec-types-of-source-code
 pub const SourceType = enum {
     script,
     module,
@@ -40,8 +43,57 @@ pub const SourceType = enum {
             .module => "module",
         };
     }
+
+    /// Determines the source type based on the file extension.
+    /// - `.mjs`, `.mts` are treated as modules (ES modules)
+    /// - `.cjs`, `.cts` are treated as scripts (CommonJS)
+    /// - All other files default to module (modern default)
+    pub fn fromPath(path: []const u8) SourceType {
+        if (std.mem.endsWith(u8, path, ".mjs") or std.mem.endsWith(u8, path, ".mts")) {
+            return .module;
+        }
+
+        if (std.mem.endsWith(u8, path, ".cjs") or std.mem.endsWith(u8, path, ".cts")) {
+            return .script;
+        }
+
+        return .module;
+    }
 };
-pub const Lang = enum { js, ts, jsx, tsx, dts };
+
+/// Language variant for JavaScript/TypeScript files.
+/// Determines which syntax features are enabled during parsing.
+pub const Lang = enum {
+    js,
+    ts,
+    jsx,
+    tsx,
+    dts,
+
+    /// Determines the language variant based on the file extension.
+    /// - `.d.ts`, `.d.mts`, `.d.cts` → `dts` (TypeScript declaration files)
+    /// - `.tsx` → `tsx` (TypeScript with JSX)
+    /// - `.ts`, `.mts`, `.cts` → `ts` (TypeScript)
+    /// - `.jsx` → `jsx` (JavaScript with JSX)
+    /// - `.js`, `.mjs`, `.cjs` or unknown → `js` (JavaScript)
+    pub fn fromPath(path: []const u8) Lang {
+        if (std.mem.endsWith(u8, path, ".ts")) {
+            return .ts;
+        } else if (std.mem.endsWith(u8, path, ".tsx")) {
+            return .tsx;
+        } else if (std.mem.endsWith(u8, path, ".jsx")) {
+            return .jsx;
+        } else if (std.mem.endsWith(u8, path, ".d.ts") or std.mem.endsWith(u8, path, ".d.mts") or std.mem.endsWith(u8, path, ".d.cts")) {
+            return .dts;
+        } else if (std.mem.endsWith(u8, path, ".mts") or std.mem.endsWith(u8, path, ".cts")) {
+            return .ts;
+        } else if (std.mem.endsWith(u8, path, ".mjs") or std.mem.endsWith(u8, path, ".cjs")) {
+            return .js;
+        } else {
+            return .js;
+        }
+    }
+};
 
 pub const Comment = struct {
     type: Type,

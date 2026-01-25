@@ -134,7 +134,6 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
-
         // now scan template continuation from right after right_brace
 
         const right_brace = parser.current_token;
