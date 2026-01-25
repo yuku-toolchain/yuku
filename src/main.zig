@@ -8,12 +8,7 @@ pub fn main() !void {
 
     const file_path = "test.js";
 
-    const file = try std.fs.cwd().openFile(file_path, .{});
-    defer file.close();
-
-    var buffer: [4096]u8 = undefined;
-    var reader = file.reader(&buffer);
-    const contents = try reader.interface.allocRemaining(allocator, std.Io.Limit.limited(10 * 1024 * 1024));
+    const contents = try std.fs.cwd().readFileAlloc(file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
     defer allocator.free(contents);
 
     var start = try std.time.Timer.start();
