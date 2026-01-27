@@ -26,9 +26,9 @@ interface TestConfig {
 }
 
 const configs: TestConfig[] = [
-  { path: "test/js/pass", type: "snapshot", languages: ["js"] },
-  { path: "test/js/regression", type: "snapshot", languages: ["js"] },
-  { path: "test/js/fail", type: "should_fail", languages: ["js"],
+  { path: "test/suite/js/pass", type: "snapshot", languages: ["js"] },
+  { path: "test/suite/js/misc", type: "snapshot", languages: ["js"] },
+  { path: "test/suite/js/fail", type: "should_fail", languages: ["js"],
     exclude: [
       // these are the semantic tests
       // remove these from this exclude list when we implement a visitor/traverser and semantic analyzer
@@ -42,7 +42,7 @@ const configs: TestConfig[] = [
       "5e6f67a0e748cc42.js",
       "efcb54b62e8f0e06.js",
       "8b72c44bd531621a.js",
-      "d17d3aebb6a3cf43.js",
+      "ee0034582e67e51e.js",
       "2b050de45ab44c8c.js",
       "3078b4fed5626e2a.js",
       "04bc213db9cd1130.js",
@@ -61,11 +61,9 @@ const configs: TestConfig[] = [
       "5059efc702f08060.js",
       "f063969b23239390.module.js"
   ] },
-  { path: "test/js/misc", type: "snapshot", languages: ["js"] },
-  { path: "test/jsx/pass", type: "snapshot", languages: ["jsx"] },
-  { path: "test/jsx/regression", type: "snapshot", languages: ["jsx"] },
-  { path: "test/jsx/misc", type: "snapshot", languages: ["jsx"] },
-  { path: "test/jsx/fail", type: "should_fail", languages: ["jsx"] },
+  { path: "test/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
+  { path: "test/suite/jsx/misc", type: "snapshot", languages: ["jsx"] },
+  { path: "test/suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
 ]
 
 interface TestResult {

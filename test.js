@@ -1,1 +1,1 @@
-const a = b
+"use strict"; for (let {a: b = let} = undefined;;) {}

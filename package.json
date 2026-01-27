@@ -4,7 +4,7 @@
   "scripts": {
     "build:npm": "zig build && bun run --filter './npm' build",
     "dev:docs": "bun run --filter './docs' dev",
-    "test": "bun run build:npm && bun test/run.ts",
+    "test": "bun load-test-suite && bun build:npm && bun test/run.ts",
     "release:npm": "bumpp -r --commit --push --tag",
     "format": "zig fmt **/*.zig",
     "load-test-suite": "bun test/load.ts test/suite"

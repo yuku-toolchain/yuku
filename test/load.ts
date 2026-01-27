@@ -1,5 +1,11 @@
 import Bun from 'bun'
 
+const shouldLoad = !(await Bun.file('test/suite').exists())
+
+if (!shouldLoad) {
+  process.exit(0)
+}
+
 const dest = Bun.argv[2] || '.'
 
 const TEST_SUITE_REPO_URL = "https://github.com/arshad-yaseen/typescript-estree-parser-test-suite"
