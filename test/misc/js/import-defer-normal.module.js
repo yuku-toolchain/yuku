@@ -1,1 +1,1 @@
-import defer from "wow"
+import defer from "module"

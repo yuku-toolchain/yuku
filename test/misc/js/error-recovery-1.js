@@ -1,5 +1,5 @@
-function cool() {
-  const randomNumber = "
+function testFunction() {
+  const unclosedString = "
   {
 
   }

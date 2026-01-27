@@ -1,1 +1,1 @@
-import(hey)()
+import(modulePath)()

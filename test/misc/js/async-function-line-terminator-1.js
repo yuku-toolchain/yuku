@@ -1,4 +1,4 @@
 async
-function nice() {
+function testFunction() {
     console.log('Hello, world!');
 }

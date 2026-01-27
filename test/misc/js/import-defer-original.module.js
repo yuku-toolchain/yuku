@@ -1,1 +1,1 @@
-import defer * as nice from "wow"
+import defer * as moduleExports from "module"

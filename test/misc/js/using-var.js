@@ -1,1 +1,1 @@
-using nice = Bun;
+using resource = Bun;

@@ -1,1 +1,1 @@
-const nice = async()
+const testCall = async()

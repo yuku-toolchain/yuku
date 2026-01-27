@@ -2,33 +2,33 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 21,
+    "end": 25,
     "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
         "start": 0,
-        "end": 20,
+        "end": 24,
         "kind": "const",
         "declarations": [
           {
             "type": "VariableDeclarator",
             "start": 6,
-            "end": 20,
+            "end": 24,
             "id": {
               "type": "Identifier",
               "start": 6,
-              "end": 10,
-              "name": "nice"
+              "end": 14,
+              "name": "testCall"
             },
             "init": {
               "type": "CallExpression",
-              "start": 13,
-              "end": 20,
+              "start": 17,
+              "end": 24,
               "callee": {
                 "type": "Identifier",
-                "start": 13,
-                "end": 18,
+                "start": 17,
+                "end": 22,
                 "name": "async"
               },
               "arguments": [],

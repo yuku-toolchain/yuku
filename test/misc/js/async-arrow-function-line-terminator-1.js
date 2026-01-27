@@ -1,2 +1,2 @@
-const nice = async
+const testVariable = async
 () => {}

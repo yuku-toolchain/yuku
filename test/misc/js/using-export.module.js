@@ -1,1 +1,1 @@
-export using nice = Bun;
+export using resource = Bun;

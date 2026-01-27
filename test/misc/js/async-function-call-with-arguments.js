@@ -1,1 +1,1 @@
-const nice = async(wow)
+const testCall = async(argument)

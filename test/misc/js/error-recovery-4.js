@@ -1,6 +1,6 @@
-function cool() {
-  const randomNumber = "
-  function nice() {
+function testFunction() {
+  const unclosedString = "
+  function innerFunction() {
     10 = 10;
   }
   break;

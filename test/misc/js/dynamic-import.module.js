@@ -1,1 +1,1 @@
-import(wow)
+import(modulePath)

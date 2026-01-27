@@ -2,22 +2,22 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 12,
+    "end": 19,
     "sourceType": "module",
     "body": [
       {
         "type": "ExpressionStatement",
         "start": 0,
-        "end": 11,
+        "end": 18,
         "expression": {
           "type": "ImportExpression",
           "start": 0,
-          "end": 11,
+          "end": 18,
           "source": {
             "type": "Identifier",
             "start": 7,
-            "end": 10,
-            "name": "wow"
+            "end": 17,
+            "name": "modulePath"
           },
           "options": null,
           "phase": null

@@ -1,1 +1,1 @@
-const nice = async(wow, ...cool, ...rest)
+const testCall = async(firstArg, ...secondSpread, ...thirdSpread)

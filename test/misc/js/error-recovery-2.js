@@ -1,6 +1,6 @@
-function cool() {
-  const randomNumber = "
-  function cool() {
+function testFunction() {
+  const unclosedString = "
+  function testFunction() {
 
   }
   break;

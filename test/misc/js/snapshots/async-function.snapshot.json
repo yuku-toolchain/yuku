@@ -2,49 +2,49 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 61,
+    "end": 68,
     "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 60,
+        "end": 67,
         "id": {
           "type": "Identifier",
           "start": 15,
-          "end": 20,
-          "name": "hello"
+          "end": 27,
+          "name": "testFunction"
         },
         "generator": false,
         "async": true,
         "params": [],
         "body": {
           "type": "BlockStatement",
-          "start": 23,
-          "end": 60,
+          "start": 30,
+          "end": 67,
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 29,
-              "end": 58,
+              "start": 36,
+              "end": 65,
               "expression": {
                 "type": "CallExpression",
-                "start": 29,
-                "end": 57,
+                "start": 36,
+                "end": 64,
                 "callee": {
                   "type": "MemberExpression",
-                  "start": 29,
-                  "end": 40,
+                  "start": 36,
+                  "end": 47,
                   "object": {
                     "type": "Identifier",
-                    "start": 29,
-                    "end": 36,
+                    "start": 36,
+                    "end": 43,
                     "name": "console"
                   },
                   "property": {
                     "type": "Identifier",
-                    "start": 37,
-                    "end": 40,
+                    "start": 44,
+                    "end": 47,
                     "name": "log"
                   },
                   "computed": false,
@@ -53,8 +53,8 @@
                 "arguments": [
                   {
                     "type": "Literal",
-                    "start": 41,
-                    "end": 56,
+                    "start": 48,
+                    "end": 63,
                     "value": "Hello, world!",
                     "raw": "'Hello, world!'"
                   }

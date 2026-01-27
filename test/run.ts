@@ -29,8 +29,6 @@ const configs: TestConfig[] = [
   { path: "test/suite/js/pass", type: "snapshot", languages: ["js"] },
   { path: "test/suite/js/fail", type: "should_fail", languages: ["js"],
     exclude: [
-      // these are the semantic tests
-      // remove these from this exclude list when we implement a visitor/traverser and semantic analyzer
       "67c714796e7f40a4.js",
       "e6559958e6954318.js",
       "4e2cce832b4449f1.js",

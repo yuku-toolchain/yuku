@@ -1,1 +1,1 @@
-await using nice = Bun;
+await using resource = Bun;

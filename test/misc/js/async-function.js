@@ -1,3 +1,3 @@
-async function hello() {
+async function testFunction() {
     console.log('Hello, world!');
 }

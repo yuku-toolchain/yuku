@@ -1,1 +1,1 @@
-import nide from "wow";
+import defaultExport from "module";

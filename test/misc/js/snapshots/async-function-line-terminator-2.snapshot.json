@@ -2,29 +2,29 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 75,
+    "end": 89,
     "sourceType": "script",
     "body": [
       {
         "type": "VariableDeclaration",
         "start": 0,
-        "end": 19,
+        "end": 26,
         "kind": "const",
         "declarations": [
           {
             "type": "VariableDeclarator",
             "start": 6,
-            "end": 19,
+            "end": 26,
             "id": {
               "type": "Identifier",
               "start": 6,
-              "end": 11,
-              "name": "hello"
+              "end": 18,
+              "name": "testVariable"
             },
             "init": {
               "type": "Identifier",
-              "start": 14,
-              "end": 19,
+              "start": 21,
+              "end": 26,
               "name": "async"
             }
           }
@@ -32,44 +32,44 @@
       },
       {
         "type": "FunctionDeclaration",
-        "start": 20,
-        "end": 74,
+        "start": 27,
+        "end": 88,
         "id": {
           "type": "Identifier",
-          "start": 29,
-          "end": 34,
-          "name": "world"
+          "start": 36,
+          "end": 48,
+          "name": "testFunction"
         },
         "generator": false,
         "async": false,
         "params": [],
         "body": {
           "type": "BlockStatement",
-          "start": 37,
-          "end": 74,
+          "start": 51,
+          "end": 88,
           "body": [
             {
               "type": "ExpressionStatement",
-              "start": 43,
-              "end": 72,
+              "start": 57,
+              "end": 86,
               "expression": {
                 "type": "CallExpression",
-                "start": 43,
-                "end": 71,
+                "start": 57,
+                "end": 85,
                 "callee": {
                   "type": "MemberExpression",
-                  "start": 43,
-                  "end": 54,
+                  "start": 57,
+                  "end": 68,
                   "object": {
                     "type": "Identifier",
-                    "start": 43,
-                    "end": 50,
+                    "start": 57,
+                    "end": 64,
                     "name": "console"
                   },
                   "property": {
                     "type": "Identifier",
-                    "start": 51,
-                    "end": 54,
+                    "start": 65,
+                    "end": 68,
                     "name": "log"
                   },
                   "computed": false,
@@ -78,8 +78,8 @@
                 "arguments": [
                   {
                     "type": "Literal",
-                    "start": 55,
-                    "end": 70,
+                    "start": 69,
+                    "end": 84,
                     "value": "Hello, world!",
                     "raw": "'Hello, world!'"
                   }

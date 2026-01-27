@@ -1,4 +1,4 @@
-const hello = async
-function world() {
+const testVariable = async
+function testFunction() {
     console.log('Hello, world!');
 }

@@ -63,7 +63,7 @@
                   "type": "JSXIdentifier",
                   "start": 19,
                   "end": 28,
-                  "name": "nice-cool"
+                  "name": "data-test"
                 },
                 "value": null
               }

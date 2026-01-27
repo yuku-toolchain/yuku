@@ -2,52 +2,52 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 79,
+    "end": 97,
     "sourceType": "script",
     "body": [
       {
         "type": "FunctionDeclaration",
         "start": 0,
-        "end": 78,
+        "end": 96,
         "id": {
           "type": "Identifier",
           "start": 9,
-          "end": 13,
-          "name": "cool"
+          "end": 21,
+          "name": "testFunction"
         },
         "generator": false,
         "async": false,
         "params": [],
         "body": {
           "type": "BlockStatement",
-          "start": 16,
-          "end": 78,
+          "start": 24,
+          "end": 96,
           "body": [
             {
               "type": "FunctionDeclaration",
-              "start": 45,
-              "end": 67,
+              "start": 55,
+              "end": 85,
               "id": {
                 "type": "Identifier",
-                "start": 54,
-                "end": 58,
-                "name": "cool"
+                "start": 64,
+                "end": 76,
+                "name": "testFunction"
               },
               "generator": false,
               "async": false,
               "params": [],
               "body": {
                 "type": "BlockStatement",
-                "start": 61,
-                "end": 67,
+                "start": 79,
+                "end": 85,
                 "body": []
               },
               "expression": false
             },
             {
               "type": "BreakStatement",
-              "start": 70,
-              "end": 76,
+              "start": 88,
+              "end": 94,
               "label": null
             }
           ]
@@ -62,8 +62,8 @@
       "severity": "error",
       "message": "Unterminated string literal",
       "help": "Try adding a closing quote here to complete the string",
-      "start": 40,
-      "end": 42,
+      "start": 50,
+      "end": 52,
       "labels": []
     }
   ]
