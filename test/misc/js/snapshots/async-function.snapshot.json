@@ -1,0 +1,73 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 61,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "FunctionDeclaration",
+        "start": 0,
+        "end": 60,
+        "id": {
+          "type": "Identifier",
+          "start": 15,
+          "end": 20,
+          "name": "hello"
+        },
+        "generator": false,
+        "async": true,
+        "params": [],
+        "body": {
+          "type": "BlockStatement",
+          "start": 23,
+          "end": 60,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 29,
+              "end": 58,
+              "expression": {
+                "type": "CallExpression",
+                "start": 29,
+                "end": 57,
+                "callee": {
+                  "type": "MemberExpression",
+                  "start": 29,
+                  "end": 40,
+                  "object": {
+                    "type": "Identifier",
+                    "start": 29,
+                    "end": 36,
+                    "name": "console"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "start": 37,
+                    "end": 40,
+                    "name": "log"
+                  },
+                  "computed": false,
+                  "optional": false
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 41,
+                    "end": 56,
+                    "value": "Hello, world!",
+                    "raw": "'Hello, world!'"
+                  }
+                ],
+                "optional": false
+              }
+            }
+          ]
+        },
+        "expression": false
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

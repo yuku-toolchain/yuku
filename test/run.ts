@@ -27,7 +27,6 @@ interface TestConfig {
 
 const configs: TestConfig[] = [
   { path: "test/suite/js/pass", type: "snapshot", languages: ["js"] },
-  { path: "test/suite/js/misc", type: "snapshot", languages: ["js"] },
   { path: "test/suite/js/fail", type: "should_fail", languages: ["js"],
     exclude: [
       // these are the semantic tests
@@ -62,8 +61,9 @@ const configs: TestConfig[] = [
       "f063969b23239390.module.js"
   ] },
   { path: "test/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
-  { path: "test/suite/jsx/misc", type: "snapshot", languages: ["jsx"] },
   { path: "test/suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
+  { path: "test/misc/jsx", type: "snapshot", languages: ["jsx"] },
+  { path: "test/misc/js", type: "snapshot", languages: ["js"] },
 ]
 
 interface TestResult {

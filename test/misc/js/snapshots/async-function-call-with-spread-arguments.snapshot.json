@@ -1,0 +1,73 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 42,
+    "sourceType": "script",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 41,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 41,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 10,
+              "name": "nice"
+            },
+            "init": {
+              "type": "CallExpression",
+              "start": 13,
+              "end": 41,
+              "callee": {
+                "type": "Identifier",
+                "start": 13,
+                "end": 18,
+                "name": "async"
+              },
+              "arguments": [
+                {
+                  "type": "Identifier",
+                  "start": 19,
+                  "end": 22,
+                  "name": "wow"
+                },
+                {
+                  "type": "SpreadElement",
+                  "start": 24,
+                  "end": 31,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 27,
+                    "end": 31,
+                    "name": "cool"
+                  }
+                },
+                {
+                  "type": "SpreadElement",
+                  "start": 33,
+                  "end": 40,
+                  "argument": {
+                    "type": "Identifier",
+                    "start": 36,
+                    "end": 40,
+                    "name": "rest"
+                  }
+                }
+              ],
+              "optional": false
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

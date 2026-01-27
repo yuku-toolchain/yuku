@@ -1,0 +1,2 @@
+const nice = async
+nice => {}
