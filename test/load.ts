@@ -13,7 +13,7 @@ if (!shouldLoad) {
 
 const dest = Bun.argv[2] || '.'
 
-console.log("Downloading test suite...")
+console.log("\nDownloading test suite...")
 
 Bun.spawnSync({
   cmd: ["git", "clone", "--quiet", "--no-progress", "--single-branch", "--depth", "1", TEST_SUITE_REPO_URL, dest]
@@ -28,4 +28,4 @@ for (const fileToRemove of REMOVE_FILES) {
   }
 }
 
-console.log()
+console.log("\nTest suite downloaded\n")

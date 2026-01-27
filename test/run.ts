@@ -194,7 +194,7 @@ const runCategory = async (config: TestConfig) => {
   result.failed = result.failures.length
 }
 
-console.log("Running tests...\n")
+console.log("\nRunning tests...\n")
 
 for (const config of configs) {
   if (config.skipOnCI && isCI) {
