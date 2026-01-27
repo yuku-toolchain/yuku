@@ -1,5 +1,0 @@
-(function () {
-    if (true) {
-        a();
-    }
-}());

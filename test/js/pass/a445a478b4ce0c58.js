@@ -1,1 +1,0 @@
-({ get a() { return b } })

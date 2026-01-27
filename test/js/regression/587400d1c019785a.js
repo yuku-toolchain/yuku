@@ -1,3 +1,0 @@
-try {} finally {
-  a(b);
-}

@@ -1,1 +1,0 @@
-import {function} from 'a';

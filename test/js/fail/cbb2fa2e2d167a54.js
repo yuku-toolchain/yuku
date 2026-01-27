@@ -1,1 +1,0 @@
-function f() { new.anythingElse; }

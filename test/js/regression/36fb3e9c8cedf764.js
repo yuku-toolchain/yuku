@@ -1,3 +1,0 @@
-class a {
-  set(b) {}
-}

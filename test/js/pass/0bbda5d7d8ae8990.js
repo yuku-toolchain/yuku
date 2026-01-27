@@ -1,1 +1,0 @@
-function a() { /* infinite */ while (true) { } /* bar */ var b; }

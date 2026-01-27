@@ -1,1 +1,0 @@
-var {yield: a} = (b);

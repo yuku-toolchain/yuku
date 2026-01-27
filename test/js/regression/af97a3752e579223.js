@@ -1,3 +1,0 @@
-(function () {
-  yield * (1);
-});

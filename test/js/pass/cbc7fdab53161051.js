@@ -1,2 +1,0 @@
-debugger;
-if (a) debugger;

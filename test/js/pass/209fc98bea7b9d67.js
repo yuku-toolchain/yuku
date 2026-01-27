@@ -1,2 +1,0 @@
-if (true) a()
-; else;

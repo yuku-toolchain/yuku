@@ -1,1 +1,0 @@
-const nice = async(wow)

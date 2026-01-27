@@ -1,2 +1,0 @@
-{ throw a// Comment
-a; }

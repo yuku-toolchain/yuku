@@ -1,5 +1,0 @@
-for (;;) {
-  while (true) {
-    continue;
-  }
-}

@@ -1,5 +1,0 @@
-for (;;) {
-    with (a) {
-        continue;
-    }
-}

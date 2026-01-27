@@ -1,5 +1,0 @@
-function* a() {
-  ({b() {
-    yield;
-  }});
-}

@@ -1,1 +1,0 @@
-await using nice = Bun;

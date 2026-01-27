@@ -6,7 +6,8 @@
     "dev:docs": "bun run --filter './docs' dev",
     "test": "bun run build:npm && bun test/run.ts",
     "release:npm": "bumpp -r --commit --push --tag",
-    "format": "zig fmt **/*.zig"
+    "format": "zig fmt **/*.zig",
+    "load-test-suite": "bun test/load.ts test/suite"
   },
   "devDependencies": {
     "@types/bun": "^1.3.5",

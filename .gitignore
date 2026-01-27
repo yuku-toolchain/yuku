@@ -7,3 +7,4 @@ operator-precedence.md
 jsx-roadmap.md
 **/dist
 .astro/
+test/suite

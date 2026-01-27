@@ -1,4 +1,0 @@
-(function* () {
-  yield;
-  a;
-});

@@ -1,6 +1,0 @@
-function* a() {
-  (class {
-    [(yield)]() {}
-  });
-}
-;

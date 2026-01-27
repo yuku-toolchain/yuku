@@ -1,1 +1,0 @@
-export {a as} from a

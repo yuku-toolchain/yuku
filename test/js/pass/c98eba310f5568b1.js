@@ -1,2 +1,0 @@
-for (;;)
-    if (a()) break;

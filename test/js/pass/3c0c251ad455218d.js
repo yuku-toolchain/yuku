@@ -1,2 +1,0 @@
-do a()
-;while (true)

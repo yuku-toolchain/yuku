@@ -1,1 +1,0 @@
-a: for (;;) break a;
