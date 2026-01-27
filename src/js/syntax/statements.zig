@@ -345,7 +345,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_paren, "Expected ')' after with expression", null)) return null;
 
-    const body = try parseStatement(parser, .{}) orelse return null;
+    const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     return try parser.addNode(.{
         .with_statement = .{

@@ -1,1 +1,1 @@
-"use strict"; for (let {a: b = let} = undefined;;) {}
+with(true) let a
