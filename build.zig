@@ -63,6 +63,21 @@ pub fn build(b: *std.Build) void {
     const gen_unicode_id_table_step = b.step("generate-unicode-id", "Generate unicode identifier tables");
     gen_unicode_id_table_step.dependOn(&run_gen_unicode_id_table.step);
 
+    const tools_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tools/root.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    tools_tests.root_module.addImport("util", util_module);
+
+    const run_tools_tests = b.addRunArtifact(tools_tests);
+    // tools test needs network connection
+    const test_tools_step = b.step("test-tools", "Run the tools tests");
+    test_tools_step.dependOn(&run_tools_tests.step);
+
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .freestanding,
