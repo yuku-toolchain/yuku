@@ -48,7 +48,7 @@ pub fn main() !void {
 
     try writer.writeAll(
         \\// Generated file, do not edit.
-        \\// See: scripts/generate_unicode_id.zig
+        \\// See: src/tools/generate_unicode_id.zig
         \\
         \\// inspired by https://github.com/dtolnay/unicode-ident
         \\
@@ -73,6 +73,7 @@ pub fn main() !void {
         \\    const word = leaf[word_idx];
         \\    return (word >> bit_position) & 1 == 1;
         \\}
+        \\
     );
 
     try emitTableStructure(start_tables, writer, "id_start");
