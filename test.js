@@ -1,1 +1,3 @@
-with(true) let a
+for await (let wow of nice) {
+
+}

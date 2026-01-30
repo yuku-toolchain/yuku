@@ -306,7 +306,6 @@ fn parseMethodDefinition(
                 "Constructor cannot be async",
                 .{ .help = "Remove the 'async' modifier from the constructor." },
             );
-            return null;
         }
         if (is_generator) {
             try parser.report(
@@ -314,7 +313,6 @@ fn parseMethodDefinition(
                 "Constructor cannot be a generator",
                 .{ .help = "Remove the '*' from the constructor." },
             );
-            return null;
         }
     }
 
@@ -324,7 +322,6 @@ fn parseMethodDefinition(
             "Getter cannot be a generator",
             .{ .help = "Remove the '*' from the getter definition." },
         );
-        return null;
     }
 
     if (kind == .set and is_generator) {
@@ -333,7 +330,6 @@ fn parseMethodDefinition(
             "Setter cannot be a generator",
             .{ .help = "Remove the '*' from the setter definition." },
         );
-        return null;
     }
 
     // save and set context
@@ -361,7 +357,6 @@ fn parseMethodDefinition(
                 "Getter must have no parameters",
                 .{ .help = "Remove all parameters from the getter." },
             );
-            return null;
         }
     }
 
@@ -372,7 +367,6 @@ fn parseMethodDefinition(
                 "Setter must have exactly one parameter",
                 .{ .help = "Setters accept exactly one argument." },
             );
-            return null;
         }
     }
 

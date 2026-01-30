@@ -4,7 +4,35 @@
     "start": 0,
     "end": 36,
     "sourceType": "script",
-    "body": []
+    "body": [
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 35,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 7,
+            "end": 20,
+            "local": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 20,
+              "name": "defaultExport"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 26,
+          "end": 34,
+          "value": "module",
+          "raw": "\"module\""
+        },
+        "phase": null,
+        "attributes": []
+      }
+    ]
   },
   "comments": [],
   "errors": [

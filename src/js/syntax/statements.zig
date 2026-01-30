@@ -334,7 +334,6 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     if (parser.strict_mode) {
         try parser.report(parser.current_token.span, "'with' statement is not allowed in strict mode", .{});
-        return null;
     }
 
     try parser.advance() orelse return null; // consume 'with'
@@ -412,7 +411,6 @@ fn parseForStatement(parser: *Parser, is_await: bool) Error!?ast.NodeIndex {
     if (parser.current_token.type == .await) {
         if (!parser.context.in_async and !parser.isModule()) {
             try parser.report(parser.current_token.span, "'for await' is only valid in async functions or modules", .{});
-            return null;
         }
         try parser.advance() orelse return null; // consume 'await'
 
@@ -638,7 +636,6 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
             "'return' statement is only valid inside a function",
             .{ .help = "Remove the 'return' statement or wrap the code in a function." },
         );
-        return null;
     }
 
     try parser.advance() orelse return null; // consume 'return'

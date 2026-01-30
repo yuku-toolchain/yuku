@@ -38,8 +38,6 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
             "Lexical declaration cannot appear in a single-statement context",
             .{ .help = "Wrap this declaration in a block statement" },
         );
-
-        return null;
     }
 
     return try parser.addNode(

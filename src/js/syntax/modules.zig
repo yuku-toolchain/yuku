@@ -17,7 +17,6 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         try parser.report(parser.current_token.span, "'import' statement is only valid in module mode", .{
             .help = "Use dynamic import() for script mode",
         });
-        return null;
     }
 
     const start = parser.current_token.span.start;
@@ -263,7 +262,6 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         try parser.report(parser.current_token.span, "'export' statement is only valid in module mode", .{
             .help = "Export declarations can only appear in module mode",
         });
-        return null;
     }
 
     const start = parser.current_token.span.start;
@@ -449,7 +447,6 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
                 try parser.report(local_span, "A string literal cannot be used as an exported binding without 'from'", .{
                     .help = "Use: export { \"name\" } from 'some-module' or export { localName as \"name\" }",
                 });
-                return null;
             }
 
             const local_token_type: token.TokenType = @enumFromInt(result.local_token_types[i]);
@@ -463,7 +460,6 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
                     .{},
                     .{ .help = try parser.formatMessage("Did you mean `export {{ {s} as {s} }} from 'some-module'`?", .{ local_name, local_name }) },
                 );
-                return null;
             }
         }
     }
