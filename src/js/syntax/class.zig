@@ -191,19 +191,18 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // determine if this is constructor
     // non-static, non-computed methods with PropName "constructor" are constructors
     // PropName can come from identifier or string literal (but not computed)
-    if (!is_static and !computed and kind == .method) {
-        const key_data = parser.getData(key);
-        if (key_data == .identifier_name) {
-            const name = parser.getSourceText(key_data.identifier_name.name_start, key_data.identifier_name.name_len);
-            if (std.mem.eql(u8, name, "constructor")) {
-                kind = .constructor;
-            }
-        } else if (key_data == .string_literal) {
-            const raw = parser.getSourceText(key_data.string_literal.raw_start, key_data.string_literal.raw_len);
+    if (!is_static and !computed and isKeyName(parser, key, "constructor")) {
+        // Constructor cannot have get/set modifiers
+        if (kind == .get or kind == .set) {
+            try parser.report(
+                parser.getSpan(key),
+                "Constructor can't have get/set modifier",
+                .{ .help = "Remove the get/set keyword from the constructor." },
+            );
+        }
 
-            if (raw.len >= 2 and std.mem.eql(u8, raw[1 .. raw.len - 1], "constructor")) {
-                kind = .constructor;
-            }
+        if (kind == .method) {
+            kind = .constructor;
         }
     }
 
@@ -299,6 +298,10 @@ fn parseMethodDefinition(
     is_async: bool,
     is_generator: bool,
 ) Error!?ast.NodeIndex {
+    if(is_static and !computed) {
+        try validateStaticPrototypeName(parser, key);
+    }
+
     if (kind == .constructor) {
         if (is_async) {
             try parser.report(
@@ -408,6 +411,10 @@ fn parsePropertyDefinition(
     computed: bool,
     is_static: bool,
 ) Error!?ast.NodeIndex {
+    if(is_static and !computed) {
+        try validateStaticPrototypeName(parser, key);
+    }
+
     var value: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(key).end;
 
@@ -464,4 +471,27 @@ inline fn isClassElementKeyStart(tok_type: token.TokenType) bool {
         tok_type == .string_literal or
         tok_type.isNumericLiteral() or
         tok_type.isIdentifierLike();
+}
+
+/// checks if a key node matches a given name (works for identifier and string literal keys)
+fn isKeyName(parser: *Parser, key: ast.NodeIndex, name: []const u8) bool {
+    const key_data = parser.getData(key);
+    if (key_data == .identifier_name) {
+        const key_name = parser.getSourceText(key_data.identifier_name.name_start, key_data.identifier_name.name_len);
+        return std.mem.eql(u8, key_name, name);
+    } else if (key_data == .string_literal) {
+        const raw = parser.getSourceText(key_data.string_literal.raw_start, key_data.string_literal.raw_len);
+        return raw.len >= 2 and std.mem.eql(u8, raw[1 .. raw.len - 1], name);
+    }
+    return false;
+}
+
+fn validateStaticPrototypeName(parser: *Parser, key: ast.NodeIndex) Error!void {
+    if (!isKeyName(parser, key, "prototype")) return;
+
+    try parser.report(
+        parser.getSpan(key),
+        "Classes may not have a static property named 'prototype'",
+        .{ .help = "Remove 'static' or rename the property." },
+    );
 }

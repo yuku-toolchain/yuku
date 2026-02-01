@@ -1,1 +1,6 @@
-class a extends b { static prototype(){} }
+class Foo {
+  static "prototype" = 42;
+  get constructor() {
+
+  }
+}
