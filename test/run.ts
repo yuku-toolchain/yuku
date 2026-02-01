@@ -42,22 +42,9 @@ interface TestResult {
   failed: number
   total: number
   failures: string[]
-  parseTime: number
-  parsedFiles: number
 }
 
 const results = new Map<string, TestResult>()
-
-const formatTime = (ms: number): string => {
-  if (ms >= 1000) {
-    return `${(ms / 1000).toFixed(2)}s`
-  }
-
-  if(ms <= 1)
-    return `${ms.toFixed(3)}ms`
-
-  return `${ms.toFixed(2)}ms`
-}
 
 const getLanguage = (path: string): Language => {
   if (path.endsWith(".tsx")) return "tsx"
@@ -105,12 +92,7 @@ const runTest = async (
     const lang = getLanguage(file)
     const sourceType = file.includes(".module.") ? "module" : "script"
 
-    const parseStart = performance.now()
     const parsed = parseSync(content, { sourceType, lang })
-    const parseEnd = performance.now()
-
-    result.parseTime += parseEnd - parseStart
-    result.parsedFiles++
 
     const hasErrors = parsed.errors && parsed.errors.length > 0
 
@@ -170,7 +152,8 @@ const runTest = async (
 const runCategory = async (config: TestConfig) => {
   const result: TestResult = {
     path: config.path,
-    passed: 0, failed: 0, total: 0, failures: [], parseTime: 0, parsedFiles: 0 }
+    passed: 0, failed: 0, total: 0, failures: []
+  }
   results.set(config.path, result)
 
   const pattern = `${config.path}/**/*`
@@ -208,8 +191,6 @@ for (const config of configs) {
 let totalPassed = 0
 let totalFailed = 0
 let totalTests = 0
-let totalParseTime = 0
-let totalParsedFiles = 0
 
 for (const [, result] of results) {
   const status = result.failed === 0 ? "✓" : "x"
@@ -223,14 +204,54 @@ for (const [, result] of results) {
   totalPassed += result.passed
   totalFailed += result.failed
   totalTests += result.total
-  totalParseTime += result.parseTime
-  totalParsedFiles += result.parsedFiles
 }
 
 const passRate = ((totalPassed / totalTests) * 100).toFixed(2)
-const avgParseTime = totalParsedFiles > 0 ? totalParseTime / totalParsedFiles : 0
 
-console.log(`\n${totalPassed}/${totalTests} (${passRate}%) • ${formatTime(totalParseTime)} for parsing ${totalParsedFiles} files • ${formatTime(avgParseTime)} to parse per file`)
+console.log(`\n${totalPassed}/${totalTests} (${passRate}%)`)
+
+const saveResults = async () => {
+  const lines: string[] = [
+    "# Test Results",
+    "",
+    "Running TypeScript, Test262 and Babel test suites with AST matching TypeScript-Estree + Estree AST.",
+    "",
+    "## Summary",
+    "",
+    `- **Passed**: ${totalPassed}`,
+    `- **Failed**: ${totalFailed}`,
+    `- **Total**: ${totalTests}`,
+    `- **AST Matches**: ${passRate}%`,
+    "",
+    "## Results by Suite",
+    "",
+  ]
+
+  for (const [, result] of results) {
+    if (result.total === 0) continue
+    const status = result.failed === 0 ? "✓" : "✗"
+    const suiteRate = ((result.passed / result.total) * 100).toFixed(2)
+    lines.push(`### ${status} ${result.path}`)
+    lines.push("")
+    lines.push(`- Passed: ${result.passed}/${result.total} (${suiteRate}%)`)
+
+    if (result.failures.length > 0) {
+      lines.push(`- Failed: ${result.failed}`)
+      lines.push("")
+      lines.push("**Failures:**")
+      lines.push("")
+      for (const failure of result.failures) {
+        lines.push(`- \`${failure}\``)
+      }
+    }
+    lines.push("")
+  }
+
+  await Bun.write("test/results.md", lines.join("\n"))
+  console.log("\nResults saved to test/results.md")
+}
+
+await saveResults()
 
 if (totalFailed > 0) {
   process.exit(1)
