@@ -6,28 +6,24 @@ Running TypeScript, Test262 and Babel test suites with ESTree/TypeScript-ESTree 
 Summary
 -------
 Passed:      37931
-Failed:      539
-Total:       38470
-Coverage:    98.60%
+Failed:      479
+Total:       38410
+Coverage:    98.75%
 
 Results by Suite
 ----------------
 
 ✗ test/suite/js/pass
-  Passed: 37081/37613 (98.59%)
-  Failed: 532
+  Passed: 37081/37553 (98.74%)
+  Failed: 472
   Failures:
     - test/suite/js/pass/94809bec87aef538.js
     - test/suite/js/pass/ae21291bcd461ac3.js
     - test/suite/js/pass/ca7cd4d2acaf9770.js
-    - test/suite/js/pass/9acdaa318fa81695.module.js
     - test/suite/js/pass/73e3b696d859e505.js
     - test/suite/js/pass/3572bfe54fd13cdb.js
-    - test/suite/js/pass/657b41f6e9f3bda0.module.js
     - test/suite/js/pass/352ddcc2cd45872e.js
     - test/suite/js/pass/a9482799825e5e96.js
-    - test/suite/js/pass/ed5756685cd2028c.js
-    - test/suite/js/pass/0352ec542a7a160c.js
     - test/suite/js/pass/edfe082e9badb2f5.js
     - test/suite/js/pass/91fe55e6dd38d465.js
     - test/suite/js/pass/36dd319efb972fdf.js
@@ -35,8 +31,6 @@ Results by Suite
     - test/suite/js/pass/aca3c4f662b8a1b4.js
     - test/suite/js/pass/1c8aaaf1f2c94795.js
     - test/suite/js/pass/a0fc601115be8dac.js
-    - test/suite/js/pass/77e4f40d2bda7935.js
-    - test/suite/js/pass/819e30c2bffad77f.module.js
     - test/suite/js/pass/9db2f500fb73d4b3.js
     - test/suite/js/pass/ea408410ec3deffb.js
     - test/suite/js/pass/e7fcf05593df8d84.js
@@ -45,28 +39,21 @@ Results by Suite
     - test/suite/js/pass/cf4ade8ba16fe244.js
     - test/suite/js/pass/abf30856c52cbc08.js
     - test/suite/js/pass/c4e2bc7110d2242c.js
-    - test/suite/js/pass/97efdcd0d76868d1.module.js
     - test/suite/js/pass/dc268fd8061e90be.js
     - test/suite/js/pass/8b8f055d2e1c91f4.js
     - test/suite/js/pass/bc785eac79d91704.js
     - test/suite/js/pass/0ed780912851e990.js
-    - test/suite/js/pass/eea8e71659db5e3e.js
     - test/suite/js/pass/3fa162d677e2908a.js
     - test/suite/js/pass/95fd2254b1e17d01.js
     - test/suite/js/pass/018315a394d03406.js
-    - test/suite/js/pass/516498e163ccb22d.js
     - test/suite/js/pass/b5bb33a87a134a47.js
-    - test/suite/js/pass/98d88dc77378284f.js
     - test/suite/js/pass/cd613bd8ca030563.js
-    - test/suite/js/pass/c2b73586575fdf5b.module.js
-    - test/suite/js/pass/4e3ea0e73c2c220a.js
     - test/suite/js/pass/aebcebc125a2fedc.js
     - test/suite/js/pass/93f7dc27bfbe8cf3.js
     - test/suite/js/pass/10b0ea59ebc0a6b7.js
     - test/suite/js/pass/a529d2701eab3af2.js
     - test/suite/js/pass/39c4c6a909d89ef6.js
     - test/suite/js/pass/03e5f95c0f966156.js
-    - test/suite/js/pass/b9c12a057b8fc019.module.js
     - test/suite/js/pass/d9fbe38103d2d284.js
     - test/suite/js/pass/fbca025a688f684a.js
     - test/suite/js/pass/6585e1fa4e677457.js
@@ -76,7 +63,6 @@ Results by Suite
     - test/suite/js/pass/e5db1fb33c6729cf.js
     - test/suite/js/pass/f01a805eb4999fa4.js
     - test/suite/js/pass/de48922d9cbaae07.js
-    - test/suite/js/pass/6c68ba4595e55b33.module.js
     - test/suite/js/pass/16cbf941a32800ab.js
     - test/suite/js/pass/59fa396bfa4d4cb5.js
     - test/suite/js/pass/aa181b03b79c7eab.js
@@ -84,13 +70,11 @@ Results by Suite
     - test/suite/js/pass/eaf5ee68d79d99d3.js
     - test/suite/js/pass/c0a9b3558bb7b947.js
     - test/suite/js/pass/2d1e26d310789969.js
-    - test/suite/js/pass/f5f7e2f7f752f32f.module.js
     - test/suite/js/pass/9e0e3a7bd9c32070.js
     - test/suite/js/pass/b429fad313d4a48c.js
     - test/suite/js/pass/80eba225d5dccaf7.js
     - test/suite/js/pass/4cf7dcf9ec3d5490.js
     - test/suite/js/pass/514166dddc49a9ce.js
-    - test/suite/js/pass/03ae70cf7097e279.js
     - test/suite/js/pass/10a193679625793a.js
     - test/suite/js/pass/d1efe3c288cf969f.js
     - test/suite/js/pass/006092d3ee9f3efb.js
@@ -99,10 +83,8 @@ Results by Suite
     - test/suite/js/pass/d4751ccc6f12d5a2.js
     - test/suite/js/pass/2cd92816c39ff0ed.js
     - test/suite/js/pass/028cb82125592036.js
-    - test/suite/js/pass/656ded5ad7574dd4.js
     - test/suite/js/pass/cf1ef3002a38a8c2.js
     - test/suite/js/pass/ec8a6bd64ce6c50e.js
-    - test/suite/js/pass/566925d57d217eac.module.js
     - test/suite/js/pass/0f62f1d31a5ff922.js
     - test/suite/js/pass/05972c30310985b0.js
     - test/suite/js/pass/6c38e09958f2b51d.js
@@ -111,16 +93,12 @@ Results by Suite
     - test/suite/js/pass/785937d012235711.js
     - test/suite/js/pass/a4309c017a0f4a0a.js
     - test/suite/js/pass/262aa1cad370dafc.js
-    - test/suite/js/pass/bafe52ce4767911f.module.js
     - test/suite/js/pass/d64e3804c8ccea04.js
     - test/suite/js/pass/a73f9b78af6a41fa.js
     - test/suite/js/pass/44cfc12eda994fc3.js
-    - test/suite/js/pass/2386c8b2f89bfbaf.js
     - test/suite/js/pass/d01c9b2cd6e572bf.js
-    - test/suite/js/pass/9d11c766aa5903fc.module.js
     - test/suite/js/pass/bd7f87317715ebcc.js
     - test/suite/js/pass/e7e96a092e4ae71b.js
-    - test/suite/js/pass/80f2d00bfe63ce31.js
     - test/suite/js/pass/37a7850f313127a8.module.js
     - test/suite/js/pass/24b30fc9a4fea093.js
     - test/suite/js/pass/a892d321ecd51361.js
@@ -131,7 +109,6 @@ Results by Suite
     - test/suite/js/pass/8cf00b8172976057.js
     - test/suite/js/pass/bed3e9183a5f1f38.js
     - test/suite/js/pass/8d70d54ed8dd1c05.js
-    - test/suite/js/pass/dafda4dae33a05b4.module.js
     - test/suite/js/pass/36a9d9dc5cb0ee1a.js
     - test/suite/js/pass/3d4c18f92ca8443e.js
     - test/suite/js/pass/25cd50f7457463d2.js
@@ -139,25 +116,19 @@ Results by Suite
     - test/suite/js/pass/cddf43d5f4a333fd.js
     - test/suite/js/pass/84e2d10f3987cfdc.js
     - test/suite/js/pass/4661e593038cadc2.js
-    - test/suite/js/pass/0e9a1647aff823ff.module.js
     - test/suite/js/pass/9dccd7b28914e18c.js
-    - test/suite/js/pass/9a81c17aceabcc90.module.js
     - test/suite/js/pass/f52a6093a8c36b35.js
     - test/suite/js/pass/c39d57f07ccfde6a.js
     - test/suite/js/pass/6a18356862d56c9a.js
     - test/suite/js/pass/e610cf8cdcb09ab1.js
-    - test/suite/js/pass/aff42487a3dbe9fe.js
     - test/suite/js/pass/a1d89e78a7ce8fde.js
-    - test/suite/js/pass/5e147af1d7a5b37c.module.js
     - test/suite/js/pass/8f67d9c142e8cf69.js
     - test/suite/js/pass/b6325d370a7abfe3.js
     - test/suite/js/pass/3d578fd02d6e2115.js
     - test/suite/js/pass/c8185770513a8a39.js
     - test/suite/js/pass/71995b1e13c03405.js
-    - test/suite/js/pass/6de70d49723d9d17.js
     - test/suite/js/pass/8ec129c40fce2650.js
     - test/suite/js/pass/da856657ad6bd629.js
-    - test/suite/js/pass/aaf101496b53b047.module.js
     - test/suite/js/pass/b2ac6e2b2f24e7e2.js
     - test/suite/js/pass/b53d8a9040f94149.js
     - test/suite/js/pass/be680a69760e26cc.js
@@ -169,14 +140,11 @@ Results by Suite
     - test/suite/js/pass/5c360341d6fb6357.js
     - test/suite/js/pass/62ba39b07fe0b0c7.module.js
     - test/suite/js/pass/4218dfc17a082b1c.module.js
-    - test/suite/js/pass/7203af9753f7d446.js
     - test/suite/js/pass/fb1e8ab49a2e7854.js
     - test/suite/js/pass/b15c8ec64cbeffcf.js
     - test/suite/js/pass/ee1e2f85d112da09.js
-    - test/suite/js/pass/50e6d76e6a9b4383.module.js
     - test/suite/js/pass/c6da92047857f60d.js
     - test/suite/js/pass/f56cfa3911ff18d6.js
-    - test/suite/js/pass/c717f631f50d7ddd.js
     - test/suite/js/pass/adaf8530e5cf0fb4.js
     - test/suite/js/pass/635760b6c209c02b.js
     - test/suite/js/pass/b8b4709327879876.js
@@ -184,9 +152,6 @@ Results by Suite
     - test/suite/js/pass/9a470f3cd7c3fb57.js
     - test/suite/js/pass/697ba16be49c9176.js
     - test/suite/js/pass/ab73b456a72dc9de.js
-    - test/suite/js/pass/a8c107c4b331518f.js
-    - test/suite/js/pass/86fbe3d933ebdf23.module.js
-    - test/suite/js/pass/e2cfdaa7d557e729.js
     - test/suite/js/pass/10b9bcf4afcf9aa3.js
     - test/suite/js/pass/4c6e40865aae1c79.js
     - test/suite/js/pass/906c24a0d64468ba.js
@@ -194,16 +159,12 @@ Results by Suite
     - test/suite/js/pass/43bf3a510afc933f.js
     - test/suite/js/pass/6199b88dd4575394.js
     - test/suite/js/pass/7ece7495118fda2c.js
-    - test/suite/js/pass/0660b73224b1389b.js
     - test/suite/js/pass/01a5527d99f7debb.js
     - test/suite/js/pass/67cbc432b6079ccb.js
     - test/suite/js/pass/b46e1336bf7205d3.js
     - test/suite/js/pass/b97ed3bd04ca9170.js
     - test/suite/js/pass/5f0fec721f5df3ad.js
-    - test/suite/js/pass/a6b4e235f5fcf287.module.js
     - test/suite/js/pass/fb174e3de59ff24b.js
-    - test/suite/js/pass/5269a43a5498daae.js
-    - test/suite/js/pass/f8d7052bcc674141.module.js
     - test/suite/js/pass/6202d1a0d330409e.js
     - test/suite/js/pass/23410cd462fc4905.js
     - test/suite/js/pass/9d65d5bc8d254ca9.js
@@ -211,7 +172,6 @@ Results by Suite
     - test/suite/js/pass/ef7287010cbaf925.js
     - test/suite/js/pass/3942d840e6104913.js
     - test/suite/js/pass/32d7ba308c1e28a4.js
-    - test/suite/js/pass/fe96aaf4d6c38b56.module.js
     - test/suite/js/pass/4b8a312399ab1a38.js
     - test/suite/js/pass/b2898d27da4408b9.js
     - test/suite/js/pass/9bb59ffb17fe5375.js
@@ -228,7 +188,6 @@ Results by Suite
     - test/suite/js/pass/86c6b77c336a166e.js
     - test/suite/js/pass/782d096245de4836.js
     - test/suite/js/pass/9fd0bb42dbe60af7.js
-    - test/suite/js/pass/9434f4b78364b4a0.js
     - test/suite/js/pass/aa9ec1a56729b466.js
     - test/suite/js/pass/02c2e1a25a995d03.js
     - test/suite/js/pass/4bdace9cb10585e8.js
@@ -237,12 +196,10 @@ Results by Suite
     - test/suite/js/pass/77a0e66bdeb691a6.js
     - test/suite/js/pass/3861d718451c4459.js
     - test/suite/js/pass/f94f2fa01da83c99.js
-    - test/suite/js/pass/6c1f3e349391ba82.module.js
     - test/suite/js/pass/35cfa6c5aaf90998.js
     - test/suite/js/pass/c5f361000a339ba2.js
     - test/suite/js/pass/c65470f0f4cb4bd0.js
     - test/suite/js/pass/d76f84d184b859d6.js
-    - test/suite/js/pass/814db62e1cb131b1.js
     - test/suite/js/pass/655af8da63e8f6d5.js
     - test/suite/js/pass/eadfce103de53ff3.js
     - test/suite/js/pass/37db8f56b508a68c.js
@@ -259,7 +216,6 @@ Results by Suite
     - test/suite/js/pass/f3adf126c6257c07.js
     - test/suite/js/pass/13cb506bd1420793.js
     - test/suite/js/pass/ad73caf1fed2dc55.js
-    - test/suite/js/pass/b813901e9fa1ed7b.module.js
     - test/suite/js/pass/20006a6776d42bd7.js
     - test/suite/js/pass/4981aec4d1785774.js
     - test/suite/js/pass/242cd80588ae1a33.js
@@ -272,7 +228,6 @@ Results by Suite
     - test/suite/js/pass/5445c74f924ed6eb.js
     - test/suite/js/pass/16cf662fa717af87.js
     - test/suite/js/pass/7a747b4819650a60.js
-    - test/suite/js/pass/850ba99acbbb703f.js
     - test/suite/js/pass/08677349704af264.js
     - test/suite/js/pass/bab649728f59f6fe.js
     - test/suite/js/pass/b956e0acea9b1058.js
@@ -281,11 +236,8 @@ Results by Suite
     - test/suite/js/pass/acfac76e274adbc4.js
     - test/suite/js/pass/4f21f64e638ee720.js
     - test/suite/js/pass/f238c3e1d4860603.js
-    - test/suite/js/pass/0dd00240d42f6864.js
     - test/suite/js/pass/a55633141e1b02b4.js
-    - test/suite/js/pass/3c1efe8de399b85e.module.js
     - test/suite/js/pass/09888ee6c90d8943.js
-    - test/suite/js/pass/76e328d87ec32801.module.js
     - test/suite/js/pass/428321a62e2be026.js
     - test/suite/js/pass/f2de373249196bae.js
     - test/suite/js/pass/c822c0d7569e8a84.js
@@ -295,25 +247,20 @@ Results by Suite
     - test/suite/js/pass/f624298608d65ab9.js
     - test/suite/js/pass/3504231038bf8877.js
     - test/suite/js/pass/65d7b37024863755.js
-    - test/suite/js/pass/888de0d68fe08dd3.js
     - test/suite/js/pass/adff1fa1bcaaabe0.js
     - test/suite/js/pass/a56edd54c371240c.js
     - test/suite/js/pass/8e5d4b335173ff99.js
-    - test/suite/js/pass/c29c5c88df33ae21.module.js
     - test/suite/js/pass/0b658163d16e3314.js
     - test/suite/js/pass/0fd140452805c6c8.js
     - test/suite/js/pass/aeb994499a4029f8.js
     - test/suite/js/pass/2faab230fe357538.js
     - test/suite/js/pass/57c5de284386b0b1.js
-    - test/suite/js/pass/f627ae588760d9c3.module.js
     - test/suite/js/pass/c5f425d5796aa19c.js
     - test/suite/js/pass/521abfbe5b74912e.js
     - test/suite/js/pass/e9ca3c36d7a240c7.js
     - test/suite/js/pass/0d275e87a6c32560.js
     - test/suite/js/pass/6cb597cc0137ffdb.js
-    - test/suite/js/pass/a276a9543dd23085.module.js
     - test/suite/js/pass/37d22f16973305f1.js
-    - test/suite/js/pass/456363f39f43934a.module.js
     - test/suite/js/pass/4c2354b4cd055a48.js
     - test/suite/js/pass/78620501e7cd7a72.js
     - test/suite/js/pass/ee0bedd2148a909d.js
@@ -343,13 +290,10 @@ Results by Suite
     - test/suite/js/pass/aef758003e38af51.js
     - test/suite/js/pass/3d15e32fe3041ca7.js
     - test/suite/js/pass/3e89007d5ed09198.js
-    - test/suite/js/pass/d14c49ef67ca9548.js
     - test/suite/js/pass/0d03fc0736b321fe.js
     - test/suite/js/pass/433225677d771cac.js
     - test/suite/js/pass/c18a3b6f55cf5d7e.js
     - test/suite/js/pass/9eb2f78256f150fd.js
-    - test/suite/js/pass/683a9a3e0b102b6f.module.js
-    - test/suite/js/pass/392206ea3161a6d0.js
     - test/suite/js/pass/0f3389635e30a738.js
     - test/suite/js/pass/5ca28daebfee3b93.js
     - test/suite/js/pass/6e5c3fcca923b343.js
@@ -369,7 +313,6 @@ Results by Suite
     - test/suite/js/pass/f632b7b4bd1babf1.js
     - test/suite/js/pass/43ee96e7e5d4e309.js
     - test/suite/js/pass/0dcd3cf7c47054c2.js
-    - test/suite/js/pass/aad5319fa68d4ffe.js
     - test/suite/js/pass/387e468767a33a09.js
     - test/suite/js/pass/04571759065dbf65.js
     - test/suite/js/pass/93dba0832f768c12.js
@@ -420,7 +363,6 @@ Results by Suite
     - test/suite/js/pass/f2c4f4b63206c35a.js
     - test/suite/js/pass/4462a60e3666f4ab.js
     - test/suite/js/pass/63ddba0cffc3345f.js
-    - test/suite/js/pass/8eb3258c1840bee5.module.js
     - test/suite/js/pass/5107ddc7d9c51fc8.js
     - test/suite/js/pass/f3f9063d04a33d63.js
     - test/suite/js/pass/37224c47e09f12b6.js
@@ -440,14 +382,12 @@ Results by Suite
     - test/suite/js/pass/4ca833b970f2f384.js
     - test/suite/js/pass/fc319af41ceb308e.js
     - test/suite/js/pass/323287ec6a080447.module.js
-    - test/suite/js/pass/98a3a324cafd24d9.module.js
     - test/suite/js/pass/e13314ec06ae4589.js
     - test/suite/js/pass/80810e858fb819cd.js
     - test/suite/js/pass/6963c841cffab1f6.js
     - test/suite/js/pass/546b7cd34a90193a.js
     - test/suite/js/pass/a409930b88466a02.js
     - test/suite/js/pass/d3ebc8a932e639f6.js
-    - test/suite/js/pass/f73f02437e73620e.module.js
     - test/suite/js/pass/9270ec9403375016.js
     - test/suite/js/pass/f2be886610781f4c.js
     - test/suite/js/pass/3b25d03b3fe461e2.js
