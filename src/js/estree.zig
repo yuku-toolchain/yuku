@@ -1,5 +1,5 @@
 // this is slow tbh (while other yuku things are super/extremely fast in comparison), but it's as fast as possible.
-// it converts the parsed tree to a typescript-estree compatible json string.
+// it converts the parsed tree to a estree/typescript-estree compatible json string.
 // used for testing and ast inspection purposes, such as snapshot tests (in the test folder).
 // this module will likely be removed when we have a better approach for passing ast to js,
 // and we'll use that approach for snapshot tests.

@@ -215,7 +215,7 @@ const saveResults = async () => {
     "Test Results",
     "============",
     "",
-    "Running TypeScript, Test262 and Babel test suites with AST matching TypeScript-Estree + Estree AST.",
+    "Running TypeScript, Test262 and Babel test suites with AST matching ESTree/TypeScript-ESTree AST.",
     "",
     "Summary",
     "-------",

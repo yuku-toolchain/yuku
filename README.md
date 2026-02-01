@@ -19,7 +19,7 @@ A high-performance JavaScript/TypeScript compiler written in Zig, featuring a fa
 - **Correctness**: Full ECMAScript spec compliance. Passes all parser tests from [Test262](https://github.com/tc39/test262).
 - **Performance**: Exceptionally fast through meticulous performance engineering and data-oriented design. Competitive with leading parsers like Oxc. [See benchmarks](https://github.com/arshad-yaseen/ecmascript-native-parser-benchmark).
 - **Modern**: Supports modern and experimental JavaScript features, including decorators, source and defer imports, and more.
-- **Compliance**: Rigorously tested, 100% accurate ESTree + TypeScript-ESTree AST.
+- **Compliance**: Rigorously tested, 100% accurate ESTree/TypeScript-ESTree AST.
 
 ## Roadmap
 
