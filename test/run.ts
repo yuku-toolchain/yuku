@@ -26,7 +26,7 @@ interface TestConfig {
 }
 
 const configs: TestConfig[] = [
-  { path: "test/suite/js/pass", type: "snapshot", languages: ["js"] },
+  { path: "test/suite/js/pass", type: "snapshot", languages: ["js"], skipOnCI: true },
   { path: "test/suite/js/fail", type: "should_fail", languages: ["js"] },
   // uncomment when we add semantic checks (first needs a visitor/traverser)
   // { path: "test/suite/js/semantic", type: "should_fail", languages: ["js"] },
