@@ -1,0 +1,32 @@
+Test Results
+============
+
+Running TypeScript, Test262 and Babel test suites with AST matching TypeScript-Estree + Estree AST.
+
+Summary
+-------
+Passed:      4453
+Failed:      0
+Total:       4453
+AST Matches: 100.00%
+
+Results by Suite
+----------------
+
+✓ test/suite/js/pass
+  Passed: 3607/3607 (100.00%)
+
+✓ test/suite/js/fail
+  Passed: 752/752 (100.00%)
+
+✓ test/suite/jsx/pass
+  Passed: 55/55 (100.00%)
+
+✓ test/suite/jsx/fail
+  Passed: 14/14 (100.00%)
+
+✓ test/misc/jsx
+  Passed: 1/1 (100.00%)
+
+✓ test/misc/js
+  Passed: 24/24 (100.00%)

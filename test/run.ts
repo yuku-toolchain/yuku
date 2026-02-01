@@ -212,43 +212,43 @@ console.log(`\n${totalPassed}/${totalTests} (${passRate}%)`)
 
 const saveResults = async () => {
   const lines: string[] = [
-    "# Test Results",
+    "Test Results",
+    "============",
     "",
     "Running TypeScript, Test262 and Babel test suites with AST matching TypeScript-Estree + Estree AST.",
     "",
-    "## Summary",
+    "Summary",
+    "-------",
+    `Passed:      ${totalPassed}`,
+    `Failed:      ${totalFailed}`,
+    `Total:       ${totalTests}`,
+    `AST Matches: ${passRate}%`,
     "",
-    `- **Passed**: ${totalPassed}`,
-    `- **Failed**: ${totalFailed}`,
-    `- **Total**: ${totalTests}`,
-    `- **AST Matches**: ${passRate}%`,
-    "",
-    "## Results by Suite",
-    "",
+    "Results by Suite",
+    "----------------",
   ]
 
   for (const [, result] of results) {
     if (result.total === 0) continue
     const status = result.failed === 0 ? "✓" : "✗"
     const suiteRate = ((result.passed / result.total) * 100).toFixed(2)
-    lines.push(`### ${status} ${result.path}`)
     lines.push("")
-    lines.push(`- Passed: ${result.passed}/${result.total} (${suiteRate}%)`)
+    lines.push(`${status} ${result.path}`)
+    lines.push(`  Passed: ${result.passed}/${result.total} (${suiteRate}%)`)
 
     if (result.failures.length > 0) {
-      lines.push(`- Failed: ${result.failed}`)
-      lines.push("")
-      lines.push("**Failures:**")
-      lines.push("")
+      lines.push(`  Failed: ${result.failed}`)
+      lines.push("  Failures:")
       for (const failure of result.failures) {
-        lines.push(`- \`${failure}\``)
+        lines.push(`    - ${failure}`)
       }
     }
-    lines.push("")
   }
 
-  await Bun.write("test/results.md", lines.join("\n"))
-  console.log("\nResults saved to test/results.md")
+  lines.push("")
+
+  await Bun.write("test/results.txt", lines.join("\n"))
+  console.log("\nResults saved to test/results.txt")
 }
 
 await saveResults()
