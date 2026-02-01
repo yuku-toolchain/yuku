@@ -5,7 +5,7 @@
     "build:npm": "zig build && bun run --filter './npm' build",
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
-    "test:conformance": "bun load-test-suite -b test262 && bun build:npm && bun test/run.ts",
+    "test": "bun load-test-suite -b test262 && bun build:npm && bun test/run.ts",
     "release:npm": "bumpp -r --commit --push --tag",
     "format": "zig fmt **/*.zig",
     "load-test-suite": "bun test/load.ts test/suite"

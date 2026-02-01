@@ -35,5 +35,5 @@ jobs:
       - name: Run tools tests
         run: bun run test:tools
 
-      - name: Run conformance tests
-        run: bun run test:conformance
+      - name: Run tests
+        run: bun run test

@@ -679,7 +679,7 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
-        try self.fieldEmptyObject("value");
+        try self.fieldNull("value");
         try self.field("raw");
         try self.writeByte('"');
         try self.writeByte('/');
