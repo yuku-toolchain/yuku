@@ -498,9 +498,14 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_await: bool) Error!?a
     for (declarators) |decl| {
         const data = parser.getData(decl).variable_declarator;
         const id_data = parser.getData(data.id);
-        if (ast.isNull(data.init) and id_data != .binding_identifier) {
-            try parser.report(parser.getSpan(data.id), "Missing initializer in destructuring declaration", .{ .help = "Add an initializer (e.g. ` = undefined`) here" });
-            return null;
+        if (ast.isNull(data.init)) {
+            if (id_data != .binding_identifier) {
+                try parser.report(parser.getSpan(data.id), "Destructuring declaration in for loop initializer must be initialized", .{ .help = "Add '= value' to provide the object or array to destructure from." });
+                return null;
+            } else if (kind == .@"const") {
+                try parser.report(parser.getSpan(data.id), "'const' declarations in for loop initializer must be initialized", .{ .help = "Add '= value' to initialize the constant in the for loop." });
+                return null;
+            }
         }
     }
 
