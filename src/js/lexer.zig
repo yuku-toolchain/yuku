@@ -524,7 +524,7 @@ pub const Lexer = struct {
                 return error.InvalidUnicodeEscape;
 
             if (util.Utf.parseHexVariable(self.source, start, end - start)) |r| {
-                if (in_identifier and !util.UnicodeId.canContinueIdentifierUnicode(r.value)) {
+                if (in_identifier and !util.UnicodeId.canContinueId(r.value)) {
                     return id_error;
                 }
 
@@ -539,7 +539,7 @@ pub const Lexer = struct {
         } else {
             // \uXXXX format
             if (util.Utf.parseHex4(self.source, self.cursor)) |r| {
-                if (in_identifier and !util.UnicodeId.canContinueIdentifierUnicode(r.value)) {
+                if (in_identifier and !util.UnicodeId.canContinueId(r.value)) {
                     return id_error;
                 }
 
@@ -595,7 +595,7 @@ pub const Lexer = struct {
             } else {
                 @branchHint(.cold);
                 const cp = try util.Utf.codePointAt(self.source, self.cursor);
-                if (util.UnicodeId.canContinueIdentifierUnicode(cp.value)) {
+                if (util.UnicodeId.canContinueId(cp.value)) {
                     self.cursor += cp.len;
                 } else {
                     break;
@@ -641,7 +641,7 @@ pub const Lexer = struct {
         } else {
             @branchHint(.cold);
             const c_cp = try util.Utf.codePointAt(self.source, self.cursor);
-            if (!util.UnicodeId.canStartIdentifierUnicode(c_cp.value)) {
+            if (!util.UnicodeId.canStartId(c_cp.value)) {
                 return error.InvalidIdentifierStart;
             }
             self.cursor += c_cp.len;

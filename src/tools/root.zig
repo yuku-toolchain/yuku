@@ -11,7 +11,7 @@ test "unicode_id can start and continue" {
 
     for (0..std.math.maxInt(u21)) |ch| {
         const expected = id_starts.contains(@intCast(ch));
-        if (t.expectEqual(expected, util.UnicodeId.canStartIdentifierUnicode(@intCast(ch)))) {} else |err| {
+        if (t.expectEqual(expected, util.UnicodeId.canStartId(@intCast(ch)))) {} else |err| {
             std.debug.print("ID Start failed for codepoint: {d} (U+{X:0>4})\n", .{ ch, ch });
             return err;
         }
@@ -19,7 +19,7 @@ test "unicode_id can start and continue" {
 
     for (0..std.math.maxInt(u21)) |ch| {
         const expected = id_contts.contains(@intCast(ch));
-        if (t.expectEqual(expected, util.UnicodeId.canContinueIdentifierUnicode(@intCast(ch)))) {} else |err| {
+        if (t.expectEqual(expected, util.UnicodeId.canContinueId(@intCast(ch)))) {} else |err| {
             std.debug.print("ID Continue failed for codepoint: {d} (U+{X:0>4})\n", .{ ch, ch });
             return err;
         }

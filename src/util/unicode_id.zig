@@ -3,11 +3,11 @@
 
 // inspired by https://github.com/dtolnay/unicode-ident
 
-pub fn canStartIdentifierUnicode(cp: u32) bool {
+pub fn canStartId(cp: u32) bool {
     return queryBitTable(cp, &id_start_root, &id_start_leaf);
 }
 
-pub fn canContinueIdentifierUnicode(cp: u32) bool {
+pub fn canContinueId(cp: u32) bool {
     return queryBitTable(cp, &id_continue_root, &id_continue_leaf);
 }
 
