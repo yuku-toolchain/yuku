@@ -40,15 +40,14 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
 
         const left_data = parser.getData(left);
 
-        // yield [no LineTerminator here]
+        // `yield\n+a`
+        // it's not a binary expression, these are separate 'YieldExpression (argument=null)'
+        // and an another 'UnaryExpression'
         if (parser.current_token.has_line_terminator_before) {
             if (left_data == .yield_expression) {
                 break;
             }
         }
-
-        const lbp = parser.current_token.leftBp();
-        if (lbp < precedence or lbp == 0) break;
 
         // only LeftHandSideExpressions can have postfix operations applied.
         //   a++()        <- can't call an update expression
@@ -59,6 +58,9 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
                 break;
             }
         }
+
+        const lbp = parser.current_token.leftBp();
+        if (lbp < precedence or lbp == 0) break;
 
         left = try parseInfix(parser, lbp, left) orelse return null;
     }
@@ -303,6 +305,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     var delegate = false;
+
     if (parser.current_token.type == .star and !parser.current_token.has_line_terminator_before) {
         delegate = true;
         end = parser.current_token.span.end;
@@ -312,8 +315,8 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
     var argument: ast.NodeIndex = ast.null_node;
 
     if (
-        // yield [no LineTerminator here] AssignmentExpression[?In, +Yield, ?Await]
-        !parser.canInsertSemicolon(parser.current_token) and
+    // yield [no LineTerminator here] AssignmentExpression[?In, +Yield, ?Await]
+    !parser.canInsertSemicolon(parser.current_token) and
         parser.current_token.type != .semicolon)
     {
         // the yield argument is optional.
