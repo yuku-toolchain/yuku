@@ -257,8 +257,8 @@ pub fn fetchUnicodeData(io: std.Io, alloc: std.mem.Allocator) !void {
     const resp_reader = http_resp.reader(&resp_buf);
     _ = try resp_reader.streamRemaining(zip_writer);
 
-    try std.Io.Dir.deleteDirAbsolute(io, extraction_path);
-    try std.Io.Dir.createDirAbsolute(io, extraction_path, .default_dir);
+    std.Io.Dir.deleteDirAbsolute(io, extraction_path) catch {};
+    std.Io.Dir.createDirAbsolute(io, extraction_path, .default_dir) catch {};
 
     var extract_dir = try std.Io.Dir.openDirAbsolute(io, extraction_path, .{});
     defer extract_dir.close(io);
