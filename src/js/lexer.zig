@@ -364,7 +364,7 @@ pub const Lexer = struct {
                     const flag = self.source[self.cursor];
 
                     const is_valid_flag = switch (flag) {
-                        'g', 'i', 'm', 's', 'u', 'y', 'd' => true,
+                        'g', 'i', 'm', 's', 'u', 'y', 'd', 'v' => true,
                         else => false,
                     };
 
