@@ -370,7 +370,7 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
     var label: ast.NodeIndex = ast.null_node;
 
     // break [no LineTerminator here] LabelIdentifier;
-    if (!parser.canInsertSemicolon() and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertSemicolon(parser.current_token) and parser.current_token.type != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
         end = parser.getSpan(label_node).end;
@@ -390,7 +390,7 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
     var label: ast.NodeIndex = ast.null_node;
 
     // continue [no LineTerminator here] LabelIdentifier;
-    if (!parser.canInsertSemicolon() and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertSemicolon(parser.current_token) and parser.current_token.type != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
         end = parser.getSpan(label_node).end;
@@ -648,7 +648,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     var argument: ast.NodeIndex = ast.null_node;
 
     // return [no LineTerminator here] Expression?
-    if (!parser.canInsertSemicolon() and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertSemicolon(parser.current_token) and parser.current_token.type != .semicolon) {
         argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         end = parser.getSpan(argument).end;
     }

@@ -311,7 +311,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var argument: ast.NodeIndex = ast.null_node;
 
-    if (!parser.canInsertSemicolon() and
+    if (!parser.canInsertSemicolon(parser.current_token) and
         parser.current_token.type != .semicolon)
     {
         if (try parseExpression(parser, Precedence.Assignment, .{ .optional = true })) |expr| {
