@@ -5,7 +5,7 @@ const util = @import("util");
 const t = std.testing;
 
 test "unicode_id can start and continue" {
-    var id_starts, var id_contts = try gen_unicode_id.downloadAndParseProperties(t.allocator);
+    var id_starts, var id_contts = try gen_unicode_id.downloadAndParseProperties(t.io, t.allocator);
     defer id_starts.deinit();
     defer id_contts.deinit();
 

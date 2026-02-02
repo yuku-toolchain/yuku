@@ -5,6 +5,7 @@ const std = @import("std");
 const unicode_data_url = "https://www.unicode.org/Public/17.0.0/ucd/UCD.zip";
 const temp_zip_path = "/tmp/ucd.zip";
 const extraction_path = "/tmp/ucd";
+const derived_core_properties_path = "/tmp/ucd/DerivedCoreProperties.txt";
 const output_table_path = "./src/util/unicode_id.zig";
 
 const chunk_elements = 16; // number of 32-bit words per chunk
@@ -19,16 +20,18 @@ const TableData = struct { root: []u32, leaf: []u32 };
 
 const PropertyType = enum { Start, Continue };
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arena = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = arena.deinit();
     const alloc = arena.allocator();
 
-    if (!pathExists(extraction_path)) {
-        try fetchUnicodeData(alloc);
+    const io = init.io;
+
+    if (!pathExists(io, derived_core_properties_path)) {
+        try fetchUnicodeData(io, alloc);
     }
 
-    var start_set, var continue_set = try parseUnicodeProperties(alloc);
+    var start_set, var continue_set = try parseUnicodeProperties(io, alloc);
     defer start_set.deinit();
     defer continue_set.deinit();
 
@@ -39,7 +42,7 @@ pub fn main() !void {
     defer alloc.free(continue_tables.root);
     defer alloc.free(continue_tables.leaf);
 
-    const output = try std.fs.cwd().createFile(output_table_path, .{});
+    const output = try std.Io.Dir.createFile(io, output_table_path, .{});
     defer output.close();
 
     var buf: [1024]u8 = undefined;
@@ -168,13 +171,13 @@ fn buildLookupTables(alloc: std.mem.Allocator, codepoints: CodepointSet) !TableD
 ///
 /// this function extracts both ID_Start and ID_Continue properties and returns them
 /// as separate sets of codepoints.
-pub fn parseUnicodeProperties(alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
+pub fn parseUnicodeProperties(io: std.Io, alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
     const target_file = "DerivedCoreProperties.txt";
 
-    var data_dir = try std.fs.openDirAbsolute(extraction_path, .{});
-    defer data_dir.close();
+    var data_dir = try std.Io.Dir.openDirAbsolute(io, extraction_path, .{});
+    defer data_dir.close(io);
 
-    const file_data = try data_dir.readFileAlloc(target_file, alloc, .limited(2 * 1024 * 1024));
+    const file_data = try data_dir.readFileAlloc(io, target_file, alloc, .limited(2 * 1024 * 1024));
     defer alloc.free(file_data);
 
     var start_set = CodepointSet.init(alloc);
@@ -229,8 +232,8 @@ fn extractCodepointRange(line: []const u8) !?CodepointRange {
     }
 }
 
-pub fn fetchUnicodeData(alloc: std.mem.Allocator) !void {
-    var http_client: std.http.Client = .{ .allocator = alloc };
+pub fn fetchUnicodeData(io: std.Io, alloc: std.mem.Allocator) !void {
+    var http_client: std.http.Client = .{ .allocator = alloc, .io = io };
     defer http_client.deinit();
 
     const target_uri = try std.Uri.parse(unicode_data_url);
@@ -243,36 +246,36 @@ pub fn fetchUnicodeData(alloc: std.mem.Allocator) !void {
     try http_req.sendBodiless();
     var http_resp = try http_req.receiveHead(&.{});
 
-    const zip_file = try std.fs.createFileAbsolute(temp_zip_path, .{});
-    defer zip_file.close();
-    defer std.fs.deleteFileAbsolute(temp_zip_path) catch @panic("Zip deletion filed");
+    const zip_file = try std.Io.Dir.createFileAbsolute(io, temp_zip_path, .{});
+    defer zip_file.close(io);
+    defer std.Io.Dir.deleteFileAbsolute(io, temp_zip_path) catch @panic("Zip deletion filed");
 
-    var zip_file_writer = zip_file.writer(&.{});
+    var zip_file_writer = zip_file.writer(io, &.{});
     const zip_writer = &zip_file_writer.interface;
 
     var resp_buf: [1024]u8 = undefined;
     const resp_reader = http_resp.reader(&resp_buf);
     _ = try resp_reader.streamRemaining(zip_writer);
 
-    try std.fs.deleteTreeAbsolute(extraction_path);
-    try std.fs.makeDirAbsolute(extraction_path);
+    try std.Io.Dir.deleteDirAbsolute(io, extraction_path);
+    try std.Io.Dir.createDirAbsolute(io, extraction_path, .default_dir);
 
-    var extract_dir = try std.fs.openDirAbsolute(extraction_path, .{});
-    defer extract_dir.close();
+    var extract_dir = try std.Io.Dir.openDirAbsolute(io, extraction_path, .{});
+    defer extract_dir.close(io);
 
-    const archive = try std.fs.openFileAbsolute(temp_zip_path, .{});
-    defer archive.close();
+    const archive = try std.Io.Dir.openFileAbsolute(io, temp_zip_path, .{});
+    defer archive.close(io);
 
     var archive_buf: [1024]u8 = undefined;
-    var archive_reader = archive.reader(&archive_buf);
+    var archive_reader = archive.reader(io, &archive_buf);
 
     try std.zip.extract(extract_dir, &archive_reader, .{});
 
     std.log.info("Extracted successfully to {s}", .{extraction_path});
 }
 
-fn pathExists(path: []const u8) bool {
-    if (std.fs.accessAbsolute(path, .{})) |_| {
+fn pathExists(io: std.Io, path: []const u8) bool {
+    if (std.Io.Dir.accessAbsolute(io, path, .{})) |_| {
         return true;
     } else |_| {
         return false;
@@ -329,9 +332,9 @@ fn emitTableStructure(data: TableData, writer: *std.Io.Writer, table_name: []con
     std.log.info("Successfully wrote {s} to {s}", .{ table_name, output_table_path });
 }
 
-pub fn downloadAndParseProperties(alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
-    if (!pathExists(extraction_path)) {
-        try fetchUnicodeData(alloc);
+pub fn downloadAndParseProperties(io: std.Io, alloc: std.mem.Allocator) !struct { CodepointSet, CodepointSet } {
+    if (!pathExists(io, derived_core_properties_path)) {
+        try fetchUnicodeData(io, alloc);
     }
-    return try parseUnicodeProperties(alloc);
+    return try parseUnicodeProperties(io, alloc);
 }
