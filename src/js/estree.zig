@@ -560,9 +560,9 @@ pub const Serializer = struct {
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
         const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
 
-        // normalize line endings: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
         self.scratch.clearRetainingCapacity();
 
+        // normalize line endings: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
         var i: usize = 0;
         while (i < raw.len) {
             const c = raw[i];
@@ -657,6 +657,13 @@ pub const Serializer = struct {
     fn writeRegExpLiteral(self: *Self, data: ast.RegExpLiteral, span: ast.Span) !void {
         const pattern = self.tree.getSourceText(data.pattern_start, data.pattern_len);
         const flags = self.tree.getSourceText(data.flags_start, data.flags_len);
+
+        self.scratch.clearRetainingCapacity();
+
+        try self.scratch.appendSlice(self.allocator, flags);
+
+        std.mem.sort(u8, self.scratch.items, {}, comptime std.sort.asc(u8));
+
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
@@ -671,7 +678,7 @@ pub const Serializer = struct {
         try self.field("regex");
         try self.beginObject();
         try self.fieldString("pattern", pattern);
-        try self.fieldString("flags", flags);
+        try self.fieldString("flags", self.scratch.items);
         try self.endObject();
         try self.endObject();
     }
