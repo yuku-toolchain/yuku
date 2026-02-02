@@ -51,7 +51,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.N
     );
 }
 
-inline fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind {
+fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind {
     const token_type = parser.current_token.type;
     try parser.advance() orelse return null;
 
@@ -111,4 +111,24 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
         .{ .variable_declarator = .{ .id = id, .init = init } },
         .{ .start = start, .end = end },
     );
+}
+
+/// determines if 'let' should be parsed as an identifier rather than a variable declaration keyword.
+pub fn shouldLetBeAIdentifier(parser: *Parser) Error!?bool {
+    std.debug.assert(parser.current_token.type == .let);
+
+    const next = try parser.lookAhead() orelse return null;
+
+    // 'let' followed by a semicolon should be parsed as an identifier, not a declaration.
+    if (next.type == .semicolon) {
+        return true;
+    }
+
+    // in single-statement contexts (e.g., if/while bodies), 'let' followed by an implicit semicolon
+    // should also be parsed as an identifier, since lexical declarations aren't allowed there.
+    if (parser.context.in_single_statement_context and parser.canInsertSemicolon(next)) {
+        return true;
+    }
+
+    return false;
 }

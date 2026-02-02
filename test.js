@@ -1,2 +1,1 @@
-await
-cool
+for (; false; ) let cool = nice;

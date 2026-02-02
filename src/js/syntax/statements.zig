@@ -57,8 +57,30 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         }
     }
 
+    const is_var_decl = switch (parser.current_token.type) {
+        .@"var", .@"const", .let, .using => true,
+        else => false,
+    };
+
+    if (is_var_decl) {
+        // 'let' can be either a keyword or an identifier depending on context.
+        // check if it should be parsed as an identifier (e.g., `let;`) before treating it as a declaration.
+        if (parser.current_token.type == .let) {
+            const is_identifier = try variables.shouldLetBeAIdentifier(parser) orelse return null;
+
+            if (!is_identifier) {
+                // parse as variable declaration: `let x = 5;`
+                return variables.parseVariableDeclaration(parser, false);
+            }
+
+            // otherwise, fall through to parse 'let' as an identifier in an expression statement.
+        } else {
+            // other variable declaration keywords (var, const, using) are always keywords.
+            return variables.parseVariableDeclaration(parser, false);
+        }
+    }
+
     const statement = switch (parser.current_token.type) {
-        .@"var", .@"const", .let, .using => variables.parseVariableDeclaration(parser, false),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
         .@"export" => modules.parseExportDeclaration(parser),
