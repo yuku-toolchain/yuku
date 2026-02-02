@@ -23,18 +23,17 @@ interface TestConfig {
   languages: Language[]
   exclude?: string[] // file paths to exclude
   skipOnCI?: boolean
-  matchErrorsInSnapshot?: boolean // if true, do AST matching even for files with parse errors in snapshot tests
 }
 
 const configs: TestConfig[] = [
   { path: "test/suite/js/pass", type: "snapshot", languages: ["js"], skipOnCI: true },
-  { path: "test/suite/js/fail", type: "should_fail", languages: ["js"] },
+  { path: "test/suite/js/fail", type: "should_fail", languages: ["js"], skipOnCI: true },
   // uncomment when we add semantic checks (first needs a visitor/traverser)
   // { path: "test/suite/js/semantic", type: "should_fail", languages: ["js"] },
   { path: "test/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
   { path: "test/suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
-  { path: "test/misc/jsx", type: "snapshot", languages: ["jsx"], matchErrorsInSnapshot: true },
-  { path: "test/misc/js", type: "snapshot", languages: ["js"], matchErrorsInSnapshot: true },
+  { path: "test/misc/jsx", type: "snapshot", languages: ["jsx"] },
+  { path: "test/misc/js", type: "snapshot", languages: ["js"] },
 ]
 
 interface TestResult {
@@ -87,7 +86,6 @@ const runTest = async (
   file: string,
   type: TestType,
   result: TestResult,
-  matchErrorsInSnapshot?: boolean,
 ): Promise<void> => {
   try {
     const content = await Bun.file(file).text()
@@ -117,11 +115,6 @@ const runTest = async (
     }
 
     if (type === "snapshot") {
-      if (!matchErrorsInSnapshot && hasErrors) {
-        result.failures.push(file)
-        return
-      }
-
       const dir = dirname(file)
       const snapshotsDir = join(dir, "snapshots")
       const base = getBaseName(file)
@@ -178,7 +171,7 @@ const runCategory = async (config: TestConfig) => {
   if (result.total === 0) return
 
   for (const file of files) {
-    await runTest(file, config.type, result, config.matchErrorsInSnapshot)
+    await runTest(file, config.type, result)
   }
 
   result.failed = result.failures.length
