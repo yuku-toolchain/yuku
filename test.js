@@ -1,1 +1,1 @@
-const regex = /hello/ig;
+for (; false; ) yield

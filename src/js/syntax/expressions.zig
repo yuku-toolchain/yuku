@@ -117,17 +117,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseParenthesizedOrArrowFunction(parser, false, null, precedence);
     }
 
-    if (token_type == .await) {
-        if (!(parser.context.in_async or parser.isModule())) {
-            try parser.report(
-                parser.current_token.span,
-                "'await' is only valid in async functions and at the top level of modules",
-                .{ .help = "Consider wrapping this code in an async function" },
-            );
-
-            return null;
-        }
-
+    if (token_type == .await and (parser.context.in_async or parser.isModule())) {
         return parseAwaitExpression(parser);
     }
 
