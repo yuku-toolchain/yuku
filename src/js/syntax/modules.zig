@@ -366,10 +366,10 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
 
     // export default class [name] {}
     else if (parser.current_token.type == .class) {
-        declaration = try class.parseClass(parser, .{ .is_default_export = true }, null, ast.IndexRange.empty) orelse return null;
+        declaration = try class.parseClass(parser, .{ .is_default_export = true }, null) orelse return null;
         is_decl = true;
     }
-    // export default @decorator class [name] {}
+    // export default @decorator [declaration]
     else if (parser.current_token.type == .at) {
         declaration = try extensions.parseDecorated(parser, .{ .is_default_export = true }) orelse return null;
         is_decl = true;
@@ -499,7 +499,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             declaration = try functions.parseFunction(parser, .{ .is_async = true }, async_start) orelse return null;
         },
         .class => {
-            declaration = try class.parseClass(parser, .{}, null, ast.IndexRange.empty) orelse return null;
+            declaration = try class.parseClass(parser, .{}, null) orelse return null;
         },
         .at => {
             declaration = try extensions.parseDecorated(parser, .{}) orelse return null;

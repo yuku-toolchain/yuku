@@ -31,7 +31,15 @@ pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-pub fn parseDecorated(parser: *Parser, opts: class.ParseClassOpts) Error!?ast.NodeIndex {
+pub const ParseDecoratedOpts = packed struct {
+    /// whether the decorated construct is parsed in expression position.
+    is_expression: bool = false,
+    /// whether the decorated construct is a default export.
+    /// currently only affects class declarations (allows optional name but produces ClassDeclaration).
+    is_default_export: bool = false,
+};
+
+pub fn parseDecorated(parser: *Parser, opts: ParseDecoratedOpts) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const decorators = try parseDecorators(parser) orelse return null;
 
@@ -44,5 +52,8 @@ pub fn parseDecorated(parser: *Parser, opts: class.ParseClassOpts) Error!?ast.No
         return null;
     }
 
-    return class.parseClass(parser, opts, start, decorators);
+    return class.parseClassDecorated(parser, .{
+        .is_expression = opts.is_expression,
+        .is_default_export = opts.is_default_export,
+    }, start, decorators);
 }

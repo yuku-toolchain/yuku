@@ -13,6 +13,7 @@ const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
 
 pub const ParseClassOpts = packed struct {
+    /// whether the class is parsing in an expression position
     is_expression: bool = false,
     /// for export default class, allows optional name but produces ClassDeclaration
     is_default_export: bool = false,
@@ -20,7 +21,16 @@ pub const ParseClassOpts = packed struct {
 
 /// class declaration or expression
 /// https://tc39.es/ecma262/#sec-class-definitions
-pub fn parseClass(parser: *Parser, opts: ParseClassOpts, start_from_param: ?u32, decorators: ast.IndexRange) Error!?ast.NodeIndex {
+pub fn parseClass(parser: *Parser, opts: ParseClassOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
+    return parseClassDecorated(parser, opts, start_from_param, ast.IndexRange.empty);
+}
+
+pub fn parseClassDecorated(
+    parser: *Parser,
+    opts: ParseClassOpts,
+    start_from_param: ?u32,
+    decorators: ast.IndexRange,
+) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
 
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;

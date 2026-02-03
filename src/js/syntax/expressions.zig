@@ -163,7 +163,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
         .left_bracket => parseArrayExpression(parser, opts.in_cover),
         .left_brace => parseObjectExpression(parser, opts.in_cover),
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
-        .class => class.parseClass(parser, .{ .is_expression = true }, null, ast.IndexRange.empty),
+        .class => class.parseClass(parser, .{ .is_expression = true }, null),
         .async => parseAsyncFunctionOrArrow(parser, precedence),
         else => {
             if (parser.current_token.type.isIdentifierLike()) {

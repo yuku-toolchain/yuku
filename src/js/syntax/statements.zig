@@ -88,7 +88,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
 
     const statement = switch (parser.current_token.type) {
         .function => functions.parseFunction(parser, .{}, null),
-        .class => class.parseClass(parser, .{}, null, ast.IndexRange.empty),
+        .class => class.parseClass(parser, .{}, null),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
