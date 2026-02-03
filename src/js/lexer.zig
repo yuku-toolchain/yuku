@@ -98,7 +98,7 @@ pub const Lexer = struct {
             '0'...'9' => try self.scanNumber(),
             '"', '\'' => self.scanString(),
             '`' => self.scanTemplateLiteral(),
-            '~', '(', ')', '{', '[', ']', ';', ',', ':' => self.scanSimplePunctuation(),
+            '~', '(', ')', '{', '[', ']', ';', ',', ':', '@' => self.scanSimplePunctuation(),
             '}' => self.handleRightBrace(),
             else => self.scanIdentifierOrKeyword(),
         };
@@ -119,6 +119,7 @@ pub const Lexer = struct {
             ';' => .semicolon,
             ',' => .comma,
             ':' => .colon,
+            '@' => .at,
             else => unreachable,
         };
 

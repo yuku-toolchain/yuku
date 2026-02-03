@@ -368,6 +368,11 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
         declaration = try class.parseClass(parser, .{ .is_default_export = true }, null) orelse return null;
         is_decl = true;
     }
+    // export default @decorator class [name] {}
+    else if (parser.current_token.type == .at) {
+        declaration = try class.parseDecoratedClass(parser, .{ .is_default_export = true }) orelse return null;
+        is_decl = true;
+    }
     // export default expression
     else {
         declaration = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
@@ -494,6 +499,9 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         },
         .class => {
             declaration = try class.parseClass(parser, .{}, null) orelse return null;
+        },
+        .at => {
+            declaration = try class.parseDecoratedClass(parser, .{}) orelse return null;
         },
         else => {
             try parser.report(parser.current_token.span, "Expected declaration after 'export'", .{

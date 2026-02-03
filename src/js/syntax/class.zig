@@ -21,6 +21,21 @@ pub const ParseClassOpts = packed struct {
 /// https://tc39.es/ecma262/#sec-class-definitions
 pub fn parseClass(parser: *Parser, opts: ParseClassOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
+    return parseClassWithDecorators(parser, opts, start, ast.IndexRange.empty);
+}
+
+pub fn parseDecoratedClass(parser: *Parser, opts: ParseClassOpts) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    const decorators = try parseDecorators(parser) orelse return null;
+    return parseClassWithDecorators(parser, opts, start, decorators);
+}
+
+fn parseClassWithDecorators(
+    parser: *Parser,
+    opts: ParseClassOpts,
+    start: u32,
+    decorators: ast.IndexRange,
+) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 
@@ -61,11 +76,38 @@ pub fn parseClass(parser: *Parser, opts: ParseClassOpts, start_from_param: ?u32)
     return try parser.addNode(.{
         .class = .{
             .type = class_type,
+            .decorators = decorators,
             .id = id,
             .super_class = super_class,
             .body = body,
         },
     }, .{ .start = start, .end = body_end });
+}
+
+fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
+    const checkpoint = parser.scratch_decorators.begin();
+    defer parser.scratch_decorators.reset(checkpoint);
+
+    while (parser.current_token.type == .at) {
+        const decorator = try parseDecorator(parser) orelse return null;
+        try parser.scratch_decorators.append(parser.allocator(), decorator);
+    }
+
+    return try parser.addExtra(try parser.scratch_decorators.take(parser.allocator(), checkpoint));
+}
+
+fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    if (!try parser.expect(.at, "Expected '@' to start a decorator", null)) return null;
+
+    const expression = try expressions.parseLeftHandSideExpression(parser) orelse return null;
+    const end = parser.getSpan(expression).end;
+
+    return try parser.addNode(.{
+        .decorator = .{
+            .expression = expression,
+        },
+    }, .{ .start = start, .end = end });
 }
 
 /// class body: { ClassElementList }
@@ -110,7 +152,13 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
 
 /// a single class element (method, field, or static block)
 fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
-    const elem_start = parser.current_token.span.start;
+    var decorators: ast.IndexRange = ast.IndexRange.empty;
+    var elem_start = parser.current_token.span.start;
+
+    if (parser.current_token.type == .at) {
+        elem_start = parser.current_token.span.start;
+        decorators = try parseDecorators(parser) orelse return null;
+    }
 
     var is_static = false;
     var is_async = false;
@@ -126,7 +174,15 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
         // static { } - static block
         if (parser.current_token.type == .left_brace) {
-            return parseStaticBlock(parser, elem_start);
+            if (decorators.len != 0) {
+                const first = parser.getExtra(decorators)[0];
+                try parser.report(
+                    parser.getSpan(first),
+                    "Decorators cannot be applied to static blocks",
+                    .{ .help = "Remove the decorator or apply it to a method or field instead." },
+                );
+            }
+            return parseStaticBlock(parser, static_token.span.start);
         }
 
         // if next token is '(' or nothing that could be a class element key, 'static' is the key
@@ -214,7 +270,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     // method: key followed by (
     if (parser.current_token.type == .left_paren) {
-        return parseMethodDefinition(parser, elem_start, key, computed, kind, is_static, is_async, is_generator);
+        return parseMethodDefinition(parser, elem_start, decorators, key, computed, kind, is_static, is_async, is_generator);
     }
 
     if (is_async or is_generator) {
@@ -236,7 +292,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // field definition
-    return parsePropertyDefinition(parser, elem_start, key, computed, is_static);
+    return parsePropertyDefinition(parser, elem_start, decorators, key, computed, is_static);
 }
 
 const KeyResult = struct {
@@ -297,6 +353,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
 fn parseMethodDefinition(
     parser: *Parser,
     elem_start: u32,
+    decorators: ast.IndexRange,
     key: ast.NodeIndex,
     computed: bool,
     kind: ast.MethodDefinitionKind,
@@ -430,6 +487,7 @@ fn parseMethodDefinition(
 
     return try parser.addNode(
         .{ .method_definition = .{
+            .decorators = decorators,
             .key = key,
             .value = func,
             .kind = kind,
@@ -444,6 +502,7 @@ fn parseMethodDefinition(
 fn parsePropertyDefinition(
     parser: *Parser,
     elem_start: u32,
+    decorators: ast.IndexRange,
     key: ast.NodeIndex,
     computed: bool,
     is_static: bool,
@@ -476,6 +535,7 @@ fn parsePropertyDefinition(
 
     return try parser.addNode(
         .{ .property_definition = .{
+            .decorators = decorators,
             .key = key,
             .value = value,
             .computed = computed,

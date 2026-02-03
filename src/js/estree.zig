@@ -116,6 +116,7 @@ pub const Serializer = struct {
             .await_expression => |d| self.writeAwaitExpression(d, span),
             .yield_expression => |d| self.writeYieldExpression(d, span),
             .meta_property => |d| self.writeMetaProperty(d, span),
+            .decorator => |d| self.writeDecorator(d, span),
             .this_expression => self.writeThisExpression(span),
             .template_literal => |d| self.writeTemplateLiteral(d, span),
             .template_element => |d| self.writeTemplateElement(d, span),
@@ -793,7 +794,7 @@ pub const Serializer = struct {
             .class_expression => "ClassExpression",
         });
         try self.fieldSpan(span);
-        try self.fieldEmptyArray("decorators");
+        try self.fieldNodeArray("decorators", data.decorators);
         try self.fieldNode("id", data.id);
         try self.fieldNode("superClass", data.super_class);
         try self.fieldNode("body", data.body);
@@ -812,7 +813,7 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldType("MethodDefinition");
         try self.fieldSpan(span);
-        try self.fieldEmptyArray("decorators");
+        try self.fieldNodeArray("decorators", data.decorators);
         try self.fieldNode("key", data.key);
         try self.fieldNode("value", data.value);
         try self.fieldString("kind", data.kind.toString());
@@ -825,7 +826,7 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldType("PropertyDefinition");
         try self.fieldSpan(span);
-        try self.fieldEmptyArray("decorators");
+        try self.fieldNodeArray("decorators", data.decorators);
         try self.fieldNode("key", data.key);
         try self.fieldNode("value", data.value);
         try self.fieldBool("computed", data.computed);
@@ -1048,6 +1049,14 @@ pub const Serializer = struct {
         try self.fieldSpan(span);
         try self.fieldNode("meta", data.meta);
         try self.fieldNode("property", data.property);
+        try self.endObject();
+    }
+
+    fn writeDecorator(self: *Self, data: ast.Decorator, span: ast.Span) !void {
+        try self.beginObject();
+        try self.fieldType("Decorator");
+        try self.fieldSpan(span);
+        try self.fieldNode("expression", data.expression);
         try self.endObject();
     }
 

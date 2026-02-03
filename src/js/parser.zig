@@ -52,6 +52,7 @@ pub const Parser = struct {
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
+    scratch_decorators: ScratchBuffer = .{},
 
     // multiple scratches to handle multiple extras at the same time
     scratch_a: ScratchBuffer = .{},
@@ -354,7 +355,7 @@ pub const Parser = struct {
 
                 if (self.current_token.has_line_terminator_before) {
                     const can_start_statement = switch (self.current_token.type) {
-                        .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
+                        .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
                         else => false,
                     };
 
@@ -389,6 +390,7 @@ pub const Parser = struct {
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
+        try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
     }
 };
 

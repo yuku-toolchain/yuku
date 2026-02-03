@@ -1,1 +1,1 @@
-for (; false; ) let cool = nice;
+@decorator

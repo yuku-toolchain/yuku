@@ -492,9 +492,17 @@ pub const MethodDefinitionKind = enum {
     }
 };
 
+/// https://github.com/tc39/proposal-decorators
+pub const Decorator = struct {
+    /// Expression
+    expression: NodeIndex,
+};
+
 /// https://tc39.es/ecma262/#sec-class-definitions
 pub const Class = struct {
     type: ClassType,
+    /// Decorator[]
+    decorators: IndexRange,
     /// BindingIdentifier (optional, may be null_node for class expressions)
     id: NodeIndex,
     /// Expression (optional, may be null_node if no extends clause)
@@ -511,6 +519,8 @@ pub const ClassBody = struct {
 
 /// https://tc39.es/ecma262/#prod-MethodDefinition
 pub const MethodDefinition = struct {
+    /// Decorator[]
+    decorators: IndexRange,
     /// PropertyKey (IdentifierName | PrivateIdentifier | Expression)
     key: NodeIndex,
     /// Function
@@ -522,6 +532,8 @@ pub const MethodDefinition = struct {
 
 /// https://tc39.es/ecma262/#prod-FieldDefinition
 pub const PropertyDefinition = struct {
+    /// Decorator[]
+    decorators: IndexRange,
     /// PropertyKey (IdentifierName | PrivateIdentifier | Expression)
     key: NodeIndex,
     /// Expression (optional, may be null_node)
@@ -1369,6 +1381,7 @@ pub const NodeData = union(enum) {
     await_expression: AwaitExpression,
     yield_expression: YieldExpression,
     meta_property: MetaProperty,
+    decorator: Decorator,
     class: Class,
     class_body: ClassBody,
     method_definition: MethodDefinition,

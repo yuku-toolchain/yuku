@@ -26,6 +26,10 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         return parseBlockStatement(parser);
     }
 
+    if (parser.current_token.type == .at) {
+        return class.parseDecoratedClass(parser, .{});
+    }
+
     if (opts.can_be_single_statement_context) {
         parser.context.in_single_statement_context = true;
     }
@@ -42,7 +46,8 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     if (parser.current_token.type == .import) {
         const next = try parser.lookAhead() orelse return null;
 
-        if (next.type != .left_paren) {
+        // `import(` and `import.` are expression forms (dynamic import / import.meta or phase imports)
+        if (next.type != .left_paren and next.type != .dot) {
             return modules.parseImportDeclaration(parser);
         }
     }

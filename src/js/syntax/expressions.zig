@@ -110,6 +110,10 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseUpdateExpression(parser, true, ast.null_node);
     }
 
+    if (token_type == .at) {
+        return class.parseDecoratedClass(parser, .{ .is_expression = true });
+    }
+
     if (token_type.isUnaryOperator()) {
         return parseUnaryExpression(parser);
     }
@@ -1005,7 +1009,7 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
     };
 }
 
-/// used to parse `extends` clause, where we only need left hand side expression
+/// used to parse `extends` clause or decorator expression, where we only need left hand side expression
 pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex {
     // base expression
     var expr: ast.NodeIndex = blk: {
