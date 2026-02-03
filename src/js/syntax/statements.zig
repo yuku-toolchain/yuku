@@ -64,12 +64,12 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
 
     if (is_var_decl) {
         // 'let' can be either a keyword or an identifier depending on context.
-        // check if it should be parsed as an identifier (e.g., `let;`) before treating it as a declaration.
+        // check if it should be parsed as an identifier (eg, `let;`) before treating it as a declaration.
         if (parser.current_token.type == .let) {
-            const is_identifier = try variables.shouldLetBeAIdentifier(parser) orelse return null;
+            const is_identifier = try variables.isLetIdentifier(parser) orelse return null;
 
             if (!is_identifier) {
-                // parse as variable declaration: `let x = 5;`
+                // parse as variable declaration: let x = 5;
                 return variables.parseVariableDeclaration(parser, false);
             }
 
