@@ -824,7 +824,7 @@ pub const Serializer = struct {
 
     fn writePropertyDefinition(self: *Self, data: ast.PropertyDefinition, span: ast.Span) !void {
         try self.beginObject();
-        try self.fieldType("PropertyDefinition");
+        try self.fieldType(if (data.accessor) "AccessorProperty" else "PropertyDefinition");
         try self.fieldSpan(span);
         try self.fieldNodeArray("decorators", data.decorators);
         try self.fieldNode("key", data.key);

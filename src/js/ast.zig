@@ -540,6 +540,7 @@ pub const PropertyDefinition = struct {
     value: NodeIndex,
     computed: bool,
     static: bool,
+    accessor: bool,
 };
 
 /// https://tc39.es/ecma262/#prod-ClassStaticBlock

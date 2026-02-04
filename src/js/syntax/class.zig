@@ -133,6 +133,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var is_static = false;
     var is_async = false;
     var is_generator = false;
+    var is_accessor = false;
     var kind: ast.MethodDefinitionKind = .method;
     var computed = false;
     var key: ast.NodeIndex = ast.null_node;
@@ -211,6 +212,26 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
+    // check for accessor field (only if no key yet and not async/generator)
+    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
+        const lexeme = parser.current_token.lexeme;
+        if (std.mem.eql(u8, lexeme, "accessor")) {
+            const accessor_token = parser.current_token;
+            const next = try parser.lookAhead() orelse return null;
+
+            if (isClassElementKeyStart(next.type)) {
+                is_accessor = true;
+                try parser.advance() orelse return null; // consume 'accessor'
+            } else {
+                key = try parser.addNode(
+                    .{ .identifier_name = .{ .name_start = accessor_token.span.start, .name_len = @intCast(accessor_token.lexeme.len) } },
+                    accessor_token.span,
+                );
+                try parser.advance() orelse return null; // consume 'accessor' as key
+            }
+        }
+    }
+
     // parse the key if not already determined
     if (ast.isNull(key)) {
         const key_result = try parseClassElementKey(parser) orelse return null;
@@ -240,6 +261,14 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     // method: key followed by (
     if (parser.current_token.type == .left_paren) {
+        if (is_accessor) {
+            try parser.report(
+                parser.current_token.span,
+                "Accessor properties cannot be methods",
+                .{ .help = "Remove the parentheses to declare an auto-accessor field." },
+            );
+            return null;
+        }
         return parseMethodDefinition(parser, elem_start, decorators, key, computed, kind, is_static, is_async, is_generator);
     }
 
@@ -262,7 +291,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // field definition
-    return parsePropertyDefinition(parser, elem_start, decorators, key, computed, is_static);
+    return parsePropertyDefinition(parser, elem_start, decorators, key, computed, is_static, is_accessor);
 }
 
 const KeyResult = struct {
@@ -476,6 +505,7 @@ fn parsePropertyDefinition(
     key: ast.NodeIndex,
     computed: bool,
     is_static: bool,
+    is_accessor: bool,
 ) Error!?ast.NodeIndex {
     if (is_static and !computed) {
         try validateStaticPrototypeName(parser, key);
@@ -510,6 +540,7 @@ fn parsePropertyDefinition(
             .value = value,
             .computed = computed,
             .static = is_static,
+            .accessor = is_accessor,
         } },
         .{ .start = elem_start, .end = end },
     );
