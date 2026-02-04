@@ -1,6 +1,6 @@
 {
   "name": "yuku-docs",
-  "version": "0.0.2",
+  "version": "0.2.9",
   "dependencies": {
     "@astrojs/starlight": "^0.37.1",
     "astro": "^5.6.1",
