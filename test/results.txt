@@ -5,10 +5,11 @@ Running TypeScript, Test262 and Babel test suites with ESTree/TypeScript-ESTree 
 
 Summary
 -------
-Passed:      38373
-Failed:      37
-Total:       38410
-Coverage:    99.90%
+Passed:       38373
+Failed:       37
+AST mismatch: 10/37609
+Total:        38410
+Coverage:     99.90%
 
 Results by Suite
 ----------------
@@ -17,36 +18,36 @@ Results by Suite
   Passed: 37519/37553 (99.91%)
   Failed: 34
   Failures:
-    - test/suite/js/pass/91fe55e6dd38d465.js
+    - test/suite/js/pass/91fe55e6dd38d465.js (AST mismatch)
     - test/suite/js/pass/abf30856c52cbc08.js
     - test/suite/js/pass/c4e2bc7110d2242c.js
     - test/suite/js/pass/bc785eac79d91704.js
     - test/suite/js/pass/03e5f95c0f966156.js
     - test/suite/js/pass/80eba225d5dccaf7.js
     - test/suite/js/pass/4cf7dcf9ec3d5490.js
-    - test/suite/js/pass/37a7850f313127a8.module.js
+    - test/suite/js/pass/37a7850f313127a8.module.js (AST mismatch)
     - test/suite/js/pass/b6325d370a7abfe3.js
-    - test/suite/js/pass/b53d8a9040f94149.js
-    - test/suite/js/pass/10b9bcf4afcf9aa3.js
+    - test/suite/js/pass/b53d8a9040f94149.js (AST mismatch)
+    - test/suite/js/pass/10b9bcf4afcf9aa3.js (AST mismatch)
     - test/suite/js/pass/734befbb3f29fa54.js
-    - test/suite/js/pass/e9be8ed11bcdfcc2.js
+    - test/suite/js/pass/e9be8ed11bcdfcc2.js (AST mismatch)
     - test/suite/js/pass/4dd46d3523507053.js
     - test/suite/js/pass/f632b7b4bd1babf1.js
     - test/suite/js/pass/93dba0832f768c12.js
     - test/suite/js/pass/875288c6d94c7979.js
-    - test/suite/js/pass/b6b5e49c97cedebb.js
-    - test/suite/js/pass/b6fc916d7104c2d7.js
-    - test/suite/js/pass/58eceaf055ee743a.js
+    - test/suite/js/pass/b6b5e49c97cedebb.js (AST mismatch)
+    - test/suite/js/pass/b6fc916d7104c2d7.js (AST mismatch)
+    - test/suite/js/pass/58eceaf055ee743a.js (AST mismatch)
     - test/suite/js/pass/546b7cd34a90193a.js
     - test/suite/js/pass/3b25d03b3fe461e2.js
     - test/suite/js/pass/12ee9a68fce89bc4.js
-    - test/suite/js/pass/7a6f20d74aed16d8.module.js
+    - test/suite/js/pass/7a6f20d74aed16d8.module.js (AST mismatch)
     - test/suite/js/pass/1b74c047bfb0d4a8.js
     - test/suite/js/pass/be8a21d0e2da975f.js
     - test/suite/js/pass/4d513c17428f7941.js
     - test/suite/js/pass/978d861516846a89.js
     - test/suite/js/pass/cef525f8b090bc9e.js
-    - test/suite/js/pass/8b16604d6324911f.js
+    - test/suite/js/pass/8b16604d6324911f.js (AST mismatch)
     - test/suite/js/pass/3e332ea1125feb21.js
     - test/suite/js/pass/c30bfb9ed55f7d54.js
     - test/suite/js/pass/3cede6b3581aeceb.js

@@ -23,6 +23,7 @@ interface TestConfig {
   languages: Language[]
   exclude?: string[] // file paths to exclude
   skipOnCI?: boolean
+  checkAstOnError?: boolean
 }
 
 const configs: TestConfig[] = [
@@ -32,8 +33,8 @@ const configs: TestConfig[] = [
   // { path: "test/suite/js/semantic", type: "should_fail", languages: ["js"] },
   { path: "test/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
   { path: "test/suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
-  { path: "test/misc/jsx", type: "snapshot", languages: ["jsx"] },
-  { path: "test/misc/js", type: "snapshot", languages: ["js"] },
+  { path: "test/misc/jsx", type: "snapshot", languages: ["jsx"], checkAstOnError: true },
+  { path: "test/misc/js", type: "snapshot", languages: ["js"], checkAstOnError: true },
 ]
 
 interface TestResult {
@@ -42,6 +43,8 @@ interface TestResult {
   failed: number
   total: number
   failures: string[]
+  astMismatches: number
+  astComparisons: number
 }
 
 const results = new Map<string, TestResult>()
@@ -84,10 +87,11 @@ const shouldIncludeFile = (path: string, languages: Language[], exclude?: string
 
 const runTest = async (
   file: string,
-  type: TestType,
+  config: TestConfig,
   result: TestResult,
 ): Promise<void> => {
   try {
+    const { type, checkAstOnError } = config
     const content = await Bun.file(file).text()
     const lang = getLanguage(file)
     const sourceType = file.includes(".module.") ? "module" : "script"
@@ -115,6 +119,11 @@ const runTest = async (
     }
 
     if (type === "snapshot") {
+      if (hasErrors && !checkAstOnError) {
+        result.failures.push(file)
+        return
+      }
+
       const dir = dirname(file)
       const snapshotsDir = join(dir, "snapshots")
       const base = getBaseName(file)
@@ -130,6 +139,8 @@ const runTest = async (
 
       const snapshot = await Bun.file(snapshotFile).json()
 
+      result.astComparisons++
+
       if (!equal(parsed, snapshot)) {
         if (updateSnapshots) {
           await Bun.write(snapshotFile, JSON.stringify(parsed, null, 2))
@@ -138,21 +149,22 @@ const runTest = async (
         }
         const difference = diff(snapshot, parsed, { contextLines: 2 })
         console.log(`\nx ${file}\n${difference}\n`)
-        result.failures.push(file)
+        result.failures.push(`${file} (AST mismatch)`)
+        result.astMismatches++
         return
       }
 
       result.passed++
     }
   } catch (err) {
-    result.failures.push(`${file} (error: ${err})`)
+    result.failures.push(`${file} - error: ${err}`)
   }
 }
 
 const runCategory = async (config: TestConfig) => {
   const result: TestResult = {
     path: config.path,
-    passed: 0, failed: 0, total: 0, failures: []
+    passed: 0, failed: 0, total: 0, failures: [], astMismatches: 0, astComparisons: 0
   }
   results.set(config.path, result)
 
@@ -171,7 +183,7 @@ const runCategory = async (config: TestConfig) => {
   if (result.total === 0) return
 
   for (const file of files) {
-    await runTest(file, config.type, result)
+    await runTest(file, config, result)
   }
 
   result.failed = result.failures.length
@@ -191,6 +203,8 @@ for (const config of configs) {
 let totalPassed = 0
 let totalFailed = 0
 let totalTests = 0
+let totalAstMismatches = 0
+let totalAstComparisons = 0
 
 for (const [, result] of results) {
   const status = result.failed === 0 ? "✓" : "x"
@@ -204,6 +218,8 @@ for (const [, result] of results) {
   totalPassed += result.passed
   totalFailed += result.failed
   totalTests += result.total
+  totalAstMismatches += result.astMismatches
+  totalAstComparisons += result.astComparisons
 }
 
 const passRate = ((totalPassed / totalTests) * 100).toFixed(2)
@@ -219,10 +235,11 @@ const saveResults = async () => {
     "",
     "Summary",
     "-------",
-    `Passed:      ${totalPassed}`,
-    `Failed:      ${totalFailed}`,
-    `Total:       ${totalTests}`,
-    `Coverage:    ${passRate}%`,
+    `Passed:       ${totalPassed}`,
+    `Failed:       ${totalFailed}`,
+    `AST mismatch: ${totalAstMismatches}/${totalAstComparisons}`,
+    `Total:        ${totalTests}`,
+    `Coverage:     ${passRate}%`,
     "",
     "Results by Suite",
     "----------------",
