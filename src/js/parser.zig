@@ -36,8 +36,6 @@ const ParserState = struct {
     cover_has_trailing_comma: ?u32 = null,
     /// tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
-    /// current scope identified by depth
-    current_scope_id: u32 = 0,
 };
 
 pub const Error = error{OutOfMemory};
@@ -135,7 +133,6 @@ pub const Parser = struct {
         defer self.scratch_statements.reset(statements_checkpoint);
 
         self.context.in_directive_prologue = true;
-        self.state.current_scope_id += 1;
 
         while (!self.isAtBodyEnd(terminator)) {
             if (try statements.parseStatement(self, .{})) |statement| {
@@ -145,8 +142,6 @@ pub const Parser = struct {
                 try self.synchronize(terminator) orelse break;
             }
         }
-
-        self.state.current_scope_id -= 1;
 
         return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
     }
@@ -361,30 +356,27 @@ pub const Parser = struct {
 
     // returning null here means, break the top level statement parsing loop
     // otherwise continue
+    // TODO: make it better
     fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!?void {
-        const errored_scope_id = self.state.current_scope_id;
-
         while (self.current_token.type != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {
                 if (self.current_token.type == t) return;
             }
 
-            if (self.state.current_scope_id <= errored_scope_id) {
-                if (self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
-                    try self.advance() orelse return null;
+            if (self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
+                try self.advance() orelse return null;
+                return;
+            }
+
+            if (self.current_token.has_line_terminator_before) {
+                const can_start_statement = switch (self.current_token.type) {
+                    .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
+                    else => false,
+                };
+
+                if (can_start_statement) {
                     return;
-                }
-
-                if (self.current_token.has_line_terminator_before) {
-                    const can_start_statement = switch (self.current_token.type) {
-                        .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
-                        else => false,
-                    };
-
-                    if (can_start_statement) {
-                        return;
-                    }
                 }
             }
 
