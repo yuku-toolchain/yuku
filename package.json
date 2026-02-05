@@ -2,11 +2,11 @@
   "name": "yuku-root",
   "private": true,
   "scripts": {
-    "build:npm": "zig build && bun run --filter './npm' build",
+    "build:npm": "zig build && bun run --filter './npm/**/*' build",
     "dev:docs": "bun run --filter './docs' dev",
     "test:tools": "zig build test-tools",
     "test": "bun load-test-suite -b test262 && bun build:npm && bun test/run.ts",
-    "publish:npm": "bun --filter './npm' publish",
+    "publish:npm": "bumpp --commit 'npm %s' --push --tag --yes --release 'patch'",
     "format": "zig fmt **/*.zig",
     "load-test-suite": "bun test/load.ts test/suite"
   },
@@ -18,7 +18,7 @@
     "typescript": "^5.9.3"
   },
   "workspaces": [
-    "npm",
+    "npm/**/*",
     "docs"
   ]
 }

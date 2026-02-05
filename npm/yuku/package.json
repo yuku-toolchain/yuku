@@ -1,0 +1,45 @@
+{
+  "name": "yuku",
+  "description": "Yuku, the JavaScript/TypeScript parser",
+  "version": "0.2.10",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "funding": "https://github.com/sponsors/arshad-yaseen",
+  "homepage": "https://yuku.fyi",
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "Arshad Yaseen",
+      "email": "arshadpyaseen@gmail.com",
+      "url": "https://arshad.fyi"
+    }
+  ],
+  "scripts": {
+    "build": "bunup --exports"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.5.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arshad-yaseen/yuku.git"
+  },
+  "devDependencies": {
+    "bunup": "^0.16.22"
+  }
+}

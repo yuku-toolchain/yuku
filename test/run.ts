@@ -1,6 +1,6 @@
 // this is a wasm module, and i know it's not expected to use for these kinds of tasks, also not expected to use in node
 // so replace it with the yuku node (napi) module when we have it
-import { parseSync, preload } from "../npm/dist/browser"
+import { parseSync, preload } from "../npm/wasm/dist"
 import { Glob } from "bun"
 import equal from "fast-deep-equal"
 import { diff } from "jest-diff"

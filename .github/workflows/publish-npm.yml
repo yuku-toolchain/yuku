@@ -1,4 +1,4 @@
-name: Release
+name: Publish to NPM
 
 on:
   push:
@@ -54,4 +54,7 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish packages to npm
-        run: cd npm && bun pm pack && npm publish ./*.tgz --access public
+        run: |
+              for dir in packages/*/; do
+                (cd "$dir" && bun pm pack && npm publish ./*.tgz --access public)
+              done
