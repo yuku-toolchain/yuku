@@ -55,6 +55,6 @@ jobs:
 
       - name: Publish packages to npm
         run: |
-              for dir in packages/*/; do
+              for dir in npm/*/; do
                 (cd "$dir" && bun pm pack && npm publish ./*.tgz --access public)
               done
