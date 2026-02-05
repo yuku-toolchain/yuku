@@ -9,7 +9,8 @@
   "module": "./dist/index.js",
   "devDependencies": {
     "@types/bun": "^1.3.5",
-    "@typescript/native-preview": "^7.0.0-dev.20260109.1"
+    "@typescript/native-preview": "^7.0.0-dev.20260109.1",
+    "bumpp": "^10.4.1"
   },
   "exports": {
     ".": {
@@ -44,7 +45,8 @@
     }
   },
   "scripts": {
-    "build": "tsgo && cp ../zig-out/bin/yuku.wasm dist"
+    "build": "tsgo && cp ../zig-out/bin/yuku.wasm dist",
+    "publish": "bumpp -r --commit --push --tag"
   },
   "type": "module",
   "types": "./dist/index.d.ts"
