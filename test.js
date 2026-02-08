@@ -1,1 +1,4 @@
-export { if }
+(function() {
+  "use strict";
+  "asterisk: \052";
+});

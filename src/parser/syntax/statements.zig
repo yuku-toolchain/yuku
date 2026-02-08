@@ -128,7 +128,6 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
         const value_len: u16 = expression_data.string_literal.raw_len - 2;
 
         if (std.mem.eql(u8, parser.getSourceText(value_start, value_len), "use strict")) {
-            parser.strict_mode = true;
             parser.lexer.strict_mode = true;
         }
 
@@ -359,10 +358,6 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 /// https://tc39.es/ecma262/#sec-with-statement
 fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-
-    if (parser.strict_mode) {
-        try parser.report(parser.current_token.span, "'with' statement is not allowed in strict mode", .{});
-    }
 
     try parser.advance() orelse return null; // consume 'with'
 

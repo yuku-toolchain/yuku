@@ -14,7 +14,7 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = parser.Lang.fromPath(file_path), .source_type = parser.SourceType.fromPath(file_path) });
+    const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = parser.Lang.fromPath(file_path), .source_type = .script });
 
     defer tree.deinit();
 

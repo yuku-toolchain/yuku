@@ -61,7 +61,6 @@ pub const Parser = struct {
     context: ParserContext = .{},
     state: ParserState = .{},
 
-    strict_mode: bool,
     source_type: ast.SourceType,
     lang: ast.Lang,
 
@@ -71,7 +70,6 @@ pub const Parser = struct {
             .arena = std.heap.ArenaAllocator.init(child_allocator),
             .source_type = options.source_type,
             .lang = options.lang,
-            .strict_mode = options.source_type == .module,
             .lexer = undefined,
             .current_token = undefined,
         };
@@ -88,7 +86,7 @@ pub const Parser = struct {
         const alloc = self.allocator();
 
         // init lexer
-        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type, self.strict_mode);
+        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type, self.isModule());
 
         // let's begin
         try self.advance() orelse {
