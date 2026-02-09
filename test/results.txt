@@ -5,18 +5,18 @@ Running TypeScript, Test262 and Babel test suites with ESTree/TypeScript-ESTree 
 
 Summary
 -------
-Passed:       38325
-Failed:       84
-AST mismatch: 10/37607
+Passed:       38327
+Failed:       82
+AST mismatch: 10/37608
 Total:        38409
-Coverage:     99.78%
+Coverage:     99.79%
 
 Results by Suite
 ----------------
 
 ✗ test/suite/js/pass
-  Passed: 37518/37553 (99.91%)
-  Failed: 35
+  Passed: 37519/37553 (99.91%)
+  Failed: 34
   Failures:
     - test/suite/js/pass/91fe55e6dd38d465.js (AST mismatch)
     - test/suite/js/pass/abf30856c52cbc08.js
@@ -33,7 +33,6 @@ Results by Suite
     - test/suite/js/pass/e9be8ed11bcdfcc2.js (AST mismatch)
     - test/suite/js/pass/4dd46d3523507053.js
     - test/suite/js/pass/f632b7b4bd1babf1.js
-    - test/suite/js/pass/4f60d8fbb4be1120.js
     - test/suite/js/pass/93dba0832f768c12.js
     - test/suite/js/pass/875288c6d94c7979.js
     - test/suite/js/pass/b6b5e49c97cedebb.js (AST mismatch)
@@ -55,14 +54,13 @@ Results by Suite
     - test/suite/js/pass/b61d4b9da6f25d58.js
 
 ✗ test/suite/js/fail
-  Passed: 714/763 (93.58%)
-  Failed: 49
+  Passed: 715/763 (93.71%)
+  Failed: 48
   Failures:
     - test/suite/js/fail/3990bb94b19b1071.module.js
     - test/suite/js/fail/ca2716d236c027cd.js
     - test/suite/js/fail/938db8c9f82c8cb5.module.js
     - test/suite/js/fail/974222e3683f284a.js
-    - test/suite/js/fail/85351ad05c8d5f1b.js
     - test/suite/js/fail/1c04d8bc2ab25c1e.js
     - test/suite/js/fail/1395e3a9d2acf65c.module.js
     - test/suite/js/fail/11d61dbd7c1fbd1b.js

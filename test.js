@@ -1,1 +1,1 @@
-const nice = <>cool</>
+const nice = 09.x

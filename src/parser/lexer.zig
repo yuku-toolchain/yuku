@@ -878,8 +878,10 @@ pub const Lexer = struct {
             try self.consumeDecimalDigits();
         }
 
-        // handle decimal point only for regular numbers, not legacy octals
-        if (token_type == .numeric_literal and
+        const can_have_fraction_or_exponent = token_type == .numeric_literal or token_type == .leading_zero_literal;
+
+        // handle decimal point for decimal/leading-zero literals, but not legacy octals before member access
+        if (can_have_fraction_or_exponent and
             self.cursor < self.source.len and self.source[self.cursor] == '.')
         {
             const next = self.peek(1);
@@ -894,8 +896,8 @@ pub const Lexer = struct {
             }
         }
 
-        // handle exponent (only for regular numbers)
-        if (token_type == .numeric_literal and self.cursor < self.source.len) {
+        // handle exponent for decimal/leading-zero literals
+        if (can_have_fraction_or_exponent and self.cursor < self.source.len) {
             const exp_char = self.source[self.cursor];
             if (exp_char == 'e' or exp_char == 'E') {
                 has_decimal_or_exponent = true;
@@ -906,7 +908,7 @@ pub const Lexer = struct {
         // handle bigint suffix 'n'
         if (self.cursor < self.source.len and self.source[self.cursor] == 'n') {
             // bigint cannot have decimal point or exponent
-            if (token_type == .numeric_literal and has_decimal_or_exponent) {
+            if (has_decimal_or_exponent) {
                 return error.InvalidBigIntSuffix;
             }
 
