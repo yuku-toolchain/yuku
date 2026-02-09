@@ -148,6 +148,10 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
 }
 
 pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error!?ast.NodeIndex {
+    if(parser.current_token.type.isNumericLiteral()) {
+        return literals.parseNumericLiteral(parser);
+    }
+
     return switch (parser.current_token.type) {
         .private_identifier => literals.parsePrivateIdentifier(parser),
         .string_literal => literals.parseStringLiteral(parser),
@@ -155,7 +159,6 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
         .null_literal => literals.parseNullLiteral(parser),
         .this => parseThisExpression(parser),
         .super => parseSuperExpression(parser),
-        .numeric_literal, .hex_literal, .octal_literal, .leading_zero_literal, .binary_literal => literals.parseNumericLiteral(parser),
         .bigint_literal => literals.parseBigIntLiteral(parser),
         .slash, .slash_assign => literals.parseRegExpLiteral(parser),
         .template_head => literals.parseTemplateLiteral(parser),
