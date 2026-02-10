@@ -1,13 +1,13 @@
 ---
-title: Yuku Parser
-description: Very fast & spec-compliant JavaScript/TypeScript parser in pure Zig.
+title: Yuku
+description: High-performance JavaScript/TypeScript toolchain in Zig 🦎
 ---
 
 <div align="center">
 
-<h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku/parser</h1>
+<h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku</h1>
 
-Very fast & spec-compliant JavaScript/TypeScript parser in pure Zig.
+A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
 
 <br />
 
