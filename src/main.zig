@@ -1,5 +1,5 @@
 const std = @import("std");
-const parser = @import("parser");
+const js = @import("js");
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
@@ -14,7 +14,7 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = parser.Lang.fromPath(file_path), .source_type = .script });
+    const tree = try js.parse(std.heap.page_allocator, contents, .{ .lang = js.Lang.fromPath(file_path), .source_type = .script });
 
     defer tree.deinit();
 
@@ -33,10 +33,10 @@ pub fn main(init: std.process.Init) !void {
 
     const mb_per_sec = (@as(f64, @floatFromInt(contents.len)) / 1_000_000.0) / (taken_ms / 1000.0);
 
-    const json = try parser.estree.toJSON(&tree, allocator, .{});
+    const json = try js.estree.toJSON(&tree, allocator, .{});
     defer allocator.free(json);
 
-    std.debug.print("{s}", .{json});
+    // std.debug.print("{s}", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics) |err| {

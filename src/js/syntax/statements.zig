@@ -102,7 +102,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .@"try" => parseTryStatement(parser),
         .debugger => parseDebuggerStatement(parser),
         .semicolon => parseEmptyStatement(parser),
-        else => parseExpressionStatementOrLabeledOrDirective(parser),
+        else => parseExpressionOrLabeledStatement(parser),
     };
 
     parser.context.in_single_statement_context = false;
@@ -110,7 +110,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     return statement;
 }
 
-fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.NodeIndex {
+fn parseExpressionOrLabeledStatement(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     const expression_span = parser.getSpan(expression);
     const expression_data = parser.getData(expression);
@@ -121,21 +121,6 @@ fn parseExpressionStatementOrLabeledOrDirective(parser: *Parser) Error!?ast.Node
     }
 
     const start = expression_span.start;
-
-    if (expression_data == .string_literal and parser.context.in_directive_prologue) {
-        const value_start = expression_data.string_literal.raw_start + 1;
-        const value_len: u16 = expression_data.string_literal.raw_len - 2;
-
-        return try parser.addNode(.{
-            .directive = .{
-                .expression = expression,
-                .value_start = value_start,
-                .value_len = value_len,
-            },
-        }, .{ .start = start, .end = try parser.eatSemicolon(expression_span.end) orelse return null });
-    } else if (parser.context.in_directive_prologue) {
-        parser.context.in_directive_prologue = false;
-    }
 
     return try parser.addNode(
         .{ .expression_statement = .{ .expression = expression } },

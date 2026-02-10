@@ -1,20 +1,20 @@
 ---
-title: Yuku
-description: High-performance JavaScript/TypeScript compiler in Zig 🦎
+title: Yuku Parser
+description: Very fast & spec-compliant JavaScript/TypeScript parser in pure Zig.
 ---
 
 <div align="center">
 
-<h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku</h1>
+<h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku/parser</h1>
 
-A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
+Very fast & spec-compliant JavaScript/TypeScript parser in pure Zig.
 
 <br />
 
 </div>
 
 :::note
-Yuku's JavaScript/JSX parser is already functional, well-tested, and production-ready. TypeScript support is still in development. Additionally, to facilitate clean public use of Yuku's parsers, a Visitor/Traverse API is on the way, featuring comprehensive scope information, symbol tables, and more.
+Yuku's JavaScript/JSX parser is already functional, well-tested. TypeScript support is still in development. Additionally, to facilitate clean public use of Yuku's parsers, a Visitor/Traverse API is on the way, featuring comprehensive scope information, symbol tables, and more.
 :::
 
 ## Roadmap

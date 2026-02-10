@@ -26,8 +26,6 @@ const ParserContext = struct {
     ///          ~~
     ///           ^ this is in a single statement context
     in_single_statement_context: bool = false,
-    /// tracks if we're still in the directive prologue of a function/script body.
-    in_directive_prologue: bool = true,
 };
 
 const ParserState = struct {
@@ -130,13 +128,16 @@ pub const Parser = struct {
         const statements_checkpoint = self.scratch_statements.begin();
         defer self.scratch_statements.reset(statements_checkpoint);
 
-        self.context.in_directive_prologue = true;
+        // var in_directive_prologue = true;
 
         while (!self.isAtBodyEnd(terminator)) {
             if (try statements.parseStatement(self, .{})) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
+
+                const data = self.getData(statement);
+
+                _ = data;
             } else {
-                self.context.in_directive_prologue = false;
                 try self.synchronize(terminator) orelse break;
             }
         }

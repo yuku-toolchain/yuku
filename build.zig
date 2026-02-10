@@ -10,13 +10,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const parser_module = b.addModule("parser", .{
-        .root_source_file = b.path("src/parser/root.zig"),
+    const js_module = b.addModule("js", .{
+        .root_source_file = b.path("src/js/root.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    parser_module.addImport("util", util_module);
+    js_module.addImport("util", util_module);
 
     const exe_module = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -24,7 +24,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe_module.addImport("parser", parser_module);
+    exe_module.addImport("js", js_module);
 
     const exe = b.addExecutable(.{
         .name = "yuku",
@@ -87,13 +87,13 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSmall,
     });
 
-    const wasm_parser_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/root.zig"),
+    const wasm_js_module = b.createModule(.{
+        .root_source_file = b.path("src/js/root.zig"),
         .target = wasm_target,
         .optimize = .ReleaseSmall,
     });
 
-    wasm_parser_module.addImport("util", wasm_util_module);
+    wasm_js_module.addImport("util", wasm_util_module);
 
     const wasm_module = b.createModule(.{
         .root_source_file = b.path("src/wasm.zig"),
@@ -101,7 +101,7 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseSmall,
     });
 
-    wasm_module.addImport("parser", wasm_parser_module);
+    wasm_module.addImport("js", wasm_js_module);
 
     const wasm_exe = b.addExecutable(.{
         .name = "yuku",

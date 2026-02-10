@@ -2,7 +2,7 @@ import Bun from 'bun'
 import { rm } from 'node:fs/promises'
 import path from 'path'
 
-const TEST_SUITE_REPO_URL = "https://github.com/arshad-yaseen/yuku-parser-test-suite"
+const TEST_SUITE_REPO_URL = "https://github.com/yuku-toolchain/parser-test-suite"
 const REMOVE_FILES = ["README.md", ".gitignore"]
 
 const shouldLoad = !(await Bun.file('test/suite').exists())
