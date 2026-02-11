@@ -19,8 +19,10 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: master
+      - name: Load files
+        run: bun load-files
       - name: Run profiler
         uses: CodSpeedHQ/action@v4
         with:
           mode: simulation
-          run: bun run profile
+          run: zig build --release=fast profile

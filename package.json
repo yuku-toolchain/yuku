@@ -8,7 +8,6 @@
     "publish:npm": "bumpp -r --commit 'npm %s' --push --tag --yes --release 'patch'",
     "format": "zig fmt **/*.zig",
     "test": "bun load-files && bun build:npm && bun test/run.ts",
-    "profile": "bun load-files && zig build --release=fast profile",
     "load-files": "bun profiler/load-parser-bench-files && bun test/load test/suite -b test262"
   },
   "devDependencies": {
