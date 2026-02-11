@@ -1,7 +1,12 @@
 .{
     .name = .yuku,
     .version = "0.0.0",
-    .dependencies = .{},
+    .dependencies = .{
+        .codspeed_zig = .{
+            .url = "git+https://github.com/arshad-yaseen/codspeed-zig.git#654b7abda4291432a40306017a698ff36d3fe765",
+            .hash = "codspeed_zig-0.0.1-cdqfthwFDQAE_mGVmuNzDDHx3zxoCyybCB-nOmDOnlcX",
+        },
+    },
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
     .minimum_zig_version = "0.16.0-dev.731+958faa703",
     .paths = .{

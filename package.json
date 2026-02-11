@@ -8,7 +8,8 @@
     "test": "bun load-test-suite -b test262 && bun build:npm && bun test/run.ts",
     "publish:npm": "bumpp -r --commit 'npm %s' --push --tag --yes --release 'patch'",
     "format": "zig fmt **/*.zig",
-    "load-test-suite": "bun test/load.ts test/suite"
+    "load-test-suite": "bun test/load.ts test/suite",
+    "profile": "bun profiler/load-parser-bench-files.ts && zig build profile"
   },
   "devDependencies": {
     "@types/bun": "^1.3.5",
