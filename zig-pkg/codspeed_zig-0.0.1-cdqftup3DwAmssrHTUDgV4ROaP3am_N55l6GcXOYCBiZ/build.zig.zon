@@ -1,0 +1,7 @@
+.{
+    .name = .codspeed_zig,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.16.0-dev.2490+fce7878a9",
+    .paths = .{""},
+    .fingerprint = 0x1aa32aa2b69fda71,
+}
