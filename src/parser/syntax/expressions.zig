@@ -404,7 +404,7 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: u32) Error!?ast.NodeIndex
     }
 
     // import.meta
-    if (parser.current_token.type != .identifier or !std.mem.eql(u8, parser.current_token.lexeme, "meta")) {
+    if (parser.current_token.type != .identifier or !std.mem.eql(u8, parser.getTokenText(parser.current_token), "meta")) {
         try parser.report(
             parser.current_token.span,
             "The only valid meta properties for 'import' are 'import.meta', 'import.source()', or 'import.defer()'",
@@ -425,7 +425,7 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: u32) Error!?ast.NodeIndex
 fn parseNewTarget(parser: *Parser, name: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '.'
 
-    if (!std.mem.eql(u8, parser.current_token.lexeme, "target")) {
+    if (!std.mem.eql(u8, parser.getTokenText(parser.current_token), "target")) {
         try parser.report(
             parser.current_token.span,
             "The only valid meta property for 'new' is 'new.target'",
@@ -617,22 +617,19 @@ fn parseSequenceExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex)
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
     try parser.scratch_a.append(parser.allocator(), left);
+    var last = left;
 
     while (parser.current_token.type == .comma) {
         try parser.advance() orelse return null; // consume ','
 
         const expr = try parseExpression(parser, precedence + 1, .{}) orelse return null;
         try parser.scratch_a.append(parser.allocator(), expr);
+        last = expr;
     }
-
-    const expressions = try parser.scratch_a.take(parser.allocator(), checkpoint);
-
-    const first_span = parser.getSpan(expressions[0]);
-    const last_span = parser.getSpan(expressions[expressions.len - 1]);
 
     return try parser.addNode(
         .{ .sequence_expression = .{ .expressions = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint) } },
-        .{ .start = first_span.start, .end = last_span.end },
+        .{ .start = parser.getSpan(left).start, .end = parser.getSpan(last).end },
     );
 }
 

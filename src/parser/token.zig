@@ -389,16 +389,22 @@ pub const Span = struct {
 pub const Token = struct {
     span: Span,
     type: TokenType,
-    lexeme: []const u8,
     has_line_terminator_before: bool,
 
     pub inline fn eof(pos: u32) Token {
         return Token{
-            .lexeme = "",
             .span = .{ .start = pos, .end = pos },
             .type = .eof,
             .has_line_terminator_before = false,
         };
+    }
+
+    pub inline fn len(self: Token) u32 {
+        return self.span.end - self.span.start;
+    }
+
+    pub inline fn text(self: Token, source: []const u8) []const u8 {
+        return source[self.span.start..self.span.end];
     }
 
     pub fn leftBp(self: *const Token) u5 {
@@ -445,3 +451,7 @@ pub const Precedence = struct {
     pub const Call: u8 = 17;
     pub const Grouping: u8 = 18;
 };
+
+test "Token layout stays compact" {
+    try @import("std").testing.expect(@sizeOf(Token) <= 16);
+}

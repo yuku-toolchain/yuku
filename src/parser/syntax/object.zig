@@ -110,7 +110,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         } else {
             // it's a key named "async"
             key = try parser.addNode(
-                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.lexeme.len) } },
+                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.len()) } },
                 async_token.span,
             );
         }
@@ -124,17 +124,17 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
     // check for get/set, only if no async/generator modifiers and no key yet
     if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
-        const lexeme = parser.current_token.lexeme;
+        const token_text = parser.getTokenText(parser.current_token);
 
-        if (std.mem.eql(u8, lexeme, "get") or std.mem.eql(u8, lexeme, "set")) {
+        if (std.mem.eql(u8, token_text, "get") or std.mem.eql(u8, token_text, "set")) {
             const get_set_token = parser.current_token;
             try parser.advance() orelse return null;
 
             if (isPropertyKeyStart(parser.current_token.type)) {
-                kind = if (std.mem.eql(u8, lexeme, "get")) .get else .set;
+                kind = if (std.mem.eql(u8, token_text, "get")) .get else .set;
             } else {
                 key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.lexeme.len) } },
+                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
                     get_set_token.span,
                 );
             }

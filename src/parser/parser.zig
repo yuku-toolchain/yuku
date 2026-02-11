@@ -229,6 +229,10 @@ pub const Parser = struct {
         return self.source[start..][0..len];
     }
 
+    pub inline fn getTokenText(self: *const Parser, tok: token.Token) []const u8 {
+        return tok.text(self.source);
+    }
+
     inline fn nextToken(self: *Parser) Error!?token.Token {
         return self.lexer.nextToken() catch |e| blk: {
             if (e == error.OutOfMemory) return error.OutOfMemory;
@@ -316,8 +320,9 @@ pub const Parser = struct {
         return tok.type == .eof or tok.has_line_terminator_before or tok.type == .right_brace;
     }
 
-    pub inline fn describeToken(_: *Parser, tok: token.Token) []const u8 {
-        return if (tok.type == .eof) "end of file" else tok.lexeme;
+    pub inline fn describeToken(self: *Parser, tok: token.Token) []const u8 {
+        if (tok.type == .eof) return "end of file";
+        return tok.type.toString() orelse tok.text(self.source);
     }
 
     pub const ReportOptions = struct {
@@ -421,10 +426,6 @@ const ScratchBuffer = struct {
         } else {
             try self.items.append(alloc, index);
         }
-    }
-
-    pub inline fn take(self: *ScratchBuffer, alloc: std.mem.Allocator, checkpoint: usize) Error![]const ast.NodeIndex {
-        return try alloc.dupe(ast.NodeIndex, self.items.items[checkpoint..self.items.items.len]);
     }
 
     pub inline fn reset(self: *ScratchBuffer, checkpoint: usize) void {

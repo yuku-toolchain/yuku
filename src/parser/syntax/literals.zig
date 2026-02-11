@@ -12,7 +12,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{
         .string_literal = .{
             .raw_start = token.span.start,
-            .raw_len = @intCast(token.lexeme.len),
+            .raw_len = @intCast(token.len()),
         },
     }, token.span);
 }
@@ -40,7 +40,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
         return try parser.addNode(.{
             .bigint_literal = .{
                 .raw_start = token.span.start,
-                .raw_len = @intCast(token.lexeme.len),
+                .raw_len = @intCast(token.len()),
             },
         }, token.span);
     }
@@ -48,7 +48,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{
         .numeric_literal = .{
             .raw_start = token.span.start,
-            .raw_len = @intCast(token.lexeme.len),
+            .raw_len = @intCast(token.len()),
             .kind = ast.NumericLiteral.Kind.fromToken(token.type),
         },
     }, token.span);
@@ -62,12 +62,7 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     };
 
-    try parser.advanceWithRescannedToken(parser.lexer.createToken(
-        .regex_literal,
-        parser.source[regex.span.start..regex.span.end],
-        regex.span.start,
-        regex.span.end,
-    )) orelse return null;
+    try parser.advanceWithRescannedToken(parser.lexer.createToken(.regex_literal, regex.span.start, regex.span.end)) orelse return null;
 
     return try parser.addNode(.{
         .regexp_literal = .{
@@ -194,7 +189,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{
         .identifier_reference = .{
             .name_start = tok.span.start,
-            .name_len = @intCast(tok.lexeme.len),
+            .name_len = @intCast(tok.len()),
         },
     }, tok.span);
 }
@@ -205,7 +200,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{
         .private_identifier = .{
             .name_start = token.span.start,
-            .name_len = @intCast(token.lexeme.len),
+            .name_len = @intCast(token.len()),
         },
     }, token.span);
 }
@@ -216,7 +211,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{
         .identifier_name = .{
             .name_start = tok.span.start,
-            .name_len = @intCast(tok.lexeme.len),
+            .name_len = @intCast(tok.len()),
         },
     }, tok.span);
 }
@@ -230,7 +225,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.addNode(.{
         .label_identifier = .{
             .name_start = current.span.start,
-            .name_len = @intCast(current.lexeme.len),
+            .name_len = @intCast(current.len()),
         },
     }, current.span);
 }
@@ -251,7 +246,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         try parser.reportFmt(
             token.span,
             "'{s}' is a reserved word and cannot be used as {s}",
-            .{ token.lexeme, as_what },
+            .{ parser.getTokenText(token), as_what },
             .{},
         );
 

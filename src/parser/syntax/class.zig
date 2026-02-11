@@ -160,7 +160,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.type == .left_paren or !isClassElementKeyStart(parser.current_token.type)) {
             key = try parser.addNode(
-                .{ .identifier_name = .{ .name_start = static_token.span.start, .name_len = @intCast(static_token.lexeme.len) } },
+                .{ .identifier_name = .{ .name_start = static_token.span.start, .name_len = @intCast(static_token.len()) } },
                 static_token.span,
             );
         } else {
@@ -178,7 +178,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             key = try parser.addNode(
-                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.lexeme.len) } },
+                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.len()) } },
                 async_token.span,
             );
         }
@@ -192,9 +192,9 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     // check for get/set (only if no key yet and not async/generator)
     if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
-        const lexeme = parser.current_token.lexeme;
-        const is_get = std.mem.eql(u8, lexeme, "get");
-        const is_set = std.mem.eql(u8, lexeme, "set");
+        const token_text = parser.getTokenText(parser.current_token);
+        const is_get = std.mem.eql(u8, token_text, "get");
+        const is_set = std.mem.eql(u8, token_text, "set");
 
         if (is_get or is_set) {
             const get_set_token = parser.current_token;
@@ -205,7 +205,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 kind = if (is_get) .get else .set;
             } else {
                 key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.lexeme.len) } },
+                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
                     get_set_token.span,
                 );
             }
@@ -214,8 +214,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     // check for accessor field (only if no key yet and not async/generator)
     if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
-        const lexeme = parser.current_token.lexeme;
-        if (std.mem.eql(u8, lexeme, "accessor")) {
+        if (std.mem.eql(u8, parser.getTokenText(parser.current_token), "accessor")) {
             const accessor_token = parser.current_token;
             const next = try parser.lookAhead() orelse return null;
 
@@ -224,7 +223,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 try parser.advance() orelse return null; // consume 'accessor'
             } else {
                 key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = accessor_token.span.start, .name_len = @intCast(accessor_token.lexeme.len) } },
+                    .{ .identifier_name = .{ .name_start = accessor_token.span.start, .name_len = @intCast(accessor_token.len()) } },
                     accessor_token.span,
                 );
                 try parser.advance() orelse return null; // consume 'accessor' as key
@@ -332,7 +331,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         const tok = parser.current_token;
         try parser.advance() orelse return null;
         const key = try parser.addNode(
-            .{ .identifier_name = .{ .name_start = tok.span.start, .name_len = @intCast(tok.lexeme.len) } },
+            .{ .identifier_name = .{ .name_start = tok.span.start, .name_len = @intCast(tok.len()) } },
             tok.span,
         );
         return .{ .key = key, .computed = false };

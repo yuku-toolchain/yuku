@@ -431,6 +431,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         end = parser.getSpan(source).end;
     } else {
         const specs = parser.getExtra(specifiers);
+        const local_token_types = parser.getExtra(result.local_token_types);
 
         for (specs, 0..) |spec_idx, i| {
             const specifier = parser.getData(spec_idx).export_specifier;
@@ -443,7 +444,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
                 });
             }
 
-            const local_token_type: token.TokenType = @enumFromInt(result.local_token_types[i]);
+            const local_token_type: token.TokenType = @enumFromInt(local_token_types[i]);
 
             if (local_token_type.isReserved()) {
                 const local_name = parser.getSourceText(local_data.identifier_name.name_start, local_data.identifier_name.name_len);
@@ -512,7 +513,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
 
 const ExportSpecifiersResult = struct {
     specifiers: ast.IndexRange,
-    local_token_types: []const u32,
+    local_token_types: ast.IndexRange,
 };
 
 /// export specifiers: { foo, bar as baz }
@@ -544,7 +545,7 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
 
     return .{
         .specifiers = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
-        .local_token_types = try parser.scratch_b.take(parser.allocator(), token_checkpoint),
+        .local_token_types = try parser.addExtraFromScratch(&parser.scratch_b, token_checkpoint),
     };
 }
 

@@ -218,11 +218,11 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         // scan text content until '<' or '{'
         const text_token = parser.lexer.reScanJsxText(scan_from);
 
-        if (text_token.lexeme.len > 0) {
+        if (text_token.len() > 0) {
             const text_node = try parser.addNode(.{
                 .jsx_text = .{
                     .raw_start = text_token.span.start,
-                    .raw_len = @intCast(text_token.lexeme.len),
+                    .raw_len = @intCast(text_token.len()),
                 },
             }, text_token.span);
 
@@ -304,7 +304,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
     var name = try parser.addNode(.{
         .jsx_identifier = .{
             .name_start = start,
-            .name_len = @intCast(parser.current_token.lexeme.len),
+            .name_len = @intCast(parser.current_token.len()),
         },
     }, parser.current_token.span);
 
@@ -327,7 +327,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
         const local = try parser.addNode(.{
             .jsx_identifier = .{
                 .name_start = parser.current_token.span.start,
-                .name_len = @intCast(parser.current_token.lexeme.len),
+                .name_len = @intCast(parser.current_token.len()),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;
@@ -479,7 +479,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     var name = try parser.addNode(.{
         .jsx_identifier = .{
             .name_start = start,
-            .name_len = @intCast(parser.current_token.lexeme.len),
+            .name_len = @intCast(parser.current_token.len()),
         },
     }, parser.current_token.span);
 
@@ -504,7 +504,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         const property = try parser.addNode(.{
             .jsx_identifier = .{
                 .name_start = parser.current_token.span.start,
-                .name_len = @intCast(parser.current_token.lexeme.len),
+                .name_len = @intCast(parser.current_token.len()),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;
@@ -533,7 +533,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         const local = try parser.addNode(.{
             .jsx_identifier = .{
                 .name_start = parser.current_token.span.start,
-                .name_len = @intCast(parser.current_token.lexeme.len),
+                .name_len = @intCast(parser.current_token.len()),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;

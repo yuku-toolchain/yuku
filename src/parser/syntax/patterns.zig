@@ -38,7 +38,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
         .{
             .binding_identifier = .{
                 .name_start = current.span.start,
-                .name_len = @intCast(current.lexeme.len),
+                .name_len = @intCast(current.len()),
             },
         },
         current.span,

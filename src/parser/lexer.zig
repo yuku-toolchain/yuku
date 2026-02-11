@@ -83,7 +83,7 @@ pub const Lexer = struct {
         try self.skipWsAndComments();
 
         if (self.cursor >= self.source.len) {
-            return self.createToken(.eof, "", self.cursor, self.cursor);
+            return self.createToken(.eof, self.cursor, self.cursor);
         }
 
         const current_char = self.source[self.cursor];
@@ -119,12 +119,12 @@ pub const Lexer = struct {
             else => unreachable,
         };
 
-        return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
+        return self.createToken(token_type, start, self.cursor);
     }
 
     inline fn makePuncToken(self: *Lexer, len: u32, token_type: token.TokenType, start: u32) token.Token {
         self.cursor += len;
-        return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
+        return self.createToken(token_type, start, self.cursor);
     }
 
     fn scanPunctuation(self: *Lexer) LexicalError!token.Token {
@@ -277,12 +277,12 @@ pub const Lexer = struct {
             if (c == '`') {
                 self.cursor += 1;
                 const end = self.cursor;
-                return self.createToken(.template_tail, self.source[start..end], start, end);
+                return self.createToken(.template_tail, start, end);
             }
             if (c == '$' and self.peek(1) == '{') {
                 self.cursor += 2;
                 const end = self.cursor;
-                return self.createToken(.template_middle, self.source[start..end], start, end);
+                return self.createToken(.template_middle, start, end);
             }
             self.cursor += 1;
         }
@@ -305,13 +305,13 @@ pub const Lexer = struct {
             }
         }
 
-        return self.createToken(.jsx_text, self.source[start..self.cursor], start, self.cursor);
+        return self.createToken(.jsx_text, start, self.cursor);
     }
 
     /// re-scans a slash token as a regex literal
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
-    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8, lexeme: []const u8 } {
+    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8 } {
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
@@ -386,7 +386,7 @@ pub const Lexer = struct {
                 const pattern = self.source[start + 1 .. closing_delimeter_pos - 1];
                 const flags = self.source[closing_delimeter_pos..end];
 
-                return .{ .span = .{ .start = start, .end = end }, .lexeme = self.source[start..end], .pattern = pattern, .flags = flags };
+                return .{ .span = .{ .start = start, .end = end }, .pattern = pattern, .flags = flags };
             }
 
             self.cursor += 1;
@@ -411,7 +411,7 @@ pub const Lexer = struct {
 
             if (c == quote) {
                 self.cursor += 1;
-                return self.createToken(.string_literal, self.source[start..self.cursor], start, self.cursor);
+                return self.createToken(.string_literal, start, self.cursor);
             }
 
             // in jsx tag mode, strings can contain newlines (for multi-line attribute values)
@@ -440,13 +440,13 @@ pub const Lexer = struct {
             if (c == '`') {
                 self.cursor += 1;
                 const end = self.cursor;
-                return self.createToken(.no_substitution_template, self.source[start..end], start, end);
+                return self.createToken(.no_substitution_template, start, end);
             }
 
             if (c == '$' and self.peek(1) == '{') {
                 self.cursor += 2;
                 const end = self.cursor;
-                return self.createToken(.template_head, self.source[start..end], start, end);
+                return self.createToken(.template_head, start, end);
             }
 
             self.cursor += 1;
@@ -569,7 +569,7 @@ pub const Lexer = struct {
     fn handleRightBrace(self: *Lexer) token.Token {
         const start = self.cursor;
         self.cursor += 1;
-        return self.createToken(.right_brace, self.source[start..self.cursor], start, self.cursor);
+        return self.createToken(.right_brace, start, self.cursor);
     }
 
     fn scanDot(self: *Lexer) LexicalError!token.Token {
@@ -668,7 +668,7 @@ pub const Lexer = struct {
 
         const token_type: token.TokenType = if (is_jsx_tag) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
 
-        return self.createToken(token_type, lexeme, start, self.cursor);
+        return self.createToken(token_type, start, self.cursor);
     }
 
     fn getKeywordType(_: *Lexer, lexeme: []const u8) token.TokenType {
@@ -922,7 +922,7 @@ pub const Lexer = struct {
             if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
         }
 
-        return self.createToken(token_type, self.source[start..self.cursor], start, self.cursor);
+        return self.createToken(token_type, start, self.cursor);
     }
 
     inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
@@ -1176,10 +1176,9 @@ pub const Lexer = struct {
         }) catch return error.OutOfMemory;
     }
 
-    pub inline fn createToken(self: *Lexer, token_type: token.TokenType, lexeme: []const u8, start: u32, end: u32) token.Token {
+    pub inline fn createToken(self: *Lexer, token_type: token.TokenType, start: u32, end: u32) token.Token {
         const tok = token.Token{
             .type = token_type,
-            .lexeme = lexeme,
             .span = .{ .start = start, .end = end },
             .has_line_terminator_before = self.state.has_line_terminator_before,
         };
