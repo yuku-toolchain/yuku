@@ -8,3 +8,4 @@ jsx-roadmap.md
 **/dist
 .astro/
 test/suite
+profiler/files

@@ -18,7 +18,7 @@ pub fn main() !void {
         const BenchFn = struct {
             fn run() void {
                 const contents = @embedFile(file.path);
-                const tree = parser.parse(contents, .{}) catch unreachable;
+                const tree = parser.parse(std.heap.page_allocator, contents, .{}) catch unreachable;
                 defer tree.deinit();
             }
         };

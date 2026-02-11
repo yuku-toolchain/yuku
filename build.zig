@@ -39,7 +39,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe);
 
     const profiler_module = b.createModule(.{
-        .root_source_file = b.path("src/profiler/main.zig"),
+        .root_source_file = b.path("profiler/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -48,7 +48,7 @@ pub fn build(b: *std.Build) void {
     profiler_module.addImport("codspeed", codspeed_dep.module("codspeed"));
 
     const profiler_exe = b.addExecutable(.{
-        .name = "profiler",
+        .name = "profile",
         .root_module = profiler_module,
     });
 
