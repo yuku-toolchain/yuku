@@ -21,8 +21,10 @@ jobs:
           version: master
       - name: Load files
         run: bun load-files
+      - name: Build profiler
+        run: zig build --release=fast
       - name: Run profiler
         uses: CodSpeedHQ/action@v4
         with:
           mode: simulation
-          run: zig build --release=fast profile
+          run: ./zig-out/bin/profiler
