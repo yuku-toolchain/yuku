@@ -7,7 +7,7 @@
     "body": [
       {
         "type": "VariableDeclaration",
-        "start": 6,
+        "start": 0,
         "end": 27,
         "kind": "await using",
         "declarations": [
