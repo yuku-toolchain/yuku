@@ -46,8 +46,9 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         const next = try parser.lookAhead() orelse return null;
 
         if (next.type == .using) {
-            try parser.advance() orelse return null;
-            return variables.parseVariableDeclaration(parser, true);
+            const start = parser.current_token.span.start;
+            try parser.advance() orelse return null; // consume 'await'
+            return variables.parseVariableDeclaration(parser, true, start);
         }
     }
 
@@ -83,13 +84,13 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
 
             if (!is_identifier) {
                 // parse as variable declaration: let x = 5;
-                return variables.parseVariableDeclaration(parser, false);
+                return variables.parseVariableDeclaration(parser, false, null);
             }
 
             // otherwise, fall through to parse 'let' as an identifier in an expression statement.
         } else {
             // other variable declaration keywords (var, const, using) are always keywords.
-            return variables.parseVariableDeclaration(parser, false);
+            return variables.parseVariableDeclaration(parser, false, null);
         }
     }
 

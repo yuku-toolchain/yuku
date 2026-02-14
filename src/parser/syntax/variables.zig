@@ -6,8 +6,8 @@ const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 const std = @import("std");
 
-pub fn parseVariableDeclaration(parser: *Parser, await_using: bool) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
+pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_param: ?u32) Error!?ast.NodeIndex {
+    const start = start_from_param orelse parser.current_token.span.start;
     const kind = try parseVariableKind(parser, await_using) orelse return null;
 
     const checkpoint = parser.scratch_a.begin();
