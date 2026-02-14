@@ -122,24 +122,24 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
 fn parseExpressionOrLabeledStatement(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     const expression_data = parser.getData(expression);
-    const expression_span = parser.getSpan(expression);
 
     // labeled statement: identifier ':'
     if (expression_data == .identifier_reference and parser.current_token.type == .colon) {
         return parseLabeledStatement(parser, expression);
     }
 
-    return parseExpressionStatement(parser, expression, expression_span);
+    return parseExpressionStatement(parser, expression);
 }
 
 fn parseExpressionStatement(
     parser: *Parser,
     expression: ast.NodeIndex,
-    expression_span: ast.Span,
 ) Error!?ast.NodeIndex {
+    const span = parser.getSpan(expression);
+
     return try parser.addNode(
         .{ .expression_statement = .{ .expression = expression } },
-        .{ .start = expression_span.start, .end = try parser.eatSemicolon(expression_span.end) orelse return null },
+        .{ .start = span.start, .end = try parser.eatSemicolon(span.end) orelse return null },
     );
 }
 
