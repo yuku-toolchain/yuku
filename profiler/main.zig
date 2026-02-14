@@ -5,9 +5,9 @@ const codspeed = @import("codspeed");
 // these files loaded at the profile time
 // check load-parser-bench-files.ts script in profiler dir
 const parser_bench_files = .{
-    .{ .name = "typescript", .path = "files/typescript.js" },
-    .{ .name = "three", .path = "files/three.js" },
-    .{ .name = "antd", .path = "files/antd.js" },
+    .{ .name = "typescript.js", .path = "files/typescript.js" },
+    .{ .name = "three.js", .path = "files/three.js" },
+    .{ .name = "antd.js", .path = "files/antd.js" },
 };
 
 pub fn main() !void {
@@ -23,7 +23,7 @@ pub fn main() !void {
             }
         };
 
-        const bench_name = "parser/" ++ file.name;
+        const bench_name = "parser[" ++ file.name ++ ']';
         try session.bench(bench_name, BenchFn.run);
     }
 }

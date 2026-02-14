@@ -1,15 +1,19 @@
 {
-  "name": "yuku",
-  "description": "Yuku, the JavaScript/TypeScript parser",
+  "name": "yuku-parser-wasm",
+  "description": "WebAssembly module for Yuku parser, the JavaScript/TypeScript parser",
   "version": "0.2.12",
   "type": "module",
   "files": [
     "dist"
   ],
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -24,7 +28,7 @@
     }
   ],
   "scripts": {
-    "build": "bunup --exports"
+    "build": "bunup --exports --target browser --format iife,esm && cp ../../zig-out/bin/yuku.wasm dist"
   },
   "peerDependencies": {
     "typescript": ">=4.5.0"
