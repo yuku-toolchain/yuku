@@ -74,6 +74,15 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
 
+    if ((kind == .using or kind == .await_using) and patterns.isDestructuringPattern(parser, id)) {
+        try parser.report(
+            parser.getSpan(id),
+            "Using declarations may not have binding patterns",
+            .{},
+        );
+        return null;
+    }
+
     var init: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(id).end;
 

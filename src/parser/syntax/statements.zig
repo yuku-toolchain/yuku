@@ -113,11 +113,13 @@ fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
+/// `using` declaration, or fall through to expression statement.
 fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const next = try parser.lookAhead() orelse return null;
 
     return switch(next.type) {
-        .dot, .left_paren, .left_bracket, .left_brace => parseExpressionOrLabeledStatementOrDirective(parser),
+        // `using.`, `using(`, `using[` are expression forms where `using` is an identifier.
+        .dot, .left_paren, .left_bracket => parseExpressionOrLabeledStatementOrDirective(parser),
         else => variables.parseVariableDeclaration(parser, false, null)
     };
 }

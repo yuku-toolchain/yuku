@@ -1,1 +1,1 @@
-using[x] = null;
+await using {x} = x
