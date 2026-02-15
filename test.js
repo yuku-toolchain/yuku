@@ -1,1 +1,3 @@
-await using {x} = x
+for(using [cool] = x;;) {
+
+}

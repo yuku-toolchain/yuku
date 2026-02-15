@@ -15,6 +15,8 @@ const grammar = @import("../grammar.zig");
 const modules = @import("modules.zig");
 
 const ParseStatementOpts = struct {
+    /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
+    /// where lexical declarations (`let`, `const`) are not allowed without a block.
     can_be_single_statement_context: bool = false,
 };
 
@@ -504,8 +506,13 @@ fn parseForLoopVariableKindOrNull(parser: *Parser) Error!?ast.VariableKind {
     switch (token_type) {
         .using => {
             const next = try parser.lookAhead() orelse return null;
+
             // 'using' is an identifier in 'for (using of/in ...)' unless it's a declaration.
             if (next.type == .of or next.type == .in) return null;
+
+            // 'using.', 'using(', 'using[' are expression forms where 'using' is an identifier.
+            if (next.type == .dot or next.type == .left_paren or next.type == .left_bracket) return null;
+
             try parser.advance() orelse return null;
             return .using;
         },
