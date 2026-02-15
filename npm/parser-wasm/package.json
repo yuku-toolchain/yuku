@@ -30,6 +30,9 @@
   "scripts": {
     "build": "bunup --exports --target browser --format iife,esm && cp ../../zig-out/bin/yuku.wasm dist"
   },
+  "dependencies": {
+    "yuku-shared": "workspace:*"
+  },
   "peerDependencies": {
     "typescript": ">=4.5.0"
   },
@@ -41,7 +44,7 @@
   "author": "Arshad Yaseen <arshadpyaseen@gmail.com> (https://arshad.fyi)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arshad-yaseen/yuku.git"
+    "url": "git+https://github.com/yuku-toolchain/yuku.git"
   },
   "devDependencies": {
     "bunup": "^0.16.22"

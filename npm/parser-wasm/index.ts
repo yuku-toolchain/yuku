@@ -1,3 +1,5 @@
+import { parseYukuForeignAstJson } from "yuku-shared"
+
 export enum SourceType {
   Script = 0,
   Module = 1,
@@ -16,17 +18,8 @@ export interface ParseOptions {
   lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts';
 }
 
-interface YukuNode {
-  type: string;
-  [key: string]: unknown;
-}
-
-// we will expand it later
-type YukuAST = {
-  program: YukuNode[];
-  errors: Record<string, unknown>[];
-  comments: Record<string, unknown>[];
-};
+// we will expand this later
+type YukuAST = Record<string, unknown>
 
 interface WasmExports {
   alloc: (size: number) => number;
@@ -99,7 +92,7 @@ function parseInternal(
 
       const jsonStr = decoder.decode(jsonBytes);
 
-      return JSON.parse(jsonStr) as YukuAST;
+      return parseYukuForeignAstJson<YukuAST>(jsonStr);
     } finally {
       wasm.free(resultPtr, jsonLen);
     }

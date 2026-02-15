@@ -11,6 +11,7 @@
         "fast-deep-equal": "^3.1.3",
         "jest-diff": "^30.2.0",
         "typescript": "^5.9.3",
+        "yuku-shared": "workspace:*",
       },
     },
     "docs": {
@@ -37,6 +38,22 @@
     },
     "npm/parser-wasm": {
       "name": "yuku-parser-wasm",
+      "version": "0.2.12",
+      "dependencies": {
+        "yuku-shared": "workspace:*",
+      },
+      "devDependencies": {
+        "bunup": "^0.16.22",
+      },
+      "peerDependencies": {
+        "typescript": ">=4.5.0",
+      },
+      "optionalPeers": [
+        "typescript",
+      ],
+    },
+    "npm/shared": {
+      "name": "yuku-shared",
       "version": "0.2.12",
       "devDependencies": {
         "bunup": "^0.16.22",
@@ -1137,6 +1154,8 @@
     "yuku-parser": ["yuku-parser@workspace:npm/parser"],
 
     "yuku-parser-wasm": ["yuku-parser-wasm@workspace:npm/parser-wasm"],
+
+    "yuku-shared": ["yuku-shared@workspace:npm/shared"],
 
     "zlye": ["zlye@0.4.4", "", { "dependencies": { "picocolors": "^1.1.1" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"] }, "sha512-fwpeC841X3ElOLYRMKXbwX29pitNrsm6nRNvEhDMrRXDl3BhR2i03Bkr0GNrpyYgZJuEzUsBylXAYzgGPXXOCQ=="],
 

@@ -1,3 +1,1 @@
-for(using [cool] = x;;) {
-
-}
+var r = /./;

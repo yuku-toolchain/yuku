@@ -628,10 +628,13 @@ pub const Serializer = struct {
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
         const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
+        self.scratch.clearRetainingCapacity();
+        try self.scratch.appendSlice(self.allocator, "(BigInt) ");
+        try self.scratch.appendSlice(self.allocator, raw);
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
-        try self.fieldNull("value");
+        try self.fieldString("value", self.scratch.items);
         try self.fieldString("raw", raw);
         try self.fieldString("bigint", raw[0 .. raw.len - 1]);
         try self.endObject();
@@ -668,20 +671,35 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldType("Literal");
         try self.fieldSpan(span);
-        try self.fieldNull("value");
+        try self.field("value");
+        try self.writeTaggedRegExpLiteralValue(pattern, flags);
         try self.field("raw");
-        try self.writeByte('"');
-        try self.writeByte('/');
-        try self.writeJsonEscaped(pattern);
-        try self.writeByte('/');
-        try self.write(flags);
-        try self.writeByte('"');
+        try self.writeRegExpLiteralRaw(pattern, flags);
         try self.field("regex");
         try self.beginObject();
         try self.fieldString("pattern", pattern);
         try self.fieldString("flags", self.scratch.items);
         try self.endObject();
         try self.endObject();
+    }
+
+    fn writeRegExpLiteralRaw(self: *Self, pattern: []const u8, flags: []const u8) !void {
+        try self.writeByte('"');
+        try self.writeByte('/');
+        try self.writeJsonEscaped(pattern);
+        try self.writeByte('/');
+        try self.write(flags);
+        try self.writeByte('"');
+    }
+
+    fn writeTaggedRegExpLiteralValue(self: *Self, pattern: []const u8, flags: []const u8) !void {
+        try self.writeByte('"');
+        try self.write("(RegExp) ");
+        try self.writeByte('/');
+        try self.writeJsonEscaped(pattern);
+        try self.writeByte('/');
+        try self.write(flags);
+        try self.writeByte('"');
     }
 
     fn writeIdentifier(self: *Self, data: anytype, span: ast.Span) !void {

@@ -5,7 +5,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'High-performance JavaScript/TypeScript compiler in Zig 🦎',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/arshad-yaseen/yuku' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/yuku-toolchain/yuku' }],
 			customCss: ["./src/styles/index.css"],
 			sidebar: [
 			{ label: 'Introduction', slug: '' }

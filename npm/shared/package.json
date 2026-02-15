@@ -1,15 +1,19 @@
 {
-  "name": "yuku-parser",
-  "description": "Yuku, the JavaScript/TypeScript parser",
+  "name": "yuku-shared",
+  "description": "Shared utils for Yuku toolchain",
   "version": "0.2.12",
   "type": "module",
   "files": [
     "dist"
   ],
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./package.json": "./package.json"
   },

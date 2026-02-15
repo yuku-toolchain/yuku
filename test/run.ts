@@ -6,6 +6,7 @@ import equal from "fast-deep-equal"
 import { diff } from "jest-diff"
 import { basename, dirname, join } from "path"
 import { mkdir } from "fs/promises"
+import { parseYukuForeignAstJson, stringifyYukuForeignAstJson } from "yuku-shared"
 
 await preload()
 
@@ -132,25 +133,28 @@ const runTest = async (
 
       if (!snapshotExists) {
         await mkdir(snapshotsDir, { recursive: true })
-        await Bun.write(snapshotFile, JSON.stringify(parsed, null, 2))
+        await Bun.write(snapshotFile, stringifyYukuForeignAstJson(parsed))
         result.passed++
         return
       }
 
-      const snapshot = await Bun.file(snapshotFile).json()
+      const snapshot = parseYukuForeignAstJson(await Bun.file(snapshotFile).text())
 
       result.astComparisons++
 
       if (!equal(parsed, snapshot)) {
         if (updateSnapshots) {
-          await Bun.write(snapshotFile, JSON.stringify(parsed, null, 2))
+          await Bun.write(snapshotFile, stringifyYukuForeignAstJson(parsed))
           result.passed++
           return
         }
+
         const difference = diff(snapshot, parsed, { contextLines: 2 })
+
         console.log(`\nx ${file}\n${difference}\n`)
         result.failures.push(`${file} (AST mismatch)`)
         result.astMismatches++
+
         return
       }
 
