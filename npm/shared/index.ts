@@ -1,6 +1,6 @@
 const BIG_INT_PREFIX = "(BigInt) ";
 const REGEXP_PREFIX = "(RegExp) ";
-const REGEXP_LITERAL = /^\/(.+)\/([gimsuy]*)$/;
+const REGEXP_LITERAL = /^\/(.+)\/([dgimsuyv]*)$/;
 
 /**
  * Deserializes AST JSON that Yuku passes from Zig (via estree.toJSON) to JS.
@@ -28,8 +28,14 @@ export function deserializeAstJson<T = unknown>(jsonString: string): T {
       const match = value.slice(REGEXP_PREFIX.length).match(REGEXP_LITERAL);
 
       if (match) {
-        return new RegExp(match[1]!, match[2]);
+        try {
+          return new RegExp(match[1]!, match[2]);
+        } catch {
+          return null;
+        }
       }
+
+      return null;
     }
 
     return value;
