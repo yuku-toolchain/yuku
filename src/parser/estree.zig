@@ -642,7 +642,12 @@ pub const Serializer = struct {
         try self.fieldSpan(span);
         try self.fieldString("value", self.scratch.items);
         try self.fieldString("raw", raw);
-        try self.fieldString("bigint", raw[0 .. raw.len - 1]);
+        try self.field("bigint");
+        self.scratch.clearRetainingCapacity();
+        for (raw[0 .. raw.len - 1]) |c| {
+            if (c != '_') try self.scratch.append(self.allocator, c);
+        }
+        try self.writeString(self.scratch.items);
         try self.endObject();
     }
 

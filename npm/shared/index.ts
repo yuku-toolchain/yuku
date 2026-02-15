@@ -11,6 +11,11 @@ const REGEXP_LITERAL = /^\/(.+)\/([gimsuy]*)$/;
  */
 export function deserializeAstJson<T = unknown>(jsonString: string): T {
   return JSON.parse(jsonString, (_, value) => {
+    if (typeof value === "object" && value !== null && typeof value.value === "bigint") {
+      value.bigint = value.value.toString();
+      return value;
+    }
+
     if (typeof value !== "string") {
       return value;
     }
