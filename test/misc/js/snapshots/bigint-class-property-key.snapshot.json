@@ -1,1 +1,117 @@
-{"program":{"type":"Program","start":0,"end":76,"sourceType":"script","hashbang":null,"body":[{"type":"ClassDeclaration","start":0,"end":75,"decorators":[],"id":{"type":"Identifier","start":6,"end":14,"name":"_MyClass"},"superClass":null,"body":{"type":"ClassBody","start":15,"end":75,"body":[{"type":"PropertyDefinition","start":19,"end":48,"decorators":[],"key":{"type":"Literal","start":19,"end":23,"value":"(BigInt) 100n","raw":"100n","bigint":"100"},"value":{"type":"AssignmentExpression","start":26,"end":48,"operator":"=","left":{"type":"MemberExpression","start":26,"end":42,"object":{"type":"Literal","start":26,"end":33,"value":"value","raw":"\"value\""},"property":{"type":"Literal","start":37,"end":41,"value":"(BigInt) 200n","raw":"200n","bigint":"200"},"computed":true,"optional":false},"right":{"type":"Literal","start":45,"end":48,"value":200,"raw":"200"}},"computed":false,"static":false},{"type":"MethodDefinition","start":52,"end":73,"decorators":[],"key":{"type":"Literal","start":59,"end":64,"value":"(BigInt) 1000n","raw":"1000n","bigint":"1000"},"value":{"type":"FunctionExpression","start":64,"end":73,"id":null,"generator":false,"async":false,"params":[],"body":{"type":"BlockStatement","start":67,"end":73,"body":[]},"expression":false},"kind":"method","computed":false,"static":true}]}}]},"comments":[],"errors":[]}
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 76,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 75,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 6,
+          "end": 14,
+          "name": "_MyClass"
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 15,
+          "end": 75,
+          "body": [
+            {
+              "type": "PropertyDefinition",
+              "start": 19,
+              "end": 48,
+              "decorators": [],
+              "key": {
+                "type": "Literal",
+                "start": 19,
+                "end": 23,
+                "value": "(BigInt) 100n",
+                "raw": "100n",
+                "bigint": "100"
+              },
+              "value": {
+                "type": "AssignmentExpression",
+                "start": 26,
+                "end": 48,
+                "operator": "=",
+                "left": {
+                  "type": "MemberExpression",
+                  "start": 26,
+                  "end": 42,
+                  "object": {
+                    "type": "Literal",
+                    "start": 26,
+                    "end": 33,
+                    "value": "value",
+                    "raw": "\"value\""
+                  },
+                  "property": {
+                    "type": "Literal",
+                    "start": 37,
+                    "end": 41,
+                    "value": "(BigInt) 200n",
+                    "raw": "200n",
+                    "bigint": "200"
+                  },
+                  "computed": true,
+                  "optional": false
+                },
+                "right": {
+                  "type": "Literal",
+                  "start": 45,
+                  "end": 48,
+                  "value": 200,
+                  "raw": "200"
+                }
+              },
+              "computed": false,
+              "static": false
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 52,
+              "end": 73,
+              "decorators": [],
+              "key": {
+                "type": "Literal",
+                "start": 59,
+                "end": 64,
+                "value": "(BigInt) 1000n",
+                "raw": "1000n",
+                "bigint": "1000"
+              },
+              "value": {
+                "type": "FunctionExpression",
+                "start": 64,
+                "end": 73,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 67,
+                  "end": 73,
+                  "body": []
+                },
+                "expression": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

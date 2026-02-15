@@ -19,7 +19,7 @@ export interface ParseOptions {
 }
 
 // we will expand this later
-type YukuAST = Record<string, unknown>
+type YukuAST = Record<string, any>
 
 interface WasmExports {
   alloc: (size: number) => number;

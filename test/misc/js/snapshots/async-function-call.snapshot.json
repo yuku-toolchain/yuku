@@ -1,1 +1,45 @@
-{"program":{"type":"Program","start":0,"end":25,"sourceType":"script","hashbang":null,"body":[{"type":"VariableDeclaration","start":0,"end":24,"kind":"const","declarations":[{"type":"VariableDeclarator","start":6,"end":24,"id":{"type":"Identifier","start":6,"end":14,"name":"testCall"},"init":{"type":"CallExpression","start":17,"end":24,"callee":{"type":"Identifier","start":17,"end":22,"name":"async"},"arguments":[],"optional":false}}]}]},"comments":[],"errors":[]}
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 24,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 24,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 14,
+              "name": "testCall"
+            },
+            "init": {
+              "type": "CallExpression",
+              "start": 17,
+              "end": 24,
+              "callee": {
+                "type": "Identifier",
+                "start": 17,
+                "end": 22,
+                "name": "async"
+              },
+              "arguments": [],
+              "optional": false
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}

@@ -133,7 +133,7 @@ const runTest = async (
 
       if (!snapshotExists) {
         await mkdir(snapshotsDir, { recursive: true })
-        await Bun.write(snapshotFile, serializeAstJson(parsed))
+        await Bun.write(snapshotFile, serializeAstJson(parsed, 2))
         result.passed++
         return
       }
@@ -144,7 +144,7 @@ const runTest = async (
 
       if (!equal(parsed, snapshot)) {
         if (updateSnapshots) {
-          await Bun.write(snapshotFile, serializeAstJson(parsed))
+          await Bun.write(snapshotFile, serializeAstJson(parsed, 2))
           result.passed++
           return
         }

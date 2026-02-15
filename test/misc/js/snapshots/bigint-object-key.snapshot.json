@@ -1,1 +1,87 @@
-{"program":{"type":"Program","start":0,"end":47,"sourceType":"script","hashbang":null,"body":[{"type":"VariableDeclaration","start":0,"end":46,"kind":"const","declarations":[{"type":"VariableDeclarator","start":6,"end":46,"id":{"type":"Identifier","start":6,"end":13,"name":"_object"},"init":{"type":"ObjectExpression","start":16,"end":46,"properties":[{"type":"Property","start":20,"end":30,"kind":"init","key":{"type":"Literal","start":20,"end":23,"value":"(BigInt) 10n","raw":"10n","bigint":"10"},"value":{"type":"Identifier","start":25,"end":30,"name":"value"},"method":false,"shorthand":false,"computed":false},{"type":"Property","start":34,"end":44,"kind":"init","key":{"type":"Literal","start":35,"end":38,"value":"(BigInt) 20n","raw":"20n","bigint":"20"},"value":{"type":"Literal","start":41,"end":44,"value":"(BigInt) 72n","raw":"72n","bigint":"72"},"method":false,"shorthand":false,"computed":true}]}}]}]},"comments":[],"errors":[]}
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 47,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "start": 0,
+        "end": 46,
+        "kind": "const",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 6,
+            "end": 46,
+            "id": {
+              "type": "Identifier",
+              "start": 6,
+              "end": 13,
+              "name": "_object"
+            },
+            "init": {
+              "type": "ObjectExpression",
+              "start": 16,
+              "end": 46,
+              "properties": [
+                {
+                  "type": "Property",
+                  "start": 20,
+                  "end": 30,
+                  "kind": "init",
+                  "key": {
+                    "type": "Literal",
+                    "start": 20,
+                    "end": 23,
+                    "value": "(BigInt) 10n",
+                    "raw": "10n",
+                    "bigint": "10"
+                  },
+                  "value": {
+                    "type": "Identifier",
+                    "start": 25,
+                    "end": 30,
+                    "name": "value"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": false
+                },
+                {
+                  "type": "Property",
+                  "start": 34,
+                  "end": 44,
+                  "kind": "init",
+                  "key": {
+                    "type": "Literal",
+                    "start": 35,
+                    "end": 38,
+                    "value": "(BigInt) 20n",
+                    "raw": "20n",
+                    "bigint": "20"
+                  },
+                  "value": {
+                    "type": "Literal",
+                    "start": 41,
+                    "end": 44,
+                    "value": "(BigInt) 72n",
+                    "raw": "72n",
+                    "bigint": "72"
+                  },
+                  "method": false,
+                  "shorthand": false,
+                  "computed": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "comments": [],
+  "errors": []
+}
