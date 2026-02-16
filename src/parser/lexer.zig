@@ -136,7 +136,7 @@ pub const Lexer = struct {
         return self.createToken(token_type, start, self.cursor);
     }
 
-    inline fn makePuncToken(self: *Lexer, len: u32, token_type: token.TokenType, start: u32) token.Token {
+    inline fn puncToken(self: *Lexer, len: u32, token_type: token.TokenType, start: u32) token.Token {
         self.cursor += len;
         return self.createToken(token_type, start, self.cursor);
     }
@@ -150,92 +150,92 @@ pub const Lexer = struct {
 
         return switch (c0) {
             '+' => switch (c1) {
-                '+' => self.makePuncToken(2, .increment, start),
-                '=' => self.makePuncToken(2, .plus_assign, start),
-                else => self.makePuncToken(1, .plus, start),
+                '+' => self.puncToken(2, .increment, start),
+                '=' => self.puncToken(2, .plus_assign, start),
+                else => self.puncToken(1, .plus, start),
             },
             '-' => switch (c1) {
-                '-' => self.makePuncToken(2, .decrement, start),
-                '=' => self.makePuncToken(2, .minus_assign, start),
-                else => self.makePuncToken(1, .minus, start),
+                '-' => self.puncToken(2, .decrement, start),
+                '=' => self.puncToken(2, .minus_assign, start),
+                else => self.puncToken(1, .minus, start),
             },
             '*' => if (c1 == '*' and c2 == '=')
-                self.makePuncToken(3, .exponent_assign, start)
+                self.puncToken(3, .exponent_assign, start)
             else switch (c1) {
-                '*' => self.makePuncToken(2, .exponent, start),
-                '=' => self.makePuncToken(2, .star_assign, start),
-                else => self.makePuncToken(1, .star, start),
+                '*' => self.puncToken(2, .exponent, start),
+                '=' => self.puncToken(2, .star_assign, start),
+                else => self.puncToken(1, .star, start),
             },
-            '/' => if (c1 == '=') self.makePuncToken(2, .slash_assign, start) else self.makePuncToken(1, .slash, start),
+            '/' => if (c1 == '=') self.puncToken(2, .slash_assign, start) else self.puncToken(1, .slash, start),
             '%' => switch (c1) {
-                '=' => self.makePuncToken(2, .percent_assign, start),
-                else => self.makePuncToken(1, .percent, start),
+                '=' => self.puncToken(2, .percent_assign, start),
+                else => self.puncToken(1, .percent, start),
             },
             '<' => if (c1 == '<' and c2 == '=')
-                self.makePuncToken(3, .left_shift_assign, start)
+                self.puncToken(3, .left_shift_assign, start)
             else switch (c1) {
-                '<' => self.makePuncToken(2, .left_shift, start),
-                '=' => self.makePuncToken(2, .less_than_equal, start),
-                else => self.makePuncToken(1, .less_than, start),
+                '<' => self.puncToken(2, .left_shift, start),
+                '=' => self.puncToken(2, .less_than_equal, start),
+                else => self.puncToken(1, .less_than, start),
             },
             '>' => if (c1 == '>' and c2 == '=')
-                self.makePuncToken(3, .right_shift_assign, start)
+                self.puncToken(3, .right_shift_assign, start)
             else if (c1 == '>' and c2 == '>')
-                if (c3 == '=') self.makePuncToken(4, .unsigned_right_shift_assign, start) else self.makePuncToken(3, .unsigned_right_shift, start)
+                if (c3 == '=') self.puncToken(4, .unsigned_right_shift_assign, start) else self.puncToken(3, .unsigned_right_shift, start)
             else switch (c1) {
                 '>' => {
                     // in jsx, <div attr=<elem></elem>></div>
                     //                               ~~
                     //                               this should be interepted as separate '>' tokens for ease of parsing
                     if (self.state.mode == .jsx_tag) {
-                        return self.makePuncToken(1, .greater_than, start);
+                        return self.puncToken(1, .greater_than, start);
                     } else {
-                        return self.makePuncToken(2, .right_shift, start);
+                        return self.puncToken(2, .right_shift, start);
                     }
                 },
-                '=' => self.makePuncToken(2, .greater_than_equal, start),
-                else => self.makePuncToken(1, .greater_than, start),
+                '=' => self.puncToken(2, .greater_than_equal, start),
+                else => self.puncToken(1, .greater_than, start),
             },
             '=' => if (c1 == '=' and c2 == '=')
-                self.makePuncToken(3, .strict_equal, start)
+                self.puncToken(3, .strict_equal, start)
             else switch (c1) {
-                '=' => self.makePuncToken(2, .equal, start),
-                '>' => self.makePuncToken(2, .arrow, start),
-                else => self.makePuncToken(1, .assign, start),
+                '=' => self.puncToken(2, .equal, start),
+                '>' => self.puncToken(2, .arrow, start),
+                else => self.puncToken(1, .assign, start),
             },
             '!' => if (c1 == '=' and c2 == '=')
-                self.makePuncToken(3, .strict_not_equal, start)
+                self.puncToken(3, .strict_not_equal, start)
             else switch (c1) {
-                '=' => self.makePuncToken(2, .not_equal, start),
-                else => self.makePuncToken(1, .logical_not, start),
+                '=' => self.puncToken(2, .not_equal, start),
+                else => self.puncToken(1, .logical_not, start),
             },
             '&' => if (c1 == '&' and c2 == '=')
-                self.makePuncToken(3, .logical_and_assign, start)
+                self.puncToken(3, .logical_and_assign, start)
             else switch (c1) {
-                '&' => self.makePuncToken(2, .logical_and, start),
-                '=' => self.makePuncToken(2, .bitwise_and_assign, start),
-                else => self.makePuncToken(1, .bitwise_and, start),
+                '&' => self.puncToken(2, .logical_and, start),
+                '=' => self.puncToken(2, .bitwise_and_assign, start),
+                else => self.puncToken(1, .bitwise_and, start),
             },
             '|' => if (c1 == '|' and c2 == '=')
-                self.makePuncToken(3, .logical_or_assign, start)
+                self.puncToken(3, .logical_or_assign, start)
             else switch (c1) {
-                '|' => self.makePuncToken(2, .logical_or, start),
-                '=' => self.makePuncToken(2, .bitwise_or_assign, start),
-                else => self.makePuncToken(1, .bitwise_or, start),
+                '|' => self.puncToken(2, .logical_or, start),
+                '=' => self.puncToken(2, .bitwise_or_assign, start),
+                else => self.puncToken(1, .bitwise_or, start),
             },
             '^' => switch (c1) {
-                '=' => self.makePuncToken(2, .bitwise_xor_assign, start),
-                else => self.makePuncToken(1, .bitwise_xor, start),
+                '=' => self.puncToken(2, .bitwise_xor_assign, start),
+                else => self.puncToken(1, .bitwise_xor, start),
             },
             '?' => if (c1 == '?' and c2 == '=')
-                self.makePuncToken(3, .nullish_assign, start)
+                self.puncToken(3, .nullish_assign, start)
             else switch (c1) {
-                '?' => self.makePuncToken(2, .nullish_coalescing, start),
+                '?' => self.puncToken(2, .nullish_coalescing, start),
                 '.' => if (std.ascii.isDigit(c2))
-                    self.makePuncToken(1, .question, start)
+                    self.puncToken(1, .question, start)
                 else
-                    self.makePuncToken(2, .optional_chaining, start),
-                else => self.makePuncToken(1, .question, start),
+                    self.puncToken(2, .optional_chaining, start),
+                    else => self.puncToken(1, .question, start),
             },
             else => unreachable,
         };
@@ -595,9 +595,9 @@ pub const Lexer = struct {
             return self.scanNumber();
         }
         if (c1 == '.' and c2 == '.') {
-            return self.makePuncToken(3, .spread, start);
+            return self.puncToken(3, .spread, start);
         }
-        return self.makePuncToken(1, .dot, start);
+        return self.puncToken(1, .dot, start);
     }
 
     inline fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !void {
