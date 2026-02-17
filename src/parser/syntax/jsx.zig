@@ -75,7 +75,7 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
     // parse <>
     try parser.advance() orelse return null; // consume '<'
     if (parser.current_token.type != .greater_than) {
-        try parser.report(parser.current_token.span, "Expected '>' to close JSX opening fragment", .{ .help = "Add '>' to complete the fragment opening tag" });
+        try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX opening fragment", .{ .help = "Add '>' to complete the fragment opening tag" });
         return null;
     }
     const opening_end = parser.current_token.span.end;
@@ -123,7 +123,7 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
     }
 
     if (parser.current_token.type != .greater_than) {
-        try parser.report(parser.current_token.span, "Expected '>' to close JSX opening element", .{ .help = "Add '>' to close the JSX tag" });
+        try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX opening element", .{ .help = "Add '>' to close the JSX tag" });
         return null;
     }
     const end = parser.current_token.span.end;
@@ -345,10 +345,9 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume ':'
 
         if (parser.current_token.type != .jsx_identifier) {
-            try parser.reportFmt(
+            try parser.reportExpected(
                 parser.current_token.span,
-                "Expected identifier after ':' in namespaced attribute, but found '{s}'",
-                .{parser.describeToken(parser.current_token)},
+                "Expected identifier after ':' in namespaced attribute",
                 .{ .help = "Namespaced attributes must have the form 'namespace:name'" },
             );
             return null;
@@ -400,10 +399,9 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
         .less_than => return parseJsxElement(parser, .attribute),
 
         else => {
-            try parser.reportFmt(
+            try parser.reportExpected(
                 parser.current_token.span,
-                "Expected string literal or JSX expression for attribute value, but found '{s}'",
-                .{parser.describeToken(parser.current_token)},
+                "Expected string literal or JSX expression for attribute value",
                 .{ .help = "JSX attribute values must be either a string literal (e.g. \"value\") or an expression in braces (e.g. {expression})" },
             );
             return null;
@@ -478,10 +476,9 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 // https://facebook.github.io/jsx/#prod-JSXElementName
 fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.type != .jsx_identifier) {
-        try parser.reportFmt(
+        try parser.reportExpected(
             parser.current_token.span,
-            "Expected JSX element name, but found '{s}'",
-            .{parser.describeToken(parser.current_token)},
+            "Expected JSX element name",
             .{ .help = "JSX element names must start with a valid identifier" },
         );
         return null;
@@ -503,10 +500,9 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume '.'
 
         if (parser.current_token.type != .jsx_identifier) {
-            try parser.reportFmt(
+            try parser.reportExpected(
                 parser.current_token.span,
-                "Expected identifier after '.' in JSX member expression, but found '{s}'",
-                .{parser.describeToken(parser.current_token)},
+                "Expected identifier after '.' in JSX member expression",
                 .{ .help = "Member expressions in JSX must have the form 'object.property'" },
             );
             return null;
@@ -533,10 +529,9 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume ':'
 
         if (parser.current_token.type != .jsx_identifier) {
-            try parser.reportFmt(
+            try parser.reportExpected(
                 parser.current_token.span,
-                "Expected identifier after ':' in namespaced element name, but found '{s}'",
-                .{parser.describeToken(parser.current_token)},
+                "Expected identifier after ':' in namespaced element name",
                 .{ .help = "Namespaced element names must have the form 'namespace:name'" },
             );
             return null;

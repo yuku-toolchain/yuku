@@ -41,7 +41,7 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     const specifiers = try parseImportClause(parser) orelse return null;
 
     if (parser.current_token.type != .from) {
-        try parser.report(parser.current_token.span, "Expected 'from' after import clause", .{
+        try parser.reportExpected(parser.current_token.span, "Expected 'from' after import clause", .{
             .help = "Import statements require 'from' followed by a module specifier: import x from 'module'",
         });
         return null;
@@ -124,7 +124,7 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
                 try parser.scratch_a.append(parser.allocator(), spec);
             }
         } else {
-            try parser.report(parser.current_token.span, "Expected namespace import (* as name) or named imports ({...}) after ','", .{});
+            try parser.reportExpected(parser.current_token.span, "Expected namespace import (* as name) or named imports ({...}) after ','", .{});
             return null;
         }
     }
@@ -152,7 +152,7 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (!try parser.expect(.star, "Expected '*' for namespace import", null)) return null;
 
     if (parser.current_token.type != .as) {
-        try parser.report(parser.current_token.span, "Expected 'as' after '*' in namespace import", .{
+        try parser.reportExpected(parser.current_token.span, "Expected 'as' after '*' in namespace import", .{
             .help = "Namespace imports must use the form: * as name",
         });
         return null;
@@ -304,7 +304,7 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     try parser.advance() orelse return null; // consume 'as'
 
     if (parser.current_token.type != .namespace) {
-        try parser.report(parser.current_token.span, "Expected 'namespace' after 'export as'", .{});
+        try parser.reportExpected(parser.current_token.span, "Expected 'namespace' after 'export as'", .{});
         return null;
     }
 
@@ -394,7 +394,7 @@ fn parseExportAllDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     // expect 'from'
     if (parser.current_token.type != .from) {
-        try parser.report(parser.current_token.span, "Expected 'from' after export *", .{
+        try parser.reportExpected(parser.current_token.span, "Expected 'from' after export *", .{
             .help = "Export all declarations require 'from': export * from 'module'",
         });
         return null;
@@ -494,7 +494,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             declaration = try extensions.parseDecorated(parser, .{}) orelse return null;
         },
         else => {
-            try parser.report(parser.current_token.span, "Expected declaration after 'export'", .{
+            try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
                 .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
             });
             return null;
@@ -586,7 +586,7 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
         return try literals.parseIdentifierName(parser) orelse return null;
     }
 
-    try parser.report(parser.current_token.span, "Expected identifier or string literal", .{});
+    try parser.reportExpected(parser.current_token.span, "Expected identifier or string literal", .{});
 
     return null;
 }
@@ -594,7 +594,7 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
 /// ModuleSpecifier: StringLiteral
 fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.type != .string_literal) {
-        try parser.report(parser.current_token.span, "Expected module specifier", .{
+        try parser.reportExpected(parser.current_token.span, "Expected module specifier", .{
             .help = "Module specifiers must be string literals, e.g., './module.js' or 'package'",
         });
         return null;
@@ -675,7 +675,7 @@ fn parseAttributeKey(parser: *Parser) Error!?ast.NodeIndex {
         return try literals.parseIdentifierName(parser) orelse return null;
     }
 
-    try parser.report(parser.current_token.span, "Expected identifier or string literal for attribute key", .{});
+    try parser.reportExpected(parser.current_token.span, "Expected identifier or string literal for attribute key", .{});
     return null;
 }
 

@@ -36,7 +36,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     // bigint literal is a separate node
-    if(token.type == .bigint_literal) {
+    if (token.type == .bigint_literal) {
         return try parser.addNode(.{
             .bigint_literal = .{
                 .raw_start = token.span.start,
@@ -122,7 +122,7 @@ pub fn parseTemplateLiteral(parser: *Parser) Error!?ast.NodeIndex {
         // after parsing the expression, we expect '}' which closes the ${} substitution.
         // we need to explicitly scan for template continuation (middle or tail).
         if (parser.current_token.type != .right_brace) {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
                 "Expected '}' to close template expression",
                 .{ .help = "Template expressions must be closed with '}'" },
@@ -232,10 +232,9 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
 pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!bool {
     if (!token.type.isIdentifierLike()) {
-        try parser.reportFmt(
+        try parser.reportExpected(
             token.span,
-            "Expected an identifier but found '{s}'",
-            .{parser.describeToken(token)},
+            "Expected an identifier",
             .{ .help = "Identifiers must start with a letter, underscore (_), or dollar sign ($)" },
         );
 

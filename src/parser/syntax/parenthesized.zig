@@ -85,7 +85,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
             try parser.advance() orelse return null;
             has_trailing_comma = parser.current_token.type == .right_paren;
         } else if (parser.current_token.type != .right_paren) {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or ')' in parenthesized expression",
                 .{ .help = "Add a comma between elements or close with ')'." },

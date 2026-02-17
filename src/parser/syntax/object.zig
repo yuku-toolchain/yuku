@@ -56,7 +56,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
                 parser.state.cover_has_trailing_comma = start;
             }
         } else if (parser.current_token.type != .right_brace) {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or '}' in object",
                 .{ .help = "Add a comma between properties or close the object with '}'." },
@@ -177,7 +177,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
     // if we had async, generator, or get/set prefix but no (, it's an error
     if (is_async or is_generator or kind != .init) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected '(' for method definition",
             .{ .help = "Method definitions require a parameter list. Use 'method() {}' syntax." },

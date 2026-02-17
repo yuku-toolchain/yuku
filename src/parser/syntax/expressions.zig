@@ -250,7 +250,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
             return parenthesized.identifierToArrowFunction(parser, id, true, start);
         }
 
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected '=>' after async arrow function parameter",
             .{ .help = "Use 'async x => ...' or 'async (x) => ...' for async arrow functions." },
@@ -334,7 +334,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (delegate and ast.isNull(argument)) {
-        try parser.report(parser.current_token.span, "Expected expression after 'yield*'", .{});
+        try parser.reportExpected(parser.current_token.span, "Expected expression after 'yield*'", .{});
         return null;
     }
 
@@ -494,7 +494,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         const arguments_end = parser.current_token.span.end;
 
         if (parser.current_token.type != .right_paren) {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ')' after constructor arguments",
                 .{
@@ -786,7 +786,7 @@ fn parseMemberProperty(parser: *Parser, object_node: ast.NodeIndex, optional: bo
     else if (tok_type == .private_identifier)
         try literals.parsePrivateIdentifier(parser)
     else {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected property name after '.'",
             .{ .help = "Use an identifier or private identifier (#name) for member access." },
@@ -821,7 +821,7 @@ fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, op
 
     const end = parser.current_token.span.end; // ']' position
     if (parser.current_token.type != .right_bracket) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected ']' after computed property",
             .{
@@ -853,7 +853,7 @@ fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bo
 
     const end = parser.current_token.span.end; // ')' position
     if (parser.current_token.type != .right_paren) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected ')' after function arguments",
             .{
@@ -998,7 +998,7 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
             return null;
         },
         else => {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
                 "Expected property name, '[', or '(' after '?.'",
                 .{ .help = "Optional chaining must be followed by property access (.x), computed access ([x]), or a call (())." },

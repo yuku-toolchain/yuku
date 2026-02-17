@@ -27,7 +27,7 @@ const ParserContext = struct {
     ///           ^ this is in a single statement context
     in_single_statement_context: bool = false,
     // https://tc39.es/ecma262/#directive-prologue
-    in_directive_prologue: bool = false
+    in_directive_prologue: bool = false,
 };
 
 const ParserState = struct {
@@ -281,7 +281,7 @@ pub const Parser = struct {
             return true;
         }
 
-        try self.report(self.current_token.span, message, .{ .help = help });
+        try self.reportExpected(self.current_token.span, message, .{ .help = help });
 
         return false;
     }
@@ -293,7 +293,11 @@ pub const Parser = struct {
             return semicolon_end;
         } else {
             if (!self.canInsertSemicolon(self.current_token)) {
-                try self.reportFmt(self.current_token.span, "Expected a semicolon or an implicit semicolon after a statement, but found '{s}'", .{self.describeToken(self.current_token)}, .{ .help = "Try inserting a semicolon here" });
+                try self.reportExpected(
+                    self.current_token.span,
+                    "Expected a semicolon or an implicit semicolon after a statement",
+                    .{ .help = "Try inserting a semicolon here" },
+                );
                 return null;
             }
         }
@@ -340,6 +344,15 @@ pub const Parser = struct {
             .help = opts.help,
             .labels = opts.labels,
         });
+    }
+
+    pub fn reportExpected(self: *Parser, span: ast.Span, message: []const u8, opts: ReportOptions) Error!void {
+        const expected_message = try std.fmt.allocPrint(self.allocator(), "{s}, but found '{s}'", .{
+            message,
+            self.describeToken(self.current_token),
+        });
+
+        try self.report(span, expected_message, opts);
     }
 
     pub fn reportFmt(self: *Parser, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Error!void {
@@ -395,16 +408,16 @@ pub const Parser = struct {
         const alloc = self.allocator();
 
         const estimated_nodes = if (self.source.len < 10_000)
-                @max(512, self.source.len / 2)
-            else if (self.source.len < 100_000)
-                self.source.len / 5
-            else
-                self.source.len / 8;
+            @max(512, self.source.len / 2)
+        else if (self.source.len < 100_000)
+            self.source.len / 5
+        else
+            self.source.len / 8;
 
         const estimated_extra = if (self.source.len < 5_000_000)
-                estimated_nodes / 4
-            else
-                estimated_nodes / 3;
+            estimated_nodes / 4
+        else
+            estimated_nodes / 3;
 
         try self.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.extra.ensureTotalCapacity(alloc, estimated_extra);

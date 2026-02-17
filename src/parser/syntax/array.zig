@@ -58,7 +58,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
                 parser.state.cover_has_trailing_comma = start;
             }
         } else if (parser.current_token.type != .right_bracket) {
-            try parser.report(
+            try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or ']' in array",
                 .{ .help = "Add a comma between elements or close the array with ']'." },

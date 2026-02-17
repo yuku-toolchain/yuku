@@ -270,7 +270,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (is_async or is_generator) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected '(' for method definition",
             .{ .help = "Method definitions require a parameter list. Use 'method() {}' syntax." },
@@ -279,7 +279,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (kind != .method) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected '(' for getter/setter definition",
             .{ .help = "Getters and setters require parentheses. Use 'get prop() {}' or 'set prop(value) {}' syntax." },
@@ -522,7 +522,7 @@ fn parsePropertyDefinition(
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
     } else if (!parser.canInsertSemicolon(parser.current_token) and tok_type != .right_brace) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             "Expected ';' after class field",
             .{ .help = "Add a semicolon after the field declaration." },

@@ -44,7 +44,7 @@ pub fn parseDecorated(parser: *Parser, opts: ParseDecoratedOpts) Error!?ast.Node
     const decorators = try parseDecorators(parser) orelse return null;
 
     if (parser.current_token.type != .class) {
-        try parser.report(
+        try parser.reportExpected(
             parser.current_token.span,
             if (opts.is_expression)
                 "Expected a class expression after decorators in expression position"
