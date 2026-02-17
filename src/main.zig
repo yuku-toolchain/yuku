@@ -14,7 +14,10 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = parser.Lang.fromPath(file_path), .source_type = .script });
+    const tree = try parser.parse(std.heap.page_allocator, contents, .{
+        .lang = .fromPath(file_path),
+        .source_type = .fromPath(file_path)
+    });
 
     defer tree.deinit();
 
@@ -36,7 +39,7 @@ pub fn main(init: std.process.Init) !void {
     const json = try parser.estree.toJSON(&tree, allocator, .{});
     defer allocator.free(json);
 
-    std.debug.print("nodes: {d} extra: {d} comments: {d}", .{tree.nodes.len, tree.extra.len, tree.comments.len});
+    std.debug.print("{s}", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics) |err| {
