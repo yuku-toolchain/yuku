@@ -31,10 +31,12 @@ const ParserContext = struct {
 };
 
 const ParserState = struct {
-    /// tracks if the cover (array or object) we are parsing has a trailing comma
+    /// Whether the parser is currently in strict mode.
+    strict_mode: bool = false,
+    /// Tracks if the cover (array or object) we are parsing has a trailing comma
     /// value is the start index of the cover
     cover_has_trailing_comma: ?u32 = null,
-    /// tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
+    /// Tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
 };
 
@@ -96,6 +98,8 @@ pub const Parser = struct {
 
         try self.ensureCapacity();
 
+        if (self.isModule()) self.enterStrictMode();
+
         const body = try self.parseBody(null);
 
         const end = self.current_token.span.end;
@@ -127,6 +131,10 @@ pub const Parser = struct {
     }
 
     pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
+        // save and restore strict mode, directives like "use strict" only apply within this scope.
+        const prev_strict = self.state.strict_mode;
+        defer self.state.strict_mode = prev_strict;
+
         // it's a directive prologue if it's a function body or if we are at the program level
         // terminator null means, we are at program level
         self.context.in_directive_prologue = self.context.in_function or terminator == null;
@@ -161,6 +169,14 @@ pub const Parser = struct {
 
     pub inline fn isModule(self: *Parser) bool {
         return self.source_type == .module;
+    }
+
+    pub inline fn enterStrictMode(self: *Parser) void {
+        self.state.strict_mode = true;
+    }
+
+    pub inline fn exitStrictMode(self: *Parser) void {
+        self.state.strict_mode = false;
     }
 
     // utils

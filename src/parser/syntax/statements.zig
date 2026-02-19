@@ -1,3 +1,4 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const token = @import("../token.zig");
 const Parser = @import("../parser.zig").Parser;
@@ -60,7 +61,7 @@ fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.Node
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     const expression_data = parser.getData(expression);
 
-    if(parser.context.in_directive_prologue and expression_data == .string_literal) {
+    if (parser.context.in_directive_prologue and expression_data == .string_literal) {
         return parseDirective(parser, expression, expression_data);
     }
 
@@ -95,6 +96,11 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex, expression_data: a
     const value_start = expression_data.string_literal.raw_start + 1;
     const value_len: u16 = expression_data.string_literal.raw_len - 2;
 
+    // "use strict" directive enables strict mode for the current scope
+    if (std.mem.eql(u8, parser.getSourceText(value_start, value_len), "use strict")) {
+        parser.enterStrictMode();
+    }
+
     return try parser.addNode(.{
         .directive = .{
             .expression = expression,
@@ -125,16 +131,16 @@ fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
 fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const next = try parser.lookAhead() orelse return null;
 
-    return switch(next.type) {
+    return switch (next.type) {
         // `using.`, `using(`, `using[` are expression forms where `using` is an identifier.
         .dot, .left_paren, .left_bracket => parseExpressionStatement(parser),
-        else => variables.parseVariableDeclaration(parser, false, null)
+        else => variables.parseVariableDeclaration(parser, false, null),
     };
 }
 
 /// `await using` declaration, or fall through to expression statement.
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-     const next = try parser.lookAhead() orelse return null;
+    const next = try parser.lookAhead() orelse return null;
 
     return switch (next.type) {
         .using => {
@@ -148,7 +154,7 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
             // - keyword:    `await using x = ...` -> parse as `await using` variable declaration
             const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
-            if(!is_using_identifier) {
+            if (!is_using_identifier) {
                 return variables.parseVariableDeclaration(parser, true, start);
             }
 
@@ -171,7 +177,7 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     return switch (next.type) {
         // `import(` and `import.` are expression forms (dynamic import / import.meta / phase imports)
         .left_paren, .dot => parseExpressionStatement(parser),
-        else => modules.parseImportDeclaration(parser)
+        else => modules.parseImportDeclaration(parser),
     };
 }
 
