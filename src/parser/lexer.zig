@@ -76,6 +76,10 @@ pub const Lexer = struct {
     /// whether the lexer is currently in strict mode (synced by the parser)
     strict_mode: bool = false,
 
+    pub inline fn isStrictMode(self: *const Lexer) bool {
+        return self.strict_mode;
+    }
+
     pub fn init(source: []const u8, allocator: std.mem.Allocator, source_type: ast.SourceType) error{OutOfMemory}!Lexer {
         var self: Lexer = .{
             .source = source,
@@ -502,7 +506,7 @@ pub const Lexer = struct {
                     break :brk;
                 }
 
-                if (self.strict_mode) return error.OctalEscapeInStrict;
+                if (self.isStrictMode()) return error.OctalEscapeInStrict;
                 try self.consumeOctal();
             },
             'x' => {
@@ -512,11 +516,11 @@ pub const Lexer = struct {
                 try self.consumeUnicodeEscape(.normal);
             },
             '1'...'7' => {
-                if (self.strict_mode) return error.OctalEscapeInStrict;
+                if (self.isStrictMode()) return error.OctalEscapeInStrict;
                 try self.consumeOctal();
             },
             '8'...'9' => {
-                if (self.strict_mode) return error.LeadingZeroEscapeInStrict;
+                if (self.isStrictMode()) return error.LeadingZeroEscapeInStrict;
                 self.cursor += 1;
             },
             '\n', '\r' => {
@@ -897,7 +901,7 @@ pub const Lexer = struct {
                         }
                     }
 
-                    if (self.strict_mode) {
+                    if (self.isStrictMode()) {
                         return if (is_legacy_octal) error.OctalLiteralInStrict else error.LeadingZeroInStrict;
                     }
 

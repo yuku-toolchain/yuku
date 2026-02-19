@@ -133,7 +133,7 @@ pub const Parser = struct {
 
     pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
         // save and restore strict mode, directives like "use strict" only apply within this scope
-        const prev_strict = self.strict_mode;
+        const prev_strict = self.isStrictMode();
         defer self.restoreStrictMode(prev_strict);
 
         // it's a directive prologue if it's a function body or if we are at the program level
@@ -172,8 +172,12 @@ pub const Parser = struct {
         return self.source_type == .module;
     }
 
+    pub inline fn isStrictMode(self: *Parser) bool {
+        return self.strict_mode;
+    }
+
     pub inline fn enterStrictMode(self: *Parser) bool {
-        const prev = self.strict_mode;
+        const prev = self.isStrictMode();
         self.strict_mode = true;
         self.lexer.strict_mode = true;
         return prev;

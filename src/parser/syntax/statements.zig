@@ -405,7 +405,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    if (parser.strict_mode) {
+    if (parser.isStrictMode()) {
         try parser.report(parser.current_token.span, "'with' statements are not allowed in strict mode", .{});
     }
 
