@@ -312,7 +312,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
             if (c == '\\') {
-                try self.consumeEscape(true);
+                try self.consumeEscape(.template);
                 continue;
             }
             if (c == '`') {
@@ -444,7 +444,7 @@ pub const Lexer = struct {
             const c = self.source[self.cursor];
 
             if (c == '\\' and self.mode != .jsx_tag) {
-                try self.consumeEscape(false);
+                try self.consumeEscape(.string);
                 continue;
             }
 
@@ -472,7 +472,7 @@ pub const Lexer = struct {
             const c = self.source[self.cursor];
 
             if (c == '\\') {
-                try self.consumeEscape(true);
+                try self.consumeEscape(.template);
                 continue;
             }
 
@@ -492,21 +492,28 @@ pub const Lexer = struct {
         return error.NonTerminatedTemplateLiteral;
     }
 
-    /// consumes an escape sequence. when loose (templates), invalid escapes
-    /// set has_invalid_escape and skip instead of returning errors.
-    fn consumeEscape(self: *Lexer, comptime loose: bool) LexicalError!void {
-        if (loose) {
-            self.consumeEscapeImpl() catch |err| {
+    const EscapeContext = enum {
+        string,
+        template,
+    };
+
+    /// consumes an escape sequence.
+    /// in string context, errors propagate directly (fatal).
+    /// in template context, errors are absorbed and has_invalid_escape is set instead,
+    /// because tagged templates tolerate invalid escapes (cooked value becomes undefined).
+    fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
+        if (context == .template) {
+            self.consumeEscapeImpl(context) catch |err| {
                 if (err == error.OutOfMemory) return error.OutOfMemory;
                 self.state.has_invalid_escape = true;
                 if (self.cursor < self.source.len) self.cursor += 1;
             };
         } else {
-            try self.consumeEscapeImpl();
+            try self.consumeEscapeImpl(context);
         }
     }
 
-    fn consumeEscapeImpl(self: *Lexer) LexicalError!void {
+    fn consumeEscapeImpl(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         self.cursor += 1; // skip backslash
 
         if (self.cursor >= self.source.len) {
@@ -519,12 +526,15 @@ pub const Lexer = struct {
             '0' => {
                 const c1 = self.peek(1);
 
+                // null escape \0
                 if (!util.Utf.isOctalDigit(c1)) {
-                    self.cursor += 1; // null escape (\0)
+                    self.cursor += 1;
                     break :brk;
                 }
 
-                if (self.isStrictMode()) return error.OctalEscapeInStrict;
+                // octal escape \0
+                // always invalid in templates, only invalid in strict mode for strings
+                if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
                 try self.consumeOctal();
             },
             'x' => {
@@ -534,11 +544,14 @@ pub const Lexer = struct {
                 try self.consumeUnicodeEscape(.normal);
             },
             '1'...'7' => {
-                if (self.isStrictMode()) return error.OctalEscapeInStrict;
+                // octal escapes, always invalid in templates, only invalid in strict mode for strings
+                if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
                 try self.consumeOctal();
             },
             '8'...'9' => {
-                if (self.isStrictMode()) return error.LeadingZeroEscapeInStrict;
+                // \8 and \9
+                // always invalid in templates, only invalid in strict mode for strings
+                if (context == .template or self.isStrictMode()) return error.LeadingZeroEscapeInStrict;
                 self.cursor += 1;
             },
             '\n', '\r' => {
