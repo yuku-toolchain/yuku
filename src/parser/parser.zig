@@ -31,8 +31,6 @@ const ParserContext = struct {
 };
 
 const ParserState = struct {
-    /// Whether the parser is currently in strict mode.
-    strict_mode: bool = false,
     /// Tracks if the cover (array or object) we are parsing has a trailing comma
     /// value is the start index of the cover
     cover_has_trailing_comma: ?u32 = null,
@@ -62,6 +60,9 @@ pub const Parser = struct {
 
     context: ParserContext = .{},
     state: ParserState = .{},
+
+    /// Whether the parser is currently in strict mode.
+    strict_mode: bool = false,
 
     source_type: ast.SourceType,
     lang: ast.Lang,
@@ -132,7 +133,7 @@ pub const Parser = struct {
 
     pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
         // save and restore strict mode, directives like "use strict" only apply within this scope
-        const prev_strict = self.state.strict_mode;
+        const prev_strict = self.strict_mode;
         defer self.restoreStrictMode(prev_strict);
 
         // it's a directive prologue if it's a function body or if we are at the program level
@@ -172,14 +173,14 @@ pub const Parser = struct {
     }
 
     pub inline fn enterStrictMode(self: *Parser) bool {
-        const prev = self.state.strict_mode;
-        self.state.strict_mode = true;
+        const prev = self.strict_mode;
+        self.strict_mode = true;
         self.lexer.strict_mode = true;
         return prev;
     }
 
     pub inline fn restoreStrictMode(self: *Parser, prev: bool) void {
-        self.state.strict_mode = prev;
+        self.strict_mode = prev;
         self.lexer.strict_mode = prev;
     }
 

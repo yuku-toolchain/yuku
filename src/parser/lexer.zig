@@ -33,6 +33,7 @@ pub const LexicalError = error{
     OctalEscapeInStrict,
     OctalLiteralInStrict,
     LeadingZeroInStrict,
+    LeadingZeroEscapeInStrict,
     // jsx-specific errors
     JsxIdentifierCannotContainEscapes,
     JsxIdentifierCannotStartWithBackslash,
@@ -515,7 +516,7 @@ pub const Lexer = struct {
                 try self.consumeOctal();
             },
             '8'...'9' => {
-                if (self.strict_mode) return error.OctalEscapeInStrict;
+                if (self.strict_mode) return error.LeadingZeroEscapeInStrict;
                 self.cursor += 1;
             },
             '\n', '\r' => {
@@ -1242,6 +1243,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.OctalEscapeInStrict => "Octal escape sequences are not allowed in strict mode",
         error.OctalLiteralInStrict => "Octal literals are not allowed in strict mode",
         error.LeadingZeroInStrict => "Decimals with leading zeros are not allowed in strict mode",
+        error.LeadingZeroEscapeInStrict => "\\8 and \\9 escape sequences are not allowed in strict mode",
         error.JsxIdentifierCannotContainEscapes => "JSX tag names cannot contain escape sequences",
         error.JsxIdentifierCannotStartWithBackslash => "JSX tag names cannot start with a backslash",
     };
@@ -1277,6 +1279,7 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.OctalEscapeInStrict => "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
         error.OctalLiteralInStrict => "Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent",
         error.LeadingZeroInStrict => "Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation",
+        error.LeadingZeroEscapeInStrict => "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
         error.JsxIdentifierCannotContainEscapes => "Remove the escape sequence and use the literal character instead",
         error.JsxIdentifierCannotStartWithBackslash => "JSX tag names must be plain identifiers without escape sequences",
     };
