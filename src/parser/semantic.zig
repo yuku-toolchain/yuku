@@ -58,4 +58,3 @@
 // export statements cannot be outside of a module.
 // 'default' case cannot appear more than once in a switch statement.
 // for-in/of loop variable declaration may not have an initializer
-// 'with' statement is not allowed in strict mode
