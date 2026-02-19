@@ -32,7 +32,6 @@ const ParserContext = struct {
 
 const ParserState = struct {
     /// Whether the parser is currently in strict mode.
-    /// Modules are always strict; otherwise enabled by "use strict" directives or class bodies.
     strict_mode: bool = false,
     /// Tracks if the cover (array or object) we are parsing has a trailing comma
     /// value is the start index of the cover
