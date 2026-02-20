@@ -349,10 +349,16 @@ pub const Lexer = struct {
         return self.createToken(.jsx_text, start, self.cursor);
     }
 
+    const RegexResult = struct {
+        span: token.Span,
+        pattern: []const u8,
+        flags: []const u8
+    };
+
     /// re-scans a slash token as a regex literal
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
-    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8 } {
+    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult  {
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
@@ -425,6 +431,7 @@ pub const Lexer = struct {
                 const end = self.cursor;
 
                 const pattern = self.source[start + 1 .. closing_delimeter_pos - 1];
+
                 const flags = self.source[closing_delimeter_pos..end];
 
                 return .{ .span = .{ .start = start, .end = end }, .pattern = pattern, .flags = flags };
@@ -655,10 +662,10 @@ pub const Lexer = struct {
         return self.puncToken(1, .dot, start);
     }
 
-    inline fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !void {
+    fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !void {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
-            if (c < 0x80) {
+            if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
                 if (c == '\\') {
                     @branchHint(.cold);
@@ -704,8 +711,10 @@ pub const Lexer = struct {
         }
 
         const first_char = self.source[self.cursor];
-        if (first_char < 0x80) {
+
+        if (std.ascii.isAscii(first_char)) {
             @branchHint(.likely);
+
             if (first_char == '\\') {
                 // JSX tag names don't support escape sequences
                 if (is_jsx_tag) {
@@ -735,7 +744,10 @@ pub const Lexer = struct {
 
         const lexeme = self.source[start..self.cursor];
 
-        const token_type: token.TokenType = if (is_jsx_tag) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
+        const token_type: token.TokenType =
+            if (is_jsx_tag) .jsx_identifier
+            else if (is_private) .private_identifier
+            else self.getKeywordType(lexeme);
 
         return self.createToken(token_type, start, self.cursor);
     }
@@ -1059,7 +1071,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
-            if (c < 0x80) {
+            if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
 
                 switch (c) {
