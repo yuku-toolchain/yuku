@@ -1,1 +1,1 @@
-if (true) async function f() {  } else ;
+for (var x o\u0066 []) ;
