@@ -113,13 +113,20 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     const end = if (!ast.isNull(body)) parser.getSpan(body).end else params_end;
 
-    if (parser.context.in_single_statement_context and is_generator) {
+    if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
-        try parser.report(
-            .{ .start = start, .end = params_end },
-            "Generators can only be declared at the top level or inside a block",
-            .{},
-        );
+
+        if(opts.is_async) {
+            try parser.report(parser.current_token.span, "Async functions can only be declared at the top level or inside a block", .{});
+        }
+
+        if(is_generator){
+            try parser.report(
+                .{ .start = start, .end = params_end },
+                "Generators can only be declared at the top level or inside a block",
+                .{},
+            );
+        }
     }
 
     return try parser.addNode(.{

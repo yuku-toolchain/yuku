@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40074
-Failed:       788
+Passed:       40085
+Failed:       777
 AST mismatch: 0/37226
 Total:        40862
-Coverage:     98.07%
+Coverage:     98.10%
 
 Results by Suite
 ----------------
@@ -18,8 +18,8 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 2834/3622 (78.24%)
-  Failed: 788
+  Passed: 2845/3622 (78.55%)
+  Failed: 777
   Failures:
     - test/suite/js/fail/66a74a184d9f6e37.js
     - test/suite/js/fail/4aafa3fab42d1077.js
@@ -152,7 +152,6 @@ Results by Suite
     - test/suite/js/fail/9f8bf490359bd4aa.js
     - test/suite/js/fail/0bd80362156b9c3e.js
     - test/suite/js/fail/f0ada8b9d828b68d.js
-    - test/suite/js/fail/1739c841037a65f5.js
     - test/suite/js/fail/6164ed77ef81e48f.js
     - test/suite/js/fail/1fcf089e775f3fb0.js
     - test/suite/js/fail/f17e426fbd4f2b8e.js
@@ -220,7 +219,6 @@ Results by Suite
     - test/suite/js/fail/cac0d1e8d392a6ae.js
     - test/suite/js/fail/54bd7e8fc18a6d00.js
     - test/suite/js/fail/a5d239fb4e914995.js
-    - test/suite/js/fail/24516ded86b13518.js
     - test/suite/js/fail/821b575c5b986002.js
     - test/suite/js/fail/8191f1e7c0bab905.js
     - test/suite/js/fail/e63223145346088f.js
@@ -258,10 +256,8 @@ Results by Suite
     - test/suite/js/fail/3205e88a8705b4ee.js
     - test/suite/js/fail/a07ca8270946a4d1.js
     - test/suite/js/fail/8df34f4088394dd7.module.js
-    - test/suite/js/fail/195f0181149b6cf7.js
     - test/suite/js/fail/89f631266fc18552.js
     - test/suite/js/fail/20a4d64ba7cb3aaf.js
-    - test/suite/js/fail/65e0b074952148df.js
     - test/suite/js/fail/2109ad5ecb1bcd9c.js
     - test/suite/js/fail/1be95e8ec94b5a91.js
     - test/suite/js/fail/f077284b82e4c1d6.js
@@ -294,7 +290,6 @@ Results by Suite
     - test/suite/js/fail/6baf1581d0c103e8.js
     - test/suite/js/fail/095c890d64a1fdc2.js
     - test/suite/js/fail/4c3ff0e5f65ed02b.js
-    - test/suite/js/fail/80536cd7a7d9c325.js
     - test/suite/js/fail/389144e04c9eb5f9.js
     - test/suite/js/fail/a97dd0320c67df29.js
     - test/suite/js/fail/835f8e79e2a0d7ad.js
@@ -394,7 +389,6 @@ Results by Suite
     - test/suite/js/fail/556870ef5872ab4f.js
     - test/suite/js/fail/39a73049e910d1c6.js
     - test/suite/js/fail/b65bf2e1ae982e96.js
-    - test/suite/js/fail/13892d18f47757b2.js
     - test/suite/js/fail/01f988c40f030c8a.js
     - test/suite/js/fail/834b03ee2422cd06.js
     - test/suite/js/fail/9e14db8dd630d9f0.js
@@ -480,7 +474,6 @@ Results by Suite
     - test/suite/js/fail/36fa165995dd6606.js
     - test/suite/js/fail/28144b7f044a68af.js
     - test/suite/js/fail/c988e9d1ce4be150.js
-    - test/suite/js/fail/683b8106da61522e.js
     - test/suite/js/fail/3e1e62d0b83cc421.js
     - test/suite/js/fail/68a97fbebdec2a3d.js
     - test/suite/js/fail/5f5621cca1450878.js
@@ -624,7 +617,6 @@ Results by Suite
     - test/suite/js/fail/c795131c60138e03.js
     - test/suite/js/fail/20f88a299fee74b5.js
     - test/suite/js/fail/65d46c1d31bced61.js
-    - test/suite/js/fail/a91375e9a08dd29e.js
     - test/suite/js/fail/643b681b34ca7a24.js
     - test/suite/js/fail/d18a6300b6cef170.js
     - test/suite/js/fail/e9dd0e699d3646a7.js
@@ -717,7 +709,6 @@ Results by Suite
     - test/suite/js/fail/95970b8793b7a4f2.js
     - test/suite/js/fail/858f7b62008fb3ff.js
     - test/suite/js/fail/c8da6c23824e409a.js
-    - test/suite/js/fail/420f82eddcf38bce.js
     - test/suite/js/fail/a3f6d9c297b9fb23.js
     - test/suite/js/fail/ff620302553b5a32.js
     - test/suite/js/fail/8bee0f1a78af0138.js
@@ -745,7 +736,6 @@ Results by Suite
     - test/suite/js/fail/d4a6880bf76c7fbc.js
     - test/suite/js/fail/5be90805c47a1fb1.js
     - test/suite/js/fail/b2f442e9f4f30cd8.js
-    - test/suite/js/fail/df14eabfcc3092f7.js
     - test/suite/js/fail/1a1ccd1b93054252.js
     - test/suite/js/fail/1c5dbe6a03861582.js
     - test/suite/js/fail/07d4f2ff532c2606.js
@@ -773,7 +763,6 @@ Results by Suite
     - test/suite/js/fail/70c82b47768543af.js
     - test/suite/js/fail/f84fed08148439a1.js
     - test/suite/js/fail/b59bac6bdfe524e1.js
-    - test/suite/js/fail/7da7617bbb46a974.js
     - test/suite/js/fail/c0980fdb113458e1.js
     - test/suite/js/fail/434610d21fbbacd9.js
     - test/suite/js/fail/fd4b826bbd41a1cb.js
