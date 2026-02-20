@@ -1,13 +1,13 @@
 Test Results
 ============
 
-Running TypeScript, Test262 and Babel test suites with ESTree/TypeScript-ESTree AST matching.
+Running TypeScript, Test262 and Babel test suites with deep AST matching against the Oxc AST (ESTree/TypeScript-ESTree).
 
 Summary
 -------
 Passed:       37934
 Failed:       0
-AST mismatch: 0/37226
+AST mismatch: 0/37224
 Total:        37934
 Coverage:     100.00%
 

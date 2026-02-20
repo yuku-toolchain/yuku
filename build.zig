@@ -76,7 +76,7 @@ pub fn build(b: *std.Build) void {
     const gen_unicode_id_table = b.addExecutable(.{
         .name = "gen-unicode-id",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tools/gen_unicode_id.zig"),
+            .root_source_file = b.path("tools/gen_unicode_id.zig"),
             .target = b.graph.host,
             .optimize = optimize,
         }),
@@ -88,7 +88,7 @@ pub fn build(b: *std.Build) void {
 
     const tools_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tools/root.zig"),
+            .root_source_file = b.path("tools/root.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -127,7 +127,7 @@ pub fn build(b: *std.Build) void {
     wasm_parser_module.addImport("util", wasm_util_module);
 
     const wasm_module = b.createModule(.{
-        .root_source_file = b.path("src/wasm.zig"),
+        .root_source_file = b.path("src/parser/wasm.zig"),
         .target = wasm_target,
         .optimize = .ReleaseSmall,
     });

@@ -42,16 +42,16 @@ pub fn main(init: std.process.Init) !void {
     defer alloc.free(continue_tables.root);
     defer alloc.free(continue_tables.leaf);
 
-    const output = try std.Io.Dir.createFile(io, output_table_path, .{});
-    defer output.close();
+    const output = try std.Io.Dir.cwd().createFile(io, output_table_path, .{});
+    defer output.close(io);
 
     var buf: [1024]u8 = undefined;
-    var buffered_writer = output.writer(&buf);
+    var buffered_writer = output.writer(io, &buf);
     const writer = &buffered_writer.interface;
 
     try writer.writeAll(
         \\// Generated file, do not edit.
-        \\// See: src/tools/generate_unicode_id.zig
+        \\// See: tools/gen_unicode_id.zig
         \\
         \\// inspired by https://github.com/dtolnay/unicode-ident
         \\
