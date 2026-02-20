@@ -17,6 +17,8 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 
 </div>
 
+> **Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. A visitor/traverser API and TypeScript support are currently in progress. See the [Roadmap](#roadmap) for details.
+
 ## Parser
 
 ### Features
@@ -29,8 +31,10 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 ## Roadmap
 
 - [x] JavaScript Parser
-- [x] WASM (try here: https://yuku-parser.vercel.app/playground)
+- [x] WASM
 - [x] JSX Support
-- [ ] Best-in-class Visitor/Traverser (In Progress)
+- [ ] Visitor/Traverser (In Progress)
 - [ ] TypeScript Support
-- [ ] Docs
+- [ ] Documentation
+- [ ] Module Resolver
+- [ ] TypeScript Declaration Transpiler, Minifier, and Bundler

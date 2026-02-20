@@ -14,7 +14,7 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 </div>
 
 :::note
-Yuku's JavaScript/JSX parser is already functional, well-tested. TypeScript support is still in development. Additionally, to facilitate clean public use of Yuku's parsers, a Visitor/Traverse API is on the way, featuring comprehensive scope information, symbol tables, and more.
+**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. A visitor/traverser API and TypeScript support are currently in progress. See the [Roadmap](#roadmap) for details.
 :::
 
 ## Roadmap
