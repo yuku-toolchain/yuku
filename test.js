@@ -1,3 +1,3 @@
-async function fn() {
-	for await (async of [7]);
-}
+asyncTest(async () => {
+	await using[x];
+});

@@ -211,7 +211,6 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool, arrow_star
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
     // [no LineTerminator here] => ConciseBody
-    // arrow function's precedence is 2, assignment level
     if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before and precedence <= Precedence.Assignment) {
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }

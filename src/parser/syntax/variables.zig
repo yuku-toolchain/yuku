@@ -74,14 +74,6 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
 
-    if ((kind == .using or kind == .await_using) and patterns.isDestructuringPattern(parser, id)) {
-        try parser.report(
-            parser.getSpan(id),
-            "Using declarations may not have binding patterns",
-            .{},
-        );
-    }
-
     var init: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(id).end;
 
@@ -141,22 +133,21 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     return false;
 }
 
-/// `using` can be either a keyword (for variable declarations) or an identifier depending on context.
-/// if the next token is a binding pattern (`{`, `[`) or an identifier on the same line,
-/// then `using` is a keyword: `using x = ...`, `using { x } = ...`.
-/// otherwise, `using` is just an identifier: `using;`, `using + 1`.
+/// returns whether the current `using` token is an `IdentifierReference`
+/// (expression path) or the contextual keyword for a declaration.
+///
+/// implements the cover-grammar disambiguation from:
+/// - CoverAwaitExpressionAndAwaitUsingDeclarationHead
 pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.type == .using);
 
     const next = try parser.lookAhead() orelse return null;
 
-    if (
-        (next.type == .left_brace or next.type == .left_bracket or next.type.isIdentifierLike())
-        and
-        !next.has_line_terminator_before
-    ) {
-        return false; // `using` is a keyword, not an identifier.
+    // if next token starts a BindingList and ASI cannot insert a semicolon,
+    // treat `using` as the contextual keyword (declaration form).
+    if (next.type.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
+        return false;
     }
 
-    return true; // `using` is an identifier.
+    return true; // `using` is an identifier
 }

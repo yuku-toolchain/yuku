@@ -129,13 +129,14 @@ fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `using` declaration, or fall through to expression statement.
 fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    // determine if 'using' is an identifier or a keyword
+    const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
-    return switch (next.type) {
-        // `using.`, `using(`, `using[` are expression forms where `using` is an identifier.
-        .dot, .left_paren, .left_bracket => parseExpressionStatement(parser),
-        else => variables.parseVariableDeclaration(parser, false, null),
-    };
+    if(!is_using_identifier) {
+        return variables.parseVariableDeclaration(parser, false, null);
+    }
+
+    return parseExpressionStatement(parser);
 }
 
 /// `await using` declaration, or fall through to expression statement.
@@ -148,10 +149,7 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
             try parser.advance() orelse return null; // consume 'await'
 
-            // after consuming 'await', the current token is 'using'.
-            // determine if 'using' is an identifier or a keyword:
-            // - identifier: `await using;` -> parse as await expression
-            // - keyword:    `await using x = ...` -> parse as `await using` variable declaration
+            // determine if 'using' is an identifier or a keyword
             const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
             if (!is_using_identifier) {

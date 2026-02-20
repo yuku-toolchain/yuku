@@ -5,20 +5,17 @@ Running TypeScript, Test262 and Babel test suites with ESTree/TypeScript-ESTree 
 
 Summary
 -------
-Passed:       37933
-Failed:       1
-AST mismatch: 0/37225
+Passed:       37934
+Failed:       0
+AST mismatch: 0/37226
 Total:        37934
 Coverage:     100.00%
 
 Results by Suite
 ----------------
 
-✗ test/suite/js/pass
-  Passed: 37140/37141 (100.00%)
-  Failed: 1
-  Failures:
-    - test/suite/js/pass/3e332ea1125feb21.js
+✓ test/suite/js/pass
+  Passed: 37141/37141 (100.00%)
 
 ✓ test/suite/js/fail
   Passed: 694/694 (100.00%)
