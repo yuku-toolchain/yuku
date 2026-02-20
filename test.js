@@ -1,3 +1,3 @@
-for ({x: prop = ('x' in ({}))} of [{}]) {
-  iterCount += 1;
+async function fn() {
+	for await (async of [7]);
 }

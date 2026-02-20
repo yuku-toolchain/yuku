@@ -250,19 +250,15 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     }
 
     // [no LineTerminator here] => ConciseBody
-    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.has_line_terminator_before and precedence <= Precedence.Assignment) {
-        const id = try literals.parseIdentifier(parser) orelse return null;
+    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.has_line_terminator_before) {
+        const after_id_token = try parser.lookAhead() orelse return null;
 
-        if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
+        if (after_id_token.type == .arrow and !after_id_token.has_line_terminator_before) {
+            const id = try literals.parseIdentifier(parser) orelse return null;
             return parenthesized.identifierToArrowFunction(parser, id, true, start);
         }
 
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected '=>' after async arrow function parameter",
-            .{ .help = "Use 'async x => ...' or 'async (x) => ...' for async arrow functions." },
-        );
-        return null;
+        return async_id;
     }
 
     return async_id;
