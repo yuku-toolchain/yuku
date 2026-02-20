@@ -28,15 +28,10 @@ const ParseExpressionOpts = struct {
     /// when true, silently returns null on immediate expression parsing failure, which means no expression found.
     /// but still reports errors on subsequent parsing failures if an expression is detected.
     optional: bool = false,
-    /// whether this call to `parseExpression` should stop parsing when it encounters
-    /// an `in` token while `allow_in` is disabled in the parser context.
-    ///
-    /// by default this is false, because `allow_in` is a context flag that gets inherited
-    /// into recursive `parseExpression` calls (e.g. inside parentheses, computed members,
-    /// default values), where `in` should still be parsed as the binary operator.
-    /// only the direct caller that sets `allow_in = false` should pass `true` here,
-    /// so that `in` is correctly treated as a keyword delimiter (e.g. `for-in`) at
-    /// the top level, without affecting nested expressions.
+    /// whether to stop at `in` when `allow_in` is disabled. only the direct caller
+    /// that sets `allow_in = false` should pass `true` here, recursive calls (inside
+    /// parentheses, computed members, etc.) leave this `false` so `in` is parsed as
+    /// a binary operator normally.
     respect_allow_in: bool = false,
 };
 
@@ -48,21 +43,22 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
 
         if (opts.respect_allow_in and current_type == .in and !parser.context.allow_in) break;
 
-        const left_data = parser.getData(left);
+        const needs_yield_check = parser.current_token.has_line_terminator_before;
 
-        // `yield\n+a`: this not a binary expression, these are separate 'YieldExpression (argument=null)' and an another 'UnaryExpression'.
-        // because 'yield' is an expression and a statement at the same time lol
-        if (parser.current_token.has_line_terminator_before and left_data == .yield_expression) {
-            break;
-        }
+        const needs_postfix_check = isPostfixOperation(current_type);
 
-        //   a++()        <- can't call an update expression
-        //   () => {}()   <- can't call an arrow function
-        // breaking here produces natural "expected semicolon" error.
-        if (isPostfixOperation(current_type)) {
-            if (!isLeftHandSideExpression(left_data)) {
-                break;
-            }
+        if (needs_yield_check or needs_postfix_check) {
+            const left_data = parser.getData(left);
+
+            // `yield\n+a`: this not a binary expression, these are separate 'YieldExpression (argument=null)' and an another 'UnaryExpression'.
+            // because 'yield' is an expression and a statement at the same time lol
+            if (needs_yield_check and left_data == .yield_expression) break;
+
+            // only LeftHandSideExpressions can have postfix operations applied.
+            //   a++()        <- can't call an update expression
+            //   () => {}()   <- can't call an arrow function
+            // breaking here produces natural "expected semicolon" error.
+            if (needs_postfix_check and !isLeftHandSideExpression(left_data)) break;
         }
 
         const lbp = parser.current_token.leftBp();
