@@ -386,6 +386,7 @@ pub const Span = struct {
 pub const Token = struct {
     span: Span,
     type: TokenType,
+
     has_line_terminator_before: bool,
 
     pub inline fn eof(pos: u32) Token {

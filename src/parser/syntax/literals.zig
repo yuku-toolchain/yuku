@@ -74,21 +74,15 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     }, regex.span);
 }
 
-/// reads the lexer's invalid escape flag for the current template element.
-/// reports an error if the template is untagged.
-inline fn checkTemplateEscape(parser: *Parser, span: ast.Span, tagged: bool) Error!bool {
-    const invalid = parser.lexer.hasInvalidEscape();
-    if (!tagged and invalid) {
-        try parser.report(span, "Invalid escape sequence in template literal", .{});
-    }
-    return invalid;
-}
-
 pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
     const tok = parser.current_token;
+
     const has_invalid_escape = try checkTemplateEscape(parser, tok.span, tagged);
+
     try parser.advance() orelse return null;
+
     const element_span = getTemplateElementSpan(tok);
+
     const element = try parser.addNode(.{
         .template_element = .{
             .raw_start = element_span.start,
@@ -97,6 +91,7 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
             .has_invalid_escape = has_invalid_escape,
         },
     }, element_span);
+
     return try parser.addNode(.{
         .template_literal = .{
             .quasis = try parser.addExtra(&[_]ast.NodeIndex{element}),
@@ -128,6 +123,7 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
     try parser.advance() orelse return null;
 
     var end: u32 = undefined;
+
     while (true) {
         const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         try parser.scratch_b.append(parser.allocator(), expr);
@@ -179,6 +175,18 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
             .expressions = try parser.addExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
         },
     }, .{ .start = start, .end = end });
+}
+
+/// reads the lexer's invalid escape flag for the current template element.
+/// reports an error if the template is untagged.
+inline fn checkTemplateEscape(parser: *Parser, span: ast.Span, tagged: bool) Error!bool {
+    const invalid = parser.lexer.hasInvalidEscape();
+
+    if (!tagged and invalid) {
+        try parser.report(span, "Invalid escape sequence in template literal", .{});
+    }
+
+    return invalid;
 }
 
 inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span {
