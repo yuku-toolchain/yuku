@@ -556,12 +556,8 @@ pub const Lexer = struct {
                 if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
                 try self.consumeOctal();
             },
-            'x' => {
-                try self.consumeHex();
-            },
-            'u' => {
-                try self.consumeUnicodeEscape(.normal);
-            },
+            'x' => try self.consumeHex(),
+            'u' => try self.consumeUnicodeEscape(.normal),
             '1'...'7' => {
                 // octal escapes, always invalid in templates, only invalid in strict mode for strings
                 if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
@@ -640,6 +636,8 @@ pub const Lexer = struct {
 
     fn consumeUnicodeEscape(self: *Lexer, comptime context: ConsumeUnicodeContext) LexicalError!void {
         const in_identifier = context == .identifier_start or context == .identifier_continue;
+
+        self.setTokenFlag(.escaped);
 
         const id_error = if (context == .identifier_start) error.InvalidIdentifierStart else error.InvalidIdentifierContinue;
 
