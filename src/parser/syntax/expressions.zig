@@ -43,7 +43,7 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
 
         if (opts.respect_allow_in and current_type == .in and !parser.context.allow_in) break;
 
-        const needs_yield_check = parser.current_token.has_line_terminator_before;
+        const needs_yield_check = parser.current_token.hasLineTerminatorBefore();
 
         const needs_postfix_check = isPostfixOperation(current_type);
 
@@ -207,7 +207,7 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool, arrow_star
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
     // [no LineTerminator here] => ConciseBody
-    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before and precedence <= Precedence.Assignment) {
+    if (parser.current_token.type == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
 
@@ -221,7 +221,7 @@ fn parseIdentifierOrArrowFunction(parser: *Parser) Error!?ast.NodeIndex {
     const id = try literals.parseIdentifier(parser) orelse return null;
 
     //  [no LineTerminator here] => ConciseBody
-    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before) {
+    if (parser.current_token.type == .arrow and !parser.current_token.hasLineTerminatorBefore()) {
         return parenthesized.identifierToArrowFunction(parser, id, false, start);
     }
 
@@ -235,20 +235,20 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     const async_id = try literals.parseIdentifier(parser) orelse return null;
 
     // async function ...
-    if (!parser.current_token.has_line_terminator_before and parser.current_token.type == .function) {
+    if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.type == .function) {
         return functions.parseFunction(parser, .{ .is_expression = true, .is_async = true }, start);
     }
 
     // async (params) => ...
-    if (!parser.current_token.has_line_terminator_before and parser.current_token.type == .left_paren) {
+    if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.type == .left_paren) {
         return parseAsyncArrowFunctionOrCall(parser, true, start, async_id, precedence);
     }
 
     // [no LineTerminator here] => ConciseBody
-    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.has_line_terminator_before) {
+    if (parser.current_token.type.isIdentifierLike() and !parser.current_token.hasLineTerminatorBefore()) {
         const after_id_token = try parser.lookAhead() orelse return null;
 
-        if (after_id_token.type == .arrow and !after_id_token.has_line_terminator_before) {
+        if (after_id_token.type == .arrow and !after_id_token.hasLineTerminatorBefore()) {
             const id = try literals.parseIdentifier(parser) orelse return null;
             return parenthesized.identifierToArrowFunction(parser, id, true, start);
         }
@@ -266,7 +266,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, is_async: bool, arrow_start: ?
 
     // [no LineTerminator here] => ConciseBody
     // async (...) => ...
-    if (parser.current_token.type == .arrow and !parser.current_token.has_line_terminator_before and precedence <= Precedence.Assignment) {
+    if (parser.current_token.type == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
 
@@ -309,7 +309,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var delegate = false;
 
-    if (parser.current_token.type == .star and !parser.current_token.has_line_terminator_before) {
+    if (parser.current_token.type == .star and !parser.current_token.hasLineTerminatorBefore()) {
         delegate = true;
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
@@ -956,7 +956,7 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
             },
             .template_head, .no_substitution_template => {
                 // tagged template in optional chain, not allowed (unless line terminator separates)
-                if (!parser.current_token.has_line_terminator_before) {
+                if (!parser.current_token.hasLineTerminatorBefore()) {
                     try parser.report(
                         parser.current_token.span,
                         "Tagged template expressions are not permitted in an optional chain",

@@ -346,7 +346,7 @@ pub const Parser = struct {
 
     /// https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion
     pub inline fn canInsertImplicitSemicolon(_: *Parser, tok: token.Token) bool {
-        return tok.type == .eof or tok.has_line_terminator_before or tok.type == .right_brace;
+        return tok.type == .eof or tok.hasLineTerminatorBefore() or tok.type == .right_brace;
     }
 
     pub inline fn describeToken(self: *Parser, tok: token.Token) []const u8 {
@@ -411,7 +411,7 @@ pub const Parser = struct {
                 return;
             }
 
-            if (self.current_token.has_line_terminator_before) {
+            if (self.current_token.hasLineTerminatorBefore()) {
                 const can_start_statement = switch (self.current_token.type) {
                     .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
                     else => false,

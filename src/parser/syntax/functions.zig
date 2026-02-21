@@ -4,7 +4,7 @@ const Error = @import("../parser.zig").Error;
 
 const patterns = @import("patterns.zig");
 
-const ParseFunctionOpts = packed struct {
+const ParseFunctionOpts = struct {
     is_async: bool = false,
     is_expression: bool = false,
     is_declare: bool = false,

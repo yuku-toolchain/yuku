@@ -31,7 +31,7 @@ pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-pub const ParseDecoratedOpts = packed struct {
+pub const ParseDecoratedOpts = struct {
     /// whether the decorated construct is parsed in expression position.
     is_expression: bool = false,
     /// whether the decorated construct is a default export.

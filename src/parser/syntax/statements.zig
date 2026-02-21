@@ -132,7 +132,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     // determine if 'using' is an identifier or a keyword
     const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
-    if(!is_using_identifier) {
+    if (!is_using_identifier) {
         return variables.parseVariableDeclaration(parser, false, null);
     }
 
@@ -183,7 +183,7 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const next = try parser.lookAhead() orelse return null;
 
-    if (next.type == .function and !next.has_line_terminator_before) {
+    if (next.type == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'async'
         return functions.parseFunction(parser, .{ .is_async = true }, start);
@@ -506,7 +506,7 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'throw'
 
     // throw [no LineTerminator here] Expression
-    if (parser.current_token.has_line_terminator_before) {
+    if (parser.current_token.hasLineTerminatorBefore()) {
         try parser.report(parser.current_token.span, "Illegal newline after throw", .{
             .help = "The thrown expression must be on the same line as 'throw'",
         });

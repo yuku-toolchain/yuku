@@ -332,7 +332,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
     }
 
     // export default async function [name]() {}
-    else if (parser.current_token.type == .async and !parser.current_token.has_line_terminator_before) {
+    else if (parser.current_token.type == .async and !parser.current_token.hasLineTerminatorBefore()) {
         const async_start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'async'
         if (parser.current_token.type == .function) {

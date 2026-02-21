@@ -12,7 +12,7 @@ const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
 
-pub const ParseClassOpts = packed struct {
+pub const ParseClassOpts = struct {
     /// whether the class is parsing in an expression position
     is_expression: bool = false,
     /// for export default class, allows optional name but produces ClassDeclaration
@@ -178,7 +178,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
 
         // check if this is async method or 'async' as property name
-        if (isClassElementKeyStart(parser.current_token.type) and !parser.current_token.has_line_terminator_before) {
+        if (isClassElementKeyStart(parser.current_token.type) and !parser.current_token.hasLineTerminatorBefore()) {
             is_async = true;
         } else {
             key = try parser.addNode(

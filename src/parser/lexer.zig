@@ -55,14 +55,10 @@ pub const LexerMode = enum {
 };
 
 const LexerState = struct {
-    /// whether the previous token was preceded by a line terminator (for ASI)
-    has_line_terminator_before: bool = false,
     /// whether the lexer is currently in strict mode (synced by the parser)
     strict_mode: bool = false,
-    /// set by consumeEscape in template context when an invalid escape is encountered.
-    /// the parser uses this to set cooked value to null for tagged templates,
-    /// or to report an error for untagged templates.
-    has_invalid_escape: bool = false,
+    /// metadata that should be attached to the next emitted token.
+    token_flags: u8 = 0,
 };
 
 pub const Lexer = struct {
@@ -82,10 +78,6 @@ pub const Lexer = struct {
 
     pub inline fn isStrictMode(self: *const Lexer) bool {
         return self.state.strict_mode;
-    }
-
-    pub inline fn hasInvalidEscape(self: *const Lexer) bool {
-        return self.state.has_invalid_escape;
     }
 
     pub fn init(source: []const u8, allocator: std.mem.Allocator, source_type: ast.SourceType) error{OutOfMemory}!Lexer {
@@ -121,7 +113,8 @@ pub const Lexer = struct {
     }
 
     pub fn nextToken(self: *Lexer) LexicalError!token.Token {
-        self.state.has_invalid_escape = false;
+        self.clearTokenFlags();
+
         try self.skipWsAndComments();
 
         if (self.cursor >= self.source.len) {
@@ -292,10 +285,27 @@ pub const Lexer = struct {
             (allow_hyphen and c == '-');
     }
 
+    inline fn setTokenFlag(self: *Lexer, comptime flag: token.TokenFlag) void {
+        self.state.token_flags |= token.flagMask(flag);
+    }
+
+    inline fn hasTokenFlag(self: *const Lexer, comptime flag: token.TokenFlag) bool {
+        return (self.state.token_flags & token.flagMask(flag)) != 0;
+    }
+
+    inline fn clearTokenFlags(self: *Lexer) void {
+        self.state.token_flags = 0;
+    }
+
+    inline fn consumeTokenFlags(self: *Lexer) u8 {
+        const flags = self.state.token_flags;
+        self.state.token_flags = 0;
+        return flags;
+    }
+
     pub inline fn rewindTo(self: *Lexer, position: u32) void {
         self.cursor = position;
-        self.state.has_line_terminator_before = false;
-        self.state.has_invalid_escape = false;
+        self.clearTokenFlags();
     }
 
     // functions exclusively called by the parser for context-specific lexing
@@ -508,13 +518,13 @@ pub const Lexer = struct {
 
     /// consumes an escape sequence.
     /// in string context, errors propagate directly (fatal).
-    /// in template context, errors are absorbed and has_invalid_escape is set instead,
+    /// in template context, errors are absorbed and a token flag is set instead,
     /// because tagged templates tolerate invalid escapes (cooked value becomes null/undefined).
     fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         if (context == .template) {
             self.consumeEscapeImpl(context) catch |err| {
                 if (err == error.OutOfMemory) return error.OutOfMemory;
-                self.state.has_invalid_escape = true;
+                self.setTokenFlag(.template_invalid_escape);
                 if (self.cursor < self.source.len) self.cursor += 1;
             };
         } else {
@@ -1126,7 +1136,7 @@ pub const Lexer = struct {
     }
 
     inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
-        var can_be_html_close_comment = self.cursor == 0 or self.state.has_line_terminator_before;
+        var can_be_html_close_comment = self.cursor == 0 or self.hasTokenFlag(.line_terminator_before);
 
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
@@ -1140,7 +1150,7 @@ pub const Lexer = struct {
                         continue;
                     },
                     '\n', '\r' => {
-                        self.state.has_line_terminator_before = true;
+                        self.setTokenFlag(.line_terminator_before);
                         can_be_html_close_comment = true;
                         self.cursor += 1;
                         continue;
@@ -1152,7 +1162,7 @@ pub const Lexer = struct {
                             continue;
                         } else if (next == '*') {
                             try self.scanBlockComment();
-                            if (self.state.has_line_terminator_before) can_be_html_close_comment = true;
+                            if (self.hasTokenFlag(.line_terminator_before)) can_be_html_close_comment = true;
                             continue;
                         }
                         break;
@@ -1195,7 +1205,7 @@ pub const Lexer = struct {
                 const us_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
 
                 if (us_len > 0) {
-                    self.state.has_line_terminator_before = true;
+                    self.setTokenFlag(.line_terminator_before);
                     can_be_html_close_comment = true;
                     self.cursor += us_len;
                     continue;
@@ -1240,7 +1250,7 @@ pub const Lexer = struct {
             const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
 
             if (lt_len > 0) {
-                self.state.has_line_terminator_before = true;
+                self.setTokenFlag(.line_terminator_before);
                 self.cursor += lt_len;
                 continue;
             }
@@ -1311,13 +1321,14 @@ pub const Lexer = struct {
     }
 
     pub inline fn createToken(self: *Lexer, token_type: token.TokenType, start: u32, end: u32) token.Token {
+        const flags = self.consumeTokenFlags();
+
         const tok = token.Token{
             .type = token_type,
             .span = .{ .start = start, .end = end },
-            .has_line_terminator_before = self.state.has_line_terminator_before,
+            .flags = flags,
         };
 
-        self.state.has_line_terminator_before = false;
         return tok;
     }
 };

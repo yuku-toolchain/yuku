@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub const Mask = struct {
     pub const IsNumericLiteral: u32 = 1 << 13;
     pub const IsBinaryOp: u32 = 1 << 14;
@@ -383,16 +385,27 @@ pub const Span = struct {
     end: u32,
 };
 
+pub const TokenFlag = enum(u3) {
+    line_terminator_before,
+    template_invalid_escape,
+    escaped,
+};
+
+pub inline fn flagMask(comptime flag: TokenFlag) u8 {
+    return @as(u8, 1) << @intFromEnum(flag);
+}
+
 pub const Token = struct {
     span: Span,
     type: TokenType,
-    has_line_terminator_before: bool,
+
+    flags: u8 = 0,
 
     pub inline fn eof(pos: u32) Token {
         return Token{
             .span = .{ .start = pos, .end = pos },
             .type = .eof,
-            .has_line_terminator_before = false,
+            .flags = 0,
         };
     }
 
@@ -404,9 +417,31 @@ pub const Token = struct {
         return source[self.span.start..self.span.end];
     }
 
+    pub inline fn has(self: Token, comptime flag: TokenFlag) bool {
+        return (self.flags & flagMask(flag)) != 0;
+    }
+
+    /// true when skipped trivia before this token contained a line terminator.
+    /// parser uses this for ASI and newline-restricted grammar rules.
+    pub inline fn hasLineTerminatorBefore(self: Token) bool {
+        return self.has(.line_terminator_before);
+    }
+
+    /// true when template literal scanning encountered an invalid escape.
+    /// parser reports this for untagged templates but allows tagged templates.
+    pub inline fn hasTemplateInvalidEscape(self: Token) bool {
+        return self.has(.template_invalid_escape);
+    }
+
+    /// true when token text came from an escaped spelling (for example, identifier/keyword escapes).
+    pub inline fn isEscaped(self: Token) bool {
+        return self.has(.escaped);
+    }
+
+    // returns left binding power of this token to use in expression parsing loop (pratt parsing)
     pub fn leftBp(self: *const Token) u5 {
         // handle: [no LineTerminator here] ++ --
-        if ((self.type == .increment or self.type == .decrement) and self.has_line_terminator_before) {
+        if ((self.type == .increment or self.type == .decrement) and self.hasLineTerminatorBefore()) {
             return 0; // can't be infix, start new expression
         }
 
@@ -419,7 +454,7 @@ pub const Token = struct {
         return switch (self.type) {
             .dot, .optional_chaining, .left_bracket, .left_paren => 17,
             // tagged template: only when no line terminator before the template
-            .template_head, .no_substitution_template => if (!self.has_line_terminator_before) 17 else 0,
+            .template_head, .no_substitution_template => if (!self.hasLineTerminatorBefore()) 17 else 0,
             .comma => 1,
             .question => 2,
             else => 0, // can't be infix
@@ -449,6 +484,6 @@ pub const Precedence = struct {
     pub const Grouping: u8 = 18;
 };
 
-test "Token layout stays compact" {
-    try @import("std").testing.expect(@sizeOf(Token) <= 16);
+comptime {
+    std.debug.assert((@sizeOf(Token) <= 16));
 }
