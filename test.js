@@ -1,1 +1,1 @@
-for (var x o\u0066 []) ;
+cool = {\u0069f: cool}
