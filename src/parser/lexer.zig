@@ -419,8 +419,9 @@ pub const Lexer = struct {
 
                 // 26 bits enough, 'a' to 'z'
                 var flags_seen: u32 = 0;
-                while (self.cursor < self.source.len and std.ascii.isAlphabetic(self.source[self.cursor])) {
-                    const flag = self.source[self.cursor];
+                while (true) {
+                    const flag = self.peek(0);
+                    if (!std.ascii.isAlphabetic(flag)) break;
 
                     const is_valid_flag = switch (flag) {
                         'g', 'i', 'm', 's', 'u', 'y', 'd', 'v' => true,
@@ -988,7 +989,7 @@ pub const Lexer = struct {
 
         var is_leading_zero = false;
 
-        if (self.source[self.cursor] == '0') {
+        if (self.peek(0) == '0') {
             const prefix = self.peek(1);
 
             switch (prefix) {
@@ -1041,9 +1042,7 @@ pub const Lexer = struct {
         }
 
         // fraction and exponent only for regular decimal literals
-        if (tag == .numeric_literal and
-            self.cursor < self.source.len and self.source[self.cursor] == '.')
-        {
+        if (tag == .numeric_literal and self.peek(0) == '.') {
             const next = self.peek(1);
             if (next == '_') return error.NumericSeparatorMisuse;
             self.cursor += 1;
@@ -1051,8 +1050,8 @@ pub const Lexer = struct {
             if (next >= '0' and next <= '9') try self.consumeDecimalDigits(true);
         }
 
-        if (tag == .numeric_literal and self.cursor < self.source.len) {
-            const exp_char = self.source[self.cursor];
+        if (tag == .numeric_literal) {
+            const exp_char = self.peek(0);
             if (exp_char == 'e' or exp_char == 'E') {
                 has_decimal_or_exponent = true;
                 try self.consumeExponent();
@@ -1060,7 +1059,7 @@ pub const Lexer = struct {
         }
 
         // handle bigint suffix 'n'
-        if (!is_leading_zero and self.cursor < self.source.len and self.source[self.cursor] == 'n') {
+        if (!is_leading_zero and self.peek(0) == 'n') {
             // bigint cannot have decimal point or exponent
             if (has_decimal_or_exponent) {
                 return error.InvalidBigIntSuffix;
@@ -1071,10 +1070,8 @@ pub const Lexer = struct {
         }
 
         // identifier cannot immediately follow a numeric literal
-        if (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-            if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
-        }
+        const c = self.peek(0);
+        if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
 
         return self.createToken(tag, start, self.cursor);
     }
