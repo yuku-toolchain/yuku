@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40730
-Failed:       133
+Passed:       40738
+Failed:       126
 AST mismatch: 0/37227
-Total:        40863
-Coverage:     99.67%
+Total:        40864
+Coverage:     99.69%
 
 Results by Suite
 ----------------
@@ -18,8 +18,8 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3489/3622 (96.33%)
-  Failed: 133
+  Passed: 3496/3622 (96.52%)
+  Failed: 126
   Failures:
     - test/suite/js/fail/801ba06a0f7e3899.js
     - test/suite/js/fail/0826bc08385de633.js
@@ -36,7 +36,6 @@ Results by Suite
     - test/suite/js/fail/fe63459872c6fa4d.js
     - test/suite/js/fail/3655b132ea57bcf1.js
     - test/suite/js/fail/575535cd1595830b.js
-    - test/suite/js/fail/cec3bd6f52d7a31e.js
     - test/suite/js/fail/0904be29be472ee1.js
     - test/suite/js/fail/6ed986948899cf46.js
     - test/suite/js/fail/d80574acc3fe0a5a.js
@@ -60,7 +59,6 @@ Results by Suite
     - test/suite/js/fail/97600a3c978e72da.js
     - test/suite/js/fail/5f7c5fdf20821a3e.js
     - test/suite/js/fail/9eb36c00864dd9c5.js
-    - test/suite/js/fail/eee3a794658157d2.js
     - test/suite/js/fail/60201c1a2d64a45f.js
     - test/suite/js/fail/0cc504aa5331b950.module.js
     - test/suite/js/fail/f077284b82e4c1d6.js
@@ -89,7 +87,6 @@ Results by Suite
     - test/suite/js/fail/da626d579c0cd093.js
     - test/suite/js/fail/56dab4aba58f415b.js
     - test/suite/js/fail/92223b46523cd26f.js
-    - test/suite/js/fail/5f58c4ffb8378874.js
     - test/suite/js/fail/83cf437e1c3d4e0f.js
     - test/suite/js/fail/8aa3da812b6157af.js
     - test/suite/js/fail/d702d802a011e298.js
@@ -97,21 +94,17 @@ Results by Suite
     - test/suite/js/fail/5f5621cca1450878.js
     - test/suite/js/fail/9a32360c635f17e4.js
     - test/suite/js/fail/d9ab1decec9b3ab6.js
-    - test/suite/js/fail/29b829d70c99c912.js
     - test/suite/js/fail/8e4858c6855efcd0.js
     - test/suite/js/fail/d5e3aad46b771d44.js
     - test/suite/js/fail/e4e218d8c1920c15.js
     - test/suite/js/fail/8ae21edec4557fef.js
-    - test/suite/js/fail/674dcf73ce454c5a.js
     - test/suite/js/fail/2f23003a9c3a2849.js
     - test/suite/js/fail/8558e9787bedfa94.js
     - test/suite/js/fail/8ef706182f36c6e4.module.js
     - test/suite/js/fail/6925dc66ae08f190.js
     - test/suite/js/fail/9a214c9c6073936e.js
-    - test/suite/js/fail/b21bb88a2485603e.js
     - test/suite/js/fail/33308cfc785ead80.js
     - test/suite/js/fail/e18cbffe22b3d07e.js
-    - test/suite/js/fail/cfae34af6a0cffcb.js
     - test/suite/js/fail/9bc04cf866ec800d.js
     - test/suite/js/fail/bfd29968680a3be1.js
     - test/suite/js/fail/bf664810a9bc70bc.js
@@ -165,4 +158,4 @@ Results by Suite
   Passed: 1/1 (100.00%)
 
 ✓ test/misc/js
-  Passed: 30/30 (100.00%)
+  Passed: 31/31 (100.00%)

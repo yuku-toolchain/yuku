@@ -287,6 +287,15 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     const argument = try parseExpression(parser, Precedence.Unary, .{}) orelse return null;
+    const argument_span = parser.getSpan(argument);
+
+    if (parser.current_token.tag == .exponent) {
+        try parser.report(
+            .{ .start = operator_token.span.start, .end = argument_span.end },
+            "The left-hand side of '**' cannot be an unparenthesized unary expression",
+            .{ .help = "Add parentheses to make precedence explicit, for example `(-x) ** y` or `-(x ** y)`." },
+        );
+    }
 
     return try parser.addNode(
         .{
@@ -295,17 +304,26 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
                 .operator = ast.UnaryOperator.fromToken(operator_token.tag),
             },
         },
-        .{ .start = operator_token.span.start, .end = parser.getSpan(argument).end },
+        .{ .start = operator_token.span.start, .end = argument_span.end },
     );
 }
 
 /// `await expression`
 pub fn parseAwaitExpression(parser: *Parser, await_start: u32) Error!?ast.NodeIndex {
     const argument = try parseExpression(parser, Precedence.Unary, .{}) orelse return null;
+    const argument_span = parser.getSpan(argument);
+
+    if (parser.current_token.tag == .exponent) {
+        try parser.report(
+            .{ .start = await_start, .end = argument_span.end },
+            "The left-hand side of '**' cannot be an unparenthesized await expression",
+            .{ .help = "Add parentheses to make precedence explicit, for example `(await x) ** y`." },
+        );
+    }
 
     return try parser.addNode(
         .{ .await_expression = .{ .argument = argument } },
-        .{ .start = await_start, .end = parser.getSpan(argument).end },
+        .{ .start = await_start, .end = argument_span.end },
     );
 }
 

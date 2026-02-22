@@ -1,1 +1,1 @@
-function* g() { class C { static { yield 1 } } }
++(1 ** 2);
