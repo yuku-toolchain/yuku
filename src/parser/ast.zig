@@ -869,7 +869,8 @@ pub const IdentifierReference = struct {
     name_len: u16,
 };
 
-/// `#name`
+/// `#name`.
+/// `name_start` and `name_len` refer to the identifier name without the `#` prefix.
 pub const PrivateIdentifier = struct {
     name_start: u32,
     name_len: u16,

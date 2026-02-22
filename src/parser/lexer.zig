@@ -794,7 +794,7 @@ pub const Lexer = struct {
     fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
         @branchHint(.cold);
 
-        var decoded: [10]u8 = undefined; // max keyword len is 10
+        var decoded: [11]u8 = undefined; // max keyword len is 11 (constructor)
         var out_len: usize = 0;
         var i: usize = 0;
 
@@ -852,8 +852,10 @@ pub const Lexer = struct {
             3 => {
                 switch (lexeme[0]) {
                     'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .@"for",
+                    'g' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .get,
                     'l' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .let,
                     'n' => if (lexeme[1] == 'e' and lexeme[2] == 'w') return .new,
+                    's' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .set,
                     't' => if (lexeme[1] == 'r' and lexeme[2] == 'y') return .@"try",
                     'v' => if (lexeme[1] == 'a' and lexeme[2] == 'r') return .@"var",
                     else => {},
@@ -954,6 +956,7 @@ pub const Lexer = struct {
             },
             8 => {
                 switch (lexeme[0]) {
+                    'a' => if (std.mem.eql(u8, lexeme, "accessor")) return .accessor,
                     'c' => if (std.mem.eql(u8, lexeme, "continue")) return .@"continue",
                     'd' => if (std.mem.eql(u8, lexeme, "debugger")) return .debugger,
                     'f' => if (std.mem.eql(u8, lexeme, "function")) return .function,
@@ -976,6 +979,9 @@ pub const Lexer = struct {
                     },
                     else => {},
                 }
+            },
+            11 => {
+                if (lexeme[0] == 'c' and std.mem.eql(u8, lexeme, "constructor")) return .constructor;
             },
             else => {},
         }

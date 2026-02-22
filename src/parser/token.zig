@@ -172,6 +172,12 @@ pub const TokenTag = enum(u32) {
     jsx_identifier = 129,
     jsx_text = 130,
 
+    // contextual keywords (class/object bodies)
+    get = 132 | Mask.IsIdentifierLike, // "get"
+    set = 133 | Mask.IsIdentifierLike, // "set"
+    accessor = 134 | Mask.IsIdentifierLike, // "accessor"
+    constructor = 135 | Mask.IsIdentifierLike, // "constructor"
+
     eof = 131, // end of file
     pub fn precedence(self: TokenTag) u5 {
         return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
@@ -358,6 +364,11 @@ pub const TokenTag = enum(u32) {
             .debugger => "debugger",
 
             .declare => "declare",
+
+            .get => "get",
+            .set => "set",
+            .accessor => "accessor",
+            .constructor => "constructor",
 
             .eof,
             .numeric_literal,

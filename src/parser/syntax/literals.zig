@@ -201,8 +201,8 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.addNode(.{
         .private_identifier = .{
-            .name_start = token.span.start,
-            .name_len = @intCast(token.len()),
+            .name_start = token.span.start + 1, // skip '#'
+            .name_len = @intCast(token.len() - 1),
         },
     }, token.span);
 }

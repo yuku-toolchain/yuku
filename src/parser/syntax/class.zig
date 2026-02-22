@@ -197,22 +197,19 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
-    // check for get/set/accessor (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
-        const token_text = parser.getTokenText(parser.current_token);
-        const is_get = std.mem.eql(u8, token_text, "get");
-        const is_set = !is_get and std.mem.eql(u8, token_text, "set");
-        const is_accessor_kw = !is_get and !is_set and std.mem.eql(u8, token_text, "accessor");
-
-        if (is_get or is_set or is_accessor_kw) {
+    // check for get/set/accessor modifier (only if no key yet and not async/generator)
+    if (ast.isNull(key) and !is_async and !is_generator) {
+        const cur_tag = parser.current_token.tag;
+        if (cur_tag == .get or cur_tag == .set or cur_tag == .accessor) {
             const modifier_token = parser.current_token;
-            try parser.advance() orelse return null;
+            try parser.advanceAsIdentifierName() orelse return null;
 
             // check if this is a modifier or just a property named 'get'/'set'/'accessor'
             if (isClassElementKeyStart(parser.current_token.tag)) {
-                if (is_get) {
+                try parser.reportIfEscapedKeyword(modifier_token);
+                if (cur_tag == .get) {
                     kind = .get;
-                } else if (is_set) {
+                } else if (cur_tag == .set) {
                     kind = .set;
                 } else {
                     is_accessor = true;
@@ -239,8 +236,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         if (parser.getData(key) == .private_identifier) {
             const pi = parser.getData(key).private_identifier;
             const name = parser.getSourceText(pi.name_start, pi.name_len);
-            // name includes the '#' prefix
-            if (name.len == "#constructor".len and std.mem.eql(u8, name[1..], "constructor")) {
+            if (std.mem.eql(u8, name, "constructor")) {
                 try parser.report(
                     parser.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
@@ -271,14 +267,13 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // non-static field named "constructor" is forbidden
-    // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
     if (kind == .constructor and parser.current_token.tag != .left_paren) {
         try parser.report(
             parser.getSpan(key),
             "Classes may not have a non-static field named 'constructor'",
             .{ .help = "Rename this field or make it a method with parentheses." },
         );
-        // reset to .method so the field path handles it correctly for recovery
+
         kind = .method;
     }
 

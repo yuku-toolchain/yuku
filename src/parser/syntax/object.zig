@@ -1,4 +1,3 @@
-const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
@@ -125,17 +124,15 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for get/set, only if no async/generator modifiers and no key yet
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
-        const token_text = parser.getTokenText(parser.current_token);
-        const is_get = std.mem.eql(u8, token_text, "get");
-        const is_set = !is_get and std.mem.eql(u8, token_text, "set");
-
-        if (is_get or is_set) {
+    if (ast.isNull(key) and !is_async and !is_generator) {
+        const cur_tag = parser.current_token.tag;
+        if (cur_tag == .get or cur_tag == .set) {
             const get_set_token = parser.current_token;
-            try parser.advance() orelse return null;
+            try parser.advanceAsIdentifierName() orelse return null;
 
             if (isPropertyKeyStart(parser.current_token.tag)) {
-                kind = if (is_get) .get else .set;
+                try parser.reportIfEscapedKeyword(get_set_token);
+                kind = if (cur_tag == .get) .get else .set;
             } else {
                 key = try parser.addNode(
                     .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },

@@ -726,12 +726,11 @@ pub const Serializer = struct {
     }
 
     fn writePrivateIdentifier(self: *Self, data: ast.PrivateIdentifier, span: ast.Span) !void {
-        const name = self.tree.getSourceText(data.name_start, data.name_len);
         try self.beginObject();
         try self.fieldType("PrivateIdentifier");
         try self.fieldSpan(span);
         try self.field("name");
-        try self.writeDecodedString(name[1..]);
+        try self.writeDecodedString(self.tree.getSourceText(data.name_start, data.name_len));
         try self.endObject();
     }
 
