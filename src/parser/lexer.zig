@@ -1120,7 +1120,8 @@ pub const Lexer = struct {
                 return c == '0' or c == '1';
             }
         }.check;
-        return self.consumeDigits(isBinary, true);
+
+        return self.consumeDigits(isBinary, false);
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {

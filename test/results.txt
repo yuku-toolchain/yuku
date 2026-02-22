@@ -5,8 +5,8 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40728
-Failed:       135
+Passed:       40730
+Failed:       133
 AST mismatch: 0/37227
 Total:        40863
 Coverage:     99.67%
@@ -18,8 +18,8 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3487/3622 (96.27%)
-  Failed: 135
+  Passed: 3489/3622 (96.33%)
+  Failed: 133
   Failures:
     - test/suite/js/fail/801ba06a0f7e3899.js
     - test/suite/js/fail/0826bc08385de633.js
@@ -124,7 +124,6 @@ Results by Suite
     - test/suite/js/fail/d9ae9c7dfd0f47d2.module.js
     - test/suite/js/fail/c795131c60138e03.js
     - test/suite/js/fail/65d46c1d31bced61.js
-    - test/suite/js/fail/66efd4d60285d887.js
     - test/suite/js/fail/2eb5a92282524622.js
     - test/suite/js/fail/4f6ddbcfb7a9e098.js
     - test/suite/js/fail/090054c2be176800.js
@@ -151,7 +150,6 @@ Results by Suite
     - test/suite/js/fail/8c9136a24278614e.js
     - test/suite/js/fail/70c82b47768543af.js
     - test/suite/js/fail/f84fed08148439a1.js
-    - test/suite/js/fail/b59bac6bdfe524e1.js
     - test/suite/js/fail/830e82b85566aba7.js
     - test/suite/js/fail/20cfc8584938fc9d.module.js
     - test/suite/js/fail/7686825073d52fda.js
