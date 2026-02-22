@@ -2,6 +2,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const Precedence = @import("../token.zig").Precedence;
+const Token = @import("../token.zig").Token;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 const std = @import("std");
@@ -117,6 +118,11 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     );
 }
 
+/// returns `true` when `token` can begin a lexical binding (identifier, `[` or `{`).
+fn canTokenStartLexicalBinding(token: Token) bool {
+    return token.tag.isIdentifierLike() or token.tag == .left_bracket or token.tag == .left_brace;
+}
+
 /// determines if 'let' should be parsed as an identifier rather than a variable declaration keyword.
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .let);
@@ -128,11 +134,9 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
         return true;
     }
 
-    // in single-statement contexts (eg, if/while bodies), 'let' followed by an implicit semicolon
-    // should also be parsed as an identifier, since lexical declarations aren't allowed there.
-    if (parser.context.in_single_statement_context and parser.canInsertImplicitSemicolon(next)) {
-        return true;
-    }
+    // in single-statement contexts (eg, if/while bodies), parse `let` as an identifier
+    // when the next token cannot start a lexical binding.
+    if (parser.context.in_single_statement_context and !canTokenStartLexicalBinding(next)) return true;
 
     return false;
 }

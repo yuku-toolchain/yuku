@@ -1,1 +1,2 @@
-im\u0070ort('./empty_FIXTURE.js');
+while (false) let
+[a] = 0;
