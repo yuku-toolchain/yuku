@@ -5,25 +5,21 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40388
-Failed:       474
-AST mismatch: 2/37226
+Passed:       40395
+Failed:       467
+AST mismatch: 0/37226
 Total:        40862
-Coverage:     98.84%
+Coverage:     98.86%
 
 Results by Suite
 ----------------
 
-✗ test/suite/js/pass
-  Passed: 37139/37141 (99.99%)
-  Failed: 2
-  Failures:
-    - test/suite/js/pass/9036914be00c0dc7.js (AST mismatch)
-    - test/suite/js/pass/e8de5af87dc0004c.js (AST mismatch)
+✓ test/suite/js/pass
+  Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3150/3622 (86.97%)
-  Failed: 472
+  Passed: 3155/3622 (87.11%)
+  Failed: 467
   Failures:
     - test/suite/js/fail/66a74a184d9f6e37.js
     - test/suite/js/fail/cb30bbbaf709c7b2.js
@@ -123,7 +119,6 @@ Results by Suite
     - test/suite/js/fail/e47eb66f492fde44.js
     - test/suite/js/fail/15ed71d5577ba272.js
     - test/suite/js/fail/e54844c8bbdaa40d.js
-    - test/suite/js/fail/1f4f06473684fe2c.js
     - test/suite/js/fail/1fe04beba592c225.js
     - test/suite/js/fail/a6ddc5da0b3c48b8.js
     - test/suite/js/fail/67969570a50e79db.js
@@ -233,7 +228,6 @@ Results by Suite
     - test/suite/js/fail/41641ea4e95a2db0.js
     - test/suite/js/fail/ec4281225c1e91d8.js
     - test/suite/js/fail/60860f3a3cba03a9.js
-    - test/suite/js/fail/324f12b90603f90d.js
     - test/suite/js/fail/39571997f18491c8.js
     - test/suite/js/fail/dda92815dfb145d4.js
     - test/suite/js/fail/044104d0eca64122.js
@@ -248,7 +242,6 @@ Results by Suite
     - test/suite/js/fail/520552411b315c57.js
     - test/suite/js/fail/9b5148035a552358.js
     - test/suite/js/fail/556870ef5872ab4f.js
-    - test/suite/js/fail/90b540b6f6143478.js
     - test/suite/js/fail/4066d803bcbd3b0d.js
     - test/suite/js/fail/304682828de5aed9.js
     - test/suite/js/fail/d13c91380464786c.js
@@ -303,7 +296,6 @@ Results by Suite
     - test/suite/js/fail/acc12308580819f6.js
     - test/suite/js/fail/9a32360c635f17e4.js
     - test/suite/js/fail/d9ab1decec9b3ab6.js
-    - test/suite/js/fail/ded119cf8b99d1a7.js
     - test/suite/js/fail/29b829d70c99c912.js
     - test/suite/js/fail/16447d69e6ae548d.js
     - test/suite/js/fail/8e4858c6855efcd0.js
@@ -334,7 +326,6 @@ Results by Suite
     - test/suite/js/fail/93af005484fee056.js
     - test/suite/js/fail/ad65c92343e54ba5.js
     - test/suite/js/fail/1021d7ba13acd7df.js
-    - test/suite/js/fail/5eb9d95184832307.js
     - test/suite/js/fail/a5da0065b5350cc7.js
     - test/suite/js/fail/f4ffe3e7f995376c.js
     - test/suite/js/fail/94be272a3e7efc51.js

@@ -1017,7 +1017,7 @@ pub const Lexer = struct {
                     is_leading_zero = true;
 
                     // legacy octal (077) or decimal with leading zero (089)
-                    try self.consumeDecimalDigits();
+                    try self.consumeDecimalDigits(false);
 
                     var is_legacy_octal = true;
 
@@ -1034,12 +1034,10 @@ pub const Lexer = struct {
 
                     tag = if (is_legacy_octal) .octal_literal else .numeric_literal;
                 },
-                else => {
-                    try self.consumeDecimalDigits();
-                },
+                else => try self.consumeDecimalDigits(true),
             }
         } else {
-            try self.consumeDecimalDigits();
+            try self.consumeDecimalDigits(true);
         }
 
         // fraction and exponent only for regular decimal literals
@@ -1050,7 +1048,7 @@ pub const Lexer = struct {
             if (next == '_') return error.NumericSeparatorMisuse;
             self.cursor += 1;
             has_decimal_or_exponent = true;
-            if (next >= '0' and next <= '9') try self.consumeDecimalDigits();
+            if (next >= '0' and next <= '9') try self.consumeDecimalDigits(true);
         }
 
         if (tag == .numeric_literal and self.cursor < self.source.len) {
@@ -1081,7 +1079,7 @@ pub const Lexer = struct {
         return self.createToken(tag, start, self.cursor);
     }
 
-    inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
+    inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool, allow_separator: bool) LexicalError!void {
         var last_was_separator = false;
 
         while (self.cursor < self.source.len) {
@@ -1089,7 +1087,7 @@ pub const Lexer = struct {
             if (isValidDigit(c)) {
                 self.cursor += 1;
                 last_was_separator = false;
-            } else if (c == '_') {
+            } else if (allow_separator and c == '_') {
                 if (last_was_separator) {
                     return error.ConsecutiveNumericSeparators;
                 }
@@ -1105,16 +1103,16 @@ pub const Lexer = struct {
         }
     }
 
-    inline fn consumeDecimalDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(std.ascii.isDigit);
+    inline fn consumeDecimalDigits(self: *Lexer, allow_separator: bool) LexicalError!void {
+        return self.consumeDigits(std.ascii.isDigit, allow_separator);
     }
 
     inline fn consumeHexDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(std.ascii.isHex);
+        return self.consumeDigits(std.ascii.isHex, true);
     }
 
     inline fn consumeOctalDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(util.Utf.isOctalDigit);
+        return self.consumeDigits(util.Utf.isOctalDigit, true);
     }
 
     inline fn consumeBinaryDigits(self: *Lexer) LexicalError!void {
@@ -1123,7 +1121,7 @@ pub const Lexer = struct {
                 return c == '0' or c == '1';
             }
         }.check;
-        return self.consumeDigits(isBinary);
+        return self.consumeDigits(isBinary, true);
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {
@@ -1140,7 +1138,7 @@ pub const Lexer = struct {
         }
 
         const exp_start = self.cursor;
-        try self.consumeDecimalDigits();
+        try self.consumeDecimalDigits(true);
 
         if (self.cursor == exp_start) {
             return error.InvalidExponentPart;
