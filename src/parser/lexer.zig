@@ -1108,7 +1108,7 @@ pub const Lexer = struct {
     }
 
     inline fn consumeHexDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(std.ascii.isHex, true);
+        return self.consumeDigits(std.ascii.isHex, false);
     }
 
     inline fn consumeOctalDigits(self: *Lexer) LexicalError!void {
