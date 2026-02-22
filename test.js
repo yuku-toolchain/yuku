@@ -1,3 +1,1 @@
-const hello = \u0061sync () => {
-
-}
+00n

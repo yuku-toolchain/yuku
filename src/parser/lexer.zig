@@ -986,6 +986,8 @@ pub const Lexer = struct {
         // handle prefixes: 0x, 0o, 0b
         var has_decimal_or_exponent = false;
 
+        var is_leading_zero = false;
+
         if (self.source[self.cursor] == '0') {
             const prefix = self.peek(1);
 
@@ -1012,10 +1014,13 @@ pub const Lexer = struct {
                     if (self.cursor == bin_start) return error.InvalidBinaryLiteral;
                 },
                 '0'...'9' => {
+                    is_leading_zero = true;
+
                     // legacy octal (077) or decimal with leading zero (089)
                     try self.consumeDecimalDigits();
 
                     var is_legacy_octal = true;
+
                     for (self.source[start..self.cursor]) |c| {
                         if (c == '8' or c == '9') {
                             is_legacy_octal = false;
@@ -1057,7 +1062,7 @@ pub const Lexer = struct {
         }
 
         // handle bigint suffix 'n'
-        if (self.cursor < self.source.len and self.source[self.cursor] == 'n') {
+        if (!is_leading_zero and self.cursor < self.source.len and self.source[self.cursor] == 'n') {
             // bigint cannot have decimal point or exponent
             if (has_decimal_or_exponent) {
                 return error.InvalidBigIntSuffix;
