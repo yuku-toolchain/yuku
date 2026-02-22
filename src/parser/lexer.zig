@@ -1037,7 +1037,7 @@ pub const Lexer = struct {
 
                     tag = if (is_legacy_octal) .octal_literal else .numeric_literal;
                 },
-                else => try self.consumeDecimalDigits(true),
+                else => try self.consumeDecimalDigits(false),
             }
         } else {
             try self.consumeDecimalDigits(true);
@@ -1073,6 +1073,7 @@ pub const Lexer = struct {
 
         // identifier cannot immediately follow a numeric literal
         const c = self.peek(0);
+
         if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
 
         return self.createToken(tag, start, self.cursor);

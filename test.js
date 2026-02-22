@@ -1,3 +1,1 @@
-async function f() {
-  while (false) let x = null;
-}
+0_1;
