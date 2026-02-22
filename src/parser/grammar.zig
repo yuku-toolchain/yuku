@@ -146,10 +146,10 @@ pub fn expressionToPattern(
             const arg = spread.argument;
             try expressionToPattern(parser, arg, context) orelse return null;
 
-            if (context == .binding and parser.getData(arg) == .assignment_pattern) {
+            if (parser.getData(arg) == .assignment_pattern) {
                 try parser.report(
                     parser.getSpan(expr),
-                    "In binding context, rest element cannot have an initializer",
+                    "A rest element cannot have an initializer",
                     .{ .help = "Remove the '= ...' from the rest element." },
                 );
                 return null;

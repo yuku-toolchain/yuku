@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40764
-Failed:       100
+Passed:       40770
+Failed:       94
 AST mismatch: 0/37228
 Total:        40864
-Coverage:     99.76%
+Coverage:     99.77%
 
 Results by Suite
 ----------------
@@ -18,14 +18,13 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3522/3622 (97.24%)
-  Failed: 100
+  Passed: 3528/3622 (97.40%)
+  Failed: 94
   Failures:
     - test/suite/js/fail/801ba06a0f7e3899.js
     - test/suite/js/fail/77f02284703f7a93.js
     - test/suite/js/fail/dd870ca2a48a7fc7.js
     - test/suite/js/fail/31b43c39be608ac9.js
-    - test/suite/js/fail/527f6b46e447782a.js
     - test/suite/js/fail/652825f0dd566ffb.js
     - test/suite/js/fail/9a1e5e6875a3275e.module.js
     - test/suite/js/fail/fe63459872c6fa4d.js
@@ -63,14 +62,11 @@ Results by Suite
     - test/suite/js/fail/609dd4cd4720ac43.js
     - test/suite/js/fail/15dab15528c33a20.js
     - test/suite/js/fail/e199b02913f6025f.js
-    - test/suite/js/fail/dda92815dfb145d4.js
     - test/suite/js/fail/51cd992fa25f1ae7.js
     - test/suite/js/fail/556870ef5872ab4f.js
-    - test/suite/js/fail/297e7d0f1546a91f.js
     - test/suite/js/fail/da626d579c0cd093.js
     - test/suite/js/fail/56dab4aba58f415b.js
     - test/suite/js/fail/92223b46523cd26f.js
-    - test/suite/js/fail/83cf437e1c3d4e0f.js
     - test/suite/js/fail/8aa3da812b6157af.js
     - test/suite/js/fail/d702d802a011e298.js
     - test/suite/js/fail/5f5621cca1450878.js
@@ -97,12 +93,10 @@ Results by Suite
     - test/suite/js/fail/c795131c60138e03.js
     - test/suite/js/fail/65d46c1d31bced61.js
     - test/suite/js/fail/2eb5a92282524622.js
-    - test/suite/js/fail/4f6ddbcfb7a9e098.js
     - test/suite/js/fail/090054c2be176800.js
     - test/suite/js/fail/384c53d494e42be9.js
     - test/suite/js/fail/b269dd836f6785bb.js
     - test/suite/js/fail/17e278aa879ba0e9.js
-    - test/suite/js/fail/9f9ea123b6a89d45.js
     - test/suite/js/fail/1beb5ae3602d323e.module.js
     - test/suite/js/fail/a21f048ffbd95d63.js
     - test/suite/js/fail/8afbef2dd96f97ab.js
