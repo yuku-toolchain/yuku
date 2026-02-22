@@ -223,7 +223,7 @@ pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
         "Block statements must be enclosed in braces: { ... }",
     )) return null;
 
-    const body = try parser.parseBody(.right_brace);
+    const body = try parser.parseBody(.right_brace, .other);
 
     const end = parser.current_token.span.end;
 

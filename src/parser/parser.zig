@@ -23,8 +23,6 @@ const ParserContext = struct {
     allow_in: bool = true,
     /// Whether `return` statements are allowed in the current statement list.
     allow_return_statement: bool = false,
-    /// Tracks function bodies for directive-prologue handling.
-    in_function: bool = false,
     /// Whether we're parsing a single statement.
     /// example:
     /// if(test) 30;
@@ -111,7 +109,7 @@ pub const Parser = struct {
 
         try self.ensureCapacity();
 
-        const body = try self.parseBody(null);
+        const body = try self.parseBody(null, .program);
 
         const end = self.current_token.span.end;
 
@@ -141,14 +139,19 @@ pub const Parser = struct {
         return tree;
     }
 
-    pub fn parseBody(self: *Parser, terminator: ?TokenTag) Error!ast.IndexRange {
+    const BodyKind = enum {
+        program,
+        function,
+        other,
+    };
+
+    pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
         // save and restore strict mode, directives like "use strict" only apply within this scope
         const prev_strict = self.isStrictMode();
         defer self.restoreStrictMode(prev_strict);
 
-        // it's a directive prologue if it's a function body or if we are at the program level
-        // terminator null means, we are at program level
-        self.context.in_directive_prologue = self.context.in_function or terminator == null;
+        self.context.in_directive_prologue = kind == .program or kind == .function;
+
         defer self.context.in_directive_prologue = false;
 
         const statements_checkpoint = self.scratch_statements.begin();

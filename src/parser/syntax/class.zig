@@ -557,22 +557,19 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     // ClassStaticBlockStatementList : StatementList[~Yield, +Await, ~Return]opt
     const saved_await_is_keyword = parser.context.await_is_keyword;
     const saved_yield_is_keyword = parser.context.yield_is_keyword;
-    const saved_in_function = parser.context.in_function;
     const saved_allow_return_statement = parser.context.allow_return_statement;
 
     parser.context.await_is_keyword = true;
     parser.context.yield_is_keyword = false;
-    parser.context.in_function = false;
     parser.context.allow_return_statement = false;
 
     defer {
         parser.context.await_is_keyword = saved_await_is_keyword;
         parser.context.yield_is_keyword = saved_yield_is_keyword;
-        parser.context.in_function = saved_in_function;
         parser.context.allow_return_statement = saved_allow_return_statement;
     }
 
-    const body = try parser.parseBody(.right_brace);
+    const body = try parser.parseBody(.right_brace, .other);
 
     const end = parser.current_token.span.end;
 

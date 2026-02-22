@@ -263,16 +263,13 @@ const ArrowBodyResult = struct {
 fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
     const saved_await_is_keyword = parser.context.await_is_keyword;
     const saved_yield_is_keyword = parser.context.yield_is_keyword;
-    const saved_in_function = parser.context.in_function;
 
     parser.context.await_is_keyword = is_async;
     parser.context.yield_is_keyword = false;
-    parser.context.in_function = true;
 
     defer {
         parser.context.yield_is_keyword = saved_yield_is_keyword;
         parser.context.await_is_keyword = saved_await_is_keyword;
-        parser.context.in_function = saved_in_function;
     }
 
     if (parser.current_token.tag == .left_brace) {
