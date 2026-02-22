@@ -2,7 +2,8 @@ const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
-const token = @import("../token.zig");
+const Token = @import("../token.zig").Token;
+const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
@@ -98,7 +99,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     var computed = false;
 
     var key: ast.NodeIndex = ast.null_node;
-    var key_identifier_token: ?token.Token = null;
+    var key_identifier_token: ?Token = null;
 
     // check for async, consume it, then decide if it's a modifier or key based on what follows
     if (parser.current_token.tag == .async) {
@@ -276,7 +277,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn isPropertyKeyStart(tag: @import("../token.zig").TokenTag) bool {
+inline fn isPropertyKeyStart(tag: TokenTag) bool {
     return tag == .star or
         tag == .left_bracket or
         tag.isIdentifierLike() or

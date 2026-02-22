@@ -1,8 +1,8 @@
 const ast = @import("../ast.zig");
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
+const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");

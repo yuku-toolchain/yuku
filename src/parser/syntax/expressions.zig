@@ -1,7 +1,7 @@
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
 const std = @import("std");
 const Precedence = @import("../token.zig").Precedence;
 
@@ -178,11 +178,11 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
             }
 
             if (!opts.optional) {
-                const tok = parser.current_token;
+                const token = parser.current_token;
                 try parser.reportFmt(
-                    tok.span,
+                    token.span,
                     "Unexpected token '{s}'",
-                    .{parser.describeToken(tok)},
+                    .{parser.describeToken(token)},
                     .{ .help = "Expected an expression" },
                 );
             }
@@ -1054,7 +1054,7 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
 /// this operation is valid when the left side is wrapped in parentheses,
 /// which creates a `parenthesized_expression` (which is a LeftHandSideExpression):
 /// - `(a++).prop` - valid
-fn isPostfixOperation(tag: token.TokenTag) bool {
+fn isPostfixOperation(tag: TokenTag) bool {
     return switch (tag) {
         .dot, // obj.prop
         .left_bracket, // obj[prop]

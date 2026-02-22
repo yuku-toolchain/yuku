@@ -1,7 +1,7 @@
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const expressions = @import("expressions.zig");
@@ -444,7 +444,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
                 });
             }
 
-            const local_tag: token.TokenTag = @enumFromInt(local_tags[i]);
+            const local_tag: TokenTag = @enumFromInt(local_tags[i]);
 
             if (local_tag.isReserved()) {
                 const local_name = parser.getSourceText(local_data.identifier_name.name_start, local_data.identifier_name.name_len);

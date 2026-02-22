@@ -75,9 +75,9 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
-    const tok = parser.current_token;
+    const token = parser.current_token;
 
-    const element = try addTemplateElement(parser, tok, true, tagged);
+    const element = try addTemplateElement(parser, token, true, tagged);
 
     try parser.advance() orelse return null;
 
@@ -86,7 +86,7 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
             .quasis = try parser.addExtra(&[_]ast.NodeIndex{element}),
             .expressions = ast.IndexRange.empty,
         },
-    }, tok.span);
+    }, token.span);
 }
 
 pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex {
@@ -150,10 +150,10 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
     }, .{ .start = start, .end = end });
 }
 
-inline fn addTemplateElement(parser: *Parser, tok: Token, tail: bool, tagged: bool) Error!ast.NodeIndex {
-    const span = getTemplateElementSpan(tok);
+inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: bool) Error!ast.NodeIndex {
+    const span = getTemplateElementSpan(token);
 
-    const is_cooked_undefined = tok.hasInvalidEscape();
+    const is_cooked_undefined = token.hasInvalidEscape();
 
     if (!tagged and is_cooked_undefined) {
         try parser.report(span, "Bad escape sequence in untagged template literal", .{});
@@ -186,14 +186,14 @@ inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
 
-    const tok = parser.current_token;
+    const token = parser.current_token;
     try parser.advance() orelse return null;
     return try parser.addNode(.{
         .identifier_reference = .{
-            .name_start = tok.span.start,
-            .name_len = @intCast(tok.len()),
+            .name_start = token.span.start,
+            .name_len = @intCast(token.len()),
         },
-    }, tok.span);
+    }, token.span);
 }
 
 pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
@@ -208,14 +208,14 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
-    const tok = parser.current_token;
+    const token = parser.current_token;
     try parser.advance() orelse return null;
     return try parser.addNode(.{
         .identifier_name = .{
-            .name_start = tok.span.start,
-            .name_len = @intCast(tok.len()),
+            .name_start = token.span.start,
+            .name_len = @intCast(token.len()),
         },
-    }, tok.span);
+    }, token.span);
 }
 
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {

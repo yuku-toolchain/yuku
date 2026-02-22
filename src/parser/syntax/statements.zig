@@ -1,9 +1,9 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
+const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const Precedence = @import("../token.zig").Precedence;
 
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");

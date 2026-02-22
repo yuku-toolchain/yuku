@@ -1,5 +1,6 @@
 const std = @import("std");
-const token = @import("token.zig");
+const Token = @import("token.zig").Token;
+const TokenTag = @import("token.zig").TokenTag;
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
 
@@ -49,7 +50,7 @@ pub const Parser = struct {
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     nodes: ast.NodeList = .empty,
     extra: std.ArrayList(ast.NodeIndex) = .empty,
-    current_token: token.Token,
+    current_token: Token,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -93,7 +94,7 @@ pub const Parser = struct {
 
         // let's begin
         try self.advance() orelse {
-            self.current_token = token.Token.eof(0);
+            self.current_token = Token.eof(0);
         };
 
         errdefer self.arena.deinit();
@@ -130,7 +131,7 @@ pub const Parser = struct {
         return tree;
     }
 
-    pub fn parseBody(self: *Parser, terminator: ?token.TokenTag) Error!ast.IndexRange {
+    pub fn parseBody(self: *Parser, terminator: ?TokenTag) Error!ast.IndexRange {
         // save and restore strict mode, directives like "use strict" only apply within this scope
         const prev_strict = self.isStrictMode();
         defer self.restoreStrictMode(prev_strict);
@@ -154,7 +155,7 @@ pub const Parser = struct {
         return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
     }
 
-    inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenTag) bool {
+    inline fn isAtBodyEnd(self: *Parser, terminator: ?TokenTag) bool {
         return self.current_token.tag == .eof or
             (terminator != null and self.current_token.tag == terminator.?);
     }
@@ -254,11 +255,11 @@ pub const Parser = struct {
         return self.source[start..][0..len];
     }
 
-    pub inline fn getTokenText(self: *const Parser, tok: token.Token) []const u8 {
-        return tok.text(self.source);
+    pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
+        return token.text(self.source);
     }
 
-    inline fn nextToken(self: *Parser) Error!?token.Token {
+    inline fn nextToken(self: *Parser) Error!?Token {
         return self.lexer.nextToken() catch |e| blk: {
             if (e == error.OutOfMemory) return error.OutOfMemory;
 
@@ -278,7 +279,7 @@ pub const Parser = struct {
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    pub fn lookAhead(self: *Parser) Error!?token.Token {
+    pub fn lookAhead(self: *Parser) Error!?Token {
         const prev_state = self.lexer.state;
         const prev_cursor = self.lexer.cursor;
         const prev_comments_len = self.lexer.comments.items.len;
@@ -294,12 +295,12 @@ pub const Parser = struct {
 
     /// sets current token from a re-scanned token and advances to the next token.
     /// use after lexer re-scan functions (reScanJsxText, reScanTemplateContinuation, etc.)
-    pub inline fn advanceWithRescannedToken(self: *Parser, tok: token.Token) Error!?void {
-        self.current_token = tok;
+    pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
+        self.current_token = token;
         return self.advance();
     }
 
-    pub fn expect(self: *Parser, comptime tag: token.TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
+    pub fn expect(self: *Parser, comptime tag: TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
         if (self.current_token.tag == tag) {
             try self.advance() orelse return false;
             return true;
@@ -345,13 +346,13 @@ pub const Parser = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion
-    pub inline fn canInsertImplicitSemicolon(_: *Parser, tok: token.Token) bool {
-        return tok.tag == .eof or tok.hasLineTerminatorBefore() or tok.tag == .right_brace;
+    pub inline fn canInsertImplicitSemicolon(_: *Parser, token: Token) bool {
+        return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    pub inline fn describeToken(self: *Parser, tok: token.Token) []const u8 {
-        if (tok.tag == .eof) return "end of file";
-        return tok.tag.toString() orelse tok.text(self.source);
+    pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
+        if (token.tag == .eof) return "end of file";
+        return token.tag.toString() orelse token.text(self.source);
     }
 
     pub const ReportOptions = struct {
@@ -399,7 +400,7 @@ pub const Parser = struct {
     // returning null here means, break the top level statement parsing loop
     // otherwise continue
     // TODO: make it better
-    fn synchronize(self: *Parser, terminator: ?token.TokenTag) Error!?void {
+    fn synchronize(self: *Parser, terminator: ?TokenTag) Error!?void {
         while (self.current_token.tag != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {

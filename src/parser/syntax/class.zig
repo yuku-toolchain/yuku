@@ -2,7 +2,7 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
@@ -330,11 +330,11 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
 
     // identifier-like (includes keywords)
     if (parser.current_token.tag.isIdentifierLike()) {
-        const tok = parser.current_token;
+        const token = parser.current_token;
         try parser.advance() orelse return null;
         const key = try parser.addNode(
-            .{ .identifier_name = .{ .name_start = tok.span.start, .name_len = @intCast(tok.len()) } },
-            tok.span,
+            .{ .identifier_name = .{ .name_start = token.span.start, .name_len = @intCast(token.len()) } },
+            token.span,
         );
         return .{ .key = key, .computed = false };
     }
@@ -564,7 +564,7 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 }
 
 /// if token could start a class element key (after modifiers like static/async/get/set)
-inline fn isClassElementKeyStart(tag: token.TokenTag) bool {
+inline fn isClassElementKeyStart(tag: TokenTag) bool {
     return tag == .star or
         tag == .left_bracket or
         tag == .private_identifier or
