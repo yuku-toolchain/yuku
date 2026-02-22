@@ -476,7 +476,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
 
-    if (!parser.context.in_function) {
+    if (!parser.context.allow_return_statement) {
         try parser.report(
             .{ .start = start, .end = end },
             "'return' statement is only valid inside a function",

@@ -17,7 +17,7 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
     try parser.advance() orelse return null; // consume 'for'
 
     if (parser.current_token.tag == .await) {
-        if (!parser.context.in_async and !parser.isModule()) {
+        if (!parser.context.await_is_keyword) {
             try parser.report(parser.current_token.span, "'for await' is only valid in async functions or modules", .{});
         }
 

@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40722
-Failed:       141
+Passed:       40728
+Failed:       135
 AST mismatch: 0/37227
 Total:        40863
-Coverage:     99.65%
+Coverage:     99.67%
 
 Results by Suite
 ----------------
@@ -18,8 +18,8 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3481/3622 (96.11%)
-  Failed: 141
+  Passed: 3487/3622 (96.27%)
+  Failed: 135
   Failures:
     - test/suite/js/fail/801ba06a0f7e3899.js
     - test/suite/js/fail/0826bc08385de633.js
@@ -33,9 +33,7 @@ Results by Suite
     - test/suite/js/fail/652825f0dd566ffb.js
     - test/suite/js/fail/ec27785de9d6f7a9.js
     - test/suite/js/fail/9a1e5e6875a3275e.module.js
-    - test/suite/js/fail/6827fc7d43f29ec0.module.js
     - test/suite/js/fail/fe63459872c6fa4d.js
-    - test/suite/js/fail/2ae4f89bb3dc4754.module.js
     - test/suite/js/fail/3655b132ea57bcf1.js
     - test/suite/js/fail/575535cd1595830b.js
     - test/suite/js/fail/cec3bd6f52d7a31e.js
@@ -65,7 +63,6 @@ Results by Suite
     - test/suite/js/fail/eee3a794658157d2.js
     - test/suite/js/fail/60201c1a2d64a45f.js
     - test/suite/js/fail/0cc504aa5331b950.module.js
-    - test/suite/js/fail/8df34f4088394dd7.module.js
     - test/suite/js/fail/f077284b82e4c1d6.js
     - test/suite/js/fail/8982a259843effe5.js
     - test/suite/js/fail/3a857eeaa77266b4.js
@@ -101,13 +98,11 @@ Results by Suite
     - test/suite/js/fail/9a32360c635f17e4.js
     - test/suite/js/fail/d9ab1decec9b3ab6.js
     - test/suite/js/fail/29b829d70c99c912.js
-    - test/suite/js/fail/16447d69e6ae548d.js
     - test/suite/js/fail/8e4858c6855efcd0.js
     - test/suite/js/fail/d5e3aad46b771d44.js
     - test/suite/js/fail/e4e218d8c1920c15.js
     - test/suite/js/fail/8ae21edec4557fef.js
     - test/suite/js/fail/674dcf73ce454c5a.js
-    - test/suite/js/fail/14b3a58ecc5cb333.module.js
     - test/suite/js/fail/2f23003a9c3a2849.js
     - test/suite/js/fail/8558e9787bedfa94.js
     - test/suite/js/fail/8ef706182f36c6e4.module.js
@@ -120,7 +115,6 @@ Results by Suite
     - test/suite/js/fail/9bc04cf866ec800d.js
     - test/suite/js/fail/bfd29968680a3be1.js
     - test/suite/js/fail/bf664810a9bc70bc.js
-    - test/suite/js/fail/c496c72b607251dc.js
     - test/suite/js/fail/b94cccf4bc5e6c21.module.js
     - test/suite/js/fail/b56f0309fab8e00a.js
     - test/suite/js/fail/d887411d80ac4c9c.js

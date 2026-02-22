@@ -276,7 +276,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         return false;
     }
 
-    if (token.tag == .await and (parser.context.in_async or parser.isModule())) {
+    if (token.tag == .await and parser.context.await_is_keyword) {
         try parser.reportFmt(
             token.span,
             "Cannot use `await` as {s} in an async or module context",

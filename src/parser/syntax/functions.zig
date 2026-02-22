@@ -37,17 +37,16 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         try parser.advance() orelse return null;
     }
 
-    const saved_async = parser.context.in_async;
+    const saved_await_is_keyword = parser.context.await_is_keyword;
     const saved_yield_is_keyword = parser.context.yield_is_keyword;
 
-    parser.context.in_async = opts.is_async;
-
     defer {
-        parser.context.in_async = saved_async;
+        parser.context.await_is_keyword = saved_await_is_keyword;
         parser.context.yield_is_keyword = saved_yield_is_keyword;
     }
 
     const outer_yield_is_keyword = parser.context.yield_is_keyword;
+    const outer_await_is_keyword = parser.context.await_is_keyword;
 
     // names use different yield-keyword rules for declarations vs expressions.
     // inside a generator body:
@@ -59,6 +58,16 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         else => outer_yield_is_keyword,
     };
 
+    // names use different await-keyword rules for declarations vs expressions.
+    // in script code:
+    // - `async function await(){}` (declaration) is valid.
+    // - `(async function await(){})` (expression) is invalid.
+    // declarations inherit outer Await context, while async expressions force Await for their name.
+    parser.context.await_is_keyword = switch (function_type) {
+        .function_expression => opts.is_async,
+        else => outer_await_is_keyword,
+    };
+
     const id = if (parser.current_token.tag.isIdentifierLike())
         try patterns.parseBindingIdentifier(parser) orelse ast.null_node
     else
@@ -67,6 +76,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     // params/body are validated in the function's generator context.
     // example: `function* yield(){}` ok, but `function* f(yield){}` is not.
     parser.context.yield_is_keyword = is_generator;
+    parser.context.await_is_keyword = opts.is_async;
 
     // name is required for regular function declarations, but optional for:
     // - function expressions
@@ -154,10 +164,14 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     )) return null;
 
     const saved_in_function = parser.context.in_function;
+    const saved_allow_return_statement = parser.context.allow_return_statement;
+
     parser.context.in_function = true;
+    parser.context.allow_return_statement = true;
 
     defer {
         parser.context.in_function = saved_in_function;
+        parser.context.allow_return_statement = saved_allow_return_statement;
     }
 
     const body = try parser.parseBody(.right_brace);

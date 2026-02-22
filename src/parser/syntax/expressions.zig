@@ -126,7 +126,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseParenthesizedOrArrowFunction(parser, false, null, precedence);
     }
 
-    if (tag == .await and (parser.context.in_async or parser.isModule())) {
+    if (tag == .await and parser.context.await_is_keyword) {
         const await_start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'await'
         return parseAwaitExpression(parser, await_start);

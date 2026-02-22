@@ -16,10 +16,14 @@ pub const Options = struct {
 };
 
 const ParserContext = struct {
-    in_async: bool = false,
+    /// When true, `await` is a keyword (allowed as an expression, disallowed as an identifier).
+    await_is_keyword: bool = false,
     /// When true, `yield` is a keyword (allowed as an expression, disallowed as an identifier).
     yield_is_keyword: bool = false,
     allow_in: bool = true,
+    /// Whether `return` statements are allowed in the current statement list.
+    allow_return_statement: bool = false,
+    /// Tracks function bodies for directive-prologue handling.
     in_function: bool = false,
     /// Whether we're parsing a single statement.
     /// example:
@@ -91,6 +95,12 @@ pub const Parser = struct {
         self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type);
 
         if (self.isModule()) _ = self.enterStrictMode();
+
+        // ScriptBody: StatementList[~Yield, ~Await, ~Return]
+        // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
+        self.context.yield_is_keyword = false;
+        self.context.await_is_keyword = self.isModule();
+        self.context.allow_return_statement = false;
 
         // let's begin
         try self.advance() orelse {
@@ -306,7 +316,7 @@ pub const Parser = struct {
 
         if (self.current_token.tag.isUnconditionallyReserved() or
             (self.current_token.tag.isStrictModeReserved() and self.isStrictMode()) or
-            (self.current_token.tag == .await and (self.context.in_async or self.isModule())) or
+            (self.current_token.tag == .await and self.context.await_is_keyword) or
             (self.current_token.tag == .yield and self.context.yield_is_keyword))
         {
             try self.reportEscapedKeyword(self.current_token.span);
