@@ -233,6 +233,23 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         computed = key_result.computed;
     }
 
+    // no element may have a private name "#constructor" (static or not)
+    // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    if (!computed) {
+        if (parser.getData(key) == .private_identifier) {
+            const pi = parser.getData(key).private_identifier;
+            const name = parser.getSourceText(pi.name_start, pi.name_len);
+            // name includes the '#' prefix
+            if (name.len == "#constructor".len and std.mem.eql(u8, name[1..], "constructor")) {
+                try parser.report(
+                    parser.getSpan(key),
+                    "Classes can't have a private field named '#constructor'",
+                    .{ .help = "Use a different name for this private member." },
+                );
+            }
+        }
+    }
+
     // determine if this is constructor
     // non-static, non-computed methods with PropName "constructor" are constructors
     // PropName can come from identifier or string literal (but not computed)
@@ -251,6 +268,18 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 kind = .constructor;
             }
         }
+    }
+
+    // non-static field named "constructor" is forbidden
+    // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    if (kind == .constructor and parser.current_token.tag != .left_paren) {
+        try parser.report(
+            parser.getSpan(key),
+            "Classes may not have a non-static field named 'constructor'",
+            .{ .help = "Rename this field or make it a method with parentheses." },
+        );
+        // reset to .method so the field path handles it correctly for recovery
+        kind = .method;
     }
 
     // method: key followed by (

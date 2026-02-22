@@ -1,2 +1,1 @@
-while (false) let
-[a] = 0;
+const yield = "nice"
