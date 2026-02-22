@@ -26,5 +26,5 @@ jobs:
       - name: Run profiler
         uses: CodSpeedHQ/action@v4
         with:
-          mode: walltime
+          mode: simulation
           run: ./zig-out/bin/profiler
