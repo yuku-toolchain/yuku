@@ -963,15 +963,14 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                 expr = try parseOptionalChainElement(parser, expr, true) orelse return null;
             },
             .template_head, .no_substitution_template => {
-                // tagged template in optional chain, not allowed (unless line terminator separates)
-                if (!parser.current_token.hasLineTerminatorBefore()) {
-                    try parser.report(
-                        parser.current_token.span,
-                        "Tagged template expressions are not permitted in an optional chain",
-                        .{ .help = "Remove the optional chaining operator '?.' before the template literal or add parentheses." },
-                    );
-                    return null;
-                }
+                // tagged template in optional chain not allowed
+
+                try parser.report(
+                    parser.current_token.span,
+                    "Tagged template expressions are not permitted in an optional chain",
+                    .{ .help = "Remove the optional chaining operator '?.' before the template literal or add parentheses." },
+                );
+
                 break;
             },
             else => break,
