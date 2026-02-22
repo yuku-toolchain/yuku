@@ -731,17 +731,13 @@ pub const Lexer = struct {
 
         var has_escape = false;
 
-        const is_private = self.source[self.cursor] == '#';
+        const is_private = self.peek(0) == '#';
 
         if (is_private) {
             self.cursor += 1;
-            // check if we've reached end-of-file after '#'
-            if (self.cursor >= self.source.len) {
-                return error.InvalidIdentifierStart;
-            }
         }
 
-        const first_char = self.source[self.cursor];
+        const first_char = self.peek(0);
 
         if (std.ascii.isAscii(first_char)) {
             @branchHint(.likely);
@@ -1124,12 +1120,8 @@ pub const Lexer = struct {
     fn consumeExponent(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip 'e' or 'E'
 
-        if (self.cursor >= self.source.len) {
-            return error.InvalidExponentPart;
-        }
-
         // handle optional sign: + or -
-        const c = self.source[self.cursor];
+        const c = self.peek(0);
         if (c == '+' or c == '-') {
             self.cursor += 1;
         }
