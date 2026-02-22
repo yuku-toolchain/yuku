@@ -275,32 +275,32 @@ pub const Parser = struct {
         };
     }
 
-    /// Advance to the next token. Reports an error if the current token
+    /// advance to the next token. reports an error if the current token
     /// is an escaped keyword being consumed in a keyword position.
-    /// Use `advanceAsIdentifierName` to opt out in IdentifierName positions.
-    /// Use `advanceAsKeyword` for contextual keywords (async) with no reserved flags.
+    /// use `advanceAsIdentifierName` to opt out in IdentifierName positions.
+    /// use `advanceAsKeyword` for contextual keywords (async) with no reserved flags.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    /// Advance without the escaped-keyword check.
-    /// Use in IdentifierName positions where keywords are valid names
+    /// advance without the escaped-keyword check.
+    /// use in IdentifierName positions where keywords are valid names
     /// (property keys, member access, export/import specifier names, etc.)
     pub inline fn advanceAsIdentifierName(self: *Parser) Error!?void {
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    /// Advance past a contextual keyword (like `async`) that has no reserved flags
-    /// but is being consumed as a keyword. Unconditionally checks the escaped flag.
+    /// advance past a contextual keyword (like `async`) that has no reserved flags
+    /// but is being consumed as a keyword. unconditionally checks the escaped flag.
     pub inline fn advanceAsKeyword(self: *Parser) Error!?void {
         if (self.current_token.isEscaped()) try self.reportEscapedKeyword(self.current_token.span);
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    /// Reports an error if the current token is an escaped keyword in any
-    /// currently active context (unconditionally reserved, strict-mode reserved,
-    /// or contextual keywords like yield/await when they act as keywords).
+    // `StringValue` of `IdentifierName` normalizes any Unicode escape sequences
+    // in `IdentifierName` hence such escapes cannot be used to write an Identifier
+    // whose code point sequence is the same as a `ReservedWord`.
     pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
         if (!self.current_token.isEscaped()) return;
 
@@ -321,8 +321,8 @@ pub const Parser = struct {
         });
     }
 
-    /// Reports an escaped-keyword error if the given token has the escaped flag.
-    /// Use for deferred checks where the token was consumed before its role was known.
+    /// reports an escaped-keyword error if the given token has the escaped flag.
+    /// use for deferred checks where the token was consumed before its role was known.
     pub inline fn reportIfEscapedKeyword(self: *Parser, token: Token) Error!void {
         if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
     }
