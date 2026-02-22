@@ -127,13 +127,15 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     // check for get/set, only if no async/generator modifiers and no key yet
     if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
         const token_text = parser.getTokenText(parser.current_token);
+        const is_get = std.mem.eql(u8, token_text, "get");
+        const is_set = !is_get and std.mem.eql(u8, token_text, "set");
 
-        if (std.mem.eql(u8, token_text, "get") or std.mem.eql(u8, token_text, "set")) {
+        if (is_get or is_set) {
             const get_set_token = parser.current_token;
             try parser.advance() orelse return null;
 
             if (isPropertyKeyStart(parser.current_token.tag)) {
-                kind = if (std.mem.eql(u8, token_text, "get")) .get else .set;
+                kind = if (is_get) .get else .set;
             } else {
                 key = try parser.addNode(
                     .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
@@ -296,22 +298,22 @@ fn parseObjectMethodProperty(
     is_async: bool,
     is_generator: bool,
 ) Error!?ast.NodeIndex {
-    if (kind == .get and is_generator) {
-        try parser.report(
-            .{ .start = prop_start, .end = parser.current_token.span.end },
-            "Getter cannot be a generator",
-            .{ .help = "Remove the '*' from the getter definition." },
-        );
-        return null;
-    }
-
-    if (kind == .set and is_generator) {
-        try parser.report(
-            .{ .start = prop_start, .end = parser.current_token.span.end },
-            "Setter cannot be a generator",
-            .{ .help = "Remove the '*' from the setter definition." },
-        );
-        return null;
+    if (is_generator) {
+        if (kind == .get) {
+            try parser.report(
+                .{ .start = prop_start, .end = parser.current_token.span.end },
+                "Getter cannot be a generator",
+                .{ .help = "Remove the '*' from the getter definition." },
+            );
+            return null;
+        } else if (kind == .set) {
+            try parser.report(
+                .{ .start = prop_start, .end = parser.current_token.span.end },
+                "Setter cannot be a generator",
+                .{ .help = "Remove the '*' from the setter definition." },
+            );
+            return null;
+        }
     }
 
     const saved_await_is_keyword = parser.context.await_is_keyword;
@@ -374,16 +376,13 @@ fn parseObjectMethodProperty(
         .{ .start = func_start, .end = body_end },
     );
 
-    // for methods, kind is always .init (getters/setters have their own kind)
-    const prop_kind: ast.PropertyKind = kind;
-
     const is_method = kind == .init;
 
     return try parser.addNode(
         .{ .object_property = .{
             .key = key,
             .value = func,
-            .kind = prop_kind,
+            .kind = kind,
             .method = is_method,
             .shorthand = false,
             .computed = computed,
