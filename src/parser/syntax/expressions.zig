@@ -132,7 +132,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseAwaitExpression(parser, await_start);
     }
 
-    if (tag == .yield and parser.context.yield_is_keyword) {
+    if (tag == .yield and parser.context.yield_is_keyword and precedence < Precedence.Unary) {
         return parseYieldExpression(parser);
     }
 

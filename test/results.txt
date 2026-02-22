@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40407
-Failed:       455
+Passed:       40431
+Failed:       431
 AST mismatch: 0/37226
 Total:        40862
-Coverage:     98.89%
+Coverage:     98.95%
 
 Results by Suite
 ----------------
@@ -18,8 +18,8 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3167/3622 (87.44%)
-  Failed: 455
+  Passed: 3191/3622 (88.10%)
+  Failed: 431
   Failures:
     - test/suite/js/fail/cb30bbbaf709c7b2.js
     - test/suite/js/fail/df16889b67b3a538.js
@@ -32,7 +32,6 @@ Results by Suite
     - test/suite/js/fail/1903b48308bbc999.module.js
     - test/suite/js/fail/e4bf947ddefa6b89.js
     - test/suite/js/fail/0c93806b56b72967.js
-    - test/suite/js/fail/0488a0de5296fbfd.js
     - test/suite/js/fail/fa749cf3a252f600.js
     - test/suite/js/fail/af654b42a4dc314b.js
     - test/suite/js/fail/3b3d6469dc524f52.js
@@ -48,7 +47,6 @@ Results by Suite
     - test/suite/js/fail/31b43c39be608ac9.js
     - test/suite/js/fail/1c9763ebeb48149b.js
     - test/suite/js/fail/0b54b13543083d0b.js
-    - test/suite/js/fail/bc51dee6b6cc0cc7.js
     - test/suite/js/fail/b4af2ca5ae48d8bb.js
     - test/suite/js/fail/9de90164803be63e.js
     - test/suite/js/fail/527f6b46e447782a.js
@@ -89,7 +87,6 @@ Results by Suite
     - test/suite/js/fail/6ed986948899cf46.js
     - test/suite/js/fail/b87a51e4a31c6a20.js
     - test/suite/js/fail/d80574acc3fe0a5a.js
-    - test/suite/js/fail/2bdd8f1062287015.js
     - test/suite/js/fail/69006b4aaef430b8.js
     - test/suite/js/fail/8330a072a78e26f2.js
     - test/suite/js/fail/7ce016e643c1835c.js
@@ -118,10 +115,8 @@ Results by Suite
     - test/suite/js/fail/1fe04beba592c225.js
     - test/suite/js/fail/a6ddc5da0b3c48b8.js
     - test/suite/js/fail/67969570a50e79db.js
-    - test/suite/js/fail/fa5292389abe4ab3.js
     - test/suite/js/fail/17998faf7bf70b66.js
     - test/suite/js/fail/77767e17d0d3fa6d.js
-    - test/suite/js/fail/a4e405fa03c39796.js
     - test/suite/js/fail/4eb1bbc9ba45ad41.js
     - test/suite/js/fail/11690bb9c684fbf9.js
     - test/suite/js/fail/498c254b82d244bc.js
@@ -130,7 +125,6 @@ Results by Suite
     - test/suite/js/fail/2e42ee7277737356.js
     - test/suite/js/fail/ac9599f2796a5d37.js
     - test/suite/js/fail/8844e93c51850ee3.js
-    - test/suite/js/fail/e27da6f03986fdfb.js
     - test/suite/js/fail/7d13c008f658dcd8.js
     - test/suite/js/fail/f0c65ad0965d445a.js
     - test/suite/js/fail/5c59ddaad1fe4808.js
@@ -192,7 +186,6 @@ Results by Suite
     - test/suite/js/fail/44934540850bc5bc.js
     - test/suite/js/fail/91a2a358ab8c3a4b.js
     - test/suite/js/fail/99ec057d4530d319.js
-    - test/suite/js/fail/4f735e9116986d7c.js
     - test/suite/js/fail/e67b406177d2bd46.js
     - test/suite/js/fail/cce25b43493051e9.js
     - test/suite/js/fail/cab0802639f84a5b.js
@@ -273,9 +266,7 @@ Results by Suite
     - test/suite/js/fail/181694d6a3720d8c.js
     - test/suite/js/fail/a3ece107903f3ee0.js
     - test/suite/js/fail/374a43ed9cc7222e.js
-    - test/suite/js/fail/3d62f07dca30fb8f.js
     - test/suite/js/fail/4a752e9977100b1f.js
-    - test/suite/js/fail/e9ab0984e4c1155f.js
     - test/suite/js/fail/36fa165995dd6606.js
     - test/suite/js/fail/28144b7f044a68af.js
     - test/suite/js/fail/c988e9d1ce4be150.js
@@ -291,7 +282,6 @@ Results by Suite
     - test/suite/js/fail/8e4858c6855efcd0.js
     - test/suite/js/fail/d50a3e2b0628acc0.js
     - test/suite/js/fail/5dc9426bee4ea47e.js
-    - test/suite/js/fail/745b2cf6fce0ceff.js
     - test/suite/js/fail/67c134cb1e0a898a.js
     - test/suite/js/fail/9e4b1a3fdc71b741.js
     - test/suite/js/fail/5160943fabaf2f75.js
@@ -318,23 +308,18 @@ Results by Suite
     - test/suite/js/fail/1021d7ba13acd7df.js
     - test/suite/js/fail/a5da0065b5350cc7.js
     - test/suite/js/fail/f4ffe3e7f995376c.js
-    - test/suite/js/fail/94be272a3e7efc51.js
     - test/suite/js/fail/a77a9fda24a9ea75.js
-    - test/suite/js/fail/fe02cb6b7b14f02d.js
     - test/suite/js/fail/e745b668180a4ca3.js
     - test/suite/js/fail/ae584c943dd44c27.js
     - test/suite/js/fail/b21bb88a2485603e.js
-    - test/suite/js/fail/7a88aa2f90584ab6.js
     - test/suite/js/fail/11744eec8dfb26f6.js
     - test/suite/js/fail/33308cfc785ead80.js
     - test/suite/js/fail/e18cbffe22b3d07e.js
     - test/suite/js/fail/6b3051fde70f01c6.js
     - test/suite/js/fail/a9e964b583a8236b.js
-    - test/suite/js/fail/6890bde1514a32ad.js
     - test/suite/js/fail/cfae34af6a0cffcb.js
     - test/suite/js/fail/57e64485ffad38b1.js
     - test/suite/js/fail/7f788a0a13f9c95e.js
-    - test/suite/js/fail/e31600ac7b91cdcf.js
     - test/suite/js/fail/dae3f61e02c266d1.js
     - test/suite/js/fail/9bc04cf866ec800d.js
     - test/suite/js/fail/323dfa856ebcfc04.js
@@ -349,9 +334,7 @@ Results by Suite
     - test/suite/js/fail/0c78e795cc5962fd.js
     - test/suite/js/fail/c496c72b607251dc.js
     - test/suite/js/fail/b94cccf4bc5e6c21.module.js
-    - test/suite/js/fail/3a21f4c7f1607e47.js
     - test/suite/js/fail/e0e1c40893be9962.js
-    - test/suite/js/fail/fc1ae79ca9b682f1.js
     - test/suite/js/fail/3391984acf41d264.js
     - test/suite/js/fail/6bb4a13c03e84e6b.js
     - test/suite/js/fail/b56f0309fab8e00a.js
@@ -417,8 +400,6 @@ Results by Suite
     - test/suite/js/fail/3c4a92f5809e1b30.js
     - test/suite/js/fail/2d7166bdfb4956c9.js
     - test/suite/js/fail/2e02f9a4abbc6617.js
-    - test/suite/js/fail/9f073f3a0a1448db.js
-    - test/suite/js/fail/8a82e080d462e249.js
     - test/suite/js/fail/aae6ebac8a9f5c80.js
     - test/suite/js/fail/ba6acc4dfe5d967d.js
     - test/suite/js/fail/f8e7c192d5ca20d2.js
@@ -432,7 +413,6 @@ Results by Suite
     - test/suite/js/fail/4484360c4cd99612.js
     - test/suite/js/fail/bedae33f0c54e2ff.js
     - test/suite/js/fail/b8bb4940b8b0b53b.js
-    - test/suite/js/fail/2d5e0c66da67f96c.js
     - test/suite/js/fail/7bf2a85a919df006.js
     - test/suite/js/fail/7fb432d5f23d8614.js
     - test/suite/js/fail/7f942e28c5f9e5d0.js
@@ -446,8 +426,6 @@ Results by Suite
     - test/suite/js/fail/aba603d889bf93e5.js
     - test/suite/js/fail/bc4e16eb3e9d875a.js
     - test/suite/js/fail/60b05bea814300e2.js
-    - test/suite/js/fail/4a47e89001505404.js
-    - test/suite/js/fail/20f29d0321e0655d.js
     - test/suite/js/fail/fb44c50ce1fa97ce.js
     - test/suite/js/fail/dc4a7090c01f75c4.js
     - test/suite/js/fail/fa1b133e400fef12.js
@@ -461,10 +439,8 @@ Results by Suite
     - test/suite/js/fail/7ac5952b249a143a.js
     - test/suite/js/fail/8ba459ca5aff89fe.js
     - test/suite/js/fail/44bf9b05cc4936db.js
-    - test/suite/js/fail/d158f8c2866f7a06.js
     - test/suite/js/fail/05f5294840466f91.js
     - test/suite/js/fail/436c17dd7158330f.js
-    - test/suite/js/fail/8ca1340c297ad34c.js
     - test/suite/js/fail/72796a0333b7d720.js
     - test/suite/js/fail/01310f2ecb7b91f2.js
     - test/suite/js/fail/120d0137ce51d9fb.js

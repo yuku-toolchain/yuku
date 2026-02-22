@@ -1,3 +1,1 @@
-class C {
-  \u200D_ZWJ;
-}
+function *a(){({*[yield](){}})}
