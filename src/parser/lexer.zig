@@ -140,7 +140,7 @@ pub const Lexer = struct {
         const c = self.source[self.cursor];
         self.cursor += 1;
 
-        const token_type: token.TokenType = switch (c) {
+        const tag: token.TokenTag = switch (c) {
             '~' => .bitwise_not,
             '(' => .left_paren,
             ')' => .right_paren,
@@ -154,12 +154,12 @@ pub const Lexer = struct {
             else => unreachable,
         };
 
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
-    inline fn puncToken(self: *Lexer, len: u32, token_type: token.TokenType, start: u32) token.Token {
+    inline fn puncToken(self: *Lexer, len: u32, tag: token.TokenTag, start: u32) token.Token {
         self.cursor += len;
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
     fn scanPunctuation(self: *Lexer) LexicalError!token.Token {
@@ -368,7 +368,7 @@ pub const Lexer = struct {
     /// re-scans a slash token as a regex literal
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
-    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult  {
+    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult {
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
@@ -778,16 +778,13 @@ pub const Lexer = struct {
 
         const lexeme = self.source[start..self.cursor];
 
-        const token_type: token.TokenType =
-            if (is_jsx_tag) .jsx_identifier
-            else if (is_private) .private_identifier
-            else if (has_escape) self.getEscapedKeywordType(lexeme)
-            else self.getKeywordType(lexeme);
+        const tag: token.TokenTag =
+            if (is_jsx_tag) .jsx_identifier else if (is_private) .private_identifier else if (has_escape) self.getEscapedKeywordType(lexeme) else self.getKeywordType(lexeme);
 
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
-    fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) token.TokenType {
+    fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) token.TokenTag {
         @branchHint(.cold);
 
         var decoded: [10]u8 = undefined; // max keyword len is 10
@@ -828,7 +825,7 @@ pub const Lexer = struct {
         return self.getKeywordType(decoded[0..out_len]);
     }
 
-    fn getKeywordType(_: *Lexer, lexeme: []const u8) token.TokenType {
+    fn getKeywordType(_: *Lexer, lexeme: []const u8) token.TokenTag {
         switch (lexeme.len) {
             2 => {
                 switch (lexeme[1]) {
@@ -980,7 +977,7 @@ pub const Lexer = struct {
 
     fn scanNumber(self: *Lexer) LexicalError!token.Token {
         const start = self.cursor;
-        var token_type: token.TokenType = .numeric_literal;
+        var tag: token.TokenTag = .numeric_literal;
 
         // handle prefixes: 0x, 0o, 0b
         var has_decimal_or_exponent = false;
@@ -990,21 +987,21 @@ pub const Lexer = struct {
 
             switch (prefix) {
                 'x', 'X' => {
-                    token_type = .hex_literal;
+                    tag = .hex_literal;
                     self.cursor += 2;
                     const hex_start = self.cursor;
                     try self.consumeHexDigits();
                     if (self.cursor == hex_start) return error.InvalidHexLiteral;
                 },
                 'o', 'O' => {
-                    token_type = .octal_literal;
+                    tag = .octal_literal;
                     self.cursor += 2;
                     const oct_start = self.cursor;
                     try self.consumeOctalDigits();
                     if (self.cursor == oct_start) return error.InvalidOctalLiteralDigit;
                 },
                 'b', 'B' => {
-                    token_type = .binary_literal;
+                    tag = .binary_literal;
                     self.cursor += 2;
                     const bin_start = self.cursor;
                     try self.consumeBinaryDigits();
@@ -1026,7 +1023,7 @@ pub const Lexer = struct {
                         return if (is_legacy_octal) error.OctalLiteralInStrict else error.LeadingZeroInStrict;
                     }
 
-                    token_type = if (is_legacy_octal) .octal_literal else .numeric_literal;
+                    tag = if (is_legacy_octal) .octal_literal else .numeric_literal;
                 },
                 else => {
                     try self.consumeDecimalDigits();
@@ -1037,7 +1034,7 @@ pub const Lexer = struct {
         }
 
         // fraction and exponent only for regular decimal literals
-        if (token_type == .numeric_literal and
+        if (tag == .numeric_literal and
             self.cursor < self.source.len and self.source[self.cursor] == '.')
         {
             const next = self.peek(1);
@@ -1047,7 +1044,7 @@ pub const Lexer = struct {
             if (next >= '0' and next <= '9') try self.consumeDecimalDigits();
         }
 
-        if (token_type == .numeric_literal and self.cursor < self.source.len) {
+        if (tag == .numeric_literal and self.cursor < self.source.len) {
             const exp_char = self.source[self.cursor];
             if (exp_char == 'e' or exp_char == 'E') {
                 has_decimal_or_exponent = true;
@@ -1063,7 +1060,7 @@ pub const Lexer = struct {
             }
 
             self.cursor += 1;
-            token_type = .bigint_literal;
+            tag = .bigint_literal;
         }
 
         // identifier cannot immediately follow a numeric literal
@@ -1072,7 +1069,7 @@ pub const Lexer = struct {
             if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
         }
 
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
     inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
@@ -1326,11 +1323,11 @@ pub const Lexer = struct {
         }) catch return error.OutOfMemory;
     }
 
-    pub inline fn createToken(self: *Lexer, token_type: token.TokenType, start: u32, end: u32) token.Token {
+    pub inline fn createToken(self: *Lexer, tag: token.TokenTag, start: u32, end: u32) token.Token {
         const flags = self.consumeTokenFlags();
 
         const tok = token.Token{
-            .type = token_type,
+            .tag = tag,
             .span = .{ .start = start, .end = end },
             .flags = flags,
         };

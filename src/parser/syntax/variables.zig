@@ -20,7 +20,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
     var end = parser.getSpan(first_declarator).end;
 
     // additional declarators: let a, b, c;
-    while (parser.current_token.type == .comma) {
+    while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
         const declarator = try parseVariableDeclarator(parser, kind) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
@@ -52,10 +52,10 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
 }
 
 fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind {
-    const token_type = parser.current_token.type;
+    const tag = parser.current_token.tag;
     try parser.advance() orelse return null;
 
-    return switch (token_type) {
+    return switch (tag) {
         .let => .let,
         .@"const" => .@"const",
         .@"var" => .@"var",
@@ -78,7 +78,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     var end = parser.getSpan(id).end;
 
     // initializer if present
-    if (parser.current_token.type == .assign) {
+    if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(init).end;
@@ -115,12 +115,12 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
 
 /// determines if 'let' should be parsed as an identifier rather than a variable declaration keyword.
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.type == .let);
+    std.debug.assert(parser.current_token.tag == .let);
 
     const next = try parser.lookAhead() orelse return null;
 
     // 'let' followed by a semicolon should be parsed as an identifier, not a declaration.
-    if (next.type == .semicolon) {
+    if (next.tag == .semicolon) {
         return true;
     }
 
@@ -139,13 +139,13 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
 /// implements the cover-grammar disambiguation from:
 /// - CoverAwaitExpressionAndAwaitUsingDeclarationHead
 pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.type == .using);
+    std.debug.assert(parser.current_token.tag == .using);
 
     const next = try parser.lookAhead() orelse return null;
 
     // if next token starts a BindingList and ASI cannot insert a semicolon,
     // treat `using` as the contextual keyword (declaration form).
-    if (next.type.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
+    if (next.tag.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
         return false;
     }
 

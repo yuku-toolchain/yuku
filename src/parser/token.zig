@@ -16,7 +16,7 @@ pub const Mask = struct {
     pub const PrecOverlap: u32 = 0b11111;
 };
 
-pub const TokenType = enum(u32) {
+pub const TokenTag = enum(u32) {
     numeric_literal = 1 | Mask.IsNumericLiteral, // e.g., "123", "45.67"
     hex_literal = 2 | Mask.IsNumericLiteral, // e.g., "0xFF", "0x1A"
     /// modern octal literal
@@ -173,59 +173,59 @@ pub const TokenType = enum(u32) {
     jsx_text = 130,
 
     eof = 131, // end of file
-    pub fn precedence(self: TokenType) u5 {
+    pub fn precedence(self: TokenTag) u5 {
         return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
     }
 
-    pub fn is(self: TokenType, mask: u32) bool {
+    pub fn is(self: TokenTag, mask: u32) bool {
         return (@intFromEnum(self) & mask) != 0;
     }
 
-    pub fn isNumericLiteral(self: TokenType) bool {
+    pub fn isNumericLiteral(self: TokenTag) bool {
         return self.is(Mask.IsNumericLiteral);
     }
 
-    pub fn isBinaryOperator(self: TokenType) bool {
+    pub fn isBinaryOperator(self: TokenTag) bool {
         return self.is(Mask.IsBinaryOp);
     }
 
-    pub fn isLogicalOperator(self: TokenType) bool {
+    pub fn isLogicalOperator(self: TokenTag) bool {
         return self.is(Mask.IsLogicalOp);
     }
 
-    pub fn isUnaryOperator(self: TokenType) bool {
+    pub fn isUnaryOperator(self: TokenTag) bool {
         return self.is(Mask.IsUnaryOp);
     }
 
-    pub fn isAssignmentOperator(self: TokenType) bool {
+    pub fn isAssignmentOperator(self: TokenTag) bool {
         return self.is(Mask.IsAssignmentOp);
     }
 
     /// returns true for identifier-like tokens.
     /// includes: identifiers, all keywords, literal keywords.
-    pub fn isIdentifierLike(self: TokenType) bool {
+    pub fn isIdentifierLike(self: TokenTag) bool {
         return self.is(Mask.IsIdentifierLike);
     }
 
     /// returns true for unconditionally reserved keywords.
     /// these can NEVER be used as identifiers.
-    pub fn isUnconditionallyReserved(self: TokenType) bool {
+    pub fn isUnconditionallyReserved(self: TokenTag) bool {
         return self.is(Mask.IsUnconditionallyReserved);
     }
 
     /// returns true for keywords reserved ONLY in strict mode.
     /// these can be identifiers in sloppy mode but not in strict mode.
     /// includes: let, static, implements, interface, package, private, protected, public, yield
-    pub fn isStrictModeReserved(self: TokenType) bool {
+    pub fn isStrictModeReserved(self: TokenTag) bool {
         return self.is(Mask.IsStrictModeReserved);
     }
 
     /// returns true for any reserved keyword (unconditional or strict-mode-only).
-    pub fn isReserved(self: TokenType) bool {
+    pub fn isReserved(self: TokenTag) bool {
         return self.is(Mask.IsUnconditionallyReserved) or self.is(Mask.IsStrictModeReserved);
     }
 
-    pub fn toString(self: TokenType) ?[]const u8 {
+    pub fn toString(self: TokenTag) ?[]const u8 {
         return switch (self) {
             .true => "true",
             .false => "false",
@@ -397,14 +397,14 @@ pub inline fn flagMask(comptime flag: TokenFlag) u8 {
 
 pub const Token = struct {
     span: Span,
-    type: TokenType,
+    tag: TokenTag,
 
     flags: u8 = 0,
 
     pub inline fn eof(pos: u32) Token {
         return Token{
             .span = .{ .start = pos, .end = pos },
-            .type = .eof,
+            .tag = .eof,
             .flags = 0,
         };
     }
@@ -441,17 +441,17 @@ pub const Token = struct {
     // returns left binding power of this token to use in expression parsing loop (pratt parsing)
     pub fn leftBp(self: *const Token) u5 {
         // handle: [no LineTerminator here] ++ --
-        if ((self.type == .increment or self.type == .decrement) and self.hasLineTerminatorBefore()) {
+        if ((self.tag == .increment or self.tag == .decrement) and self.hasLineTerminatorBefore()) {
             return 0; // can't be infix, start new expression
         }
 
-        if (self.type.isBinaryOperator() or self.type.isLogicalOperator() or
-            self.type.isAssignmentOperator() or self.type == .increment or self.type == .decrement)
+        if (self.tag.isBinaryOperator() or self.tag.isLogicalOperator() or
+            self.tag.isAssignmentOperator() or self.tag == .increment or self.tag == .decrement)
         {
-            return self.type.precedence();
+            return self.tag.precedence();
         }
 
-        return switch (self.type) {
+        return switch (self.tag) {
             .dot, .optional_chaining, .left_bracket, .left_paren => 17,
             // tagged template: only when no line terminator before the template
             .template_head, .no_substitution_template => if (!self.hasLineTerminatorBefore()) 17 else 0,

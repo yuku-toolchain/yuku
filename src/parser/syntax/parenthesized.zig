@@ -34,7 +34,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     var has_trailing_comma = false;
 
     // empty parens: ()
-    if (parser.current_token.type == .right_paren) {
+    if (parser.current_token.tag == .right_paren) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
         const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
@@ -46,9 +46,9 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         };
     }
 
-    while (parser.current_token.type != .right_paren and parser.current_token.type != .eof) {
+    while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
         // rest element: (...x)
-        if (parser.current_token.type == .spread) {
+        if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
 
@@ -65,7 +65,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
             end = spread_end;
 
-            if (parser.current_token.type == .comma) {
+            if (parser.current_token.tag == .comma) {
                 try parser.advance() orelse return null;
                 has_trailing_comma = true;
             }
@@ -81,10 +81,10 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         end = parser.getSpan(element).end;
 
         // comma or end
-        if (parser.current_token.type == .comma) {
+        if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
-            has_trailing_comma = parser.current_token.type == .right_paren;
-        } else if (parser.current_token.type != .right_paren) {
+            has_trailing_comma = parser.current_token.tag == .right_paren;
+        } else if (parser.current_token.tag != .right_paren) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or ')' in parenthesized expression",
@@ -94,7 +94,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         }
     }
 
-    if (parser.current_token.type != .right_paren) {
+    if (parser.current_token.tag != .right_paren) {
         try parser.report(
             .{ .start = start, .end = end },
             "Unterminated parenthesized expression",
@@ -275,7 +275,7 @@ fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
         parser.context.in_function = saved_in_function;
     }
 
-    if (parser.current_token.type == .left_brace) {
+    if (parser.current_token.tag == .left_brace) {
         // block body: () => { ... }
         const body = try functions.parseFunctionBody(parser) orelse return null;
         return .{ .body = body, .is_expression = false };

@@ -42,7 +42,7 @@ pub fn parseClassDecorated(
     // optional class name
     var id: ast.NodeIndex = ast.null_node;
 
-    if (parser.current_token.type.isIdentifierLike() and parser.current_token.type != .extends) {
+    if (parser.current_token.tag.isIdentifierLike() and parser.current_token.tag != .extends) {
         id = try patterns.parseBindingIdentifier(parser) orelse ast.null_node;
     }
 
@@ -60,7 +60,7 @@ pub fn parseClassDecorated(
 
     // optional extends clause
     var super_class: ast.NodeIndex = ast.null_node;
-    if (parser.current_token.type == .extends) {
+    if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null; // consume 'extends'
         super_class = try expressions.parseLeftHandSideExpression(parser) orelse return null;
     }
@@ -98,11 +98,11 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     defer parser.scratch_a.reset(checkpoint);
 
     while (true) {
-        const tok_type = parser.current_token.type;
-        if (tok_type == .right_brace or tok_type == .eof) break;
+        const tag = parser.current_token.tag;
+        if (tag == .right_brace or tag == .eof) break;
 
         // empty statement (semicolon)
-        if (tok_type == .semicolon) {
+        if (tag == .semicolon) {
             try parser.advance() orelse return null;
             continue;
         }
@@ -129,7 +129,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var decorators: ast.IndexRange = ast.IndexRange.empty;
     var elem_start = parser.current_token.span.start;
 
-    if (parser.current_token.type == .at) {
+    if (parser.current_token.tag == .at) {
         elem_start = parser.current_token.span.start;
         decorators = try extensions.parseDecorators(parser) orelse return null;
     }
@@ -143,12 +143,12 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var key: ast.NodeIndex = ast.null_node;
 
     // check for 'static' modifier
-    if (parser.current_token.type == .static) {
+    if (parser.current_token.tag == .static) {
         const static_token = parser.current_token;
         try parser.advance() orelse return null;
 
         // static { } - static block
-        if (parser.current_token.type == .left_brace) {
+        if (parser.current_token.tag == .left_brace) {
             if (decorators.len != 0) {
                 const first = parser.getExtra(decorators)[0];
                 try parser.report(
@@ -162,7 +162,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
         // if next token is '(' or nothing that could be a class element key, 'static' is the key
         // e.g., `static() {}` is a method named "static", not a static method
-        if (parser.current_token.type == .left_paren or !isClassElementKeyStart(parser.current_token.type)) {
+        if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.addNode(
                 .{ .identifier_name = .{ .name_start = static_token.span.start, .name_len = @intCast(static_token.len()) } },
                 static_token.span,
@@ -173,12 +173,12 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for 'async' modifier (only if no key yet)
-    if (ast.isNull(key) and parser.current_token.type == .async) {
+    if (ast.isNull(key) and parser.current_token.tag == .async) {
         const async_token = parser.current_token;
         try parser.advance() orelse return null;
 
         // check if this is async method or 'async' as property name
-        if (isClassElementKeyStart(parser.current_token.type) and !parser.current_token.hasLineTerminatorBefore()) {
+        if (isClassElementKeyStart(parser.current_token.tag) and !parser.current_token.hasLineTerminatorBefore()) {
             is_async = true;
         } else {
             key = try parser.addNode(
@@ -189,13 +189,13 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for generator (*)
-    if (ast.isNull(key) and parser.current_token.type == .star) {
+    if (ast.isNull(key) and parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
 
     // check for get/set (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
+    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
         const token_text = parser.getTokenText(parser.current_token);
         const is_get = std.mem.eql(u8, token_text, "get");
         const is_set = std.mem.eql(u8, token_text, "set");
@@ -205,7 +205,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             try parser.advance() orelse return null;
 
             // check if this is get/set accessor or just a property named 'get'/'set'
-            if (isClassElementKeyStart(parser.current_token.type)) {
+            if (isClassElementKeyStart(parser.current_token.tag)) {
                 kind = if (is_get) .get else .set;
             } else {
                 key = try parser.addNode(
@@ -217,12 +217,12 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for accessor field (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
+    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
         if (std.mem.eql(u8, parser.getTokenText(parser.current_token), "accessor")) {
             const accessor_token = parser.current_token;
             try parser.advance() orelse return null; // consume 'accessor'
 
-            if (isClassElementKeyStart(parser.current_token.type)) {
+            if (isClassElementKeyStart(parser.current_token.tag)) {
                 is_accessor = true;
             } else {
                 key = try parser.addNode(
@@ -261,7 +261,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // method: key followed by (
-    if (parser.current_token.type == .left_paren) {
+    if (parser.current_token.tag == .left_paren) {
         if (is_accessor) {
             try parser.report(
                 parser.current_token.span,
@@ -303,7 +303,7 @@ const KeyResult = struct {
 /// class element key
 fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     // computed key
-    if (parser.current_token.type == .left_bracket) {
+    if (parser.current_token.tag == .left_bracket) {
         try parser.advance() orelse return null; // consume '['
         const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return .{ .key = null, .computed = true };
         if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
@@ -313,23 +313,23 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     }
 
     // #name
-    if (parser.current_token.type == .private_identifier) {
+    if (parser.current_token.tag == .private_identifier) {
         const key = try literals.parsePrivateIdentifier(parser);
         return .{ .key = key, .computed = false };
     }
 
-    if (parser.current_token.type == .string_literal) {
+    if (parser.current_token.tag == .string_literal) {
         const key = try literals.parseStringLiteral(parser);
         return .{ .key = key, .computed = false };
     }
 
-    if (parser.current_token.type.isNumericLiteral()) {
+    if (parser.current_token.tag.isNumericLiteral()) {
         const key = try literals.parseNumericLiteral(parser);
         return .{ .key = key, .computed = false };
     }
 
     // identifier-like (includes keywords)
-    if (parser.current_token.type.isIdentifierLike()) {
+    if (parser.current_token.tag.isIdentifierLike()) {
         const tok = parser.current_token;
         try parser.advance() orelse return null;
         const key = try parser.addNode(
@@ -515,17 +515,17 @@ fn parsePropertyDefinition(
     var value: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(key).end;
 
-    if (parser.current_token.type == .assign) {
+    if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null; // consume '='
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(value).end;
     }
 
-    const tok_type = parser.current_token.type;
-    if (tok_type == .semicolon) {
+    const tag = parser.current_token.tag;
+    if (tag == .semicolon) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
-    } else if (!parser.canInsertImplicitSemicolon(parser.current_token) and tok_type != .right_brace) {
+    } else if (!parser.canInsertImplicitSemicolon(parser.current_token) and tag != .right_brace) {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected ';' after class field",
@@ -564,13 +564,13 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 }
 
 /// if token could start a class element key (after modifiers like static/async/get/set)
-inline fn isClassElementKeyStart(tok_type: token.TokenType) bool {
-    return tok_type == .star or
-        tok_type == .left_bracket or
-        tok_type == .private_identifier or
-        tok_type == .string_literal or
-        tok_type.isNumericLiteral() or
-        tok_type.isIdentifierLike();
+inline fn isClassElementKeyStart(tag: token.TokenTag) bool {
+    return tag == .star or
+        tag == .left_bracket or
+        tag == .private_identifier or
+        tag == .string_literal or
+        tag.isNumericLiteral() or
+        tag.isIdentifierLike();
 }
 
 /// checks if a key node matches a given name (works for identifier and string literal keys)

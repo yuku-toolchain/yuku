@@ -130,7 +130,7 @@ pub const Parser = struct {
         return tree;
     }
 
-    pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
+    pub fn parseBody(self: *Parser, terminator: ?token.TokenTag) Error!ast.IndexRange {
         // save and restore strict mode, directives like "use strict" only apply within this scope
         const prev_strict = self.isStrictMode();
         defer self.restoreStrictMode(prev_strict);
@@ -154,9 +154,9 @@ pub const Parser = struct {
         return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
     }
 
-    inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenType) bool {
-        return self.current_token.type == .eof or
-            (terminator != null and self.current_token.type == terminator.?);
+    inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenTag) bool {
+        return self.current_token.tag == .eof or
+            (terminator != null and self.current_token.tag == terminator.?);
     }
 
     pub inline fn isTs(self: *Parser) bool {
@@ -299,8 +299,8 @@ pub const Parser = struct {
         return self.advance();
     }
 
-    pub fn expect(self: *Parser, comptime token_type: token.TokenType, message: []const u8, help: ?[]const u8) Error!bool {
-        if (self.current_token.type == token_type) {
+    pub fn expect(self: *Parser, comptime tag: token.TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
+        if (self.current_token.tag == tag) {
             try self.advance() orelse return false;
             return true;
         }
@@ -311,7 +311,7 @@ pub const Parser = struct {
     }
 
     pub fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
-        if (self.current_token.type == .semicolon) {
+        if (self.current_token.tag == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance() orelse return null;
             return semicolon_end;
@@ -336,7 +336,7 @@ pub const Parser = struct {
     ///
     /// allows `do {} while (false) foo()`, semicolon optional after the `)`.
     pub fn eatSemicolonLenient(self: *Parser, end: u32) Error!?u32 {
-        if (self.current_token.type == .semicolon) {
+        if (self.current_token.tag == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance() orelse return null;
             return semicolon_end;
@@ -346,12 +346,12 @@ pub const Parser = struct {
 
     /// https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion
     pub inline fn canInsertImplicitSemicolon(_: *Parser, tok: token.Token) bool {
-        return tok.type == .eof or tok.hasLineTerminatorBefore() or tok.type == .right_brace;
+        return tok.tag == .eof or tok.hasLineTerminatorBefore() or tok.tag == .right_brace;
     }
 
     pub inline fn describeToken(self: *Parser, tok: token.Token) []const u8 {
-        if (tok.type == .eof) return "end of file";
-        return tok.type.toString() orelse tok.text(self.source);
+        if (tok.tag == .eof) return "end of file";
+        return tok.tag.toString() orelse tok.text(self.source);
     }
 
     pub const ReportOptions = struct {
@@ -399,20 +399,20 @@ pub const Parser = struct {
     // returning null here means, break the top level statement parsing loop
     // otherwise continue
     // TODO: make it better
-    fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!?void {
-        while (self.current_token.type != .eof) {
+    fn synchronize(self: *Parser, terminator: ?token.TokenTag) Error!?void {
+        while (self.current_token.tag != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {
-                if (self.current_token.type == t) return;
+                if (self.current_token.tag == t) return;
             }
 
-            if (self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
+            if (self.current_token.tag == .semicolon or self.current_token.tag == .right_brace) {
                 try self.advance() orelse return null;
                 return;
             }
 
             if (self.current_token.hasLineTerminatorBefore()) {
-                const can_start_statement = switch (self.current_token.type) {
+                const can_start_statement = switch (self.current_token.tag) {
                     .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
                     else => false,
                 };

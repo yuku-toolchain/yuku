@@ -16,7 +16,7 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'for'
 
-    if (parser.current_token.type == .await) {
+    if (parser.current_token.tag == .await) {
         if (!parser.context.in_async and !parser.isModule()) {
             try parser.report(parser.current_token.span, "'for await' is only valid in async functions or modules", .{});
         }
@@ -33,15 +33,15 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
 }
 
 fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
-    if (parser.current_token.type == .semicolon) {
+    if (parser.current_token.tag == .semicolon) {
         return parseForStatementRest(parser, start, ast.null_node, is_for_await);
     }
 
     const decl_start = parser.current_token.span.start;
 
-    switch (parser.current_token.type) {
+    switch (parser.current_token.tag) {
         .let, .@"const", .@"var" => {
-            const kind: ast.VariableKind = switch (parser.current_token.type) {
+            const kind: ast.VariableKind = switch (parser.current_token.tag) {
                 .let => .let,
                 .@"const" => .@"const",
                 .@"var" => .@"var",
@@ -60,7 +60,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                 return parseForWithExpression(parser, start, is_for_await);
             }
 
-            switch (next.type) {
+            switch (next.tag) {
                 // `using in` is always a for-in loop (`for (using in obj)`),
                 // because `in` is reserved and can never be a variable name.
                 //
@@ -79,7 +79,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
 
                     const after_of = try parser.lookAhead() orelse return null;
 
-                    if (after_of.type == .assign or after_of.type == .semicolon or after_of.type == .colon) {
+                    if (after_of.tag == .assign or after_of.tag == .semicolon or after_of.tag == .colon) {
                         return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
                     }
 
@@ -95,7 +95,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
         },
         .await => {
             const next = try parser.lookAhead() orelse return null;
-            if (next.type != .using or next.hasLineTerminatorBefore()) return parseForWithExpression(parser, start, is_for_await);
+            if (next.tag != .using or next.hasLineTerminatorBefore()) return parseForWithExpression(parser, start, is_for_await);
             try parser.advance() orelse return null; // consume 'await'
             try parser.advance() orelse return null; // consume 'using'
             return parseForWithDeclaration(parser, start, is_for_await, .await_using, decl_start);
@@ -110,12 +110,12 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
     const first_end = parser.getSpan(first).end;
 
     // for-in / for-of: single declarator
-    if (parser.current_token.type == .in) {
+    if (parser.current_token.tag == .in) {
         const decl = try createSingleDeclaration(parser, kind, first, decl_start, first_end);
         return parseForInStatementRest(parser, start, decl, is_for_await);
     }
 
-    if (parser.current_token.type == .of) {
+    if (parser.current_token.tag == .of) {
         const decl = try createSingleDeclaration(parser, kind, first, decl_start, first_end);
         return parseForOfStatementRest(parser, start, decl, is_for_await);
     }
@@ -129,7 +129,7 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
 
     var end = first_end;
 
-    while (parser.current_token.type == .comma) {
+    while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
 
         const declarator = try parseForLoopDeclarator(parser) orelse return null;
@@ -163,12 +163,12 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
 
     parser.context.allow_in = saved_allow_in;
 
-    if (parser.current_token.type == .in) {
+    if (parser.current_token.tag == .in) {
         try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
         return parseForInStatementRest(parser, start, expr, is_for_await);
     }
 
-    if (parser.current_token.type == .of) {
+    if (parser.current_token.tag == .of) {
         try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
         return parseForOfStatementRest(parser, start, expr, is_for_await);
     }
@@ -186,14 +186,14 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex, is_fo
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop init", null)) return null;
 
     var test_expr: ast.NodeIndex = ast.null_node;
-    if (parser.current_token.type != .semicolon) {
+    if (parser.current_token.tag != .semicolon) {
         test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop condition", null)) return null;
 
     var update: ast.NodeIndex = ast.null_node;
-    if (parser.current_token.type != .right_paren) {
+    if (parser.current_token.tag != .right_paren) {
         update = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
@@ -260,7 +260,7 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
     var init: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(id).end;
 
-    if (parser.current_token.type == .assign) {
+    if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(init).end;

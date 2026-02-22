@@ -221,7 +221,7 @@ pub const BinaryOperator = enum {
     in, // in
     instanceof, // instanceof
 
-    pub fn fromToken(tok: token.TokenType) BinaryOperator {
+    pub fn fromToken(tok: token.TokenTag) BinaryOperator {
         return switch (tok) {
             .equal => .equal,
             .not_equal => .not_equal,
@@ -249,7 +249,7 @@ pub const BinaryOperator = enum {
         };
     }
 
-    pub fn toToken(self: BinaryOperator) token.TokenType {
+    pub fn toToken(self: BinaryOperator) token.TokenTag {
         return switch (self) {
             .equal => .equal,
             .not_equal => .not_equal,
@@ -286,7 +286,7 @@ pub const LogicalOperator = enum {
     @"or", // ||
     nullish_coalescing, // ??
 
-    pub fn fromToken(tok: token.TokenType) LogicalOperator {
+    pub fn fromToken(tok: token.TokenTag) LogicalOperator {
         return switch (tok) {
             .logical_and => .@"and",
             .logical_or => .@"or",
@@ -295,7 +295,7 @@ pub const LogicalOperator = enum {
         };
     }
 
-    pub fn toToken(self: LogicalOperator) token.TokenType {
+    pub fn toToken(self: LogicalOperator) token.TokenTag {
         return switch (self) {
             .@"and" => .logical_and,
             .@"or" => .logical_or,
@@ -317,7 +317,7 @@ pub const UnaryOperator = enum {
     void, // void
     delete, // delete
 
-    pub fn fromToken(tok: token.TokenType) UnaryOperator {
+    pub fn fromToken(tok: token.TokenTag) UnaryOperator {
         return switch (tok) {
             .minus => .negate,
             .plus => .positive,
@@ -330,7 +330,7 @@ pub const UnaryOperator = enum {
         };
     }
 
-    pub fn toToken(self: UnaryOperator) token.TokenType {
+    pub fn toToken(self: UnaryOperator) token.TokenTag {
         return switch (self) {
             .negate => .minus,
             .positive => .plus,
@@ -351,7 +351,7 @@ pub const UpdateOperator = enum {
     increment, // ++
     decrement, // --
 
-    pub fn fromToken(tok: token.TokenType) UpdateOperator {
+    pub fn fromToken(tok: token.TokenTag) UpdateOperator {
         return switch (tok) {
             .increment => .increment,
             .decrement => .decrement,
@@ -359,7 +359,7 @@ pub const UpdateOperator = enum {
         };
     }
 
-    pub fn toToken(self: UpdateOperator) token.TokenType {
+    pub fn toToken(self: UpdateOperator) token.TokenTag {
         return switch (self) {
             .increment => .increment,
             .decrement => .decrement,
@@ -389,7 +389,7 @@ pub const AssignmentOperator = enum {
     logical_and_assign, // &&=
     nullish_assign, // ??=
 
-    pub fn fromToken(tok: token.TokenType) AssignmentOperator {
+    pub fn fromToken(tok: token.TokenTag) AssignmentOperator {
         return switch (tok) {
             .assign => .assign,
             .plus_assign => .add_assign,
@@ -411,7 +411,7 @@ pub const AssignmentOperator = enum {
         };
     }
 
-    pub fn toToken(self: AssignmentOperator) token.TokenType {
+    pub fn toToken(self: AssignmentOperator) token.TokenTag {
         return switch (self) {
             .assign => .assign,
             .add_assign => .plus_assign,
@@ -808,7 +808,7 @@ pub const NumericLiteral = struct {
         octal,
         binary,
 
-        pub fn fromToken(tok: token.TokenType) Kind {
+        pub fn fromToken(tok: token.TokenTag) Kind {
             return switch (tok) {
                 .numeric_literal => .decimal,
                 .hex_literal => .hex,

@@ -26,9 +26,9 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     parser.context.in_single_statement_context = opts.can_be_single_statement_context;
     defer parser.context.in_single_statement_context = false;
 
-    parser.context.in_directive_prologue = parser.context.in_directive_prologue and parser.current_token.type == .string_literal;
+    parser.context.in_directive_prologue = parser.context.in_directive_prologue and parser.current_token.tag == .string_literal;
 
-    return switch (parser.current_token.type) {
+    return switch (parser.current_token.tag) {
         .at => extensions.parseDecorated(parser, .{}),
         .await => parseAwaitUsingOrExpression(parser),
         .import => parseImportDeclarationOrExpression(parser),
@@ -66,7 +66,7 @@ fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.Node
     }
 
     // labeled statement: identifier ':'
-    if (expression_data == .identifier_reference and parser.current_token.type == .colon) {
+    if (expression_data == .identifier_reference and parser.current_token.tag == .colon) {
         return parseLabeledStatement(parser, expression);
     }
 
@@ -143,7 +143,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const next = try parser.lookAhead() orelse return null;
 
-    return switch (next.type) {
+    return switch (next.tag) {
         .using => {
             const start = parser.current_token.span.start;
 
@@ -172,7 +172,7 @@ fn parseAwaitExpressionStatement(parser: *Parser, start: u32) Error!?ast.NodeInd
 fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const next = try parser.lookAhead() orelse return null;
 
-    return switch (next.type) {
+    return switch (next.tag) {
         // `import(` and `import.` are expression forms (dynamic import / import.meta / phase imports)
         .left_paren, .dot => parseExpressionStatement(parser),
         else => modules.parseImportDeclaration(parser),
@@ -183,7 +183,7 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const next = try parser.lookAhead() orelse return null;
 
-    if (next.type == .function and !next.hasLineTerminatorBefore()) {
+    if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'async'
         return functions.parseFunction(parser, .{ .is_async = true }, start);
@@ -266,7 +266,7 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    while (parser.current_token.type == .case or parser.current_token.type == .default) {
+    while (parser.current_token.tag == .case or parser.current_token.tag == .default) {
         const case_node = try parseSwitchCase(parser) orelse continue;
         try parser.scratch_a.append(parser.allocator(), case_node);
     }
@@ -276,7 +276,7 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
 
 fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    const is_default = parser.current_token.type == .default;
+    const is_default = parser.current_token.tag == .default;
 
     try parser.advance() orelse return null; // consume 'case' or 'default'
 
@@ -307,10 +307,10 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
     const checkpoint = parser.scratch_b.begin();
     defer parser.scratch_b.reset(checkpoint);
 
-    while (parser.current_token.type != .case and
-        parser.current_token.type != .default and
-        parser.current_token.type != .right_brace and
-        parser.current_token.type != .eof)
+    while (parser.current_token.tag != .case and
+        parser.current_token.tag != .default and
+        parser.current_token.tag != .right_brace and
+        parser.current_token.tag != .eof)
     {
         if (try parseStatement(parser, .{})) |stmt| {
             try parser.scratch_b.append(parser.allocator(), stmt);
@@ -338,7 +338,7 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.getSpan(consequent).end;
     var alternate: ast.NodeIndex = ast.null_node;
 
-    if (parser.current_token.type == .@"else") {
+    if (parser.current_token.tag == .@"else") {
         try parser.advance() orelse return null; // consume 'else'
         alternate = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
         end = parser.getSpan(alternate).end;
@@ -441,7 +441,7 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
     var label: ast.NodeIndex = ast.null_node;
 
     // break [no LineTerminator here] LabelIdentifier;
-    if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
         end = parser.getSpan(label_node).end;
@@ -461,7 +461,7 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
     var label: ast.NodeIndex = ast.null_node;
 
     // continue [no LineTerminator here] LabelIdentifier;
-    if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
         const label_node = try literals.parseLabelIdentifier(parser) orelse return null;
         label = label_node;
         end = parser.getSpan(label_node).end;
@@ -490,7 +490,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     var argument: ast.NodeIndex = ast.null_node;
 
     // return [no LineTerminator here] Expression?
-    if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.type != .semicolon) {
+    if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
         argument = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
         end = parser.getSpan(argument).end;
     }
@@ -531,12 +531,12 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
     var finalizer: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(block).end;
 
-    if (parser.current_token.type == .@"catch") {
+    if (parser.current_token.tag == .@"catch") {
         handler = try parseCatchClause(parser) orelse return null;
         end = parser.getSpan(handler).end;
     }
 
-    if (parser.current_token.type == .finally) {
+    if (parser.current_token.tag == .finally) {
         try parser.advance() orelse return null; // consume 'finally'
         finalizer = try parseBlockStatement(parser) orelse return null;
         end = parser.getSpan(finalizer).end;
@@ -564,7 +564,7 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     var param: ast.NodeIndex = ast.null_node;
 
     // optional catch binding: catch (param) or catch
-    if (parser.current_token.type == .left_paren) {
+    if (parser.current_token.tag == .left_paren) {
         try parser.advance() orelse return null; // consume '('
         param = try patterns.parseBindingPattern(parser) orelse return null;
         if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) return null;

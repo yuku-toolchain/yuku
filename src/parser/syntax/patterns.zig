@@ -9,11 +9,11 @@ const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.type.isIdentifierLike()) {
+    if (parser.current_token.tag.isIdentifierLike()) {
         return parseBindingIdentifier(parser);
     }
 
-    return switch (parser.current_token.type) {
+    return switch (parser.current_token.tag) {
         .left_bracket => parseArrayPattern(parser),
         .left_brace => parseObjectPattern(parser),
         else => {
@@ -58,7 +58,7 @@ fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const start = parser.getSpan(left).start;
 
-    if (parser.current_token.type != .assign) return left;
+    if (parser.current_token.tag != .assign) return left;
 
     try parser.advance() orelse return null;
 

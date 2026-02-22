@@ -21,7 +21,7 @@ pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
     return try parser.addNode(.{
-        .boolean_literal = .{ .value = token.type == .true },
+        .boolean_literal = .{ .value = token.tag == .true },
     }, token.span);
 }
 
@@ -36,7 +36,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     // bigint literal is a separate node
-    if (token.type == .bigint_literal) {
+    if (token.tag == .bigint_literal) {
         return try parser.addNode(.{
             .bigint_literal = .{
                 .raw_start = token.span.start,
@@ -49,7 +49,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
         .numeric_literal = .{
             .raw_start = token.span.start,
             .raw_len = @intCast(token.len()),
-            .kind = ast.NumericLiteral.Kind.fromToken(token.type),
+            .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
 }
@@ -111,7 +111,7 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
 
         // after parsing the expression, we expect '}' which closes the ${} substitution.
         // we need to explicitly scan for template continuation (middle or tail).
-        if (parser.current_token.type != .right_brace) {
+        if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected '}' to close template expression",
@@ -126,7 +126,7 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
             return null;
         };
 
-        const is_tail = template_token.type == .template_tail;
+        const is_tail = template_token.tag == .template_tail;
 
         try parser.scratch_a.append(parser.allocator(), try addTemplateElement(
             parser,
@@ -170,7 +170,7 @@ inline fn addTemplateElement(parser: *Parser, tok: Token, tail: bool, tagged: bo
 }
 
 inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span {
-    return switch (token.type) {
+    return switch (token.tag) {
         .template_head, .template_middle => .{
             .start = token.span.start + 1,
             .end = token.span.end - 2,
@@ -233,7 +233,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!bool {
-    if (!token.type.isIdentifierLike()) {
+    if (!token.tag.isIdentifierLike()) {
         try parser.reportExpected(
             token.span,
             "Expected an identifier",
@@ -243,7 +243,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         return false;
     }
 
-    if (token.type.isUnconditionallyReserved()) {
+    if (token.tag.isUnconditionallyReserved()) {
         try parser.reportFmt(
             token.span,
             "'{s}' is a reserved word and cannot be used as {s}",
@@ -254,7 +254,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         return false;
     }
 
-    if (token.type == .yield and parser.context.yield_is_keyword) {
+    if (token.tag == .yield and parser.context.yield_is_keyword) {
         try parser.reportFmt(
             token.span,
             "Cannot use 'yield' as {s} in a generator context",
@@ -265,7 +265,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         return false;
     }
 
-    if (token.type == .await and (parser.context.in_async or parser.isModule())) {
+    if (token.tag == .await and (parser.context.in_async or parser.isModule())) {
         try parser.reportFmt(
             token.span,
             "Cannot use `await` as {s} in an async or module context",

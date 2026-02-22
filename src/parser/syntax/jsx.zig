@@ -35,7 +35,7 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
     const next = try parser.lookAhead() orelse return null;
 
     // fragment: <>...</>
-    if (next.type == .greater_than) {
+    if (next.tag == .greater_than) {
         return parseJsxFragment(parser);
     }
 
@@ -74,7 +74,7 @@ fn parseJsxFragment(parser: *Parser) Error!?ast.NodeIndex {
 
     // parse <>
     try parser.advance() orelse return null; // consume '<'
-    if (parser.current_token.type != .greater_than) {
+    if (parser.current_token.tag != .greater_than) {
         try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX opening fragment", .{ .help = "Add '>' to complete the fragment opening tag" });
         return null;
     }
@@ -117,12 +117,12 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
     const name = try parseJsxElementName(parser) orelse return null;
     const attributes = try parseJsxAttributes(parser) orelse return null;
 
-    const self_closing = parser.current_token.type == .slash;
+    const self_closing = parser.current_token.tag == .slash;
     if (self_closing) {
         try parser.advance() orelse return null; // consume '/'
     }
 
-    if (parser.current_token.type != .greater_than) {
+    if (parser.current_token.tag != .greater_than) {
         try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX opening element", .{ .help = "Add '>' to close the JSX tag" });
         return null;
     }
@@ -232,11 +232,11 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         // advance past jsx_text to get the delimiter token ('<' or '{')
         try parser.advanceWithRescannedToken(text_token) orelse return null;
 
-        switch (parser.current_token.type) {
+        switch (parser.current_token.tag) {
             .less_than => {
                 // check if it's a closing tag
                 const next = try parser.lookAhead() orelse return null;
-                if (next.type == .slash) break;
+                if (next.tag == .slash) break;
 
                 // nested element
                 const child = try parseJsxElement(parser, .child) orelse return null;
@@ -261,7 +261,7 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     // already in normal mode from parseJsxChildren
     try parser.advance() orelse return null; // consume '{'
 
-    if (parser.current_token.type == .spread) {
+    if (parser.current_token.tag == .spread) {
         try parser.advance() orelse return null; // consume '...'
 
         const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
@@ -273,7 +273,7 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // empty expression: {}
-    if (parser.current_token.type == .right_brace) {
+    if (parser.current_token.tag == .right_brace) {
         const end = parser.current_token.span.end;
         try parser.advance() orelse return null;
 
@@ -294,7 +294,7 @@ fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    while (parser.current_token.type == .jsx_identifier or parser.current_token.type == .left_brace) {
+    while (parser.current_token.tag == .jsx_identifier or parser.current_token.tag == .left_brace) {
         const attr = try parseJsxAttribute(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), attr);
     }
@@ -305,7 +305,7 @@ fn parseJsxAttributes(parser: *Parser) Error!?ast.IndexRange {
 // https://facebook.github.io/jsx/#prod-JSXAttribute
 fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
     // spread attribute: {...expr}
-    if (parser.current_token.type == .left_brace) {
+    if (parser.current_token.tag == .left_brace) {
         return parseJsxSpreadAttribute(parser);
     }
 
@@ -313,7 +313,7 @@ fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
     const name = try parseJsxAttributeName(parser) orelse return null;
     const name_start = parser.getSpan(name).start;
 
-    if (parser.current_token.type != .assign) {
+    if (parser.current_token.tag != .assign) {
         // boolean attribute: <elem disabled />
         return try parser.addNode(.{
             .jsx_attribute = .{ .name = name, .value = ast.null_node },
@@ -341,10 +341,10 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     // check for namespaced name: ns:name
-    if (parser.current_token.type == .colon) {
+    if (parser.current_token.tag == .colon) {
         try parser.advance() orelse return null; // consume ':'
 
-        if (parser.current_token.type != .jsx_identifier) {
+        if (parser.current_token.tag != .jsx_identifier) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected identifier after ':' in namespaced attribute",
@@ -373,7 +373,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 
 // https://facebook.github.io/jsx/#prod-JSXAttributeValue
 fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
-    switch (parser.current_token.type) {
+    switch (parser.current_token.tag) {
         // string literal: "value" or 'value'
         .string_literal => return literals.parseStringLiteral(parser),
 
@@ -429,7 +429,7 @@ fn parseJsxExpressionContainer(parser: *Parser, comptime context: JsxExprContext
     try parser.advance() orelse return null; // consume '{'
 
     // empty expression: {}
-    if (parser.current_token.type == .right_brace) {
+    if (parser.current_token.tag == .right_brace) {
         const end = parser.current_token.span.end;
         if (context == .tag) {
             enterJsxTag(parser);
@@ -475,7 +475,7 @@ fn parseJsxSpreadAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
 // https://facebook.github.io/jsx/#prod-JSXElementName
 fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.type != .jsx_identifier) {
+    if (parser.current_token.tag != .jsx_identifier) {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected JSX element name",
@@ -496,10 +496,10 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
 
     // member expression: Foo.Bar.Baz
     var is_member = false;
-    while (parser.current_token.type == .dot) {
+    while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null; // consume '.'
 
-        if (parser.current_token.type != .jsx_identifier) {
+        if (parser.current_token.tag != .jsx_identifier) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected identifier after '.' in JSX member expression",
@@ -525,10 +525,10 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // namespaced name: ns:name (not allowed after member expression)
-    if (parser.current_token.type == .colon and !is_member) {
+    if (parser.current_token.tag == .colon and !is_member) {
         try parser.advance() orelse return null; // consume ':'
 
-        if (parser.current_token.type != .jsx_identifier) {
+        if (parser.current_token.tag != .jsx_identifier) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected identifier after ':' in namespaced element name",

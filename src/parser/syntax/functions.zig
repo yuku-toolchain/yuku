@@ -32,7 +32,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     var is_generator = false;
 
-    if (parser.current_token.type == .star) {
+    if (parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
@@ -59,7 +59,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         else => outer_yield_is_keyword,
     };
 
-    const id = if (parser.current_token.type.isIdentifierLike())
+    const id = if (parser.current_token.tag.isIdentifierLike())
         try patterns.parseBindingIdentifier(parser) orelse ast.null_node
     else
         ast.null_node;
@@ -99,7 +99,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     var body = ast.null_node;
 
     if (opts.is_declare) {
-        if (parser.current_token.type == .left_brace) {
+        if (parser.current_token.tag == .left_brace) {
             try parser.report(
                 parser.current_token.span,
                 "TS(1183): An implementation cannot be declared in ambient contexts.",
@@ -116,11 +116,11 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
 
-        if(opts.is_async) {
+        if (opts.is_async) {
             try parser.report(parser.current_token.span, "Async functions can only be declared at the top level or inside a block", .{});
         }
 
-        if(is_generator){
+        if (is_generator) {
             try parser.report(
                 .{ .start = start, .end = params_end },
                 "Generators can only be declared at the top level or inside a block",
@@ -183,15 +183,15 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
     var rest = ast.null_node;
 
     while (true) {
-        if (parser.current_token.type == .right_paren or parser.current_token.type == .eof) break;
+        if (parser.current_token.tag == .right_paren or parser.current_token.tag == .eof) break;
 
-        if (parser.current_token.type == .spread) {
+        if (parser.current_token.tag == .spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse ast.null_node;
             if (!ast.isNull(rest)) {
                 end = parser.getSpan(rest).end;
             }
 
-            if (parser.current_token.type == .comma and !ast.isNull(rest)) {
+            if (parser.current_token.tag == .comma and !ast.isNull(rest)) {
                 try parser.report(
                     .{ .start = parser.getSpan(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
@@ -208,7 +208,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
             try parser.scratch_a.append(parser.allocator(), param);
         }
 
-        if (parser.current_token.type == .comma) {
+        if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
         } else break;
     }
@@ -223,7 +223,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
 pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    if (parser.current_token.type == .assign) {
+    if (parser.current_token.tag == .assign) {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
