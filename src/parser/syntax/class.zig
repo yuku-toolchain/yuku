@@ -554,6 +554,21 @@ fn parsePropertyDefinition(
 fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
 
+    // ClassStaticBlockStatementList : StatementList[~Yield, +Await, ~Return]opt
+    const saved_async = parser.context.in_async;
+    const saved_yield_is_keyword = parser.context.yield_is_keyword;
+    const saved_in_function = parser.context.in_function;
+
+    parser.context.in_async = true;
+    parser.context.yield_is_keyword = false;
+    parser.context.in_function = false;
+
+    defer {
+        parser.context.in_async = saved_async;
+        parser.context.yield_is_keyword = saved_yield_is_keyword;
+        parser.context.in_function = saved_in_function;
+    }
+
     const body = try parser.parseBody(.right_brace);
 
     const end = parser.current_token.span.end;

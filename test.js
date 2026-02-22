@@ -1,3 +1,1 @@
-function cool([...{ x } = []] = []) {
-
-}
+function* g() { class C { static { yield 1 } } }
