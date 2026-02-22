@@ -1,1 +1,3 @@
-+(1 ** 2);
+async function f() {
+  while (false) let x = null;
+}

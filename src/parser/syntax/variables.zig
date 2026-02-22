@@ -30,7 +30,11 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
     const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
 
     // lexical declarations are only allowed inside block statements
-    if (parser.context.in_single_statement_context and (kind == .let or kind == .@"const")) {
+    if (
+        parser.context.in_single_statement_context and
+        (kind == .let or kind == .@"const" or kind == .using or kind == .await_using)
+    )
+    {
         @branchHint(.unlikely);
 
         try parser.report(
