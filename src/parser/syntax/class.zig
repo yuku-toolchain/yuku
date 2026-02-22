@@ -197,40 +197,30 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
-    // check for get/set (only if no key yet and not async/generator)
+    // check for get/set/accessor (only if no key yet and not async/generator)
     if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
         const token_text = parser.getTokenText(parser.current_token);
         const is_get = std.mem.eql(u8, token_text, "get");
-        const is_set = std.mem.eql(u8, token_text, "set");
+        const is_set = !is_get and std.mem.eql(u8, token_text, "set");
+        const is_accessor_kw = !is_get and !is_set and std.mem.eql(u8, token_text, "accessor");
 
-        if (is_get or is_set) {
-            const get_set_token = parser.current_token;
+        if (is_get or is_set or is_accessor_kw) {
+            const modifier_token = parser.current_token;
             try parser.advance() orelse return null;
 
-            // check if this is get/set accessor or just a property named 'get'/'set'
+            // check if this is a modifier or just a property named 'get'/'set'/'accessor'
             if (isClassElementKeyStart(parser.current_token.tag)) {
-                kind = if (is_get) .get else .set;
+                if (is_get) {
+                    kind = .get;
+                } else if (is_set) {
+                    kind = .set;
+                } else {
+                    is_accessor = true;
+                }
             } else {
                 key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
-                    get_set_token.span,
-                );
-            }
-        }
-    }
-
-    // check for accessor field (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.tag == .identifier) {
-        if (std.mem.eql(u8, parser.getTokenText(parser.current_token), "accessor")) {
-            const accessor_token = parser.current_token;
-            try parser.advance() orelse return null; // consume 'accessor'
-
-            if (isClassElementKeyStart(parser.current_token.tag)) {
-                is_accessor = true;
-            } else {
-                key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = accessor_token.span.start, .name_len = @intCast(accessor_token.len()) } },
-                    accessor_token.span,
+                    .{ .identifier_name = .{ .name_start = modifier_token.span.start, .name_len = @intCast(modifier_token.len()) } },
+                    modifier_token.span,
                 );
             }
         }
@@ -397,39 +387,6 @@ fn parseMethodDefinition(
                 .{ .help = "Remove the '*' from the setter definition." },
             );
         }
-    }
-
-    if (kind == .constructor) {
-        if (is_async) {
-            try parser.report(
-                parser.getSpan(key),
-                "Constructor cannot be async",
-                .{ .help = "Remove the 'async' modifier from the constructor." },
-            );
-        }
-        if (is_generator) {
-            try parser.report(
-                parser.getSpan(key),
-                "Constructor cannot be a generator",
-                .{ .help = "Remove the '*' from the constructor." },
-            );
-        }
-    }
-
-    if (kind == .get and is_generator) {
-        try parser.report(
-            parser.getSpan(key),
-            "Getter cannot be a generator",
-            .{ .help = "Remove the '*' from the getter definition." },
-        );
-    }
-
-    if (kind == .set and is_generator) {
-        try parser.report(
-            parser.getSpan(key),
-            "Setter cannot be a generator",
-            .{ .help = "Remove the '*' from the setter definition." },
-        );
     }
 
     const saved_await_is_keyword = parser.context.await_is_keyword;
