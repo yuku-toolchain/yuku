@@ -1,1 +1,3 @@
-a?.fn`hello`
+class C {
+  \u200D_ZWJ;
+}
