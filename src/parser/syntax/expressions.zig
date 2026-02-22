@@ -393,6 +393,10 @@ fn parseSuperExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `import.meta` or `import(...)`
 pub fn parseImportExpression(parser: *Parser, name_from_param: ?u32) Error!?ast.NodeIndex {
+    // in this grammar position, `import` is a keyword (`import.meta` / `import(...)`).
+    // we still represent it as IdentifierName in the AST, so escaped forms must be rejected here.
+    try parser.reportIfEscapedKeyword(parser.current_token);
+
     const name = name_from_param orelse try literals.parseIdentifierName(parser) orelse return null;
 
     return switch (parser.current_token.tag) {
