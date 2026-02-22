@@ -1112,7 +1112,7 @@ pub const Lexer = struct {
     }
 
     inline fn consumeOctalDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(util.Utf.isOctalDigit, true);
+        return self.consumeDigits(util.Utf.isOctalDigit, false);
     }
 
     inline fn consumeBinaryDigits(self: *Lexer) LexicalError!void {
