@@ -334,7 +334,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
     // export default async function [name]() {}
     else if (parser.current_token.tag == .async and !parser.current_token.hasLineTerminatorBefore()) {
         const async_start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'async'
+        try parser.advanceAsKeyword() orelse return null; // consume 'async'
         if (parser.current_token.tag == .function) {
             declaration = try functions.parseFunction(parser, .{ .is_default_export = true, .is_async = true }, async_start) orelse return null;
             is_decl = true;
@@ -484,7 +484,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         },
         .async => {
             const async_start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume 'async'
+            try parser.advanceAsKeyword() orelse return null; // consume 'async'
             declaration = try functions.parseFunction(parser, .{ .is_async = true }, async_start) orelse return null;
         },
         .class => {

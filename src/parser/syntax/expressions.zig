@@ -230,18 +230,22 @@ fn parseIdentifierOrArrowFunction(parser: *Parser) Error!?ast.NodeIndex {
 
 /// async function or async arrow function
 fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
+    const is_escaped = parser.current_token.isEscaped();
 
     const async_id = try literals.parseIdentifier(parser) orelse return null;
+    const async_span = parser.getSpan(async_id);
 
     // async function ...
     if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.tag == .function) {
-        return functions.parseFunction(parser, .{ .is_expression = true, .is_async = true }, start);
+        // now we know 'async' is a keyword, so report if it was escaped
+        if (is_escaped) try parser.reportEscapedKeyword(async_span);
+
+        return functions.parseFunction(parser, .{ .is_expression = true, .is_async = true }, async_span.start);
     }
 
     // async (params) => ...
     if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.tag == .left_paren) {
-        return parseAsyncArrowFunctionOrCall(parser, true, start, async_id, precedence);
+        return parseAsyncArrowFunctionOrCall(parser, true, async_span, async_id, precedence, is_escaped);
     }
 
     // [no LineTerminator here] => ConciseBody
@@ -249,8 +253,11 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
         const after_id_token = try parser.lookAhead() orelse return null;
 
         if (after_id_token.tag == .arrow and !after_id_token.hasLineTerminatorBefore()) {
+            // now we know 'async' is a keyword, so report if it was escaped
+            if (is_escaped) try parser.reportEscapedKeyword(async_span);
+
             const id = try literals.parseIdentifier(parser) orelse return null;
-            return parenthesized.identifierToArrowFunction(parser, id, true, start);
+            return parenthesized.identifierToArrowFunction(parser, id, true, async_span.start);
         }
 
         return async_id;
@@ -259,14 +266,15 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     return async_id;
 }
 
-fn parseAsyncArrowFunctionOrCall(parser: *Parser, is_async: bool, arrow_start: ?u32, async_id: u32, precedence: u8) Error!?ast.NodeIndex {
-    const start = arrow_start orelse parser.current_token.span.start;
+fn parseAsyncArrowFunctionOrCall(parser: *Parser, is_async: bool, async_span: ast.Span, async_id: u32, precedence: u8, is_escaped_async: bool) Error!?ast.NodeIndex {
+    const start = async_span.start;
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
     // [no LineTerminator here] => ConciseBody
     // async (...) => ...
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
+        if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
 

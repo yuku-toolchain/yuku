@@ -146,7 +146,6 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     return switch (next.tag) {
         .using => {
             const start = parser.current_token.span.start;
-
             try parser.advance() orelse return null; // consume 'await'
 
             // determine if 'using' is an identifier or a keyword
@@ -185,7 +184,7 @@ fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'async'
+        try parser.advanceAsKeyword() orelse return null; // consume 'async'
         return functions.parseFunction(parser, .{ .is_async = true }, start);
     }
 

@@ -145,7 +145,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // check for 'static' modifier
     if (parser.current_token.tag == .static) {
         const static_token = parser.current_token;
-        try parser.advance() orelse return null;
+        try parser.advanceAsIdentifierName() orelse return null;
 
         // static { } - static block
         if (parser.current_token.tag == .left_brace) {
@@ -157,6 +157,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                     .{ .help = "Remove the decorator or apply it to a method or field instead." },
                 );
             }
+            try parser.reportIfEscapedKeyword(static_token);
             return parseStaticBlock(parser, static_token.span.start);
         }
 
@@ -168,6 +169,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 static_token.span,
             );
         } else {
+            try parser.reportIfEscapedKeyword(static_token);
             is_static = true;
         }
     }
@@ -175,10 +177,11 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // check for 'async' modifier (only if no key yet)
     if (ast.isNull(key) and parser.current_token.tag == .async) {
         const async_token = parser.current_token;
-        try parser.advance() orelse return null;
+        try parser.advanceAsIdentifierName() orelse return null;
 
         // check if this is async method or 'async' as property name
         if (isClassElementKeyStart(parser.current_token.tag) and !parser.current_token.hasLineTerminatorBefore()) {
+            try parser.reportIfEscapedKeyword(async_token);
             is_async = true;
         } else {
             key = try parser.addNode(
@@ -331,7 +334,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     // identifier-like (includes keywords)
     if (parser.current_token.tag.isIdentifierLike()) {
         const token = parser.current_token;
-        try parser.advance() orelse return null;
+        try parser.advanceAsIdentifierName() orelse return null;
         const key = try parser.addNode(
             .{ .identifier_name = .{ .name_start = token.span.start, .name_len = @intCast(token.len()) } },
             token.span,

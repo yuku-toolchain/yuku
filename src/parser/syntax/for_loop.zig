@@ -96,6 +96,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
         .await => {
             const next = try parser.lookAhead() orelse return null;
             if (next.tag != .using or next.hasLineTerminatorBefore()) return parseForWithExpression(parser, start, is_for_await);
+
             try parser.advance() orelse return null; // consume 'await'
             try parser.advance() orelse return null; // consume 'using'
             return parseForWithDeclaration(parser, start, is_for_await, .await_using, decl_start);

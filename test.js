@@ -1,1 +1,3 @@
-cool = {\u0069f: cool}
+const hello = \u0061sync () => {
+
+}

@@ -275,8 +275,56 @@ pub const Parser = struct {
         };
     }
 
+    /// Advance to the next token. Reports an error if the current token
+    /// is an escaped keyword being consumed in a keyword position.
+    /// Use `advanceAsIdentifierName` to opt out in IdentifierName positions.
+    /// Use `advanceAsKeyword` for contextual keywords (async) with no reserved flags.
     pub inline fn advance(self: *Parser) Error!?void {
+        try self.checkEscapedKeyword();
         self.current_token = try self.nextToken() orelse return null;
+    }
+
+    /// Advance without the escaped-keyword check.
+    /// Use in IdentifierName positions where keywords are valid names
+    /// (property keys, member access, export/import specifier names, etc.)
+    pub inline fn advanceAsIdentifierName(self: *Parser) Error!?void {
+        self.current_token = try self.nextToken() orelse return null;
+    }
+
+    /// Advance past a contextual keyword (like `async`) that has no reserved flags
+    /// but is being consumed as a keyword. Unconditionally checks the escaped flag.
+    pub inline fn advanceAsKeyword(self: *Parser) Error!?void {
+        if (self.current_token.isEscaped()) try self.reportEscapedKeyword(self.current_token.span);
+        self.current_token = try self.nextToken() orelse return null;
+    }
+
+    /// Reports an error if the current token is an escaped keyword in any
+    /// currently active context (unconditionally reserved, strict-mode reserved,
+    /// or contextual keywords like yield/await when they act as keywords).
+    pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
+        if (!self.current_token.isEscaped()) return;
+
+        if (self.current_token.tag.isUnconditionallyReserved() or
+            (self.current_token.tag.isStrictModeReserved() and self.isStrictMode()) or
+            (self.current_token.tag == .await and (self.context.in_async or self.isModule())) or
+            (self.current_token.tag == .yield and self.context.yield_is_keyword))
+        {
+            try self.reportEscapedKeyword(self.current_token.span);
+        }
+    }
+
+    pub fn reportEscapedKeyword(self: *Parser, span: ast.Span) Error!void {
+        try self.diagnostics.append(self.allocator(), .{
+            .message = "Keywords cannot contain escape characters",
+            .span = span,
+            .help = "Remove the escape characters",
+        });
+    }
+
+    /// Reports an escaped-keyword error if the given token has the escaped flag.
+    /// Use for deferred checks where the token was consumed before its role was known.
+    pub inline fn reportIfEscapedKeyword(self: *Parser, token: Token) Error!void {
+        if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
     }
 
     pub fn lookAhead(self: *Parser) Error!?Token {

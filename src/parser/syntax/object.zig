@@ -104,9 +104,10 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     // check for async, consume it, then decide if it's a modifier or key based on what follows
     if (parser.current_token.tag == .async) {
         const async_token = parser.current_token;
-        try parser.advance() orelse return null;
+        try parser.advanceAsIdentifierName() orelse return null;
 
         if (isPropertyKeyStart(parser.current_token.tag)) {
+            try parser.reportIfEscapedKeyword(async_token);
             is_async = true;
         } else {
             // it's a key named "async"

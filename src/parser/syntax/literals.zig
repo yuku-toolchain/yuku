@@ -209,7 +209,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-    try parser.advance() orelse return null;
+    try parser.advanceAsIdentifierName() orelse return null;
     return try parser.addNode(.{
         .identifier_name = .{
             .name_start = token.span.start,
@@ -247,7 +247,18 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         try parser.reportFmt(
             token.span,
             "'{s}' is a reserved word and cannot be used as {s}",
-            .{ parser.getTokenText(token), as_what },
+            .{ parser.describeToken(token), as_what },
+            .{},
+        );
+
+        return false;
+    }
+
+    if (token.tag.isStrictModeReserved() and parser.isStrictMode()) {
+        try parser.reportFmt(
+            token.span,
+            "'{s}' is reserved in strict mode and cannot be used as {s}",
+            .{ parser.describeToken(token), as_what },
             .{},
         );
 
