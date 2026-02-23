@@ -1,1 +1,3 @@
-const yield = "nice"
+class Wow {
+	get \u0063\u006F\u006E\u0073\u0074\u0072\u0075\u0063\u0074\u006F\u0072() {}
+}
