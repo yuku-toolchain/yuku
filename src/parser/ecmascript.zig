@@ -39,7 +39,7 @@ pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
 
 /// https://tc39.es/ecma262/#sec-static-semantics-stringvalue
 pub fn eqlStringValue(source: []const u8, expected: []const u8) bool {
-    if (std.mem.indexOfScalar(u8, source, '\\') == null) {
+    if (std.mem.findScalar(u8, source, '\\') == null) {
         return std.mem.eql(u8, source, expected);
     }
 
