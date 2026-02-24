@@ -123,7 +123,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     if (tag == .left_paren) {
-        return parseParenthesizedOrArrowFunction(parser, false, null, precedence);
+        return parseParenthesizedOrArrowFunction(parser, null, precedence);
     }
 
     if (tag == .await and parser.context.await_is_keyword) {
@@ -201,14 +201,14 @@ fn parseParenthesizedExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// (a) or (a, b) => ...
-fn parseParenthesizedOrArrowFunction(parser: *Parser, is_async: bool, arrow_start: ?u32, precedence: u8) Error!?ast.NodeIndex {
+fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precedence: u8) Error!?ast.NodeIndex {
     const start = arrow_start orelse parser.current_token.span.start;
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
-        return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
+        return parenthesized.coverToArrowFunction(parser, cover, false, start);
     }
 
     // not an arrow function - convert to parenthesized expression
@@ -245,7 +245,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // async (params) => ...
     if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.tag == .left_paren) {
-        return parseAsyncArrowFunctionOrCall(parser, true, async_span, async_id, precedence, is_escaped);
+        return parseAsyncArrowFunctionOrCall(parser, async_span, async_id, precedence, is_escaped);
     }
 
     // [no LineTerminator here] => ConciseBody
@@ -266,8 +266,14 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     return async_id;
 }
 
-fn parseAsyncArrowFunctionOrCall(parser: *Parser, is_async: bool, async_span: ast.Span, async_id: u32, precedence: u8, is_escaped_async: bool) Error!?ast.NodeIndex {
+fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id: u32, precedence: u8, is_escaped_async: bool) Error!?ast.NodeIndex {
     const start = async_span.start;
+
+    const saved_await_is_keyword = parser.context.await_is_keyword;
+
+    parser.context.await_is_keyword = true;
+
+    defer parser.context.await_is_keyword = saved_await_is_keyword;
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
@@ -277,7 +283,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, is_async: bool, async_span: as
         // now we know 'async' is a keyword, now report if it is escaped
         if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
 
-        return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
+        return parenthesized.coverToArrowFunction(parser, cover, true, start);
     }
 
     // async(...)

@@ -1,4 +1,1 @@
-async function f() {
-	await using x = null,
-		[] = null;
-}
+async(a = (...await) => {}) => {};
