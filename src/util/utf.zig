@@ -137,6 +137,27 @@ pub fn parseHexVariable(input: []const u8, start: usize, max_digits: usize) ?str
     return .{ .value = @intCast(value), .end = i, .has_digits = has_digits };
 }
 
+/// parse a unicode escape after the `\u` prefix.
+/// `start` points at `{` (braced form) or the first hex digit (4-digit form).
+/// returns the decoded code point and position after the escape.
+pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21, end: usize } {
+    if (start < input.len and input[start] == '{') {
+        const digit_start = start + 1;
+
+        const brace_end = std.mem.findScalarPos(u8, input, digit_start, '}') orelse return null;
+
+        const r = parseHexVariable(input, digit_start, brace_end - digit_start) orelse return null;
+
+        if (r.end != brace_end) return null;
+
+        return .{ .value = r.value, .end = brace_end + 1 };
+    }
+
+    const r = parseHex4(input, start) orelse return null;
+
+    return .{ .value = r.value, .end = r.end };
+}
+
 pub inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
 }

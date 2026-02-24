@@ -618,39 +618,12 @@ pub const Lexer = struct {
         normal,
     };
 
-    const ParsedUnicodeEscape = struct {
-        value: u21,
-        end: usize,
-    };
-
-    fn parseUnicodeEscapeValue(source: []const u8, u_index: usize) ?ParsedUnicodeEscape {
-        if (u_index >= source.len or source[u_index] != 'u') return null;
-
-        const start = u_index + 1;
-
-        if (start < source.len and source[start] == '{') {
-            const digit_start = start + 1;
-
-            const brace_end = std.mem.findScalarPos(u8, source, digit_start, '}') orelse return null;
-
-            const r = util.Utf.parseHexVariable(source, digit_start, brace_end - digit_start) orelse return null;
-
-            if (!r.has_digits or r.end != brace_end) return null;
-
-            return .{ .value = r.value, .end = brace_end + 1 };
-        }
-
-        const r = util.Utf.parseHex4(source, start) orelse return null;
-
-        return .{ .value = r.value, .end = r.end };
-    }
-
     fn consumeUnicodeEscape(self: *Lexer, comptime context: ConsumeUnicodeContext) LexicalError!void {
         // set the current token is escaped
         // used by parser to check whether a reserved keyword is ecaped to throw error
         self.setTokenFlag(.escaped);
 
-        const parsed = parseUnicodeEscapeValue(self.source, self.cursor) orelse return error.InvalidUnicodeEscape;
+        const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse return error.InvalidUnicodeEscape;
 
         switch (context) {
             .identifier_start => {
@@ -804,9 +777,9 @@ pub const Lexer = struct {
             const c = lexeme[i];
 
             if (c == '\\') {
-                i += 1;
+                i += 2; // skip \u
 
-                const parsed = parseUnicodeEscapeValue(lexeme, i) orelse return .identifier;
+                const parsed = util.Utf.parseUnicodeEscape(lexeme, i) orelse return .identifier;
 
                 // if codepoint is not ascii, then it's not a keyword
                 if (parsed.value >= 0x80) return .identifier;

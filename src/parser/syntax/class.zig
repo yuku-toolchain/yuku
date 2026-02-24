@@ -11,6 +11,7 @@ const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
+const ecmascript = @import("../ecmascript.zig");
 
 pub const ParseClassOpts = struct {
     /// whether the class is parsing in an expression position
@@ -200,6 +201,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // check for get/set/accessor modifier (only if no key yet and not async/generator)
     if (ast.isNull(key) and !is_async and !is_generator) {
         const cur_tag = parser.current_token.tag;
+
         if (cur_tag == .get or cur_tag == .set or cur_tag == .accessor) {
             const modifier_token = parser.current_token;
             try parser.advanceAsIdentifierName() orelse return null;
@@ -230,8 +232,8 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         computed = key_result.computed;
     }
 
-    // no element may have a private name "#constructor" (static or not)
-    // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    // ClassElementName : PrivateIdentifier
+    //     It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
     if (!computed) {
         if (parser.getData(key) == .private_identifier) {
             const pi = parser.getData(key).private_identifier;
@@ -246,35 +248,23 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // determine if this is constructor
-    // non-static, non-computed methods with PropName "constructor" are constructors
-    // PropName can come from identifier or string literal (but not computed)
     if (!is_static and !computed) {
-        if (isKeyName(parser, key, "constructor")) {
-            // constructor cannot have get/set modifiers
-            if (kind == .get or kind == .set) {
-                try parser.report(
-                    parser.getSpan(key),
-                    "Constructor can't have get/set modifier",
-                    .{ .help = "Remove the get/set keyword from the constructor." },
-                );
-            }
+        if (ecmascript.propName(parser, key)) |prop| {
+            if (prop.eql("constructor")) {
+                // constructor cannot have get/set modifiers
+                if (kind == .get or kind == .set) {
+                    try parser.report(
+                        prop.span,
+                        "Constructor can't have get/set modifier",
+                        .{ .help = "Remove the get/set keyword from the constructor." },
+                    );
+                }
 
-            if (kind == .method) {
-                kind = .constructor;
+                if (kind == .method) {
+                    kind = .constructor;
+                }
             }
         }
-    }
-
-    // non-static field named "constructor" is forbidden
-    if (kind == .constructor and parser.current_token.tag != .left_paren) {
-        try parser.report(
-            parser.getSpan(key),
-            "Classes may not have a non-static field named 'constructor'",
-            .{ .help = "Rename this field or make it a method with parentheses." },
-        );
-
-        kind = .method;
     }
 
     // method: key followed by (
@@ -287,6 +277,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             );
             return null;
         }
+
         return parseMethodDefinition(parser, elem_start, decorators, key, computed, kind, is_static, is_async, is_generator);
     }
 
@@ -379,7 +370,7 @@ fn parseMethodDefinition(
     is_generator: bool,
 ) Error!?ast.NodeIndex {
     if (is_static and !computed) {
-        try validateStaticPrototypeName(parser, key);
+        try validateStaticPrototypeOrConstructor(parser, key, true);
     }
 
     if (kind == .constructor) {
@@ -492,8 +483,12 @@ fn parsePropertyDefinition(
     is_static: bool,
     is_accessor: bool,
 ) Error!?ast.NodeIndex {
-    if (is_static and !computed) {
-        try validateStaticPrototypeName(parser, key);
+    if (!computed) {
+        if (is_static) {
+            try validateStaticPrototypeOrConstructor(parser, key, false);
+        } else {
+            try validateFieldConstructor(parser, key);
+        }
     }
 
     var value: ast.NodeIndex = ast.null_node;
@@ -572,30 +567,40 @@ inline fn isClassElementKeyStart(tag: TokenTag) bool {
         tag.isIdentifierLike();
 }
 
-/// checks if a key node matches a given name (works for identifier and string literal keys)
-fn isKeyName(parser: *Parser, key: ast.NodeIndex, comptime name: []const u8) bool {
-    const key_data = parser.getData(key);
-    switch (key_data) {
-        .identifier_name => |id| {
-            const key_name = parser.getSourceText(id.name_start, id.name_len);
-            if (key_name.len != name.len) return false;
-            return std.mem.eql(u8, key_name, name);
-        },
-        .string_literal => |str| {
-            const raw = parser.getSourceText(str.raw_start, str.raw_len);
-            if (raw.len < 2 + name.len) return false;
-            return std.mem.eql(u8, raw[1 .. raw.len - 1], name);
-        },
-        else => return false,
+
+/// ClassElement : static MethodDefinition
+///     It is a Syntax Error if the PropName of MethodDefinition is "prototype".
+
+/// ClassElement : static FieldDefinition ;
+///     It is a Syntax Error if the PropName of FieldDefinition is either "prototype" or "constructor".
+fn validateStaticPrototypeOrConstructor(parser: *Parser, key: ast.NodeIndex, method: bool) Error!void {
+    const prop = ecmascript.propName(parser, key) orelse return;
+
+    if (prop.eql("prototype")) {
+        try parser.report(
+            prop.span,
+            "Classes may not have a static property named 'prototype'",
+            .{ .help = "Remove 'static' or rename the property." },
+        );
+    } else if (!method and prop.eql("constructor")) {
+        try parser.report(
+            prop.span,
+            "Classes may not have a static field named 'constructor'",
+            .{ .help = "Remove 'static' or rename the field." },
+        );
     }
 }
 
-fn validateStaticPrototypeName(parser: *Parser, key: ast.NodeIndex) Error!void {
-    if (!isKeyName(parser, key, "prototype")) return;
+/// ClassElement : FieldDefinition ;
+///     It is a Syntax Error if the PropName of FieldDefinition is "constructor".
+fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
+    const prop = ecmascript.propName(parser, key) orelse return;
+
+    if (!prop.eql("constructor")) return;
 
     try parser.report(
-        parser.getSpan(key),
-        "Classes may not have a static property named 'prototype'",
-        .{ .help = "Remove 'static' or rename the property." },
+        prop.span,
+        "Classes may not have a non-static field named 'constructor'",
+        .{ .help = "Rename the field or make it a method." },
     );
 }

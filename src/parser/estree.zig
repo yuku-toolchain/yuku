@@ -1491,12 +1491,10 @@ pub const Serializer = struct {
                 },
                 'u' => {
                     if (i + 2 < input.len and input[i + 2] == '{') {
-                        if (util.Utf.parseHexVariable(input, i + 3, 16)) |r| {
-                            if (r.has_digits and r.end < input.len and input[r.end] == '}') {
-                                try self.writeCodePointAsJson(r.value);
-                                i = r.end + 1;
-                                continue;
-                            }
+                        if (util.Utf.parseUnicodeEscape(input, i + 2)) |r| {
+                            try self.writeCodePointAsJson(r.value);
+                            i = r.end;
+                            continue;
                         }
                         try self.writeByte('u');
                         i += 2;
