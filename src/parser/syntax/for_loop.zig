@@ -61,9 +61,6 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
             }
 
             switch (next.tag) {
-                // `using in` is always a for-in loop (`for (using in obj)`),
-                // because `in` is reserved and can never be a variable name.
-                //
                 // `using.`, `using(`, `using[` are expression forms where `using` is an identifier.
                 //
                 // `using` doesn't support destructuring, so `for (using {} = ...;;)` is invalid.
@@ -95,10 +92,12 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
         },
         .await => {
             const next = try parser.lookAhead() orelse return null;
+
             if (next.tag != .using or next.hasLineTerminatorBefore()) return parseForWithExpression(parser, start, is_for_await);
 
             try parser.advance() orelse return null; // consume 'await'
             try parser.advance() orelse return null; // consume 'using'
+
             return parseForWithDeclaration(parser, start, is_for_await, .await_using, decl_start);
         },
         else => return parseForWithExpression(parser, start, is_for_await),
@@ -112,7 +111,16 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
 
     // for-in / for-of: single declarator
     if (parser.current_token.tag == .in) {
+        if(kind == .using or kind == .await_using) {
+            try parser.reportFmt(
+                .{ .start = decl_start, .end = first_end },
+                "The left-hand side of a for...in statement cannot be an {s} declaration.",
+                .{kind.toString()},
+                .{ .help = "Did you mean to use a for...of statement?" });
+        }
+
         const decl = try createSingleDeclaration(parser, kind, first, decl_start, first_end);
+
         return parseForInStatementRest(parser, start, decl, is_for_await);
     }
 
@@ -166,6 +174,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
 
     if (parser.current_token.tag == .in) {
         try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
+
         return parseForInStatementRest(parser, start, expr, is_for_await);
     }
 
