@@ -233,12 +233,16 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // ClassElementName : PrivateIdentifier
-    //     It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
+    //    It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
     if (!computed) {
-        if (parser.getData(key) == .private_identifier) {
-            const pi = parser.getData(key).private_identifier;
+        const data = parser.getData(key);
+
+        if (data == .private_identifier) {
+            const pi = data.private_identifier;
+
             const name = parser.getSourceText(pi.name_start, pi.name_len);
-            if (std.mem.eql(u8, name, "constructor")) {
+
+            if (ecmascript.eqlStringValue(name, "constructor")) {
                 try parser.report(
                     parser.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
