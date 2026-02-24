@@ -184,7 +184,7 @@ fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
-        try parser.advanceAsKeyword() orelse return null; // consume 'async'
+        try parser.advance() orelse return null; // consume 'async'
         return functions.parseFunction(parser, .{ .is_async = true }, start);
     }
 

@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       40809
-Failed:       55
+Passed:       40816
+Failed:       48
 AST mismatch: 0/37228
 Total:        40864
-Coverage:     99.87%
+Coverage:     99.88%
 
 Results by Suite
 ----------------
@@ -18,16 +18,14 @@ Results by Suite
   Passed: 37141/37141 (100.00%)
 
 ✗ test/suite/js/fail
-  Passed: 3567/3622 (98.48%)
-  Failed: 55
+  Passed: 3574/3622 (98.67%)
+  Failed: 48
   Failures:
     - test/suite/js/fail/801ba06a0f7e3899.js
     - test/suite/js/fail/dd870ca2a48a7fc7.js
     - test/suite/js/fail/652825f0dd566ffb.js
-    - test/suite/js/fail/9a1e5e6875a3275e.module.js
     - test/suite/js/fail/fe63459872c6fa4d.js
     - test/suite/js/fail/575535cd1595830b.js
-    - test/suite/js/fail/c212d213bea50033.module.js
     - test/suite/js/fail/6a0672644fbebd0c.js
     - test/suite/js/fail/e54844c8bbdaa40d.js
     - test/suite/js/fail/2280746b00767ed6.js
@@ -40,22 +38,18 @@ Results by Suite
     - test/suite/js/fail/3a857eeaa77266b4.js
     - test/suite/js/fail/9e43c50d0903b89f.js
     - test/suite/js/fail/09ab2af6875ccb16.js
-    - test/suite/js/fail/2d79e1f8deac924e.module.js
     - test/suite/js/fail/91a2a358ab8c3a4b.js
     - test/suite/js/fail/81462dd4138b76b1.js
-    - test/suite/js/fail/609dd4cd4720ac43.js
     - test/suite/js/fail/556870ef5872ab4f.js
     - test/suite/js/fail/da626d579c0cd093.js
     - test/suite/js/fail/d702d802a011e298.js
     - test/suite/js/fail/8e4858c6855efcd0.js
     - test/suite/js/fail/8558e9787bedfa94.js
-    - test/suite/js/fail/8ef706182f36c6e4.module.js
     - test/suite/js/fail/6925dc66ae08f190.js
     - test/suite/js/fail/33308cfc785ead80.js
     - test/suite/js/fail/e18cbffe22b3d07e.js
     - test/suite/js/fail/9bc04cf866ec800d.js
     - test/suite/js/fail/bf664810a9bc70bc.js
-    - test/suite/js/fail/b94cccf4bc5e6c21.module.js
     - test/suite/js/fail/d887411d80ac4c9c.js
     - test/suite/js/fail/6ff92d2b019e6cd6.module.js
     - test/suite/js/fail/50c97f0cabe8a925.js
@@ -72,7 +66,6 @@ Results by Suite
     - test/suite/js/fail/bfef25069b6cd377.js
     - test/suite/js/fail/fa1b133e400fef12.js
     - test/suite/js/fail/70c82b47768543af.js
-    - test/suite/js/fail/830e82b85566aba7.js
     - test/suite/js/fail/20cfc8584938fc9d.module.js
     - test/suite/js/fail/7686825073d52fda.js
     - test/suite/js/fail/46d420a196d2c681.js

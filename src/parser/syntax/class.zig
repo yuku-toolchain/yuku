@@ -146,7 +146,8 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // check for 'static' modifier
     if (parser.current_token.tag == .static) {
         const static_token = parser.current_token;
-        try parser.advanceAsIdentifierName() orelse return null;
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
 
         // static { } - static block
         if (parser.current_token.tag == .left_brace) {
@@ -158,7 +159,10 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                     .{ .help = "Remove the decorator or apply it to a method or field instead." },
                 );
             }
+
+            // now we know 'static' is keyword
             try parser.reportIfEscapedKeyword(static_token);
+
             return parseStaticBlock(parser, static_token.span.start);
         }
 
@@ -178,11 +182,14 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // check for 'async' modifier (only if no key yet)
     if (ast.isNull(key) and parser.current_token.tag == .async) {
         const async_token = parser.current_token;
-        try parser.advanceAsIdentifierName() orelse return null;
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
 
         // check if this is async method or 'async' as property name
         if (isClassElementKeyStart(parser.current_token.tag) and !parser.current_token.hasLineTerminatorBefore()) {
+            // now we know 'async' is a token
             try parser.reportIfEscapedKeyword(async_token);
+
             is_async = true;
         } else {
             key = try parser.addNode(
@@ -204,11 +211,14 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
         if (cur_tag == .get or cur_tag == .set or cur_tag == .accessor) {
             const modifier_token = parser.current_token;
-            try parser.advanceAsIdentifierName() orelse return null;
+
+            try parser.advanceWithoutEscapeCheck() orelse return null;
 
             // check if this is a modifier or just a property named 'get'/'set'/'accessor'
             if (isClassElementKeyStart(parser.current_token.tag)) {
+                // now we know 'get'/'set'/'accessor' is a token
                 try parser.reportIfEscapedKeyword(modifier_token);
+
                 if (cur_tag == .get) {
                     kind = .get;
                 } else if (cur_tag == .set) {
@@ -343,7 +353,9 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     // identifier-like (includes keywords)
     if (parser.current_token.tag.isIdentifierLike()) {
         const token = parser.current_token;
-        try parser.advanceAsIdentifierName() orelse return null;
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
+
         const key = try parser.addNode(
             .{ .identifier_name = .{ .name_start = token.span.start, .name_len = @intCast(token.len()) } },
             token.span,

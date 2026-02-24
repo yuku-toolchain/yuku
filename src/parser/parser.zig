@@ -290,39 +290,29 @@ pub const Parser = struct {
 
     /// advance to the next token. reports an error if the current token
     /// is an escaped keyword being consumed in a keyword position.
-    /// use `advanceAsIdentifierName` to opt out in IdentifierName positions.
-    /// use `advanceAsKeyword` for contextual keywords (async) with no reserved flags.
+    /// use `advanceWithoutEscapeCheck` to opt out in identifier positions.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
         self.current_token = try self.nextToken() orelse return null;
     }
 
     /// advance without the escaped-keyword check.
-    /// use in IdentifierName positions where keywords are valid names
-    /// (property keys, member access, export/import specifier names, etc.)
-    pub inline fn advanceAsIdentifierName(self: *Parser) Error!?void {
+    /// use in identifier positions where keywords are valid names
+    pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    /// advance past a contextual keyword (like `async`) that has no reserved flags
-    /// but is being consumed as a keyword. unconditionally checks the escaped flag.
-    pub inline fn advanceAsKeyword(self: *Parser) Error!?void {
-        if (self.current_token.isEscaped()) try self.reportEscapedKeyword(self.current_token.span);
-        self.current_token = try self.nextToken() orelse return null;
-    }
-
-    // `StringValue` of `IdentifierName` normalizes any Unicode escape sequences
-    // in `IdentifierName` hence such escapes cannot be used to write an Identifier
-    // whose code point sequence is the same as a `ReservedWord`.
     pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
-        if (!self.current_token.isEscaped()) return;
+        const current_token = self.current_token;
 
-        if (self.current_token.tag.isUnconditionallyReserved() or
-            (self.current_token.tag.isStrictModeReserved() and self.isStrictMode()) or
-            (self.current_token.tag == .await and self.context.await_is_keyword) or
-            (self.current_token.tag == .yield and self.context.yield_is_keyword))
-        {
-            try self.reportEscapedKeyword(self.current_token.span);
+        if (!current_token.isEscaped()) return;
+
+        if (
+            current_token.tag.isKeyword() or
+            (self.context.await_is_keyword and current_token.tag == .await) or
+            (self.context.yield_is_keyword and current_token.tag == .yield)
+        ) {
+            try self.reportEscapedKeyword(current_token.span);
         }
     }
 

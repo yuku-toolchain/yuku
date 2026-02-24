@@ -274,7 +274,9 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, is_async: bool, async_span: as
     // [no LineTerminator here] => ConciseBody
     // async (...) => ...
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
+        // now we know 'async' is a keyword, now report if it is escaped
         if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
+
         return parenthesized.coverToArrowFunction(parser, cover, is_async, start);
     }
 

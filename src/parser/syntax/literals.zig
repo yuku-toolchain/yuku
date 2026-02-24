@@ -187,7 +187,9 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
 
     const token = parser.current_token;
-    try parser.advance() orelse return null;
+
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+
     return try parser.addNode(.{
         .identifier_reference = .{
             .name_start = token.span.start,
@@ -198,7 +200,9 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
 pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
+
     try parser.advance() orelse return null;
+
     return try parser.addNode(.{
         .private_identifier = .{
             .name_start = token.span.start + 1, // skip '#'
@@ -209,7 +213,9 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-    try parser.advanceAsIdentifierName() orelse return null;
+
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+
     return try parser.addNode(.{
         .identifier_name = .{
             .name_start = token.span.start,

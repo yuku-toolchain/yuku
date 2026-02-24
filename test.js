@@ -1,3 +1,1 @@
-class Name {
-	static #con\u0073\u0074ructor;
-}
+var C = class aw\u0061it {};
