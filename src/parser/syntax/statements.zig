@@ -312,6 +312,22 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         parser.current_token.tag != .eof)
     {
         if (try parseStatement(parser, .{})) |stmt| {
+            const stmt_data = parser.getData(stmt);
+
+            // A using declaration can appear in the following contexts:
+            //  - The top level of a Module anywhere a VariableStatement is allowed, as long as it is not
+            //    immediately nested inside of a `CaseClause` or `DefaultClause`.
+            if(stmt_data == .variable_declaration) {
+                const kind = stmt_data.variable_declaration.kind;
+
+                if(kind == .using or kind == .await_using) {
+                    try parser.report(
+                        parser.getSpan(stmt),
+                        "Using declaration cannot appear in the bare case statement.",
+                        .{ .help = "Wrap this declaration in a block statement" });
+                }
+            }
+
             try parser.scratch_b.append(parser.allocator(), stmt);
         } else {
             break;
