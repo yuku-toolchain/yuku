@@ -290,14 +290,12 @@ pub const Parser = struct {
 
     /// advance to the next token. reports an error if the current token
     /// is an escaped keyword being consumed in a keyword position.
-    /// use `advanceWithoutEscapeCheck` to opt out in identifier positions.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
         self.current_token = try self.nextToken() orelse return null;
     }
 
     /// advance without the escaped-keyword check.
-    /// use in identifier positions where keywords are valid names
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
         self.current_token = try self.nextToken() orelse return null;
     }
@@ -307,11 +305,7 @@ pub const Parser = struct {
 
         if (!current_token.isEscaped()) return;
 
-        if (
-            current_token.tag.isKeyword() or
-            (self.context.await_is_keyword and current_token.tag == .await) or
-            (self.context.yield_is_keyword and current_token.tag == .yield)
-        ) {
+        if (current_token.tag.isKeyword()) {
             try self.reportEscapedKeyword(current_token.span);
         }
     }
