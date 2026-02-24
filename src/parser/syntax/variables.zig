@@ -78,38 +78,45 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
 fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
+    const id_span = parser.getSpan(id);
 
     var init: ast.NodeIndex = ast.null_node;
-    var end = parser.getSpan(id).end;
+    var end = id_span.end;
 
-    // initializer if present
+    const is_using = kind == .using or kind == .await_using;
+    const is_destructuring = patterns.isDestructuringPattern(parser, id);
+
+    if (is_using and is_destructuring) {
+        try parser.report(
+            id_span,
+            "Using declaration cannot have destructuring patterns.",
+            .{},
+        );
+    }
+
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(init).end;
-    } else if (patterns.isDestructuringPattern(parser, id)) {
+    } else if (is_destructuring) {
         try parser.report(
-            parser.getSpan(id),
+            id_span,
             "Destructuring declaration must have an initializer",
             .{ .help = "Add '= value' to provide the object or array to destructure from." },
         );
-        return null;
     } else if (kind == .@"const") {
         try parser.report(
-            parser.getSpan(id),
+            id_span,
             "'const' declarations must be initialized",
             .{ .help = "Add '= value' to initialize the constant, or use 'let' if you need to assign it later." },
         );
-        return null;
-    } else if (kind == .using or kind == .await_using) {
-        const keyword = if (kind == .using) "using" else "await using";
+    } else if (is_using) {
         try parser.reportFmt(
-            parser.getSpan(id),
+            id_span,
             "'{s}' declarations must be initialized",
-            .{keyword},
+            .{kind.toString()},
             .{ .help = "Disposable resources require an initial value that implements the dispose protocol." },
         );
-        return null;
     }
 
     return try parser.addNode(
