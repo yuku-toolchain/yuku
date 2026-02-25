@@ -345,11 +345,11 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!parser.current_token.hasLineTerminatorBefore()) {
         const can_start_yield_argument = switch (parser.current_token.tag) {
-            .eof, .right_brace, .right_paren, .right_bracket, .colon, .comma, .semicolon => true,
-            else => false,
+            .eof, .right_brace, .right_paren, .right_bracket, .colon, .comma, .semicolon => false,
+            else => true,
         };
 
-        if(!can_start_yield_argument) {
+        if(can_start_yield_argument) {
             const expr = try parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
             argument = expr;
