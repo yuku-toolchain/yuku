@@ -1,1 +1,2 @@
-const nice = 10 => {}
+export { Foo as "\uD83D" }
+function Foo() {}

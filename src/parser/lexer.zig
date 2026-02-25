@@ -16,6 +16,7 @@ pub const LexicalError = error{
     InvalidRegex,
     InvalidRegexFlag,
     DuplicateRegexFlag,
+    IncompatibleRegexFlags,
     InvalidIdentifierStart,
     InvalidIdentifierContinue,
     UnterminatedMultiLineComment,
@@ -419,6 +420,7 @@ pub const Lexer = struct {
 
                 // 26 bits enough, 'a' to 'z'
                 var flags_seen: u32 = 0;
+
                 while (true) {
                     const flag = self.peek(0);
                     if (!std.ascii.isAlphabetic(flag)) break;
@@ -441,6 +443,14 @@ pub const Lexer = struct {
                     flags_seen |= (@as(u32, 1) << bit);
 
                     self.cursor += 1;
+                }
+
+                // u and v flags are mutually exclusive (ES2024)
+                const u_bit = @as(u32, 1) << ('u' - 'a');
+                const v_bit = @as(u32, 1) << ('v' - 'a');
+
+                if (flags_seen & u_bit != 0 and flags_seen & v_bit != 0) {
+                    return error.IncompatibleRegexFlags;
                 }
 
                 const end = self.cursor;
@@ -556,15 +566,16 @@ pub const Lexer = struct {
             '0' => {
                 const c1 = self.peek(1);
 
-                // null escape \0
-                if (!util.Utf.isOctalDigit(c1)) {
+                // null escape \0 [lookahead ∉ DecimalDigit]
+                if (!std.ascii.isDigit(c1)) {
                     self.cursor += 1;
                     break :brk;
                 }
 
-                // octal escape \0
+                // octal escape \0n
                 // always invalid in templates, only invalid in strict mode for strings
                 if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
+
                 try self.consumeOctal();
             },
             'x' => try self.consumeHex(),
@@ -1330,6 +1341,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.InvalidRegex => "Invalid regular expression",
         error.InvalidRegexFlag => "Invalid regular expression flag",
         error.DuplicateRegexFlag => "Duplicate regular expression flag",
+        error.IncompatibleRegexFlags => "The 'u' and 'v' regular expression flags cannot be used together",
         error.InvalidIdentifierStart => "Invalid character at start of identifier",
         error.InvalidIdentifierContinue => "Invalid character in identifier",
         error.UnterminatedMultiLineComment => "Unterminated multi-line comment",
@@ -1366,6 +1378,7 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.InvalidRegex => "Try checking the regex syntax here for unclosed groups, invalid escapes, or malformed patterns",
         error.InvalidRegexFlag => "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)",
         error.DuplicateRegexFlag => "Remove the duplicate flag; each flag can only appear once",
+        error.IncompatibleRegexFlags => "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other",
         error.InvalidIdentifierStart => "Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)",
         error.InvalidIdentifierContinue => "Try using a valid identifier character here (letters, digits, underscore, or dollar sign)",
         error.UnterminatedMultiLineComment => "Try adding the closing delimiter (*/) here to complete the comment",

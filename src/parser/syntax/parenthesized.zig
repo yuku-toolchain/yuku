@@ -300,6 +300,16 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, elem, .binding) orelse return null;
             rest = elem;
+
+            if (cover.has_trailing_comma) {
+                try parser.report(
+                    parser.getSpan(elem),
+                    "Rest parameter must be last formal parameter",
+                    .{ .help = "Remove the trailing comma after the rest parameter" },
+                );
+                return null;
+            }
+
             continue;
         }
 

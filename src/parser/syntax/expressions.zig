@@ -469,6 +469,7 @@ fn parseNewTarget(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
 /// `new Callee`, `new Callee(args)`, or `new.target`
 fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
+    try parser.checkEscapedKeyword();
     const new = try literals.parseIdentifierName(parser) orelse return null; // consume 'new'
 
     // check for new.target
