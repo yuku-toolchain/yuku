@@ -1,5 +1,4 @@
-// Pure Pratt (TDOP) parser for JavaScript expressions.
-// follows natural JavaScript operator precedence table:
+// pure pratt parser for javascript expressions:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence#table
 // https://tdop.github.io/
 
@@ -1095,7 +1094,7 @@ fn isPostfixOperation(tag: TokenTag) bool {
         .left_paren, // func()
         .optional_chaining, // obj?.prop
         .template_head, // tag`template`
-        .no_substitution_template, // tag`template`
+        .no_substitution_template, // tag`template`,
         => true,
         else => false,
     };
