@@ -61,6 +61,7 @@ pub fn parseClassDecorated(
 
     // optional extends clause
     var super_class: ast.NodeIndex = ast.null_node;
+
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null; // consume 'extends'
         super_class = try expressions.parseLeftHandSideExpression(parser) orelse return null;

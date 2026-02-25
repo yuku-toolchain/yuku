@@ -1,1 +1,2 @@
-function *a() { yield b=c, yield* d=e, f }
+var C = class extends async () => {} {
+};

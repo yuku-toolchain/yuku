@@ -139,15 +139,19 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseImportExpression(parser, null);
     }
 
+    if (tag == .async) {
+        return parseAsyncFunctionOrArrow(parser, precedence);
+    }
+
     // jsx element
     if (tag == .less_than and parser.isJsx()) {
         return jsx.parseJsxExpression(parser);
     }
 
-    return parsePrimaryExpression(parser, opts, precedence);
+    return parsePrimaryExpression(parser, opts);
 }
 
-pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error!?ast.NodeIndex {
+pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isNumericLiteral()) {
         return literals.parseNumericLiteral(parser);
     }
@@ -166,7 +170,6 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
         .left_brace => parseObjectExpression(parser, opts.in_cover),
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
-        .async => parseAsyncFunctionOrArrow(parser, precedence),
         else => {
             if (parser.current_token.tag.isIdentifierLike()) {
                 return parseIdentifierOrArrowFunction(parser);
@@ -492,7 +495,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         // otherwise, start with a primary expression
-        break :blk try parsePrimaryExpression(parser, .{}, Precedence.Lowest) orelse return null;
+        break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
     };
 
     // member expression chain (. [] and tagged templates)
@@ -1036,6 +1039,7 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
     };
 }
 
+/// https://tc39.es/ecma262/#prod-LeftHandSideExpression
 /// used to parse `extends` clause or decorator expression, where we only need left hand side expression
 pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex {
     // base expression
@@ -1052,7 +1056,7 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
             break :blk try parseImportExpression(parser, null) orelse return null;
         }
 
-        break :blk try parsePrimaryExpression(parser, .{}, Precedence.Lowest) orelse return null;
+        break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
     };
 
     // chain LeftHandSide operations: member access, calls, optional chaining
@@ -1070,6 +1074,14 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
     return expr;
 }
 
+// https://tc39.es/ecma262/#prod-LeftHandSideExpression
+fn isLeftHandSideExpression(data: ast.NodeData) bool {
+    return switch (data) {
+        .arrow_function_expression, .update_expression, .unary_expression, .await_expression, .yield_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => false,
+        else => true,
+    };
+}
+
 fn isPostfixOperation(tag: TokenTag) bool {
     return switch (tag) {
         .dot, // obj.prop
@@ -1080,13 +1092,5 @@ fn isPostfixOperation(tag: TokenTag) bool {
         .no_substitution_template, // tag`template`
         => true,
         else => false,
-    };
-}
-
-// https://tc39.es/ecma262/#prod-LeftHandSideExpression
-fn isLeftHandSideExpression(data: ast.NodeData) bool {
-    return switch (data) {
-        .arrow_function_expression, .update_expression, .unary_expression, .await_expression, .yield_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => false,
-        else => true,
     };
 }
