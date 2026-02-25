@@ -24,10 +24,6 @@ const ParseExpressionOpts = struct {
     /// when true, we don't treat the expressions as patterns and also don't decide whether to parse them as patterns
     /// until the top level context is known after the cover is parsed.
     in_cover: bool = false,
-    /// whether to parse the expression optionally.
-    /// when true, silently returns null on immediate expression parsing failure, which means no expression found.
-    /// but still reports errors on subsequent parsing failures if an expression is detected.
-    optional: bool = false,
     /// whether to stop at `in` when `allow_in` is disabled. only the direct caller
     /// that sets `allow_in = false` should pass `true` here, recursive calls (inside
     /// parentheses, computed members, etc.) leave this `false` so `in` is parsed as
@@ -43,22 +39,16 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
 
         if (opts.respect_allow_in and current_type == .in and !parser.context.allow_in) break;
 
-        const needs_yield_check = parser.current_token.hasLineTerminatorBefore();
+        const left_data = parser.getData(left);
 
-        const needs_postfix_check = isPostfixOperation(current_type);
+        if (left_data == .yield_expression and current_type != .comma) break;
 
-        if (needs_yield_check or needs_postfix_check) {
-            const left_data = parser.getData(left);
-
-            // `yield\n+a`: this not a binary expression, these are separate 'YieldExpression (argument=null)' and an another 'UnaryExpression'.
-            // because 'yield' is an expression and a statement at the same time lol
-            if (needs_yield_check and left_data == .yield_expression) break;
-
+        if (isPostfixOperation(current_type)) {
             // only LeftHandSideExpressions can have postfix operations applied.
             //   a++()        <- can't call an update expression
             //   () => {}()   <- can't call an arrow function
             // breaking here produces natural "expected semicolon" error.
-            if (needs_postfix_check and !isLeftHandSideExpression(left_data)) break;
+            if (!isLeftHandSideExpression(left_data)) break;
         }
 
         const lbp = parser.current_token.leftBp();
@@ -132,7 +122,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseAwaitExpression(parser, await_start);
     }
 
-    if (tag == .yield and parser.context.yield_is_keyword and precedence < Precedence.Unary) {
+    if (tag == .yield and parser.context.yield_is_keyword and precedence < Precedence.Additive) {
         return parseYieldExpression(parser);
     }
 
@@ -177,15 +167,14 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts,
                 return parseIdentifierOrArrowFunction(parser);
             }
 
-            if (!opts.optional) {
-                const token = parser.current_token;
-                try parser.reportFmt(
-                    token.span,
-                    "Unexpected token '{s}'",
-                    .{parser.describeToken(token)},
-                    .{ .help = "Expected an expression" },
-                );
-            }
+            const token = parser.current_token;
+
+            try parser.reportFmt(
+                token.span,
+                "Unexpected token '{s}'",
+                .{parser.describeToken(token)},
+                .{ .help = "Expected an expression" },
+            );
 
             return null;
         },
@@ -335,7 +324,10 @@ pub fn parseAwaitExpression(parser: *Parser, await_start: u32) Error!?ast.NodeIn
     );
 }
 
-/// `yield`, `yield expression`, or `yield* expression`
+/// Section 15.5 Yield Expression
+/// yield
+/// yield [no `LineTerminator` here] `AssignmentExpression`
+/// yield [no `LineTerminator` here] * `AssignmentExpression`
 fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
@@ -343,35 +335,31 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var delegate = false;
 
+    var argument: ast.NodeIndex = ast.null_node;
+
     if (parser.current_token.tag == .star and !parser.current_token.hasLineTerminatorBefore()) {
         delegate = true;
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
     }
 
-    var argument: ast.NodeIndex = ast.null_node;
+    if (!parser.current_token.hasLineTerminatorBefore()) {
+        const can_start_yield_argument = switch (parser.current_token.tag) {
+            .eof, .right_brace, .right_paren, .right_bracket, .colon, .comma, .semicolon => true,
+            else => false,
+        };
 
-    if (
-    // yield [no LineTerminator here] AssignmentExpression[?In, +Yield, ?Await]
-    !parser.canInsertImplicitSemicolon(parser.current_token) and
-        parser.current_token.tag != .semicolon)
-    {
-        // the yield argument is optional.
-        // for example, `function* g() { [yield] }`. this passes the above condition,
-        // but the right side is not a valid expression, it's '['.
-        if (try parseExpression(parser, Precedence.Assignment, .{ .optional = true })) |expr| {
+        if(!can_start_yield_argument) {
+            const expr = try parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
             argument = expr;
+
             end = parser.getSpan(argument).end;
         }
     }
 
     if (delegate and ast.isNull(argument)) {
         try parser.reportExpected(parser.current_token.span, "Expected expression after 'yield*'", .{});
-        return null;
-    }
-
-    if (parser.current_token.tag == .dot) {
-        try parser.report(parser.current_token.span, "Cannot use member access directly on yield expression", .{ .help = "Wrap the yield expression in parentheses: (yield).property or (yield expr).property" });
         return null;
     }
 
