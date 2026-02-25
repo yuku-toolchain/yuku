@@ -1,3 +1,8 @@
+// Pure Pratt (TDOP) parser for JavaScript expressions.
+// follows natural JavaScript operator precedence table:
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence#table
+// https://tdop.github.io/
+
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
@@ -1065,20 +1070,6 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
     return expr;
 }
 
-/// checks if a token represents a postfix operation that requires the left operand
-/// to be a LeftHandSideExpression.
-///
-/// postfix operations are operations that:
-/// 1. bind tightly to their left operand (high precedence)
-/// 2. can only be applied to LeftHandSideExpressions (not to binary expressions,
-///    update expressions, etc. without parentheses)
-///
-/// example of invalid usage without parentheses:
-/// - `a++.prop` - can't access property of update expression
-///
-/// this operation is valid when the left side is wrapped in parentheses,
-/// which creates a `parenthesized_expression` (which is a LeftHandSideExpression):
-/// - `(a++).prop` - valid
 fn isPostfixOperation(tag: TokenTag) bool {
     return switch (tag) {
         .dot, // obj.prop
@@ -1092,6 +1083,7 @@ fn isPostfixOperation(tag: TokenTag) bool {
     };
 }
 
+// https://tc39.es/ecma262/#prod-LeftHandSideExpression
 fn isLeftHandSideExpression(data: ast.NodeData) bool {
     return switch (data) {
         .arrow_function_expression, .update_expression, .unary_expression, .await_expression, .yield_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => false,
