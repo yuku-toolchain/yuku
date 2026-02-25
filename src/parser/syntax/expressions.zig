@@ -66,42 +66,6 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
     return left;
 }
 
-fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const current = parser.current_token;
-
-    if (current.tag.isBinaryOperator()) {
-        return parseBinaryExpression(parser, precedence, left);
-    }
-
-    if (current.tag.isLogicalOperator()) {
-        return parseLogicalExpression(parser, precedence, left);
-    }
-
-    if (current.tag.isAssignmentOperator()) {
-        return parseAssignmentExpression(parser, precedence, left);
-    }
-
-    switch (current.tag) {
-        .increment, .decrement => return parseUpdateExpression(parser, false, left),
-        .question => return parseConditionalExpression(parser, precedence, left),
-        .comma => return parseSequenceExpression(parser, precedence, left),
-        .dot => return parseStaticMemberExpression(parser, left, false),
-        .left_bracket => return parseComputedMemberExpression(parser, left, false),
-        .left_paren => return parseCallExpression(parser, left, false),
-        .template_head, .no_substitution_template => return parseTaggedTemplateExpression(parser, left),
-        .optional_chaining => return parseOptionalChain(parser, left),
-        else => {},
-    }
-
-    try parser.reportFmt(
-        current.span,
-        "Unexpected token '{s}' in expression",
-        .{parser.describeToken(current)},
-        .{ .help = "This token cannot be used here. Expected an operator, semicolon, or end of expression." },
-    );
-    return null;
-}
-
 fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
@@ -151,6 +115,47 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     return parsePrimaryExpression(parser, opts);
 }
 
+fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    const current = parser.current_token;
+
+    if (current.tag.isBinaryOperator()) {
+        return parseBinaryExpression(parser, precedence, left);
+    }
+
+    if (current.tag.isLogicalOperator()) {
+        return parseLogicalExpression(parser, precedence, left);
+    }
+
+    if (current.tag.isAssignmentOperator()) {
+        return parseAssignmentExpression(parser, precedence, left);
+    }
+
+    if (current.tag == .arrow and !current.hasLineTerminatorBefore()) {
+        return parseSimpleArrowFunction(parser, left);
+    }
+
+    switch (current.tag) {
+        .increment, .decrement => return parseUpdateExpression(parser, false, left),
+        .question => return parseConditionalExpression(parser, precedence, left),
+        .comma => return parseSequenceExpression(parser, precedence, left),
+        .dot => return parseStaticMemberExpression(parser, left, false),
+        .left_bracket => return parseComputedMemberExpression(parser, left, false),
+        .left_paren => return parseCallExpression(parser, left, false),
+        .template_head, .no_substitution_template => return parseTaggedTemplateExpression(parser, left),
+        .optional_chaining => return parseOptionalChain(parser, left),
+        else => {},
+    }
+
+    try parser.reportFmt(
+        current.span,
+        "Unexpected token '{s}' in expression",
+        .{parser.describeToken(current)},
+        .{ .help = "This token cannot be used here. Expected an operator, semicolon, or end of expression." },
+    );
+
+    return null;
+}
+
 pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isNumericLiteral()) {
         return literals.parseNumericLiteral(parser);
@@ -172,7 +177,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts)
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
         else => {
             if (parser.current_token.tag.isIdentifierLike()) {
-                return parseIdentifierOrArrowFunction(parser);
+                return literals.parseIdentifier(parser);
             }
 
             const token = parser.current_token;
@@ -212,17 +217,18 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
     return parenthesized.coverToParenthesizedExpression(parser, cover);
 }
 
-/// identifier, checking for arrow function: x => ...
-fn parseIdentifierOrArrowFunction(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    const id = try literals.parseIdentifier(parser) orelse return null;
+/// x => ...
+fn parseSimpleArrowFunction(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    const data = parser.getData(left);
 
-    //  [no LineTerminator here] => ConciseBody
-    if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore()) {
-        return parenthesized.identifierToArrowFunction(parser, id, false, start);
+    if (data != .identifier_reference) {
+        try parser.report(parser.getSpan(left), "Unexpected '=>'", .{
+            .help = "'=>' is only valid after a single identifier or a parenthesized parameter list",
+        });
+        return null;
     }
 
-    return id;
+    return parenthesized.identifierToArrowFunction(parser, left, false, parser.getSpan(left).start);
 }
 
 /// async function or async arrow function
@@ -263,7 +269,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     return async_id;
 }
 
-fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id: u32, precedence: u8, is_escaped_async: bool) Error!?ast.NodeIndex {
+fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id: ast.NodeIndex, precedence: u8, is_escaped_async: bool) Error!?ast.NodeIndex {
     const start = async_span.start;
 
     const saved_await_is_keyword = parser.context.await_is_keyword;
@@ -418,7 +424,7 @@ pub fn parseImportExpression(parser: *Parser, name_from_param: ?u32) Error!?ast.
 }
 
 /// `import.meta`, `import.source()`, or `import.defer()`
-fn parseImportMetaOrPhaseImport(parser: *Parser, name: u32) Error!?ast.NodeIndex {
+fn parseImportMetaOrPhaseImport(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '.'
 
     const name_span = parser.getSpan(name);
@@ -453,7 +459,7 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: u32) Error!?ast.NodeIndex
 }
 
 /// `new.target`
-fn parseNewTarget(parser: *Parser, name: u32) Error!?ast.NodeIndex {
+fn parseNewTarget(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '.'
 
     if (!std.mem.eql(u8, parser.getTokenText(parser.current_token), "target")) {

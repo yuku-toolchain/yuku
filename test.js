@@ -1,2 +1,1 @@
-var C = class extends async () => {} {
-};
+const nice = 10 => {}

@@ -1,0 +1,33 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 39,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "BlockStatement",
+        "start": 34,
+        "end": 37,
+        "body": []
+      },
+      {
+        "type": "EmptyStatement",
+        "start": 37,
+        "end": 38
+      }
+    ]
+  },
+  "comments": [],
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Expected '{' to start class body, but found '=>'",
+      "help": "Class body must be enclosed in braces: class Name { ... }",
+      "start": 28,
+      "end": 30,
+      "labels": []
+    }
+  ]
+}

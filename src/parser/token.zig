@@ -99,7 +99,7 @@ pub const TokenTag = enum(u32) {
     comma = 67 | (1 << Mask.PrecShift), // ","
     dot = 68, // "."
     spread = 69, // "..."
-    arrow = 70, // "=>"
+    arrow = 70 | (2 << Mask.PrecShift), // "=>"
     question = 71 | (2 << Mask.PrecShift), // "?"
     colon = 72, // ":"
     at = 73, // "@"
@@ -462,7 +462,7 @@ pub const Token = struct {
         }
 
         if (self.tag.isBinaryOperator() or self.tag.isLogicalOperator() or
-            self.tag.isAssignmentOperator() or self.tag == .increment or self.tag == .decrement)
+            self.tag.isAssignmentOperator() or self.tag == .increment or self.tag == .decrement or self.tag == .arrow)
         {
             return self.tag.precedence();
         }
