@@ -11,10 +11,10 @@
   "errors": [
     {
       "severity": "error",
-      "message": "Expected a semicolon or an implicit semicolon after a statement, but found '=>'",
-      "help": "Try inserting a semicolon here",
-      "start": 30,
-      "end": 32,
+      "message": "Unexpected '=>'",
+      "help": "'=>' is only valid after a single identifier or a parenthesized parameter list",
+      "start": 21,
+      "end": 29,
       "labels": []
     }
   ]

@@ -1,7 +1,7 @@
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const grammar = @import("../grammar.zig");
@@ -34,7 +34,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     var has_trailing_comma = false;
 
     // empty parens: ()
-    if (parser.current_token.type == .right_paren) {
+    if (parser.current_token.tag == .right_paren) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
         const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
@@ -46,13 +46,14 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         };
     }
 
-    while (parser.current_token.type != .right_paren and parser.current_token.type != .eof) {
+    while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
         // rest element: (...x)
-        if (parser.current_token.type == .spread) {
+        if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
 
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
+
             const spread_end = parser.getSpan(argument).end;
 
             // for now, store as spread_element; will convert to rest param for arrow functions
@@ -65,7 +66,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
             end = spread_end;
 
-            if (parser.current_token.type == .comma) {
+            if (parser.current_token.tag == .comma) {
                 try parser.advance() orelse return null;
                 has_trailing_comma = true;
             }
@@ -81,10 +82,10 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         end = parser.getSpan(element).end;
 
         // comma or end
-        if (parser.current_token.type == .comma) {
+        if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
-            has_trailing_comma = parser.current_token.type == .right_paren;
-        } else if (parser.current_token.type != .right_paren) {
+            has_trailing_comma = parser.current_token.tag == .right_paren;
+        } else if (parser.current_token.tag != .right_paren) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or ')' in parenthesized expression",
@@ -94,7 +95,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
         }
     }
 
-    if (parser.current_token.type != .right_paren) {
+    if (parser.current_token.tag != .right_paren) {
         try parser.report(
             .{ .start = start, .end = end },
             "Unterminated parenthesized expression",
@@ -107,6 +108,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     }
 
     end = parser.current_token.span.end;
+
     try parser.advance() orelse return null; // consume )
 
     const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
@@ -203,7 +205,7 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
     const params = try convertToFormalParameters(parser, cover) orelse return null;
 
     // arrow body (expression or block)
-    const body_result = try parseArrowBody(parser, is_async) orelse return null;
+    const body_result = try parseArrowBody(parser) orelse return null;
 
     return try parser.addNode(
         .{ .arrow_function_expression = .{
@@ -220,13 +222,15 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
 pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: bool, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume =>
 
-    // convert identifier_reference to binding_identifier
-    const id_data = parser.getData(id).identifier_reference;
+    const saved_await_is_keyword = parser.context.await_is_keyword;
 
-    parser.setData(id, .{ .binding_identifier = .{
-        .name_start = id_data.name_start,
-        .name_len = id_data.name_len,
-    } });
+    parser.context.await_is_keyword = is_async;
+
+    defer parser.context.await_is_keyword = saved_await_is_keyword;
+
+
+    // convert identifier_reference to binding_identifier
+    try grammar.expressionToPattern(parser, id, .binding) orelse return null;
 
     const param = try parser.addNode(
         .{ .formal_parameter = .{ .pattern = id } },
@@ -242,7 +246,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
     );
 
     // parse arrow body
-    const body_result = try parseArrowBody(parser, is_async) orelse return null;
+    const body_result = try parseArrowBody(parser) orelse return null;
 
     return try parser.addNode(
         .{ .arrow_function_expression = .{
@@ -260,22 +264,8 @@ const ArrowBodyResult = struct {
     is_expression: bool,
 };
 
-fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
-    const saved_async = parser.context.in_async;
-    const saved_yield_is_keyword = parser.context.yield_is_keyword;
-    const saved_in_function = parser.context.in_function;
-
-    parser.context.in_async = is_async;
-    parser.context.yield_is_keyword = false;
-    parser.context.in_function = true;
-
-    defer {
-        parser.context.yield_is_keyword = saved_yield_is_keyword;
-        parser.context.in_async = saved_async;
-        parser.context.in_function = saved_in_function;
-    }
-
-    if (parser.current_token.type == .left_brace) {
+fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
+    if (parser.current_token.tag == .left_brace) {
         // block body: () => { ... }
         const body = try functions.parseFunctionBody(parser) orelse return null;
         return .{ .body = body, .is_expression = false };
@@ -284,6 +274,7 @@ fn parseArrowBody(parser: *Parser, is_async: bool) Error!?ArrowBodyResult {
     // expression body: () => expr
     // arrow body is parsed at assignment precedence
     const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
     return .{ .body = expr, .is_expression = true };
 }
 
@@ -309,6 +300,16 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, elem, .binding) orelse return null;
             rest = elem;
+
+            if (cover.has_trailing_comma) {
+                try parser.report(
+                    parser.getSpan(elem),
+                    "Rest parameter must be last formal parameter",
+                    .{ .help = "Remove the trailing comma after the rest parameter" },
+                );
+                return null;
+            }
+
             continue;
         }
 

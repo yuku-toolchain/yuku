@@ -2,6 +2,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const Precedence = @import("../token.zig").Precedence;
+const Token = @import("../token.zig").Token;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 const std = @import("std");
@@ -20,7 +21,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
     var end = parser.getSpan(first_declarator).end;
 
     // additional declarators: let a, b, c;
-    while (parser.current_token.type == .comma) {
+    while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
         const declarator = try parseVariableDeclarator(parser, kind) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
@@ -30,7 +31,11 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
     const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
 
     // lexical declarations are only allowed inside block statements
-    if (parser.context.in_single_statement_context and (kind == .let or kind == .@"const")) {
+    if (
+        parser.context.in_single_statement_context and
+        (kind == .let or kind == .@"const" or kind == .using or kind == .await_using)
+    )
+    {
         @branchHint(.unlikely);
 
         try parser.report(
@@ -52,10 +57,10 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
 }
 
 fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind {
-    const token_type = parser.current_token.type;
+    const tag = parser.current_token.tag;
     try parser.advance() orelse return null;
 
-    return switch (token_type) {
+    return switch (tag) {
         .let => .let,
         .@"const" => .@"const",
         .@"var" => .@"var",
@@ -73,38 +78,45 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
 fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
+    const id_span = parser.getSpan(id);
 
     var init: ast.NodeIndex = ast.null_node;
-    var end = parser.getSpan(id).end;
+    var end = id_span.end;
 
-    // initializer if present
-    if (parser.current_token.type == .assign) {
+    const is_using = kind == .using or kind == .await_using;
+    const is_destructuring = patterns.isDestructuringPattern(parser, id);
+
+    if (is_using and is_destructuring) {
+        try parser.report(
+            id_span,
+            "Using declaration cannot have destructuring patterns.",
+            .{},
+        );
+    }
+
+    if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(init).end;
-    } else if (patterns.isDestructuringPattern(parser, id)) {
+    } else if (is_destructuring) {
         try parser.report(
-            parser.getSpan(id),
+            id_span,
             "Destructuring declaration must have an initializer",
             .{ .help = "Add '= value' to provide the object or array to destructure from." },
         );
-        return null;
     } else if (kind == .@"const") {
         try parser.report(
-            parser.getSpan(id),
+            id_span,
             "'const' declarations must be initialized",
             .{ .help = "Add '= value' to initialize the constant, or use 'let' if you need to assign it later." },
         );
-        return null;
-    } else if (kind == .using or kind == .await_using) {
-        const keyword = if (kind == .using) "using" else "await using";
+    } else if (is_using) {
         try parser.reportFmt(
-            parser.getSpan(id),
+            id_span,
             "'{s}' declarations must be initialized",
-            .{keyword},
+            .{kind.toString()},
             .{ .help = "Disposable resources require an initial value that implements the dispose protocol." },
         );
-        return null;
     }
 
     return try parser.addNode(
@@ -113,22 +125,25 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     );
 }
 
+/// returns `true` when `token` can begin a lexical binding (identifier, `[` or `{`).
+fn canTokenStartLexicalBinding(token: Token) bool {
+    return token.tag.isIdentifierLike() or token.tag == .left_bracket or token.tag == .left_brace;
+}
+
 /// determines if 'let' should be parsed as an identifier rather than a variable declaration keyword.
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.type == .let);
+    std.debug.assert(parser.current_token.tag == .let);
 
     const next = try parser.lookAhead() orelse return null;
 
     // 'let' followed by a semicolon should be parsed as an identifier, not a declaration.
-    if (next.type == .semicolon) {
+    if (next.tag == .semicolon) {
         return true;
     }
 
-    // in single-statement contexts (eg, if/while bodies), 'let' followed by an implicit semicolon
-    // should also be parsed as an identifier, since lexical declarations aren't allowed there.
-    if (parser.context.in_single_statement_context and parser.canInsertImplicitSemicolon(next)) {
-        return true;
-    }
+    // in single-statement contexts (eg, if/while bodies), parse `let` as an identifier
+    // when the next token cannot start a lexical binding.
+    if (parser.context.in_single_statement_context and !canTokenStartLexicalBinding(next)) return true;
 
     return false;
 }
@@ -139,13 +154,13 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
 /// implements the cover-grammar disambiguation from:
 /// - CoverAwaitExpressionAndAwaitUsingDeclarationHead
 pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.type == .using);
+    std.debug.assert(parser.current_token.tag == .using);
 
     const next = try parser.lookAhead() orelse return null;
 
     // if next token starts a BindingList and ASI cannot insert a semicolon,
     // treat `using` as the contextual keyword (declaration form).
-    if (next.type.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
+    if (next.tag.isIdentifierLike() and !parser.canInsertImplicitSemicolon(next)) {
         return false;
     }
 

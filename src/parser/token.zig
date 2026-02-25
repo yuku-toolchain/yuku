@@ -11,12 +11,13 @@ pub const Mask = struct {
     pub const IsUnconditionallyReserved: u32 = 1 << 19;
     /// reserved words that are only reserved in strict mode
     pub const IsStrictModeReserved: u32 = 1 << 20;
+    pub const IsKeyword: u32 = 1 << 21;
 
     pub const PrecShift: u32 = 8;
     pub const PrecOverlap: u32 = 0b11111;
 };
 
-pub const TokenType = enum(u32) {
+pub const TokenTag = enum(u32) {
     numeric_literal = 1 | Mask.IsNumericLiteral, // e.g., "123", "45.67"
     hex_literal = 2 | Mask.IsNumericLiteral, // e.g., "0xFF", "0x1A"
     /// modern octal literal
@@ -32,9 +33,9 @@ pub const TokenType = enum(u32) {
     template_middle = 11, // e.g., "} world ${"
     template_tail = 12, // e.g., "} end`"
 
-    true = 13 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "true"
-    false = 14 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "false"
-    null_literal = 15 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "null"
+    true = 13 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "true"
+    false = 14 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "false"
+    null_literal = 15 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "null"
 
     plus = 16 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // "+"
     minus = 17 | (11 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnaryOp, // "-"
@@ -98,134 +99,144 @@ pub const TokenType = enum(u32) {
     comma = 67 | (1 << Mask.PrecShift), // ","
     dot = 68, // "."
     spread = 69, // "..."
-    arrow = 70, // "=>"
+    arrow = 70 | (2 << Mask.PrecShift), // "=>"
     question = 71 | (2 << Mask.PrecShift), // "?"
     colon = 72, // ":"
     at = 73, // "@"
 
-    @"if" = 74 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "if"
-    @"else" = 75 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "else"
-    @"switch" = 76 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "switch"
-    case = 77 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "case"
-    default = 78 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "default"
-    @"for" = 79 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "for"
-    @"while" = 80 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "while"
-    do = 81 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "do"
-    @"break" = 82 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "break"
-    @"continue" = 83 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "continue"
+    @"if" = 74 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "if"
+    @"else" = 75 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "else"
+    @"switch" = 76 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "switch"
+    case = 77 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "case"
+    default = 78 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "default"
+    @"for" = 79 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "for"
+    @"while" = 80 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "while"
+    do = 81 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "do"
+    @"break" = 82 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "break"
+    @"continue" = 83 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "continue"
 
-    function = 84 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "function"
-    @"return" = 85 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "return"
-    async = 86 | Mask.IsIdentifierLike, // "async"
-    await = 87 | Mask.IsIdentifierLike, // "await"
-    yield = 88 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "yield"
+    function = 84 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "function"
+    @"return" = 85 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "return"
+    async = 86 | Mask.IsKeyword | Mask.IsIdentifierLike, // "async"
+    await = 87 | Mask.IsKeyword | Mask.IsIdentifierLike, // "await"
+    yield = 88 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "yield"
 
-    @"var" = 89 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "var"
-    let = 90 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "let"
-    @"const" = 91 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "const"
-    using = 92 | Mask.IsIdentifierLike, // "using"
+    @"var" = 89 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "var"
+    let = 90 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "let"
+    @"const" = 91 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "const"
+    using = 92 | Mask.IsKeyword | Mask.IsIdentifierLike, // "using"
 
-    class = 93 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "class"
-    extends = 94 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "extends"
-    super = 95 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "super"
-    static = 96 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "static"
-    @"enum" = 97 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "enum"
-    public = 98 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "public"
-    private = 99 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "private"
-    protected = 100 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "protected"
-    interface = 101 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "interface"
-    implements = 102 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "implements"
-    package = 103 | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "package"
+    class = 93 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "class"
+    extends = 94 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "extends"
+    super = 95 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "super"
+    static = 96 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "static"
+    @"enum" = 97 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "enum"
+    public = 98 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "public"
+    private = 99 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "private"
+    protected = 100 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "protected"
+    interface = 101 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "interface"
+    implements = 102 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "implements"
+    package = 103 | Mask.IsKeyword | Mask.IsStrictModeReserved | Mask.IsIdentifierLike, // "package"
 
-    import = 104 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "import"
-    @"export" = 105 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "export"
-    from = 106 | Mask.IsIdentifierLike, // "from"
-    as = 107 | Mask.IsIdentifierLike, // "as"
-    namespace = 108 | Mask.IsIdentifierLike, // "namespace"
-    assert = 109 | Mask.IsIdentifierLike, // "assert" (import assertions)
-    source = 110 | Mask.IsIdentifierLike, // "source" (source phase imports)
-    @"defer" = 111 | Mask.IsIdentifierLike, // "defer" (deferred imports)
+    import = 104 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "import"
+    @"export" = 105 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "export"
+    from = 106 | Mask.IsKeyword | Mask.IsIdentifierLike, // "from"
+    as = 107 | Mask.IsKeyword | Mask.IsIdentifierLike, // "as"
+    namespace = 108 | Mask.IsKeyword | Mask.IsIdentifierLike, // "namespace"
+    assert = 109 | Mask.IsKeyword | Mask.IsIdentifierLike, // "assert" (import assertions)
+    source = 110 | Mask.IsKeyword | Mask.IsIdentifierLike, // "source" (source phase imports)
+    @"defer" = 111 | Mask.IsKeyword | Mask.IsIdentifierLike, // "defer" (deferred imports)
 
-    @"try" = 112 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "try"
-    @"catch" = 113 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "catch"
-    finally = 114 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "finally"
-    throw = 115 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "throw"
+    @"try" = 112 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "try"
+    @"catch" = 113 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "catch"
+    finally = 114 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "finally"
+    throw = 115 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "throw"
 
-    new = 116 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "new"
-    this = 117 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "this"
-    typeof = 118 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "typeof"
-    instanceof = 119 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "instanceof"
-    in = 120 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "in"
-    of = 121 | Mask.IsIdentifierLike, // "of"
-    delete = 122 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "delete"
-    void = 123 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "void"
-    with = 124 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "with"
-    debugger = 125 | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "debugger"
+    new = 116 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "new"
+    this = 117 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "this"
+    typeof = 118 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "typeof"
+    instanceof = 119 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "instanceof"
+    in = 120 | (9 << Mask.PrecShift) | Mask.IsBinaryOp | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "in"
+    of = 121 | Mask.IsKeyword | Mask.IsIdentifierLike, // "of"
+    delete = 122 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "delete"
+    void = 123 | (14 << Mask.PrecShift) | Mask.IsUnaryOp | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "void"
+    with = 124 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "with"
+    debugger = 125 | Mask.IsKeyword | Mask.IsUnconditionallyReserved | Mask.IsIdentifierLike, // "debugger"
 
     identifier = 126 | Mask.IsIdentifierLike, // e.g., "myVar", "foo", "_bar"
     private_identifier = 127, // e.g., "#privateField", "#method"
 
     // typescript
-    declare = 128 | Mask.IsIdentifierLike, // "declare"
+    declare = 128 | Mask.IsKeyword | Mask.IsIdentifierLike, // "declare"
 
     // jsx
     jsx_identifier = 129,
     jsx_text = 130,
 
+    // contextual keywords (class/object bodies)
+    get = 132 | Mask.IsKeyword | Mask.IsIdentifierLike, // "get"
+    set = 133 | Mask.IsKeyword | Mask.IsIdentifierLike, // "set"
+    accessor = 134 | Mask.IsIdentifierLike, // "accessor"
+    constructor = 135 | Mask.IsIdentifierLike, // "constructor"
+
     eof = 131, // end of file
-    pub fn precedence(self: TokenType) u5 {
+    pub fn precedence(self: TokenTag) u5 {
         return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
     }
 
-    pub fn is(self: TokenType, mask: u32) bool {
+    pub fn is(self: TokenTag, mask: u32) bool {
         return (@intFromEnum(self) & mask) != 0;
     }
 
-    pub fn isNumericLiteral(self: TokenType) bool {
+    pub fn isNumericLiteral(self: TokenTag) bool {
         return self.is(Mask.IsNumericLiteral);
     }
 
-    pub fn isBinaryOperator(self: TokenType) bool {
+    pub fn isBinaryOperator(self: TokenTag) bool {
         return self.is(Mask.IsBinaryOp);
     }
 
-    pub fn isLogicalOperator(self: TokenType) bool {
+    pub fn isLogicalOperator(self: TokenTag) bool {
         return self.is(Mask.IsLogicalOp);
     }
 
-    pub fn isUnaryOperator(self: TokenType) bool {
+    pub fn isUnaryOperator(self: TokenTag) bool {
         return self.is(Mask.IsUnaryOp);
     }
 
-    pub fn isAssignmentOperator(self: TokenType) bool {
+    pub fn isAssignmentOperator(self: TokenTag) bool {
         return self.is(Mask.IsAssignmentOp);
     }
 
     /// returns true for identifier-like tokens.
     /// includes: identifiers, all keywords, literal keywords.
-    pub fn isIdentifierLike(self: TokenType) bool {
+    pub fn isIdentifierLike(self: TokenTag) bool {
         return self.is(Mask.IsIdentifierLike);
+    }
+
+    pub fn isKeyword(self: TokenTag) bool {
+        return self.is(Mask.IsKeyword);
     }
 
     /// returns true for unconditionally reserved keywords.
     /// these can NEVER be used as identifiers.
-    pub fn isUnconditionallyReserved(self: TokenType) bool {
+    pub fn isUnconditionallyReserved(self: TokenTag) bool {
         return self.is(Mask.IsUnconditionallyReserved);
     }
 
     /// returns true for keywords reserved ONLY in strict mode.
     /// these can be identifiers in sloppy mode but not in strict mode.
     /// includes: let, static, implements, interface, package, private, protected, public, yield
-    pub fn isStrictModeReserved(self: TokenType) bool {
+    pub fn isStrictModeReserved(self: TokenTag) bool {
         return self.is(Mask.IsStrictModeReserved);
     }
 
     /// returns true for any reserved keyword (unconditional or strict-mode-only).
-    pub fn isReserved(self: TokenType) bool {
+    pub fn isReserved(self: TokenTag) bool {
         return self.is(Mask.IsUnconditionallyReserved) or self.is(Mask.IsStrictModeReserved);
     }
 
-    pub fn toString(self: TokenType) ?[]const u8 {
+    pub fn toString(self: TokenTag) ?[]const u8 {
         return switch (self) {
             .true => "true",
             .false => "false",
@@ -359,6 +370,11 @@ pub const TokenType = enum(u32) {
 
             .declare => "declare",
 
+            .get => "get",
+            .set => "set",
+            .accessor => "accessor",
+            .constructor => "constructor",
+
             .eof,
             .numeric_literal,
             .hex_literal,
@@ -387,7 +403,7 @@ pub const Span = struct {
 
 pub const TokenFlag = enum(u3) {
     line_terminator_before,
-    template_invalid_escape,
+    invalid_escape,
     escaped,
 };
 
@@ -397,14 +413,14 @@ pub inline fn flagMask(comptime flag: TokenFlag) u8 {
 
 pub const Token = struct {
     span: Span,
-    type: TokenType,
+    tag: TokenTag,
 
     flags: u8 = 0,
 
     pub inline fn eof(pos: u32) Token {
         return Token{
             .span = .{ .start = pos, .end = pos },
-            .type = .eof,
+            .tag = .eof,
             .flags = 0,
         };
     }
@@ -427,10 +443,10 @@ pub const Token = struct {
         return self.has(.line_terminator_before);
     }
 
-    /// true when template literal scanning encountered an invalid escape.
-    /// parser reports this for untagged templates but allows tagged templates.
-    pub inline fn hasTemplateInvalidEscape(self: Token) bool {
-        return self.has(.template_invalid_escape);
+    /// true when scanning this token encountered an invalid escape.
+    /// currently consumed by template literal parsing (tagged vs untagged behavior).
+    pub inline fn hasInvalidEscape(self: Token) bool {
+        return self.has(.invalid_escape);
     }
 
     /// true when token text came from an escaped spelling (for example, identifier/keyword escapes).
@@ -441,17 +457,17 @@ pub const Token = struct {
     // returns left binding power of this token to use in expression parsing loop (pratt parsing)
     pub fn leftBp(self: *const Token) u5 {
         // handle: [no LineTerminator here] ++ --
-        if ((self.type == .increment or self.type == .decrement) and self.hasLineTerminatorBefore()) {
+        if ((self.tag == .increment or self.tag == .decrement) and self.hasLineTerminatorBefore()) {
             return 0; // can't be infix, start new expression
         }
 
-        if (self.type.isBinaryOperator() or self.type.isLogicalOperator() or
-            self.type.isAssignmentOperator() or self.type == .increment or self.type == .decrement)
+        if (self.tag.isBinaryOperator() or self.tag.isLogicalOperator() or
+            self.tag.isAssignmentOperator() or self.tag == .increment or self.tag == .decrement or self.tag == .arrow)
         {
-            return self.type.precedence();
+            return self.tag.precedence();
         }
 
-        return switch (self.type) {
+        return switch (self.tag) {
             .dot, .optional_chaining, .left_bracket, .left_paren => 17,
             // tagged template: only when no line terminator before the template
             .template_head, .no_substitution_template => if (!self.hasLineTerminatorBefore()) 17 else 0,

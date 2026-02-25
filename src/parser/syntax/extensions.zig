@@ -9,7 +9,7 @@ pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_decorators.begin();
     defer parser.scratch_decorators.reset(checkpoint);
 
-    while (parser.current_token.type == .at) {
+    while (parser.current_token.tag == .at) {
         const decorator = try parseDecorator(parser) orelse return null;
         try parser.scratch_decorators.append(parser.allocator(), decorator);
     }
@@ -43,7 +43,7 @@ pub fn parseDecorated(parser: *Parser, opts: ParseDecoratedOpts) Error!?ast.Node
     const start = parser.current_token.span.start;
     const decorators = try parseDecorators(parser) orelse return null;
 
-    if (parser.current_token.type != .class) {
+    if (parser.current_token.tag != .class) {
         try parser.reportExpected(
             parser.current_token.span,
             if (opts.is_expression)

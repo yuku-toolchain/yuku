@@ -1,8 +1,8 @@
-const std = @import("std");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const ast = @import("../ast.zig");
-const token = @import("../token.zig");
+const Token = @import("../token.zig").Token;
+const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
@@ -28,9 +28,9 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
 
     var end = start + 1;
 
-    while (parser.current_token.type != .right_brace and parser.current_token.type != .eof) {
+    while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
         // spread: {...x}
-        if (parser.current_token.type == .spread) {
+        if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
@@ -49,13 +49,13 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
         }
 
         // comma or end
-        if (parser.current_token.type == .comma) {
+        if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
             // then it's a trailing comma
-            if (parser.current_token.type == .right_brace) {
+            if (parser.current_token.tag == .right_brace) {
                 parser.state.cover_has_trailing_comma = start;
             }
-        } else if (parser.current_token.type != .right_brace) {
+        } else if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or '}' in object",
@@ -65,7 +65,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
         }
     }
 
-    if (parser.current_token.type != .right_brace) {
+    if (parser.current_token.tag != .right_brace) {
         try parser.report(
             .{ .start = start, .end = end },
             "Unterminated object",
@@ -98,14 +98,16 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     var computed = false;
 
     var key: ast.NodeIndex = ast.null_node;
-    var key_identifier_token: ?token.Token = null;
+    var key_identifier_token: ?Token = null;
 
     // check for async, consume it, then decide if it's a modifier or key based on what follows
-    if (parser.current_token.type == .async) {
+    if (parser.current_token.tag == .async) {
         const async_token = parser.current_token;
-        try parser.advance() orelse return null;
 
-        if (isPropertyKeyStart(parser.current_token.type)) {
+        try parser.advanceWithoutEscapeCheck() orelse return null;
+
+        if (isPropertyKeyStart(parser.current_token.tag)) {
+            try parser.reportIfEscapedKeyword(async_token);
             is_async = true;
         } else {
             // it's a key named "async"
@@ -117,21 +119,22 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for generator, only if we don't already have a key
-    if (ast.isNull(key) and parser.current_token.type == .star) {
+    if (ast.isNull(key) and parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
 
     // check for get/set, only if no async/generator modifiers and no key yet
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
-        const token_text = parser.getTokenText(parser.current_token);
-
-        if (std.mem.eql(u8, token_text, "get") or std.mem.eql(u8, token_text, "set")) {
+    if (ast.isNull(key) and !is_async and !is_generator) {
+        const cur_tag = parser.current_token.tag;
+        if (cur_tag == .get or cur_tag == .set) {
             const get_set_token = parser.current_token;
-            try parser.advance() orelse return null;
 
-            if (isPropertyKeyStart(parser.current_token.type)) {
-                kind = if (std.mem.eql(u8, token_text, "get")) .get else .set;
+            try parser.advanceWithoutEscapeCheck() orelse return null;
+
+            if (isPropertyKeyStart(parser.current_token.tag)) {
+                try parser.reportIfEscapedKeyword(get_set_token);
+                kind = if (cur_tag == .get) .get else .set;
             } else {
                 key = try parser.addNode(
                     .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
@@ -143,19 +146,19 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
     // parse property key if not already determined
     if (ast.isNull(key)) {
-        if (parser.current_token.type == .left_bracket) {
+        if (parser.current_token.tag == .left_bracket) {
             computed = true;
             try parser.advance() orelse return null;
             key = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
                 return null;
             }
-        } else if (parser.current_token.type.isIdentifierLike()) {
+        } else if (parser.current_token.tag.isIdentifierLike()) {
             key_identifier_token = parser.current_token;
             key = try literals.parseIdentifierName(parser) orelse return null;
-        } else if (parser.current_token.type == .string_literal) {
+        } else if (parser.current_token.tag == .string_literal) {
             key = try literals.parseStringLiteral(parser) orelse return null;
-        } else if (parser.current_token.type.isNumericLiteral()) {
+        } else if (parser.current_token.tag.isNumericLiteral()) {
             key = try literals.parseNumericLiteral(parser) orelse return null;
         } else {
             try parser.reportFmt(
@@ -171,7 +174,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     const key_span = parser.getSpan(key);
 
     // method definition, key followed by (
-    if (parser.current_token.type == .left_paren) {
+    if (parser.current_token.tag == .left_paren) {
         return parseObjectMethodProperty(parser, prop_start, key, computed, kind, is_async, is_generator);
     }
 
@@ -186,7 +189,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // regular property: key: value
-    if (parser.current_token.type == .colon) {
+    if (parser.current_token.tag == .colon) {
         try parser.advance() orelse return null;
         const value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
         return try parser.addNode(
@@ -196,7 +199,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // CoverInitializedName: a = default
-    if (parser.current_token.type == .assign) {
+    if (parser.current_token.tag == .assign) {
         if (computed) {
             try parser.report(
                 key_span,
@@ -276,12 +279,12 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-inline fn isPropertyKeyStart(token_type: @import("../token.zig").TokenType) bool {
-    return token_type == .star or
-        token_type == .left_bracket or
-        token_type.isIdentifierLike() or
-        token_type == .string_literal or
-        token_type.isNumericLiteral();
+inline fn isPropertyKeyStart(tag: TokenTag) bool {
+    return tag == .star or
+        tag == .left_bracket or
+        tag.isIdentifierLike() or
+        tag == .string_literal or
+        tag.isNumericLiteral();
 }
 
 /// parse a method definition: key(...) { ... }
@@ -294,32 +297,32 @@ fn parseObjectMethodProperty(
     is_async: bool,
     is_generator: bool,
 ) Error!?ast.NodeIndex {
-    if (kind == .get and is_generator) {
-        try parser.report(
-            .{ .start = prop_start, .end = parser.current_token.span.end },
-            "Getter cannot be a generator",
-            .{ .help = "Remove the '*' from the getter definition." },
-        );
-        return null;
+    if (is_generator) {
+        if (kind == .get) {
+            try parser.report(
+                .{ .start = prop_start, .end = parser.current_token.span.end },
+                "Getter cannot be a generator",
+                .{ .help = "Remove the '*' from the getter definition." },
+            );
+            return null;
+        } else if (kind == .set) {
+            try parser.report(
+                .{ .start = prop_start, .end = parser.current_token.span.end },
+                "Setter cannot be a generator",
+                .{ .help = "Remove the '*' from the setter definition." },
+            );
+            return null;
+        }
     }
 
-    if (kind == .set and is_generator) {
-        try parser.report(
-            .{ .start = prop_start, .end = parser.current_token.span.end },
-            "Setter cannot be a generator",
-            .{ .help = "Remove the '*' from the setter definition." },
-        );
-        return null;
-    }
-
-    const saved_async = parser.context.in_async;
+    const saved_await_is_keyword = parser.context.await_is_keyword;
     const saved_yield_is_keyword = parser.context.yield_is_keyword;
 
-    parser.context.in_async = is_async;
+    parser.context.await_is_keyword = is_async;
     parser.context.yield_is_keyword = is_generator;
 
     defer {
-        parser.context.in_async = saved_async;
+        parser.context.await_is_keyword = saved_await_is_keyword;
         parser.context.yield_is_keyword = saved_yield_is_keyword;
     }
 
@@ -372,16 +375,13 @@ fn parseObjectMethodProperty(
         .{ .start = func_start, .end = body_end },
     );
 
-    // for methods, kind is always .init (getters/setters have their own kind)
-    const prop_kind: ast.PropertyKind = kind;
-
     const is_method = kind == .init;
 
     return try parser.addNode(
         .{ .object_property = .{
             .key = key,
             .value = func,
-            .kind = prop_kind,
+            .kind = kind,
             .method = is_method,
             .shorthand = false,
             .computed = computed,

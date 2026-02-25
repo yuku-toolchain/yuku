@@ -23,16 +23,16 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 
     var end = start + 1;
 
-    while (parser.current_token.type != .right_bracket and parser.current_token.type != .eof) {
+    while (parser.current_token.tag != .right_bracket and parser.current_token.tag != .eof) {
         // elision (holes): [,,,]
-        if (parser.current_token.type == .comma) {
+        if (parser.current_token.tag == .comma) {
             try parser.scratch_cover.append(parser.allocator(), ast.null_node);
             try parser.advance() orelse return null;
             continue;
         }
 
         // spread: [...x]
-        if (parser.current_token.type == .spread) {
+        if (parser.current_token.tag == .spread) {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
@@ -51,13 +51,13 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         }
 
         // comma or end
-        if (parser.current_token.type == .comma) {
+        if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;
             // then it's a trailing comma
-            if (parser.current_token.type == .right_bracket) {
+            if (parser.current_token.tag == .right_bracket) {
                 parser.state.cover_has_trailing_comma = start;
             }
-        } else if (parser.current_token.type != .right_bracket) {
+        } else if (parser.current_token.tag != .right_bracket) {
             try parser.reportExpected(
                 parser.current_token.span,
                 "Expected ',' or ']' in array",
@@ -67,7 +67,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
         }
     }
 
-    if (parser.current_token.type != .right_bracket) {
+    if (parser.current_token.tag != .right_bracket) {
         try parser.report(
             .{ .start = start, .end = end },
             "Unterminated array",

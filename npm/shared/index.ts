@@ -10,36 +10,45 @@ const REGEXP_LITERAL = /^\/(.+)\/([dgimsuyv]*)$/;
  * - `(RegExp) /pattern/flags`
  */
 export function deserializeAstJson<T = unknown>(jsonString: string): T {
-  return JSON.parse(jsonString, (_, value) => {
-    if (typeof value === "object" && value !== null && typeof value.value === "bigint") {
-      value.bigint = value.value.toString();
-      return value;
-    }
+	return JSON.parse(jsonString, (_, value) => {
+		if (
+			typeof value === "object" &&
+			value !== null &&
+			typeof value.value === "bigint"
+		) {
+			value.bigint = value.value.toString();
+			return value;
+		}
 
-    if (typeof value !== "string") {
-      return value;
-    }
+		if (typeof value !== "string") {
+			return value;
+		}
 
-    if (value.startsWith(BIG_INT_PREFIX)) {
-      return BigInt(value.slice(BIG_INT_PREFIX.length).replace(/n$/, "").replaceAll("_", ""));
-    }
+		if (value.startsWith(BIG_INT_PREFIX)) {
+			return BigInt(
+				value
+					.slice(BIG_INT_PREFIX.length)
+					.replace(/n$/, "")
+					.replaceAll("_", ""),
+			);
+		}
 
-    if (value.startsWith(REGEXP_PREFIX)) {
-      const match = value.slice(REGEXP_PREFIX.length).match(REGEXP_LITERAL);
+		if (value.startsWith(REGEXP_PREFIX)) {
+			const match = value.slice(REGEXP_PREFIX.length).match(REGEXP_LITERAL);
 
-      if (match) {
-        try {
-          return new RegExp(match[1]!, match[2]);
-        } catch {
-          return null;
-        }
-      }
+			if (match) {
+				try {
+					return new RegExp(match[1]!, match[2]);
+				} catch {
+					return null;
+				}
+			}
 
-      return null;
-    }
+			return null;
+		}
 
-    return value;
-  }) as T;
+		return value;
+	}) as T;
 }
 
 /**
@@ -48,22 +57,22 @@ export function deserializeAstJson<T = unknown>(jsonString: string): T {
  * deserializeAstJson.
  */
 export function serializeAstJson(
-  obj: unknown,
-  space?: string | number,
+	obj: unknown,
+	space?: string | number,
 ): string {
-  return JSON.stringify(
-    obj,
-    (_, value) => {
-      if (typeof value === "bigint") {
-        return `${BIG_INT_PREFIX}${value}n`;
-      }
+	return JSON.stringify(
+		obj,
+		(_, value) => {
+			if (typeof value === "bigint") {
+				return `${BIG_INT_PREFIX}${value}n`;
+			}
 
-      if (value instanceof RegExp) {
-        return `${REGEXP_PREFIX}${value.toString()}`;
-      }
+			if (value instanceof RegExp) {
+				return `${REGEXP_PREFIX}${value.toString()}`;
+			}
 
-      return value;
-    },
-    space,
-  );
+			return value;
+		},
+		space,
+	);
 }

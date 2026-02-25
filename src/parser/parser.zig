@@ -1,5 +1,6 @@
 const std = @import("std");
-const token = @import("token.zig");
+const Token = @import("token.zig").Token;
+const TokenTag = @import("token.zig").TokenTag;
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
 
@@ -15,11 +16,13 @@ pub const Options = struct {
 };
 
 const ParserContext = struct {
-    in_async: bool = false,
+    /// When true, `await` is a keyword (allowed as an expression, disallowed as an identifier).
+    await_is_keyword: bool = false,
     /// When true, `yield` is a keyword (allowed as an expression, disallowed as an identifier).
     yield_is_keyword: bool = false,
     allow_in: bool = true,
-    in_function: bool = false,
+    /// Whether `return` statements are allowed in the current statement list.
+    allow_return_statement: bool = false,
     /// Whether we're parsing a single statement.
     /// example:
     /// if(test) 30;
@@ -49,7 +52,7 @@ pub const Parser = struct {
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     nodes: ast.NodeList = .empty,
     extra: std.ArrayList(ast.NodeIndex) = .empty,
-    current_token: token.Token,
+    current_token: Token,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -91,16 +94,22 @@ pub const Parser = struct {
 
         if (self.isModule()) _ = self.enterStrictMode();
 
+        // ScriptBody: StatementList[~Yield, ~Await, ~Return]
+        // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
+        self.context.yield_is_keyword = false;
+        self.context.await_is_keyword = self.isModule();
+        self.context.allow_return_statement = false;
+
         // let's begin
         try self.advance() orelse {
-            self.current_token = token.Token.eof(0);
+            self.current_token = Token.eof(0);
         };
 
         errdefer self.arena.deinit();
 
         try self.ensureCapacity();
 
-        const body = try self.parseBody(null);
+        const body = try self.parseBody(null, .program);
 
         const end = self.current_token.span.end;
 
@@ -130,14 +139,19 @@ pub const Parser = struct {
         return tree;
     }
 
-    pub fn parseBody(self: *Parser, terminator: ?token.TokenType) Error!ast.IndexRange {
+    const BodyKind = enum {
+        program,
+        function,
+        other,
+    };
+
+    pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
         // save and restore strict mode, directives like "use strict" only apply within this scope
         const prev_strict = self.isStrictMode();
         defer self.restoreStrictMode(prev_strict);
 
-        // it's a directive prologue if it's a function body or if we are at the program level
-        // terminator null means, we are at program level
-        self.context.in_directive_prologue = self.context.in_function or terminator == null;
+        self.context.in_directive_prologue = kind == .program or kind == .function;
+
         defer self.context.in_directive_prologue = false;
 
         const statements_checkpoint = self.scratch_statements.begin();
@@ -154,9 +168,9 @@ pub const Parser = struct {
         return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
     }
 
-    inline fn isAtBodyEnd(self: *Parser, terminator: ?token.TokenType) bool {
-        return self.current_token.type == .eof or
-            (terminator != null and self.current_token.type == terminator.?);
+    inline fn isAtBodyEnd(self: *Parser, terminator: ?TokenTag) bool {
+        return self.current_token.tag == .eof or
+            (terminator != null and self.current_token.tag == terminator.?);
     }
 
     pub inline fn isTs(self: *Parser) bool {
@@ -254,11 +268,11 @@ pub const Parser = struct {
         return self.source[start..][0..len];
     }
 
-    pub inline fn getTokenText(self: *const Parser, tok: token.Token) []const u8 {
-        return tok.text(self.source);
+    pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
+        return token.text(self.source);
     }
 
-    inline fn nextToken(self: *Parser) Error!?token.Token {
+    inline fn nextToken(self: *Parser) Error!?Token {
         return self.lexer.nextToken() catch |e| blk: {
             if (e == error.OutOfMemory) return error.OutOfMemory;
 
@@ -274,11 +288,43 @@ pub const Parser = struct {
         };
     }
 
+    /// advance to the next token. reports an error if the current token
+    /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
+        try self.checkEscapedKeyword();
         self.current_token = try self.nextToken() orelse return null;
     }
 
-    pub fn lookAhead(self: *Parser) Error!?token.Token {
+    /// advance without the escaped-keyword check.
+    pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
+        self.current_token = try self.nextToken() orelse return null;
+    }
+
+    pub inline fn checkEscapedKeyword(self: *Parser) Error!void {
+        const current_token = self.current_token;
+
+        if (!current_token.isEscaped()) return;
+
+        if (current_token.tag.isKeyword()) {
+            try self.reportEscapedKeyword(current_token.span);
+        }
+    }
+
+    pub fn reportEscapedKeyword(self: *Parser, span: ast.Span) Error!void {
+        try self.diagnostics.append(self.allocator(), .{
+            .message = "Keywords cannot contain escape characters",
+            .span = span,
+            .help = "Remove the escape characters",
+        });
+    }
+
+    /// reports an escaped-keyword error if the given token has the escaped flag.
+    /// use for deferred checks where the token was consumed before its role was known.
+    pub inline fn reportIfEscapedKeyword(self: *Parser, token: Token) Error!void {
+        if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
+    }
+
+    pub fn lookAhead(self: *Parser) Error!?Token {
         const prev_state = self.lexer.state;
         const prev_cursor = self.lexer.cursor;
         const prev_comments_len = self.lexer.comments.items.len;
@@ -294,13 +340,13 @@ pub const Parser = struct {
 
     /// sets current token from a re-scanned token and advances to the next token.
     /// use after lexer re-scan functions (reScanJsxText, reScanTemplateContinuation, etc.)
-    pub inline fn advanceWithRescannedToken(self: *Parser, tok: token.Token) Error!?void {
-        self.current_token = tok;
+    pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
+        self.current_token = token;
         return self.advance();
     }
 
-    pub fn expect(self: *Parser, token_type: token.TokenType, message: []const u8, help: ?[]const u8) Error!bool {
-        if (self.current_token.type == token_type) {
+    pub fn expect(self: *Parser, comptime tag: TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
+        if (self.current_token.tag == tag) {
             try self.advance() orelse return false;
             return true;
         }
@@ -311,7 +357,7 @@ pub const Parser = struct {
     }
 
     pub fn eatSemicolon(self: *Parser, end: u32) Error!?u32 {
-        if (self.current_token.type == .semicolon) {
+        if (self.current_token.tag == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance() orelse return null;
             return semicolon_end;
@@ -336,7 +382,7 @@ pub const Parser = struct {
     ///
     /// allows `do {} while (false) foo()`, semicolon optional after the `)`.
     pub fn eatSemicolonLenient(self: *Parser, end: u32) Error!?u32 {
-        if (self.current_token.type == .semicolon) {
+        if (self.current_token.tag == .semicolon) {
             const semicolon_end = self.current_token.span.end;
             try self.advance() orelse return null;
             return semicolon_end;
@@ -345,13 +391,13 @@ pub const Parser = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion
-    pub inline fn canInsertImplicitSemicolon(_: *Parser, tok: token.Token) bool {
-        return tok.type == .eof or tok.hasLineTerminatorBefore() or tok.type == .right_brace;
+    pub inline fn canInsertImplicitSemicolon(_: *Parser, token: Token) bool {
+        return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    pub inline fn describeToken(self: *Parser, tok: token.Token) []const u8 {
-        if (tok.type == .eof) return "end of file";
-        return tok.type.toString() orelse tok.text(self.source);
+    pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
+        if (token.tag == .eof) return "end of file";
+        return token.tag.toString() orelse token.text(self.source);
     }
 
     pub const ReportOptions = struct {
@@ -399,20 +445,20 @@ pub const Parser = struct {
     // returning null here means, break the top level statement parsing loop
     // otherwise continue
     // TODO: make it better
-    fn synchronize(self: *Parser, terminator: ?token.TokenType) Error!?void {
-        while (self.current_token.type != .eof) {
+    fn synchronize(self: *Parser, terminator: ?TokenTag) Error!?void {
+        while (self.current_token.tag != .eof) {
             // stop at the block terminator to avoid consuming the closing brace
             if (terminator) |t| {
-                if (self.current_token.type == t) return;
+                if (self.current_token.tag == t) return;
             }
 
-            if (self.current_token.type == .semicolon or self.current_token.type == .right_brace) {
+            if (self.current_token.tag == .semicolon or self.current_token.tag == .right_brace) {
                 try self.advance() orelse return null;
                 return;
             }
 
             if (self.current_token.hasLineTerminatorBefore()) {
-                const can_start_statement = switch (self.current_token.type) {
+                const can_start_statement = switch (self.current_token.tag) {
                     .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
                     else => false,
                 };

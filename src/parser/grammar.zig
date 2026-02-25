@@ -145,6 +145,16 @@ pub fn expressionToPattern(
         .spread_element => |spread| {
             const arg = spread.argument;
             try expressionToPattern(parser, arg, context) orelse return null;
+
+            if (parser.getData(arg) == .assignment_pattern) {
+                try parser.report(
+                    parser.getSpan(expr),
+                    "A rest element cannot have an initializer",
+                    .{ .help = "Remove the '= ...' from the rest element." },
+                );
+                return null;
+            }
+
             parser.setData(expr, .{ .binding_rest_element = .{ .argument = arg } });
         },
 

@@ -1,106 +1,112 @@
-import { deserializeAstJson } from "yuku-shared"
+import { deserializeAstJson } from "yuku-shared";
 
 export enum SourceType {
-  Script = 0,
-  Module = 1,
+	Script = 0,
+	Module = 1,
 }
 
 export enum Lang {
-  JS = 0,
-  TS = 1,
-  JSX = 2,
-  TSX = 3,
-  DTS = 4,
+	JS = 0,
+	TS = 1,
+	JSX = 2,
+	TSX = 3,
+	DTS = 4,
 }
 
 export interface ParseOptions {
-  sourceType?: 'script' | 'module';
-  lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts';
+	sourceType?: "script" | "module";
+	lang?: "js" | "ts" | "jsx" | "tsx" | "dts";
 }
 
 // we will expand this later
-type YukuAST = Record<string, any>
+type YukuAST = Record<string, any>;
 
 interface WasmExports {
-  alloc: (size: number) => number;
-  free: (ptr: number, size: number) => void;
-  parse: (
-    sourcePtr: number,
-    sourceLen: number,
-    sourceType: number,
-    lang: number
-  ) => bigint; // returns packed u64: high 32 bits = length, low 32 bits = pointer
-  memory: WebAssembly.Memory;
+	alloc: (size: number) => number;
+	free: (ptr: number, size: number) => void;
+	parse: (
+		sourcePtr: number,
+		sourceLen: number,
+		sourceType: number,
+		lang: number,
+	) => bigint; // returns packed u64: high 32 bits = length, low 32 bits = pointer
+	memory: WebAssembly.Memory;
 }
 
 let wasmInstance: WasmExports | null = null;
 
 async function getWasmInstance(): Promise<WasmExports> {
-  if (wasmInstance) return wasmInstance;
+	if (wasmInstance) return wasmInstance;
 
-  const wasmModule = await WebAssembly.instantiateStreaming(fetch(new URL('./yuku.wasm', import.meta.url)));
+	const wasmModule = await WebAssembly.instantiateStreaming(
+		fetch(new URL("./yuku.wasm", import.meta.url)),
+	);
 
-  wasmInstance = wasmModule.instance.exports as unknown as WasmExports;
+	wasmInstance = wasmModule.instance.exports as unknown as WasmExports;
 
-  return wasmInstance;
+	return wasmInstance;
 }
 
 function parseInternal(
-  wasm: WasmExports,
-  source: string,
-  options: ParseOptions
+	wasm: WasmExports,
+	source: string,
+	options: ParseOptions,
 ): YukuAST {
-  const encoder = new TextEncoder();
-  const sourceBytes = encoder.encode(source);
-  const sourceLen = sourceBytes.length;
+	const encoder = new TextEncoder();
+	const sourceBytes = encoder.encode(source);
+	const sourceLen = sourceBytes.length;
 
-  // allocate source code buffer, allow empty source by not requiring allocation when length is 0
-  const sourcePtr = sourceLen > 0 ? wasm.alloc(sourceLen) : 0;
+	// allocate source code buffer, allow empty source by not requiring allocation when length is 0
+	const sourcePtr = sourceLen > 0 ? wasm.alloc(sourceLen) : 0;
 
-  if (sourceLen > 0 && !sourcePtr) {
-    throw new Error('Failed to allocate memory for source code');
-  }
+	if (sourceLen > 0 && !sourcePtr) {
+		throw new Error("Failed to allocate memory for source code");
+	}
 
-  try {
-    if (sourceLen > 0 && sourcePtr) {
-      const wasmMemory = new Uint8Array(wasm.memory.buffer, sourcePtr, sourceLen);
-      wasmMemory.set(sourceBytes);
-    }
+	try {
+		if (sourceLen > 0 && sourcePtr) {
+			const wasmMemory = new Uint8Array(
+				wasm.memory.buffer,
+				sourcePtr,
+				sourceLen,
+			);
+			wasmMemory.set(sourceBytes);
+		}
 
-    // options are numbers, so normalize them to pass to wasm
-    const sourceType = normalizeSourceType(options.sourceType);
-    const lang = normalizeLang(options.lang);
+		// options are numbers, so normalize them to pass to wasm
+		const sourceType = normalizeSourceType(options.sourceType);
+		const lang = normalizeLang(options.lang);
 
-    const result = wasm.parse(sourcePtr, sourceLen, sourceType, lang);
+		const result = wasm.parse(sourcePtr, sourceLen, sourceType, lang);
 
-    if (result === 0n) {
-      throw new Error('Failed to parse source code');
-    }
+		if (result === 0n) {
+			throw new Error("Failed to parse source code");
+		}
 
-    // unpack u64: high 32 bits = length, low 32 bits = pointer
-    const resultPtr = Number(result & 0xFFFFFFFFn);
-    const jsonLen = Number(result >> 32n);
+		// unpack u64: high 32 bits = length, low 32 bits = pointer
+		const resultPtr = Number(result & 0xffffffffn);
+		const jsonLen = Number(result >> 32n);
 
-    if (resultPtr + jsonLen > wasm.memory.buffer.byteLength) {
-      throw new Error('Invalid result pointer from WASM parser');
-    }
+		if (resultPtr + jsonLen > wasm.memory.buffer.byteLength) {
+			throw new Error("Invalid result pointer from WASM parser");
+		}
 
-    try {
-      const decoder = new TextDecoder();
+		try {
+			const decoder = new TextDecoder();
 
-      const jsonBytes = new Uint8Array(wasm.memory.buffer, resultPtr, jsonLen);
+			const jsonBytes = new Uint8Array(wasm.memory.buffer, resultPtr, jsonLen);
 
-      const jsonStr = decoder.decode(jsonBytes);
+			const jsonStr = decoder.decode(jsonBytes);
 
-      return deserializeAstJson<YukuAST>(jsonStr);
-    } finally {
-      wasm.free(resultPtr, jsonLen);
-    }
-  } finally {
-    if (sourceLen > 0 && sourcePtr) {
-      wasm.free(sourcePtr, sourceLen);
-    }
-  }
+			return deserializeAstJson<YukuAST>(jsonStr);
+		} finally {
+			wasm.free(resultPtr, jsonLen);
+		}
+	} finally {
+		if (sourceLen > 0 && sourcePtr) {
+			wasm.free(sourcePtr, sourceLen);
+		}
+	}
 }
 
 /**
@@ -120,11 +126,11 @@ function parseInternal(
  * ```
  */
 export async function parse(
-  source: string,
-  options: ParseOptions = {}
+	source: string,
+	options: ParseOptions = {},
 ): Promise<YukuAST> {
-  const wasm = await getWasmInstance();
-  return parseInternal(wasm, source, options);
+	const wasm = await getWasmInstance();
+	return parseInternal(wasm, source, options);
 }
 
 /**
@@ -145,16 +151,13 @@ export async function parse(
  * });
  * ```
  */
-export function parseSync(
-  source: string,
-  options: ParseOptions = {}
-): YukuAST {
-  if (!wasmInstance) {
-    throw new Error(
-      'WASM not loaded. Call parse() first or manually call preload()'
-    );
-  }
-  return parseInternal(wasmInstance, source, options);
+export function parseSync(source: string, options: ParseOptions = {}): YukuAST {
+	if (!wasmInstance) {
+		throw new Error(
+			"WASM not loaded. Call parse() first or manually call preload()",
+		);
+	}
+	return parseInternal(wasmInstance, source, options);
 }
 
 /**
@@ -169,24 +172,24 @@ export function parseSync(
  * ```
  */
 export async function preload(): Promise<void> {
-  await getWasmInstance();
+	await getWasmInstance();
 }
 
-function normalizeSourceType(sourceType?: 'script' | 'module'): SourceType {
-  return sourceType === 'script' ? SourceType.Script : SourceType.Module;
+function normalizeSourceType(sourceType?: "script" | "module"): SourceType {
+	return sourceType === "script" ? SourceType.Script : SourceType.Module;
 }
 
-function normalizeLang(lang?: 'js' | 'ts' | 'jsx' | 'tsx' | 'dts'): Lang {
-  switch (lang) {
-    case 'ts':
-      return Lang.TS;
-    case 'jsx':
-      return Lang.JSX;
-    case 'tsx':
-      return Lang.TSX;
-    case 'dts':
-      return Lang.DTS;
-    default:
-      return Lang.JS;
-  }
+function normalizeLang(lang?: "js" | "ts" | "jsx" | "tsx" | "dts"): Lang {
+	switch (lang) {
+		case "ts":
+			return Lang.TS;
+		case "jsx":
+			return Lang.JSX;
+		case "tsx":
+			return Lang.TSX;
+		case "dts":
+			return Lang.DTS;
+		default:
+			return Lang.JS;
+	}
 }

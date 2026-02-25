@@ -589,7 +589,7 @@ pub const Serializer = struct {
         try self.beginObject();
         try self.fieldString("raw", self.scratch.items);
         try self.field("cooked");
-        if (data.has_invalid_escape)
+        if (data.is_cooked_undefined)
             try self.writeNull()
         else
             try self.writeDecodedString(self.scratch.items);
@@ -726,12 +726,11 @@ pub const Serializer = struct {
     }
 
     fn writePrivateIdentifier(self: *Self, data: ast.PrivateIdentifier, span: ast.Span) !void {
-        const name = self.tree.getSourceText(data.name_start, data.name_len);
         try self.beginObject();
         try self.fieldType("PrivateIdentifier");
         try self.fieldSpan(span);
         try self.field("name");
-        try self.writeDecodedString(name[1..]);
+        try self.writeDecodedString(self.tree.getSourceText(data.name_start, data.name_len));
         try self.endObject();
     }
 
@@ -1492,12 +1491,10 @@ pub const Serializer = struct {
                 },
                 'u' => {
                     if (i + 2 < input.len and input[i + 2] == '{') {
-                        if (util.Utf.parseHexVariable(input, i + 3, 16)) |r| {
-                            if (r.has_digits and r.end < input.len and input[r.end] == '}') {
-                                try self.writeCodePointAsJson(r.value);
-                                i = r.end + 1;
-                                continue;
-                            }
+                        if (util.Utf.parseUnicodeEscape(input, i + 2)) |r| {
+                            try self.writeCodePointAsJson(r.value);
+                            i = r.end;
+                            continue;
                         }
                         try self.writeByte('u');
                         i += 2;

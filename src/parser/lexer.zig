@@ -1,5 +1,9 @@
 const std = @import("std");
-const token = @import("token.zig");
+const Token = @import("token.zig").Token;
+const TokenTag = @import("token.zig").TokenTag;
+const Span = @import("token.zig").Span;
+const TokenFlag = @import("token.zig").TokenFlag;
+const flagMask = @import("token.zig").flagMask;
 const ast = @import("ast.zig");
 const util = @import("util");
 
@@ -12,6 +16,7 @@ pub const LexicalError = error{
     InvalidRegex,
     InvalidRegexFlag,
     DuplicateRegexFlag,
+    IncompatibleRegexFlags,
     InvalidIdentifierStart,
     InvalidIdentifierContinue,
     UnterminatedMultiLineComment,
@@ -112,7 +117,7 @@ pub const Lexer = struct {
         }
     }
 
-    pub fn nextToken(self: *Lexer) LexicalError!token.Token {
+    pub fn nextToken(self: *Lexer) LexicalError!Token {
         self.clearTokenFlags();
 
         try self.skipWsAndComments();
@@ -135,12 +140,12 @@ pub const Lexer = struct {
         };
     }
 
-    inline fn scanSimplePunctuation(self: *Lexer) token.Token {
+    inline fn scanSimplePunctuation(self: *Lexer) Token {
         const start = self.cursor;
         const c = self.source[self.cursor];
         self.cursor += 1;
 
-        const token_type: token.TokenType = switch (c) {
+        const tag: TokenTag = switch (c) {
             '~' => .bitwise_not,
             '(' => .left_paren,
             ')' => .right_paren,
@@ -154,15 +159,15 @@ pub const Lexer = struct {
             else => unreachable,
         };
 
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
-    inline fn puncToken(self: *Lexer, len: u32, token_type: token.TokenType, start: u32) token.Token {
+    inline fn puncToken(self: *Lexer, len: u32, tag: TokenTag, start: u32) Token {
         self.cursor += len;
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
-    fn scanPunctuation(self: *Lexer) LexicalError!token.Token {
+    fn scanPunctuation(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
         const c0 = self.source[self.cursor];
         const c1 = self.peek(1);
@@ -285,12 +290,12 @@ pub const Lexer = struct {
             (allow_hyphen and c == '-');
     }
 
-    inline fn setTokenFlag(self: *Lexer, comptime flag: token.TokenFlag) void {
-        self.state.token_flags |= token.flagMask(flag);
+    inline fn setTokenFlag(self: *Lexer, comptime flag: TokenFlag) void {
+        self.state.token_flags |= flagMask(flag);
     }
 
-    inline fn hasTokenFlag(self: *const Lexer, comptime flag: token.TokenFlag) bool {
-        return (self.state.token_flags & token.flagMask(flag)) != 0;
+    inline fn hasTokenFlag(self: *const Lexer, comptime flag: TokenFlag) bool {
+        return (self.state.token_flags & flagMask(flag)) != 0;
     }
 
     inline fn clearTokenFlags(self: *Lexer) void {
@@ -313,7 +318,7 @@ pub const Lexer = struct {
     /// scans template_middle or template_tail.
     /// called by the parser when it expects a template continuation after parsing
     /// an expression inside ${}.
-    pub fn reScanTemplateContinuation(self: *Lexer, right_brace_start: u32) LexicalError!token.Token {
+    pub fn reScanTemplateContinuation(self: *Lexer, right_brace_start: u32) LexicalError!Token {
         self.rewindTo(right_brace_start);
 
         const start = self.cursor;
@@ -342,7 +347,7 @@ pub const Lexer = struct {
 
     /// scans JSX text content between '<' and '{' in JSX children.
     /// called by the parser when parsing JSX element children.
-    pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) token.Token {
+    pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
         self.rewindTo(initial_cursor);
 
         const start = self.cursor;
@@ -359,10 +364,16 @@ pub const Lexer = struct {
         return self.createToken(.jsx_text, start, self.cursor);
     }
 
+    const RegexResult = struct {
+        span: Span,
+        pattern: []const u8,
+        flags: []const u8,
+    };
+
     /// re-scans a slash token as a regex literal
     /// called by the parser when context determines that a '/' token should be interpreted
     /// as the start of a regular expression rather than a division operator
-    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!struct { span: token.Span, pattern: []const u8, flags: []const u8 } {
+    pub fn reScanAsRegex(self: *Lexer, slash_token_start: u32) LexicalError!RegexResult {
         self.rewindTo(slash_token_start);
 
         const start = self.cursor;
@@ -409,8 +420,10 @@ pub const Lexer = struct {
 
                 // 26 bits enough, 'a' to 'z'
                 var flags_seen: u32 = 0;
-                while (self.cursor < self.source.len and std.ascii.isAlphabetic(self.source[self.cursor])) {
-                    const flag = self.source[self.cursor];
+
+                while (true) {
+                    const flag = self.peek(0);
+                    if (!std.ascii.isAlphabetic(flag)) break;
 
                     const is_valid_flag = switch (flag) {
                         'g', 'i', 'm', 's', 'u', 'y', 'd', 'v' => true,
@@ -432,9 +445,18 @@ pub const Lexer = struct {
                     self.cursor += 1;
                 }
 
+                // u and v flags are mutually exclusive (ES2024)
+                const u_bit = @as(u32, 1) << ('u' - 'a');
+                const v_bit = @as(u32, 1) << ('v' - 'a');
+
+                if (flags_seen & u_bit != 0 and flags_seen & v_bit != 0) {
+                    return error.IncompatibleRegexFlags;
+                }
+
                 const end = self.cursor;
 
                 const pattern = self.source[start + 1 .. closing_delimeter_pos - 1];
+
                 const flags = self.source[closing_delimeter_pos..end];
 
                 return .{ .span = .{ .start = start, .end = end }, .pattern = pattern, .flags = flags };
@@ -447,7 +469,7 @@ pub const Lexer = struct {
 
     //
 
-    fn scanString(self: *Lexer) LexicalError!token.Token {
+    fn scanString(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
         const quote = self.source[start];
         self.cursor += 1;
@@ -476,7 +498,7 @@ pub const Lexer = struct {
         return error.UnterminatedString;
     }
 
-    fn scanTemplateLiteral(self: *Lexer) LexicalError!token.Token {
+    fn scanTemplateLiteral(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
         self.cursor += 1;
 
@@ -509,15 +531,21 @@ pub const Lexer = struct {
         template,
     };
 
-    /// consumes an escape sequence.
-    /// in string context, errors propagate directly (fatal).
-    /// in template context, errors are absorbed and a token flag is set instead,
-    /// because tagged templates tolerate invalid escapes (cooked value becomes null/undefined).
+    // in string literals, escape errors are fatal and propagate immediately.
+    // in template literals, escape errors are non-fatal: we set
+    // `invalid_escape` on the current token and continue lexing.
+    // this flag can exist on any token type, though template literals are the
+    // current parser use case.
+    // the parser then checks this flag:
+    // - tagged templates: no diagnostic (cooked becomes null/undefined)
+    // - untagged templates: report "Bad escape sequence in untagged template literal"
     fn consumeEscape(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         if (context == .template) {
             self.consumeEscapeImpl(context) catch |err| {
                 if (err == error.OutOfMemory) return error.OutOfMemory;
-                self.setTokenFlag(.template_invalid_escape);
+
+                self.setTokenFlag(.invalid_escape);
+
                 if (self.cursor < self.source.len) self.cursor += 1;
             };
         } else {
@@ -538,23 +566,20 @@ pub const Lexer = struct {
             '0' => {
                 const c1 = self.peek(1);
 
-                // null escape \0
-                if (!util.Utf.isOctalDigit(c1)) {
+                // null escape \0 [lookahead ∉ DecimalDigit]
+                if (!std.ascii.isDigit(c1)) {
                     self.cursor += 1;
                     break :brk;
                 }
 
-                // octal escape \0
+                // octal escape \0n
                 // always invalid in templates, only invalid in strict mode for strings
                 if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
+
                 try self.consumeOctal();
             },
-            'x' => {
-                try self.consumeHex();
-            },
-            'u' => {
-                try self.consumeUnicodeEscape(.normal);
-            },
+            'x' => try self.consumeHex(),
+            'u' => try self.consumeUnicodeEscape(.normal),
             '1'...'7' => {
                 // octal escapes, always invalid in templates, only invalid in strict mode for strings
                 if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
@@ -605,53 +630,36 @@ pub const Lexer = struct {
     };
 
     fn consumeUnicodeEscape(self: *Lexer, comptime context: ConsumeUnicodeContext) LexicalError!void {
-        self.cursor += 1; // skip 'u'
+        // set the current token is escaped
+        // used by parser to check whether a reserved keyword is ecaped to throw error
+        self.setTokenFlag(.escaped);
 
-        const in_identifier = context == .identifier_start or context == .identifier_continue;
+        const parsed = util.Utf.parseUnicodeEscape(self.source, self.cursor + 1) orelse return error.InvalidUnicodeEscape;
 
-        const id_error = if (context == .identifier_start) error.InvalidIdentifierStart else error.InvalidIdentifierContinue;
-
-        if (self.cursor < self.source.len and self.source[self.cursor] == '{') {
-            // \u{XXXXX}
-            self.cursor += 1;
-            const start = self.cursor;
-            const end = std.mem.findScalarPos(u8, self.source, self.cursor, '}') orelse
-                return error.InvalidUnicodeEscape;
-
-            if (util.Utf.parseHexVariable(self.source, start, end - start)) |r| {
-                if (in_identifier and !util.UnicodeId.canContinueId(r.value)) {
-                    return id_error;
+        switch (context) {
+            .identifier_start => {
+                if (!util.UnicodeId.canStartId(parsed.value)) {
+                    return error.InvalidIdentifierStart;
                 }
-
-                if (r.has_digits and r.end == end) {
-                    self.cursor = @intCast(end + 1); // skip past '}'
-                } else {
-                    return error.InvalidUnicodeEscape;
+            },
+            .identifier_continue => {
+                if (!util.UnicodeId.canContinueId(parsed.value)) {
+                    return error.InvalidIdentifierContinue;
                 }
-            } else {
-                return error.InvalidUnicodeEscape;
-            }
-        } else {
-            // \uXXXX format
-            if (util.Utf.parseHex4(self.source, self.cursor)) |r| {
-                if (in_identifier and !util.UnicodeId.canContinueId(r.value)) {
-                    return id_error;
-                }
-
-                self.cursor = @intCast(r.end);
-            } else {
-                return error.InvalidUnicodeEscape;
-            }
+            },
+            .normal => {},
         }
+
+        self.cursor = @intCast(parsed.end);
     }
 
-    fn handleRightBrace(self: *Lexer) token.Token {
+    fn handleRightBrace(self: *Lexer) Token {
         const start = self.cursor;
         self.cursor += 1;
         return self.createToken(.right_brace, start, self.cursor);
     }
 
-    fn scanDot(self: *Lexer) LexicalError!token.Token {
+    fn scanDot(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
         const c1 = self.peek(1);
         const c2 = self.peek(2);
@@ -665,10 +673,12 @@ pub const Lexer = struct {
         return self.puncToken(1, .dot, start);
     }
 
-    inline fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !void {
+    fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
+        var has_escape = false;
+
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
-            if (c < 0x80) {
+            if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
                 if (c == '\\') {
                     @branchHint(.cold);
@@ -678,7 +688,10 @@ pub const Lexer = struct {
                         return error.JsxIdentifierCannotContainEscapes;
                     }
 
+                    has_escape = true;
+
                     self.cursor += 1; // consume backslash to get to 'u'
+
                     try self.consumeUnicodeEscape(.identifier_continue);
                 } else {
                     if (canContinueIdentifierAscii(c, is_jsx_tag)) {
@@ -697,30 +710,35 @@ pub const Lexer = struct {
                 }
             }
         }
+
+        return has_escape;
     }
 
-    fn scanIdentifierOrKeyword(self: *Lexer) !token.Token {
+    fn scanIdentifierOrKeyword(self: *Lexer) !Token {
         const start = self.cursor;
+
         const is_jsx_tag = self.mode == .jsx_tag;
 
-        const is_private = self.source[self.cursor] == '#';
+        var has_escape = false;
+
+        const is_private = self.peek(0) == '#';
 
         if (is_private) {
             self.cursor += 1;
-            // check if we've reached end-of-file after '#'
-            if (self.cursor >= self.source.len) {
-                return error.InvalidIdentifierStart;
-            }
         }
 
-        const first_char = self.source[self.cursor];
-        if (first_char < 0x80) {
+        const first_char = self.peek(0);
+
+        if (std.ascii.isAscii(first_char)) {
             @branchHint(.likely);
+
             if (first_char == '\\') {
                 // JSX tag names don't support escape sequences
                 if (is_jsx_tag) {
                     return error.JsxIdentifierCannotStartWithBackslash;
                 }
+
+                has_escape = true;
 
                 self.cursor += 1; // consume backslash to get to 'u'
 
@@ -732,25 +750,73 @@ pub const Lexer = struct {
                 }
                 self.cursor += 1;
             }
-            try self.scanIdentifierBody(is_jsx_tag);
+
+            const body_has_escape = try self.scanIdentifierBody(is_jsx_tag);
+            has_escape = has_escape or body_has_escape;
         } else {
             @branchHint(.cold);
+
             const c_cp = try util.Utf.codePointAt(self.source, self.cursor);
+
             if (!util.UnicodeId.canStartId(c_cp.value)) {
                 return error.InvalidIdentifierStart;
             }
+
             self.cursor += c_cp.len;
-            try self.scanIdentifierBody(is_jsx_tag);
+
+            has_escape = try self.scanIdentifierBody(is_jsx_tag);
         }
 
         const lexeme = self.source[start..self.cursor];
 
-        const token_type: token.TokenType = if (is_jsx_tag) .jsx_identifier else if (is_private) .private_identifier else self.getKeywordType(lexeme);
+        const tag: TokenTag =
+            if (is_jsx_tag) .jsx_identifier else if (is_private) .private_identifier else if (has_escape) self.getEscapedKeywordType(lexeme) else self.getKeywordType(lexeme);
 
-        return self.createToken(token_type, start, self.cursor);
+        return self.createToken(tag, start, self.cursor);
     }
 
-    fn getKeywordType(_: *Lexer, lexeme: []const u8) token.TokenType {
+    fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
+        @branchHint(.cold);
+
+        var decoded: [11]u8 = undefined; // max keyword len is 11 (constructor)
+        var out_len: usize = 0;
+        var i: usize = 0;
+
+        while (i < lexeme.len) {
+            if (out_len == decoded.len) return .identifier;
+
+            const c = lexeme[i];
+
+            if (c == '\\') {
+                i += 2; // skip \u
+
+                const parsed = util.Utf.parseUnicodeEscape(lexeme, i) orelse return .identifier;
+
+                // if codepoint is not ascii, then it's not a keyword
+                if (parsed.value >= 0x80) return .identifier;
+
+                decoded[out_len] = @intCast(parsed.value);
+
+                out_len += 1;
+
+                i = parsed.end;
+
+                continue;
+            }
+
+            if (!std.ascii.isAscii(c)) return .identifier;
+
+            decoded[out_len] = c;
+
+            out_len += 1;
+
+            i += 1;
+        }
+
+        return self.getKeywordType(decoded[0..out_len]);
+    }
+
+    fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
         switch (lexeme.len) {
             2 => {
                 switch (lexeme[1]) {
@@ -770,8 +836,10 @@ pub const Lexer = struct {
             3 => {
                 switch (lexeme[0]) {
                     'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .@"for",
+                    'g' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .get,
                     'l' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .let,
                     'n' => if (lexeme[1] == 'e' and lexeme[2] == 'w') return .new,
+                    's' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .set,
                     't' => if (lexeme[1] == 'r' and lexeme[2] == 'y') return .@"try",
                     'v' => if (lexeme[1] == 'a' and lexeme[2] == 'r') return .@"var",
                     else => {},
@@ -872,6 +940,7 @@ pub const Lexer = struct {
             },
             8 => {
                 switch (lexeme[0]) {
+                    'a' => if (std.mem.eql(u8, lexeme, "accessor")) return .accessor,
                     'c' => if (std.mem.eql(u8, lexeme, "continue")) return .@"continue",
                     'd' => if (std.mem.eql(u8, lexeme, "debugger")) return .debugger,
                     'f' => if (std.mem.eql(u8, lexeme, "function")) return .function,
@@ -895,48 +964,56 @@ pub const Lexer = struct {
                     else => {},
                 }
             },
+            11 => {
+                if (lexeme[0] == 'c' and std.mem.eql(u8, lexeme, "constructor")) return .constructor;
+            },
             else => {},
         }
         return .identifier;
     }
 
-    fn scanNumber(self: *Lexer) LexicalError!token.Token {
+    fn scanNumber(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
-        var token_type: token.TokenType = .numeric_literal;
+        var tag: TokenTag = .numeric_literal;
 
         // handle prefixes: 0x, 0o, 0b
         var has_decimal_or_exponent = false;
 
-        if (self.source[self.cursor] == '0') {
+        var is_leading_zero = false;
+
+        if (self.peek(0) == '0') {
             const prefix = self.peek(1);
 
             switch (prefix) {
                 'x', 'X' => {
-                    token_type = .hex_literal;
+                    tag = .hex_literal;
                     self.cursor += 2;
                     const hex_start = self.cursor;
                     try self.consumeHexDigits();
                     if (self.cursor == hex_start) return error.InvalidHexLiteral;
                 },
                 'o', 'O' => {
-                    token_type = .octal_literal;
+                    tag = .octal_literal;
                     self.cursor += 2;
                     const oct_start = self.cursor;
                     try self.consumeOctalDigits();
                     if (self.cursor == oct_start) return error.InvalidOctalLiteralDigit;
                 },
                 'b', 'B' => {
-                    token_type = .binary_literal;
+                    tag = .binary_literal;
                     self.cursor += 2;
                     const bin_start = self.cursor;
                     try self.consumeBinaryDigits();
                     if (self.cursor == bin_start) return error.InvalidBinaryLiteral;
                 },
                 '0'...'9' => {
+                    is_leading_zero = true;
+
                     // legacy octal (077) or decimal with leading zero (089)
-                    try self.consumeDecimalDigits();
+                    try self.consumeDecimalDigits(false);
 
                     var is_legacy_octal = true;
+
                     for (self.source[start..self.cursor]) |c| {
                         if (c == '8' or c == '9') {
                             is_legacy_octal = false;
@@ -948,29 +1025,25 @@ pub const Lexer = struct {
                         return if (is_legacy_octal) error.OctalLiteralInStrict else error.LeadingZeroInStrict;
                     }
 
-                    token_type = if (is_legacy_octal) .octal_literal else .numeric_literal;
+                    tag = if (is_legacy_octal) .octal_literal else .numeric_literal;
                 },
-                else => {
-                    try self.consumeDecimalDigits();
-                },
+                else => try self.consumeDecimalDigits(false),
             }
         } else {
-            try self.consumeDecimalDigits();
+            try self.consumeDecimalDigits(true);
         }
 
         // fraction and exponent only for regular decimal literals
-        if (token_type == .numeric_literal and
-            self.cursor < self.source.len and self.source[self.cursor] == '.')
-        {
+        if (tag == .numeric_literal and self.peek(0) == '.') {
             const next = self.peek(1);
             if (next == '_') return error.NumericSeparatorMisuse;
             self.cursor += 1;
             has_decimal_or_exponent = true;
-            if (next >= '0' and next <= '9') try self.consumeDecimalDigits();
+            if (next >= '0' and next <= '9') try self.consumeDecimalDigits(true);
         }
 
-        if (token_type == .numeric_literal and self.cursor < self.source.len) {
-            const exp_char = self.source[self.cursor];
+        if (tag == .numeric_literal) {
+            const exp_char = self.peek(0);
             if (exp_char == 'e' or exp_char == 'E') {
                 has_decimal_or_exponent = true;
                 try self.consumeExponent();
@@ -978,26 +1051,25 @@ pub const Lexer = struct {
         }
 
         // handle bigint suffix 'n'
-        if (self.cursor < self.source.len and self.source[self.cursor] == 'n') {
+        if (!is_leading_zero and self.peek(0) == 'n') {
             // bigint cannot have decimal point or exponent
             if (has_decimal_or_exponent) {
                 return error.InvalidBigIntSuffix;
             }
 
             self.cursor += 1;
-            token_type = .bigint_literal;
+            tag = .bigint_literal;
         }
 
         // identifier cannot immediately follow a numeric literal
-        if (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-            if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
-        }
+        const c = self.peek(0);
 
-        return self.createToken(token_type, start, self.cursor);
+        if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
+
+        return self.createToken(tag, start, self.cursor);
     }
 
-    inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
+    inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool, allow_separator: bool) LexicalError!void {
         var last_was_separator = false;
 
         while (self.cursor < self.source.len) {
@@ -1005,7 +1077,7 @@ pub const Lexer = struct {
             if (isValidDigit(c)) {
                 self.cursor += 1;
                 last_was_separator = false;
-            } else if (c == '_') {
+            } else if (allow_separator and c == '_') {
                 if (last_was_separator) {
                     return error.ConsecutiveNumericSeparators;
                 }
@@ -1021,16 +1093,16 @@ pub const Lexer = struct {
         }
     }
 
-    inline fn consumeDecimalDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(std.ascii.isDigit);
+    inline fn consumeDecimalDigits(self: *Lexer, allow_separator: bool) LexicalError!void {
+        return self.consumeDigits(std.ascii.isDigit, allow_separator);
     }
 
     inline fn consumeHexDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(std.ascii.isHex);
+        return self.consumeDigits(std.ascii.isHex, false);
     }
 
     inline fn consumeOctalDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(util.Utf.isOctalDigit);
+        return self.consumeDigits(util.Utf.isOctalDigit, false);
     }
 
     inline fn consumeBinaryDigits(self: *Lexer) LexicalError!void {
@@ -1039,24 +1111,21 @@ pub const Lexer = struct {
                 return c == '0' or c == '1';
             }
         }.check;
-        return self.consumeDigits(isBinary);
+
+        return self.consumeDigits(isBinary, false);
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {
         self.cursor += 1; // skip 'e' or 'E'
 
-        if (self.cursor >= self.source.len) {
-            return error.InvalidExponentPart;
-        }
-
         // handle optional sign: + or -
-        const c = self.source[self.cursor];
+        const c = self.peek(0);
         if (c == '+' or c == '-') {
             self.cursor += 1;
         }
 
         const exp_start = self.cursor;
-        try self.consumeDecimalDigits();
+        try self.consumeDecimalDigits(true);
 
         if (self.cursor == exp_start) {
             return error.InvalidExponentPart;
@@ -1069,7 +1138,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
-            if (c < 0x80) {
+            if (std.ascii.isAscii(c)) {
                 @branchHint(.likely);
 
                 switch (c) {
@@ -1248,16 +1317,16 @@ pub const Lexer = struct {
         }) catch return error.OutOfMemory;
     }
 
-    pub inline fn createToken(self: *Lexer, token_type: token.TokenType, start: u32, end: u32) token.Token {
+    pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {
         const flags = self.consumeTokenFlags();
 
-        const tok = token.Token{
-            .type = token_type,
+        const token = Token{
+            .tag = tag,
             .span = .{ .start = start, .end = end },
             .flags = flags,
         };
 
-        return tok;
+        return token;
     }
 };
 
@@ -1272,6 +1341,7 @@ pub fn getLexicalErrorMessage(error_type: LexicalError) []const u8 {
         error.InvalidRegex => "Invalid regular expression",
         error.InvalidRegexFlag => "Invalid regular expression flag",
         error.DuplicateRegexFlag => "Duplicate regular expression flag",
+        error.IncompatibleRegexFlags => "The 'u' and 'v' regular expression flags cannot be used together",
         error.InvalidIdentifierStart => "Invalid character at start of identifier",
         error.InvalidIdentifierContinue => "Invalid character in identifier",
         error.UnterminatedMultiLineComment => "Unterminated multi-line comment",
@@ -1308,6 +1378,7 @@ pub fn getLexicalErrorHelp(error_type: LexicalError) []const u8 {
         error.InvalidRegex => "Try checking the regex syntax here for unclosed groups, invalid escapes, or malformed patterns",
         error.InvalidRegexFlag => "Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)",
         error.DuplicateRegexFlag => "Remove the duplicate flag; each flag can only appear once",
+        error.IncompatibleRegexFlags => "The 'u' (unicode) and 'v' (unicodeSets) flags are mutually exclusive; use one or the other",
         error.InvalidIdentifierStart => "Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)",
         error.InvalidIdentifierContinue => "Try using a valid identifier character here (letters, digits, underscore, or dollar sign)",
         error.UnterminatedMultiLineComment => "Try adding the closing delimiter (*/) here to complete the comment",

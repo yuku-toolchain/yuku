@@ -2,7 +2,7 @@ const std = @import("std");
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-const token = @import("../token.zig");
+const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 
 const literals = @import("literals.zig");
@@ -11,6 +11,7 @@ const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
+const ecmascript = @import("../ecmascript.zig");
 
 pub const ParseClassOpts = struct {
     /// whether the class is parsing in an expression position
@@ -42,7 +43,7 @@ pub fn parseClassDecorated(
     // optional class name
     var id: ast.NodeIndex = ast.null_node;
 
-    if (parser.current_token.type.isIdentifierLike() and parser.current_token.type != .extends) {
+    if (parser.current_token.tag.isIdentifierLike() and parser.current_token.tag != .extends) {
         id = try patterns.parseBindingIdentifier(parser) orelse ast.null_node;
     }
 
@@ -60,7 +61,8 @@ pub fn parseClassDecorated(
 
     // optional extends clause
     var super_class: ast.NodeIndex = ast.null_node;
-    if (parser.current_token.type == .extends) {
+
+    if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null; // consume 'extends'
         super_class = try expressions.parseLeftHandSideExpression(parser) orelse return null;
     }
@@ -98,11 +100,11 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     defer parser.scratch_a.reset(checkpoint);
 
     while (true) {
-        const tok_type = parser.current_token.type;
-        if (tok_type == .right_brace or tok_type == .eof) break;
+        const tag = parser.current_token.tag;
+        if (tag == .right_brace or tag == .eof) break;
 
         // empty statement (semicolon)
-        if (tok_type == .semicolon) {
+        if (tag == .semicolon) {
             try parser.advance() orelse return null;
             continue;
         }
@@ -129,7 +131,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var decorators: ast.IndexRange = ast.IndexRange.empty;
     var elem_start = parser.current_token.span.start;
 
-    if (parser.current_token.type == .at) {
+    if (parser.current_token.tag == .at) {
         elem_start = parser.current_token.span.start;
         decorators = try extensions.parseDecorators(parser) orelse return null;
     }
@@ -143,12 +145,13 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var key: ast.NodeIndex = ast.null_node;
 
     // check for 'static' modifier
-    if (parser.current_token.type == .static) {
+    if (parser.current_token.tag == .static) {
         const static_token = parser.current_token;
-        try parser.advance() orelse return null;
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
 
         // static { } - static block
-        if (parser.current_token.type == .left_brace) {
+        if (parser.current_token.tag == .left_brace) {
             if (decorators.len != 0) {
                 const first = parser.getExtra(decorators)[0];
                 try parser.report(
@@ -157,28 +160,37 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                     .{ .help = "Remove the decorator or apply it to a method or field instead." },
                 );
             }
+
+            // now we know 'static' is keyword
+            try parser.reportIfEscapedKeyword(static_token);
+
             return parseStaticBlock(parser, static_token.span.start);
         }
 
         // if next token is '(' or nothing that could be a class element key, 'static' is the key
         // e.g., `static() {}` is a method named "static", not a static method
-        if (parser.current_token.type == .left_paren or !isClassElementKeyStart(parser.current_token.type)) {
+        if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.addNode(
                 .{ .identifier_name = .{ .name_start = static_token.span.start, .name_len = @intCast(static_token.len()) } },
                 static_token.span,
             );
         } else {
+            try parser.reportIfEscapedKeyword(static_token);
             is_static = true;
         }
     }
 
     // check for 'async' modifier (only if no key yet)
-    if (ast.isNull(key) and parser.current_token.type == .async) {
+    if (ast.isNull(key) and parser.current_token.tag == .async) {
         const async_token = parser.current_token;
-        try parser.advance() orelse return null;
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
 
         // check if this is async method or 'async' as property name
-        if (isClassElementKeyStart(parser.current_token.type) and !parser.current_token.hasLineTerminatorBefore()) {
+        if (isClassElementKeyStart(parser.current_token.tag) and !parser.current_token.hasLineTerminatorBefore()) {
+            // now we know 'async' is a token
+            try parser.reportIfEscapedKeyword(async_token);
+
             is_async = true;
         } else {
             key = try parser.addNode(
@@ -189,45 +201,36 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for generator (*)
-    if (ast.isNull(key) and parser.current_token.type == .star) {
+    if (ast.isNull(key) and parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
 
-    // check for get/set (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
-        const token_text = parser.getTokenText(parser.current_token);
-        const is_get = std.mem.eql(u8, token_text, "get");
-        const is_set = std.mem.eql(u8, token_text, "set");
+    // check for get/set/accessor modifier (only if no key yet and not async/generator)
+    if (ast.isNull(key) and !is_async and !is_generator) {
+        const cur_tag = parser.current_token.tag;
 
-        if (is_get or is_set) {
-            const get_set_token = parser.current_token;
-            try parser.advance() orelse return null;
+        if (cur_tag == .get or cur_tag == .set or cur_tag == .accessor) {
+            const modifier_token = parser.current_token;
 
-            // check if this is get/set accessor or just a property named 'get'/'set'
-            if (isClassElementKeyStart(parser.current_token.type)) {
-                kind = if (is_get) .get else .set;
+            try parser.advanceWithoutEscapeCheck() orelse return null;
+
+            // check if this is a modifier or just a property named 'get'/'set'/'accessor'
+            if (isClassElementKeyStart(parser.current_token.tag)) {
+                // now we know 'get'/'set'/'accessor' is a token
+                try parser.reportIfEscapedKeyword(modifier_token);
+
+                if (cur_tag == .get) {
+                    kind = .get;
+                } else if (cur_tag == .set) {
+                    kind = .set;
+                } else {
+                    is_accessor = true;
+                }
             } else {
                 key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
-                    get_set_token.span,
-                );
-            }
-        }
-    }
-
-    // check for accessor field (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator and parser.current_token.type == .identifier) {
-        if (std.mem.eql(u8, parser.getTokenText(parser.current_token), "accessor")) {
-            const accessor_token = parser.current_token;
-            try parser.advance() orelse return null; // consume 'accessor'
-
-            if (isClassElementKeyStart(parser.current_token.type)) {
-                is_accessor = true;
-            } else {
-                key = try parser.addNode(
-                    .{ .identifier_name = .{ .name_start = accessor_token.span.start, .name_len = @intCast(accessor_token.len()) } },
-                    accessor_token.span,
+                    .{ .identifier_name = .{ .name_start = modifier_token.span.start, .name_len = @intCast(modifier_token.len()) } },
+                    modifier_token.span,
                 );
             }
         }
@@ -240,28 +243,47 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         computed = key_result.computed;
     }
 
-    // determine if this is constructor
-    // non-static, non-computed methods with PropName "constructor" are constructors
-    // PropName can come from identifier or string literal (but not computed)
-    if (!is_static and !computed) {
-        if (isKeyName(parser, key, "constructor")) {
-            // constructor cannot have get/set modifiers
-            if (kind == .get or kind == .set) {
+    // ClassElementName : PrivateIdentifier
+    //    It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
+    if (!computed) {
+        const data = parser.getData(key);
+
+        if (data == .private_identifier) {
+            const pi = data.private_identifier;
+
+            const name = parser.getSourceText(pi.name_start, pi.name_len);
+
+            if (ecmascript.eqlStringValue(name, "constructor")) {
                 try parser.report(
                     parser.getSpan(key),
-                    "Constructor can't have get/set modifier",
-                    .{ .help = "Remove the get/set keyword from the constructor." },
+                    "Classes can't have a private field named '#constructor'",
+                    .{ .help = "Use a different name for this private member." },
                 );
             }
+        }
+    }
 
-            if (kind == .method) {
-                kind = .constructor;
+    if (!is_static and !computed) {
+        if (ecmascript.propName(parser, key)) |prop| {
+            if (prop.eql("constructor")) {
+                // constructor cannot have get/set modifiers
+                if (kind == .get or kind == .set) {
+                    try parser.report(
+                        prop.span,
+                        "Constructor can't have get/set modifier",
+                        .{ .help = "Remove the get/set keyword from the constructor." },
+                    );
+                }
+
+                if (kind == .method) {
+                    kind = .constructor;
+                }
             }
         }
     }
 
     // method: key followed by (
-    if (parser.current_token.type == .left_paren) {
+    if (parser.current_token.tag == .left_paren) {
         if (is_accessor) {
             try parser.report(
                 parser.current_token.span,
@@ -270,6 +292,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             );
             return null;
         }
+
         return parseMethodDefinition(parser, elem_start, decorators, key, computed, kind, is_static, is_async, is_generator);
     }
 
@@ -303,7 +326,7 @@ const KeyResult = struct {
 /// class element key
 fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     // computed key
-    if (parser.current_token.type == .left_bracket) {
+    if (parser.current_token.tag == .left_bracket) {
         try parser.advance() orelse return null; // consume '['
         const key = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return .{ .key = null, .computed = true };
         if (!try parser.expect(.right_bracket, "Expected ']' after computed property key", null)) {
@@ -313,28 +336,30 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     }
 
     // #name
-    if (parser.current_token.type == .private_identifier) {
+    if (parser.current_token.tag == .private_identifier) {
         const key = try literals.parsePrivateIdentifier(parser);
         return .{ .key = key, .computed = false };
     }
 
-    if (parser.current_token.type == .string_literal) {
+    if (parser.current_token.tag == .string_literal) {
         const key = try literals.parseStringLiteral(parser);
         return .{ .key = key, .computed = false };
     }
 
-    if (parser.current_token.type.isNumericLiteral()) {
+    if (parser.current_token.tag.isNumericLiteral()) {
         const key = try literals.parseNumericLiteral(parser);
         return .{ .key = key, .computed = false };
     }
 
     // identifier-like (includes keywords)
-    if (parser.current_token.type.isIdentifierLike()) {
-        const tok = parser.current_token;
-        try parser.advance() orelse return null;
+    if (parser.current_token.tag.isIdentifierLike()) {
+        const token = parser.current_token;
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
+
         const key = try parser.addNode(
-            .{ .identifier_name = .{ .name_start = tok.span.start, .name_len = @intCast(tok.len()) } },
-            tok.span,
+            .{ .identifier_name = .{ .name_start = token.span.start, .name_len = @intCast(token.len()) } },
+            token.span,
         );
         return .{ .key = key, .computed = false };
     }
@@ -362,7 +387,7 @@ fn parseMethodDefinition(
     is_generator: bool,
 ) Error!?ast.NodeIndex {
     if (is_static and !computed) {
-        try validateStaticPrototypeName(parser, key);
+        try validateStaticPrototypeOrConstructor(parser, key, true);
     }
 
     if (kind == .constructor) {
@@ -396,47 +421,14 @@ fn parseMethodDefinition(
         }
     }
 
-    if (kind == .constructor) {
-        if (is_async) {
-            try parser.report(
-                parser.getSpan(key),
-                "Constructor cannot be async",
-                .{ .help = "Remove the 'async' modifier from the constructor." },
-            );
-        }
-        if (is_generator) {
-            try parser.report(
-                parser.getSpan(key),
-                "Constructor cannot be a generator",
-                .{ .help = "Remove the '*' from the constructor." },
-            );
-        }
-    }
-
-    if (kind == .get and is_generator) {
-        try parser.report(
-            parser.getSpan(key),
-            "Getter cannot be a generator",
-            .{ .help = "Remove the '*' from the getter definition." },
-        );
-    }
-
-    if (kind == .set and is_generator) {
-        try parser.report(
-            parser.getSpan(key),
-            "Setter cannot be a generator",
-            .{ .help = "Remove the '*' from the setter definition." },
-        );
-    }
-
-    const saved_async = parser.context.in_async;
+    const saved_await_is_keyword = parser.context.await_is_keyword;
     const saved_yield_is_keyword = parser.context.yield_is_keyword;
 
-    parser.context.in_async = is_async;
+    parser.context.await_is_keyword = is_async;
     parser.context.yield_is_keyword = is_generator;
 
     defer {
-        parser.context.in_async = saved_async;
+        parser.context.await_is_keyword = saved_await_is_keyword;
         parser.context.yield_is_keyword = saved_yield_is_keyword;
     }
 
@@ -508,24 +500,28 @@ fn parsePropertyDefinition(
     is_static: bool,
     is_accessor: bool,
 ) Error!?ast.NodeIndex {
-    if (is_static and !computed) {
-        try validateStaticPrototypeName(parser, key);
+    if (!computed) {
+        if (is_static) {
+            try validateStaticPrototypeOrConstructor(parser, key, false);
+        } else {
+            try validateFieldConstructor(parser, key);
+        }
     }
 
     var value: ast.NodeIndex = ast.null_node;
     var end = parser.getSpan(key).end;
 
-    if (parser.current_token.type == .assign) {
+    if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null; // consume '='
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         end = parser.getSpan(value).end;
     }
 
-    const tok_type = parser.current_token.type;
-    if (tok_type == .semicolon) {
+    const tag = parser.current_token.tag;
+    if (tag == .semicolon) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
-    } else if (!parser.canInsertImplicitSemicolon(parser.current_token) and tok_type != .right_brace) {
+    } else if (!parser.canInsertImplicitSemicolon(parser.current_token) and tag != .right_brace) {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected ';' after class field",
@@ -551,7 +547,22 @@ fn parsePropertyDefinition(
 fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
 
-    const body = try parser.parseBody(.right_brace);
+    // ClassStaticBlockStatementList : StatementList[~Yield, +Await, ~Return]opt
+    const saved_await_is_keyword = parser.context.await_is_keyword;
+    const saved_yield_is_keyword = parser.context.yield_is_keyword;
+    const saved_allow_return_statement = parser.context.allow_return_statement;
+
+    parser.context.await_is_keyword = true;
+    parser.context.yield_is_keyword = false;
+    parser.context.allow_return_statement = false;
+
+    defer {
+        parser.context.await_is_keyword = saved_await_is_keyword;
+        parser.context.yield_is_keyword = saved_yield_is_keyword;
+        parser.context.allow_return_statement = saved_allow_return_statement;
+    }
+
+    const body = try parser.parseBody(.right_brace, .other);
 
     const end = parser.current_token.span.end;
 
@@ -564,39 +575,49 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 }
 
 /// if token could start a class element key (after modifiers like static/async/get/set)
-inline fn isClassElementKeyStart(tok_type: token.TokenType) bool {
-    return tok_type == .star or
-        tok_type == .left_bracket or
-        tok_type == .private_identifier or
-        tok_type == .string_literal or
-        tok_type.isNumericLiteral() or
-        tok_type.isIdentifierLike();
+inline fn isClassElementKeyStart(tag: TokenTag) bool {
+    return tag == .star or
+        tag == .left_bracket or
+        tag == .private_identifier or
+        tag == .string_literal or
+        tag.isNumericLiteral() or
+        tag.isIdentifierLike();
 }
 
-/// checks if a key node matches a given name (works for identifier and string literal keys)
-fn isKeyName(parser: *Parser, key: ast.NodeIndex, comptime name: []const u8) bool {
-    const key_data = parser.getData(key);
-    switch (key_data) {
-        .identifier_name => |id| {
-            const key_name = parser.getSourceText(id.name_start, id.name_len);
-            if (key_name.len != name.len) return false;
-            return std.mem.eql(u8, key_name, name);
-        },
-        .string_literal => |str| {
-            const raw = parser.getSourceText(str.raw_start, str.raw_len);
-            if (raw.len < 2 + name.len) return false;
-            return std.mem.eql(u8, raw[1 .. raw.len - 1], name);
-        },
-        else => return false,
+
+/// ClassElement : static MethodDefinition
+///     It is a Syntax Error if the PropName of MethodDefinition is "prototype".
+
+/// ClassElement : static FieldDefinition ;
+///     It is a Syntax Error if the PropName of FieldDefinition is either "prototype" or "constructor".
+fn validateStaticPrototypeOrConstructor(parser: *Parser, key: ast.NodeIndex, method: bool) Error!void {
+    const prop = ecmascript.propName(parser, key) orelse return;
+
+    if (prop.eql("prototype")) {
+        try parser.report(
+            prop.span,
+            "Classes may not have a static property named 'prototype'",
+            .{ .help = "Remove 'static' or rename the property." },
+        );
+    } else if (!method and prop.eql("constructor")) {
+        try parser.report(
+            prop.span,
+            "Classes may not have a static field named 'constructor'",
+            .{ .help = "Remove 'static' or rename the field." },
+        );
     }
 }
 
-fn validateStaticPrototypeName(parser: *Parser, key: ast.NodeIndex) Error!void {
-    if (!isKeyName(parser, key, "prototype")) return;
+/// ClassElement : FieldDefinition ;
+///     It is a Syntax Error if the PropName of FieldDefinition is "constructor".
+fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
+    const prop = ecmascript.propName(parser, key) orelse return;
+
+    if (!prop.eql("constructor")) return;
 
     try parser.report(
-        parser.getSpan(key),
-        "Classes may not have a static property named 'prototype'",
-        .{ .help = "Remove 'static' or rename the property." },
+        prop.span,
+        "Classes may not have a non-static field named 'constructor'",
+        .{ .help = "Rename the field or make it a method." },
     );
 }

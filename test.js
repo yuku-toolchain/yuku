@@ -1,3 +1,2 @@
-asyncTest(async () => {
-	await using[x];
-});
+export { Foo as "\uD83D" }
+function Foo() {}

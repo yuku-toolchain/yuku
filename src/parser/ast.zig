@@ -1,5 +1,9 @@
 const std = @import("std");
-const token = @import("token.zig");
+const TokenSpan = @import("token.zig").Span;
+const TokenTag = @import("token.zig").TokenTag;
+
+// Re-export Span for public use
+pub const Span = TokenSpan;
 
 pub const Severity = enum {
     @"error",
@@ -182,7 +186,6 @@ pub const ParseTree = struct {
 /// index into the ast node array. `null_node` for optional nodes.
 pub const NodeIndex = u32;
 pub const null_node: NodeIndex = std.math.maxInt(NodeIndex);
-pub const Span = token.Span;
 
 /// range of indices in the extra array for storing node lists.
 pub const IndexRange = struct {
@@ -221,8 +224,8 @@ pub const BinaryOperator = enum {
     in, // in
     instanceof, // instanceof
 
-    pub fn fromToken(tok: token.TokenType) BinaryOperator {
-        return switch (tok) {
+    pub fn fromToken(token: TokenTag) BinaryOperator {
+        return switch (token) {
             .equal => .equal,
             .not_equal => .not_equal,
             .strict_equal => .strict_equal,
@@ -249,7 +252,7 @@ pub const BinaryOperator = enum {
         };
     }
 
-    pub fn toToken(self: BinaryOperator) token.TokenType {
+    pub fn toToken(self: BinaryOperator) TokenTag {
         return switch (self) {
             .equal => .equal,
             .not_equal => .not_equal,
@@ -286,8 +289,8 @@ pub const LogicalOperator = enum {
     @"or", // ||
     nullish_coalescing, // ??
 
-    pub fn fromToken(tok: token.TokenType) LogicalOperator {
-        return switch (tok) {
+    pub fn fromToken(token: TokenTag) LogicalOperator {
+        return switch (token) {
             .logical_and => .@"and",
             .logical_or => .@"or",
             .nullish_coalescing => .nullish_coalescing,
@@ -295,7 +298,7 @@ pub const LogicalOperator = enum {
         };
     }
 
-    pub fn toToken(self: LogicalOperator) token.TokenType {
+    pub fn toToken(self: LogicalOperator) TokenTag {
         return switch (self) {
             .@"and" => .logical_and,
             .@"or" => .logical_or,
@@ -317,8 +320,8 @@ pub const UnaryOperator = enum {
     void, // void
     delete, // delete
 
-    pub fn fromToken(tok: token.TokenType) UnaryOperator {
-        return switch (tok) {
+    pub fn fromToken(token: TokenTag) UnaryOperator {
+        return switch (token) {
             .minus => .negate,
             .plus => .positive,
             .logical_not => .logical_not,
@@ -330,7 +333,7 @@ pub const UnaryOperator = enum {
         };
     }
 
-    pub fn toToken(self: UnaryOperator) token.TokenType {
+    pub fn toToken(self: UnaryOperator) TokenTag {
         return switch (self) {
             .negate => .minus,
             .positive => .plus,
@@ -351,15 +354,15 @@ pub const UpdateOperator = enum {
     increment, // ++
     decrement, // --
 
-    pub fn fromToken(tok: token.TokenType) UpdateOperator {
-        return switch (tok) {
+    pub fn fromToken(token: TokenTag) UpdateOperator {
+        return switch (token) {
             .increment => .increment,
             .decrement => .decrement,
             else => unreachable,
         };
     }
 
-    pub fn toToken(self: UpdateOperator) token.TokenType {
+    pub fn toToken(self: UpdateOperator) TokenTag {
         return switch (self) {
             .increment => .increment,
             .decrement => .decrement,
@@ -389,8 +392,8 @@ pub const AssignmentOperator = enum {
     logical_and_assign, // &&=
     nullish_assign, // ??=
 
-    pub fn fromToken(tok: token.TokenType) AssignmentOperator {
-        return switch (tok) {
+    pub fn fromToken(token: TokenTag) AssignmentOperator {
+        return switch (token) {
             .assign => .assign,
             .plus_assign => .add_assign,
             .minus_assign => .subtract_assign,
@@ -411,7 +414,7 @@ pub const AssignmentOperator = enum {
         };
     }
 
-    pub fn toToken(self: AssignmentOperator) token.TokenType {
+    pub fn toToken(self: AssignmentOperator) TokenTag {
         return switch (self) {
             .assign => .assign,
             .add_assign => .plus_assign,
@@ -808,8 +811,8 @@ pub const NumericLiteral = struct {
         octal,
         binary,
 
-        pub fn fromToken(tok: token.TokenType) Kind {
-            return switch (tok) {
+        pub fn fromToken(token: TokenTag) Kind {
+            return switch (token) {
                 .numeric_literal => .decimal,
                 .hex_literal => .hex,
                 .octal_literal => .octal,
@@ -851,8 +854,12 @@ pub const TemplateElement = struct {
     raw_start: u32,
     raw_len: u16,
     tail: bool,
-    /// when true, the cooked value is null/undefined (invalid escape in tagged template)
-    has_invalid_escape: bool = false,
+    /// True when this quasi's cooked template value is undefined per
+    /// ECMAScript TV semantics.
+    /// This happens when the quasi contains a NotEscapeSequence.
+    /// Untagged templates are syntax errors, tagged templates allow this and
+    /// produce undefined cooked values.
+    is_cooked_undefined: bool = false,
 };
 
 /// used in expressions
@@ -862,7 +869,8 @@ pub const IdentifierReference = struct {
     name_len: u16,
 };
 
-/// `#name`
+/// `#name`.
+/// `name_start` and `name_len` refer to the identifier name without the `#` prefix.
 pub const PrivateIdentifier = struct {
     name_start: u32,
     name_len: u16,
