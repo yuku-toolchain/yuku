@@ -39,25 +39,13 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
     var left = try parsePrefix(parser, opts, precedence) orelse return null;
 
     while (true) {
-        const current_type = parser.current_token.tag;
-
-        if (opts.respect_allow_in and current_type == .in and !parser.context.allow_in) break;
-
-        const left_data = parser.getData(left);
-
-        if (left_data == .yield_expression and current_type != .comma) break;
-
-        if (isPostfixOperation(current_type)) {
-            // only LeftHandSideExpressions can have postfix operations applied.
-            //   a++()        <- can't call an update expression
-            //   () => {}()   <- can't call an arrow function
-            // breaking here produces natural "expected semicolon" error.
-            if (!isLeftHandSideExpression(left_data)) break;
-        }
+        if (opts.respect_allow_in and parser.current_token.tag == .in and !parser.context.allow_in) break;
 
         const lbp = parser.current_token.leftBp();
 
         if (lbp < precedence or lbp == 0) break;
+
+        if (lbp > maxLeftPrecedence(parser.getData(left))) break;
 
         left = try parseInfix(parser, lbp, left) orelse return null;
     }
@@ -1079,23 +1067,17 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
     return expr;
 }
 
-// https://tc39.es/ecma262/#prod-LeftHandSideExpression
-fn isLeftHandSideExpression(data: ast.NodeData) bool {
+/// returns the maximum left-binding power of operators allowed to take
+/// the given expression as their left operand. this encodes the js
+/// grammar hierarchy directly into the pratt parser:
+///  - AssignmentExpression-level (arrow, yield): only comma can follow
+///  - Non-LeftHandSideExpressions (unary, binary, etc.): binary ops OK,
+///    but no member access, calls, or postfix ++/--
+///  - LeftHandSideExpressions: unrestricted
+fn maxLeftPrecedence(data: ast.NodeData) u8 {
     return switch (data) {
-        .arrow_function_expression, .update_expression, .unary_expression, .await_expression, .yield_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => false,
-        else => true,
-    };
-}
-
-fn isPostfixOperation(tag: TokenTag) bool {
-    return switch (tag) {
-        .dot, // obj.prop
-        .left_bracket, // obj[prop]
-        .left_paren, // func()
-        .optional_chaining, // obj?.prop
-        .template_head, // tag`template`
-        .no_substitution_template, // tag`template`,
-        => true,
-        else => false,
+        .arrow_function_expression, .yield_expression => Precedence.Comma,
+        .update_expression, .unary_expression, .await_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => Precedence.Unary,
+        else => std.math.maxInt(u8),
     };
 }
