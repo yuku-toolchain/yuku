@@ -1075,7 +1075,7 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
 ///  - Non-LeftHandSideExpressions (unary, binary, etc.): binary ops OK,
 ///    but no member access, calls, or postfix ++/--
 ///  - LeftHandSideExpressions: unrestricted
-fn maxLeftPrecedence(data: ast.NodeData) u8 {
+inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
     return switch (data) {
         .arrow_function_expression, .yield_expression => Precedence.Comma,
         .update_expression, .unary_expression, .await_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => Precedence.Unary,
