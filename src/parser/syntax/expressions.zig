@@ -45,6 +45,10 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
 
         if (current_precedence < min_precedence or current_precedence == 0) break;
 
+        // for example:
+        //  a++()        <- can't call an update expression
+        //  () => {}()   <- can't call an arrow function
+        // breaking here produces natural "expected semicolon" error.
         if (current_precedence > maxLeftPrecedence(parser.getData(left))) break;
 
         if (opts.respect_allow_in and current_token.tag == .in and !parser.context.allow_in) break;
