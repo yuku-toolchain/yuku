@@ -580,6 +580,11 @@ fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 /// ModuleExportName: IdentifierName or StringLiteral
 fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .string_literal) {
+        if (parser.current_token.hasLoneSurrogates()) {
+            try parser.report(parser.current_token.span, "An export name cannot include a unicode lone surrogate", .{});
+            return null;
+        }
+
         return literals.parseStringLiteral(parser);
     }
 

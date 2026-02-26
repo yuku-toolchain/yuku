@@ -101,49 +101,49 @@ pub fn build(b: *std.Build) void {
     const test_tools_step = b.step("test-tools", "Run the tools tests");
     test_tools_step.dependOn(&run_tools_tests.step);
 
-    // const wasm_target = b.resolveTargetQuery(.{
-    //     .cpu_arch = .wasm32,
-    //     .os_tag = .freestanding,
-    //     .cpu_features_add = std.Target.wasm.featureSet(&.{
-    //         .bulk_memory,
-    //         .mutable_globals,
-    //         .nontrapping_fptoint,
-    //         .sign_ext,
-    //     }),
-    // });
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .freestanding,
+        .cpu_features_add = std.Target.wasm.featureSet(&.{
+            .bulk_memory,
+            .mutable_globals,
+            .nontrapping_fptoint,
+            .sign_ext,
+        }),
+    });
 
-    // const wasm_util_module = b.createModule(.{
-    //     .root_source_file = b.path("src/util/root.zig"),
-    //     .target = wasm_target,
-    //     .optimize = .ReleaseSmall,
-    // });
+    const wasm_util_module = b.createModule(.{
+        .root_source_file = b.path("src/util/root.zig"),
+        .target = wasm_target,
+        .optimize = .ReleaseSmall,
+    });
 
-    // const wasm_parser_module = b.createModule(.{
-    //     .root_source_file = b.path("src/parser/root.zig"),
-    //     .target = wasm_target,
-    //     .optimize = .ReleaseSmall,
-    // });
+    const wasm_parser_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = wasm_target,
+        .optimize = .ReleaseSmall,
+    });
 
-    // wasm_parser_module.addImport("util", wasm_util_module);
+    wasm_parser_module.addImport("util", wasm_util_module);
 
-    // const wasm_module = b.createModule(.{
-    //     .root_source_file = b.path("src/parser/wasm.zig"),
-    //     .target = wasm_target,
-    //     .optimize = .ReleaseSmall,
-    // });
+    const wasm_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/wasm.zig"),
+        .target = wasm_target,
+        .optimize = .ReleaseSmall,
+    });
 
-    // wasm_module.addImport("parser", wasm_parser_module);
+    wasm_module.addImport("parser", wasm_parser_module);
 
-    // const wasm_exe = b.addExecutable(.{
-    //     .name = "yuku",
-    //     .root_module = wasm_module,
-    // });
+    const wasm_exe = b.addExecutable(.{
+        .name = "yuku",
+        .root_module = wasm_module,
+    });
 
-    // wasm_exe.entry = .disabled;
-    // wasm_exe.rdynamic = true;
-    // wasm_exe.initial_memory = 64 * 1024 * 1024; // 64MB initial
-    // wasm_exe.max_memory = 256 * 1024 * 1024; // 256MB max
-    // wasm_exe.stack_size = 1024 * 1024;
+    wasm_exe.entry = .disabled;
+    wasm_exe.rdynamic = true;
+    wasm_exe.initial_memory = 64 * 1024 * 1024; // 64MB initial
+    wasm_exe.max_memory = 256 * 1024 * 1024; // 256MB max
+    wasm_exe.stack_size = 1024 * 1024;
 
-    // b.installArtifact(wasm_exe);
+    b.installArtifact(wasm_exe);
 }
