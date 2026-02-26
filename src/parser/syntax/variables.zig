@@ -96,7 +96,9 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
+
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
         end = parser.getSpan(init).end;
     } else if (is_destructuring) {
         try parser.report(

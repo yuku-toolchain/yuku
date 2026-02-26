@@ -292,6 +292,7 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '='
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
     const end = try parser.eatSemicolon(parser.getSpan(expression).end) orelse return null;
 
     return try parser.addNode(.{

@@ -1,2 +1,1 @@
-const testVariable = async
-() => {}
+await cool << nice;

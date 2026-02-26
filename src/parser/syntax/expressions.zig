@@ -35,16 +35,17 @@ const ParseExpressionOpts = struct {
     respect_allow_in: bool = false,
 };
 
-pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
-    var left = try parsePrefix(parser, opts, precedence) orelse return null;
+pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
+    var left = try parsePrefix(parser, opts, min_precedence) orelse return null;
 
     while (true) {
         const current_token = parser.current_token;
-        const current_prec = current_token.tag.precedence();
 
-        if (current_prec < precedence or current_prec == 0) break;
+        const current_precedence = current_token.tag.precedence();
 
-        if (current_prec > maxLeftPrecedence(parser.getData(left))) break;
+        if (current_precedence < min_precedence or current_precedence == 0) break;
+
+        if (current_precedence > maxLeftPrecedence(parser.getData(left))) break;
 
         if (opts.respect_allow_in and current_token.tag == .in and !parser.context.allow_in) break;
 
@@ -52,7 +53,7 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
         // [no LineTerminator here] --
         if((current_token.tag == .increment or current_token.tag == .decrement) and current_token.hasLineTerminatorBefore()) break;
 
-        left = try parseInfix(parser, current_prec, left) orelse return null;
+        left = try parseInfix(parser, current_precedence, left) orelse return null;
     }
 
     return left;
@@ -597,6 +598,7 @@ fn parseBinaryExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) E
 
     // '**' is right-associative
     const next_precedence = if (operator == .exponent) precedence else precedence + 1;
+
     const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
     return try parser.addNode(
