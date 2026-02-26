@@ -579,7 +579,30 @@ pub const Lexer = struct {
                 try self.consumeOctal();
             },
             'x' => try self.consumeHex(),
-            'u' => try self.consumeUnicodeEscape(.normal),
+            'u' => {
+                const cp = try self.consumeUnicodeEscape(.normal);
+
+                // check for lone surrogates
+                if (util.Utf.isSurrogateRange(cp)) {
+                    if (util.Utf.isHighSurrogate(cp)
+                        and self.source[self.cursor] == '\\'
+                        and self.peek(1) == 'u')
+                    {
+                        self.cursor += 1; // skip backslash
+
+                        const next_cp = try self.consumeUnicodeEscape(.normal);
+
+                        // lone high
+                        if (!util.Utf.isLowSurrogate(next_cp)) {
+                            self.setTokenFlag(.lone_surrogates);
+                        }
+                    }
+                    // lone low
+                    else {
+                        self.setTokenFlag(.lone_surrogates);
+                    }
+                }
+            },
             '1'...'7' => {
                 // octal escapes, always invalid in templates, only invalid in strict mode for strings
                 if (context == .template or self.isStrictMode()) return error.OctalEscapeInStrict;
@@ -629,7 +652,7 @@ pub const Lexer = struct {
         normal,
     };
 
-    fn consumeUnicodeEscape(self: *Lexer, comptime context: ConsumeUnicodeContext) LexicalError!void {
+    fn consumeUnicodeEscape(self: *Lexer, comptime context: ConsumeUnicodeContext) LexicalError!u21 {
         // set the current token is escaped
         // used by parser to check whether a reserved keyword is ecaped to throw error
         self.setTokenFlag(.escaped);
@@ -651,6 +674,8 @@ pub const Lexer = struct {
         }
 
         self.cursor = @intCast(parsed.end);
+
+        return parsed.value;
     }
 
     fn handleRightBrace(self: *Lexer) Token {
@@ -692,7 +717,7 @@ pub const Lexer = struct {
 
                     self.cursor += 1; // consume backslash to get to 'u'
 
-                    try self.consumeUnicodeEscape(.identifier_continue);
+                    _ = try self.consumeUnicodeEscape(.identifier_continue);
                 } else {
                     if (canContinueIdentifierAscii(c, is_jsx_tag)) {
                         self.cursor += 1;
@@ -742,7 +767,7 @@ pub const Lexer = struct {
 
                 self.cursor += 1; // consume backslash to get to 'u'
 
-                try self.consumeUnicodeEscape(.identifier_start);
+                _ = try self.consumeUnicodeEscape(.identifier_start);
             } else {
                 if (!canStartIdentifierAscii(first_char)) {
                     @branchHint(.cold);

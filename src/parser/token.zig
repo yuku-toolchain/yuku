@@ -405,6 +405,7 @@ pub const TokenFlag = enum(u3) {
     line_terminator_before,
     invalid_escape,
     escaped,
+    lone_surrogates,
 };
 
 pub inline fn flagMask(comptime flag: TokenFlag) u8 {
@@ -452,6 +453,11 @@ pub const Token = struct {
     /// true when token text came from an escaped spelling (for example, identifier/keyword escapes).
     pub inline fn isEscaped(self: Token) bool {
         return self.has(.escaped);
+    }
+
+    /// whether the string/template token have lone surrogates
+    pub inline fn hasLoneSurrogates(self: Token) bool {
+        return self.has(.lone_surrogates);
     }
 };
 
