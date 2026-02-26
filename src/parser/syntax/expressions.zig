@@ -39,15 +39,15 @@ pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpt
     var left = try parsePrefix(parser, opts, precedence) orelse return null;
 
     while (true) {
+        const left_prec = parser.current_token.tag.precedence();
+
+        if (left_prec < precedence or left_prec == 0) break;
+
+        if (left_prec > maxLeftPrecedence(parser.getData(left))) break;
+
         if (opts.respect_allow_in and parser.current_token.tag == .in and !parser.context.allow_in) break;
 
-        const lbp = parser.current_token.leftBp();
-
-        if (lbp < precedence or lbp == 0) break;
-
-        if (lbp > maxLeftPrecedence(parser.getData(left))) break;
-
-        left = try parseInfix(parser, lbp, left) orelse return null;
+        left = try parseInfix(parser, left_prec, left) orelse return null;
     }
 
     return left;
