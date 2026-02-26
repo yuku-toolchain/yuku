@@ -292,6 +292,7 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '='
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
     const end = try parser.eatSemicolon(parser.getSpan(expression).end) orelse return null;
 
     return try parser.addNode(.{
@@ -579,6 +580,11 @@ fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 /// ModuleExportName: IdentifierName or StringLiteral
 fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .string_literal) {
+        if (parser.current_token.hasLoneSurrogates()) {
+            try parser.report(parser.current_token.span, "An export name cannot include a unicode lone surrogate", .{});
+            return null;
+        }
+
         return literals.parseStringLiteral(parser);
     }
 

@@ -28,8 +28,8 @@ pub const TokenTag = enum(u32) {
     string_literal = 7, // e.g., "'hello'", "\"world\""
     regex_literal = 8, // e.g., "/abc/g", "/[0-9]+/i"
 
-    no_substitution_template = 9, // e.g., "`hello`"
-    template_head = 10, // e.g., "`hello ${"
+    no_substitution_template = 9 | (17 << Mask.PrecShift), // e.g., "`hello`"
+    template_head = 10 | (17 << Mask.PrecShift), // e.g., "`hello ${"
     template_middle = 11, // e.g., "} world ${"
     template_tail = 12, // e.g., "} end`"
 
@@ -87,17 +87,17 @@ pub const TokenTag = enum(u32) {
     nullish_assign = 56 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "??="
     logical_and_assign = 57 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "&&="
     logical_or_assign = 58 | (2 << Mask.PrecShift) | Mask.IsAssignmentOp, // "||="
-    optional_chaining = 59, // "?."
+    optional_chaining = 59 | (17 << Mask.PrecShift), // "?."
 
-    left_paren = 60, // "("
+    left_paren = 60 | (17 << Mask.PrecShift), // "("
     right_paren = 61, // ")"
     left_brace = 62, // "{"
     right_brace = 63, // "}"
-    left_bracket = 64, // "["
+    left_bracket = 64 | (17 << Mask.PrecShift), // "["
     right_bracket = 65, // "]"
     semicolon = 66, // ";"
     comma = 67 | (1 << Mask.PrecShift), // ","
-    dot = 68, // "."
+    dot = 68 | (17 << Mask.PrecShift), // "."
     spread = 69, // "..."
     arrow = 70 | (2 << Mask.PrecShift), // "=>"
     question = 71 | (2 << Mask.PrecShift), // "?"
@@ -405,6 +405,7 @@ pub const TokenFlag = enum(u3) {
     line_terminator_before,
     invalid_escape,
     escaped,
+    lone_surrogates,
 };
 
 pub inline fn flagMask(comptime flag: TokenFlag) u8 {
@@ -454,27 +455,9 @@ pub const Token = struct {
         return self.has(.escaped);
     }
 
-    // returns left binding power of this token to use in expression parsing loop (pratt parsing)
-    pub fn leftBp(self: *const Token) u5 {
-        // handle: [no LineTerminator here] ++ --
-        if ((self.tag == .increment or self.tag == .decrement) and self.hasLineTerminatorBefore()) {
-            return 0; // can't be infix, start new expression
-        }
-
-        if (self.tag.isBinaryOperator() or self.tag.isLogicalOperator() or
-            self.tag.isAssignmentOperator() or self.tag == .increment or self.tag == .decrement or self.tag == .arrow)
-        {
-            return self.tag.precedence();
-        }
-
-        return switch (self.tag) {
-            .dot, .optional_chaining, .left_bracket, .left_paren => 17,
-            // tagged template: only when no line terminator before the template
-            .template_head, .no_substitution_template => if (!self.hasLineTerminatorBefore()) 17 else 0,
-            .comma => 1,
-            .question => 2,
-            else => 0, // can't be infix
-        };
+    /// whether the string/template token have lone surrogates
+    pub inline fn hasLoneSurrogates(self: Token) bool {
+        return self.has(.lone_surrogates);
     }
 };
 

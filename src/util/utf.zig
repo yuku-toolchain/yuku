@@ -158,6 +158,18 @@ pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21,
     return .{ .value = r.value, .end = r.end };
 }
 
-pub inline fn hexVal(c: u8) ?u8 {
+inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
+}
+
+pub inline fn isSurrogateRange(cp: u21) bool {
+    return cp >= 0xD800 and cp <= 0xDFFF;
+}
+
+pub inline fn isHighSurrogate(cp: u21) bool {
+    return cp >= 0xD800 and cp <= 0xDBFF;
+}
+
+pub inline fn isLowSurrogate(cp: u21) bool {
+    return cp >= 0xDC00 and cp <= 0xDFFF;
 }

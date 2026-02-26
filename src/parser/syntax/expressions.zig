@@ -35,19 +35,29 @@ const ParseExpressionOpts = struct {
     respect_allow_in: bool = false,
 };
 
-pub fn parseExpression(parser: *Parser, precedence: u8, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
-    var left = try parsePrefix(parser, opts, precedence) orelse return null;
+pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressionOpts) Error!?ast.NodeIndex {
+    var left = try parsePrefix(parser, opts, min_precedence) orelse return null;
 
     while (true) {
-        if (opts.respect_allow_in and parser.current_token.tag == .in and !parser.context.allow_in) break;
+        const current_token = parser.current_token;
 
-        const lbp = parser.current_token.leftBp();
+        const current_precedence = current_token.tag.precedence();
 
-        if (lbp < precedence or lbp == 0) break;
+        if (current_precedence < min_precedence or current_precedence == 0) break;
 
-        if (lbp > maxLeftPrecedence(parser.getData(left))) break;
+        // for example:
+        //  a++()        <- can't call an update expression
+        //  () => {}()   <- can't call an arrow function
+        // breaking here produces natural "expected semicolon" error.
+        if (current_precedence > maxLeftPrecedence(parser.getData(left))) break;
 
-        left = try parseInfix(parser, lbp, left) orelse return null;
+        if (opts.respect_allow_in and current_token.tag == .in and !parser.context.allow_in) break;
+
+        // [no LineTerminator here] ++
+        // [no LineTerminator here] --
+        if((current_token.tag == .increment or current_token.tag == .decrement) and current_token.hasLineTerminatorBefore()) break;
+
+        left = try parseInfix(parser, current_precedence, left) orelse return null;
     }
 
     return left;
@@ -592,6 +602,7 @@ fn parseBinaryExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) E
 
     // '**' is right-associative
     const next_precedence = if (operator == .exponent) precedence else precedence + 1;
+
     const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
     return try parser.addNode(
@@ -1075,7 +1086,7 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
 ///  - Non-LeftHandSideExpressions (unary, binary, etc.): binary ops OK,
 ///    but no member access, calls, or postfix ++/--
 ///  - LeftHandSideExpressions: unrestricted
-fn maxLeftPrecedence(data: ast.NodeData) u8 {
+inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
     return switch (data) {
         .arrow_function_expression, .yield_expression => Precedence.Comma,
         .update_expression, .unary_expression, .await_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => Precedence.Unary,

@@ -1,2 +1,1 @@
-export { Foo as "\uD83D" }
-function Foo() {}
+import { "\uD83D" as foo } from "./export-expname_FIXTURE.js";
