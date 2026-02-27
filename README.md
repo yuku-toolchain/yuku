@@ -36,6 +36,75 @@ The only extensions beyond the base specs are support for Stage 3 [decorators](h
 
 AST accuracy is verified by running Test262, TypeScript, and Babel test suites and performing a deep comparison against the Oxc AST (ESTree/TS-ESTree). See [test results](/test/results.txt).
 
+## Usage
+
+The parser can be used from Zig or from JavaScript/TypeScript via WASM.
+
+### Zig
+
+```zig
+const std = @import("std");
+const parser = @import("parser");
+
+const tree = try parser.parse(allocator, source, .{
+    .lang = .js,       // .js, .jsx, .ts, .tsx, .dts
+    .source_type = .module, // .module, .script
+});
+defer tree.deinit();
+```
+
+To serialize the AST to JSON (useful for quick inspection):
+
+```zig
+const json = try parser.estree.toJSON(&tree, allocator, .{});
+defer allocator.free(json);
+```
+
+> A visitor/traverser API is in progress and will be the recommended way to work with the AST. JSON serialization is available now for quick testing.
+
+### JavaScript / TypeScript (WASM)
+
+```bash
+npm install yuku-parser-wasm
+```
+
+```ts
+import { parse } from "yuku-parser-wasm";
+
+const ast = await parse("const x = 5;", {
+  sourceType: "module",
+  lang: "js",
+});
+```
+
+## Contributing
+
+Yuku is pure Zig with no external dependencies.
+
+```bash
+git clone https://github.com/yuku-toolchain/yuku.git
+cd yuku
+zig build
+```
+
+> Requires the latest Zig nightly build. Yuku stays up to date with Zig's latest development version.
+
+`src/main.zig` parses `test.js` and prints the AST as JSON. Edit `test.js` and run:
+
+```bash
+zig build run
+```
+
+### Testing
+
+Run the full test suite (40,000+ files from Test262 and others) with AST matching:
+
+```bash
+bun run test
+```
+
+The first run will download the test suite (wait for it to finish). After the run completes, check `test/results.txt` for results.
+
 ## Roadmap
 
 - [x] JavaScript Parser
