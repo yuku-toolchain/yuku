@@ -22,7 +22,7 @@ jobs:
       - name: Load files
         run: bun load-files
       - name: Build profiler
-        run: zig build --release=fast
+        run: zig build
       - name: Run profiler
         uses: CodSpeedHQ/action@v4
         with:
