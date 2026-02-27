@@ -22,32 +22,6 @@ pub fn isOctalDigit(digit: u8) bool {
     return digit >= '0' and digit <= '7';
 }
 
-/// returns the length of ascii line terminators (\n, \r, \r\n)
-/// returns 0 if no ascii line terminator is found at the position
-pub fn asciiLineTerminatorLen(source: []const u8, pos: usize) u8 {
-    if (pos >= source.len) return 0;
-
-    const c = source[pos];
-
-    // LF
-    if (c == '\n') return 1;
-
-    // CR or CRLF
-    if (c == '\r') {
-        return if (pos + 1 < source.len and source[pos + 1] == '\n') 2 else 1;
-    }
-
-    return 0;
-}
-
-pub fn lineTerminatorLen(source: []const u8, pos: usize) u8 {
-    const ascii_len = asciiLineTerminatorLen(source, pos);
-
-    if (ascii_len > 0) return ascii_len;
-
-    return unicodeSeparatorLen(source, pos);
-}
-
 /// check if the byte sequence at `pos` is U+2028 (Line Separator) or U+2029 (Paragraph Separator)
 pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
     if (pos + 2 < source.len and source[pos] == 0xE2 and source[pos + 1] == 0x80) {
@@ -56,10 +30,6 @@ pub fn unicodeSeparatorLen(source: []const u8, pos: usize) u8 {
         }
     }
     return 0;
-}
-
-pub inline fn isLineTerminator(source: []const u8, pos: usize) bool {
-    return lineTerminatorLen(source, pos) > 0;
 }
 
 pub fn isMultiByteSpace(cp: u21) bool {
@@ -160,16 +130,4 @@ pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21,
 
 inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
-}
-
-pub inline fn isSurrogateRange(cp: u21) bool {
-    return cp >= 0xD800 and cp <= 0xDFFF;
-}
-
-pub inline fn isHighSurrogate(cp: u21) bool {
-    return cp >= 0xD800 and cp <= 0xDBFF;
-}
-
-pub inline fn isLowSurrogate(cp: u21) bool {
-    return cp >= 0xDC00 and cp <= 0xDFFF;
 }

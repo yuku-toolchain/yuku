@@ -275,20 +275,6 @@ pub const Lexer = struct {
         return self.source[idx];
     }
 
-    inline fn canStartIdentifierAscii(c: u8) bool {
-        return (c >= 'a' and c <= 'z') or
-            (c >= 'A' and c <= 'Z') or
-            c == '_' or c == '$';
-    }
-
-    inline fn canContinueIdentifierAscii(c: u8, allow_hyphen: bool) bool {
-        return (c >= 'a' and c <= 'z') or
-            (c >= 'A' and c <= 'Z') or
-            (c >= '0' and c <= '9') or
-            c == '_' or c == '$' or
-            // <elem-name></elem-name>
-            (allow_hyphen and c == '-');
-    }
 
     inline fn setTokenFlag(self: *Lexer, comptime flag: TokenFlag) void {
         self.state.token_flags |= flagMask(flag);
@@ -311,6 +297,10 @@ pub const Lexer = struct {
     pub inline fn rewindTo(self: *Lexer, position: u32) void {
         self.cursor = position;
         self.clearTokenFlags();
+    }
+
+    inline fn isLineTerminator(self: *const Lexer, c: u8) bool {
+        return c == '\n' or c == '\r' or (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0);
     }
 
     // functions exclusively called by the parser for context-specific lexing
@@ -382,11 +372,11 @@ pub const Lexer = struct {
         var in_class = false;
 
         while (self.cursor < self.source.len) {
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+            const c = self.source[self.cursor];
+
+            if (self.isLineTerminator(c)) {
                 return error.InvalidRegexLineTerminator;
             }
-
-            const c = self.source[self.cursor];
 
             if (c == '\\') {
                 self.cursor += 1; // consume '\'
@@ -395,7 +385,7 @@ pub const Lexer = struct {
                     return error.UnterminatedRegexLiteral;
                 }
 
-                if (util.Utf.isLineTerminator(self.source, self.cursor)) {
+                if (self.isLineTerminator(self.source[self.cursor])) {
                     return error.InvalidRegexLineTerminator;
                 }
 
@@ -583,8 +573,8 @@ pub const Lexer = struct {
                 const cp = try self.consumeUnicodeEscape(.normal);
 
                 // check for lone surrogates
-                if (util.Utf.isSurrogateRange(cp)) {
-                    if (util.Utf.isHighSurrogate(cp)
+                if (std.unicode.isSurrogateCodepoint(cp)) {
+                    if (std.unicode.utf16IsHighSurrogate(@intCast(cp))
                         and self.source[self.cursor] == '\\'
                         and self.peek(1) == 'u')
                     {
@@ -593,14 +583,12 @@ pub const Lexer = struct {
                         const next_cp = try self.consumeUnicodeEscape(.normal);
 
                         // lone high
-                        if (!util.Utf.isLowSurrogate(next_cp)) {
+                        if (!std.unicode.utf16IsLowSurrogate(@intCast(next_cp))) {
                             self.setTokenFlag(.lone_surrogates);
                         }
                     }
                     // lone low
-                    else {
-                        self.setTokenFlag(.lone_surrogates);
-                    }
+                    else self.setTokenFlag(.lone_surrogates);
                 }
             },
             '1'...'7' => {
@@ -614,8 +602,10 @@ pub const Lexer = struct {
                 if (context == .template or self.isStrictMode()) return error.LeadingZeroEscapeInStrict;
                 self.cursor += 1;
             },
-            '\n', '\r' => {
-                self.cursor += util.Utf.asciiLineTerminatorLen(self.source, self.cursor);
+            '\n' => self.cursor += 1,
+            '\r' => {
+                self.cursor += 1;
+                if (self.cursor < self.source.len and self.source[self.cursor] == '\n') self.cursor += 1;
             },
             else => {
                 const us_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
@@ -698,42 +688,71 @@ pub const Lexer = struct {
         return self.puncToken(1, .dot, start);
     }
 
+    const ident_start_table_ascii: [256]bool = blk: {
+        var t = [_]bool{false} ** 256;
+        for ('a'..('z' + 1)) |c| t[c] = true;
+        for ('A'..('Z' + 1)) |c| t[c] = true;
+        t['_'] = true;
+        t['$'] = true;
+        break :blk t;
+    };
+
+    const ident_continue_table_ascii: [256]bool = blk: {
+        var t = [_]bool{false} ** 256;
+        for ('a'..('z' + 1)) |c| t[c] = true;
+        for ('A'..('Z' + 1)) |c| t[c] = true;
+        for ('0'..('9' + 1)) |c| t[c] = true;
+        t['_'] = true;
+        t['$'] = true;
+        break :blk t;
+    };
+
+    const ident_continue_jsx_table_ascii: [256]bool = blk: {
+        var t = ident_continue_table_ascii;
+        t['-'] = true;
+        break :blk t;
+    };
+
     fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
         var has_escape = false;
 
+        const table = if (is_jsx_tag) &ident_continue_jsx_table_ascii else &ident_continue_table_ascii;
+
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
-            if (std.ascii.isAscii(c)) {
-                @branchHint(.likely);
-                if (c == '\\') {
-                    @branchHint(.cold);
 
-                    // JSX tag names don't support escape sequences
-                    if (is_jsx_tag) {
-                        return error.JsxIdentifierCannotContainEscapes;
-                    }
+            if (table[c]) {
+                self.cursor += 1;
+                continue;
+            }
 
-                    has_escape = true;
-
-                    self.cursor += 1; // consume backslash to get to 'u'
-
-                    _ = try self.consumeUnicodeEscape(.identifier_continue);
-                } else {
-                    if (canContinueIdentifierAscii(c, is_jsx_tag)) {
-                        self.cursor += 1;
-                    } else {
-                        break;
-                    }
+            if (c == '\\') {
+                // jsx tag names don't support escape sequences
+                if (is_jsx_tag) {
+                    return error.JsxIdentifierCannotContainEscapes;
                 }
-            } else {
+
+                has_escape = true;
+
+                self.cursor += 1; // consume backslash to get to 'u'
+
+                _ = try self.consumeUnicodeEscape(.identifier_continue);
+
+                continue;
+            }
+
+            if (c >= 0x80) {
                 @branchHint(.cold);
+
                 const cp = try util.Utf.codePointAt(self.source, self.cursor);
+
                 if (util.UnicodeId.canContinueId(cp.value)) {
                     self.cursor += cp.len;
-                } else {
-                    break;
+                    continue;
                 }
             }
+
+            break;
         }
 
         return has_escape;
@@ -769,7 +788,7 @@ pub const Lexer = struct {
 
                 _ = try self.consumeUnicodeEscape(.identifier_start);
             } else {
-                if (!canStartIdentifierAscii(first_char)) {
+                if (!ident_start_table_ascii[first_char]) {
                     @branchHint(.cold);
                     return error.InvalidIdentifierStart;
                 }
@@ -1089,7 +1108,7 @@ pub const Lexer = struct {
         // identifier cannot immediately follow a numeric literal
         const c = self.peek(0);
 
-        if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
+        if (ident_start_table_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
 
         return self.createToken(tag, start, self.cursor);
     }
@@ -1250,7 +1269,8 @@ pub const Lexer = struct {
         self.cursor += 2; // skip '//'
 
         while (self.cursor < self.source.len) {
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
+            const c = self.source[self.cursor];
+            if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
 
@@ -1268,26 +1288,35 @@ pub const Lexer = struct {
 
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
+            switch (c) {
+                '*' => {
+                    if (self.cursor + 1 < self.source.len and self.source[self.cursor + 1] == '/') {
+                        self.cursor += 2; // skip '*/'
+                        self.comments.append(self.allocator, .{
+                            .type = .block,
+                            .start = start,
+                            .end = self.cursor,
+                        }) catch return error.OutOfMemory;
+                        return;
+                    }
+                    self.cursor += 1;
+                },
+                '\n', '\r' => {
+                    self.setTokenFlag(.line_terminator_before);
+                    self.cursor += 1;
+                },
+                0x80...0xFF => {
+                    const lt_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
 
-            const lt_len = util.Utf.lineTerminatorLen(self.source, self.cursor);
-
-            if (lt_len > 0) {
-                self.setTokenFlag(.line_terminator_before);
-                self.cursor += lt_len;
-                continue;
+                    if (lt_len > 0) {
+                        self.setTokenFlag(.line_terminator_before);
+                        self.cursor += lt_len;
+                    } else {
+                        self.cursor += 1;
+                    }
+                },
+                else => self.cursor += 1,
             }
-
-            if (c == '*' and self.peek(1) == '/') {
-                self.cursor += 2; // skip '*/'
-                self.comments.append(self.allocator, .{
-                    .type = .block,
-                    .start = start,
-                    .end = self.cursor,
-                }) catch return error.OutOfMemory;
-                return;
-            }
-
-            self.cursor += 1;
         }
 
         return error.UnterminatedMultiLineComment;
@@ -1312,7 +1341,7 @@ pub const Lexer = struct {
                 return;
             }
 
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
+            if (self.isLineTerminator(c)) break;
 
             self.cursor += 1;
         }
@@ -1331,7 +1360,8 @@ pub const Lexer = struct {
         self.cursor += 3; // skip '-->'
 
         while (self.cursor < self.source.len) {
-            if (util.Utf.isLineTerminator(self.source, self.cursor)) break;
+            const c = self.source[self.cursor];
+            if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
 
