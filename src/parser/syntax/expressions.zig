@@ -361,7 +361,8 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
         };
 
         if(can_start_yield_argument) {
-            const expr = try parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+            // YieldExpression[?In]: yield [no LT] AssignmentExpression[?In]
+            const expr = try parseExpression(parser, Precedence.Assignment, .{ .respect_allow_in = true }) orelse return null;
 
             argument = expr;
 
@@ -605,6 +606,11 @@ fn parseBinaryExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) E
 
     const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
+    // `#field in expr` — the RHS of `in` with a private LHS must not be another private identifier
+    if (operator == .in and parser.getData(right) == .private_identifier) {
+        try parser.report(parser.getSpan(right), "Private identifier is not valid in the right-hand side of 'in' expression", .{});
+    }
+
     return try parser.addNode(
         .{ .binary_expression = .{ .left = left, .right = right, .operator = operator } },
         .{ .start = parser.getSpan(left).start, .end = parser.getSpan(right).end },
@@ -714,15 +720,22 @@ fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.Node
 
     try parser.advance() orelse return null; // consume '?'
 
+    // ConditionalExpression[?In]: ... ? AssignmentExpression[+In] : AssignmentExpression[?In]
+    // consequent gets [+In]: `in` is always allowed
+    const saved_allow_in = parser.context.allow_in;
+    parser.context.allow_in = true;
+
     // consequent
     // right-associative, so same prec, not precedence + 1
     const consequent = try parseExpression(parser, precedence, .{}) orelse return null;
 
+    parser.context.allow_in = saved_allow_in;
+
     if (!try parser.expect(.colon, "Expected ':' after conditional expression consequent", "The ternary operator requires a colon (:) to separate the consequent and alternate expressions.")) return null;
 
-    // alternate
+    // alternate gets [?In]: propagate the current `allow_in` restriction
     // right-associative, so same prec, not precedence + 1
-    const alternate = try parseExpression(parser, precedence, .{}) orelse return null;
+    const alternate = try parseExpression(parser, precedence, .{ .respect_allow_in = true }) orelse return null;
 
     return try parser.addNode(
         .{
