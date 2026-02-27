@@ -34,8 +34,6 @@ Yuku produces the same AST as [Oxc](https://oxc.rs):
 
 The only extensions beyond the base specs are support for Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a non-standard `hashbang` field on `Program`.
 
-AST accuracy is verified by running Test262, TypeScript, and Babel test suites and performing a deep comparison against the Oxc AST (ESTree/TS-ESTree). See [test results](/test/results.txt).
-
 ## Usage
 
 The parser can be used from Zig or from JavaScript/TypeScript via WASM.
@@ -46,7 +44,7 @@ The parser can be used from Zig or from JavaScript/TypeScript via WASM.
 const std = @import("std");
 const parser = @import("parser");
 
-const tree = try parser.parse(allocator, source, .{
+const tree = try parser.parse(allocator, "const x = 5;", .{
     .lang = .js,       // .js, .jsx, .ts, .tsx, .dts
     .source_type = .module, // .module, .script
 });
@@ -69,6 +67,8 @@ To serialize the AST to JSON (useful for quick inspection):
 ```zig
 const json = try parser.estree.toJSON(&tree, allocator, .{});
 defer allocator.free(json);
+
+std.debug.print("{s}\n", .{json});
 ```
 
 > A visitor/traverser API is in progress and will be the recommended way to work with the AST. JSON serialization is available now for quick testing.
@@ -87,6 +87,8 @@ const ast = await parse("const x = 5;", {
   lang: "js",
 });
 ```
+
+A native Node.js module (N-API) will be available in the future.
 
 ## Contributing
 
