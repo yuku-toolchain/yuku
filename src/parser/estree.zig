@@ -1535,7 +1535,11 @@ pub const Serializer = struct {
                         i += 2;
                     }
                 },
-                '\r', '\n' => i += 1 + util.Utf.asciiLineTerminatorLen(input, i + 1),
+                '\r' => {
+                    // skip \<CR> or \<CR><LF>
+                    i += if (i + 2 < input.len and input[i + 2] == '\n') @as(usize, 3) else 2;
+                },
+                '\n' => i += 2,
                 else => {
                     try self.writeJsonEscapedChar(next);
                     i += 2;
