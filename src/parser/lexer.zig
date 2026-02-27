@@ -1108,7 +1108,7 @@ pub const Lexer = struct {
         // identifier cannot immediately follow a numeric literal
         const c = self.peek(0);
 
-        if (std.ascii.isAlphabetic(c) or c == '_' or c == '$' or c == '\\') return error.IdentifierAfterNumericLiteral;
+        if (ident_start_table_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
 
         return self.createToken(tag, start, self.cursor);
     }
@@ -1340,8 +1340,6 @@ pub const Lexer = struct {
                 }) catch return error.OutOfMemory;
                 return;
             }
-
-            if (c == '\n' or c == '\r') break;
 
             if (self.isLineTerminator(c)) break;
 
