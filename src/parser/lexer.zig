@@ -299,6 +299,10 @@ pub const Lexer = struct {
         self.clearTokenFlags();
     }
 
+    inline fn isLineTerminator(self: *const Lexer, c: u8) bool {
+        return c == '\n' or c == '\r' or (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0);
+    }
+
     // functions exclusively called by the parser for context-specific lexing
 
     /// scans template_middle or template_tail.
@@ -370,7 +374,7 @@ pub const Lexer = struct {
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
 
-            if (c == '\n' or c == '\r' or (c == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0)) {
+            if (self.isLineTerminator(c)) {
                 return error.InvalidRegexLineTerminator;
             }
 
@@ -381,8 +385,7 @@ pub const Lexer = struct {
                     return error.UnterminatedRegexLiteral;
                 }
 
-                const c2 = self.source[self.cursor];
-                if (c2 == '\n' or c2 == '\r' or (c2 == 0xE2 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0)) {
+                if (self.isLineTerminator(self.source[self.cursor])) {
                     return error.InvalidRegexLineTerminator;
                 }
 
@@ -1267,8 +1270,7 @@ pub const Lexer = struct {
 
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
-            if (c == '\n' or c == '\r') break;
-            if (c >= 0x80 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0) break;
+            if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
 
@@ -1341,7 +1343,7 @@ pub const Lexer = struct {
 
             if (c == '\n' or c == '\r') break;
 
-            if (c >= 0x80 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0) break;
+            if (self.isLineTerminator(c)) break;
 
             self.cursor += 1;
         }
@@ -1361,8 +1363,7 @@ pub const Lexer = struct {
 
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
-            if (c == '\n' or c == '\r') break;
-            if (c >= 0x80 and util.Utf.unicodeSeparatorLen(self.source, self.cursor) > 0) break;
+            if (self.isLineTerminator(c)) break;
             self.cursor += 1;
         }
 
