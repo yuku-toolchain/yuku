@@ -275,20 +275,6 @@ pub const Lexer = struct {
         return self.source[idx];
     }
 
-    inline fn canStartIdentifierAscii(c: u8) bool {
-        return (c >= 'a' and c <= 'z') or
-            (c >= 'A' and c <= 'Z') or
-            c == '_' or c == '$';
-    }
-
-    inline fn canContinueIdentifierAscii(c: u8, allow_hyphen: bool) bool {
-        return (c >= 'a' and c <= 'z') or
-            (c >= 'A' and c <= 'Z') or
-            (c >= '0' and c <= '9') or
-            c == '_' or c == '$' or
-            // <elem-name></elem-name>
-            (allow_hyphen and c == '-');
-    }
 
     inline fn setTokenFlag(self: *Lexer, comptime flag: TokenFlag) void {
         self.state.token_flags |= flagMask(flag);
@@ -696,42 +682,71 @@ pub const Lexer = struct {
         return self.puncToken(1, .dot, start);
     }
 
+    const ident_start_table_ascii: [256]bool = blk: {
+        var t = [_]bool{false} ** 256;
+        for ('a'..('z' + 1)) |c| t[c] = true;
+        for ('A'..('Z' + 1)) |c| t[c] = true;
+        t['_'] = true;
+        t['$'] = true;
+        break :blk t;
+    };
+
+    const ident_continue_table_ascii: [256]bool = blk: {
+        var t = [_]bool{false} ** 256;
+        for ('a'..('z' + 1)) |c| t[c] = true;
+        for ('A'..('Z' + 1)) |c| t[c] = true;
+        for ('0'..('9' + 1)) |c| t[c] = true;
+        t['_'] = true;
+        t['$'] = true;
+        break :blk t;
+    };
+
+    const ident_continue_jsx_table_ascii: [256]bool = blk: {
+        var t = ident_continue_table_ascii;
+        t['-'] = true;
+        break :blk t;
+    };
+
     fn scanIdentifierBody(self: *Lexer, is_jsx_tag: bool) !bool {
         var has_escape = false;
 
+        const table = if (is_jsx_tag) &ident_continue_jsx_table_ascii else &ident_continue_table_ascii;
+
         while (self.cursor < self.source.len) {
             const c = self.source[self.cursor];
-            if (std.ascii.isAscii(c)) {
-                @branchHint(.likely);
-                if (c == '\\') {
-                    @branchHint(.cold);
 
-                    // JSX tag names don't support escape sequences
-                    if (is_jsx_tag) {
-                        return error.JsxIdentifierCannotContainEscapes;
-                    }
+            if (table[c]) {
+                self.cursor += 1;
+                continue;
+            }
 
-                    has_escape = true;
-
-                    self.cursor += 1; // consume backslash to get to 'u'
-
-                    _ = try self.consumeUnicodeEscape(.identifier_continue);
-                } else {
-                    if (canContinueIdentifierAscii(c, is_jsx_tag)) {
-                        self.cursor += 1;
-                    } else {
-                        break;
-                    }
+            if (c == '\\') {
+                // jsx tag names don't support escape sequences
+                if (is_jsx_tag) {
+                    return error.JsxIdentifierCannotContainEscapes;
                 }
-            } else {
+
+                has_escape = true;
+
+                self.cursor += 1; // consume backslash to get to 'u'
+
+                _ = try self.consumeUnicodeEscape(.identifier_continue);
+
+                continue;
+            }
+
+            if (c >= 0x80) {
                 @branchHint(.cold);
+
                 const cp = try util.Utf.codePointAt(self.source, self.cursor);
+
                 if (util.UnicodeId.canContinueId(cp.value)) {
                     self.cursor += cp.len;
-                } else {
-                    break;
+                    continue;
                 }
             }
+
+            break;
         }
 
         return has_escape;
@@ -767,7 +782,7 @@ pub const Lexer = struct {
 
                 _ = try self.consumeUnicodeEscape(.identifier_start);
             } else {
-                if (!canStartIdentifierAscii(first_char)) {
+                if (!ident_start_table_ascii[first_char]) {
                     @branchHint(.cold);
                     return error.InvalidIdentifierStart;
                 }
