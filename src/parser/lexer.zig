@@ -583,8 +583,8 @@ pub const Lexer = struct {
                 const cp = try self.consumeUnicodeEscape(.normal);
 
                 // check for lone surrogates
-                if (util.Utf.isSurrogateRange(cp)) {
-                    if (util.Utf.isHighSurrogate(cp)
+                if (std.unicode.isSurrogateCodepoint(cp)) {
+                    if (std.unicode.utf16IsHighSurrogate(@intCast(cp))
                         and self.source[self.cursor] == '\\'
                         and self.peek(1) == 'u')
                     {
@@ -593,14 +593,12 @@ pub const Lexer = struct {
                         const next_cp = try self.consumeUnicodeEscape(.normal);
 
                         // lone high
-                        if (!util.Utf.isLowSurrogate(next_cp)) {
+                        if (!std.unicode.utf16IsLowSurrogate(@intCast(next_cp))) {
                             self.setTokenFlag(.lone_surrogates);
                         }
                     }
                     // lone low
-                    else {
-                        self.setTokenFlag(.lone_surrogates);
-                    }
+                    else self.setTokenFlag(.lone_surrogates);
                 }
             },
             '1'...'7' => {
