@@ -53,6 +53,17 @@ const tree = try parser.parse(allocator, source, .{
 defer tree.deinit();
 ```
 
+The parser uses an `ArenaAllocator` internally. The allocator you pass to `parse` is the backing (child) allocator for that arena. The returned `ParseTree` owns the arena, which holds all memory the parser allocated:
+
+- `program` - root node (always a `Program`)
+- `nodes` - all AST nodes
+- `extra` - extra data for variadic node children
+- `diagnostics` - errors and warnings from parsing
+- `comments` - comments found in source
+- `arena` - the arena allocator owning all the memory
+
+Calling `tree.deinit()` frees everything at once.
+
 To serialize the AST to JSON (useful for quick inspection):
 
 ```zig
