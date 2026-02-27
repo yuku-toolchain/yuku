@@ -71,6 +71,7 @@ defer allocator.free(json);
 std.debug.print("{s}\n", .{json});
 ```
 
+> [!NOTE]
 > A visitor/traverser API is in progress and will be the recommended way to work with the AST. JSON serialization is available now for quick testing.
 
 ### JavaScript / TypeScript (WASM)
@@ -100,6 +101,7 @@ cd yuku
 zig build
 ```
 
+> [!IMPORTANT]
 > Requires the latest Zig nightly build. Yuku stays up to date with Zig's latest development version.
 
 `src/main.zig` parses `test.js` and prints the AST as JSON. Edit `test.js` and run:
