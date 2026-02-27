@@ -1,2 +1,6 @@
-var async = {};
-for (async.x of [1]) ;
+class C {
+  #field;
+  constructor() {
+    #field in this;
+  }
+}

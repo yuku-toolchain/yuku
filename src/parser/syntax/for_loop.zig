@@ -181,13 +181,14 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
 
     if (parser.current_token.tag == .of) {
         // for ( [lookahead ∉ { async of }] LeftHandSideExpression of AssignmentExpression )
-        // this restriction only applies to regular for-of, not for-await-of
         if (!is_for_await and isAsyncIdentifier(parser, expr)) {
             try parser.report(parser.getSpan(expr), "'for (async of ...)' is not allowed, it is ambiguous with 'for await'", .{
                 .help = "Use a different variable name or add parentheses: 'for ((async) of ...)'",
             });
         }
+
         try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
+
         return parseForOfStatementRest(parser, start, expr, is_for_await);
     }
 
@@ -300,12 +301,13 @@ fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: 
     }, .{ .start = decl_start, .end = decl_end });
 }
 
-/// check if an expression is the non-escaped identifier `async` (for `async of` lookahead restriction).
-/// escaped forms like `\u0061sync` are valid for-of targets and must not match.
 fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
     const data = parser.getData(expr);
+
     if (data != .identifier_reference) return false;
+
     const id = data.identifier_reference;
+
     return id.name_len == 5 and std.mem.eql(u8, parser.getSourceText(id.name_start, id.name_len), "async");
 }
 

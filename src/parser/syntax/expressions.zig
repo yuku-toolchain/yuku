@@ -606,9 +606,12 @@ fn parseBinaryExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) E
 
     const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
-    // `#field in expr` — the RHS of `in` with a private LHS must not be another private identifier
-    if (operator == .in and parser.getData(right) == .private_identifier) {
-        try parser.report(parser.getSpan(right), "Private identifier is not valid in the right-hand side of 'in' expression", .{});
+    if (parser.getData(right) == .private_identifier) {
+        try parser.report(
+            parser.getSpan(right),
+            "Private names are only allowed in property accesses (`obj.#field`) or in `in` expressions (`#field in obj`)",
+            .{},
+        );
     }
 
     return try parser.addNode(
