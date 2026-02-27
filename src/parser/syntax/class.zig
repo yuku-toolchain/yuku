@@ -216,8 +216,11 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             try parser.advanceWithoutEscapeCheck() orelse return null;
 
             // check if this is a modifier or just a property named 'get'/'set'/'accessor'
-            if (isClassElementKeyStart(parser.current_token.tag)) {
-                // now we know 'get'/'set'/'accessor' is a token
+            if (isClassElementKeyStart(parser.current_token.tag) and
+                // accessor [no LineTerminator here] ClassElementName
+                (cur_tag != .accessor or !parser.current_token.hasLineTerminatorBefore()))
+            {
+                // now we know 'get'/'set'/'accessor' is a keyword
                 try parser.reportIfEscapedKeyword(modifier_token);
 
                 if (cur_tag == .get) {

@@ -1,6 +1,3 @@
-class C {
-  #field;
-  constructor() {
-    #field in this;
-  }
+class Nice {
+  accessor wow;
 }
