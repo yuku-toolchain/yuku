@@ -18,11 +18,11 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: mlugg/setup-zig@v2
         with:
-          version: master
+          version: 0.16.0-dev.2535+b5bd49460
       - name: Load files
         run: bun load-files
       - name: Build profiler
-        run: zig build
+        run: zig build --release=fast
       - name: Run profiler
         uses: CodSpeedHQ/action@v4
         with:
