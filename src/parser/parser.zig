@@ -41,6 +41,7 @@ const ParserState = struct {
     cover_has_trailing_comma: ?u32 = null,
     /// Tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
+    scope_depth: u32 = 0,
 };
 
 pub const Error = error{OutOfMemory};
@@ -161,7 +162,7 @@ pub const Parser = struct {
             if (try statements.parseStatement(self, .{})) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
-                try self.synchronize(terminator) orelse break;
+                try self.recover() orelse break;
             }
         }
 
@@ -209,22 +210,14 @@ pub const Parser = struct {
 
     pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
         const index: ast.NodeIndex = @intCast(self.nodes.len);
-        if (self.nodes.len < self.nodes.capacity) {
-            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
-        } else {
-            try self.nodes.append(self.allocator(), .{ .data = data, .span = span });
-        }
+        try self.nodes.append(self.allocator(), .{ .data = data, .span = span });
         return index;
     }
 
     pub fn addExtra(self: *Parser, indices: []const ast.NodeIndex) Error!ast.IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
         const len: u32 = @intCast(indices.len);
-        if (self.extra.items.len + indices.len <= self.extra.capacity) {
-            self.extra.appendSliceAssumeCapacity(indices);
-        } else {
-            try self.extra.appendSlice(self.allocator(), indices);
-        }
+        try self.extra.appendSlice(self.allocator(), indices);
         return .{ .start = start, .len = len };
     }
 
@@ -234,11 +227,7 @@ pub const Parser = struct {
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
-            if (self.extra.items.len + slice.len <= self.extra.capacity) {
-                self.extra.appendSliceAssumeCapacity(slice);
-            } else {
-                try self.extra.appendSlice(self.allocator(), slice);
-            }
+            try self.extra.appendSlice(self.allocator(), slice);
         }
 
         return .{ .start = start, .len = len };
@@ -292,7 +281,14 @@ pub const Parser = struct {
     /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
+
         self.current_token = try self.nextToken() orelse return null;
+
+        switch (self.current_token.tag) {
+            .left_brace => self.state.scope_depth += 1,
+            .right_brace => self.state.scope_depth -|= 1,
+            else => {},
+        }
     }
 
     /// advance without the escaped-keyword check.
@@ -442,30 +438,24 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    // returning null here means, break the top level statement parsing loop
-    // otherwise continue
-    // TODO: make it better
-    fn synchronize(self: *Parser, terminator: ?TokenTag) Error!?void {
+    fn recover(self: *Parser) Error!?void {
+        const errored_scope_depth = self.state.scope_depth;
+
+        var consumed_sync = false;
+
         while (self.current_token.tag != .eof) {
-            // stop at the block terminator to avoid consuming the closing brace
-            if (terminator) |t| {
-                if (self.current_token.tag == t) return;
-            }
-
             if (self.current_token.tag == .semicolon or self.current_token.tag == .right_brace) {
+                consumed_sync = true;
                 try self.advance() orelse return null;
-                return;
+                continue;
             }
 
-            if (self.current_token.hasLineTerminatorBefore()) {
-                const can_start_statement = switch (self.current_token.tag) {
-                    .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
-                    else => false,
-                };
-
-                if (can_start_statement) {
-                    return;
-                }
+            if (self.current_token.hasLineTerminatorBefore() and
+                self.current_token.tag.isKeyword() and
+                (self.state.scope_depth < errored_scope_depth or
+                (consumed_sync and self.state.scope_depth == errored_scope_depth)))
+            {
+                break;
             }
 
             try self.advance() orelse return null;
@@ -508,11 +498,7 @@ const ScratchBuffer = struct {
     }
 
     pub inline fn append(self: *ScratchBuffer, alloc: std.mem.Allocator, index: ast.NodeIndex) Error!void {
-        if (self.items.items.len < self.items.capacity) {
-            self.items.appendAssumeCapacity(index);
-        } else {
-            try self.items.append(alloc, index);
-        }
+        try self.items.append(alloc, index);
     }
 
     pub inline fn reset(self: *ScratchBuffer, checkpoint: usize) void {
