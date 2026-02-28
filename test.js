@@ -1,0 +1,3 @@
+class Nice {
+  accessor wow;
+}

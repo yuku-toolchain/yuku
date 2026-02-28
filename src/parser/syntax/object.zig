@@ -106,7 +106,8 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
-        if (isPropertyKeyStart(parser.current_token.tag)) {
+        // async [no LineTerminator here] MethodDefinition
+        if (isPropertyKeyStart(parser.current_token.tag) and !parser.current_token.hasLineTerminatorBefore()) {
             try parser.reportIfEscapedKeyword(async_token);
             is_async = true;
         } else {
