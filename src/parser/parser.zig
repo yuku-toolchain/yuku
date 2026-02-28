@@ -41,7 +41,6 @@ const ParserState = struct {
     cover_has_trailing_comma: ?u32 = null,
     /// Tracks if CoverInitializedName ({a = 1}) was parsed in current cover context.
     cover_has_init_name: bool = false,
-    scope_depth: u32 = 0,
 };
 
 pub const Error = error{OutOfMemory};
@@ -162,7 +161,7 @@ pub const Parser = struct {
             if (try statements.parseStatement(self, .{})) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
-                try self.recover() orelse break;
+                try self.recover(terminator) orelse break;
             }
         }
 
@@ -281,14 +280,7 @@ pub const Parser = struct {
     /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
-
         self.current_token = try self.nextToken() orelse return null;
-
-        switch (self.current_token.tag) {
-            .left_brace => self.state.scope_depth += 1,
-            .right_brace => self.state.scope_depth -|= 1,
-            else => {},
-        }
     }
 
     /// advance without the escaped-keyword check.
@@ -438,22 +430,27 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    fn recover(self: *Parser) Error!?void {
-        const errored_scope_depth = self.state.scope_depth;
-
-        var consumed_sync = false;
+    fn recover(self: *Parser, terminator: ?TokenTag) Error!?void {
+        var depth: i32 = 0;
 
         while (self.current_token.tag != .eof) {
-            if (self.current_token.tag == .semicolon or self.current_token.tag == .right_brace) {
-                consumed_sync = true;
-                try self.advance() orelse return null;
-                continue;
+            switch (self.current_token.tag) {
+                .right_brace => depth -= 1,
+                .left_brace => depth += 1,
+                else => {},
             }
 
-            if (self.current_token.hasLineTerminatorBefore() and
+            if(terminator) |t| {
+                if(self.current_token.tag == t and depth < 0) {
+                    break;
+                }
+            }
+
+            if (
+                self.current_token.hasLineTerminatorBefore() and
                 self.current_token.tag.isKeyword() and
-                (self.state.scope_depth < errored_scope_depth or
-                (consumed_sync and self.state.scope_depth == errored_scope_depth)))
+                depth < 0
+            )
             {
                 break;
             }
