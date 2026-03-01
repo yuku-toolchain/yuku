@@ -1,14 +1,12 @@
-function nice() {
-for (C = class {
-  get [('x in empty)]() {
-    return 'via get';
+function SwitchTest(value){
+  var result = 0;
+switch {
+    case 0:
+      result += 2;
+    default:
+      result += 32;
+      break;
   }
-};;) { }
-
-const another = "haha"
-
-function () {
-
+return result;
 }
-}
-const cool = "wow"
+var x = SwitchTest(0);

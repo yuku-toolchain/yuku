@@ -81,7 +81,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
                         return parseForWithDeclaration(parser, start, is_for_await, .using, decl_start);
                     }
 
-                    try grammar.expressionToPattern(parser, using_identifier, .assignable) orelse return null;
+                    try grammar.expressionToPattern(parser, using_identifier, .assignable);
 
                     return parseForOfStatementRest(parser, start, using_identifier, is_for_await);
                 },
@@ -174,7 +174,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     parser.context.allow_in = saved_allow_in;
 
     if (parser.current_token.tag == .in) {
-        try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
+        try grammar.expressionToPattern(parser, expr, .assignable);
 
         return parseForInStatementRest(parser, start, expr, is_for_await);
     }
@@ -187,7 +187,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
             });
         }
 
-        try grammar.expressionToPattern(parser, expr, .assignable) orelse return null;
+        try grammar.expressionToPattern(parser, expr, .assignable);
 
         return parseForOfStatementRest(parser, start, expr, is_for_await);
     }

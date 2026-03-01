@@ -5,13 +5,7 @@
     "end": 30,
     "sourceType": "script",
     "hashbang": null,
-    "body": [
-      {
-        "type": "EmptyStatement",
-        "start": 22,
-        "end": 23
-      }
-    ]
+    "body": []
   },
   "comments": [],
   "errors": [
@@ -21,14 +15,6 @@
       "help": null,
       "start": 11,
       "end": 13,
-      "labels": []
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token ')'",
-      "help": "Expected an expression",
-      "start": 23,
-      "end": 24,
       "labels": []
     }
   ]

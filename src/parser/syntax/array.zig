@@ -99,22 +99,22 @@ pub fn coverToExpression(parser: *Parser, cover: ArrayCover, validate: bool) Err
         .{ .start = cover.start, .end = cover.end },
     );
 
-    if (validate and !try grammar.validateNoCoverInitializedSyntax(parser, array_expression)) return null;
+    if (validate) try grammar.validateNoCoverInitializedSyntax(parser, array_expression);
 
     return array_expression;
 }
 
 /// convert array cover to ArrayPattern.
-pub fn coverToPattern(parser: *Parser, cover: ArrayCover, comptime context: grammar.PatternContext) Error!?ast.NodeIndex {
+pub fn coverToPattern(parser: *Parser, cover: ArrayCover, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
     return toArrayPatternImpl(parser, null, cover.elements, .{ .start = cover.start, .end = cover.end }, context);
 }
 
 /// convert ArrayExpression to ArrayPattern (mutates in-place).
-pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!?void {
-    _ = try toArrayPatternImpl(parser, expr_node, elements_range, span, context) orelse return null;
+pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!void {
+    _ = try toArrayPatternImpl(parser, expr_node, elements_range, span, context);
 }
 
-fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!?ast.NodeIndex {
+fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
     const elements = parser.getExtra(elements_range);
 
     var rest: ast.NodeIndex = ast.null_node;
@@ -132,25 +132,22 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
                 });
 
                 parser.state.cover_has_trailing_comma = null;
-
-                return null;
             }
 
             if (i != elements_len - 1) {
                 try parser.report(parser.getSpan(elem), "Rest element must be the last element", .{
                     .help = "No elements can follow the rest element in a destructuring pattern.",
                 });
-                return null;
             }
 
             // spread_element to binding_rest_element
-            try grammar.expressionToPattern(parser, elem, context) orelse return null;
+            try grammar.expressionToPattern(parser, elem, context);
             rest = elem;
             elements_len = @intCast(i);
             break;
         }
 
-        try grammar.expressionToPattern(parser, elem, context) orelse return null;
+        try grammar.expressionToPattern(parser, elem, context);
     }
 
     const pattern_data: ast.NodeData = .{ .array_pattern = .{

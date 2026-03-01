@@ -399,22 +399,22 @@ pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Er
         .{ .start = cover.start, .end = cover.end },
     );
 
-    if (validate and !try grammar.validateNoCoverInitializedSyntax(parser, object_expression)) return null;
+    if (validate) try grammar.validateNoCoverInitializedSyntax(parser, object_expression);
 
     return object_expression;
 }
 
 /// convert object cover to ObjectPattern.
-pub fn coverToPattern(parser: *Parser, cover: ObjectCover, comptime context: grammar.PatternContext) Error!?ast.NodeIndex {
+pub fn coverToPattern(parser: *Parser, cover: ObjectCover, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
     return toObjectPatternImpl(parser, null, cover.properties, .{ .start = cover.start, .end = cover.end }, context);
 }
 
 /// convert ObjectExpression to ObjectPattern (mutates in-place).
-pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!?void {
-    _ = try toObjectPatternImpl(parser, expr_node, properties_range, span, context) orelse return null;
+pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!void {
+    _ = try toObjectPatternImpl(parser, expr_node, properties_range, span, context);
 }
 
-fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!?ast.NodeIndex {
+fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
     const properties = parser.getExtra(properties_range);
 
     var rest: ast.NodeIndex = ast.null_node;
@@ -430,19 +430,16 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
                 });
 
                 parser.state.cover_has_trailing_comma = null;
-
-                return null;
             }
 
             if (i != properties.len - 1) {
                 try parser.report(parser.getSpan(prop), "Rest element must be the last property", .{
                     .help = "No properties can follow the rest element in a destructuring pattern.",
                 });
-                return null;
             }
 
             // spread_element to binding_rest_element
-            try grammar.expressionToPattern(parser, prop, context) orelse return null;
+            try grammar.expressionToPattern(parser, prop, context);
 
             rest = prop;
             properties_len = @intCast(i);
@@ -451,7 +448,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
 
         if (prop_data != .object_property) {
             try parser.report(parser.getSpan(prop), "Invalid property in object pattern", .{});
-            return null;
+            continue;
         }
 
         const obj_prop = prop_data.object_property;
@@ -460,17 +457,17 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
             try parser.report(parser.getSpan(prop), "Method cannot appear in destructuring pattern", .{
                 .help = "Use a regular property instead of a method definition.",
             });
-            return null;
+            continue;
         }
 
         if (obj_prop.kind != .init) {
             try parser.report(parser.getSpan(prop), "Getter/setter cannot appear in destructuring pattern", .{
                 .help = "Use a regular property instead of a getter or setter.",
             });
-            return null;
+            continue;
         }
 
-        try grammar.expressionToPattern(parser, obj_prop.value, context) orelse return null;
+        try grammar.expressionToPattern(parser, obj_prop.value, context);
 
         parser.setData(prop, .{ .binding_property = .{
             .key = obj_prop.key,

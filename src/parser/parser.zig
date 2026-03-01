@@ -161,7 +161,7 @@ pub const Parser = struct {
             if (try statements.parseStatement(self, .{})) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
-                try self.recover(terminator) orelse break;
+                try self.recover(terminator);
             }
         }
 
@@ -209,14 +209,22 @@ pub const Parser = struct {
 
     pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
         const index: ast.NodeIndex = @intCast(self.nodes.len);
-        try self.nodes.append(self.allocator(), .{ .data = data, .span = span });
+        if (self.nodes.len < self.nodes.capacity) {
+            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
+        } else {
+            try self.nodes.append(self.allocator(), .{ .data = data, .span = span });
+        }
         return index;
     }
 
     pub fn addExtra(self: *Parser, indices: []const ast.NodeIndex) Error!ast.IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
         const len: u32 = @intCast(indices.len);
-        try self.extra.appendSlice(self.allocator(), indices);
+        if (self.extra.items.len + indices.len <= self.extra.capacity) {
+            self.extra.appendSliceAssumeCapacity(indices);
+        } else {
+            try self.extra.appendSlice(self.allocator(), indices);
+        }
         return .{ .start = start, .len = len };
     }
 
@@ -226,7 +234,11 @@ pub const Parser = struct {
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
-            try self.extra.appendSlice(self.allocator(), slice);
+            if (self.extra.items.len + slice.len <= self.extra.capacity) {
+                self.extra.appendSliceAssumeCapacity(slice);
+            } else {
+                try self.extra.appendSlice(self.allocator(), slice);
+            }
         }
 
         return .{ .start = start, .len = len };
@@ -430,8 +442,12 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    fn recover(self: *Parser, terminator: ?TokenTag) Error!?void {
+    fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
         while (self.current_token.tag != .eof) {
+            self.current_token = try self.recoverNextToken();
+
+            if (self.current_token.tag == .eof) break;
+
             if (terminator) |t| {
                 if (self.current_token.tag == t) break;
             }
@@ -440,26 +456,24 @@ pub const Parser = struct {
                 self.current_token.hasLineTerminatorBefore() and
                 self.current_token.tag.isKeyword()
             ) break;
-
-            self.current_token = try self.recoverNextToken();
         }
     }
 
-    /// advances to the next token during error recovery, skipping characters that cause lexical errors.
-    fn recoverNextToken(self: *Parser) Error!Token {
-        while (true) {
-            return self.lexer.nextToken() catch |e| {
-                if (e == error.OutOfMemory) return error.OutOfMemory;
+      /// advances to the next token during error recovery, skipping characters that cause lexical errors.
+      fn recoverNextToken(self: *Parser) Error!Token {
+          while (true) {
+              return self.lexer.nextToken() catch |e| {
+                  if (e == error.OutOfMemory) return error.OutOfMemory;
 
-                if (self.lexer.cursor < self.source.len) {
-                    self.lexer.cursor += 1;
-                } else {
-                    return Token.eof(@intCast(self.source.len));
-                }
+                  if (self.lexer.cursor < self.source.len) {
+                      self.lexer.cursor += 1;
+                  } else {
+                      return Token.eof(@intCast(self.source.len));
+                  }
 
-                continue;
-            };
-        }
+                  continue;
+              };
+          }
     }
 
     fn ensureCapacity(self: *Parser) Error!void {
@@ -498,7 +512,11 @@ const ScratchBuffer = struct {
     }
 
     pub inline fn append(self: *ScratchBuffer, alloc: std.mem.Allocator, index: ast.NodeIndex) Error!void {
-        try self.items.append(alloc, index);
+        if (self.items.items.len < self.items.capacity) {
+            self.items.appendAssumeCapacity(index);
+        } else {
+            try self.items.append(alloc, index);
+        }
     }
 
     pub inline fn reset(self: *ScratchBuffer, checkpoint: usize) void {
