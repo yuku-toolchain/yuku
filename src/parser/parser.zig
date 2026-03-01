@@ -432,37 +432,61 @@ pub const Parser = struct {
 
     fn recover(self: *Parser, terminator: ?TokenTag) Error!?void {
         var depth: i32 = 0;
+        var depth_escaped = false;
 
         while (self.current_token.tag != .eof) {
             switch (self.current_token.tag) {
-                .right_brace => {
-                    depth -= 1;
-                    self.current_token = self.lexer.nextToken() catch continue;
-                },
                 .left_brace => {
                     depth += 1;
-                    self.current_token = self.lexer.nextToken() catch continue;
+                    self.current_token = try self.recoverNextToken();
+                    depth_escaped = true;
+                    continue;
                 },
-                .semicolon => self.current_token = self.lexer.nextToken() catch continue,
-                else => {
-                    if(terminator) |t| {
-                        if(self.current_token.tag == t and depth < 0) {
-                            break;
-                        }
-                    }
-
-                    if (
-                        self.current_token.hasLineTerminatorBefore() and
-                        self.current_token.tag.isKeyword() and
-                        depth < 0
-                    )
-                    {
-                        break;
-                    }
-
-                    self.current_token = self.lexer.nextToken() catch continue;
+                .right_brace => {
+                    depth -= 1;
+                    self.current_token = try self.recoverNextToken();
+                    depth_escaped = true;
+                    continue;
                 },
+                else => {},
             }
+
+            const debt_check = if (depth_escaped) depth <= 0 else depth < 0;
+
+            if (terminator) |t| {
+                if (self.current_token.tag == t and debt_check) {
+                    break;
+                }
+            }
+
+            if (
+                self.current_token.hasLineTerminatorBefore() and
+                self.current_token.tag.isKeyword() and
+                debt_check
+            )
+            {
+                break;
+            }
+
+            depth_escaped = false;
+            self.current_token = try self.recoverNextToken();
+        }
+    }
+
+    /// advances to the next token during error recovery, skipping characters that cause lexical errors.
+    fn recoverNextToken(self: *Parser) Error!Token {
+        while (true) {
+            return self.lexer.nextToken() catch |e| {
+                if (e == error.OutOfMemory) return error.OutOfMemory;
+
+                if (self.lexer.cursor < self.source.len) {
+                    self.lexer.cursor += 1;
+                } else {
+                    return Token.eof(@intCast(self.source.len));
+                }
+
+                continue;
+            };
         }
     }
 
