@@ -431,44 +431,16 @@ pub const Parser = struct {
     }
 
     fn recover(self: *Parser, terminator: ?TokenTag) Error!?void {
-        var depth: i32 = 0;
-        var depth_escaped = false;
-
         while (self.current_token.tag != .eof) {
-            switch (self.current_token.tag) {
-                .left_brace => {
-                    depth += 1;
-                    self.current_token = try self.recoverNextToken();
-                    depth_escaped = true;
-                    continue;
-                },
-                .right_brace => {
-                    depth -= 1;
-                    self.current_token = try self.recoverNextToken();
-                    depth_escaped = true;
-                    continue;
-                },
-                else => {},
-            }
-
-            const debt_check = if (depth_escaped) depth <= 0 else depth < 0;
-
             if (terminator) |t| {
-                if (self.current_token.tag == t and debt_check) {
-                    break;
-                }
+                if (self.current_token.tag == t) break;
             }
 
             if (
                 self.current_token.hasLineTerminatorBefore() and
-                self.current_token.tag.isKeyword() and
-                debt_check
-            )
-            {
-                break;
-            }
+                self.current_token.tag.isKeyword()
+            ) break;
 
-            depth_escaped = false;
             self.current_token = try self.recoverNextToken();
         }
     }
