@@ -1,7 +1,7 @@
 {
   "name": "yuku-parser",
   "description": "Yuku, the JavaScript/TypeScript parser written in Zig.",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "type": "module",
   "files": [
     "dist"
