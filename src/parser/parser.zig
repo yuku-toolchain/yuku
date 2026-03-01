@@ -435,27 +435,34 @@ pub const Parser = struct {
 
         while (self.current_token.tag != .eof) {
             switch (self.current_token.tag) {
-                .right_brace => depth -= 1,
-                .left_brace => depth += 1,
-                else => {},
-            }
+                .right_brace => {
+                    depth -= 1;
+                    self.current_token = self.lexer.nextToken() catch continue;
+                },
+                .left_brace => {
+                    depth += 1;
+                    self.current_token = self.lexer.nextToken() catch continue;
+                },
+                .semicolon => self.current_token = self.lexer.nextToken() catch continue,
+                else => {
+                    if(terminator) |t| {
+                        if(self.current_token.tag == t and depth < 0) {
+                            break;
+                        }
+                    }
 
-            if(terminator) |t| {
-                if(self.current_token.tag == t and depth < 0) {
-                    break;
-                }
-            }
+                    if (
+                        self.current_token.hasLineTerminatorBefore() and
+                        self.current_token.tag.isKeyword() and
+                        depth < 0
+                    )
+                    {
+                        break;
+                    }
 
-            if (
-                self.current_token.hasLineTerminatorBefore() and
-                self.current_token.tag.isKeyword() and
-                depth < 0
-            )
-            {
-                break;
+                    self.current_token = self.lexer.nextToken() catch continue;
+                },
             }
-
-            try self.advance() orelse return null;
         }
     }
 
