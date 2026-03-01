@@ -23,20 +23,9 @@
           "type": "BlockStatement",
           "start": 19,
           "end": 40,
-          "body": [
-            {
-              "type": "EmptyStatement",
-              "start": 35,
-              "end": 36
-            }
-          ]
+          "body": []
         },
         "expression": false
-      },
-      {
-        "type": "EmptyStatement",
-        "start": 116,
-        "end": 117
       }
     ]
   },
@@ -48,14 +37,6 @@
       "help": null,
       "start": 34,
       "end": 35,
-      "labels": []
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token ')'",
-      "help": "Expected an expression",
-      "start": 36,
-      "end": 37,
       "labels": []
     },
     {
@@ -80,22 +61,6 @@
       "help": null,
       "start": 115,
       "end": 116,
-      "labels": []
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token ')'",
-      "help": "Expected an expression",
-      "start": 117,
-      "end": 118,
-      "labels": []
-    },
-    {
-      "severity": "error",
-      "message": "Unexpected token '}'",
-      "help": "Expected an expression",
-      "start": 122,
-      "end": 123,
       "labels": []
     }
   ]

@@ -684,7 +684,7 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u8, left: ast.NodeInde
 
     const left_span = parser.getSpan(left);
 
-    try grammar.expressionToPattern(parser, left, .assignable) orelse return null;
+    try grammar.expressionToPattern(parser, left, .assignable);
 
     // validate that left side can be assigned to
     if (!isValidAssignmentTarget(parser, left, operator)) {

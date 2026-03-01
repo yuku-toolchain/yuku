@@ -126,9 +126,7 @@ pub fn coverToCallExpression(parser: *Parser, cover: ParenthesizedCover, callee:
     const elements = parser.getExtra(cover.elements);
     // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
-        if (!try grammar.validateNoCoverInitializedSyntax(parser, elem)) {
-            return null;
-        }
+        try grammar.validateNoCoverInitializedSyntax(parser, elem);
     }
 
     return try parser.addNode(
@@ -171,9 +169,7 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
             return null;
         }
 
-        if (!try grammar.validateNoCoverInitializedSyntax(parser, elem)) {
-            return null;
-        }
+        try grammar.validateNoCoverInitializedSyntax(parser, elem);
     }
 
     if (elements.len == 1) {
@@ -230,7 +226,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
 
 
     // convert identifier_reference to binding_identifier
-    try grammar.expressionToPattern(parser, id, .binding) orelse return null;
+    try grammar.expressionToPattern(parser, id, .binding);
 
     const param = try parser.addNode(
         .{ .formal_parameter = .{ .pattern = id } },
@@ -298,7 +294,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
         if (parser.getData(elem) == .spread_element) {
             // spread_element to binding_rest_element
-            try grammar.expressionToPattern(parser, elem, .binding) orelse return null;
+            try grammar.expressionToPattern(parser, elem, .binding);
             rest = elem;
 
             if (cover.has_trailing_comma) {
@@ -328,7 +324,7 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
 fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.NodeIndex {
     // convert expression to binding pattern
-    try grammar.expressionToPattern(parser, expr, .binding) orelse return null;
+    try grammar.expressionToPattern(parser, expr, .binding);
 
     // expr is now pattern
 

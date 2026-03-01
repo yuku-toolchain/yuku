@@ -87,7 +87,6 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
             "Function declaration requires a name",
             .{ .help = "Add a name after 'function', e.g. 'function myFunc() {}'." },
         );
-        return null;
     }
 
     if (!try parser.expect(

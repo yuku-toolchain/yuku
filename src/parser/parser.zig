@@ -161,7 +161,7 @@ pub const Parser = struct {
             if (try statements.parseStatement(self, .{})) |statement| {
                 try self.scratch_statements.append(self.allocator(), statement);
             } else {
-                try self.synchronize(terminator) orelse break;
+                try self.recover(terminator);
             }
         }
 
@@ -442,34 +442,38 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
-    // returning null here means, break the top level statement parsing loop
-    // otherwise continue
-    // TODO: make it better
-    fn synchronize(self: *Parser, terminator: ?TokenTag) Error!?void {
+    fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
         while (self.current_token.tag != .eof) {
-            // stop at the block terminator to avoid consuming the closing brace
+            self.current_token = try self.recoverNextToken();
+
+            if (self.current_token.tag == .eof) break;
+
             if (terminator) |t| {
-                if (self.current_token.tag == t) return;
+                if (self.current_token.tag == t) break;
             }
 
-            if (self.current_token.tag == .semicolon or self.current_token.tag == .right_brace) {
-                try self.advance() orelse return null;
-                return;
-            }
-
-            if (self.current_token.hasLineTerminatorBefore()) {
-                const can_start_statement = switch (self.current_token.tag) {
-                    .at, .class, .function, .@"var", .@"for", .@"if", .@"while", .@"return", .let, .@"const", .@"try", .throw, .debugger, .@"break", .@"continue", .@"switch", .do, .with, .async, .@"export", .import, .left_brace => true,
-                    else => false,
-                };
-
-                if (can_start_statement) {
-                    return;
-                }
-            }
-
-            try self.advance() orelse return null;
+            if (
+                self.current_token.hasLineTerminatorBefore() and
+                self.current_token.tag.isKeyword()
+            ) break;
         }
+    }
+
+      /// advances to the next token during error recovery, skipping characters that cause lexical errors.
+      fn recoverNextToken(self: *Parser) Error!Token {
+          while (true) {
+              return self.lexer.nextToken() catch |e| {
+                  if (e == error.OutOfMemory) return error.OutOfMemory;
+
+                  if (self.lexer.cursor < self.source.len) {
+                      self.lexer.cursor += 1;
+                  } else {
+                      return Token.eof(@intCast(self.source.len));
+                  }
+
+                  continue;
+              };
+          }
     }
 
     fn ensureCapacity(self: *Parser) Error!void {
