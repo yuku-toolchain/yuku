@@ -9,5 +9,10 @@ pub const Severity = ast.Severity;
 pub const Label = ast.Label;
 pub const SourceType = ast.SourceType;
 pub const Lang = ast.Lang;
+pub const NodeIndex = ast.NodeIndex;
+pub const IndexRange = ast.IndexRange;
+pub const NodeData = ast.NodeData;
 
 pub const estree = @import("estree.zig");
+
+pub const traverser = @import("traverser.zig");

@@ -164,12 +164,12 @@ pub const ParseTree = struct {
 
     /// Gets the data for the node at the given index.
     pub inline fn getData(self: *const ParseTree, index: NodeIndex) NodeData {
-        return self.nodes.items(.data)[index];
+        return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
     /// Gets the span for the node at the given index.
     pub inline fn getSpan(self: *const ParseTree, index: NodeIndex) Span {
-        return self.nodes.items(.span)[index];
+        return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
     /// Gets the extra node indices for the given range.
@@ -184,8 +184,9 @@ pub const ParseTree = struct {
 };
 
 /// index into the ast node array. `null_node` for optional nodes.
-pub const NodeIndex = u32;
-pub const null_node: NodeIndex = std.math.maxInt(NodeIndex);
+pub const NodeIndex = enum(u32) { _ };
+
+pub const null_node: NodeIndex = @enumFromInt(std.math.maxInt(u32));
 
 /// range of indices in the extra array for storing node lists.
 pub const IndexRange = struct {
