@@ -11,8 +11,8 @@ pub const TraverseCtx = struct {
     }
 
     /// Nth ancestor: 0 = parent, 1 = grandparent, ...
-    pub inline fn ancestor(self: *const TraverseCtx, d: usize) ast.NodeIndex {
-        return self.parents.get(d);
+    pub inline fn ancestor(self: *const TraverseCtx, depth_offset: usize) ast.NodeIndex {
+        return self.parents.get(depth_offset);
     }
 
     pub inline fn parentData(self: *const TraverseCtx) ?ast.NodeData {
@@ -30,27 +30,6 @@ pub const TraverseCtx = struct {
             if (predicate(self.tree.getData(a))) return a;
             i += 1;
         }
-    }
-
-    /// Nesting depth (0 at root)
-    pub inline fn depth(self: *const TraverseCtx) u32 {
-        return self.parents.len;
-    }
-
-    pub inline fn getData(self: *const TraverseCtx, index: ast.NodeIndex) ast.NodeData {
-        return self.tree.getData(index);
-    }
-
-    pub inline fn getSpan(self: *const TraverseCtx, index: ast.NodeIndex) ast.Span {
-        return self.tree.getSpan(index);
-    }
-
-    pub inline fn getExtra(self: *const TraverseCtx, range: ast.IndexRange) []const ast.NodeIndex {
-        return self.tree.getExtra(range);
-    }
-
-    pub inline fn getSourceText(self: *const TraverseCtx, start: u32, len: u16) []const u8 {
-        return self.tree.getSourceText(start, len);
     }
 
     pub inline fn getNodeText(self: *const TraverseCtx, index: ast.NodeIndex) []const u8 {
@@ -76,7 +55,7 @@ const ParentStack = struct {
         self.len -= 1;
     }
 
-    /// Current parent (top of stack). null_node if empty.
+    /// Current parent. null_node if empty.
     inline fn current(self: *const ParentStack) ast.NodeIndex {
         if (self.len == 0) return ast.null_node;
         return self.buf[self.len - 1];
