@@ -445,7 +445,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
                 });
             }
 
-            const local_tag: TokenTag = @enumFromInt(local_tags[i]);
+            const local_tag: TokenTag = @enumFromInt(@intFromEnum(local_tags[i]));
 
             if (local_tag.isReserved()) {
                 const local_name = parser.getSourceText(local_data.identifier_name.name_start, local_data.identifier_name.name_len);
@@ -533,7 +533,7 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
 
         try parser.scratch_a.append(parser.allocator(), spec);
 
-        try parser.scratch_b.append(parser.allocator(), @intFromEnum(local_tag));
+        try parser.scratch_b.append(parser.allocator(), @enumFromInt(@as(u32, @intFromEnum(local_tag))));
 
         if (parser.current_token.tag == .comma) {
             try parser.advance() orelse return null;

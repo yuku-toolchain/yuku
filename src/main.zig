@@ -1,6 +1,8 @@
 const std = @import("std");
 const parser = @import("parser");
 
+const traverser = parser.traverser;
+
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
     var gpa = std.heap.DebugAllocator(.{}).init;
@@ -17,6 +19,25 @@ pub fn main(init: std.process.Init) !void {
     const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = .fromPath(file_path), .source_type = .fromPath(file_path) });
 
     defer tree.deinit();
+
+    const Visitor = struct {
+        count: usize = 0,
+
+        pub fn enter_block_statement(_: *@This(), _: parser.NodeIndex, _: *traverser.TraverseCtx) traverser.Action {
+            return .skip;
+        }
+
+        pub fn enter_variable_declaration(self: *@This(), _: parser.NodeIndex, _: *traverser.TraverseCtx) traverser.Action {
+            self.count += 1;
+            return .proceed;
+        }
+    };
+
+    var visitor = Visitor{};
+
+    traverser.traverse(Visitor, &tree, &visitor);
+
+    std.debug.print("{d}", .{visitor.count});
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
 
@@ -36,7 +57,7 @@ pub fn main(init: std.process.Init) !void {
     const json = try parser.estree.toJSON(&tree, allocator, .{});
     defer allocator.free(json);
 
-    std.debug.print("{s}\n", .{json});
+    // std.debug.print("{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics) |err| {

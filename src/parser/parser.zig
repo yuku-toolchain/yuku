@@ -208,7 +208,7 @@ pub const Parser = struct {
     }
 
     pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
-        const index: ast.NodeIndex = @intCast(self.nodes.len);
+        const index: ast.NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
         if (self.nodes.len < self.nodes.capacity) {
             self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
         } else {
@@ -245,19 +245,19 @@ pub const Parser = struct {
     }
 
     pub inline fn getSpan(self: *const Parser, index: ast.NodeIndex) ast.Span {
-        return self.nodes.items(.span)[index];
+        return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
     pub inline fn getData(self: *const Parser, index: ast.NodeIndex) ast.NodeData {
-        return self.nodes.items(.data)[index];
+        return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
     pub inline fn setData(self: *Parser, index: ast.NodeIndex, data: ast.NodeData) void {
-        self.nodes.items(.data)[index] = data;
+        self.nodes.items(.data)[@intFromEnum(index)] = data;
     }
 
     pub inline fn setSpan(self: *Parser, index: ast.NodeIndex, span: ast.Span) void {
-        self.nodes.items(.span)[index] = span;
+        self.nodes.items(.span)[@intFromEnum(index)] = span;
     }
 
     pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {
