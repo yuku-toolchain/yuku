@@ -34,6 +34,9 @@
 /* General customizations. */
 :root {
 	--sl-content-width: 56rem;
+	--sl-font-size-h1: 1.5rem;
+	--sl-font-size-h2: 1rem;
+	--sl-font-size-h3: 0.75rem;
 }
 
 table code {
