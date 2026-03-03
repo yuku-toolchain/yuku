@@ -3,7 +3,7 @@
 /* Dark mode colors. */
 :root {
 	--sl-color-accent-low: #3d2800;
-	--sl-color-accent: #F4C013;
+	--sl-color-accent: #f4c013;
 	--sl-color-accent-high: #ffe082;
 	--sl-color-white: #ffffff;
 	--sl-color-gray-1: #f5f0e6;
@@ -58,22 +58,23 @@ table code {
 }
 
 .title-wrapper {
-    display: none;
+	display: none;
 }
 
 .header {
-    padding: 16px !important;
+	padding: 16px !important;
 }
 
 .header > .header {
-    grid-template-columns: 270px auto;
-    padding: 0 !important;
+	grid-template-columns: 270px auto;
+	padding: 0 !important;
 }
 
-.content-panel:has(h1#_top:not([data-page-title])) {
+/*.content-panel:has(h1#_top:not([data-page-title])) {
     display: none;
-}
+}*/
 
-.content-panel, .right-sidebar-panel {
-    padding: 36px;
+.content-panel,
+.right-sidebar-panel {
+	padding: 36px;
 }
