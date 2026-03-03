@@ -8,7 +8,13 @@ export default defineConfig({
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/yuku-toolchain/yuku' }],
 			customCss: ["./src/styles/index.css"],
 			sidebar: [
-			{ label: 'Introduction', slug: '' }
+			{ label: 'Introduction', slug: '' },
+			{
+				label: 'Parser',
+				items: [
+					{ label: 'Introduction', slug: 'parser' },
+				],
+			},
 			],
 		}),
 	],
