@@ -82,15 +82,20 @@ pub const Action = enum {
 /// `V` is any struct. If it declares `enter_call_expression`, `exit_function`, etc,
 /// those get called. Hooks you don't declare are simply skipped.
 ///
-/// Enter hooks: `fn (self: *V, node: ast.NodeIndex, ctx: *TraverseCtx) Action`
-/// Exit hooks:  `fn (self: *V, node: ast.NodeIndex, ctx: *TraverseCtx) void`
+/// Typed hooks receive the payload directly:
+///   enter: `fn (self: *V, data: ast.Function, node: ast.NodeIndex, ctx: *TraverseCtx) Action`
+///   exit:  `fn (self: *V, data: ast.Function, node: ast.NodeIndex, ctx: *TraverseCtx) void`
+///
+/// Catch-all hooks:
+///   `fn enter_node(self: *V, node: ast.NodeIndex, ctx: *TraverseCtx) Action`
+///   `fn exit_node(self: *V, node: ast.NodeIndex, ctx: *TraverseCtx) void`
 ///
 /// Example:
 /// ```
 /// const Counter = struct {
 ///     count: usize = 0,
 ///
-///     pub fn enter_function(self: *Counter, _: ast.NodeIndex, _: *TraverseCtx) Action {
+///     pub fn enter_function(self: *Counter, _: ast.Function, _: ast.NodeIndex, _: *TraverseCtx) Action {
 ///         self.count += 1;
 ///         return .proceed;
 ///     }
@@ -156,10 +161,10 @@ fn callEnter(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.Node
 
 fn callEnterTyped(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeData, ctx: *TraverseCtx) Action {
     switch (data) {
-        inline else => |_, tag| {
+        inline else => |payload, tag| {
             const enter_name = comptime enterNameFor(tag);
             if (comptime @hasDecl(V, enter_name)) {
-                return @field(V, enter_name)(visitor, index, ctx);
+                return @field(V, enter_name)(visitor, payload, index, ctx);
             }
             return .proceed;
         },
@@ -176,10 +181,10 @@ fn callExit(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeD
 
 fn callExitTyped(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeData, ctx: *TraverseCtx) void {
     switch (data) {
-        inline else => |_, tag| {
+        inline else => |payload, tag| {
             const exit_name = comptime exitNameFor(tag);
             if (comptime @hasDecl(V, exit_name)) {
-                @field(V, exit_name)(visitor, index, ctx);
+                @field(V, exit_name)(visitor, payload, index, ctx);
             }
         },
     }

@@ -2,6 +2,8 @@ const std = @import("std");
 const parser = @import("parser");
 const wasm_allocator = std.heap.wasm_allocator;
 
+const ast = parser.ast;
+
 pub export fn alloc(size: usize) ?[*]u8 {
     const buf = wasm_allocator.alloc(u8, size) catch return null;
     return buf.ptr;
@@ -22,8 +24,8 @@ pub export fn parse(
 ) u64 {
     const source: []const u8 = if (len == 0) &[_]u8{} else source_bytes[0..len];
 
-    const st: parser.SourceType = if (source_type == 0) .script else .module;
-    const l: parser.Lang = switch (lang) {
+    const st: ast.SourceType = if (source_type == 0) .script else .module;
+    const l: ast.Lang = switch (lang) {
         0 => .js,
         1 => .ts,
         2 => .jsx,

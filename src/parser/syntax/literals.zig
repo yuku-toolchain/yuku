@@ -28,7 +28,7 @@ pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.null_literal, token.span);
+    return try parser.addNode(.{ .null_literal = .{} }, token.span);
 }
 
 pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {

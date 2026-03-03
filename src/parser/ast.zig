@@ -497,6 +497,12 @@ pub const MethodDefinitionKind = enum {
 };
 
 /// https://github.com/tc39/proposal-decorators
+pub const Super = struct {};
+pub const NullLiteral = struct {};
+pub const ThisExpression = struct {};
+pub const DebuggerStatement = struct {};
+pub const EmptyStatement = struct {};
+
 pub const Decorator = struct {
     /// Expression
     expression: NodeIndex,
@@ -1424,13 +1430,13 @@ pub const NodeData = union(enum) {
     method_definition: MethodDefinition,
     property_definition: PropertyDefinition,
     static_block: StaticBlock,
-    super,
+    super: Super,
     string_literal: StringLiteral,
     numeric_literal: NumericLiteral,
     bigint_literal: BigIntLiteral,
     boolean_literal: BooleanLiteral,
-    null_literal,
-    this_expression,
+    null_literal: NullLiteral,
+    this_expression: ThisExpression,
     regexp_literal: RegExpLiteral,
     template_literal: TemplateLiteral,
     template_element: TemplateElement,
@@ -1456,8 +1462,8 @@ pub const NodeData = union(enum) {
     throw_statement: ThrowStatement,
     try_statement: TryStatement,
     catch_clause: CatchClause,
-    debugger_statement,
-    empty_statement,
+    debugger_statement: DebuggerStatement,
+    empty_statement: EmptyStatement,
     variable_declaration: VariableDeclaration,
     variable_declarator: VariableDeclarator,
     directive: Directive,

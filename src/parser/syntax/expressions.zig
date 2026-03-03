@@ -385,7 +385,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 fn parseThisExpression(parser: *Parser) Error!?ast.NodeIndex {
     const this_token = parser.current_token;
     try parser.advance() orelse return null; // consume 'this'
-    return try parser.addNode(.this_expression, this_token.span);
+    return try parser.addNode(.{ .this_expression = .{} }, this_token.span);
 }
 
 /// `super`
@@ -396,7 +396,7 @@ fn parseSuperExpression(parser: *Parser) Error!?ast.NodeIndex {
         try parser.report(parser.current_token.span, "'super' must be followed by a call or property access", .{ .help = "use 'super()' to call parent constructor, 'super.property' or 'super[property]' to access parent members" });
         return null;
     }
-    return try parser.addNode(.super, super_token.span);
+    return try parser.addNode(.{ .super = .{} }, super_token.span);
 }
 
 /// `import.meta` or `import(...)`

@@ -1,6 +1,7 @@
 const std = @import("std");
 const parser = @import("parser");
 
+const ast = parser.ast;
 const traverser = parser.traverser;
 
 pub fn main(init: std.process.Init) !void {
@@ -21,14 +22,7 @@ pub fn main(init: std.process.Init) !void {
     defer tree.deinit();
 
     const Visitor = struct {
-        count: usize = 0,
-
-        pub fn enter_block_statement(_: *@This(), _: parser.NodeIndex, _: *traverser.TraverseCtx) traverser.Action {
-            return .skip;
-        }
-
-        pub fn enter_variable_declaration(self: *@This(), _: parser.NodeIndex, _: *traverser.TraverseCtx) traverser.Action {
-            self.count += 1;
+        pub fn enter_variable_declaration(_: *@This(), _: ast.VariableDeclaration, _: ast.NodeIndex, _: *traverser.TraverseCtx) traverser.Action {
             return .proceed;
         }
     };
@@ -36,8 +30,6 @@ pub fn main(init: std.process.Init) !void {
     var visitor = Visitor{};
 
     traverser.traverse(Visitor, &tree, &visitor);
-
-    std.debug.print("{d}", .{visitor.count});
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
 

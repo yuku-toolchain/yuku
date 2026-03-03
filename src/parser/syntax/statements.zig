@@ -444,7 +444,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 fn parseEmptyStatement(parser: *Parser) Error!?ast.NodeIndex {
     const span = parser.current_token.span;
     try parser.advance() orelse return null; // consume ';'
-    return try parser.addNode(.empty_statement, span);
+    return try parser.addNode(.{ .empty_statement = .{} }, span);
 }
 
 /// https://tc39.es/ecma262/#sec-break-statement
@@ -601,5 +601,5 @@ fn parseDebuggerStatement(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume 'debugger'
     end = try parser.eatSemicolon(end) orelse return null;
-    return try parser.addNode(.debugger_statement, .{ .start = start, .end = end });
+    return try parser.addNode(.{ .debugger_statement = .{} }, .{ .start = start, .end = end });
 }
