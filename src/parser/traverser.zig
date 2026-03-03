@@ -83,19 +83,19 @@ pub const Action = enum {
 /// those get called. Hooks you don't declare are simply skipped.
 ///
 /// Typed hooks receive the payload directly:
-///   enter: `fn (self: *V, data: ast.Function, node: ast.NodeIndex, ctx: *TraverseCtx) Action`
-///   exit:  `fn (self: *V, data: ast.Function, node: ast.NodeIndex, ctx: *TraverseCtx) void`
+///   enter: `fn (self: *V, data: ast.Function, ctx: *TraverseCtx) Action`
+///   exit:  `fn (self: *V, data: ast.Function, ctx: *TraverseCtx) void`
 ///
 /// Catch-all hooks:
-///   `fn enter_node(self: *V, node: ast.NodeIndex, ctx: *TraverseCtx) Action`
-///   `fn exit_node(self: *V, node: ast.NodeIndex, ctx: *TraverseCtx) void`
+///   `fn enter_node(self: *V, data: ast.NodeData, ctx: *TraverseCtx) Action`
+///   `fn exit_node(self: *V, data: ast.NodeData, ctx: *TraverseCtx) void`
 ///
 /// Example:
 /// ```
 /// const Counter = struct {
 ///     count: usize = 0,
 ///
-///     pub fn enter_function(self: *Counter, _: ast.Function, _: ast.NodeIndex, _: *TraverseCtx) Action {
+///     pub fn enter_function(self: *Counter, _: ast.Function, _: *TraverseCtx) Action {
 ///         self.count += 1;
 ///         return .proceed;
 ///     }
@@ -116,7 +116,7 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
 
     // enter
     if (comptime hasAnyEnter(V)) {
-        switch (callEnter(V, visitor, index, data, ctx)) {
+        switch (callEnter(V, visitor, data, ctx)) {
             .skip => return .proceed,
             .stop => return .stop,
             .proceed => {},
@@ -137,7 +137,7 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
     // exit
     if (comptime hasAnyExit(V)) {
         if (child_result != .stop) {
-            callExit(V, visitor, index, data, ctx);
+            callExit(V, visitor, data, ctx);
         }
     }
 
@@ -146,45 +146,45 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
 
 // enter dispatch
 
-fn callEnter(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeData, ctx: *TraverseCtx) Action {
+fn callEnter(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) Action {
     // catch-all enter_node
     if (comptime @hasDecl(V, "enter_node")) {
-        switch (visitor.enter_node(index, ctx)) {
+        switch (visitor.enter_node(data, ctx)) {
             .skip => return .skip,
             .stop => return .stop,
             .proceed => {},
         }
     }
 
-    return callEnterTyped(V, visitor, index, data, ctx);
+    return callEnterTyped(V, visitor, data, ctx);
 }
 
-fn callEnterTyped(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeData, ctx: *TraverseCtx) Action {
+fn callEnterTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) Action {
     switch (data) {
         inline else => |payload, tag| {
             const enter_name = comptime enterNameFor(tag);
             if (comptime @hasDecl(V, enter_name)) {
-                return @field(V, enter_name)(visitor, payload, index, ctx);
+                return @field(V, enter_name)(visitor, payload, ctx);
             }
             return .proceed;
         },
     }
 }
 
-fn callExit(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeData, ctx: *TraverseCtx) void {
-    callExitTyped(V, visitor, index, data, ctx);
+fn callExit(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) void {
+    callExitTyped(V, visitor, data, ctx);
 
     if (comptime @hasDecl(V, "exit_node")) {
-        visitor.exit_node(index, ctx);
+        visitor.exit_node(data, ctx);
     }
 }
 
-fn callExitTyped(comptime V: type, visitor: *V, index: ast.NodeIndex, data: ast.NodeData, ctx: *TraverseCtx) void {
+fn callExitTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) void {
     switch (data) {
         inline else => |payload, tag| {
             const exit_name = comptime exitNameFor(tag);
             if (comptime @hasDecl(V, exit_name)) {
-                @field(V, exit_name)(visitor, payload, index, ctx);
+                @field(V, exit_name)(visitor, payload, ctx);
             }
         },
     }

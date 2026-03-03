@@ -22,7 +22,7 @@ pub fn main(init: std.process.Init) !void {
     defer tree.deinit();
 
     const Visitor = struct {
-        pub fn enter_variable_declaration(_: *@This(), _: ast.VariableDeclaration, _: ast.NodeIndex, _: *traverser.TraverseCtx) traverser.Action {
+        pub fn enter_variable_declaration(_: *@This(), _: ast.VariableDeclaration, _: *traverser.TraverseCtx) traverser.Action {
             return .proceed;
         }
     };
