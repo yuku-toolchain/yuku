@@ -27,9 +27,9 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 
 Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is designed for correctness, performance, and clarity.
 
-**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 40,000+ tests from [Test262](https://github.com/tc39/test262) with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches.
+**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 45,000+ tests from [Test262](https://github.com/tc39/test262) with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches.
 
-**Fast by design.** The parser is built using data-oriented design principles: arena allocation, zero-copy string references, packed token encoding, and cache-friendly node storage. It is competitive with leading parsers like [Oxc](https://oxc.rs). [See benchmarks](https://github.com/yuku-toolchain/parser-benchmark).
+**Fast by design.** The parser is built using data-oriented design principles and generous performance engineering. It is competitive with leading parsers like [Oxc](https://oxc.rs). [See benchmarks](https://github.com/yuku-toolchain/parser-benchmark).
 
 **Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
 
@@ -74,10 +74,3 @@ defer tree.deinit();
 ```
 
 See the [Parser documentation](/parser) for the full guide.
-
-## Roadmap
-
-- [x] JavaScript Parser
-- [x] JSX Support
-- [x] Visitor/Traverser (basic, actively improving)
-- [ ] TypeScript Parsing
