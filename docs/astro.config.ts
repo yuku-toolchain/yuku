@@ -14,8 +14,8 @@ export default defineConfig({
 				items: [
 					{ label: 'Introduction', slug: 'parser' },
 					{ label: 'AST', slug: 'parser/ast' },
-					{ label: 'Traverse', slug: 'parser/traverse' },
-					{ label: 'Architecture', slug: 'parser/architecture' },
+					{ label: 'Traverse', slug: 'parser/traverse', badge: 'Coming Soon' },
+					{ label: 'Architecture', slug: 'parser/architecture', badge: 'Coming Soon' },
 				],
 			},
 			],

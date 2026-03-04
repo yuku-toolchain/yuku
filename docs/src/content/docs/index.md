@@ -41,8 +41,8 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 |-----------|--------|
 | [JavaScript/JSX Parser](/parser) | Complete |
 | [AST](/parser/ast) | Complete |
-| [Visitor/Traverser](/parser/traverse) | Functional, actively improving |
-| TypeScript Parsing | Planned |
+| TypeScript Parsing | In Progress |
+| [Visitor/Traverser](/parser/traverse) | Planned |
 | Module Resolver | Planned |
 
 ## Quick start
