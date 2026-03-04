@@ -3,21 +3,21 @@ title: AST
 description: The Abstract Syntax Tree produced by Yuku's parser
 ---
 
-In Node.js, Yuku produces the same AST as [Oxc](https://oxc.rs):
+Internally, Yuku uses an optimized AST designed for performance in Zig — flat arrays, `u32` indices instead of pointers, and zero-copy source references. When serialized to JSON or exposed through Node.js bindings, this internal AST is converted to an [ESTree](https://github.com/estree/estree)-compatible format, matching the output of [Oxc](https://oxc.rs):
 
 - **JavaScript / JSX** — Fully conformant with the [ESTree](https://github.com/estree/estree) standard, identical to the AST produced by [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript** — Conforms to the [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) format used by `@typescript-eslint`.
 
 The only extensions beyond the base specs are support for Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a non-standard `hashbang` field on `Program`.
 
-This page covers the structure of the AST, all node types, and how to work with them.
+This page covers the structure of the internal Zig AST, all node types, and how to work with them.
 
-## Node Storage
+## Nodes
 
 All AST nodes are stored in a single flat array (`tree.nodes`). Instead of heap-allocated tree nodes connected by pointers, every node is identified by a `NodeIndex`, a simple `u32` that indexes into this array.
 
 ```
-NodeIndex  -->  nodes[i]  -->  { data: NodeData, span: Span }
+NodeIndex  —>  nodes[i]  —>  { data: NodeData, span: Span }
 ```
 
 Each node has two parts:
@@ -87,7 +87,7 @@ String values in the AST (identifiers, string literals, numeric literals, etc.) 
 ```zig
 const id = tree.getData(node).identifier_reference;
 const name = tree.getSourceText(id.name_start, id.name_len);
-// "name" is a slice of the original source -- no allocation
+// "name" is a slice of the original source
 ```
 
 This applies to all text-carrying nodes: identifiers, string literals, numeric literals, BigInt literals, regex patterns, template elements, and more. The original source bytes are reused, avoiding any string allocation or copying during parsing.
