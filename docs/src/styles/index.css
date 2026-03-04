@@ -73,10 +73,6 @@ table code {
 	padding: 0 !important;
 }
 
-/*.content-panel:has(h1#_top:not([data-page-title])) {
-    display: none;
-}*/
-
 .content-panel,
 .right-sidebar-panel {
 	padding: 36px;

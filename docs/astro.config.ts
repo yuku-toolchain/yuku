@@ -13,6 +13,9 @@ export default defineConfig({
 				label: 'Parser',
 				items: [
 					{ label: 'Introduction', slug: 'parser' },
+					{ label: 'AST', slug: 'parser/ast' },
+					{ label: 'Traverse', slug: 'parser/traverse' },
+					{ label: 'Architecture', slug: 'parser/architecture' },
 				],
 			},
 			],
