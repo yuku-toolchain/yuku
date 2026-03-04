@@ -138,6 +138,7 @@ for (tree.diagnostics) |d| {
     // d.message   -- human-readable description
     // d.span      -- { .start, .end } byte offsets
     // d.help      -- optional suggestion for fixing
+    // d.labels    -- additional labeled spans for context
 }
 ```
 

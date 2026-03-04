@@ -3,14 +3,21 @@ title: AST
 description: The Abstract Syntax Tree produced by Yuku's parser
 ---
 
-The parser produces an ESTree-conformant Abstract Syntax Tree. This page covers the structure of the AST, all node types, and how to work with them.
+Internally, Yuku uses an optimized AST designed for performance in Zig. When serialized to JSON or exposed through Node.js bindings, this internal AST is converted to an [ESTree](https://github.com/estree/estree)-compatible format, matching the output of [Oxc](https://oxc.rs):
 
-## Node Storage
+- **JavaScript / JSX**: Fully conformant with the [ESTree](https://github.com/estree/estree) standard, identical to the AST produced by [Acorn](https://www.npmjs.com/package/acorn).
+- **TypeScript**: Conforms to the [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) format used by `@typescript-eslint`.
+
+The only extensions beyond the base specs are support for Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a non-standard `hashbang` field on `Program`.
+
+This page covers the structure of the internal Zig AST, all node types, and how to work with them.
+
+## Nodes
 
 All AST nodes are stored in a single flat array (`tree.nodes`). Instead of heap-allocated tree nodes connected by pointers, every node is identified by a `NodeIndex`, a simple `u32` that indexes into this array.
 
 ```
-NodeIndex  -->  nodes[i]  -->  { data: NodeData, span: Span }
+NodeIndex  ->  nodes[i]  ->  { data: NodeData, span: Span }
 ```
 
 Each node has two parts:
@@ -80,7 +87,7 @@ String values in the AST (identifiers, string literals, numeric literals, etc.) 
 ```zig
 const id = tree.getData(node).identifier_reference;
 const name = tree.getSourceText(id.name_start, id.name_len);
-// "name" is a slice of the original source -- no allocation
+// "name" is a slice of the original source
 ```
 
 This applies to all text-carrying nodes: identifiers, string literals, numeric literals, BigInt literals, regex patterns, template elements, and more. The original source bytes are reused, avoiding any string allocation or copying during parsing.
@@ -185,9 +192,9 @@ The root node of every AST.
 | `formal_parameter` | `pattern: NodeIndex` | Single parameter wrapping a binding pattern |
 
 `FormalParameterKind` distinguishes between:
-- `formal_parameters` -- regular function params
-- `unique_formal_parameters` -- params in methods, no duplicate names allowed
-- `arrow_formal_parameters` -- arrow function params
+- `formal_parameters`: regular function params
+- `unique_formal_parameters`: params in methods, no duplicate names allowed
+- `arrow_formal_parameters`: arrow function params
 
 ### Patterns (Destructuring)
 
@@ -206,13 +213,21 @@ Array pattern elements can be `null_node` to represent holes: `[a, , b]`.
 
 ### Identifiers
 
-Yuku distinguishes between different identifier roles:
+Unlike ESTree, which uses a single generic `Identifier` for all positions, Yuku uses distinct node types for each identifier role. This eliminates ambiguity. When you encounter a node, its type tells you exactly how the identifier is used, with no runtime checks needed:
+
+```js
+const foo = bar.baz;
+//    ^^^   ^^^ ^^^
+//    |     |   IdentifierName (property key)
+//    |     IdentifierReference (variable usage)
+//    BindingIdentifier (declaration)
+```
 
 | Node | Fields | Description |
 |------|--------|-------------|
+| `binding_identifier` | `name_start`, `name_len` | Declaration position (`let x`, `function f`) |
 | `identifier_reference` | `name_start`, `name_len` | Expression position (reading a variable) |
-| `binding_identifier` | `name_start`, `name_len` | Declaration position (declaring a variable) |
-| `identifier_name` | `name_start`, `name_len` | Property keys, labels |
+| `identifier_name` | `name_start`, `name_len` | Property keys, member access (`obj.prop`) |
 | `label_identifier` | `name_start`, `name_len` | Labels in `break`/`continue` |
 | `private_identifier` | `name_start`, `name_len` | `#name` (the stored name excludes the `#` prefix) |
 
