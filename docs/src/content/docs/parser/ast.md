@@ -213,13 +213,21 @@ Array pattern elements can be `null_node` to represent holes: `[a, , b]`.
 
 ### Identifiers
 
-Yuku distinguishes between different identifier roles:
+Unlike ESTree, which uses a single generic `Identifier` for all positions, Yuku uses distinct node types for each identifier role. This eliminates ambiguity — when you encounter a node, its type tells you exactly how the identifier is used, with no runtime checks needed:
+
+```js
+const foo = bar.baz;
+//    ^^^   ^^^ ^^^
+//    |     |   IdentifierName (property key)
+//    |     IdentifierReference (variable usage)
+//    BindingIdentifier (declaration)
+```
 
 | Node | Fields | Description |
 |------|--------|-------------|
+| `binding_identifier` | `name_start`, `name_len` | Declaration position (`let x`, `function f`) |
 | `identifier_reference` | `name_start`, `name_len` | Expression position (reading a variable) |
-| `binding_identifier` | `name_start`, `name_len` | Declaration position (declaring a variable) |
-| `identifier_name` | `name_start`, `name_len` | Property keys, labels |
+| `identifier_name` | `name_start`, `name_len` | Property keys, member access (`obj.prop`) |
 | `label_identifier` | `name_start`, `name_len` | Labels in `break`/`continue` |
 | `private_identifier` | `name_start`, `name_len` | `#name` (the stored name excludes the `#` prefix) |
 
