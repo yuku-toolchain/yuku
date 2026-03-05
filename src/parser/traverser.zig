@@ -1,3 +1,5 @@
+// wip, not finished yet
+
 const std = @import("std");
 const ast = @import("ast.zig");
 
@@ -35,36 +37,6 @@ pub const TraverseCtx = struct {
     pub inline fn getNodeText(self: *const TraverseCtx, index: ast.NodeIndex) []const u8 {
         const span = self.tree.getSpan(index);
         return self.tree.source[span.start..span.end];
-    }
-};
-
-const ParentStack = struct {
-    const MAX_DEPTH = 512;
-
-    buf: [MAX_DEPTH]ast.NodeIndex = undefined,
-    len: u32 = 0,
-
-    inline fn push(self: *ParentStack, node: ast.NodeIndex) void {
-        std.debug.assert(self.len < MAX_DEPTH);
-        self.buf[self.len] = node;
-        self.len += 1;
-    }
-
-    inline fn pop(self: *ParentStack) void {
-        std.debug.assert(self.len > 0);
-        self.len -= 1;
-    }
-
-    /// Current parent. null_node if empty.
-    inline fn current(self: *const ParentStack) ast.NodeIndex {
-        if (self.len == 0) return ast.null_node;
-        return self.buf[self.len - 1];
-    }
-
-    /// Get ancestor by depth: 0 = parent, 1 = grandparent, ...
-    inline fn get(self: *const ParentStack, depth_offset: usize) ast.NodeIndex {
-        if (depth_offset >= self.len) return ast.null_node;
-        return self.buf[self.len - 1 - @as(u32, @intCast(depth_offset))];
     }
 };
 
@@ -225,6 +197,36 @@ fn walkStructFields(comptime V: type, visitor: *V, comptime T: type, payload: T,
 }
 
 //
+
+const ParentStack = struct {
+    const MAX_DEPTH = 512;
+
+    buf: [MAX_DEPTH]ast.NodeIndex = undefined,
+    len: u32 = 0,
+
+    inline fn push(self: *ParentStack, node: ast.NodeIndex) void {
+        std.debug.assert(self.len < MAX_DEPTH);
+        self.buf[self.len] = node;
+        self.len += 1;
+    }
+
+    inline fn pop(self: *ParentStack) void {
+        std.debug.assert(self.len > 0);
+        self.len -= 1;
+    }
+
+    /// Current parent. null_node if empty.
+    inline fn current(self: *const ParentStack) ast.NodeIndex {
+        if (self.len == 0) return ast.null_node;
+        return self.buf[self.len - 1];
+    }
+
+    /// Get ancestor by depth: 0 = parent, 1 = grandparent, ...
+    inline fn get(self: *const ParentStack, depth_offset: usize) ast.NodeIndex {
+        if (depth_offset >= self.len) return ast.null_node;
+        return self.buf[self.len - 1 - @as(u32, @intCast(depth_offset))];
+    }
+};
 
 fn enterNameFor(comptime tag: std.meta.Tag(ast.NodeData)) []const u8 {
     return "enter_" ++ @tagName(tag);
