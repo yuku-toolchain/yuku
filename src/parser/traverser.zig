@@ -268,7 +268,7 @@ fn validateHooks(comptime V: type) void {
             continue;
 
         if (!@hasField(ast.NodeData, node_name)) {
-            @compileError("Visitor declares hook '" ++ name ++ "' but no matching node type exists in NodeData");
+            @compileError("Invalid visitor hook '" ++ name ++ "': no field '" ++ node_name ++ "' exists in ast.NodeData");
         }
     }
 }
