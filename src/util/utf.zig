@@ -132,8 +132,6 @@ inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
 }
 
-// --- Tests ---
-
 const testing = std.testing;
 
 test "codePointAt - ASCII" {
