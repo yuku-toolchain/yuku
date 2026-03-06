@@ -260,15 +260,40 @@ fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;
 
+        // catch-all hooks are validated separately
+        if (comptime std.mem.eql(u8, name, ENTER_CATCH_ALL) or std.mem.eql(u8, name, EXIT_CATCH_ALL))
+            continue;
+
         const node_name = if (std.mem.startsWith(u8, name, ENTER_PREFIX))
             name[ENTER_PREFIX.len..]
         else if (std.mem.startsWith(u8, name, EXIT_PREFIX))
-        name[EXIT_PREFIX.len..]
+            name[EXIT_PREFIX.len..]
         else
             continue;
 
         if (!@hasField(ast.NodeData, node_name)) {
             @compileError("Invalid visitor hook '" ++ name ++ "': no field '" ++ node_name ++ "' exists in ast.NodeData");
         }
+
+        // validate the payload parameter type matches the node data field type
+        const expected_type = payloadTypeFor(node_name);
+
+        const fn_info = @typeInfo(@TypeOf(@field(V, name))).@"fn";
+
+        if (fn_info.params.len >= 2) {
+            if (fn_info.params[1].type) |actual_type| {
+                if (actual_type != expected_type) {
+                    @compileError("Visitor hook '" ++ name ++ "': expected payload type '" ++ @typeName(expected_type) ++ "', found '" ++ @typeName(actual_type) ++ "'");
+                }
+            }
+        }
     }
+}
+
+fn payloadTypeFor(comptime node_name: []const u8) type {
+    inline for (@typeInfo(ast.NodeData).@"union".fields) |f| {
+        if (comptime std.mem.eql(u8, f.name, node_name)) return f.type;
+    }
+
+    unreachable;
 }
