@@ -60,12 +60,12 @@ pub const Action = enum {
 /// those get called. Hooks you don't declare are simply skipped.
 ///
 /// Typed hooks receive the payload directly:
-///   enter: `fn (self: *V, data: ast.Function, ctx: *TraverseCtx) Action`
-///   exit:  `fn (self: *V, data: ast.Function, ctx: *TraverseCtx) void`
+///   enter: `fn (self: *V, payload: ast.Function, ctx: *TraverseCtx) Action`
+///   exit:  `fn (self: *V, payload: ast.Function, ctx: *TraverseCtx) void`
 ///
 /// Catch-all hooks:
-///   `fn enter_node(self: *V, data: ast.NodeData, ctx: *TraverseCtx) Action`
-///   `fn exit_node(self: *V, data: ast.NodeData, ctx: *TraverseCtx) void`
+///   `fn enter_node(self: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action`
+///   `fn exit_node(self: *V, payload: ast.NodeData, ctx: *TraverseCtx) void`
 ///
 /// Example:
 /// ```
@@ -92,11 +92,11 @@ pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V) void 
 fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseCtx) Action {
     if (ast.isNull(index)) return .proceed;
 
-    const data = ctx.tree.getData(index);
+    const payload = ctx.tree.getData(index);
 
     // enter
     if (comptime hasAnyEnter(V)) {
-        switch (callEnter(V, visitor, data, ctx)) {
+        switch (callEnter(V, visitor, payload, ctx)) {
             .skip => return .proceed,
             .stop => return .stop,
             .proceed => {},
@@ -106,14 +106,14 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
     // push parent, walk children, pop parent
     ctx.parents.push(index);
 
-    const child_result = walkChildren(V, visitor, data, ctx);
+    const child_result = walkChildren(V, visitor, payload, ctx);
 
     ctx.parents.pop();
 
     // exit
     if (comptime hasAnyExit(V)) {
         if (child_result != .stop) {
-            callExit(V, visitor, data, ctx);
+            callExit(V, visitor, payload, ctx);
         }
     }
 
@@ -122,21 +122,21 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
 
 // enter dispatch
 
-fn callEnter(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) Action {
+fn callEnter(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
     // catch-all enter_node
     if (comptime @hasDecl(V, ENTER_CATCH_ALL)) {
-        switch (visitor.enter_node(data, ctx)) {
+        switch (visitor.enter_node(payload, ctx)) {
             .skip => return .skip,
             .stop => return .stop,
             .proceed => {},
         }
     }
 
-    return callEnterTyped(V, visitor, data, ctx);
+    return callEnterTyped(V, visitor, payload, ctx);
 }
 
-fn callEnterTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) Action {
-    switch (data) {
+fn callEnterTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
+    switch (payload) {
         inline else => |payload, tag| {
             const enter_name = comptime enterNameFor(tag);
             if (comptime @hasDecl(V, enter_name)) {
@@ -147,16 +147,16 @@ fn callEnterTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *Trave
     }
 }
 
-fn callExit(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) void {
-    callExitTyped(V, visitor, data, ctx);
+fn callExit(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) void {
+    callExitTyped(V, visitor, payload, ctx);
 
     if (comptime @hasDecl(V, EXIT_CATCH_ALL)) {
-        visitor.exit_node(data, ctx);
+        visitor.exit_node(payload, ctx);
     }
 }
 
-fn callExitTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) void {
-    switch (data) {
+fn callExitTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) void {
+    switch (payload) {
         inline else => |payload, tag| {
             const exit_name = comptime exitNameFor(tag);
             if (comptime @hasDecl(V, exit_name)) {
@@ -169,8 +169,8 @@ fn callExitTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *Traver
 // any field of type NodeIndex gets walked. any field of type IndexRange
 // gets iterated and each element walked. everything else is skipped.
 
-fn walkChildren(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) Action {
-    switch (data) {
+fn walkChildren(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
+    switch (payload) {
         inline else => |payload| {
             const T = @TypeOf(payload);
             if (@typeInfo(T) == .@"struct") {
