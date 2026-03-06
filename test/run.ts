@@ -110,7 +110,7 @@ const updateProgress = (file: string, passed: boolean) => {
 	if (isCI) return;
 	progressCurrent++;
 	const icon = passed ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
-	const label = file.length > 60 ? "..." + file.slice(-57) : file;
+	const label = file.length > 60 ? `...${file.slice(-57)}` : file;
 	process.stdout.write(
 		`\r\x1b[K  ${icon} ${progressCurrent}/${progressTotal}  ${label}`,
 	);

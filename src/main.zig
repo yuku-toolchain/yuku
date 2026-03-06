@@ -47,9 +47,10 @@ pub fn main(init: std.process.Init) !void {
     const mb_per_sec = (@as(f64, @floatFromInt(contents.len)) / 1_000_000.0) / (taken_ms / 1000.0);
 
     const json = try parser.estree.toJSON(&tree, allocator, .{});
+
     defer allocator.free(json);
 
-    // std.debug.print("{s}\n", .{json});
+    std.debug.print("{s}\n", .{json});
 
     if (tree.hasDiagnostics()) {
         for (tree.diagnostics) |err| {
