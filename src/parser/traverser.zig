@@ -1,5 +1,3 @@
-// wip, not finished yet
-
 const std = @import("std");
 const ast = @import("ast.zig");
 
@@ -8,42 +6,7 @@ const EXIT_CATCH_ALL = "exit_node";
 const ENTER_PREFIX = "enter_";
 const EXIT_PREFIX = "exit_";
 
-pub const TraverseCtx = struct {
-    tree: *const ast.ParseTree,
-    parents: ParentStack = .{},
-
-    /// The immediate parent node (null_node at root)
-    pub inline fn parent(self: *const TraverseCtx) ast.NodeIndex {
-        return self.parents.current();
-    }
-
-    /// Nth ancestor: 0 = parent, 1 = grandparent, ...
-    pub inline fn ancestor(self: *const TraverseCtx, depth_offset: usize) ast.NodeIndex {
-        return self.parents.get(depth_offset);
-    }
-
-    pub inline fn parentData(self: *const TraverseCtx) ?ast.NodeData {
-        const p = self.parent();
-        if (ast.isNull(p)) return null;
-        return self.tree.getData(p);
-    }
-
-    /// Walk up ancestors until predicate matches. Returns the matching node index.
-    pub fn findAncestor(self: *const TraverseCtx, comptime predicate: fn (ast.NodeData) bool) ?ast.NodeIndex {
-        var i: usize = 0;
-        while (true) {
-            const a = self.parents.get(i);
-            if (ast.isNull(a)) return null;
-            if (predicate(self.tree.getData(a))) return a;
-            i += 1;
-        }
-    }
-
-    pub inline fn getNodeText(self: *const TraverseCtx, index: ast.NodeIndex) []const u8 {
-        const span = self.tree.getSpan(index);
-        return self.tree.source[span.start..span.end];
-    }
-};
+// ── Public types ──
 
 pub const Action = enum {
     /// Continue into children (default)
@@ -54,89 +17,119 @@ pub const Action = enum {
     stop,
 };
 
-/// Traverse the AST calling visitor hooks at each node.
-///
-/// `V` is any struct. If it declares `enter_call_expression`, `exit_function`, etc,
-/// those get called. Hooks you don't declare are simply skipped.
-///
-/// Typed hooks receive the payload directly:
-///   enter: `fn (self: *V, payload: ast.Function, ctx: *TraverseCtx) Action`
-///   exit:  `fn (self: *V, payload: ast.Function, ctx: *TraverseCtx) void`
-///
-/// Catch-all hooks:
-///   `fn enter_node(self: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action`
-///   `fn exit_node(self: *V, payload: ast.NodeData, ctx: *TraverseCtx) void`
-///
-/// Example:
-/// ```
-/// const Counter = struct {
-///     count: usize = 0,
-///
-///     pub fn enter_function(self: *Counter, _: ast.Function, _: *TraverseCtx) Action {
-///         self.count += 1;
-///         return .proceed;
-///     }
-/// };
-///
-/// var c = Counter{};
-/// traverse(Counter, &tree, &c);
-/// ```
+pub const NodeTag = std.meta.Tag(ast.NodeData);
+
+/// Basic traversal context with parent stack only.
+pub const Ctx = struct {
+    tree: *const ast.ParseTree,
+    parents: ParentStack = .{},
+
+    /// The immediate parent node (null_node at root)
+    pub inline fn parent(self: *const Ctx) ast.NodeIndex {
+        return self.parents.current();
+    }
+
+    /// Nth ancestor: 0 = parent, 1 = grandparent, ...
+    pub inline fn ancestor(self: *const Ctx, depth_offset: usize) ast.NodeIndex {
+        return self.parents.get(depth_offset);
+    }
+
+    pub inline fn parentData(self: *const Ctx) ?ast.NodeData {
+        const p = self.parent();
+        if (ast.isNull(p)) return null;
+        return self.tree.getData(p);
+    }
+
+    /// Walk up ancestors until predicate matches. Returns the matching node index.
+    pub fn findAncestor(self: *const Ctx, comptime predicate: fn (ast.NodeData) bool) ?ast.NodeIndex {
+        var i: usize = 0;
+        while (true) {
+            const a = self.parents.get(i);
+            if (ast.isNull(a)) return null;
+            if (predicate(self.tree.getData(a))) return a;
+            i += 1;
+        }
+    }
+
+    pub inline fn nodeText(self: *const Ctx, start: u32, len: u16) []const u8 {
+        return self.tree.source[start..][0..len];
+    }
+};
+
+// ── Entry points ──
+
+/// Simple traversal with basic Ctx (parent stack only). Zero overhead.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V) void {
-    var ctx = TraverseCtx{ .tree = tree };
-
-    comptime validateHooks(V);
-
-    _ = walkNode(V, visitor, tree.program, &ctx);
+    var ctx = Ctx{ .tree = tree };
+    walk(Ctx, V, visitor, &ctx);
 }
 
-fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseCtx) Action {
+/// Generic traversal with any context type.
+///
+/// `C` must have fields `.tree` and `.parents`.
+/// `C` may optionally declare `onPush(index, tag)` and `onPop(index, tag)`,
+/// which are called when entering/exiting each node. These are resolved at
+/// comptime — when absent, zero overhead.
+pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) void {
+    comptime validateHooks(V);
+    _ = walkNode(C, V, visitor, ctx.tree.program, ctx);
+}
+
+// ── Walk engine ──
+
+fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Action {
     if (ast.isNull(index)) return .proceed;
 
-    const payload = ctx.tree.getData(index);
+    const data = ctx.tree.getData(index);
+    const tag = std.meta.activeTag(data);
 
-    // enter
+    // 1. Enter hooks (visitor sees OUTER scope — correct for declaring names in parent scope)
     if (comptime hasAnyEnter(V)) {
-        switch (callEnter(V, visitor, payload, ctx)) {
+        switch (callEnter(C, V, visitor, data, ctx)) {
             .skip => return .proceed,
             .stop => return .stop,
             .proceed => {},
         }
     }
 
-    // push parent, walk children, pop parent
+    // 2. Push parent + notify context extension
     ctx.parents.push(index);
 
-    const child_result = walkChildren(V, visitor, payload, ctx);
+    if (comptime @hasDecl(C, "onPush")) ctx.onPush(index, tag);
 
-    ctx.parents.pop();
+    // 3. Walk children
+    const result = walkChildren(C, V, visitor, data, ctx);
 
-    // exit
+    // 4. Exit hooks (BEFORE onPop — visitor still sees inner scope)
     if (comptime hasAnyExit(V)) {
-        if (child_result != .stop) {
-            callExit(V, visitor, payload, ctx);
+        if (result != .stop) {
+            callExit(C, V, visitor, data, ctx);
         }
     }
 
-    return child_result;
+    // 5. Pop context extension + parent
+    if (comptime @hasDecl(C, "onPop")) ctx.onPop(index, tag);
+
+    ctx.parents.pop();
+
+    return result;
 }
 
-// enter dispatch
+// ── Enter dispatch ──
 
-fn callEnter(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
-    // catch-all enter_node
+fn callEnter(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Action {
     if (comptime @hasDecl(V, ENTER_CATCH_ALL)) {
-        switch (visitor.enter_node(payload, ctx)) {
+        switch (visitor.enter_node(data, ctx)) {
             .skip => return .skip,
             .stop => return .stop,
             .proceed => {},
         }
     }
-
-    return callEnterTyped(V, visitor, payload, ctx);
+    return callEnterTyped(C, V, visitor, data, ctx);
 }
 
-fn callEnterTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
-    switch (payload) {
+fn callEnterTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Action {
+    switch (data) {
         inline else => |node, tag| {
             const enter_name = comptime enterNameFor(tag);
             if (comptime @hasDecl(V, enter_name)) {
@@ -147,16 +140,18 @@ fn callEnterTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *Tr
     }
 }
 
-fn callExit(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) void {
-    callExitTyped(V, visitor, payload, ctx);
+// ── Exit dispatch ──
+
+fn callExit(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) void {
+    callExitTyped(C, V, visitor, data, ctx);
 
     if (comptime @hasDecl(V, EXIT_CATCH_ALL)) {
-        visitor.exit_node(payload, ctx);
+        visitor.exit_node(data, ctx);
     }
 }
 
-fn callExitTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) void {
-    switch (payload) {
+fn callExitTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) void {
+    switch (data) {
         inline else => |node, tag| {
             const exit_name = comptime exitNameFor(tag);
             if (comptime @hasDecl(V, exit_name)) {
@@ -166,33 +161,33 @@ fn callExitTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *Tra
     }
 }
 
-// any field of type NodeIndex gets walked. any field of type IndexRange
-// gets iterated and each element walked. everything else is skipped.
+// ── Child walking ──
+// Any field of type NodeIndex gets walked. Any field of type IndexRange
+// gets iterated and each element walked. Everything else is skipped.
 
-fn walkChildren(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
-    switch (payload) {
+fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Action {
+    switch (data) {
         inline else => |node| {
             const T = @TypeOf(node);
             if (@typeInfo(T) == .@"struct") {
-                return walkStructFields(V, visitor, T, node, ctx);
+                return walkStructFields(C, V, visitor, T, node, ctx);
             }
-            // void payload (this_expression, null_literal, etc), leaf node
             return .proceed;
         },
     }
 }
 
-fn walkStructFields(comptime V: type, visitor: *V, comptime T: type, payload: T, ctx: *TraverseCtx) Action {
+fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T: type, payload: T, ctx: *C) Action {
     const fields = @typeInfo(T).@"struct".fields;
 
     inline for (fields) |field| {
         if (field.type == ast.NodeIndex) {
-            if (walkNode(V, visitor, @field(payload, field.name), ctx) == .stop) return .stop;
+            if (walkNode(C, V, visitor, @field(payload, field.name), ctx) == .stop) return .stop;
         } else if (field.type == ast.IndexRange) {
             const range = @field(payload, field.name);
             const children = ctx.tree.getExtra(range);
             for (children) |child| {
-                if (walkNode(V, visitor, child, ctx) == .stop) return .stop;
+                if (walkNode(C, V, visitor, child, ctx) == .stop) return .stop;
             }
         }
     }
@@ -200,46 +195,47 @@ fn walkStructFields(comptime V: type, visitor: *V, comptime T: type, payload: T,
     return .proceed;
 }
 
-//
+// ── Parent stack ──
 
-const ParentStack = struct {
-    const MAX_DEPTH = 512;
+pub const ParentStack = struct {
+    pub const MAX_DEPTH = 512;
 
     buf: [MAX_DEPTH]ast.NodeIndex = undefined,
     len: u32 = 0,
 
-    inline fn push(self: *ParentStack, node: ast.NodeIndex) void {
+    pub inline fn push(self: *ParentStack, node: ast.NodeIndex) void {
         std.debug.assert(self.len < MAX_DEPTH);
         self.buf[self.len] = node;
         self.len += 1;
     }
 
-    inline fn pop(self: *ParentStack) void {
+    pub inline fn pop(self: *ParentStack) void {
         std.debug.assert(self.len > 0);
         self.len -= 1;
     }
 
     /// Current parent. null_node if empty.
-    inline fn current(self: *const ParentStack) ast.NodeIndex {
+    pub inline fn current(self: *const ParentStack) ast.NodeIndex {
         if (self.len == 0) return ast.null_node;
         return self.buf[self.len - 1];
     }
 
     /// Get ancestor by depth: 0 = parent, 1 = grandparent, ...
-    inline fn get(self: *const ParentStack, depth_offset: usize) ast.NodeIndex {
+    pub inline fn get(self: *const ParentStack, depth_offset: usize) ast.NodeIndex {
         if (depth_offset >= self.len) return ast.null_node;
         return self.buf[self.len - 1 - @as(u32, @intCast(depth_offset))];
     }
 };
 
-fn enterNameFor(comptime tag: std.meta.Tag(ast.NodeData)) []const u8 {
+// ── Comptime helpers ──
+
+fn enterNameFor(comptime tag: NodeTag) []const u8 {
     return ENTER_PREFIX ++ @tagName(tag);
 }
 
-fn exitNameFor(comptime tag: std.meta.Tag(ast.NodeData)) []const u8 {
+fn exitNameFor(comptime tag: NodeTag) []const u8 {
     return EXIT_PREFIX ++ @tagName(tag);
 }
-
 
 fn hasAnyEnter(comptime V: type) bool {
     if (@hasDecl(V, ENTER_CATCH_ALL)) return true;
@@ -257,10 +253,6 @@ fn hasAnyExit(comptime V: type) bool {
     return false;
 }
 
-// validates the hooks defined in the visitor at compile time for:
-//  - checking that enter and exit hook node names are correct (e.g., 'enter_blk_statement' is incorrect)
-//  - checking that enter and exit hooks have valid corresponding payload types (e.g., 'ast.VariableDeclaration' is
-//    not a valid payload type for the 'enter_binding_identifier' hook)
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;
@@ -283,8 +275,8 @@ fn validateHooks(comptime V: type) void {
 
         const hook_fn_params = @typeInfo(@TypeOf(@field(V, name))).@"fn".params;
 
-        if(hook_fn_params.len >= 2) {
-            if(hook_fn_params[1].type) |actual| {
+        if (hook_fn_params.len >= 2) {
+            if (hook_fn_params[1].type) |actual| {
                 if (actual != expected) {
                     @compileError("Visitor hook '" ++ name ++ "': expected payload type '" ++ @typeName(expected) ++ "', found '" ++ @typeName(actual) ++ "'");
                 }

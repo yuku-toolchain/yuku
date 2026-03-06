@@ -3,6 +3,7 @@ const parser = @import("parser");
 
 const ast = parser.ast;
 const traverser = parser.traverser;
+const scope = parser.scope;
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
@@ -15,75 +16,75 @@ pub fn main(init: std.process.Init) !void {
     const contents = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
     defer allocator.free(contents);
 
-
     const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = .fromPath(file_path), .source_type = .fromPath(file_path) });
-
     defer tree.deinit();
 
-    const start = std.Io.Clock.Timestamp.now(Io, .real);
+    // -- Redeclaration linter --
 
-    const Visitor = struct {
-        pub fn enter_await_expression(_: *@This(), payload: ast.AwaitExpression, ctx: *traverser.TraverseCtx) traverser.Action {
-            const arg = ctx.tree.getData(payload.argument);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const arena_allocator = arena.allocator();
 
-            std.debug.print("yes", .{});
+    const Linter = struct {
+        syms: scope.SymbolTable,
+        source: []const u8,
 
-            switch (arg) {
-                .array_expression => {},
-                else => {}
+        pub fn enter_node(self: *@This(), data: ast.NodeData, _: *scope.ScopedCtx) traverser.Action {
+            if (scope.scopeKindOf(data) != null) {
+                self.syms.pushScope();
             }
-
             return .proceed;
+        }
+
+        pub fn enter_variable_declarator(self: *@This(), decl: ast.VariableDeclarator, ctx: *scope.ScopedCtx) traverser.Action {
+            const id_data = ctx.tree.getData(decl.id);
+            switch (id_data) {
+                .binding_identifier => |binding| {
+                    const name_slice = ctx.tree.getSourceText(binding.name_start, binding.name_len);
+
+                    if (self.syms.resolve(name_slice)) |existing_id| {
+                        const existing = self.syms.get(existing_id);
+                        if (existing.scope == ctx.currentScope()) {
+                            const pos = getLineAndColumn(self.source, binding.name_start);
+                            std.debug.print("redeclaration of '{s}' at {d}:{d}\n", .{ name_slice, pos.line, pos.col });
+                        }
+                    }
+
+                    _ = self.syms.declare(.{
+                        .name_start = binding.name_start,
+                        .name_len = binding.name_len,
+                        .node = decl.id,
+                        .scope = ctx.currentScope(),
+                        .kind = .variable,
+                        .flags = .{},
+                    }, name_slice);
+                },
+                else => {},
+            }
+            return .proceed;
+        }
+
+        pub fn exit_node(self: *@This(), data: ast.NodeData, _: *scope.ScopedCtx) void {
+            if (scope.scopeKindOf(data) != null) {
+                self.syms.popScope();
+            }
         }
     };
 
-    var visitor = Visitor{};
+    var linter = Linter{
+        .syms = scope.SymbolTable.init(arena_allocator, @intCast(tree.nodes.len / 8)),
+        .source = contents,
+    };
 
-    traverser.traverse(Visitor, &tree, &visitor);
+    const start = std.Io.Clock.Timestamp.now(Io, .real);
+
+    const scope_tree = scope.traverse(Linter, &tree, &linter, arena_allocator);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
+    const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
 
-    const taken = start.durationTo(end);
-
-    const taken_ms = @as(f64, @floatFromInt(taken.raw.toNanoseconds())) / std.time.ns_per_ms;
-
-    var line_count: usize = 1;
-    for (contents) |c| {
-        if (c == '\n') line_count += 1;
-    }
-
-    const million_lines_per_sec = (@as(f64, @floatFromInt(line_count)) / 1_000_000.0) / (taken_ms / 1000.0);
-
-    const mb_per_sec = (@as(f64, @floatFromInt(contents.len)) / 1_000_000.0) / (taken_ms / 1000.0);
-
-    const json = try parser.estree.toJSON(&tree, allocator, .{});
-
-    defer allocator.free(json);
-
-    // std.debug.print("{s}\n", .{json});
-
-    if (tree.hasDiagnostics()) {
-        for (tree.diagnostics) |err| {
-            const start_pos = getLineAndColumn(contents, err.span.start);
-            const end_pos = getLineAndColumn(contents, err.span.end);
-
-            std.debug.print("\nError: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
-            if (err.help) |help| std.debug.print("  Help: {s}\n\n", .{help});
-            if (err.labels.len > 0) {
-                for (err.labels) |label| {
-                    const label_start_pos = getLineAndColumn(contents, label.span.start);
-                    const label_end_pos = getLineAndColumn(contents, label.span.end);
-
-                    std.debug.print("  Label: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ label.message, label_start_pos.line, label_start_pos.col, label_end_pos.line, label_end_pos.col });
-                }
-            }
-        }
-    }
-
-    std.debug.print("\n\n{d:.2}ms | {d:.2} million lines/sec | {d:.2} MB/s\n\n", .{ taken_ms, million_lines_per_sec, mb_per_sec });
+    std.debug.print("\nscopes: {d}, symbols: {d}, took: {d:.2}ms\n", .{ scope_tree.len(), linter.syms.count(), taken_ms });
 }
-
-const ns_to_ms = 1_000_000.0;
 
 fn getLineAndColumn(contents: []const u8, offset: usize) struct { line: usize, col: usize } {
     var line: usize = 1;

@@ -6,3 +6,4 @@ pub const Options = parser.Options;
 pub const ast = @import("ast.zig");
 pub const estree = @import("estree.zig");
 pub const traverser = @import("traverser.zig");
+pub const scope = @import("scope.zig");
