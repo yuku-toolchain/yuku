@@ -1,9 +1,9 @@
 const std = @import("std");
-const ast = @import("ast.zig");
-const traverser = @import("traverser.zig");
+const ast = @import("../ast.zig");
+const root = @import("root.zig");
 
 const Allocator = std.mem.Allocator;
-const NodeTag = traverser.NodeTag;
+const NodeTag = root.NodeTag;
 
 // ── Handles ──
 
@@ -115,7 +115,7 @@ pub const ScopeTree = struct {
 
 pub const ScopedCtx = struct {
     tree: *const ast.ParseTree,
-    parents: traverser.ParentStack = .{},
+    parents: root.ParentStack = .{},
     allocator: Allocator,
 
     // scope internals
@@ -138,9 +138,11 @@ pub const ScopedCtx = struct {
         return self;
     }
 
-    // ── Ctx protocol (called by traverser.walk) ──
+    // ── Context protocol (called by root.walk) ──
 
-    pub fn onPush(self: *ScopedCtx, index: ast.NodeIndex, tag: NodeTag) void {
+    pub fn onEnter(self: *ScopedCtx, index: ast.NodeIndex, tag: NodeTag) void {
+        self.parents.push(index);
+
         const kind = scopeKindOf(tag) orelse return;
         var flags: Scope.Flags = .{};
         if (kind == .function) {
@@ -167,10 +169,11 @@ pub const ScopedCtx = struct {
         self.scope_stack.append(self.allocator, id) catch unreachable;
     }
 
-    pub fn onPop(self: *ScopedCtx, _: ast.NodeIndex, tag: NodeTag) void {
+    pub fn onExit(self: *ScopedCtx, _: ast.NodeIndex, tag: NodeTag) void {
         if (scopeKindOf(tag) != null) {
             _ = self.scope_stack.pop().?;
         }
+        self.parents.pop();
     }
 
     // ── User-facing API ──
@@ -222,7 +225,7 @@ pub const ScopedCtx = struct {
 /// Returns the complete ScopeTree after traversal.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) ScopeTree {
     var ctx = ScopedCtx.init(tree, allocator);
-    traverser.walk(ScopedCtx, V, visitor, &ctx);
+    root.walk(ScopedCtx, V, visitor, &ctx);
     return ctx.finalize();
 }
 
@@ -289,9 +292,6 @@ pub const SymbolTable = struct {
     }
 
     /// Declare a symbol in the current scope. Returns its SymbolId.
-    /// If a symbol with the same name is already visible, it is shadowed
-    /// and will be restored on `popScope`. To detect redeclarations,
-    /// call `resolve` before `declare` and compare scope IDs.
     pub fn declare(self: *SymbolTable, sym: Symbol, name_slice: []const u8) SymbolId {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
 

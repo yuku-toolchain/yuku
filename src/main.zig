@@ -3,7 +3,7 @@ const parser = @import("parser");
 
 const ast = parser.ast;
 const traverser = parser.traverser;
-const scope = parser.scope;
+const scoped = traverser.scoped;
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
@@ -26,17 +26,17 @@ pub fn main(init: std.process.Init) !void {
     const arena_allocator = arena.allocator();
 
     const Linter = struct {
-        syms: scope.SymbolTable,
+        syms: scoped.SymbolTable,
         source: []const u8,
 
-        pub fn enter_node(self: *@This(), data: ast.NodeData, _: *scope.ScopedCtx) traverser.Action {
-            if (scope.scopeKindOf(data) != null) {
+        pub fn enter_node(self: *@This(), data: ast.NodeData, _: *scoped.ScopedCtx) traverser.Action {
+            if (scoped.scopeKindOf(std.meta.activeTag(data)) != null) {
                 self.syms.pushScope();
             }
             return .proceed;
         }
 
-        pub fn enter_variable_declarator(self: *@This(), decl: ast.VariableDeclarator, ctx: *scope.ScopedCtx) traverser.Action {
+        pub fn enter_variable_declarator(self: *@This(), decl: ast.VariableDeclarator, ctx: *scoped.ScopedCtx) traverser.Action {
             const id_data = ctx.tree.getData(decl.id);
             switch (id_data) {
                 .binding_identifier => |binding| {
@@ -64,21 +64,21 @@ pub fn main(init: std.process.Init) !void {
             return .proceed;
         }
 
-        pub fn exit_node(self: *@This(), data: ast.NodeData, _: *scope.ScopedCtx) void {
-            if (scope.scopeKindOf(data) != null) {
+        pub fn exit_node(self: *@This(), data: ast.NodeData, _: *scoped.ScopedCtx) void {
+            if (scoped.scopeKindOf(std.meta.activeTag(data)) != null) {
                 self.syms.popScope();
             }
         }
     };
 
     var linter = Linter{
-        .syms = scope.SymbolTable.init(arena_allocator, @intCast(tree.nodes.len / 8)),
+        .syms = scoped.SymbolTable.init(arena_allocator, @intCast(tree.nodes.len / 8)),
         .source = contents,
     };
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    const scope_tree = scope.traverse(Linter, &tree, &linter, arena_allocator);
+    const scope_tree = scoped.traverse(Linter, &tree, &linter, arena_allocator);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
