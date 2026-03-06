@@ -3,6 +3,11 @@
 const std = @import("std");
 const ast = @import("ast.zig");
 
+const ENTER_CATCH_ALL = "enter_node";
+const EXIT_CATCH_ALL = "exit_node";
+const ENTER_PREFIX = "enter_";
+const EXIT_PREFIX = "exit_";
+
 pub const TraverseCtx = struct {
     tree: *const ast.ParseTree,
     parents: ParentStack = .{},
@@ -78,6 +83,9 @@ pub const Action = enum {
 /// ```
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V) void {
     var ctx = TraverseCtx{ .tree = tree };
+
+    comptime validateHooks(V);
+
     _ = walkNode(V, visitor, tree.program, &ctx);
 }
 
@@ -96,15 +104,11 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
     }
 
     // push parent, walk children, pop parent
-    if (comptime hasAnyHook(V)) {
-        ctx.parents.push(index);
-    }
+    ctx.parents.push(index);
 
     const child_result = walkChildren(V, visitor, data, ctx);
 
-    if (comptime hasAnyHook(V)) {
-        ctx.parents.pop();
-    }
+    ctx.parents.pop();
 
     // exit
     if (comptime hasAnyExit(V)) {
@@ -120,7 +124,7 @@ fn walkNode(comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *TraverseC
 
 fn callEnter(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) Action {
     // catch-all enter_node
-    if (comptime @hasDecl(V, "enter_node")) {
+    if (comptime @hasDecl(V, ENTER_CATCH_ALL)) {
         switch (visitor.enter_node(data, ctx)) {
             .skip => return .skip,
             .stop => return .stop,
@@ -146,7 +150,7 @@ fn callEnterTyped(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *Trave
 fn callExit(comptime V: type, visitor: *V, data: ast.NodeData, ctx: *TraverseCtx) void {
     callExitTyped(V, visitor, data, ctx);
 
-    if (comptime @hasDecl(V, "exit_node")) {
+    if (comptime @hasDecl(V, EXIT_CATCH_ALL)) {
         visitor.exit_node(data, ctx);
     }
 }
@@ -229,29 +233,42 @@ const ParentStack = struct {
 };
 
 fn enterNameFor(comptime tag: std.meta.Tag(ast.NodeData)) []const u8 {
-    return "enter_" ++ @tagName(tag);
+    return ENTER_PREFIX ++ @tagName(tag);
 }
 
 fn exitNameFor(comptime tag: std.meta.Tag(ast.NodeData)) []const u8 {
-    return "exit_" ++ @tagName(tag);
+    return EXIT_PREFIX ++ @tagName(tag);
 }
 
 fn hasAnyEnter(comptime V: type) bool {
-    if (@hasDecl(V, "enter_node")) return true;
+    if (@hasDecl(V, ENTER_CATCH_ALL)) return true;
     for (@typeInfo(ast.NodeData).@"union".fields) |f| {
-        if (@hasDecl(V, "enter_" ++ f.name)) return true;
+        if (@hasDecl(V, ENTER_PREFIX ++ f.name)) return true;
     }
     return false;
 }
 
 fn hasAnyExit(comptime V: type) bool {
-    if (@hasDecl(V, "exit_node")) return true;
+    if (@hasDecl(V, EXIT_CATCH_ALL)) return true;
     for (@typeInfo(ast.NodeData).@"union".fields) |f| {
-        if (@hasDecl(V, "exit_" ++ f.name)) return true;
+        if (@hasDecl(V, EXIT_PREFIX ++ f.name)) return true;
     }
     return false;
 }
 
-fn hasAnyHook(comptime V: type) bool {
-    return hasAnyEnter(V) or hasAnyExit(V);
+fn validateHooks(comptime V: type) void {
+    for (@typeInfo(V).@"struct".decls) |decl| {
+        const name = decl.name;
+
+        const node_name = if (std.mem.startsWith(u8, name, ENTER_PREFIX))
+            name[ENTER_PREFIX.len..]
+        else if (std.mem.startsWith(u8, name, EXIT_PREFIX))
+        name[EXIT_PREFIX.len..]
+        else
+            continue;
+
+        if (!@hasField(ast.NodeData, node_name)) {
+            @compileError("Visitor declares hook '" ++ name ++ "' but no matching node type exists in NodeData");
+        }
+    }
 }
