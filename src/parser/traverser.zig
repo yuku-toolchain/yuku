@@ -240,11 +240,27 @@ fn exitNameFor(comptime tag: std.meta.Tag(ast.NodeData)) []const u8 {
     return EXIT_PREFIX ++ @tagName(tag);
 }
 
-// validates the hooks defined in visitor at compile time
-// for:
-//  - checking the enter and exit hooks nodes names are correct, 'enter_blk_statement' is incorrect
-//  - checking the enter and exit hooks have valid corresponding hooks defined, 'ast.VariableDeclaration' payload type is
-//    not valid for 'enter_binding_identifier' hook.
+
+fn hasAnyEnter(comptime V: type) bool {
+    if (@hasDecl(V, ENTER_CATCH_ALL)) return true;
+    for (@typeInfo(ast.NodeData).@"union".fields) |f| {
+        if (@hasDecl(V, ENTER_PREFIX ++ f.name)) return true;
+    }
+    return false;
+}
+
+fn hasAnyExit(comptime V: type) bool {
+    if (@hasDecl(V, EXIT_CATCH_ALL)) return true;
+    for (@typeInfo(ast.NodeData).@"union".fields) |f| {
+        if (@hasDecl(V, EXIT_PREFIX ++ f.name)) return true;
+    }
+    return false;
+}
+
+// validates the hooks defined in the visitor at compile time for:
+//  - checking that enter and exit hook node names are correct (e.g., 'enter_blk_statement' is incorrect)
+//  - checking that enter and exit hooks have valid corresponding payload types (e.g., 'ast.VariableDeclaration' is
+//    not a valid payload type for the 'enter_binding_identifier' hook)
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;
