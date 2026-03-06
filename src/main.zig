@@ -15,14 +15,24 @@ pub fn main(init: std.process.Init) !void {
     const contents = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
     defer allocator.free(contents);
 
-    const start = std.Io.Clock.Timestamp.now(Io, .real);
 
     const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = .fromPath(file_path), .source_type = .fromPath(file_path) });
 
     defer tree.deinit();
 
+    const start = std.Io.Clock.Timestamp.now(Io, .real);
+
     const Visitor = struct {
-        pub fn enter_ts_export_assignment(_: *@This(), _: ast.VariableDeclaration, _: *traverser.TraverseCtx) traverser.Action {
+        pub fn enter_await_expression(_: *@This(), payload: ast.AwaitExpression, ctx: *traverser.TraverseCtx) traverser.Action {
+            const arg = ctx.tree.getData(payload.argument);
+
+            std.debug.print("yes", .{});
+
+            switch (arg) {
+                .array_expression => {},
+                else => {}
+            }
+
             return .proceed;
         }
     };

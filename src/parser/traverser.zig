@@ -137,10 +137,10 @@ fn callEnter(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *Travers
 
 fn callEnterTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
     switch (payload) {
-        inline else => |payload, tag| {
+        inline else => |node, tag| {
             const enter_name = comptime enterNameFor(tag);
             if (comptime @hasDecl(V, enter_name)) {
-                return @field(V, enter_name)(visitor, payload, ctx);
+                return @field(V, enter_name)(visitor, node, ctx);
             }
             return .proceed;
         },
@@ -157,10 +157,10 @@ fn callExit(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *Traverse
 
 fn callExitTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) void {
     switch (payload) {
-        inline else => |payload, tag| {
+        inline else => |node, tag| {
             const exit_name = comptime exitNameFor(tag);
             if (comptime @hasDecl(V, exit_name)) {
-                @field(V, exit_name)(visitor, payload, ctx);
+                @field(V, exit_name)(visitor, node, ctx);
             }
         },
     }
@@ -171,10 +171,10 @@ fn callExitTyped(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *Tra
 
 fn walkChildren(comptime V: type, visitor: *V, payload: ast.NodeData, ctx: *TraverseCtx) Action {
     switch (payload) {
-        inline else => |payload| {
-            const T = @TypeOf(payload);
+        inline else => |node| {
+            const T = @TypeOf(node);
             if (@typeInfo(T) == .@"struct") {
-                return walkStructFields(V, visitor, T, payload, ctx);
+                return walkStructFields(V, visitor, T, node, ctx);
             }
             // void payload (this_expression, null_literal, etc), leaf node
             return .proceed;
