@@ -24,83 +24,12 @@ pub const Scope = struct {
         @"switch",
     };
 
-    pub const Flags = packed struct(u8) {
+    pub const Flags = struct {
         strict: bool = false,
         arrow: bool = false,
         @"async": bool = false,
         generator: bool = false,
-        _pad: u4 = 0,
     };
-};
-
-const scope_kinds: [std.meta.fields(ast.NodeData).len]?Scope.Kind = blk: {
-    var table: [std.meta.fields(ast.NodeData).len]?Scope.Kind = @splat(null);
-    table[@intFromEnum(NodeTag.function)] = .function;
-    table[@intFromEnum(NodeTag.arrow_function_expression)] = .function;
-    table[@intFromEnum(NodeTag.block_statement)] = .block;
-    table[@intFromEnum(NodeTag.for_statement)] = .@"for";
-    table[@intFromEnum(NodeTag.for_in_statement)] = .@"for";
-    table[@intFromEnum(NodeTag.for_of_statement)] = .@"for";
-    table[@intFromEnum(NodeTag.catch_clause)] = .@"catch";
-    table[@intFromEnum(NodeTag.class)] = .class;
-    table[@intFromEnum(NodeTag.static_block)] = .static_block;
-    table[@intFromEnum(NodeTag.switch_statement)] = .@"switch";
-    break :blk table;
-};
-
-/// returns the scope kind for a node tag, or null if it doesn't create a scope.
-pub inline fn scopeKindOf(tag: NodeTag) ?Scope.Kind {
-    return scope_kinds[@intFromEnum(tag)];
-}
-
-// flat output that survives traversal
-pub const ScopeTree = struct {
-    scopes: []const Scope,
-
-    pub inline fn get(self: ScopeTree, id: ScopeId) Scope {
-        return self.scopes[@intFromEnum(id)];
-    }
-
-    pub inline fn parentOf(self: ScopeTree, id: ScopeId) ScopeId {
-        return self.scopes[@intFromEnum(id)].parent;
-    }
-
-    pub inline fn len(self: ScopeTree) u32 {
-        return @intCast(self.scopes.len);
-    }
-
-    /// Walk up the scope chain, calling `func` for each ancestor scope.
-    /// Stops when func returns false or the root is reached.
-    pub fn walkAncestors(self: ScopeTree, id: ScopeId, comptime func: fn (ScopeId, Scope) bool) void {
-        var current = id;
-        while (current != .none) {
-            const s = self.get(current);
-            if (!func(current, s)) return;
-            current = s.parent;
-        }
-    }
-
-    /// Find the nearest ancestor scope of a given kind.
-    pub fn nearestOfKind(self: ScopeTree, from: ScopeId, kind: Scope.Kind) ?ScopeId {
-        var current = self.get(from).parent;
-        while (current != .none) {
-            const s = self.get(current);
-            if (s.kind == kind) return current;
-            current = s.parent;
-        }
-        return null;
-    }
-
-    /// Find the nearest function or module scope (for var hoisting).
-    pub fn nearestVarScope(self: ScopeTree, from: ScopeId) ScopeId {
-        var current = from;
-        while (current != .none) {
-            const s = self.get(current);
-            if (s.kind == .function or s.kind == .module) return current;
-            current = s.parent;
-        }
-        return .root;
-    }
 };
 
 pub const ScopedCtx = struct {
@@ -171,39 +100,58 @@ pub const ScopedCtx = struct {
         }
     }
 
-    // user facing API
-
     /// The currently active scope.
     pub inline fn currentScope(self: *const ScopedCtx) ScopeId {
         return self.scope_stack.getLast();
     }
 
     /// Get the Scope data for a given ScopeId.
-    pub inline fn scopeData(self: *const ScopedCtx, id: ScopeId) Scope {
+    pub inline fn getScope(self: *const ScopedCtx, id: ScopeId) Scope {
         return self.scopes.items[@intFromEnum(id)];
     }
 
-    /// Get the scope tree built so far (useful in exit hooks to find var-hoist target, etc).
-    pub inline fn scopeTree(self: *const ScopedCtx) ScopeTree {
-        return .{ .scopes = self.scopes.items };
+    pub inline fn currentKind(self: *const ScopedCtx) Scope.Kind {
+        return self.getScope(self.currentScope()).kind;
     }
 
-    pub inline fn nodeText(self: *const ScopedCtx, start: u32, len: u16) []const u8 {
-        return self.tree.source[start..][0..len];
+    pub inline fn isStrict(self: *const ScopedCtx) bool {
+        return self.getScope(self.currentScope()).flags.strict;
     }
 
-    /// Finalize and return the complete scope tree.
-    pub fn finalize(self: *const ScopedCtx) ScopeTree {
-        return .{ .scopes = self.scopes.items };
+    pub fn nearestVarScope(self: *const ScopedCtx) ScopeId {
+        var current = self.currentScope();
+        while (current != .none) {
+            const s = self.getScope(current);
+            if (s.kind == .function or s.kind == .module) return current;
+            current = s.parent;
+        }
+        return .root;
     }
-
-    //
 };
+
+const scope_kinds: [std.meta.fields(ast.NodeData).len]?Scope.Kind = blk: {
+    var table: [std.meta.fields(ast.NodeData).len]?Scope.Kind = @splat(null);
+    table[@intFromEnum(NodeTag.function)] = .function;
+    table[@intFromEnum(NodeTag.arrow_function_expression)] = .function;
+    table[@intFromEnum(NodeTag.block_statement)] = .block;
+    table[@intFromEnum(NodeTag.for_statement)] = .@"for";
+    table[@intFromEnum(NodeTag.for_in_statement)] = .@"for";
+    table[@intFromEnum(NodeTag.for_of_statement)] = .@"for";
+    table[@intFromEnum(NodeTag.catch_clause)] = .@"catch";
+    table[@intFromEnum(NodeTag.class)] = .class;
+    table[@intFromEnum(NodeTag.static_block)] = .static_block;
+    table[@intFromEnum(NodeTag.switch_statement)] = .@"switch";
+    break :blk table;
+};
+
+/// returns the scope kind for a node tag, or null if it doesn't create a scope.
+pub inline fn scopeKindOf(tag: NodeTag) ?Scope.Kind {
+    return scope_kinds[@intFromEnum(tag)];
+}
 
 /// Scoped traversal. Automatically tracks scope enter/exit.
 /// Returns the complete ScopeTree after traversal.
-pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) ScopeTree {
+pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) void {
     var ctx = ScopedCtx.init(tree, allocator);
     walk(ScopedCtx, V, visitor, &ctx);
-    return ctx.finalize();
 }

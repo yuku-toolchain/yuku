@@ -5,7 +5,6 @@ const ast = parser.ast;
 
 const traverser = parser.traverser;
 const scoped = traverser.scoped;
-const symbols = traverser.symbols;
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
@@ -27,23 +26,18 @@ pub fn main(init: std.process.Init) !void {
     const arena_allocator = arena.allocator();
 
     const Linter = struct {
-        symbols: symbols.SymbolTable,
-        source: []const u8,
     };
 
-    var linter = Linter{
-        .symbols = symbols.SymbolTable.init(arena_allocator),
-        .source = contents,
-    };
+    var linter = Linter{};
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    const scope_tree = scoped.traverse(Linter, &tree, &linter, arena_allocator);
+    scoped.traverse(Linter, &tree, &linter, arena_allocator);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
 
-    std.debug.print("\nscopes: {d}, symbols: {d}, took: {d:.2}ms\n", .{ scope_tree.len(), linter.symbols.count(), taken_ms });
+    std.debug.print("\ntook: {d:.2}ms\n", .{ taken_ms });
 }
 
 fn getLineAndColumn(contents: []const u8, offset: usize) struct { line: usize, col: usize } {
