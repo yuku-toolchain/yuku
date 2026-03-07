@@ -25,17 +25,18 @@ pub fn main(init: std.process.Init) !void {
 
     const arena_allocator = arena.allocator();
 
-    const Linter = struct {
-        pub fn enter_debugger_statement(_: *@This(), _: ast.DebuggerStatement, _: ast.NodeIndex, _: *scoped.ScopedCtx) traverser.Action {
+    const Visitor = struct {
+        pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
+            std.debug.print("{}", .{ctx.currentScopeKind()});
             return .proceed;
         }
     };
 
-    var linter = Linter{};
+    var visitor = Visitor{};
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    scoped.traverse(Linter, &tree, &linter, arena_allocator);
+    scoped.traverse(Visitor, &tree, &visitor, arena_allocator);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;

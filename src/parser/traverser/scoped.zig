@@ -14,22 +14,25 @@ pub const Scope = struct {
     flags: Flags,
 
     pub const Kind = enum(u8) {
+        global,
         module,
-        function,
+        function_params,
+        function_body,
         block,
-        @"for",
-        @"catch",
         class,
         static_block,
-        @"switch",
+
+        /// Will `var` land here?
+        fn isFunctionLike(kind: Kind) bool {
+            return switch (kind) {
+                .global, .module, .function_body, .static_block => true,
+                else => false,
+            };
+        }
     };
 
-    pub const Flags = packed struct(u8) {
+    pub const Flags = struct {
         strict: bool = false,
-        arrow: bool = false,
-        @"async": bool = false,
-        generator: bool = false,
-        _pad: u4 = 0,
     };
 };
 
@@ -41,6 +44,8 @@ pub const ScopedCtx = struct {
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
 
+    pending_function_body: bool = false,
+
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) ScopedCtx {
         var self = ScopedCtx{ .tree = tree, .allocator = allocator };
 
@@ -49,19 +54,37 @@ pub const ScopedCtx = struct {
         self.scopes.ensureTotalCapacity(allocator, @max(16, @as(u32, @intCast(node_count / 16)))) catch {};
         self.scope_stack.ensureTotalCapacity(allocator, 64) catch {};
 
-        // root module scope
+        self.pushRoot();
+
+        return self;
+    }
+
+    fn pushRoot(self: *ScopedCtx) void {
         self.scopes.appendAssumeCapacity(.{
-            .node = tree.program,
+            .node = self.tree.program,
             .parent = .none,
-            .kind = .module,
-            .flags = .{
-                .strict = tree.source_type == .module
-            },
+            .kind = .global,
+            .flags = .{},
         });
 
         self.scope_stack.appendAssumeCapacity(.root);
 
-        return self;
+        if(self.tree.source_type == .module) {
+            self.pushScope(.module, self.tree.program, .{ .strict = true });
+        }
+    }
+
+    pub fn pushScope(self: *ScopedCtx, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) void {
+        const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
+
+        self.scopes.append(self.allocator, .{
+            .node = node,
+            .parent = self.currentScope(),
+            .kind = kind,
+            .flags = flags,
+        }) catch unreachable;
+
+        self.scope_stack.append(self.allocator, id) catch unreachable;
     }
 
     // called by walk
@@ -71,57 +94,64 @@ pub const ScopedCtx = struct {
         switch (data) {
             .directive => |d| {
                 if(std.mem.eql(u8, self.tree.getSourceText(d.value_start, d.value_len), "use strict")) {
-                    self.getScopePtr(self.currentScope()).flags.strict = true;
+                    self.getCurrentScopePtr().flags.strict = true;
                 }
             },
             else => {},
         }
 
-        const scope_kind = scopeKindOf(tag);
+        const is_outer_strict = self.getCurrentScope().flags.strict;
 
-        if(scope_kind) |kind| {
-            const current_scope = self.currentScope();
+        const flags: Scope.Flags = .{
+            .strict = is_outer_strict
+        };
 
-            const is_outer_strict = self.getScope(current_scope).flags.strict;
-
-            var flags: Scope.Flags = .{
-                .strict = is_outer_strict
-            };
-
-            switch (data) {
-                .arrow_function_expression => |f| {
-                    flags.arrow = true;
-                    flags.@"async" = f.@"async";
-                },
-                .function => |f| {
-                    flags.@"async" = f.@"async";
-                    flags.generator = f.generator;
-                },
-                else => {},
-            }
-
-            const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
-
-            self.scopes.append(self.allocator, .{
-                .node = index,
-                .parent = self.currentScope(),
-                .kind = kind,
-                .flags = flags,
-            }) catch unreachable;
-
-            self.scope_stack.append(self.allocator, id) catch unreachable;
+        switch (tag) {
+            .function, .arrow_function_expression => {
+                self.pushScope(.function_params, index, flags);
+                self.pending_function_body = true;
+            },
+            .block_statement => {
+                if (self.pending_function_body) {
+                    self.pending_function_body = false;
+                    self.pushScope(.function_body, index, flags);
+                } else {
+                    self.pushScope(.block, index, flags);
+                }
+            },
+            .for_statement, .for_in_statement, .for_of_statement,
+            .catch_clause, .switch_statement => self.pushScope(.block, index, flags),
+            .class => self.pushScope(.class, index, flags),
+            .static_block => self.pushScope(.static_block, index, flags),
+            else => {},
         }
     }
 
     pub fn onExit(self: *ScopedCtx, _: ast.NodeIndex, tag: NodeTag) void {
-        if (scopeKindOf(tag) != null) {
-            _ = self.scope_stack.pop().?;
+        switch (tag) {
+            .function, .arrow_function_expression => {
+                self.pending_function_body = false;
+                _ = self.scope_stack.pop();
+            },
+            .block_statement,
+            .for_statement, .for_in_statement, .for_of_statement,
+            .catch_clause, .switch_statement,
+            .class, .static_block => _ = self.scope_stack.pop(),
+            else => {},
         }
     }
 
     /// The currently active scope.
     pub inline fn currentScope(self: *const ScopedCtx) ScopeId {
         return self.scope_stack.getLast();
+    }
+
+    pub inline fn getCurrentScope(self: *const ScopedCtx) Scope {
+        return self.getScope(self.currentScope());
+    }
+
+    pub inline fn getCurrentScopePtr(self: *const ScopedCtx) *Scope {
+        return &self.scopes.items[@intFromEnum(self.currentScope())];
     }
 
     /// Get the Scope data for a given ScopeId.
@@ -133,12 +163,12 @@ pub const ScopedCtx = struct {
         return &self.scopes.items[@intFromEnum(id)];
     }
 
-    pub inline fn currentKind(self: *const ScopedCtx) Scope.Kind {
-        return self.getScope(self.currentScope()).kind;
+    pub inline fn currentScopeKind(self: *const ScopedCtx) Scope.Kind {
+        return self.getCurrentScope().kind;
     }
 
     pub inline fn isStrict(self: *const ScopedCtx) bool {
-        return self.getScope(self.currentScope()).flags.strict;
+        return self.getCurrentScope().flags.strict;
     }
 
     pub fn iterAncestors(self: *const ScopedCtx, start: ScopeId) AncestorIterator {
@@ -157,26 +187,6 @@ pub const ScopedCtx = struct {
         }
     };
 };
-
-const scope_kinds: [std.meta.fields(ast.NodeData).len]?Scope.Kind = blk: {
-    var table: [std.meta.fields(ast.NodeData).len]?Scope.Kind = @splat(null);
-    table[@intFromEnum(NodeTag.function)] = .function;
-    table[@intFromEnum(NodeTag.arrow_function_expression)] = .function;
-    table[@intFromEnum(NodeTag.block_statement)] = .block;
-    table[@intFromEnum(NodeTag.for_statement)] = .@"for";
-    table[@intFromEnum(NodeTag.for_in_statement)] = .@"for";
-    table[@intFromEnum(NodeTag.for_of_statement)] = .@"for";
-    table[@intFromEnum(NodeTag.catch_clause)] = .@"catch";
-    table[@intFromEnum(NodeTag.class)] = .class;
-    table[@intFromEnum(NodeTag.static_block)] = .static_block;
-    table[@intFromEnum(NodeTag.switch_statement)] = .@"switch";
-    break :blk table;
-};
-
-/// returns the scope kind for a node tag, or null if it doesn't create a scope.
-pub inline fn scopeKindOf(tag: NodeTag) ?Scope.Kind {
-    return scope_kinds[@intFromEnum(tag)];
-}
 
 /// Scoped traversal. Automatically tracks scope enter/exit.
 /// Returns the complete ScopeTree after traversal.
