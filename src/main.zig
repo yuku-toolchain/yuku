@@ -37,7 +37,7 @@ pub fn main(init: std.process.Init) !void {
             return .proceed;
         }
 
-        pub fn enter_binding_identifier(self: *@This(), id: ast.VariableDeclarator, index: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
+        pub fn enter_binding_identifier(self: *@This(), id: ast.BindingIdentifier, index: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
             const name_slice = ctx.tree.getSourceText(id.name_start, id.name_len);
 
             if (self.symbols.resolve(name_slice)) |existing_id| {
