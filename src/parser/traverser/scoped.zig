@@ -11,6 +11,8 @@ pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
 pub const Scope = struct {
     node: ast.NodeIndex,
     parent: ScopeId,
+    /// Nearest ancestor (or self) where `var` declarations hoist to.
+    hoist_target: ScopeId,
     kind: Kind,
     flags: Flags,
 
@@ -59,6 +61,7 @@ pub const ScopedCtx = struct {
         self.scopes.appendAssumeCapacity(.{
             .node = self.tree.program,
             .parent = .none,
+            .hoist_target = .root,
             .kind = .global,
             .flags = .{},
         });
@@ -73,10 +76,12 @@ pub const ScopedCtx = struct {
     /// Push a new scope onto the scope stack.
     pub fn pushScope(self: *ScopedCtx, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
+        const parent = self.currentScope();
 
         try self.scopes.append(self.allocator, .{
             .node = node,
             .parent = self.currentScopeId(),
+            .hoist_target = if (kind.isHoistTarget()) id else parent.hoist_target,
             .kind = kind,
             .flags = flags,
         });
@@ -142,6 +147,11 @@ pub const ScopedCtx = struct {
     /// Returns the id of the currently active scope.
     pub inline fn currentScopeId(self: *const ScopedCtx) ScopeId {
         return self.scope_stack.getLast();
+    }
+
+    /// Returns the id of the nearest hoist-target scope (where `var` lands).
+    pub inline fn currentHoistScopeId(self: *const ScopedCtx) ScopeId {
+        return self.currentScope().hoist_target;
     }
 
     /// Returns the currently active scope.

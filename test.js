@@ -1,5 +1,3 @@
-switch (cool) {
-	case x: {
-		haha;
-	}
+function nice() {
+	haha;
 }
