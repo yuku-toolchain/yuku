@@ -56,7 +56,7 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
 }
 
 fn callEnter(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Action {
-    if (comptime @hasDecl(V, ENTER_CATCH_ALL)) {
+    if (comptime @hasDecl(V, "enter_node")) {
         switch (visitor.enter_node(data, index, ctx)) {
             .skip => return .skip,
             .stop => return .stop,
@@ -81,7 +81,7 @@ fn callEnterTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.Nod
 fn callExit(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
     callExitTyped(C, V, visitor, data, index, ctx);
 
-    if (comptime @hasDecl(V, EXIT_CATCH_ALL)) {
+    if (comptime @hasDecl(V, "exit_node")) {
         visitor.exit_node(data, index, ctx);
     }
 }
@@ -128,25 +128,25 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
 }
 
 fn enterNameFor(comptime tag: NodeTag) []const u8 {
-    return ENTER_PREFIX ++ @tagName(tag);
+    return "enter_" ++ @tagName(tag);
 }
 
 fn exitNameFor(comptime tag: NodeTag) []const u8 {
-    return EXIT_PREFIX ++ @tagName(tag);
+    return "exit_" ++ @tagName(tag);
 }
 
 fn hasAnyEnter(comptime V: type) bool {
-    if (@hasDecl(V, ENTER_CATCH_ALL)) return true;
+    if (@hasDecl(V, "enter_node")) return true;
     for (@typeInfo(ast.NodeData).@"union".fields) |f| {
-        if (@hasDecl(V, ENTER_PREFIX ++ f.name)) return true;
+        if (@hasDecl(V, "enter_" ++ f.name)) return true;
     }
     return false;
 }
 
 fn hasAnyExit(comptime V: type) bool {
-    if (@hasDecl(V, EXIT_CATCH_ALL)) return true;
+    if (@hasDecl(V, "exit_node")) return true;
     for (@typeInfo(ast.NodeData).@"union".fields) |f| {
-        if (@hasDecl(V, EXIT_PREFIX ++ f.name)) return true;
+        if (@hasDecl(V, "exit_" ++ f.name)) return true;
     }
     return false;
 }
@@ -155,13 +155,13 @@ fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;
 
-        if (comptime std.mem.eql(u8, name, ENTER_CATCH_ALL) or std.mem.eql(u8, name, EXIT_CATCH_ALL))
+        if (comptime std.mem.eql(u8, name, "enter_node") or std.mem.eql(u8, name, "exit_node"))
             continue;
 
-        const node_name = if (std.mem.startsWith(u8, name, ENTER_PREFIX))
-            name[ENTER_PREFIX.len..]
-        else if (std.mem.startsWith(u8, name, EXIT_PREFIX))
-            name[EXIT_PREFIX.len..]
+        const node_name = if (std.mem.startsWith(u8, name, "enter_"))
+        name["enter_".len..]
+        else if (std.mem.startsWith(u8, name, "exit_"))
+            name["exit_".len..]
         else
             continue;
 
@@ -182,8 +182,3 @@ fn validateHooks(comptime V: type) void {
         }
     }
 }
-
-const ENTER_CATCH_ALL = "enter_node";
-const EXIT_CATCH_ALL = "exit_node";
-const ENTER_PREFIX = "enter_";
-const EXIT_PREFIX = "exit_";

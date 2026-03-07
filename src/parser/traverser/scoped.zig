@@ -67,8 +67,9 @@ pub const ScopedCtx = struct {
 
         var flags: Scope.Flags = .{};
 
+        const data = self.tree.getData(index);
+
         if (kind == .function) {
-            const data = self.tree.getData(index);
             switch (data) {
                 .arrow_function_expression => |f| {
                     flags.arrow = true;
@@ -118,15 +119,21 @@ pub const ScopedCtx = struct {
         return self.getScope(self.currentScope()).flags.strict;
     }
 
-    pub fn nearestVarScope(self: *const ScopedCtx) ScopeId {
-        var current = self.currentScope();
-        while (current != .none) {
-            const s = self.getScope(current);
-            if (s.kind == .function or s.kind == .module) return current;
-            current = s.parent;
-        }
-        return .root;
+    pub fn iterAncestors(self: *const ScopedCtx, start: ScopeId) AncestorIterator {
+        return .{ .ctx = self, .current = start };
     }
+
+    pub const AncestorIterator = struct {
+        ctx: *const ScopedCtx,
+        current: ScopeId,
+
+        pub fn next(self: *AncestorIterator) ?ScopeId {
+            const id = self.current;
+            if (id == .none) return null;
+            self.current = self.ctx.getScope(id).parent;
+            return id;
+        }
+    };
 };
 
 const scope_kinds: [std.meta.fields(ast.NodeData).len]?Scope.Kind = blk: {
