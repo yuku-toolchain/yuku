@@ -170,19 +170,41 @@ pub const ScopedCtx = struct {
     }
 
     /// Returns an iterator over ancestor scopes starting from `start`, walking up to root.
-    pub fn ancestors(self: *const ScopedCtx, start: ScopeId) AncestorIterator {
-        return .{ .tracker = self, .current = start };
+    pub fn ancestors(self: *const ScopedCtx, start: ScopeId) ScopeTree.AncestorIterator {
+        return .{ .scopes = self.scopes.items, .current = start };
     }
 
+    /// Returns the completed scope tree. Call after traversal is done.
+    pub fn toScopeTree(self: *const ScopedCtx) ScopeTree {
+        return .{ .scopes = self.scopes.items };
+    }
+};
+
+/// The immutable result of a scoped traversal, a flat array of scopes
+/// linked by parent pointers.
+pub const ScopeTree = struct {
+    scopes: []const Scope,
+
+    /// Returns the scope for a given id.
+    pub inline fn getScope(self: ScopeTree, id: ScopeId) Scope {
+        return self.scopes[@intFromEnum(id)];
+    }
+
+    /// Returns an iterator over ancestor scopes starting from `start`, walking up to root.
+    pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
+        return .{ .scopes = self.scopes, .current = start };
+    }
+
+    /// Iterator over ancestor scopes from a starting scope up to root.
     pub const AncestorIterator = struct {
-        tracker: *const ScopedCtx,
+        scopes: []const Scope,
         current: ScopeId,
 
         /// Returns the next ancestor scope, or null when the root has been passed.
         pub fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
-            self.current = self.tracker.getScope(id).parent;
+            self.current = self.scopes[@intFromEnum(id)].parent;
             return id;
         }
     };
@@ -192,8 +214,9 @@ pub const ScopedCtx = struct {
 ///
 /// Walks the AST while automatically tracking scope enter/exit. The visitor
 /// receives a `*ScopedCtx` as its context, giving access to scope
-/// information at every node.
-pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!void {
+/// information at every node. Returns the completed `ScopeTree`.
+pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
     var ctx = try ScopedCtx.init(tree, allocator);
     try walk(ScopedCtx, V, visitor, &ctx);
+    return ctx.toScopeTree();
 }

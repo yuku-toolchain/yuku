@@ -36,7 +36,7 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    try scoped.traverse(Visitor, &tree, &visitor, arena_allocator);
+    _ = try scoped.traverse(Visitor, &tree, &visitor, arena_allocator);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
