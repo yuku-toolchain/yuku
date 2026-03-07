@@ -1,35 +1,40 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
-const root = @import("root.zig");
 
+const Allocator = std.mem.Allocator;
 const NodeTag = std.meta.Tag(ast.NodeData);
 
+/// Controls traversal flow at each node.
 pub const Action = enum {
-    /// Continue into children (default)
+    /// Continue into children (default).
     proceed,
-    /// Skip this node's children, continue to next sibling
+    /// Skip this node's children, continue to next sibling.
     skip,
-    /// Stop the entire traversal immediately
+    /// Stop the entire traversal immediately.
     stop,
 };
 
 /// Walk the AST, calling visitor hooks at each node.
 ///
-/// This is the generic foundation. `C` is any context type that must have
-/// a `.tree = ast.ParseTree` field. It may optionally declare `onEnter` and `onExit` hooks
-/// that are called when entering/exiting each node.
-pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) void {
+/// `C` is a context type with a `.tree: *const ast.ParseTree` field.
+/// It may optionally declare `onEnter`/`onExit` hooks called when
+/// entering/exiting nodes. If `onEnter` returns an error, it is
+/// propagated through the walk.
+///
+/// `V` is a visitor type with optional per-node enter/exit hooks
+/// (e.g. `enter_function`, `exit_block_statement`).
+pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
-    _ = walkNode(C, V, visitor, ctx.tree.program, ctx);
+    _ = try walkNode(C, V, visitor, ctx.tree.program, ctx);
 }
 
-fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Action {
+fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
     if (ast.isNull(index)) return .proceed;
 
     const data = ctx.tree.getData(index);
     const tag = std.meta.activeTag(data);
 
-    // enter hooks
+    // visitor enter hooks
     if (comptime hasAnyEnter(V)) {
         switch (callEnter(C, V, visitor, data, index, ctx)) {
             .skip => return .proceed,
@@ -38,18 +43,21 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
         }
     }
 
-    // context enter
-    if (comptime @hasDecl(C, "onEnter")) ctx.onEnter(index, tag);
+    // context enter hook
+    if (comptime @hasDecl(C, "onEnter")) {
+        try ctx.onEnter(index, tag);
+    }
 
-    const result = walkChildren(C, V, visitor, data, ctx);
+    const result = try walkChildren(C, V, visitor, data, ctx);
 
+    // visitor exit hooks
     if (comptime hasAnyExit(V)) {
         if (result != .stop) {
             callExit(C, V, visitor, data, index, ctx);
         }
     }
 
-    // context exit
+    // context exit hook
     if (comptime @hasDecl(C, "onExit")) ctx.onExit(index, tag);
 
     return result;
@@ -69,9 +77,8 @@ fn callEnter(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData
 fn callEnterTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Action {
     switch (data) {
         inline else => |node, tag| {
-            const enter_name = comptime enterNameFor(tag);
-            if (comptime @hasDecl(V, enter_name)) {
-                return @field(V, enter_name)(visitor, node, index, ctx);
+            if (comptime @hasDecl(V, "enter_" ++ @tagName(tag))) {
+                return @field(V, "enter_" ++ @tagName(tag))(visitor, node, index, ctx);
             }
             return .proceed;
         },
@@ -89,15 +96,14 @@ fn callExit(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData,
 fn callExitTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
     switch (data) {
         inline else => |node, tag| {
-            const exit_name = comptime exitNameFor(tag);
-            if (comptime @hasDecl(V, exit_name)) {
-                @field(V, exit_name)(visitor, node, index, ctx);
+            if (comptime @hasDecl(V, "exit_" ++ @tagName(tag))) {
+                @field(V, "exit_" ++ @tagName(tag))(visitor, node, index, ctx);
             }
         },
     }
 }
 
-fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Action {
+fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Allocator.Error!Action {
     switch (data) {
         inline else => |node| {
             const T = @TypeOf(node);
@@ -109,30 +115,20 @@ fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeD
     }
 }
 
-fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T: type, payload: T, ctx: *C) Action {
+fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T: type, payload: T, ctx: *C) Allocator.Error!Action {
     const fields = @typeInfo(T).@"struct".fields;
 
     inline for (fields) |field| {
         if (field.type == ast.NodeIndex) {
-            if (walkNode(C, V, visitor, @field(payload, field.name), ctx) == .stop) return .stop;
+            if ((try walkNode(C, V, visitor, @field(payload, field.name), ctx)) == .stop) return .stop;
         } else if (field.type == ast.IndexRange) {
-            const range = @field(payload, field.name);
-            const children = ctx.tree.getExtra(range);
-            for (children) |child| {
-                if (walkNode(C, V, visitor, child, ctx) == .stop) return .stop;
+            for (ctx.tree.getExtra(@field(payload, field.name))) |child| {
+                if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
             }
         }
     }
 
     return .proceed;
-}
-
-fn enterNameFor(comptime tag: NodeTag) []const u8 {
-    return "enter_" ++ @tagName(tag);
-}
-
-fn exitNameFor(comptime tag: NodeTag) []const u8 {
-    return "exit_" ++ @tagName(tag);
 }
 
 fn hasAnyEnter(comptime V: type) bool {
@@ -151,6 +147,8 @@ fn hasAnyExit(comptime V: type) bool {
     return false;
 }
 
+/// validates at compile time that all visitor hook names correspond to
+/// actual `ast.NodeData` fields and have the correct payload types.
 fn validateHooks(comptime V: type) void {
     for (@typeInfo(V).@"struct".decls) |decl| {
         const name = decl.name;
@@ -159,7 +157,7 @@ fn validateHooks(comptime V: type) void {
             continue;
 
         const node_name = if (std.mem.startsWith(u8, name, "enter_"))
-        name["enter_".len..]
+            name["enter_".len..]
         else if (std.mem.startsWith(u8, name, "exit_"))
             name["exit_".len..]
         else
@@ -170,7 +168,6 @@ fn validateHooks(comptime V: type) void {
         }
 
         const expected = @FieldType(ast.NodeData, node_name);
-
         const hook_fn_params = @typeInfo(@TypeOf(@field(V, name))).@"fn".params;
 
         if (hook_fn_params.len >= 3) {

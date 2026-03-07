@@ -27,7 +27,7 @@ pub fn main(init: std.process.Init) !void {
 
     const Visitor = struct {
         pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
-            std.debug.print("{}", .{ctx.currentScopeKind()});
+            std.debug.print("{}", .{ctx.currentScope().kind});
             return .proceed;
         }
     };
@@ -36,7 +36,7 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    scoped.traverse(Visitor, &tree, &visitor, arena_allocator);
+    try scoped.traverse(Visitor, &tree, &visitor, arena_allocator);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
