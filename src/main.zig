@@ -26,11 +26,7 @@ pub fn main(init: std.process.Init) !void {
     const arena_allocator = arena.allocator();
 
     const Linter = struct {
-        pub fn enter_debugger_statement(_: *@This(), _: ast.DebuggerStatement, _: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
-            if(ctx.isStrict()) {
-                std.debug.print("Debugger statement is not allowed in strict context", .{});
-            }
-
+        pub fn enter_debugger_statement(_: *@This(), _: ast.DebuggerStatement, _: ast.NodeIndex, _: *scoped.ScopedCtx) traverser.Action {
             return .proceed;
         }
     };
