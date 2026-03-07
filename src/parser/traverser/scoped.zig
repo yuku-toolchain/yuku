@@ -54,7 +54,9 @@ pub const ScopedCtx = struct {
             .node = tree.program,
             .parent = .none,
             .kind = .module,
-            .flags = .{},
+            .flags = .{
+                .strict = tree.source_type == .module
+            },
         });
 
         self.scope_stack.appendAssumeCapacity(.root);
@@ -62,23 +64,11 @@ pub const ScopedCtx = struct {
         return self;
     }
 
-    // called by root.walk
+    // called by walk
     pub fn onEnter(self: *ScopedCtx, index: ast.NodeIndex, tag: NodeTag) void {
-        const kind = scopeKindOf(tag) orelse return;
-
-        var flags: Scope.Flags = .{};
-
         const data = self.tree.getData(index);
 
         switch (data) {
-            .arrow_function_expression => |f| {
-                flags.arrow = true;
-                flags.@"async" = f.@"async";
-            },
-            .function => |f| {
-                flags.@"async" = f.@"async";
-                flags.generator = f.generator;
-            },
             .directive => |d| {
                 if(std.mem.eql(u8, self.tree.getSourceText(d.value_start, d.value_len), "use strict")) {
                     self.getScopePtr(self.currentScope()).flags.strict = true;
@@ -87,16 +77,40 @@ pub const ScopedCtx = struct {
             else => {},
         }
 
-        const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
+        const scope_kind = scopeKindOf(tag);
 
-        self.scopes.append(self.allocator, .{
-            .node = index,
-            .parent = self.currentScope(),
-            .kind = kind,
-            .flags = flags,
-        }) catch unreachable;
+        if(scope_kind) |kind| {
+            const current_scope = self.currentScope();
 
-        self.scope_stack.append(self.allocator, id) catch unreachable;
+            const is_outer_strict = self.getScope(current_scope).flags.strict;
+
+            var flags: Scope.Flags = .{
+                .strict = is_outer_strict
+            };
+
+            switch (data) {
+                .arrow_function_expression => |f| {
+                    flags.arrow = true;
+                    flags.@"async" = f.@"async";
+                },
+                .function => |f| {
+                    flags.@"async" = f.@"async";
+                    flags.generator = f.generator;
+                },
+                else => {},
+            }
+
+            const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
+
+            self.scopes.append(self.allocator, .{
+                .node = index,
+                .parent = self.currentScope(),
+                .kind = kind,
+                .flags = flags,
+            }) catch unreachable;
+
+            self.scope_stack.append(self.allocator, id) catch unreachable;
+        }
     }
 
     pub fn onExit(self: *ScopedCtx, _: ast.NodeIndex, tag: NodeTag) void {

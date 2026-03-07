@@ -16,7 +16,7 @@ pub const Action = enum {
 /// Walk the AST, calling visitor hooks at each node.
 ///
 /// This is the generic foundation. `C` is any context type that must have
-/// a `.tree` field. It may optionally declare `onEnter` and `onExit` hooks
+/// a `.tree = ast.ParseTree` field. It may optionally declare `onEnter` and `onExit` hooks
 /// that are called when entering/exiting each node.
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) void {
     comptime validateHooks(V);
