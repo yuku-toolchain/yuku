@@ -1,3 +1,6 @@
 const nice = "cool";
 
-function cool() {}
+function cool() {
+	"use strict";
+	debugger;
+}

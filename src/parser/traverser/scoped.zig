@@ -24,11 +24,12 @@ pub const Scope = struct {
         @"switch",
     };
 
-    pub const Flags = struct {
+    pub const Flags = packed struct(u8) {
         strict: bool = false,
         arrow: bool = false,
         @"async": bool = false,
         generator: bool = false,
+        _pad: u4 = 0,
     };
 };
 
@@ -69,18 +70,21 @@ pub const ScopedCtx = struct {
 
         const data = self.tree.getData(index);
 
-        if (kind == .function) {
-            switch (data) {
-                .arrow_function_expression => |f| {
-                    flags.arrow = true;
-                    flags.@"async" = f.@"async";
-                },
-                .function => |f| {
-                    flags.@"async" = f.@"async";
-                    flags.generator = f.generator;
-                },
-                else => {},
-            }
+        switch (data) {
+            .arrow_function_expression => |f| {
+                flags.arrow = true;
+                flags.@"async" = f.@"async";
+            },
+            .function => |f| {
+                flags.@"async" = f.@"async";
+                flags.generator = f.generator;
+            },
+            .directive => |d| {
+                if(std.mem.eql(u8, self.tree.getSourceText(d.value_start, d.value_len), "use strict")) {
+                    self.getScopePtr(self.currentScope()).flags.strict = true;
+                }
+            },
+            else => {},
         }
 
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
@@ -109,6 +113,10 @@ pub const ScopedCtx = struct {
     /// Get the Scope data for a given ScopeId.
     pub inline fn getScope(self: *const ScopedCtx, id: ScopeId) Scope {
         return self.scopes.items[@intFromEnum(id)];
+    }
+
+    pub inline fn getScopePtr(self: *const ScopedCtx, id: ScopeId) *Scope {
+        return &self.scopes.items[@intFromEnum(id)];
     }
 
     pub inline fn currentKind(self: *const ScopedCtx) Scope.Kind {
