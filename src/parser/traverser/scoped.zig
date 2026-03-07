@@ -9,11 +9,15 @@ pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
 
 /// A single scope in the scope tree.
 pub const Scope = struct {
+    /// The AST node that introduced this scope.
     node: ast.NodeIndex,
+    /// The enclosing parent scope, or `.none` for the root.
     parent: ScopeId,
     /// Nearest ancestor (or self) where `var` declarations hoist to.
     hoist_target: ScopeId,
+    /// What kind of syntactic construct created this scope.
     kind: Kind,
+    /// Inherited and local flags (e.g. strict mode).
     flags: Flags,
 
     pub const Kind = enum(u8) {
