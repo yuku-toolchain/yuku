@@ -4,6 +4,29 @@ const ast = @import("../ast.zig");
 const Allocator = std.mem.Allocator;
 const NodeTag = std.meta.Tag(ast.NodeData);
 
+/// Tracks the path of node indices from root to the current position.
+/// Provides efficient access to parent and ancestor nodes during traversal.
+pub const NodePath = struct {
+    stack: std.ArrayList(ast.NodeIndex) = .{},
+
+    /// Returns the parent of the current node.
+    pub inline fn parent(self: *const NodePath) ?ast.NodeIndex {
+        const items = self.stack.items;
+        return if (items.len >= 2) items[items.len - 2] else null;
+    }
+
+    /// Returns the ancestor `n` levels up (0 = current, 1 = parent, 2 = grandparent).
+    pub inline fn ancestor(self: *const NodePath, n: usize) ?ast.NodeIndex {
+        const items = self.stack.items;
+        return if (n < items.len) items[items.len - 1 - n] else null;
+    }
+
+    /// The current nesting depth.
+    pub inline fn depth(self: *const NodePath) usize {
+        return self.stack.items.len;
+    }
+};
+
 /// Controls traversal flow at each node.
 pub const Action = enum {
     /// Continue into children (default).
@@ -30,6 +53,15 @@ pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.
 
 fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
     if (ast.isNull(index)) return .proceed;
+
+    // track node path (push now, defer pop for all exit paths)
+    if (comptime @hasField(C, "path")) {
+        try ctx.path.stack.append(ctx.allocator, index);
+    }
+
+    defer if (comptime @hasField(C, "path")) {
+        _ = ctx.path.stack.pop();
+    };
 
     const data = ctx.tree.getData(index);
     const tag = std.meta.activeTag(data);
