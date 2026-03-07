@@ -67,7 +67,6 @@ pub const ScopedCtx = struct {
         var self = ScopedCtx{ .tree = tree, .allocator = allocator };
 
         const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));
-        try self.path.stack.ensureTotalCapacity(allocator, 64);
         try self.scopes.ensureTotalCapacity(allocator, estimated_scopes);
         try self.scope_stack.ensureTotalCapacity(allocator, 64);
 

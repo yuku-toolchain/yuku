@@ -4,29 +4,6 @@ const ast = @import("../ast.zig");
 const Allocator = std.mem.Allocator;
 const NodeTag = std.meta.Tag(ast.NodeData);
 
-/// Tracks the path of node indices from root to the current position.
-/// Provides efficient access to parent and ancestor nodes during traversal.
-pub const NodePath = struct {
-    stack: std.ArrayList(ast.NodeIndex) = .{},
-
-    /// Returns the parent of the current node.
-    pub inline fn parent(self: *const NodePath) ?ast.NodeIndex {
-        const items = self.stack.items;
-        return if (items.len >= 2) items[items.len - 2] else null;
-    }
-
-    /// Returns the ancestor `n` levels up (0 = current, 1 = parent, 2 = grandparent).
-    pub inline fn ancestor(self: *const NodePath, n: usize) ?ast.NodeIndex {
-        const items = self.stack.items;
-        return if (n < items.len) items[items.len - 1 - n] else null;
-    }
-
-    /// The current nesting depth.
-    pub inline fn depth(self: *const NodePath) usize {
-        return self.stack.items.len;
-    }
-};
-
 /// Controls traversal flow at each node.
 pub const Action = enum {
     /// Continue into children (default).
@@ -55,13 +32,8 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
     if (ast.isNull(index)) return .proceed;
 
     // track node path (push now, defer pop for all exit paths)
-    if (comptime @hasField(C, "path")) {
-        try ctx.path.stack.append(ctx.allocator, index);
-    }
-
-    defer if (comptime @hasField(C, "path")) {
-        _ = ctx.path.stack.pop();
-    };
+    if (comptime @hasField(C, "path")) ctx.path.push(index);
+    defer if (comptime @hasField(C, "path")) ctx.path.pop();
 
     const data = ctx.tree.getData(index);
     const tag = std.meta.activeTag(data);
@@ -211,3 +183,39 @@ fn validateHooks(comptime V: type) void {
         }
     }
 }
+
+/// Tracks the path of node indices from root to the current position.
+pub const NodePath = struct {
+    const capacity = 256;
+
+    buf: [capacity]ast.NodeIndex = undefined,
+    len: usize = 0,
+
+    /// Returns the parent of the current node.
+    pub inline fn parent(self: *const NodePath) ?ast.NodeIndex {
+        return self.ancestor(1);
+    }
+
+    /// Returns the ancestor `n` levels up (0 = current, 1 = parent, 2 = grandparent).
+    pub inline fn ancestor(self: *const NodePath, n: usize) ?ast.NodeIndex {
+        if (n >= self.len) return null;
+        const pos = self.len - 1 - n;
+        return if (pos < capacity) self.buf[pos] else null;
+    }
+
+    /// The current nesting depth.
+    pub inline fn depth(self: *const NodePath) usize {
+        return self.len;
+    }
+
+    fn push(self: *NodePath, index: ast.NodeIndex) void {
+        if (self.len < capacity) {
+            self.buf[self.len] = index;
+        }
+        self.len += 1;
+    }
+
+    fn pop(self: *NodePath) void {
+        self.len -= 1;
+    }
+};
