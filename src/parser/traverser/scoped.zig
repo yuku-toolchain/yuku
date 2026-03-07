@@ -48,6 +48,17 @@ pub const ScopedCtx = struct {
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
+
+    // in JavaScript, a function creates two scopes, one for its parameters
+    // (`function_params`) and one for its body (`function_body`). The AST
+    // represents the body as a `block_statement` child of the `function` node,
+    // but a `block_statement` on its own could be a standalone block (`{ ... }`).
+    //
+    // this flag bridges that gap, when we enter a `function` node, we push the
+    // params scope and set this to `true`. when we then hit the immediate
+    // `block_statement` child, we check this flag to know it's the function body
+    // (not a regular block), push `function_body` instead of `block`, and
+    // consume the flag.
     pending_function_body: bool = false,
 
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!ScopedCtx {
