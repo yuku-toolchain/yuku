@@ -29,44 +29,6 @@ pub fn main(init: std.process.Init) !void {
     const Linter = struct {
         symbols: symbols.SymbolTable,
         source: []const u8,
-
-        pub fn enter_node(self: *@This(), data: ast.NodeData, _: ast.NodeIndex, _: *scoped.ScopedCtx) traverser.Action {
-            if (scoped.scopeKindOf(std.meta.activeTag(data)) != null) {
-                self.symbols.pushScope();
-            }
-            return .proceed;
-        }
-
-        pub fn enter_binding_identifier(self: *@This(), id: ast.BindingIdentifier, index: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
-            const name_slice = ctx.tree.getSourceText(id.name_start, id.name_len);
-
-            if (self.symbols.resolve(name_slice)) |existing_id| {
-                const existing = self.symbols.get(existing_id);
-
-                if (existing.scope == ctx.currentScope()) {
-                    const pos = getLineAndColumn(self.source, id.name_start);
-
-                    std.debug.print("redeclaration of '{s}' at test.js:{d}:{d}\n", .{ name_slice, pos.line, pos.col });
-                }
-            }
-
-            _ = self.symbols.declare(.{
-                .name_start = id.name_start,
-                .name_len = id.name_len,
-                .node = index,
-                .scope = ctx.currentScope(),
-                .kind = .variable,
-                .flags = .{},
-            }, name_slice);
-
-            return .proceed;
-        }
-
-        pub fn exit_node(self: *@This(), data: ast.NodeData, _: ast.NodeIndex, _: *scoped.ScopedCtx) void {
-            if (scoped.scopeKindOf(std.meta.activeTag(data)) != null) {
-                self.symbols.popScope();
-            }
-        }
     };
 
     var linter = Linter{

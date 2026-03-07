@@ -15,6 +15,7 @@ pub const Symbol = struct {
     flags: Flags,
 
     pub const Kind = enum(u8) { variable, function, parameter, import, class, type_alias };
+
     pub const Flags = packed struct(u8) {
         @"const": bool = false,
         exported: bool = false,
