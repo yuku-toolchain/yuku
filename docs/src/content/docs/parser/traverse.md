@@ -347,9 +347,21 @@ while (it.next()) |id| {
     const s = scope_tree.getScope(id);
     // ...
 }
+
+// each scope stores the AST node that created it,
+// so you can read its children directly from the tree
+const func_scope = scope_tree.getScope(some_scope_id);
+const node_data = tree.getData(func_scope.node);
+switch (node_data) {
+    .function => |func| {
+        const body_data = tree.getData(func.body);
+        // access all statements in the function body...
+    },
+    else => {},
+}
 ```
 
-The `ScopeTree` is a flat array of `Scope` structs linked by parent pointers. No tree allocation, just a slice.
+The `ScopeTree` is a flat array of `Scope` structs linked by parent pointers. No tree allocation, just a slice. Each scope stores the `node` that created it, so you always have a direct link back to the AST to read that scope's contents.
 
 ### Var Hoisting Example
 
