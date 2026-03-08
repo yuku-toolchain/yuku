@@ -101,6 +101,9 @@ pub fn build(b: *std.Build) void {
     const test_tools_step = b.step("test-tools", "Run the tools tests");
     test_tools_step.dependOn(&run_tools_tests.step);
 
+    const test_step = b.step("test", "Run all tests");
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
+
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .freestanding,

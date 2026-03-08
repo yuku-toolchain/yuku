@@ -131,3 +131,189 @@ pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21,
 inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
 }
+
+const testing = std.testing;
+
+test "codePointAt - ASCII" {
+    const s = "hello";
+    const cp = try codePointAt(s, 0);
+    try testing.expectEqual(@as(u3, 1), cp.len);
+    try testing.expectEqual(@as(u21, 'h'), cp.value);
+}
+
+test "codePointAt - 2-byte UTF-8" {
+    const s = "ñ";
+    const cp = try codePointAt(s, 0);
+    try testing.expectEqual(@as(u3, 2), cp.len);
+    try testing.expectEqual(@as(u21, 0x00F1), cp.value);
+}
+
+test "codePointAt - 3-byte UTF-8" {
+    const s = "€";
+    const cp = try codePointAt(s, 0);
+    try testing.expectEqual(@as(u3, 3), cp.len);
+    try testing.expectEqual(@as(u21, 0x20AC), cp.value);
+}
+
+test "codePointAt - 4-byte UTF-8" {
+    const s = "𐍈";
+    const cp = try codePointAt(s, 0);
+    try testing.expectEqual(@as(u3, 4), cp.len);
+    try testing.expectEqual(@as(u21, 0x10348), cp.value);
+}
+
+test "codePointAt - invalid leading byte" {
+    const s = &[_]u8{0xFF};
+    try testing.expectError(error.InvalidUtf8, codePointAt(s, 0));
+}
+
+test "isOctalDigit" {
+    for ('0'..'8') |c| {
+        try testing.expect(isOctalDigit(@intCast(c)));
+    }
+    try testing.expect(!isOctalDigit('8'));
+    try testing.expect(!isOctalDigit('9'));
+    try testing.expect(!isOctalDigit('a'));
+}
+
+test "unicodeSeparatorLen - line separator U+2028" {
+    const s = &[_]u8{ 0xE2, 0x80, 0xA8 };
+    try testing.expectEqual(@as(u8, 3), unicodeSeparatorLen(s, 0));
+}
+
+test "unicodeSeparatorLen - paragraph separator U+2029" {
+    const s = &[_]u8{ 0xE2, 0x80, 0xA9 };
+    try testing.expectEqual(@as(u8, 3), unicodeSeparatorLen(s, 0));
+}
+
+test "unicodeSeparatorLen - not a separator" {
+    const s = &[_]u8{ 0xE2, 0x80, 0xAA };
+    try testing.expectEqual(@as(u8, 0), unicodeSeparatorLen(s, 0));
+}
+
+test "unicodeSeparatorLen - too short" {
+    const s = &[_]u8{ 0xE2, 0x80 };
+    try testing.expectEqual(@as(u8, 0), unicodeSeparatorLen(s, 0));
+}
+
+test "isMultiByteSpace" {
+    try testing.expect(isMultiByteSpace(0xFEFF)); // BOM
+    try testing.expect(isMultiByteSpace(0x00A0)); // NBSP
+    try testing.expect(isMultiByteSpace(0x2000)); // EN QUAD
+    try testing.expect(isMultiByteSpace(0x2005)); // FOUR-PER-EM SPACE
+    try testing.expect(isMultiByteSpace(0x3000)); // IDEOGRAPHIC SPACE
+    try testing.expect(isMultiByteSpace(0x1680)); // OGHAM SPACE MARK
+    try testing.expect(!isMultiByteSpace(' '));
+    try testing.expect(!isMultiByteSpace('A'));
+}
+
+test "parseOctal - single digit" {
+    const r = parseOctal("5xyz", 0);
+    try testing.expectEqual(@as(u21, 5), r.value);
+    try testing.expectEqual(@as(usize, 1), r.end);
+}
+
+test "parseOctal - three digits starting with 0-3" {
+    const r = parseOctal("377", 0);
+    try testing.expectEqual(@as(u21, 0o377), r.value);
+    try testing.expectEqual(@as(usize, 3), r.end);
+}
+
+test "parseOctal - two digits starting with 4-7" {
+    const r = parseOctal("77", 0);
+    try testing.expectEqual(@as(u21, 0o77), r.value);
+    try testing.expectEqual(@as(usize, 2), r.end);
+}
+
+test "parseOctal - stops at non-octal" {
+    const r = parseOctal("129", 0);
+    try testing.expectEqual(@as(u21, 0o12), r.value);
+    try testing.expectEqual(@as(usize, 2), r.end);
+}
+
+test "parseHex2 - valid" {
+    const r = parseHex2("FF", 0).?;
+    try testing.expectEqual(@as(u21, 0xFF), r.value);
+    try testing.expectEqual(@as(usize, 2), r.end);
+}
+
+test "parseHex2 - lowercase" {
+    const r = parseHex2("ab", 0).?;
+    try testing.expectEqual(@as(u21, 0xAB), r.value);
+}
+
+test "parseHex2 - too short" {
+    try testing.expect(parseHex2("F", 0) == null);
+}
+
+test "parseHex2 - invalid hex char" {
+    try testing.expect(parseHex2("GG", 0) == null);
+}
+
+test "parseHex4 - valid" {
+    const r = parseHex4("00E9rest", 0).?;
+    try testing.expectEqual(@as(u21, 0x00E9), r.value);
+    try testing.expectEqual(@as(usize, 4), r.end);
+}
+
+test "parseHex4 - too short" {
+    try testing.expect(parseHex4("00E", 0) == null);
+}
+
+test "parseHexVariable - valid" {
+    const r = parseHexVariable("1F600", 0, 6).?;
+    try testing.expectEqual(@as(u21, 0x1F600), r.value);
+    try testing.expectEqual(@as(usize, 5), r.end);
+}
+
+test "parseHexVariable - exceeds max codepoint" {
+    try testing.expect(parseHexVariable("FFFFFF", 0, 6) == null);
+}
+
+test "parseHexVariable - no digits" {
+    try testing.expect(parseHexVariable("xyz", 0, 6) == null);
+}
+
+test "parseHexVariable - respects max_digits" {
+    const r = parseHexVariable("ABCDEF", 0, 2).?;
+    try testing.expectEqual(@as(u21, 0xAB), r.value);
+    try testing.expectEqual(@as(usize, 2), r.end);
+}
+
+test "parseUnicodeEscape - 4-digit form" {
+    const r = parseUnicodeEscape("00E9rest", 0).?;
+    try testing.expectEqual(@as(u21, 0x00E9), r.value);
+    try testing.expectEqual(@as(usize, 4), r.end);
+}
+
+test "parseUnicodeEscape - braced form" {
+    const r = parseUnicodeEscape("{1F600}!", 0).?;
+    try testing.expectEqual(@as(u21, 0x1F600), r.value);
+    try testing.expectEqual(@as(usize, 7), r.end);
+}
+
+test "parseUnicodeEscape - braced form single digit" {
+    const r = parseUnicodeEscape("{A}z", 0).?;
+    try testing.expectEqual(@as(u21, 0xA), r.value);
+    try testing.expectEqual(@as(usize, 3), r.end);
+}
+
+test "parseUnicodeEscape - missing closing brace" {
+    try testing.expect(parseUnicodeEscape("{1F600", 0) == null);
+}
+
+test "parseUnicodeEscape - invalid hex in 4-digit" {
+    try testing.expect(parseUnicodeEscape("GHIJ", 0) == null);
+}
+
+test "hexVal" {
+    try testing.expectEqual(@as(u8, 0), hexVal('0').?);
+    try testing.expectEqual(@as(u8, 9), hexVal('9').?);
+    try testing.expectEqual(@as(u8, 10), hexVal('a').?);
+    try testing.expectEqual(@as(u8, 15), hexVal('f').?);
+    try testing.expectEqual(@as(u8, 10), hexVal('A').?);
+    try testing.expectEqual(@as(u8, 15), hexVal('F').?);
+    try testing.expect(hexVal('g') == null);
+    try testing.expect(hexVal('G') == null);
+    try testing.expect(hexVal(' ') == null);
+}
