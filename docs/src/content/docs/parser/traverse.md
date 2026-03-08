@@ -3,6 +3,10 @@ title: Traverse
 description: Visiting and traversing the AST
 ---
 
+:::caution
+The traverser API is under active development and may change as new features are added.
+:::
+
 Yuku provides a traversal system for walking the AST and reacting to nodes. It is built on three layers:
 
 1. **Walk engine** (`traverser.walk`): the generic depth-first walker that drives everything.
@@ -54,7 +58,17 @@ enter_{node_type}   called before a node's children are walked
 exit_{node_type}    called after a node's children are walked
 ```
 
-For example, `enter_variable_declaration` fires when entering a `variable_declaration` node. The names must exactly match the tags in `ast.NodeData`. If you misspell one, you get a compile error, not a silent bug. To see all available node types, check the [AST page](/parser/ast/#node-types).
+For example, `enter_variable_declaration` fires when entering a `variable_declaration` node. The names must exactly match the tags in `ast.NodeData`. If you misspell one, you get a compile error, not a silent bug:
+
+```zig
+pub fn enter_functoin(...) { ... }  // typo
+```
+
+```
+error: Invalid visitor hook 'enter_functoin': no field 'functoin' exists in ast.NodeData
+```
+
+To see all available node types, check the [AST page](/parser/ast/#node-types).
 
 ### Hook Signatures
 
@@ -75,7 +89,15 @@ pub fn exit_function(self: *@This(), node: ast.Function, index: ast.NodeIndex, c
 }
 ```
 
-The payload type (`ast.Function` above) is checked at compile time. If it doesn't match the node type, you get a compile error telling you the expected type.
+The payload type (`ast.Function` above) is checked at compile time. If it doesn't match the node type, you get a compile error telling you the expected type:
+
+```zig
+pub fn enter_function(self: *@This(), node: ast.CallExpression, ...) { ... }
+```
+
+```
+error: Visitor hook 'enter_function': expected payload type 'ast.Function', found 'ast.CallExpression'
+```
 
 ### Catch-All Hooks
 
