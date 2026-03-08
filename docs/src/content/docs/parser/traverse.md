@@ -54,7 +54,7 @@ enter_{node_type}   called before a node's children are walked
 exit_{node_type}    called after a node's children are walked
 ```
 
-For example, `enter_variable_declaration` fires when entering a `variable_declaration` node. The names must exactly match the tags in `ast.NodeData`. If you misspell one, you get a compile error, not a silent bug.
+For example, `enter_variable_declaration` fires when entering a `variable_declaration` node. The names must exactly match the tags in `ast.NodeData`. If you misspell one, you get a compile error, not a silent bug. To see all available node types, check the [AST page](/parser/ast/#node-types).
 
 ### Hook Signatures
 
@@ -187,7 +187,7 @@ pub fn enter_call_expression(self: *@This(), call: ast.CallExpression, index: as
 
 ### Walking Up: Parent and Ancestor Access
 
-Both `BasicCtx` and `ScopedCtx` include a `path` field that tracks the node path from the root to the current position. This is a bounded stack with no allocation and no overhead beyond a fixed 1 KB buffer:
+Both `BasicCtx` and `ScopedCtx` include a `path` field that tracks the node path from the root to the current position:
 
 ```zig
 pub fn enter_identifier_reference(self: *@This(), id: ast.IdentifierReference, index: ast.NodeIndex, ctx: *C) traverser.Action {
