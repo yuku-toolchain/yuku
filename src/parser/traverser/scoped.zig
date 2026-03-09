@@ -203,9 +203,9 @@ pub const Ctx = struct {
 
     /// Returns the completed scope tree and releases resources that are
     /// no longer needed. Call after traversal is done.
-    pub fn toScopeTree(self: *Ctx) ScopeTree {
+    pub fn toScopeTree(self: *Ctx) Allocator.Error!ScopeTree {
         self.scope_stack.deinit(self.allocator);
-        return .{ .scopes = self.scopes.items, .allocator = self.allocator, .capacity = self.scopes.capacity };
+        return .{ .scopes = try self.scopes.toOwnedSlice(self.allocator), .allocator = self.allocator };
     }
 
     /// Release all owned memory without producing a scope tree.
@@ -220,11 +220,10 @@ pub const Ctx = struct {
 pub const ScopeTree = struct {
     scopes: []const Scope,
     allocator: Allocator,
-    capacity: usize,
 
     /// Free the backing memory.
     pub fn deinit(self: *ScopeTree) void {
-        self.allocator.free(self.scopes.ptr[0..self.capacity]);
+        self.allocator.free(self.scopes);
         self.* = undefined;
     }
 
@@ -262,5 +261,5 @@ pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, alloc
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
     try walk(Ctx, V, visitor, &ctx);
-    return ctx.toScopeTree();
+    return try ctx.toScopeTree();
 }
