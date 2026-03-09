@@ -22,8 +22,7 @@ pub const Scope = struct {
     pub const Kind = enum(u8) {
         global,
         module,
-        function_params,
-        function_body,
+        function,
         block,
         class,
         static_block,
@@ -31,7 +30,7 @@ pub const Scope = struct {
         /// Returns whether `var` declarations hoist to this scope kind.
         pub fn isHoistTarget(kind: Kind) bool {
             return switch (kind) {
-                .global, .module, .function_body, .static_block => true,
+                .global, .module, .function, .static_block => true,
                 else => false,
             };
         }
@@ -86,18 +85,6 @@ pub const ScopeTracker = struct {
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
-
-    // A function creates two scopes: one for its parameters (`function_params`)
-    // and one for its body (`function_body`). The AST represents the body as a
-    // `block_statement` child of the `function` node, but a `block_statement`
-    // on its own could be a standalone block (`{ ... }`).
-    //
-    // This flag bridges that gap: when we enter a `function` node, we push the
-    // params scope and set this to `true`. When we then hit the immediate
-    // `block_statement` child, we check this flag to know it's the function
-    // body (not a regular block), push `function_body` instead of `block`,
-    // and consume the flag.
-    pending_function_body: bool = false,
 
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!ScopeTracker {
         var self = ScopeTracker{ .tree = tree, .allocator = allocator };
@@ -161,16 +148,10 @@ pub const ScopeTracker = struct {
 
         switch (tag) {
             .function, .arrow_function_expression => {
-                try self.pushScope(.function_params, index, flags);
-                self.pending_function_body = true;
+                try self.pushScope(.function, index, flags);
             },
             .block_statement => {
-                if (self.pending_function_body) {
-                    self.pending_function_body = false;
-                    try self.pushScope(.function_body, index, flags);
-                } else {
-                    try self.pushScope(.block, index, flags);
-                }
+                try self.pushScope(.block, index, flags);
             },
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
@@ -184,10 +165,7 @@ pub const ScopeTracker = struct {
     /// Process a node exit. Call this from your context's `onExit`.
     pub fn exit(self: *ScopeTracker, tag: NodeTag) void {
         switch (tag) {
-            .function, .arrow_function_expression => {
-                self.pending_function_body = false;
-                _ = self.scope_stack.pop();
-            },
+            .function, .arrow_function_expression,
             .block_statement,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,

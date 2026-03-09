@@ -68,9 +68,10 @@ const RedeclChecker = struct {
         if (ctx.symbols.findInScope(target_scope, name)) |existing_id| {
             const existing = ctx.symbols.getSymbol(existing_id);
 
-            // var+var and function+function redeclarations are allowed
+            // var/function/param can coexist with var/function (same binding).
+            // let/const/class/import conflict with everything.
             const allowed = switch (existing.kind) {
-                .hoisted, .function => current_kind == .hoisted or current_kind == .function,
+                .hoisted, .function, .parameter => current_kind == .hoisted or current_kind == .function,
                 else => false,
             };
 
