@@ -209,6 +209,7 @@ pub const NodePath = struct {
     }
 
     fn push(self: *NodePath, index: ast.NodeIndex) void {
+        std.debug.assert(self.len < capacity);
         if (self.len < capacity) {
             self.buf[self.len] = index;
         }
