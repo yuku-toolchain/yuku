@@ -1,5 +1,5 @@
 const std = @import("std");
-const ast = @import("../ast.zig");
+const ast = @import("../../ast.zig");
 
 const Allocator = std.mem.Allocator;
 const NodeTag = std.meta.Tag(ast.NodeData);

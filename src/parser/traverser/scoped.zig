@@ -1,15 +1,15 @@
 const std = @import("std");
 const ast = @import("../ast.zig");
 const wk = @import("walk.zig");
-const st = @import("scope_tracker.zig");
+const sc = @import("tracker/scope.zig");
 
 const Allocator = std.mem.Allocator;
 const NodeTag = std.meta.Tag(ast.NodeData);
 
-pub const ScopeId = st.ScopeId;
-pub const Scope = st.Scope;
-pub const ScopeTree = st.ScopeTree;
-pub const ScopeTracker = st.ScopeTracker;
+pub const ScopeId = sc.ScopeId;
+pub const Scope = sc.Scope;
+pub const ScopeTree = sc.ScopeTree;
+pub const ScopeTracker = sc.ScopeTracker;
 
 pub const Ctx = struct {
     tree: *const ast.ParseTree,
