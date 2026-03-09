@@ -201,16 +201,32 @@ pub const Ctx = struct {
         return .{ .scopes = self.scopes.items, .current = start };
     }
 
-    /// Returns the completed scope tree. Call after traversal is done.
-    pub fn toScopeTree(self: *const Ctx) ScopeTree {
-        return .{ .scopes = self.scopes.items };
+    /// Returns the completed scope tree and releases resources that are
+    /// no longer needed. Call after traversal is done.
+    pub fn toScopeTree(self: *Ctx) ScopeTree {
+        self.scope_stack.deinit(self.allocator);
+        return .{ .scopes = self.scopes.items, .allocator = self.allocator, .capacity = self.scopes.capacity };
+    }
+
+    /// Release all owned memory without producing a scope tree.
+    pub fn deinit(self: *Ctx) void {
+        self.scopes.deinit(self.allocator);
+        self.scope_stack.deinit(self.allocator);
     }
 };
 
 /// The immutable result of a scoped traversal, a flat array of scopes
-/// linked by parent pointers.
+/// linked by parent pointers. Owns its backing memory.
 pub const ScopeTree = struct {
     scopes: []const Scope,
+    allocator: Allocator,
+    capacity: usize,
+
+    /// Free the backing memory.
+    pub fn deinit(self: *ScopeTree) void {
+        self.allocator.free(self.scopes.ptr[0..self.capacity]);
+        self.* = undefined;
+    }
 
     /// Returns the scope for a given id.
     pub inline fn getScope(self: ScopeTree, id: ScopeId) Scope {
@@ -244,6 +260,7 @@ pub const ScopeTree = struct {
 /// information at every node. Returns the completed `ScopeTree`.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
     var ctx = try Ctx.init(tree, allocator);
+    errdefer ctx.deinit();
     try walk(Ctx, V, visitor, &ctx);
     return ctx.toScopeTree();
 }

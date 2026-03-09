@@ -44,7 +44,8 @@ const Visitor = struct {
 };
 
 var visitor = Visitor{};
-const scope_tree = try scoped.traverse(Visitor, &tree, &visitor, allocator);
+var scope_tree = try scoped.traverse(Visitor, &tree, &visitor, allocator);
+defer scope_tree.deinit();
 
 std.debug.print("found {} functions\n", .{visitor.count});
 ```
@@ -174,7 +175,8 @@ const StrictChecker = struct {
 };
 
 var checker = StrictChecker{};
-const scope_tree = try scoped.traverse(StrictChecker, &tree, &checker, allocator);
+var scope_tree = try scoped.traverse(StrictChecker, &tree, &checker, allocator);
+defer scope_tree.deinit();
 ```
 
 `scoped.traverse` returns a `ScopeTree`, the immutable result of all scopes discovered during the walk. You can use it after traversal for downstream analysis.
@@ -336,7 +338,8 @@ ES modules are strict by default. The module scope is created with `strict: true
 `scoped.traverse` returns a `ScopeTree`, which is the immutable result of all scopes discovered during the walk. Use it after traversal for downstream consumers like linters, bundlers, or code generators:
 
 ```zig
-const scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor, allocator);
+var scope_tree = try scoped.traverse(MyVisitor, &tree, &visitor, allocator);
+defer scope_tree.deinit();
 
 // look up any scope
 const scope = scope_tree.getScope(some_scope_id);
@@ -361,7 +364,7 @@ switch (node_data) {
 }
 ```
 
-The `ScopeTree` is a flat array of `Scope` structs linked by parent pointers. No tree allocation, just a slice. Each scope stores the `node` that created it, so you always have a direct link back to the AST to read that scope's contents.
+The `ScopeTree` is a flat array of `Scope` structs linked by parent pointers. Each scope stores the `node` that created it, so you always have a direct link back to the AST to read that scope's contents. Call `scope_tree.deinit()` when you're done to free the backing memory.
 
 ### Var Hoisting Example
 
