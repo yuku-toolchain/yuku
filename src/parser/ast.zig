@@ -2,7 +2,6 @@ const std = @import("std");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
-// Re-export Span for public use
 pub const Span = TokenSpan;
 
 pub const Severity = enum {

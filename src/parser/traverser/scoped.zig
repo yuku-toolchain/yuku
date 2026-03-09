@@ -44,14 +44,14 @@ pub const Scope = struct {
     };
 };
 
-pub const ScopedCtx = struct {
+pub const Ctx = struct {
     tree: *const ast.ParseTree,
     allocator: Allocator,
     path: wk.NodePath = .{},
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
 
-    // in JavaScript, a function creates two scopes, one for its parameters
+    // a function creates two scopes, one for its parameters
     // (`function_params`) and one for its body (`function_body`). The AST
     // represents the body as a `block_statement` child of the `function` node,
     // but a `block_statement` on its own could be a standalone block (`{ ... }`).
@@ -63,8 +63,8 @@ pub const ScopedCtx = struct {
     // consume the flag.
     pending_function_body: bool = false,
 
-    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!ScopedCtx {
-        var self = ScopedCtx{ .tree = tree, .allocator = allocator };
+    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Ctx {
+        var self = Ctx{ .tree = tree, .allocator = allocator };
 
         const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));
         try self.scopes.ensureTotalCapacity(allocator, estimated_scopes);
@@ -74,7 +74,7 @@ pub const ScopedCtx = struct {
         return self;
     }
 
-    fn pushRoot(self: *ScopedCtx) Allocator.Error!void {
+    fn pushRoot(self: *Ctx) Allocator.Error!void {
         self.scopes.appendAssumeCapacity(.{
             .node = self.tree.program,
             .parent = .none,
@@ -91,7 +91,7 @@ pub const ScopedCtx = struct {
     }
 
     /// Push a new scope onto the scope stack.
-    pub fn pushScope(self: *ScopedCtx, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
+    pub fn pushScope(self: *Ctx, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
         const parent = self.currentScope();
 
@@ -107,7 +107,7 @@ pub const ScopedCtx = struct {
     }
 
     /// Called by the walker when entering a node.
-    pub fn onEnter(self: *ScopedCtx, index: ast.NodeIndex, tag: NodeTag) Allocator.Error!void {
+    pub fn onEnter(self: *Ctx, index: ast.NodeIndex, tag: NodeTag) Allocator.Error!void {
         const data = self.tree.getData(index);
 
         switch (data) {
@@ -146,7 +146,7 @@ pub const ScopedCtx = struct {
     }
 
     /// Called by the walker when exiting a node.
-    pub fn onExit(self: *ScopedCtx, _: ast.NodeIndex, tag: NodeTag) void {
+    pub fn onExit(self: *Ctx, _: ast.NodeIndex, tag: NodeTag) void {
         switch (tag) {
             .function, .arrow_function_expression => {
                 self.pending_function_body = false;
@@ -162,47 +162,47 @@ pub const ScopedCtx = struct {
     }
 
     /// Returns the id of the currently active scope.
-    pub inline fn currentScopeId(self: *const ScopedCtx) ScopeId {
+    pub inline fn currentScopeId(self: *const Ctx) ScopeId {
         return self.scope_stack.getLast();
     }
 
     /// Returns the id of the nearest hoist-target scope (where `var` lands).
-    pub inline fn currentHoistScopeId(self: *const ScopedCtx) ScopeId {
+    pub inline fn currentHoistScopeId(self: *const Ctx) ScopeId {
         return self.currentScope().hoist_target;
     }
 
     /// Returns the currently active scope.
-    pub inline fn currentScope(self: *const ScopedCtx) Scope {
+    pub inline fn currentScope(self: *const Ctx) Scope {
         return self.getScope(self.currentScopeId());
     }
 
     /// Returns a mutable pointer to the currently active scope.
-    pub inline fn currentScopePtr(self: *ScopedCtx) *Scope {
+    pub inline fn currentScopePtr(self: *Ctx) *Scope {
         return &self.scopes.items[@intFromEnum(self.currentScopeId())];
     }
 
     /// Returns the scope for a given id.
-    pub inline fn getScope(self: *const ScopedCtx, id: ScopeId) Scope {
+    pub inline fn getScope(self: *const Ctx, id: ScopeId) Scope {
         return self.scopes.items[@intFromEnum(id)];
     }
 
     /// Returns a mutable pointer to the scope for a given id.
-    pub inline fn getScopePtr(self: *ScopedCtx, id: ScopeId) *Scope {
+    pub inline fn getScopePtr(self: *Ctx, id: ScopeId) *Scope {
         return &self.scopes.items[@intFromEnum(id)];
     }
 
     /// Returns whether the current scope is in strict mode.
-    pub inline fn isStrict(self: *const ScopedCtx) bool {
+    pub inline fn isStrict(self: *const Ctx) bool {
         return self.currentScope().flags.strict;
     }
 
     /// Returns an iterator over ancestor scopes starting from `start`, walking up to root.
-    pub fn ancestors(self: *const ScopedCtx, start: ScopeId) ScopeTree.AncestorIterator {
+    pub fn ancestors(self: *const Ctx, start: ScopeId) ScopeTree.AncestorIterator {
         return .{ .scopes = self.scopes.items, .current = start };
     }
 
     /// Returns the completed scope tree. Call after traversal is done.
-    pub fn toScopeTree(self: *const ScopedCtx) ScopeTree {
+    pub fn toScopeTree(self: *const Ctx) ScopeTree {
         return .{ .scopes = self.scopes.items };
     }
 };
@@ -240,10 +240,10 @@ pub const ScopeTree = struct {
 /// Run a scoped traversal over the parse tree.
 ///
 /// Walks the AST while automatically tracking scope enter/exit. The visitor
-/// receives a `*ScopedCtx` as its context, giving access to scope
+/// receives a `*scoped.Ctx` as its context, giving access to scope
 /// information at every node. Returns the completed `ScopeTree`.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
-    var ctx = try ScopedCtx.init(tree, allocator);
-    try walk(ScopedCtx, V, visitor, &ctx);
+    var ctx = try Ctx.init(tree, allocator);
+    try walk(Ctx, V, visitor, &ctx);
     return ctx.toScopeTree();
 }

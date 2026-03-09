@@ -4,7 +4,7 @@ const parser = @import("parser");
 const ast = parser.ast;
 
 const traverser = parser.traverser;
-const scoped = traverser.scoped;
+const basic = traverser.basic;
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
@@ -20,14 +20,13 @@ pub fn main(init: std.process.Init) !void {
     const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = .fromPath(file_path), .source_type = .fromPath(file_path) });
     defer tree.deinit();
 
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
+    // var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    // defer arena.deinit();
 
-    const arena_allocator = arena.allocator();
+    // const arena_allocator = arena.allocator();
 
     const Visitor = struct {
-        pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, ctx: *scoped.ScopedCtx) traverser.Action {
-            std.debug.print("{}", .{ctx.currentScope().kind});
+        pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, _: *basic.Ctx) traverser.Action {
             return .proceed;
         }
     };
@@ -36,7 +35,7 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    _ = try scoped.traverse(Visitor, &tree, &visitor, arena_allocator);
+    _ = try basic.traverse(Visitor, &tree, &visitor);
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;

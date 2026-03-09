@@ -5,14 +5,13 @@ const walk = wk.walk;
 const Allocator = std.mem.Allocator;
 const std = @import("std");
 
-/// Minimal context for walking the AST without scope tracking.
-pub const BasicCtx = struct {
+pub const Ctx = struct {
     tree: *const ast.ParseTree,
     path: wk.NodePath = .{},
 };
 
-/// Run a basic traversal over the parse tree (no scope tracking).
+/// Run a basic traversal over the parse tree.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V) Allocator.Error!void {
-    var ctx = BasicCtx{ .tree = tree };
-    try walk(BasicCtx, V, visitor, &ctx);
+    var ctx = Ctx{ .tree = tree };
+    try walk(Ctx, V, visitor, &ctx);
 }
