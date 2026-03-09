@@ -8,36 +8,32 @@ const basic = traverser.basic;
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+
+    const allocator = init.arena.allocator();
 
     const file_path = "test.js";
 
     const contents = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
-    defer allocator.free(contents);
 
     const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = .fromPath(file_path), .source_type = .fromPath(file_path) });
     defer tree.deinit();
 
-    // var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    // defer arena.deinit();
+    // const Visitor = struct {
+    //     pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, _: *basic.Ctx) traverser.Action {
+    //         return .proceed;
+    //     }
+    // };
 
-    // const arena_allocator = arena.allocator();
+    // var visitor = Visitor{};
 
-    const Visitor = struct {
-        pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, _: *basic.Ctx) traverser.Action {
-            return .proceed;
-        }
-    };
-
-    var visitor = Visitor{};
+    // _ = try basic.traverse(Visitor, &tree, &visitor);
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    _ = try basic.traverse(Visitor, &tree, &visitor);
+    _ = try parser.estree.toJSON(&tree, allocator, .{});
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
+
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
 
     std.debug.print("\ntook: {d:.2}ms\n", .{ taken_ms });
