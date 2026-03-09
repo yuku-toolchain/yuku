@@ -20,7 +20,7 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 </div>
 
 :::note
-**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. TypeScript parsing is supported. The visitor/traverser API is functional and actively being improved. See the [Roadmap](#roadmap) for details.
+**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. A visitor/traverser API and TypeScript support are currently in progress.
 :::
 
 ## Why Yuku
