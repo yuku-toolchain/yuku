@@ -142,6 +142,7 @@ pub const ScopeTracker = struct {
         try self.scope_stack.append(self.allocator, id);
     }
 
+    /// Process a node enter. Call this from your context's `onEnter`.
     pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, tag: NodeTag) Allocator.Error!void {
         const data = self.tree.getData(index);
 
@@ -180,6 +181,7 @@ pub const ScopeTracker = struct {
         }
     }
 
+    /// Process a node exit. Call this from your context's `onExit`.
     pub fn exit(self: *ScopeTracker, tag: NodeTag) void {
         switch (tag) {
             .function, .arrow_function_expression => {
@@ -195,43 +197,54 @@ pub const ScopeTracker = struct {
         }
     }
 
+    /// Returns the id of the currently active scope.
     pub inline fn currentScopeId(self: *const ScopeTracker) ScopeId {
         return self.scope_stack.getLast();
     }
 
+    /// Returns the id of the nearest hoist-target scope (where `var` lands).
     pub inline fn currentHoistScopeId(self: *const ScopeTracker) ScopeId {
         return self.currentScope().hoist_target;
     }
 
+    /// Returns the currently active scope.
     pub inline fn currentScope(self: *const ScopeTracker) Scope {
         return self.getScope(self.currentScopeId());
     }
 
+    /// Returns a mutable pointer to the currently active scope.
     pub inline fn currentScopePtr(self: *ScopeTracker) *Scope {
         return &self.scopes.items[@intFromEnum(self.currentScopeId())];
     }
 
+    /// Returns the scope for a given id.
     pub inline fn getScope(self: *const ScopeTracker, id: ScopeId) Scope {
         return self.scopes.items[@intFromEnum(id)];
     }
 
+    /// Returns a mutable pointer to the scope for a given id.
     pub inline fn getScopePtr(self: *ScopeTracker, id: ScopeId) *Scope {
         return &self.scopes.items[@intFromEnum(id)];
     }
 
+    /// Returns whether the current scope is in strict mode.
     pub inline fn isStrict(self: *const ScopeTracker) bool {
         return self.currentScope().flags.strict;
     }
 
+    /// Returns an iterator over ancestor scopes starting from `start`, walking up to root.
     pub fn ancestors(self: *const ScopeTracker, start: ScopeId) ScopeTree.AncestorIterator {
         return .{ .scopes = self.scopes.items, .current = start };
     }
 
+    /// Returns the completed scope tree and releases resources that are
+    /// no longer needed. Call after traversal is done.
     pub fn toScopeTree(self: *ScopeTracker) Allocator.Error!ScopeTree {
         self.scope_stack.deinit(self.allocator);
         return .{ .scopes = try self.scopes.toOwnedSlice(self.allocator), .allocator = self.allocator };
     }
 
+    /// Release all owned memory without producing a scope tree.
     pub fn deinit(self: *ScopeTracker) void {
         self.scopes.deinit(self.allocator);
         self.scope_stack.deinit(self.allocator);
