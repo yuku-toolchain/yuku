@@ -4,13 +4,15 @@ const wk = @import("walk.zig");
 const sc = @import("tracker/scope.zig");
 
 const Allocator = std.mem.Allocator;
-const NodeTag = std.meta.Tag(ast.NodeData);
 
 pub const ScopeId = sc.ScopeId;
 pub const Scope = sc.Scope;
 pub const ScopeTree = sc.ScopeTree;
 pub const ScopeTracker = sc.ScopeTracker;
 
+// traverser context that tracks path and javascript lexical scopes.
+// scopes are pushed before user hooks fire, so visitors always see
+// the correct current scope.
 pub const Ctx = struct {
     tree: *const ast.ParseTree,
     path: wk.NodePath = .{},
@@ -20,34 +22,29 @@ pub const Ctx = struct {
         return .{ .tree = tree, .scope = try ScopeTracker.init(tree, allocator) };
     }
 
-    pub fn onEnter(self: *Ctx, index: ast.NodeIndex, tag: NodeTag) Allocator.Error!void {
-        try self.scope.enter(index, tag);
+    pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+        self.path.push(index);
+        try self.scope.enter(index, data);
     }
 
-    pub fn onExit(self: *Ctx, _: ast.NodeIndex, tag: NodeTag) void {
-        self.scope.exit(tag);
+    pub fn exit(self: *Ctx, data: ast.NodeData) void {
+        self.scope.exit(data);
+        self.path.pop();
     }
 
-    /// Returns the completed scope tree and releases resources that are
-    /// no longer needed. Call after traversal is done.
     pub fn toScopeTree(self: *Ctx) Allocator.Error!ScopeTree {
         return self.scope.toScopeTree();
     }
 
-    /// Release all owned memory without producing a scope tree.
     pub fn deinit(self: *Ctx) void {
         self.scope.deinit();
     }
 };
 
-/// Run a scoped traversal over the parse tree.
-///
-/// Walks the AST while automatically tracking scope enter/exit. The visitor
-/// receives a `*scoped.Ctx` as its context, giving access to scope
-/// information at every node via `ctx.scope`. Returns the completed `ScopeTree`.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
-    try wk.walk(Ctx, V, visitor, &ctx);
+    var layer = wk.Layer(Ctx, V){ .inner = visitor };
+    try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
     return try ctx.toScopeTree();
 }

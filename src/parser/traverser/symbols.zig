@@ -5,7 +5,6 @@ const sc = @import("tracker/scope.zig");
 const sy = @import("tracker/symbol.zig");
 
 const Allocator = std.mem.Allocator;
-const NodeTag = std.meta.Tag(ast.NodeData);
 
 pub const ScopeId = sc.ScopeId;
 pub const Scope = sc.Scope;
@@ -18,6 +17,20 @@ pub const Reference = sy.Reference;
 pub const SymbolTable = sy.SymbolTable;
 pub const SymbolTracker = sy.SymbolTracker;
 
+// full traverser context: path + scopes + symbols.
+//
+// the tracking is split into two phases around user hooks:
+//
+//   enter:       push path, push scopes, set binding context
+//                (now user hooks fire, they can inspect existing symbols)
+//   post_enter:  declare the new binding / record the reference
+//                (symbol is added to the table after the user had a chance to check)
+//   exit:        clean up symbols, scopes, and path in reverse order
+//
+// this split matters for things like redeclaration checking. the user's
+// enter_binding_identifier hook runs between setBindingContext and
+// declare_bindings, so it sees the scope state before the new symbol
+// is added and can check for conflicts.
 pub const Ctx = struct {
     tree: *const ast.ParseTree,
     path: wk.NodePath = .{},
@@ -32,17 +45,22 @@ pub const Ctx = struct {
         };
     }
 
-    pub fn onEnter(self: *Ctx, index: ast.NodeIndex, tag: NodeTag) Allocator.Error!void {
-        try self.scope.enter(index, tag);
-        try self.symbols.enter(index, tag, &self.scope);
+    pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+        self.path.push(index);
+        try self.scope.enter(index, data);
+        self.symbols.setBindingContext(data);
     }
 
-    pub fn onExit(self: *Ctx, _: ast.NodeIndex, tag: NodeTag) void {
-        self.scope.exit(tag);
-        self.symbols.exit(tag);
+    pub fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+        try self.symbols.declare_bindings(index, data, &self.scope);
     }
 
-    /// Returns the completed result and releases builder resources.
+    pub fn exit(self: *Ctx, data: ast.NodeData) void {
+        self.symbols.exit(data);
+        self.scope.exit(data);
+        self.path.pop();
+    }
+
     pub fn toResult(self: *Ctx) Allocator.Error!Result {
         return .{
             .scope_tree = try self.scope.toScopeTree(),
@@ -50,14 +68,12 @@ pub const Ctx = struct {
         };
     }
 
-    /// Release all owned memory without producing a result.
     pub fn deinit(self: *Ctx) void {
         self.scope.deinit();
         self.symbols.deinit();
     }
 };
 
-/// The immutable result of a symbol-tracking traversal.
 pub const Result = struct {
     scope_tree: ScopeTree,
     symbol_table: SymbolTable,
@@ -68,15 +84,10 @@ pub const Result = struct {
     }
 };
 
-/// Run a symbol-tracking traversal over the parse tree.
-///
-/// Walks the AST while automatically tracking scopes and collecting symbols
-/// and references. The visitor receives a `*symbols.Ctx` as its context,
-/// giving access to scope and symbol information at every node via
-/// `ctx.scope` and `ctx.symbols`. Returns the completed `Result`.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!Result {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
-    try wk.walk(Ctx, V, visitor, &ctx);
+    var layer = wk.Layer(Ctx, V){ .inner = visitor };
+    try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
     return try ctx.toResult();
 }

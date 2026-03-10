@@ -2,21 +2,15 @@ const std = @import("std");
 const ast = @import("../../ast.zig");
 
 const Allocator = std.mem.Allocator;
-const NodeTag = std.meta.Tag(ast.NodeData);
 
 pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
 
-/// A single scope in the scope tree.
 pub const Scope = struct {
-    /// The AST node that introduced this scope.
     node: ast.NodeIndex,
-    /// The enclosing parent scope, or `.none` for the root.
     parent: ScopeId,
-    /// Nearest ancestor (or self) where `var` declarations hoist to.
+    // nearest ancestor (or self) where `var` declarations hoist to.
     hoist_target: ScopeId,
-    /// What kind of syntactic construct created this scope.
     kind: Kind,
-    /// Inherited and local flags (e.g. strict mode).
     flags: Flags,
 
     pub const Kind = enum(u8) {
@@ -26,8 +20,20 @@ pub const Scope = struct {
         block,
         class,
         static_block,
+        // intermediate scope for named function/class expressions.
+        //
+        // in js, `const x = function foo() { const foo = 1; }` is valid
+        // because the expression name `foo` lives in a separate scope
+        // between the outer scope and the function body. same for
+        // `const x = class C { }`. without this, the name would
+        // conflict with same-named bindings inside the body.
+        //
+        // scope structure for `const x = function foo() { ... }`:
+        //   outer scope (x lives here)
+        //     expression_name scope (foo lives here)
+        //       function scope (body bindings live here)
+        expression_name,
 
-        /// Returns whether `var` declarations hoist to this scope kind.
         pub fn isHoistTarget(kind: Kind) bool {
             return switch (kind) {
                 .global, .module, .function, .static_block => true,
@@ -41,34 +47,30 @@ pub const Scope = struct {
     };
 };
 
-/// The immutable result of a scoped traversal, a flat array of scopes
-/// linked by parent pointers. Owns its backing memory.
+// immutable result of a scoped traversal. flat array of scopes
+// linked by parent pointers. owns its backing memory.
 pub const ScopeTree = struct {
     scopes: []const Scope,
     allocator: Allocator,
 
-    /// Free the backing memory.
     pub fn deinit(self: *ScopeTree) void {
         self.allocator.free(self.scopes);
         self.* = undefined;
     }
 
-    /// Returns the scope for a given id.
     pub inline fn getScope(self: ScopeTree, id: ScopeId) Scope {
         return self.scopes[@intFromEnum(id)];
     }
 
-    /// Returns an iterator over ancestor scopes starting from `start`, walking up to root.
     pub fn ancestors(self: ScopeTree, start: ScopeId) AncestorIterator {
         return .{ .scopes = self.scopes, .current = start };
     }
 
-    /// Iterator over ancestor scopes from a starting scope up to root.
+    // walks up from `start` to root, yielding each scope id.
     pub const AncestorIterator = struct {
         scopes: []const Scope,
         current: ScopeId,
 
-        /// Returns the next ancestor scope, or null when the root has been passed.
         pub fn next(self: *AncestorIterator) ?ScopeId {
             const id = self.current;
             if (id == .none) return null;
@@ -78,8 +80,11 @@ pub const ScopeTree = struct {
     };
 };
 
-/// Mutable builder that tracks JavaScript lexical scopes during an AST walk.
-/// Embed this in any context that needs scope tracking.
+// mutable builder that tracks javascript lexical scopes during an ast walk.
+//
+// call `enter` when visiting a node and `exit` when leaving it.
+// the tracker pushes/pops scopes for nodes that create them
+// (functions, blocks, classes, etc) and ignores everything else.
 pub const ScopeTracker = struct {
     tree: *const ast.ParseTree,
     allocator: Allocator,
@@ -113,7 +118,6 @@ pub const ScopeTracker = struct {
         }
     }
 
-    /// Push a new scope onto the scope stack.
     pub fn pushScope(self: *ScopeTracker, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
         const parent = self.currentScope();
@@ -129,10 +133,8 @@ pub const ScopeTracker = struct {
         try self.scope_stack.append(self.allocator, id);
     }
 
-    /// Process a node enter. Call this from your context's `onEnter`.
-    pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, tag: NodeTag) Allocator.Error!void {
-        const data = self.tree.getData(index);
-
+    pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
+        // check for "use strict" directives and mark the current scope
         switch (data) {
             .directive => |d| {
                 if (std.mem.eql(u8, self.tree.getSourceText(d.value_start, d.value_len), "use strict")) {
@@ -142,87 +144,115 @@ pub const ScopeTracker = struct {
             else => {},
         }
 
+        // inherit strict mode from parent scope
         const flags: Scope.Flags = .{
             .strict = self.currentScope().flags.strict,
         };
 
-        switch (tag) {
-            .function, .arrow_function_expression => {
+        switch (data) {
+            .function => |func| {
+                // named function expressions get an extra scope for their name.
+                // we push it before the function scope so it sits between
+                // outer and body. see Scope.Kind.expression_name for details.
+                if (isNamedFunctionExpression(func))
+                    try self.pushScope(.expression_name, index, flags);
                 try self.pushScope(.function, index, flags);
             },
-            .block_statement => {
-                try self.pushScope(.block, index, flags);
-            },
+            .arrow_function_expression => try self.pushScope(.function, index, flags),
+            .block_statement => try self.pushScope(.block, index, flags),
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
             => try self.pushScope(.block, index, flags),
-            .class => try self.pushScope(.class, index, flags),
+            .class => |cls| {
+                // same as named function expressions, named class expressions
+                // get an extra scope for their name.
+                if (isNamedClassExpression(cls))
+                    try self.pushScope(.expression_name, index, flags);
+                try self.pushScope(.class, index, flags);
+            },
             .static_block => try self.pushScope(.static_block, index, flags),
             else => {},
         }
     }
 
-    /// Process a node exit. Call this from your context's `onExit`.
-    pub fn exit(self: *ScopeTracker, tag: NodeTag) void {
-        switch (tag) {
-            .function, .arrow_function_expression,
+    // mirrors enter: pops the same number of scopes that were pushed.
+    // for named function/class expressions, that's two pops (body + name).
+    pub fn exit(self: *ScopeTracker, data: ast.NodeData) void {
+        switch (data) {
+            .function => |func| {
+                _ = self.scope_stack.pop();
+                if (isNamedFunctionExpression(func))
+                    _ = self.scope_stack.pop();
+            },
+            .arrow_function_expression,
             .block_statement,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
-            .class, .static_block,
+            .static_block,
             => _ = self.scope_stack.pop(),
+            .class => |cls| {
+                _ = self.scope_stack.pop();
+                if (isNamedClassExpression(cls))
+                    _ = self.scope_stack.pop();
+            },
             else => {},
         }
     }
 
-    /// Returns the id of the currently active scope.
+    // declarations bind their name in the parent scope directly,
+    // expressions bind in an intermediate expression_name scope.
+    // these check if we're dealing with a named expression.
+
+    fn isNamedFunctionExpression(func: ast.Function) bool {
+        return switch (func.type) {
+            .function_declaration, .ts_declare_function => false,
+            else => !ast.isNull(func.id),
+        };
+    }
+
+    fn isNamedClassExpression(cls: ast.Class) bool {
+        return cls.type != .class_declaration and !ast.isNull(cls.id);
+    }
+
     pub inline fn currentScopeId(self: *const ScopeTracker) ScopeId {
         return self.scope_stack.getLast();
     }
 
-    /// Returns the id of the nearest hoist-target scope (where `var` lands).
     pub inline fn currentHoistScopeId(self: *const ScopeTracker) ScopeId {
         return self.currentScope().hoist_target;
     }
 
-    /// Returns the currently active scope.
     pub inline fn currentScope(self: *const ScopeTracker) Scope {
         return self.getScope(self.currentScopeId());
     }
 
-    /// Returns a mutable pointer to the currently active scope.
     pub inline fn currentScopePtr(self: *ScopeTracker) *Scope {
         return &self.scopes.items[@intFromEnum(self.currentScopeId())];
     }
 
-    /// Returns the scope for a given id.
     pub inline fn getScope(self: *const ScopeTracker, id: ScopeId) Scope {
         return self.scopes.items[@intFromEnum(id)];
     }
 
-    /// Returns a mutable pointer to the scope for a given id.
     pub inline fn getScopePtr(self: *ScopeTracker, id: ScopeId) *Scope {
         return &self.scopes.items[@intFromEnum(id)];
     }
 
-    /// Returns whether the current scope is in strict mode.
     pub inline fn isStrict(self: *const ScopeTracker) bool {
         return self.currentScope().flags.strict;
     }
 
-    /// Returns an iterator over ancestor scopes starting from `start`, walking up to root.
     pub fn ancestors(self: *const ScopeTracker, start: ScopeId) ScopeTree.AncestorIterator {
         return .{ .scopes = self.scopes.items, .current = start };
     }
 
-    /// Returns the completed scope tree and releases resources that are
-    /// no longer needed. Call after traversal is done.
+    // finalize into an immutable ScopeTree. frees the scope stack since
+    // it's only needed during the walk.
     pub fn toScopeTree(self: *ScopeTracker) Allocator.Error!ScopeTree {
         self.scope_stack.deinit(self.allocator);
         return .{ .scopes = try self.scopes.toOwnedSlice(self.allocator), .allocator = self.allocator };
     }
 
-    /// Release all owned memory without producing a scope tree.
     pub fn deinit(self: *ScopeTracker) void {
         self.scopes.deinit(self.allocator);
         self.scope_stack.deinit(self.allocator);

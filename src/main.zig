@@ -19,7 +19,6 @@ pub fn main(init: std.process.Init) !void {
 
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
-    // Run symbol-tracking traversal with redeclaration checker
     var checker = RedeclChecker{};
     var result = try symbols.traverse(RedeclChecker, &tree, &checker, std.heap.page_allocator);
     defer result.deinit();
@@ -31,7 +30,6 @@ pub fn main(init: std.process.Init) !void {
 
     std.debug.print("{s}\n\n", .{json});
 
-    // Print results
     for (checker.errors.items) |err| {
         const current_loc = getLineAndColumn(contents, err.offset);
         const existing_loc = getLineAndColumn(contents, err.existing_offset);
@@ -64,15 +62,9 @@ const RedeclChecker = struct {
         ctx: *symbols.Ctx,
     ) traverser.Action {
         const name = ctx.tree.getSourceText(id.name_start, id.name_len);
-        const target_scope_kind = ctx.symbols.currentTargetScopeKind();
+        const target = ctx.symbols.resolveTargetScope(&ctx.scope);
 
-        const target_scope = switch (target_scope_kind) {
-            .hoist => ctx.scope.currentHoistScopeId(),
-            .parent => ctx.scope.currentScope().parent,
-            .current => ctx.scope.currentScopeId(),
-        };
-
-        if (ctx.symbols.findInScope(target_scope, name)) |ex| {
+        if (ctx.symbols.findInScope(target, name)) |ex| {
             const existing = ctx.symbols.getSymbol(ex);
 
             self.errors.append(std.heap.page_allocator, .{
