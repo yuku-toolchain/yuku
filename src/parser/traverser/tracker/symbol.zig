@@ -312,7 +312,7 @@ pub const SymbolTracker = struct {
     }
 
     /// Returns the current binding target scope kind.
-    pub inline fn currentTargetScope(self: *const SymbolTracker) TargetScope {
+    pub inline fn currentTargetScopeKind(self: *const SymbolTracker) TargetScope {
         return self.target_scope;
     }
 

@@ -57,30 +57,19 @@ const RedeclChecker = struct {
         ctx: *symbols.Ctx,
     ) traverser.Action {
         const name = ctx.tree.getSourceText(id.name_start, id.name_len);
-        const current_kind = ctx.symbols.currentBindingKind();
-        const target_scope = switch (current_kind) {
-            .hoisted => ctx.scope.currentHoistScopeId(),
-            .function => ctx.scope.currentScope().parent,
-            .class => ctx.scope.currentScope().parent,
-            else => ctx.scope.currentScopeId(),
+        const target_scope_kind = ctx.symbols.currentTargetScopeKind();
+
+        const target_scope = switch (target_scope_kind) {
+            .hoist => ctx.scope.currentHoistScopeId(),
+            .parent => ctx.scope.currentScope().parent,
+            .current => ctx.scope.currentScopeId(),
         };
 
-        if (ctx.symbols.findInScope(target_scope, name)) |existing_id| {
-            const existing = ctx.symbols.getSymbol(existing_id);
-
-            // var/function/param can coexist with var/function (same binding).
-            // let/const/class/import conflict with everything.
-            const allowed = switch (existing.kind) {
-                .hoisted, .function, .parameter => current_kind == .hoisted or current_kind == .function,
-                else => false,
-            };
-
-            if (!allowed) {
-                self.errors.append(std.heap.page_allocator, .{
-                    .name = name,
-                    .offset = id.name_start,
-                }) catch {};
-            }
+        if (ctx.symbols.findInScope(target_scope, name)) |_| {
+            self.errors.append(std.heap.page_allocator, .{
+                .name = name,
+                .offset = id.name_start,
+            }) catch {};
         }
 
         return .proceed;
