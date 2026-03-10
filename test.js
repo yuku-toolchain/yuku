@@ -1,1 +1,1 @@
-const nice = "";
+delete nice ** cool

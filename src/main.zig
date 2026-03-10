@@ -27,6 +27,10 @@ pub fn main(init: std.process.Init) !void {
     const end = std.Io.Clock.Timestamp.now(Io, .real);
     const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
 
+    const json = try parser.estree.toJSON(&tree, allocator, .{});
+
+    std.debug.print("{s}\n\n", .{json});
+
     // Print results
     for (checker.errors.items) |err| {
         const current_loc = getLineAndColumn(contents, err.offset);
@@ -40,6 +44,7 @@ pub fn main(init: std.process.Init) !void {
         result.scope_tree.scopes.len,
         checker.errors.items.len,
     });
+
     std.debug.print("took: {d:.2}ms\n", .{taken_ms});
 }
 
