@@ -1,7 +1,7 @@
-// traverser layers, from simplest to most capable:
-//   basic:   path tracking only
-//   scoped:  path + javascript lexical scopes
-//   symbols: path + scopes + symbol/reference collection
+/// Traverser layers, from simplest to most capable:
+///   basic:   path tracking only
+///   scoped:  path + JavaScript lexical scopes
+///   symbols: path + scopes + symbol/reference collection
 pub const basic = @import("basic.zig");
 pub const scoped = @import("scoped.zig");
 pub const symbols = @import("symbols.zig");

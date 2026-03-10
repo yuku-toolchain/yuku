@@ -4,8 +4,8 @@ const wk = @import("walk.zig");
 
 const Allocator = std.mem.Allocator;
 
-// simplest traverser context. only tracks the path from root to
-// the current node. no scope or symbol tracking.
+/// Simplest traverser context. Only tracks the path from root to
+/// the current node. No scope or symbol tracking.
 pub const Ctx = struct {
     tree: *const ast.ParseTree,
     path: wk.NodePath = .{},
@@ -19,6 +19,7 @@ pub const Ctx = struct {
     }
 };
 
+/// Walks the tree with path tracking only. No allocator needed.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V) Allocator.Error!void {
     var ctx = Ctx{ .tree = tree };
     var layer = wk.Layer(Ctx, V){ .inner = visitor };

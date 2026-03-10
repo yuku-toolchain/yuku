@@ -3,24 +3,24 @@ const ast = @import("../ast.zig");
 
 const Allocator = std.mem.Allocator;
 
-// controls what happens at each node during traversal.
+/// Controls what happens at each node during traversal.
 pub const Action = enum {
-    // keep going into children.
+    /// Keep going into children.
     proceed,
-    // skip this node's children, move to the next sibling.
+    /// Skip this node's children, move to the next sibling.
     skip,
-    // stop the entire traversal right now.
+    /// Stop the entire traversal right now.
     stop,
 };
 
-// walks the ast tree, calling visitor hooks at each node.
-//
-// C is the context type. it must have a `.tree` field so the walker
-// can access child nodes. contexts can also define `enter`, `exit`,
-// and `post_enter` methods if used with `Layer`.
-//
-// V is the visitor type. it can define hooks like `enter_function`,
-// `exit_block_statement`, or the catch-all `enter_node`/`exit_node`.
+/// Walks the AST tree, calling visitor hooks at each node.
+///
+/// `C` is the context type. It must have a `.tree` field so the walker
+/// can access child nodes. Contexts can also define `enter`, `exit`,
+/// and `post_enter` methods if used with `Layer`.
+///
+/// `V` is the visitor type. It can define hooks like `enter_function`,
+/// `exit_block_statement`, or the catch-all `enter_node`/`exit_node`.
 pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.Error!void {
     comptime validateHooks(V);
     _ = try walkNode(C, V, visitor, ctx.tree.program, ctx);
@@ -77,23 +77,23 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
     return .proceed;
 }
 
-// generic layer that wires a context's tracking methods into the walk cycle.
-//
-// instead of each traverser writing its own wrapper visitor, they define
-// tracking logic as methods on their Ctx type, and this layer handles
-// the rest. the protocol is:
-//
-//   1. ctx.enter(index, data)    -- runs before user hooks (push scopes, etc)
-//   2. dispatch to inner visitor -- user's enter_node and typed hooks fire here
-//   3. ctx.post_enter(index, data) -- runs after user hooks (optional, for
-//                                     work that needs to happen after the user
-//                                     saw the pre-existing state, like declaring
-//                                     new symbols)
-//   ... walk children ...
-//   4. dispatch to inner visitor -- user's exit hooks fire here
-//   5. ctx.exit(data)            -- cleanup (pop scopes, etc)
-//
-// C must have `enter` and `exit`. `post_enter` is optional.
+/// Generic layer that wires a context's tracking methods into the walk cycle.
+///
+/// Instead of each traverser writing its own wrapper visitor, they define
+/// tracking logic as methods on their `Ctx` type, and this layer handles
+/// the rest. The protocol is:
+///
+///   1. `ctx.enter(index, data)`      - runs before user hooks (push scopes, etc.)
+///   2. dispatch to inner visitor      - user's enter_node and typed hooks fire here
+///   3. `ctx.post_enter(index, data)` - runs after user hooks (optional, for
+///                                      work that needs to happen after the user
+///                                      saw the pre-existing state, like declaring
+///                                      new symbols)
+///   ... walk children ...
+///   4. dispatch to inner visitor      - user's exit hooks fire here
+///   5. `ctx.exit(data)`              - cleanup (pop scopes, etc.)
+///
+/// `C` must have `enter` and `exit`. `post_enter` is optional.
 pub fn Layer(comptime C: type, comptime V: type) type {
     return struct {
         inner: *V,
@@ -112,15 +112,17 @@ pub fn Layer(comptime C: type, comptime V: type) type {
     };
 }
 
-// dispatch helpers for calling visitor hooks.
-//
-// `enter` calls enter_node first, then the typed hook (e.g. enter_function).
-// `exit` calls the typed hook first, then exit_node.
-//
-// these are public so custom layers can use them to forward hooks
-// to an inner visitor. for example, Layer uses these to dispatch
-// to the user's visitor after doing its tracking work.
+/// Dispatch helpers for calling visitor hooks.
+///
+/// `enter` calls `enter_node` first, then the typed hook (e.g. `enter_function`).
+/// `exit` calls the typed hook first, then `exit_node`.
+///
+/// These are public so custom layers can use them to forward hooks
+/// to an inner visitor. For example, `Layer` uses these to dispatch
+/// to the user's visitor after doing its tracking work.
 pub const dispatch = struct {
+    /// Dispatches the enter phase: calls `enter_node` first, then the typed hook.
+    /// Returns the action from whichever hook fires.
     pub fn enter(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
         if (comptime @hasDecl(V, "enter_node")) {
             switch (try unwrapAction(visitor.enter_node(data, index, ctx))) {
@@ -132,6 +134,7 @@ pub const dispatch = struct {
         return enterTyped(C, V, visitor, data, index, ctx);
     }
 
+    /// Dispatches only the typed enter hook (e.g. `enter_function`), skipping `enter_node`.
     pub fn enterTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
         switch (data) {
             inline else => |node, tag| {
@@ -143,6 +146,7 @@ pub const dispatch = struct {
         }
     }
 
+    /// Dispatches the exit phase: calls the typed hook first, then `exit_node`.
     pub fn exit(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
         exitTyped(C, V, visitor, data, index, ctx);
         if (comptime @hasDecl(V, "exit_node")) {
@@ -150,6 +154,7 @@ pub const dispatch = struct {
         }
     }
 
+    /// Dispatches only the typed exit hook (e.g. `exit_function`), skipping `exit_node`.
     pub fn exitTyped(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
         switch (data) {
             inline else => |node, tag| {
@@ -202,29 +207,32 @@ fn validateHooks(comptime V: type) void {
     }
 }
 
-// tracks the path of node indices from root to the current position.
-// fixed capacity stack, no heap allocation.
+/// Tracks the path of node indices from root to the current position.
+/// Fixed-capacity stack, no heap allocation.
 pub const NodePath = struct {
     const capacity = 256;
 
     buf: [capacity]ast.NodeIndex = undefined,
     len: usize = 0,
 
+    /// Returns the parent node index, or `null` if at the root.
     pub inline fn parent(self: *const NodePath) ?ast.NodeIndex {
         return self.ancestor(1);
     }
 
-    // 0 = current node, 1 = parent, 2 = grandparent, etc.
+    /// Returns the nth ancestor. 0 = current node, 1 = parent, 2 = grandparent, etc.
     pub inline fn ancestor(self: *const NodePath, n: usize) ?ast.NodeIndex {
         if (n >= self.len) return null;
         const pos = self.len - 1 - n;
         return if (pos < capacity) self.buf[pos] else null;
     }
 
+    /// Returns the current nesting depth (0 at root).
     pub inline fn depth(self: *const NodePath) usize {
         return self.len;
     }
 
+    /// Pushes a node onto the path stack when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
         std.debug.assert(self.len < capacity);
         if (self.len < capacity) {
@@ -233,6 +241,7 @@ pub const NodePath = struct {
         self.len += 1;
     }
 
+    /// Pops the current node off the path stack when exiting it.
     pub fn pop(self: *NodePath) void {
         self.len -= 1;
     }
