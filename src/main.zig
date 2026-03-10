@@ -29,8 +29,9 @@ pub fn main(init: std.process.Init) !void {
 
     // Print results
     for (checker.errors.items) |err| {
-        const loc = getLineAndColumn(contents, err.offset);
-        std.debug.print("{s}:{d}:{d}: redeclaration of '{s}'\n", .{ file_path, loc.line, loc.col, err.name });
+        const current_loc = getLineAndColumn(contents, err.offset);
+        const existing_loc = getLineAndColumn(contents, err.existing_offset);
+        std.debug.print("{s}:{d}:{d}: redeclaration of '{s}' which already declared at {s}:{d}:{d}\n", .{ file_path, current_loc.line, current_loc.col, err.name, file_path, existing_loc.line, existing_loc.col });
     }
 
     std.debug.print("\nsymbols: {d}, references: {d}, scopes: {d}, errors: {d}\n", .{
@@ -48,6 +49,7 @@ const RedeclChecker = struct {
     const Error = struct {
         name: []const u8,
         offset: usize,
+        existing_offset: usize,
     };
 
     pub fn enter_binding_identifier(
@@ -65,10 +67,13 @@ const RedeclChecker = struct {
             .current => ctx.scope.currentScopeId(),
         };
 
-        if (ctx.symbols.findInScope(target_scope, name)) |_| {
+        if (ctx.symbols.findInScope(target_scope, name)) |ex| {
+            const existing = ctx.symbols.getSymbol(ex);
+
             self.errors.append(std.heap.page_allocator, .{
                 .name = name,
                 .offset = id.name_start,
+                .existing_offset = existing.name_start,
             }) catch {};
         }
 
