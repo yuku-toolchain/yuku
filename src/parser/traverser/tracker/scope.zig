@@ -3,7 +3,7 @@ const ast = @import("../../ast.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// Typed index into the scope array. `.root` is always 0, `.none` is the sentinel.
+/// Unique identifier for a scope. `.root` is the top-level scope, `.none` means no scope.
 pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
 
 /// A single lexical scope in the JavaScript scope tree.
@@ -70,13 +70,12 @@ pub const Scope = struct {
     };
 };
 
-/// Immutable result of a scoped traversal. Flat array of scopes
-/// linked by parent pointers. Owns its backing memory.
+/// The result of a scoped traversal. Contains all scopes created during the walk.
 pub const ScopeTree = struct {
     scopes: []const Scope,
     allocator: Allocator,
 
-    /// Frees the backing scope array.
+    /// Frees all resources.
     pub fn deinit(self: *ScopeTree) void {
         self.allocator.free(self.scopes);
         self.* = undefined;
@@ -107,17 +106,17 @@ pub const ScopeTree = struct {
     };
 };
 
-/// Mutable builder that tracks JavaScript lexical scopes during an AST walk.
+/// Tracks JavaScript lexical scopes during an AST walk.
 /// Call `enter` when visiting a node and `exit` when leaving it.
-/// The tracker pushes/pops scopes for nodes that create them
-/// (functions, blocks, classes, etc.) and ignores everything else.
+/// Scopes are created for nodes that introduce them
+/// (functions, blocks, classes, etc.) and ignored for everything else.
 pub const ScopeTracker = struct {
     tree: *const ast.ParseTree,
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
 
-    /// Creates a new tracker with a root scope (and module scope for modules).
+    /// Creates a new scope tracker with a root scope.
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!ScopeTracker {
         var self = ScopeTracker{ .tree = tree, .allocator = allocator };
 
@@ -146,7 +145,7 @@ pub const ScopeTracker = struct {
         }
     }
 
-    /// Pushes a new child scope onto the stack.
+    /// Creates a new child scope under the current one.
     pub fn pushScope(self: *ScopeTracker, kind: Scope.Kind, node: ast.NodeIndex, flags: Scope.Flags) Allocator.Error!void {
         const id: ScopeId = @enumFromInt(@as(u32, @intCast(self.scopes.items.len)));
         const parent = self.currentScope();
@@ -294,15 +293,14 @@ pub const ScopeTracker = struct {
         return .{ .scopes = self.scopes.items, .current = start };
     }
 
-    /// Finalizes into an immutable `ScopeTree`. Frees the scope stack since
-    /// it's only needed during the walk.
+    /// Finalizes into an immutable `ScopeTree`.
     pub fn toScopeTree(self: *ScopeTracker) Allocator.Error!ScopeTree {
         self.scope_stack.deinit(self.allocator);
         return .{ .scopes = try self.scopes.toOwnedSlice(self.allocator), .allocator = self.allocator };
     }
 
-    /// Frees all resources. Only needed if the traversal is aborted early
-    /// (normally, call `toScopeTree` instead which takes ownership).
+    /// Frees all resources. Only needed if the traversal is aborted early;
+    /// normally call `toScopeTree` instead.
     pub fn deinit(self: *ScopeTracker) void {
         self.scopes.deinit(self.allocator);
         self.scope_stack.deinit(self.allocator);

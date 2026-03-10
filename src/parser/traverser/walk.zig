@@ -208,7 +208,6 @@ fn validateHooks(comptime V: type) void {
 }
 
 /// Tracks the path of node indices from root to the current position.
-/// Fixed-capacity stack, no heap allocation.
 pub const NodePath = struct {
     const capacity = 256;
 
@@ -232,7 +231,7 @@ pub const NodePath = struct {
         return self.len;
     }
 
-    /// Pushes a node onto the path stack when entering it.
+    /// Adds a node to the path when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
         std.debug.assert(self.len < capacity);
         if (self.len < capacity) {
@@ -241,7 +240,7 @@ pub const NodePath = struct {
         self.len += 1;
     }
 
-    /// Pops the current node off the path stack when exiting it.
+    /// Removes the current node from the path when exiting it.
     pub fn pop(self: *NodePath) void {
         self.len -= 1;
     }

@@ -4,9 +4,9 @@ const sc = @import("scope.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// Typed index into the symbol array. `.none` is the sentinel for "no symbol".
+/// Unique identifier for a symbol. `.none` means no symbol.
 pub const SymbolId = enum(u32) { none = std.math.maxInt(u32), _ };
-/// Typed index into the reference array. `.none` is the sentinel for "no reference".
+/// Unique identifier for a reference. `.none` means no reference.
 pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
 /// A declared binding (variable, function, class, import, or parameter).
@@ -20,9 +20,7 @@ pub const Symbol = struct {
     /// The scope this symbol is declared in.
     scope: sc.ScopeId,
     node: ast.NodeIndex,
-    /// Symbols in the same scope form a linked list.
-    /// Points to the next symbol, or `.none` if this is the last one.
-    /// Used by `findInScope` to walk all symbols in a scope.
+    /// Next symbol in the same scope, or `.none` if this is the last one.
     next_in_scope: SymbolId,
 
     /// What kind of JavaScript declaration created this symbol.
@@ -69,18 +67,17 @@ pub const Reference = struct {
     resolved: SymbolId,
 };
 
-/// Immutable result of symbol collection. Owns its backing memory.
+/// The result of symbol collection. Contains all symbols and references from the walk.
 pub const SymbolTable = struct {
     symbols: []const Symbol,
     references: []const Reference,
-    /// Head of the per-scope symbol linked list, indexed by scope ID.
-    /// Each entry points to the first symbol in that scope (or `.none`).
-    /// Follow `next_in_scope` on each symbol to walk the rest.
+    /// First symbol in each scope, indexed by scope ID.
+    /// `.none` if the scope has no symbols.
     scope_symbols: []const SymbolId,
     source: []const u8,
     allocator: Allocator,
 
-    /// Frees all backing arrays.
+    /// Frees all resources.
     pub fn deinit(self: *SymbolTable) void {
         self.allocator.free(self.symbols);
         self.allocator.free(self.references);
@@ -163,7 +160,7 @@ const TargetScope = enum {
     name,
 };
 
-/// Mutable builder that collects symbols and references during an AST walk.
+/// Collects symbols and references during an AST walk.
 ///
 /// Split into two phases per node:
 ///   `setBindingContext`: called on enter, sets up what kind of binding we're
@@ -178,8 +175,7 @@ pub const SymbolTracker = struct {
     allocator: Allocator,
     symbols: std.ArrayList(Symbol) = .{},
     references: std.ArrayList(Reference) = .{},
-    /// Per-scope linked list heads, indexed by scope ID.
-    /// Grows as new scopes are created by the scope tracker.
+    /// First symbol in each scope, indexed by scope ID.
     scope_symbols: std.ArrayList(SymbolId) = .{},
 
     // binding context: set by parent nodes, consumed by binding_identifier
@@ -189,7 +185,7 @@ pub const SymbolTracker = struct {
     is_export: bool = false,
     is_default_export: bool = false,
 
-    /// Creates a new tracker with pre-allocated capacity based on tree size.
+    /// Creates a new symbol tracker.
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!SymbolTracker {
         var self = SymbolTracker{ .tree = tree, .allocator = allocator };
 
@@ -302,7 +298,7 @@ pub const SymbolTracker = struct {
         }
     }
 
-    /// Cleans up binding context on exit (resets export flags after export nodes).
+    /// Resets binding context when exiting a node.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
             .export_named_declaration, .export_default_declaration => {
@@ -405,7 +401,7 @@ pub const SymbolTracker = struct {
         return null;
     }
 
-    /// Finalizes into an immutable `SymbolTable` by transferring ownership of the arrays.
+    /// Finalizes into an immutable `SymbolTable`.
     pub fn toSymbolTable(self: *SymbolTracker) Allocator.Error!SymbolTable {
         return .{
             .symbols = try self.symbols.toOwnedSlice(self.allocator),
@@ -416,8 +412,8 @@ pub const SymbolTracker = struct {
         };
     }
 
-    /// Frees all resources. Only needed if the traversal is aborted early
-    /// (normally, call `toSymbolTable` instead which takes ownership).
+    /// Frees all resources. Only needed if the traversal is aborted early;
+    /// normally call `toSymbolTable` instead.
     pub fn deinit(self: *SymbolTracker) void {
         self.symbols.deinit(self.allocator);
         self.references.deinit(self.allocator);

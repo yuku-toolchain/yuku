@@ -18,7 +18,7 @@ pub const Ctx = struct {
     path: wk.NodePath = .{},
     scope: ScopeTracker,
 
-    /// Creates a new scoped context with a root scope already pushed.
+    /// Creates a new scoped context with a root scope.
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Ctx {
         return .{ .tree = tree, .scope = try ScopeTracker.init(tree, allocator) };
     }
@@ -33,7 +33,7 @@ pub const Ctx = struct {
         self.path.pop();
     }
 
-    /// Finalizes the context into an immutable `ScopeTree`.
+    /// Finalizes into an immutable `ScopeTree`.
     pub fn toScopeTree(self: *Ctx) Allocator.Error!ScopeTree {
         return self.scope.toScopeTree();
     }
@@ -44,7 +44,7 @@ pub const Ctx = struct {
     }
 };
 
-/// Walks the tree with path and scope tracking. Returns the finalized `ScopeTree`.
+/// Walks the tree with path and scope tracking. Returns a `ScopeTree`.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();

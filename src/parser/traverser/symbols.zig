@@ -62,7 +62,7 @@ pub const Ctx = struct {
         self.path.pop();
     }
 
-    /// Finalizes the context into an immutable `Result` containing the scope tree and symbol table.
+    /// Finalizes into a `Result` containing the scope tree and symbol table.
     pub fn toResult(self: *Ctx) Allocator.Error!Result {
         return .{
             .scope_tree = try self.scope.toScopeTree(),
@@ -89,8 +89,8 @@ pub const Result = struct {
     }
 };
 
-/// Walks the tree with full path, scope, and symbol tracking. Returns a `Result`
-/// containing the finalized scope tree and symbol table.
+/// Walks the tree with full path, scope, and symbol tracking.
+/// Returns a `Result` containing the scope tree and symbol table.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!Result {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
