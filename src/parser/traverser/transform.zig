@@ -36,19 +36,26 @@
 //! Both are safe to call during traversal.
 //!
 //! A common pattern is wrapping a node: copy the original data to a new node,
-//! then replace the current node with a wrapper pointing to the new one:
+//! then replace the current node with a wrapper pointing to the new one.
+//! When wrapping, update the span too so it covers the new syntax (e.g. the
+//! added parentheses):
 //!
 //! ```
-//! // Move the original data to a new node.
+//! const span = ctx.tree.getSpan(index);
+//!
+//! // Move the original data to a new node, keeping its original span.
 //! const inner = try ctx.tree.addNode(
 //!     .{ .binary_expression = expr },
-//!     ctx.tree.getSpan(index),
+//!     span,
 //! );
 //!
 //! // Replace the current node with a wrapper.
 //! ctx.tree.setData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });
+//!
+//! // Expand the span to include the wrapping parentheses.
+//! ctx.tree.setSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
 //!
 //! // Skip so the walker does not descend into the new children,
 //! // which would re-trigger this hook on the moved inner node.
