@@ -134,7 +134,6 @@ pub const Parser = struct {
             .arena = self.arena,
             .source_type = self.source_type,
             .lang = self.lang,
-            .new_source = .{},
         };
 
         return tree;

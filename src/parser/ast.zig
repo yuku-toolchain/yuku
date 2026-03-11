@@ -150,8 +150,6 @@ pub const ParseTree = struct {
     source_type: SourceType,
     /// Language variant (js, ts, jsx, tsx, dts)
     lang: Lang,
-    /// Synthetic source text for identifiers/strings created during transforms.
-    new_source: std.ArrayList(u8),
 
     /// Returns true if the parse tree contains any errors.
     pub inline fn hasErrors(self: *const ParseTree) bool {
@@ -190,11 +188,7 @@ pub const ParseTree = struct {
 
     /// Gets a slice of the source text at the given position.
     pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
-        const base_len: u32 = @intCast(self.source.len);
-        return if (start < base_len)
-            self.source[start..][0..len]
-        else
-            self.new_source.items[start - base_len ..][0..len];
+        return self.source[start..][0..len];
     }
 
     // -- mutation interface --
@@ -210,26 +204,27 @@ pub const ParseTree = struct {
     }
 
     /// Allocates a new node in the arena. Returns its index.
-    pub fn addNode(self: *ParseTree, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+    pub inline fn addNode(self: *ParseTree, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
-        try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        if (self.nodes.len < self.nodes.capacity) {
+            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
+        } else {
+            try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        }
         return index;
     }
 
     /// Allocates a new child list in the arena. Returns its range.
-    pub fn addExtra(self: *ParseTree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+    pub inline fn addExtra(self: *ParseTree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
-        try self.extra.appendSlice(self.arena.allocator(), children);
+        if (self.extra.items.len + children.len <= self.extra.capacity) {
+            self.extra.appendSliceAssumeCapacity(children);
+        } else {
+            try self.extra.appendSlice(self.arena.allocator(), children);
+        }
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Registers synthetic source text for identifiers/strings created during transforms.
-    /// Returns a name handle usable in BindingIdentifier, StringLiteral, etc.
-    pub fn addSource(self: *ParseTree, text: []const u8) error{OutOfMemory}!struct { start: u32, len: u16 } {
-        const start: u32 = @as(u32, @intCast(self.source.len)) + @as(u32, @intCast(self.new_source.items.len));
-        try self.new_source.appendSlice(self.arena.allocator(), text);
-        return .{ .start = start, .len = @intCast(text.len) };
-    }
 };
 
 /// index into the ast node array. `null_node` for optional nodes.
