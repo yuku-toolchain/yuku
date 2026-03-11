@@ -4,9 +4,10 @@ const sc = @import("scope.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// Unique identifier for a symbol. `.none` means no symbol.
+/// ID for a symbol. `.none` means no symbol.
 pub const SymbolId = enum(u32) { none = std.math.maxInt(u32), _ };
-/// Unique identifier for a reference. `.none` means no reference.
+
+/// ID for a reference. `.none` means no reference.
 pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
 /// A declared binding (variable, function, class, import, or parameter).
@@ -25,17 +26,17 @@ pub const Symbol = struct {
 
     /// What kind of JavaScript declaration created this symbol.
     pub const Kind = enum(u8) {
-        /// ECMA-262 14.3.1: `let`, `const`, `using`, `await using`.
+        /// `let`, `const`, `using`, `await using`.
         lexical,
-        /// ECMA-262 14.3.2: `var` (hoists to nearest function/module/global scope).
+        /// `var` (hoists to nearest function/module/global scope).
         hoisted,
-        /// ECMA-262 15.2: function declaration or expression name.
+        /// Function declaration/expression name.
         function,
-        /// ECMA-262 15.7: class declaration or expression name.
+        /// Class declaration/expression name.
         class,
-        /// ECMA-262 15.1: function parameter or catch clause parameter.
+        /// Function parameter or catch clause parameter.
         parameter,
-        /// ECMA-262 16.2.2: import binding.
+        /// Import binding.
         import,
     };
 
@@ -149,14 +150,13 @@ const TargetScope = enum {
     // let, const, import, etc go in the current scope
     current,
     // var hoists to nearest function/module/global scope
-    // ecma262 10.2.11 FunctionDeclarationInstantiation
     hoist,
     // function/class declarations bind in the enclosing scope
     parent,
     // function/class expression names go in the expression_name scope,
     // which is the parent of the current function/class scope.
-    // ecma262 15.2.5 InstantiateOrdinaryFunctionExpression (step 2-3)
-    // ecma262 15.7.14 ClassDefinitionEvaluation (step 5-6)
+    // Section 15.2.5 InstantiateOrdinaryFunctionExpression (step 2-3)
+    // Section 15.7.14 ClassDefinitionEvaluation (step 5-6)
     name,
 };
 
@@ -166,7 +166,7 @@ const TargetScope = enum {
 ///   `setBindingContext`: called on enter, sets up what kind of binding we're
 ///                       looking at (let/var/function/etc.) and where it should go.
 ///                       This runs for parent nodes like `variable_declaration`.
-///   `declare_bindings`: called on post_enter, actually creates the symbol or
+///   `declareBindings`: called on post_enter, actually creates the symbol or
 ///                       reference. This runs for leaf nodes like `binding_identifier`.
 ///
 /// The split lets user hooks see the world between these two phases.
@@ -178,14 +178,14 @@ pub const SymbolTracker = struct {
     /// First symbol in each scope, indexed by scope ID.
     scope_symbols: std.ArrayList(SymbolId) = .{},
 
-    // binding context: set by parent nodes, consumed by binding_identifier
+    // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,
     binding_is_const: bool = false,
     target_scope: TargetScope = .current,
     is_export: bool = false,
     is_default_export: bool = false,
+    //
 
-    /// Creates a new symbol tracker.
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!SymbolTracker {
         var self = SymbolTracker{ .tree = tree, .allocator = allocator };
 
@@ -200,7 +200,7 @@ pub const SymbolTracker = struct {
 
     /// Phase 1: sets up the binding context based on what kind of node we're entering.
     /// This doesn't create any symbols yet. It just records "the next
-    /// `binding_identifier` we see should be a let/var/function/etc. in this scope".
+    /// `binding_identifier` we see should be a let/var/function/etc, in this scope".
     pub fn setBindingContext(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
             .export_named_declaration => {
@@ -276,12 +276,13 @@ pub const SymbolTracker = struct {
 
     /// Phase 2: actually creates the symbol or reference.
     /// Only fires for `binding_identifier` and `identifier_reference` nodes.
-    /// Runs after user hooks, so the user can inspect existing state first.
-    pub fn declare_bindings(self: *SymbolTracker, index: ast.NodeIndex, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
+    pub fn declareBindings(self: *SymbolTracker, index: ast.NodeIndex, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
         // keep scope_symbols in sync with scope count. new scopes might
         // have been created since the last time we were called.
         const scope_count = scope.scopes.items.len;
+
         try self.scope_symbols.ensureTotalCapacity(self.allocator, scope_count);
+
         while (self.scope_symbols.items.len < scope_count) {
             self.scope_symbols.appendAssumeCapacity(.none);
         }
@@ -298,7 +299,7 @@ pub const SymbolTracker = struct {
         }
     }
 
-    /// Resets binding context when exiting a node.
+    // resets binding context when exiting a node.
     pub fn exit(self: *SymbolTracker, data: ast.NodeData) void {
         switch (data) {
             .export_named_declaration, .export_default_declaration => {
@@ -311,16 +312,15 @@ pub const SymbolTracker = struct {
 
     /// Figures out which scope a binding should land in, based on
     /// the target scope set by `setBindingContext`.
-    ///
-    /// For `.name` (function/class expression names): the current scope
-    /// is the function/class body. The `expression_name` scope is its parent,
-    /// so we go up one level. If for some reason we're not inside a
-    /// function/class (shouldn't happen), falls back to current scope.
     pub fn resolveTargetScope(self: *const SymbolTracker, scope: *const sc.ScopeTracker) sc.ScopeId {
         return switch (self.target_scope) {
             .current => scope.currentScopeId(),
             .hoist => scope.currentHoistScopeId(),
             .parent => scope.currentScope().parent,
+            // for `.name` (function/class expression names), the current scope
+            // is the function/class body. The `expression_name` scope is its parent,
+            // so we go up one level. If for some reason we're not inside a
+            // function/class (shouldn't happen), falls back to current scope.
             .name => blk: {
                 const current = scope.currentScope();
                 break :blk if (current.kind == .function or current.kind == .class)
@@ -353,6 +353,7 @@ pub const SymbolTracker = struct {
         });
 
         self.scope_symbols.items[scope_idx] = id;
+
         return id;
     }
 

@@ -22,6 +22,8 @@ pub const Ctx = struct {
 /// Walks the tree with path tracking only. No allocator needed.
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V) Allocator.Error!void {
     var ctx = Ctx{ .tree = tree };
+
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
+
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
 }

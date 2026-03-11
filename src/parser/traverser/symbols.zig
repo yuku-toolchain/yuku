@@ -17,27 +17,12 @@ pub const Reference = sy.Reference;
 pub const SymbolTable = sy.SymbolTable;
 pub const SymbolTracker = sy.SymbolTracker;
 
-/// Full traverser context: path + scopes + symbols.
-///
-/// The tracking is split into two phases around user hooks:
-///
-///   enter:       push path, push scopes, set binding context
-///                (now user hooks fire, they can inspect existing symbols)
-///   post_enter:  declare the new binding / record the reference
-///                (symbol is added to the table after the user had a chance to check)
-///   exit:        clean up symbols, scopes, and path in reverse order
-///
-/// This split matters for things like redeclaration checking. The user's
-/// `enter_binding_identifier` hook runs between `setBindingContext` and
-/// `declare_bindings`, so it sees the scope state before the new symbol
-/// is added and can check for conflicts.
 pub const Ctx = struct {
     tree: *const ast.ParseTree,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
 
-    /// Creates a new context with root scope and empty symbol table.
     pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Ctx {
         return .{
             .tree = tree,
@@ -53,7 +38,7 @@ pub const Ctx = struct {
     }
 
     pub fn post_enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
-        try self.symbols.declare_bindings(index, data, &self.scope);
+        try self.symbols.declareBindings(index, data, &self.scope);
     }
 
     pub fn exit(self: *Ctx, data: ast.NodeData) void {
@@ -94,7 +79,10 @@ pub const Result = struct {
 pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!Result {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
+
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
+
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
+
     return try ctx.toResult();
 }

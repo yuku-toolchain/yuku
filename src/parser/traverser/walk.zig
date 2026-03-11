@@ -47,8 +47,7 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
 }
 
 // walks all child nodes by iterating over the struct fields of the
-// node payload. NodeIndex fields are single children, IndexRange
-// fields are lists of children stored in the extra array.
+// node payload.
 fn walkChildren(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, ctx: *C) Allocator.Error!Action {
     switch (data) {
         inline else => |node| {
@@ -83,15 +82,15 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
 /// tracking logic as methods on their `Ctx` type, and this layer handles
 /// the rest. The protocol is:
 ///
-///   1. `ctx.enter(index, data)`      - runs before user hooks (push scopes, etc.)
+///   1. `ctx.enter(index, data)`       - runs before user hooks (push scopes, etc.)
 ///   2. dispatch to inner visitor      - user's enter_node and typed hooks fire here
-///   3. `ctx.post_enter(index, data)` - runs after user hooks (optional, for
+///   3. `ctx.post_enter(index, data)`  - runs after user hooks (optional, for
 ///                                      work that needs to happen after the user
 ///                                      saw the pre-existing state, like declaring
 ///                                      new symbols)
 ///   ... walk children ...
 ///   4. dispatch to inner visitor      - user's exit hooks fire here
-///   5. `ctx.exit(data)`              - cleanup (pop scopes, etc.)
+///   5. `ctx.exit(data)`               - cleanup (pop scopes, etc.)
 ///
 /// `C` must have `enter` and `exit`. `post_enter` is optional.
 pub fn Layer(comptime C: type, comptime V: type) type {
@@ -113,16 +112,8 @@ pub fn Layer(comptime C: type, comptime V: type) type {
 }
 
 /// Dispatch helpers for calling visitor hooks.
-///
-/// `enter` calls `enter_node` first, then the typed hook (e.g. `enter_function`).
-/// `exit` calls the typed hook first, then `exit_node`.
-///
-/// These are public so custom layers can use them to forward hooks
-/// to an inner visitor. For example, `Layer` uses these to dispatch
-/// to the user's visitor after doing its tracking work.
 pub const dispatch = struct {
-    /// Dispatches the enter phase: calls `enter_node` first, then the typed hook.
-    /// Returns the action from whichever hook fires.
+    /// Dispatches the enter phase, calls `enter_node` first, then the typed hook.
     pub fn enter(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
         if (comptime @hasDecl(V, "enter_node")) {
             switch (try unwrapAction(visitor.enter_node(data, index, ctx))) {
@@ -146,7 +137,7 @@ pub const dispatch = struct {
         }
     }
 
-    /// Dispatches the exit phase: calls the typed hook first, then `exit_node`.
+    /// Dispatches the exit phase, calls the typed hook first, then `exit_node`.
     pub fn exit(comptime C: type, comptime V: type, visitor: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *C) void {
         exitTyped(C, V, visitor, data, index, ctx);
         if (comptime @hasDecl(V, "exit_node")) {
@@ -167,7 +158,7 @@ pub const dispatch = struct {
 };
 
 // lets visitor hooks return either `Action` or `Allocator.Error!Action`.
-// both coerce to `Allocator.Error!Action` through zig's error union rules,
+// both coerce to `Allocator.Error!Action` through Zig's error union rules,
 // so hooks that don't need to allocate can just return `.proceed` directly
 // without wrapping it in an error union.
 inline fn unwrapAction(result: anytype) Allocator.Error!Action {
