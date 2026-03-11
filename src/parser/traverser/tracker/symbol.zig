@@ -303,6 +303,7 @@ pub const SymbolTracker = struct {
         while (self.scope_symbols.items.len < scope_count) {
             self.scope_symbols.appendAssumeCapacity(.none);
         }
+        //
 
         switch (data) {
             .binding_identifier => |id| {
