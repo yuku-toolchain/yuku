@@ -208,22 +208,14 @@ pub const ParseTree = struct {
     /// Allocates a new node in the arena. Returns its index.
     pub inline fn addNode(self: *ParseTree, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
-        if (self.nodes.len < self.nodes.capacity) {
-            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
-        } else {
-            try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
-        }
+        try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
         return index;
     }
 
     /// Allocates a new child list in the arena. Returns its range.
     pub inline fn addExtra(self: *ParseTree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
-        if (self.extra.items.len + children.len <= self.extra.capacity) {
-            self.extra.appendSliceAssumeCapacity(children);
-        } else {
-            try self.extra.appendSlice(self.arena.allocator(), children);
-        }
+        try self.extra.appendSlice(self.arena.allocator(), children);
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
