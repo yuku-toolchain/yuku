@@ -5,15 +5,8 @@ const Allocator = std.mem.Allocator;
 
 /// A mutable overlay on a ParseTree that supports in-place node edits
 /// and new node/extra/source allocation.
-///
-/// Implements the same read interface as `ParseTree` (`getData`, `getExtra`,
-/// `getSourceText`), so the generic walker works unchanged.
-///
-/// Original nodes are addressed by their existing `NodeIndex`. Newly created
-/// nodes get indices starting at `base_count`. Same split addressing for
-/// extra (child-list) entries and synthetic source text.
 pub const MutableTree = struct {
-    // mutable views of original data (via @constCast of the arena-owned slices)
+    // mutable views of original data
     data: []ast.NodeData,
     spans: []ast.Span,
     extra: []const ast.NodeIndex,
@@ -38,8 +31,14 @@ pub const MutableTree = struct {
 
     /// Creates a mutable overlay from an existing ParseTree.
     /// The ParseTree must outlive the MutableTree.
-    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) MutableTree {
-        return .{
+    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!MutableTree {
+        const node_count = tree.nodes.items(.data).len;
+        const extra_count = tree.extra.len;
+
+        const estimated_new_nodes: u32 = @max(16, @as(u32, @intCast(node_count / 32)));
+        const estimated_new_extra: u32 = @max(16, @as(u32, @intCast(extra_count / 32)));
+
+        var self = MutableTree{
             .data = @constCast(tree.nodes.items(.data)),
             .spans = @constCast(tree.nodes.items(.span)),
             .extra = tree.extra,
@@ -50,25 +49,33 @@ pub const MutableTree = struct {
             .new_spans = .{},
             .new_extra = .{},
             .new_source = .{},
-            .base_count = @intCast(tree.nodes.items(.data).len),
-            .base_extra_count = @intCast(tree.extra.len),
+            .base_count = @intCast(node_count),
+            .base_extra_count = @intCast(extra_count),
             .base_source_len = @intCast(tree.source.len),
             .allocator = allocator,
         };
+
+        try self.new_data.ensureTotalCapacity(allocator, estimated_new_nodes);
+        try self.new_spans.ensureTotalCapacity(allocator, estimated_new_nodes);
+        try self.new_extra.ensureTotalCapacity(allocator, estimated_new_extra);
+        try self.new_source.ensureTotalCapacity(allocator, 256);
+
+        return self;
     }
 
-    // -- read interface (walker-compatible) --
-
+    /// Gets the data for the node at the given index.
     pub inline fn getData(self: *const MutableTree, index: ast.NodeIndex) ast.NodeData {
         const i = @intFromEnum(index);
         return if (i < self.base_count) self.data[i] else self.new_data.items[i - self.base_count];
     }
 
+    /// Gets the span for the node at the given index.
     pub inline fn getSpan(self: *const MutableTree, index: ast.NodeIndex) ast.Span {
         const i = @intFromEnum(index);
         return if (i < self.base_count) self.spans[i] else self.new_spans.items[i - self.base_count];
     }
 
+    /// Gets the extra node indices for the given range.
     pub inline fn getExtra(self: *const MutableTree, range: ast.IndexRange) []const ast.NodeIndex {
         return if (range.start < self.base_extra_count)
             self.extra[range.start..][0..range.len]
@@ -76,14 +83,13 @@ pub const MutableTree = struct {
             self.new_extra.items[range.start - self.base_extra_count ..][0..range.len];
     }
 
+    /// Gets a slice of the source text at the given position.
     pub inline fn getSourceText(self: *const MutableTree, start: u32, len: u16) []const u8 {
         return if (start < self.base_source_len)
             self.source[start..][0..len]
         else
             self.new_source.items[start - self.base_source_len ..][0..len];
     }
-
-    // -- mutation --
 
     /// Overwrites an existing node's data in-place.
     pub inline fn setData(self: *MutableTree, index: ast.NodeIndex, new: ast.NodeData) void {
