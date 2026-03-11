@@ -37,10 +37,14 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
         .proceed => {},
     }
 
-    const result = try walkChildren(C, V, visitor, data, ctx);
+    // re-read, if a visitor replaced this node during enter, walk the
+    // replacement's children instead of the (now stale) originals.
+    const current = ctx.tree.getData(index);
+
+    const result = try walkChildren(C, V, visitor, current, ctx);
 
     if (result != .stop) {
-        dispatch.exit(C, V, visitor, data, index, ctx);
+        dispatch.exit(C, V, visitor, current, index, ctx);
     }
 
     return result;

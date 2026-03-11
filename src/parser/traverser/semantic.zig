@@ -62,7 +62,7 @@ pub const Ctx = struct {
     }
 };
 
-/// Combined output of a symbol-collecting traversal.
+/// Combined output of a semantic traversal.
 pub const Result = struct {
     scope_tree: ScopeTree,
     symbol_table: SymbolTable,

@@ -3,7 +3,7 @@ const parser = @import("parser");
 
 const ast = parser.ast;
 const traverser = parser.traverser;
-const symbols = traverser.symbols;
+const semantic = traverser.semantic;
 
 pub fn main(init: std.process.Init) !void {
     const Io = init.io;
@@ -20,7 +20,7 @@ pub fn main(init: std.process.Init) !void {
     const start = std.Io.Clock.Timestamp.now(Io, .real);
 
     var checker = RedeclChecker{};
-    var result = try symbols.traverse(RedeclChecker, &tree, &checker, std.heap.page_allocator);
+    var result = try semantic.traverse(RedeclChecker, &tree, &checker, std.heap.page_allocator);
     defer result.deinit();
 
     const end = std.Io.Clock.Timestamp.now(Io, .real);
@@ -59,7 +59,7 @@ const RedeclChecker = struct {
         self: *RedeclChecker,
         id: ast.BindingIdentifier,
         _: ast.NodeIndex,
-        ctx: *symbols.Ctx,
+        ctx: *semantic.Ctx,
     ) traverser.Action {
         const name = ctx.tree.getSourceText(id.name_start, id.name_len);
 
