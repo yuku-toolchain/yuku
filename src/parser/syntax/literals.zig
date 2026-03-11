@@ -9,7 +9,7 @@ const expressions = @import("expressions.zig");
 pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .string_literal = .{
             .raw_start = token.span.start,
             .raw_len = @intCast(token.len()),
@@ -20,7 +20,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .boolean_literal = .{ .value = token.tag == .true },
     }, token.span);
 }
@@ -28,7 +28,7 @@ pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.{ .null_literal = .{} }, token.span);
+    return try parser.createNode(.{ .null_literal = .{} }, token.span);
 }
 
 pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -37,7 +37,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     // bigint literal is a separate node
     if (token.tag == .bigint_literal) {
-        return try parser.addNode(.{
+        return try parser.createNode(.{
             .bigint_literal = .{
                 .raw_start = token.span.start,
                 .raw_len = @intCast(token.len()),
@@ -45,7 +45,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
         }, token.span);
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .numeric_literal = .{
             .raw_start = token.span.start,
             .raw_len = @intCast(token.len()),
@@ -64,7 +64,7 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithRescannedToken(parser.lexer.createToken(.regex_literal, regex.span.start, regex.span.end)) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .regexp_literal = .{
             .pattern_start = @intCast(regex.span.start + 1),
             .pattern_len = @intCast(regex.pattern.len),
@@ -81,9 +81,9 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
 
     try parser.advance() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .template_literal = .{
-            .quasis = try parser.addExtra(&[_]ast.NodeIndex{element}),
+            .quasis = try parser.createExtra(&[_]ast.NodeIndex{element}),
             .expressions = ast.IndexRange.empty,
         },
     }, token.span);
@@ -142,10 +142,10 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
         if (is_tail) break;
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .template_literal = .{
-            .quasis = try parser.addExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
-            .expressions = try parser.addExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
+            .quasis = try parser.createExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
+            .expressions = try parser.createExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
         },
     }, .{ .start = start, .end = end });
 }
@@ -159,7 +159,7 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
         try parser.report(span, "Bad escape sequence in untagged template literal", .{});
     }
 
-    return parser.addNode(.{
+    return parser.createNode(.{
         .template_element = .{
             .raw_start = span.start,
             .raw_len = @intCast(span.end - span.start),
@@ -190,7 +190,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .identifier_reference = .{
             .name_start = token.span.start,
             .name_len = @intCast(token.len()),
@@ -203,7 +203,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .private_identifier = .{
             .name_start = token.span.start + 1, // skip '#'
             .name_len = @intCast(token.len() - 1),
@@ -216,7 +216,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .identifier_name = .{
             .name_start = token.span.start,
             .name_len = @intCast(token.len()),
@@ -230,7 +230,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const current = parser.current_token;
     try parser.advance() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .label_identifier = .{
             .name_start = current.span.start,
             .name_len = @intCast(current.len()),

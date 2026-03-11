@@ -56,7 +56,7 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_declaration = .{
             .specifiers = specifiers,
             .source = source,
@@ -72,7 +72,7 @@ fn parseSideEffectImport(parser: *Parser, start: u32, phase: ?ast.ImportPhase) E
     const attributes = try parseWithClause(parser);
     const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_declaration = .{
             .specifiers = ast.IndexRange.empty,
             .source = source,
@@ -96,7 +96,7 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
     if (parser.current_token.tag == .star) {
         const ns = try parseImportNamespaceSpecifier(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), ns);
-        return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+        return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
     }
 
     // named imports: { foo, bar }
@@ -129,7 +129,7 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
         }
     }
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 /// default import specifier: import foo from 'module'
@@ -140,7 +140,7 @@ fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const local = try parseImportedBinding(parser) orelse return null;
     const end = parser.getSpan(local).end;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_default_specifier = .{ .local = local },
     }, .{ .start = start, .end = end });
 }
@@ -162,7 +162,7 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const local = try parseImportedBinding(parser) orelse return null;
     const end = parser.getSpan(local).end;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_namespace_specifier = .{ .local = local },
     }, .{ .start = start, .end = end });
 }
@@ -187,7 +187,7 @@ fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
 
     if (!try parser.expect(.right_brace, "Expected '}' to close named imports", null)) return null;
 
-    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 /// import specifier: foo or foo as bar or "string" as bar
@@ -239,7 +239,7 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = parser.getSpan(local).end;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_specifier = .{
             .imported = imported,
             .local = local,
@@ -295,7 +295,7 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     const end = try parser.eatSemicolon(parser.getSpan(expression).end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .ts_export_assignment = .{ .expression = expression },
     }, .{ .start = start, .end = end });
 }
@@ -314,7 +314,7 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     const id = try literals.parseIdentifierName(parser) orelse return null;
     const end = try parser.eatSemicolon(parser.getSpan(id).end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .ts_namespace_export_declaration = .{ .id = id },
     }, .{ .start = start, .end = end });
 }
@@ -344,7 +344,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
             // export default async;
             const async_end = async_start + 5;
 
-            declaration = try parser.addNode(.{
+            declaration = try parser.createNode(.{
                 .identifier_reference = .{
                     .name_start = async_start,
                     .name_len = @intCast(async_end - async_start),
@@ -376,7 +376,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
     else
         try parser.eatSemicolon(decl_span.end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .export_default_declaration = .{ .declaration = declaration },
     }, .{ .start = start, .end = end });
 }
@@ -406,7 +406,7 @@ fn parseExportAllDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const attributes = try parseWithClause(parser);
     const end = try parser.eatSemicolon(parser.getSpan(source).end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .export_all_declaration = .{
             .exported = exported,
             .source = source,
@@ -462,7 +462,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .export_named_declaration = .{
             .declaration = ast.null_node,
             .specifiers = specifiers,
@@ -502,7 +502,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         },
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .export_named_declaration = .{
             .declaration = declaration,
             .specifiers = ast.IndexRange.empty,
@@ -545,8 +545,8 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     if (!try parser.expect(.right_brace, "Expected '}' to close export specifiers", null)) return null;
 
     return .{
-        .specifiers = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
-        .local_tags = try parser.addExtraFromScratch(&parser.scratch_b, token_checkpoint),
+        .specifiers = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
+        .local_tags = try parser.createExtraFromScratch(&parser.scratch_b, token_checkpoint),
     };
 }
 
@@ -569,7 +569,7 @@ fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = parser.getSpan(exported).end;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .export_specifier = .{
             .local = local,
             .exported = exported,
@@ -643,7 +643,7 @@ fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
         return ast.IndexRange.empty;
     }
 
-    return parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 /// ImportAttribute: key : value
@@ -663,7 +663,7 @@ fn parseImportAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     const value = try literals.parseStringLiteral(parser) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_attribute = .{
             .key = key,
             .value = value,
@@ -715,7 +715,7 @@ pub fn parseDynamicImport(parser: *Parser, import_keyword: ast.NodeIndex, phase:
 
     if (!try parser.expect(.right_paren, "Expected ')' after import()", "Dynamic import call must end with ')'")) return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .import_expression = .{
             .source = source,
             .options = options,

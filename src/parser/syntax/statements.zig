@@ -84,7 +84,7 @@ fn parseExpressionStatementWithExpression(
 ) Error!?ast.NodeIndex {
     const span = parser.getSpan(expression);
 
-    return try parser.addNode(
+    return try parser.createNode(
         .{ .expression_statement = .{ .expression = expression } },
         .{ .start = span.start, .end = try parser.eatSemicolon(span.end) orelse return null },
     );
@@ -101,7 +101,7 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex, expression_data: a
         _ = parser.enterStrictMode();
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .directive = .{
             .expression = expression,
             .value_start = value_start,
@@ -197,7 +197,7 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
     const id_span = parser.getSpan(identifier);
 
     // IdentifierReference to LabelIdentifier
-    const label = try parser.addNode(.{
+    const label = try parser.createNode(.{
         .label_identifier = .{
             .name_start = id_data.identifier_reference.name_start,
             .name_len = id_data.identifier_reference.name_len,
@@ -208,7 +208,7 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
 
     const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .labeled_statement = .{ .label = label, .body = body },
     }, .{ .start = id_span.start, .end = parser.getSpan(body).end });
 }
@@ -233,7 +233,7 @@ pub fn parseBlockStatement(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the block statement, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.addNode(.{ .block_statement = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .block_statement = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-switch-statement
@@ -253,7 +253,7 @@ pub fn parseSwitchStatement(parser: *Parser) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(.right_brace, "Expected '}' to close switch body", null)) return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .switch_statement = .{
             .discriminant = discriminant,
             .cases = cases,
@@ -270,7 +270,7 @@ fn parseSwitchCases(parser: *Parser) Error!ast.IndexRange {
         try parser.scratch_a.append(parser.allocator(), case_node);
     }
 
-    return parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
+    return parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
@@ -294,7 +294,7 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
     else
         colon_end;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .switch_case = .{
             .@"test" = test_expr,
             .consequent = consequent,
@@ -334,7 +334,7 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
         }
     }
 
-    return parser.addExtraFromScratch(&parser.scratch_b, checkpoint);
+    return parser.createExtraFromScratch(&parser.scratch_b, checkpoint);
 }
 
 /// https://tc39.es/ecma262/#sec-if-statement
@@ -359,7 +359,7 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.getSpan(alternate).end;
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .if_statement = .{
             .@"test" = test_expr,
             .consequent = consequent,
@@ -381,7 +381,7 @@ fn parseWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .while_statement = .{
             .@"test" = test_expr,
             .body = body,
@@ -406,7 +406,7 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = try parser.eatSemicolonLenient(rparen_end) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .do_while_statement = .{
             .body = body,
             .@"test" = test_expr,
@@ -432,7 +432,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .with_statement = .{
             .object = object,
             .body = body,
@@ -444,7 +444,7 @@ fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
 fn parseEmptyStatement(parser: *Parser) Error!?ast.NodeIndex {
     const span = parser.current_token.span;
     try parser.advance() orelse return null; // consume ';'
-    return try parser.addNode(.{ .empty_statement = .{} }, span);
+    return try parser.createNode(.{ .empty_statement = .{} }, span);
 }
 
 /// https://tc39.es/ecma262/#sec-break-statement
@@ -464,7 +464,7 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.addNode(.{ .break_statement = .{ .label = label } }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .break_statement = .{ .label = label } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-continue-statement
@@ -484,7 +484,7 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.addNode(.{ .continue_statement = .{ .label = label } }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .continue_statement = .{ .label = label } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-return-statement
@@ -512,7 +512,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     end = try parser.eatSemicolon(end) orelse return null;
 
-    return try parser.addNode(.{ .return_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .return_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-throw-statement
@@ -532,7 +532,7 @@ fn parseThrowStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const end = try parser.eatSemicolon(parser.getSpan(argument).end) orelse return null;
 
-    return try parser.addNode(.{ .throw_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .throw_statement = .{ .argument = argument } }, .{ .start = start, .end = end });
 }
 
 /// https://tc39.es/ecma262/#sec-try-statement
@@ -562,7 +562,7 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .try_statement = .{
             .block = block,
             .handler = handler,
@@ -587,7 +587,7 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseBlockStatement(parser) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .catch_clause = .{
             .param = param,
             .body = body,
@@ -601,5 +601,5 @@ fn parseDebuggerStatement(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume 'debugger'
     end = try parser.eatSemicolon(end) orelse return null;
-    return try parser.addNode(.{ .debugger_statement = .{} }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .debugger_statement = .{} }, .{ .start = start, .end = end });
 }

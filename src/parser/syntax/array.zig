@@ -37,7 +37,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             try parser.advance() orelse return null;
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             const spread_end = parser.getSpan(argument).end;
-            const spread = try parser.addNode(
+            const spread = try parser.createNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
             );
@@ -82,7 +82,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume ]
 
-    const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const elements = try parser.createExtraFromScratch(&parser.scratch_cover, checkpoint);
 
     return .{
         .elements = elements,
@@ -94,7 +94,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 /// convert array cover to ArrayExpression.
 /// validates that the expression does not contain CoverInitializedName when validate=true.
 pub fn coverToExpression(parser: *Parser, cover: ArrayCover, validate: bool) Error!?ast.NodeIndex {
-    const array_expression = try parser.addNode(
+    const array_expression = try parser.createNode(
         .{ .array_expression = .{ .elements = cover.elements } },
         .{ .start = cover.start, .end = cover.end },
     );
@@ -160,5 +160,5 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
         return node;
     }
 
-    return try parser.addNode(pattern_data, span);
+    return try parser.createNode(pattern_data, span);
 }

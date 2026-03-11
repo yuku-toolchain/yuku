@@ -29,19 +29,23 @@ const PlusToMul = struct {
         index: ast.NodeIndex,
         ctx: *transform.Ctx,
     ) !traverser.Action {
-        const inner = try ctx.tree.addNode(
+        const span = ctx.tree.getSpan(index);
+
+        const inner = try ctx.tree.createNode(
              .{ .binary_expression = .{
                  .left = expr.left,
                  .right = expr.right,
                  .operator = .multiply,
              } },
-             ctx.tree.getSpan(index),
+             span,
          );
 
         if (expr.operator == .add) {
             ctx.tree.setData(index, .{ .parenthesized_expression = .{
                 .expression = inner,
             } });
+
+            ctx.tree.setSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
         }
 
         return .proceed;

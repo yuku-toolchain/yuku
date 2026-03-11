@@ -151,9 +151,9 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
         end = parser.getSpan(declarator).end;
     }
 
-    const decl = try parser.addNode(.{
+    const decl = try parser.createNode(.{
         .variable_declaration = .{
-            .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+            .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
             .kind = kind,
         },
     }, .{ .start = decl_start, .end = end });
@@ -220,7 +220,7 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex, is_fo
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .for_statement = .{
             .init = init,
             .@"test" = test_expr,
@@ -243,7 +243,7 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .for_in_statement = .{
             .left = left,
             .right = right,
@@ -262,7 +262,7 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .for_of_statement = .{
             .left = left,
             .right = right,
@@ -285,7 +285,7 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.getSpan(init).end;
     }
 
-    return try parser.addNode(.{ .variable_declarator = .{ .id = id, .init = init } }, .{ .start = decl_start, .end = end });
+    return try parser.createNode(.{ .variable_declarator = .{ .id = id, .init = init } }, .{ .start = decl_start, .end = end });
 }
 
 fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: ast.NodeIndex, decl_start: u32, decl_end: u32) Error!ast.NodeIndex {
@@ -293,9 +293,9 @@ fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: 
     defer parser.scratch_a.reset(checkpoint);
     try parser.scratch_a.append(parser.allocator(), declarator);
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .variable_declaration = .{
-            .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+            .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
             .kind = kind,
         },
     }, .{ .start = decl_start, .end = decl_end });

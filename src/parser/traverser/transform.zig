@@ -3,7 +3,7 @@
 //! Walks a `ParseTreeMut` and lets visitor hooks mutate the AST in place.
 //! The context exposes the mutable tree directly via `ctx.tree`, giving
 //! access to all read and write operations: `getData`, `getSpan`, `setData`,
-//! `setSpan`, `addNode`, and `addExtra`.
+//! `setSpan`, `createNode`, and `createExtra`.
 //!
 //! ## Replacing a node
 //!
@@ -31,8 +31,8 @@
 //!
 //! ## Creating new nodes
 //!
-//! Use `addNode` to append a new node to the tree and get its index.
-//! Use `addExtra` to allocate a child list (for nodes with `IndexRange` fields).
+//! Use `createNode` to append a new node to the tree and get its index.
+//! Use `createExtra` to allocate a child list (for nodes with `IndexRange` fields).
 //! Both are safe to call during traversal.
 //!
 //! A common pattern is wrapping a node: copy the original data to a new node,
@@ -44,7 +44,7 @@
 //! const span = ctx.tree.getSpan(index);
 //!
 //! // Move the original data to a new node, keeping its original span.
-//! const inner = try ctx.tree.addNode(
+//! const inner = try ctx.tree.createNode(
 //!     .{ .binary_expression = expr },
 //!     span,
 //! );
@@ -69,14 +69,14 @@
 //!
 //! ```
 //! // WRONG: creates a cycle (node points to itself).
-//! const wrapper = try ctx.tree.addNode(
+//! const wrapper = try ctx.tree.createNode(
 //!     .{ .parenthesized_expression = .{ .expression = index } },
 //!     span,
 //! );
 //! ctx.tree.setData(index, ctx.tree.getData(wrapper));
 //!
 //! // RIGHT: move original data to a new node, point wrapper to it.
-//! const inner = try ctx.tree.addNode(original_data, span);
+//! const inner = try ctx.tree.createNode(original_data, span);
 //! ctx.tree.setData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });

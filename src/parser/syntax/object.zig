@@ -35,7 +35,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
             try parser.advance() orelse return null;
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             const spread_end = parser.getSpan(argument).end;
-            const spread = try parser.addNode(
+            const spread = try parser.createNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
             );
@@ -80,7 +80,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
     end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume }
 
-    const properties = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const properties = try parser.createExtraFromScratch(&parser.scratch_cover, checkpoint);
 
     return .{
         .properties = properties,
@@ -112,7 +112,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             // it's a key named "async"
-            key = try parser.addNode(
+            key = try parser.createNode(
                 .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.len()) } },
                 async_token.span,
             );
@@ -137,7 +137,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
                 try parser.reportIfEscapedKeyword(get_set_token);
                 kind = if (cur_tag == .get) .get else .set;
             } else {
-                key = try parser.addNode(
+                key = try parser.createNode(
                     .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
                     get_set_token.span,
                 );
@@ -193,7 +193,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .colon) {
         try parser.advance() orelse return null;
         const value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
-        return try parser.addNode(
+        return try parser.createNode(
             .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = false, .computed = computed } },
             .{ .start = prop_start, .end = parser.getSpan(value).end },
         );
@@ -223,19 +223,19 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
         const default_value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
 
-        const id_ref = try parser.addNode(
+        const id_ref = try parser.createNode(
             .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
             key_span,
         );
 
-        const assign_expr = try parser.addNode(
+        const assign_expr = try parser.createNode(
             .{ .assignment_expression = .{ .left = id_ref, .right = default_value, .operator = .assign } },
             .{ .start = key_span.start, .end = parser.getSpan(default_value).end },
         );
 
         parser.state.cover_has_init_name = true;
 
-        return try parser.addNode(
+        return try parser.createNode(
             .{ .object_property = .{ .key = key, .value = assign_expr, .kind = .init, .method = false, .shorthand = true, .computed = false } },
             .{ .start = prop_start, .end = parser.getSpan(default_value).end },
         );
@@ -269,12 +269,12 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    const value = try parser.addNode(
+    const value = try parser.createNode(
         .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
         key_span,
     );
 
-    return try parser.addNode(
+    return try parser.createNode(
         .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = true, .computed = false } },
         .{ .start = prop_start, .end = key_span.end },
     );
@@ -364,7 +364,7 @@ fn parseObjectMethodProperty(
     const body_end = parser.getSpan(body).end;
 
     // create function expression for the method value
-    const func = try parser.addNode(
+    const func = try parser.createNode(
         .{ .function = .{
             .type = .function_expression,
             .id = ast.null_node,
@@ -378,7 +378,7 @@ fn parseObjectMethodProperty(
 
     const is_method = kind == .init;
 
-    return try parser.addNode(
+    return try parser.createNode(
         .{ .object_property = .{
             .key = key,
             .value = func,
@@ -394,7 +394,7 @@ fn parseObjectMethodProperty(
 /// convert object cover to ObjectExpression.
 /// validates that the expression does not contain CoverInitializedName when validate=true.
 pub fn coverToExpression(parser: *Parser, cover: ObjectCover, validate: bool) Error!?ast.NodeIndex {
-    const object_expression = try parser.addNode(
+    const object_expression = try parser.createNode(
         .{ .object_expression = .{ .properties = cover.properties } },
         .{ .start = cover.start, .end = cover.end },
     );
@@ -487,5 +487,5 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
         return node;
     }
 
-    return try parser.addNode(pattern_data, span);
+    return try parser.createNode(pattern_data, span);
 }

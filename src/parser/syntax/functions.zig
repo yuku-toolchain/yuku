@@ -138,7 +138,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         }
     }
 
-    return try parser.addNode(.{
+    return try parser.createNode(.{
         .function = .{
             .type = function_type,
             .id = id,
@@ -180,7 +180,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.addNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Error!?ast.NodeIndex {
@@ -223,8 +223,8 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         } else break;
     }
 
-    return try parser.addNode(.{ .formal_parameters = .{
-        .items = try parser.addExtraFromScratch(&parser.scratch_a, params_checkpoint),
+    return try parser.createNode(.{ .formal_parameters = .{
+        .items = try parser.createExtraFromScratch(&parser.scratch_a, params_checkpoint),
         .rest = rest,
         .kind = kind,
     } }, .{ .start = start, .end = end });
@@ -237,7 +237,7 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
-    return try parser.addNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.getSpan(pattern));
+    return try parser.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.getSpan(pattern));
 }
 
 // https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist

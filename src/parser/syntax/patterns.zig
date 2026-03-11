@@ -35,7 +35,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.addNode(
+    return try parser.createNode(
         .{
             .binding_identifier = .{
                 .name_start = current.span.start,
@@ -65,7 +65,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-    return try parser.addNode(
+    return try parser.createNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
         .{ .start = start, .end = parser.getSpan(right).end },
     );
@@ -78,7 +78,7 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     const argument = try parseBindingPattern(parser) orelse return null;
     const end = parser.getSpan(argument).end;
 
-    return try parser.addNode(
+    return try parser.createNode(
         .{ .binding_rest_element = .{ .argument = argument } },
         .{ .start = start, .end = end },
     );

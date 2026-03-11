@@ -116,7 +116,7 @@ pub const Parser = struct {
 
         const end = self.current_token.span.end;
 
-        self.tree.program = try self.addNode(
+        self.tree.program = try self.createNode(
             .{
                 .program = .{
                     .source_type = if (self.tree.source_type == .module) .module else .script,
@@ -159,7 +159,7 @@ pub const Parser = struct {
             }
         }
 
-        return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
+        return self.createExtraFromScratch(&self.scratch_statements, statements_checkpoint);
     }
 
     inline fn isAtBodyEnd(self: *Parser, terminator: ?TokenTag) bool {
@@ -201,15 +201,15 @@ pub const Parser = struct {
         self.lexer.mode = mode;
     }
 
-    pub inline fn addNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
-        return self.tree.addNode(data, span);
+    pub inline fn createNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
+        return self.tree.createNode(data, span);
     }
 
-    pub inline fn addExtra(self: *Parser, indices: []const ast.NodeIndex) Error!ast.IndexRange {
-        return self.tree.addExtra(indices);
+    pub inline fn createExtra(self: *Parser, indices: []const ast.NodeIndex) Error!ast.IndexRange {
+        return self.tree.createExtra(indices);
     }
 
-    pub fn addExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
+    pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
         const start: u32 = @intCast(self.tree.extra.items.len);
         const slice = scratch.items.items[checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);

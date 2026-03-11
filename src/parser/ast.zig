@@ -292,15 +292,15 @@ pub const ParseTreeMut = struct {
         self.nodes.items(.span)[@intFromEnum(index)] = span;
     }
 
-    /// Allocates a new node in the arena. Returns its index.
-    pub inline fn addNode(self: *ParseTreeMut, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+    /// Creates a new node in the arena. Returns its index.
+    pub inline fn createNode(self: *ParseTreeMut, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
         try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
         return index;
     }
 
-    /// Allocates a new child list in the arena. Returns its range.
-    pub inline fn addExtra(self: *ParseTreeMut, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+    /// Creates a new child list in the arena. Returns its range.
+    pub inline fn createExtra(self: *ParseTreeMut, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
         try self.extra.appendSlice(self.arena.allocator(), children);
         return .{ .start = start, .len = @intCast(children.len) };
