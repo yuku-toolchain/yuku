@@ -184,9 +184,15 @@ pub const ParseTree = struct {
         return self.extra.items[range.start..][0..range.len];
     }
 
-    /// Gets a slice of the source text at the given position.
+    /// Gets a slice of the source text at the given offset and length.
+    /// Used for compact name fields stored as (start, len) in node data.
     pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
         return self.source[start..][0..len];
+    }
+
+    /// Gets the source text covered by the given span.
+    pub inline fn getSpanText(self: *const ParseTree, span: Span) []const u8 {
+        return self.source[span.start..span.end];
     }
 
     /// Overwrites an existing node's data in-place.

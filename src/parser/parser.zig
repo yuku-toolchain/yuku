@@ -247,6 +247,10 @@ pub const Parser = struct {
         return self.tree.getSourceText(start, len);
     }
 
+    pub inline fn getSpanText(self: *const Parser, span: ast.Span) []const u8 {
+        return self.tree.getSpanText(span);
+    }
+
     pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
         return token.text(self.tree.source);
     }
