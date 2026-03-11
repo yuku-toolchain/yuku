@@ -106,17 +106,21 @@ pub const SymbolTable = struct {
         return self.source[ref.name_start..][0..ref.name_len];
     }
 
+    /// Returns an iterator over all symbols declared in the given scope.
+    pub fn scopeSymbols(self: SymbolTable, scope: sc.ScopeId) ScopeSymbolIterator {
+        return .{ .symbols = self.symbols, .current = self.scope_symbols[@intFromEnum(scope)] };
+    }
+
     /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
     pub fn findInScope(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        var id = self.scope_symbols[@intFromEnum(scope)];
-        while (id != .none) {
+        var it = self.scopeSymbols(scope);
+        while (it.next()) |id| {
             const sym = self.symbols[@intFromEnum(id)];
             if (sym.name_len == name.len and
                 std.mem.eql(u8, self.source[sym.name_start..][0..sym.name_len], name))
             {
                 return id;
             }
-            id = sym.next_in_scope;
         }
         return null;
     }
@@ -142,6 +146,20 @@ pub const SymbolTable = struct {
     fn asReferenceMut(self: *SymbolTable) []Reference {
         return @constCast(self.references);
     }
+
+    /// Walks the symbols declared in a single scope, following `next_in_scope` links.
+    pub const ScopeSymbolIterator = struct {
+        symbols: []const Symbol,
+        current: SymbolId,
+
+        /// Returns the next symbol ID in this scope, or `null` when done.
+        pub fn next(self: *ScopeSymbolIterator) ?SymbolId {
+            const id = self.current;
+            if (id == .none) return null;
+            self.current = self.symbols[@intFromEnum(id)].next_in_scope;
+            return id;
+        }
+    };
 };
 
 // where a binding should be declared. set by setBindingContext when
@@ -388,16 +406,20 @@ pub const SymbolTracker = struct {
         return self.tree.getSourceText(sym.name_start, sym.name_len);
     }
 
+    /// Returns an iterator over all symbols declared in the given scope.
+    pub fn scopeSymbols(self: *const SymbolTracker, scope: sc.ScopeId) SymbolTable.ScopeSymbolIterator {
+        return .{ .symbols = self.symbols.items, .current = self.scope_symbols.items[@intFromEnum(scope)] };
+    }
+
     /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
     pub fn findInScope(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        var id = self.scope_symbols.items[@intFromEnum(scope)];
-        while (id != .none) {
+        var it = self.scopeSymbols(scope);
+        while (it.next()) |id| {
             const sym = self.symbols.items[@intFromEnum(id)];
             if (sym.name_len == name.len) {
                 if (std.mem.eql(u8, self.tree.getSourceText(sym.name_start, sym.name_len), name))
                     return id;
             }
-            id = sym.next_in_scope;
         }
         return null;
     }

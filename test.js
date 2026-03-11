@@ -1,5 +1,5 @@
-const C = "nice";
-// Named class expression:
-const C = class MyClass {
-	constructor() {}
-};
+class MyClass {
+	constructor() {
+		const Cool = Cool;
+	}
+}

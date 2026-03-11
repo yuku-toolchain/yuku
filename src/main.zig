@@ -62,6 +62,7 @@ const RedeclChecker = struct {
         ctx: *symbols.Ctx,
     ) traverser.Action {
         const name = ctx.tree.getSourceText(id.name_start, id.name_len);
+
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
 
         if (ctx.symbols.findInScope(target, name)) |ex| {
