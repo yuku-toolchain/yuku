@@ -123,15 +123,23 @@ pub const Comment = struct {
 };
 
 /// Must be deinitialized to free the arena-allocated memory.
+///
+/// The tree is mutable after parsing: existing nodes can be replaced via
+/// `setData`, and new nodes, child lists, or source text can be appended.
+/// All allocations go into the arena, so `deinit` frees everything at once.
+///
+/// Read-only consumers take `*const ParseTree`; code that transforms the
+/// tree takes `*ParseTree`. Zig's const correctness enforces this at
+/// compile time — no separate "mutable tree" type needed.
 pub const ParseTree = struct {
     /// Root node of the AST (always a Program node)
     program: NodeIndex,
     /// Source code that was parsed
     source: []const u8,
     /// All nodes in the AST
-    nodes: NodeList.Slice,
+    nodes: NodeList,
     /// Extra data storage for variadic node children
-    extra: []NodeIndex,
+    extra: std.ArrayList(NodeIndex),
     /// Diagnostics (errors, warnings, etc.) encountered during parsing
     diagnostics: []const Diagnostic,
     /// Comments collected in source code
@@ -142,9 +150,11 @@ pub const ParseTree = struct {
     source_type: SourceType,
     /// Language variant (js, ts, jsx, tsx, dts)
     lang: Lang,
+    /// Synthetic source text for identifiers/strings created during transforms.
+    new_source: std.ArrayList(u8),
 
     /// Returns true if the parse tree contains any errors.
-    pub inline fn hasErrors(self: ParseTree) bool {
+    pub inline fn hasErrors(self: *const ParseTree) bool {
         for (self.diagnostics) |d| {
             if (d.severity == .@"error") return true;
         }
@@ -152,7 +162,7 @@ pub const ParseTree = struct {
     }
 
     /// Returns true if the parse tree contains any diagnostics (errors, warnings, etc.).
-    pub inline fn hasDiagnostics(self: ParseTree) bool {
+    pub inline fn hasDiagnostics(self: *const ParseTree) bool {
         return self.diagnostics.len > 0;
     }
 
@@ -160,6 +170,8 @@ pub const ParseTree = struct {
     pub fn deinit(self: *const ParseTree) void {
         self.arena.deinit();
     }
+
+    // -- read interface --
 
     /// Gets the data for the node at the given index.
     pub inline fn getData(self: *const ParseTree, index: NodeIndex) NodeData {
@@ -173,12 +185,50 @@ pub const ParseTree = struct {
 
     /// Gets the extra node indices for the given range.
     pub inline fn getExtra(self: *const ParseTree, range: IndexRange) []const NodeIndex {
-        return self.extra[range.start..][0..range.len];
+        return self.extra.items[range.start..][0..range.len];
     }
 
     /// Gets a slice of the source text at the given position.
     pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
-        return self.source[start..][0..len];
+        const base_len: u32 = @intCast(self.source.len);
+        return if (start < base_len)
+            self.source[start..][0..len]
+        else
+            self.new_source.items[start - base_len ..][0..len];
+    }
+
+    // -- mutation interface --
+
+    /// Overwrites an existing node's data in-place.
+    pub inline fn setData(self: *ParseTree, index: NodeIndex, data: NodeData) void {
+        self.nodes.items(.data)[@intFromEnum(index)] = data;
+    }
+
+    /// Overwrites an existing node's span in-place.
+    pub inline fn setSpan(self: *ParseTree, index: NodeIndex, span: Span) void {
+        self.nodes.items(.span)[@intFromEnum(index)] = span;
+    }
+
+    /// Allocates a new node in the arena. Returns its index.
+    pub fn addNode(self: *ParseTree, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+        const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
+        try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        return index;
+    }
+
+    /// Allocates a new child list in the arena. Returns its range.
+    pub fn addExtra(self: *ParseTree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+        const start: u32 = @intCast(self.extra.items.len);
+        try self.extra.appendSlice(self.arena.allocator(), children);
+        return .{ .start = start, .len = @intCast(children.len) };
+    }
+
+    /// Registers synthetic source text for identifiers/strings created during transforms.
+    /// Returns a name handle usable in BindingIdentifier, StringLiteral, etc.
+    pub fn addSource(self: *ParseTree, text: []const u8) error{OutOfMemory}!struct { start: u32, len: u16 } {
+        const start: u32 = @as(u32, @intCast(self.source.len)) + @as(u32, @intCast(self.new_source.items.len));
+        try self.new_source.appendSlice(self.arena.allocator(), text);
+        return .{ .start = start, .len = @intCast(text.len) };
     }
 };
 

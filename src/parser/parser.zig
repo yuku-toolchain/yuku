@@ -127,13 +127,14 @@ pub const Parser = struct {
         const tree = ast.ParseTree{
             .program = program,
             .source = self.source,
-            .nodes = self.nodes.toOwnedSlice(),
-            .extra = try self.extra.toOwnedSlice(alloc),
+            .nodes = self.nodes,
+            .extra = self.extra,
             .diagnostics = try self.diagnostics.toOwnedSlice(alloc),
             .comments = try self.lexer.comments.toOwnedSlice(alloc),
             .arena = self.arena,
             .source_type = self.source_type,
             .lang = self.lang,
+            .new_source = .{},
         };
 
         return tree;

@@ -7,4 +7,3 @@ pub const walk = @import("walk.zig").walk;
 pub const Layer = @import("walk.zig").Layer;
 pub const Action = @import("walk.zig").Action;
 pub const NodePath = @import("walk.zig").NodePath;
-pub const MutableTree = @import("mutable_tree.zig").MutableTree;
