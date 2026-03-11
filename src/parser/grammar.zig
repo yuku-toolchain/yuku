@@ -99,7 +99,7 @@ pub fn expressionToPattern(
 
     switch (data) {
         .identifier_reference => |id| {
-            parser.setData(expr, .{ .binding_identifier = .{
+            parser.replaceData(expr, .{ .binding_identifier = .{
                 .name_start = id.name_start,
                 .name_len = id.name_len,
             } });
@@ -117,7 +117,7 @@ pub fn expressionToPattern(
 
             try expressionToPattern(parser, assign.left, context);
 
-            parser.setData(expr, .{ .assignment_pattern = .{
+            parser.replaceData(expr, .{ .assignment_pattern = .{
                 .left = assign.left,
                 .right = assign.right,
             } });
@@ -143,7 +143,7 @@ pub fn expressionToPattern(
                 );
             }
 
-            parser.setData(expr, .{ .binding_rest_element = .{ .argument = arg } });
+            parser.replaceData(expr, .{ .binding_rest_element = .{ .argument = arg } });
         },
 
         .chain_expression => {
@@ -185,8 +185,8 @@ pub fn expressionToPattern(
                 return;
             }
 
-            parser.setData(expr, parser.getData(paren.expression));
-            parser.setSpan(expr, parser.getSpan(paren.expression));
+            parser.replaceData(expr, parser.getData(paren.expression));
+            parser.replaceSpan(expr, parser.getSpan(paren.expression));
         },
 
         .binding_identifier, .array_pattern, .object_pattern, .assignment_pattern => {},

@@ -469,7 +469,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
 
         try grammar.expressionToPattern(parser, obj_prop.value, context);
 
-        parser.setData(prop, .{ .binding_property = .{
+        parser.replaceData(prop, .{ .binding_property = .{
             .key = obj_prop.key,
             .value = obj_prop.value,
             .shorthand = obj_prop.shorthand,
@@ -483,7 +483,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
     } };
 
     if (mutate_node) |node| {
-        parser.setData(node, pattern_data);
+        parser.replaceData(node, pattern_data);
         return node;
     }
 

@@ -2,8 +2,8 @@
 //!
 //! Walks a `ParseTreeMut` and lets visitor hooks mutate the AST in place.
 //! The context exposes the mutable tree directly via `ctx.tree`, giving
-//! access to all read and write operations: `getData`, `getSpan`, `setData`,
-//! `setSpan`, `createNode`, and `createExtra`.
+//! access to all read and write operations: `getData`, `getSpan`, `replaceData`,
+//! `replaceSpan`, `createNode`, and `createExtra`.
 //!
 //! ## Replacing a node
 //!
@@ -19,7 +19,7 @@
 //!     ctx: *transform.Ctx,
 //! ) traverser.Action {
 //!     if (expr.operator == .add) {
-//!         ctx.tree.setData(index, .{ .binary_expression = .{
+//!         ctx.tree.replaceData(index, .{ .binary_expression = .{
 //!             .left = expr.left,
 //!             .right = expr.right,
 //!             .operator = .multiply,
@@ -50,12 +50,12 @@
 //! );
 //!
 //! // Replace the current node with a wrapper.
-//! ctx.tree.setData(index, .{ .parenthesized_expression = .{
+//! ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });
 //!
 //! // Expand the span to include the wrapping parentheses.
-//! ctx.tree.setSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
+//! ctx.tree.replaceSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
 //!
 //! // Skip so the walker does not descend into the new children,
 //! // which would re-trigger this hook on the moved inner node.
@@ -73,11 +73,11 @@
 //!     .{ .parenthesized_expression = .{ .expression = index } },
 //!     span,
 //! );
-//! ctx.tree.setData(index, ctx.tree.getData(wrapper));
+//! ctx.tree.replaceData(index, ctx.tree.getData(wrapper));
 //!
 //! // RIGHT: move original data to a new node, point wrapper to it.
 //! const inner = try ctx.tree.createNode(original_data, span);
-//! ctx.tree.setData(index, .{ .parenthesized_expression = .{
+//! ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });
 //! ```

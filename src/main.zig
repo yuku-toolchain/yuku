@@ -41,11 +41,11 @@ const PlusToMul = struct {
          );
 
         if (expr.operator == .add) {
-            ctx.tree.setData(index, .{ .parenthesized_expression = .{
+            ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
                 .expression = inner,
             } });
 
-            ctx.tree.setSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
+            ctx.tree.replaceSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
         }
 
         return .proceed;

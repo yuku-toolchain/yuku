@@ -233,12 +233,12 @@ pub const Parser = struct {
         return self.tree.getData(index);
     }
 
-    pub inline fn setData(self: *Parser, index: ast.NodeIndex, data: ast.NodeData) void {
-        self.tree.setData(index, data);
+    pub inline fn replaceData(self: *Parser, index: ast.NodeIndex, data: ast.NodeData) void {
+        self.tree.replaceData(index, data);
     }
 
-    pub inline fn setSpan(self: *Parser, index: ast.NodeIndex, span: ast.Span) void {
-        self.tree.setSpan(index, span);
+    pub inline fn replaceSpan(self: *Parser, index: ast.NodeIndex, span: ast.Span) void {
+        self.tree.replaceSpan(index, span);
     }
 
     pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {

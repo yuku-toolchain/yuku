@@ -282,13 +282,13 @@ pub const ParseTreeMut = struct {
         return self.source[span.start..span.end];
     }
 
-    /// Overwrites an existing node's data in-place.
-    pub inline fn setData(self: *ParseTreeMut, index: NodeIndex, data: NodeData) void {
+    /// Replaces an existing node's data in-place.
+    pub inline fn replaceData(self: *ParseTreeMut, index: NodeIndex, data: NodeData) void {
         self.nodes.items(.data)[@intFromEnum(index)] = data;
     }
 
-    /// Overwrites an existing node's span in-place.
-    pub inline fn setSpan(self: *ParseTreeMut, index: NodeIndex, span: Span) void {
+    /// Replaces an existing node's span in-place.
+    pub inline fn replaceSpan(self: *ParseTreeMut, index: NodeIndex, span: Span) void {
         self.nodes.items(.span)[@intFromEnum(index)] = span;
     }
 

@@ -156,7 +156,7 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
     } };
 
     if (mutate_node) |node| {
-        parser.setData(node, pattern_data);
+        parser.replaceData(node, pattern_data);
         return node;
     }
 
