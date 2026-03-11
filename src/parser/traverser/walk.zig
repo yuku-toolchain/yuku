@@ -76,21 +76,21 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
     return .proceed;
 }
 
-/// Generic layer that wires a context's tracking methods into the walk cycle.
+/// Middleware that runs a context's tracking logic around user visitor hooks.
 ///
-/// Instead of each traverser writing its own wrapper visitor, they define
-/// tracking logic as methods on their `Ctx` type, and this layer handles
-/// the rest. The protocol is:
+/// Each traverser module (`basic`, `scoped`, `symbols`) defines a `Ctx`
+/// with its own tracking needs: path only, path + scopes, or path + scopes
+/// + symbols. `Layer` wraps the user's visitor so this tracking runs
+/// automatically at the right points:
 ///
-///   1. `ctx.enter(index, data)`       - runs before user hooks (push scopes, etc.)
-///   2. dispatch to inner visitor      - user's enter_node and typed hooks fire here
-///   3. `ctx.post_enter(index, data)`  - runs after user hooks (optional, for
-///                                      work that needs to happen after the user
-///                                      saw the pre-existing state, like declaring
-///                                      new symbols)
+///   1. `ctx.enter(index, data)`       - before user hooks (push path/scopes)
+///   2. dispatch to inner visitor      - user's hooks fire here
+///   3. `ctx.post_enter(index, data)`  - after user hooks, before children
+///                                       (e.g. declare symbols, so users see
+///                                       the scope state before the declaration)
 ///   ... walk children ...
-///   4. dispatch to inner visitor      - user's exit hooks fire here
-///   5. `ctx.exit(data)`               - cleanup (pop scopes, etc.)
+///   4. dispatch to inner visitor      - user's exit hooks fire
+///   5. `ctx.exit(data)`               - after user hooks (pop path/scopes)
 ///
 /// `C` must have `enter` and `exit`. `post_enter` is optional.
 pub fn Layer(comptime C: type, comptime V: type) type {
