@@ -16,7 +16,7 @@ pub const Action = enum {
 /// Walks the AST tree, calling visitor hooks at each node.
 ///
 /// `C` is the context type. It must have a `.tree` field (either a
-/// `*const ParseTree` or `*MutableParseTree`) so the walker can access
+/// `*const ParseTree` or `*ParseTreeMut`) so the walker can access
 /// child nodes. Contexts can also define `enter`, `exit`, and
 /// `post_enter` methods if used with `Layer`.
 ///
@@ -72,7 +72,9 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
         if (field.type == ast.NodeIndex) {
             if ((try walkNode(C, V, visitor, @field(payload, field.name), ctx)) == .stop) return .stop;
         } else if (field.type == ast.IndexRange) {
-            for (ctx.tree.getExtra(@field(payload, field.name))) |child| {
+            const range = @field(payload, field.name);
+            for (0..range.len) |i| {
+                const child = ctx.tree.getExtra(range)[i];
                 if ((try walkNode(C, V, visitor, child, ctx)) == .stop) return .stop;
             }
         }
@@ -229,7 +231,6 @@ pub const NodePath = struct {
 
     /// Adds a node to the path when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
-        std.debug.assert(self.len < capacity);
         if (self.len < capacity) {
             self.buf[self.len] = index;
         }

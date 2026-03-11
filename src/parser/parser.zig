@@ -46,7 +46,7 @@ const ParserState = struct {
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
-    tree: ast.MutableParseTree,
+    tree: ast.ParseTreeMut,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     current_token: Token,
@@ -90,7 +90,7 @@ pub const Parser = struct {
         return tree.finalize();
     }
 
-    pub fn parseMut(self: *Parser) Error!ast.MutableParseTree {
+    pub fn parseMut(self: *Parser) Error!ast.ParseTreeMut {
         const alloc = self.allocator();
 
         self.lexer = try lexer.Lexer.init(self.tree.source, alloc, self.tree.source_type);
@@ -518,14 +518,14 @@ pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Op
     return p.parse();
 }
 
-/// Parses JavaScript/TypeScript source into a `MutableParseTree`.
+/// Parses JavaScript/TypeScript source into a `ParseTreeMut`.
 ///
 /// Use this when you need to modify the tree after parsing (e.g. with
 /// the transform traverser). Call `finalize()` on the returned tree to
 /// convert it into an immutable `ParseTree` when mutations are complete.
 ///
 /// The caller owns the returned tree and must call `deinit()` when done.
-pub fn parseMut(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.MutableParseTree {
+pub fn parseMut(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.ParseTreeMut {
     var p = Parser.init(child_allocator, source, options);
     return p.parseMut();
 }

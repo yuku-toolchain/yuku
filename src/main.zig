@@ -3,7 +3,7 @@ const parser = @import("parser");
 
 const ast = parser.ast;
 const traverser = parser.traverser;
-const tranform = traverser.transform;
+const transform = traverser.transform;
 
 pub fn main(init: std.process.Init) !void {
     const allocator = init.arena.allocator();
@@ -13,7 +13,7 @@ pub fn main(init: std.process.Init) !void {
     var mut_tree = try parser.parseMut(std.heap.page_allocator, source, .{});
 
     var t = PlusToMul{};
-    try tranform.traverse(PlusToMul, &mut_tree, &t);
+    try transform.traverse(PlusToMul, &mut_tree, &t);
 
     var tree = mut_tree.finalize();
     defer tree.deinit();
@@ -27,13 +27,20 @@ const PlusToMul = struct {
         _: *PlusToMul,
         expr: ast.BinaryExpression,
         index: ast.NodeIndex,
-        ctx: *tranform.Ctx,
-    ) traverser.Action {
+        ctx: *transform.Ctx,
+    ) !traverser.Action {
+        const inner = try ctx.tree.addNode(
+             .{ .binary_expression = .{
+                 .left = expr.left,
+                 .right = expr.right,
+                 .operator = .multiply,
+             } },
+             ctx.tree.getSpan(index),
+         );
+
         if (expr.operator == .add) {
-            ctx.replaceWith(index, .{ .binary_expression = .{
-                .left = expr.left,
-                .right = expr.right,
-                .operator = .multiply,
+            ctx.tree.setData(index, .{ .parenthesized_expression = .{
+                .expression = inner,
             } });
         }
 
