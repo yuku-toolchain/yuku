@@ -36,6 +36,7 @@ const PlusToMul = struct {
                 .operator = .multiply,
             } });
         }
+
         return .proceed;
     }
 };
