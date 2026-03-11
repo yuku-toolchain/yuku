@@ -15,9 +15,10 @@ pub const Action = enum {
 
 /// Walks the AST tree, calling visitor hooks at each node.
 ///
-/// `C` is the context type. It must have a `.tree` field so the walker
-/// can access child nodes. Contexts can also define `enter`, `exit`,
-/// and `post_enter` methods if used with `Layer`.
+/// `C` is the context type. It must have a `.tree` field (either a
+/// `*const ParseTree` or `*MutableParseTree`) so the walker can access
+/// child nodes. Contexts can also define `enter`, `exit`, and
+/// `post_enter` methods if used with `Layer`.
 ///
 /// `V` is the visitor type. It can define hooks like `enter_function`,
 /// `exit_block_statement`, or the catch-all `enter_node`/`exit_node`.
@@ -82,10 +83,10 @@ fn walkStructFields(comptime C: type, comptime V: type, visitor: *V, comptime T:
 
 /// Middleware that runs a context's tracking logic around user visitor hooks.
 ///
-/// Each traverser module (`basic`, `scoped`, `symbols`) defines a `Ctx`
-/// with its own tracking needs: path only, path + scopes, or path + scopes
-/// + symbols. `Layer` wraps the user's visitor so this tracking runs
-/// automatically at the right points:
+/// Each traverser module (`basic`, `scoped`, `semantic`, `transform`) defines
+/// a `Ctx` with its own tracking needs: path only, path + scopes,
+/// path + scopes + symbols, or path + mutation. `Layer` wraps the user's
+/// visitor so this tracking runs automatically at the right points:
 ///
 ///   1. `ctx.enter(index, data)`       - before user hooks (push path/scopes)
 ///   2. dispatch to inner visitor      - user's hooks fire here

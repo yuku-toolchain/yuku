@@ -6,11 +6,11 @@ const Allocator = std.mem.Allocator;
 
 /// Traverser context for AST transformations.
 ///
-/// Tracks the path and provides mutation through the `ParseTree`.
+/// Tracks the path and provides mutation through the `MutableParseTree`.
 /// The walker re-reads node data after enter hooks, so replaced nodes
 /// have their new children walked automatically.
 pub const Ctx = struct {
-    tree: *ast.ParseTree,
+    tree: *ast.MutableParseTree,
     path: wk.NodePath = .{},
 
     pub fn enter(self: *Ctx, index: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
@@ -31,7 +31,7 @@ pub const Ctx = struct {
 };
 
 /// Walks the tree with path tracking and mutation support.
-pub fn traverse(comptime V: type, tree: *ast.ParseTree, visitor: *V) Allocator.Error!void {
+pub fn traverse(comptime V: type, tree: *ast.MutableParseTree, visitor: *V) Allocator.Error!void {
     var ctx = Ctx{ .tree = tree };
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };

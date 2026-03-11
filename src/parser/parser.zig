@@ -46,7 +46,7 @@ const ParserState = struct {
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
-    tree: ast.ParseTree,
+    tree: ast.MutableParseTree,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     current_token: Token,
@@ -85,10 +85,12 @@ pub const Parser = struct {
         return self.tree.arena.allocator();
     }
 
-    /// Parse the source code and return a ParseTree.
-    /// The Parser is consumed and should not be used after calling this method.
-    /// The caller owns the returned ParseTree and must call deinit() on it.
     pub fn parse(self: *Parser) Error!ast.ParseTree {
+        var tree = try self.parseMut();
+        return tree.finalize();
+    }
+
+    pub fn parseMut(self: *Parser) Error!ast.MutableParseTree {
         const alloc = self.allocator();
 
         self.lexer = try lexer.Lexer.init(self.tree.source, alloc, self.tree.source_type);
@@ -508,9 +510,22 @@ const ScratchBuffer = struct {
     }
 };
 
-/// Parse JavaScript/TypeScript source code into an AST.
-/// Returns a ParseTree that must be freed by calling `tree.deinit()` when you're done using it.
+/// Parses JavaScript/TypeScript source into an immutable `ParseTree`.
+///
+/// The caller owns the returned tree and must call `deinit()` when done.
 pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.ParseTree {
-    var parser = Parser.init(child_allocator, source, options);
-    return parser.parse();
+    var p = Parser.init(child_allocator, source, options);
+    return p.parse();
+}
+
+/// Parses JavaScript/TypeScript source into a `MutableParseTree`.
+///
+/// Use this when you need to modify the tree after parsing (e.g. with
+/// the transform traverser). Call `finalize()` on the returned tree to
+/// convert it into an immutable `ParseTree` when mutations are complete.
+///
+/// The caller owns the returned tree and must call `deinit()` when done.
+pub fn parseMut(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.MutableParseTree {
+    var p = Parser.init(child_allocator, source, options);
+    return p.parseMut();
 }
