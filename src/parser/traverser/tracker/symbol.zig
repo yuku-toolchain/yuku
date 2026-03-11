@@ -138,7 +138,7 @@ pub const SymbolTable = struct {
     pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) void {
         for (self.asReferenceMut()) |*ref| {
             if (ref.resolved == .none) {
-                ref.resolved = self.resolve(ref.scope, self.source[ref.name_start..][0..ref.name_len], scope_tree) orelse .none;
+                ref.resolved = self.resolve(ref.scope, self.getRefName(ref), scope_tree) orelse .none;
             }
         }
     }
@@ -293,7 +293,6 @@ pub const SymbolTracker = struct {
     }
 
     /// Phase 2: actually creates the symbol or reference.
-    /// Only fires for `binding_identifier` and `identifier_reference` nodes.
     pub fn declareBindings(self: *SymbolTracker, index: ast.NodeIndex, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
         // keep scope_symbols in sync with scope count. new scopes might
         // have been created since the last time we were called.

@@ -159,7 +159,7 @@ pub const ScopeTracker = struct {
         switch (data) {
             .directive => |d| {
                 if (std.mem.eql(u8, self.tree.getSourceText(d.value_start, d.value_len), "use strict")) {
-                    self.currentScopePtr().flags.strict = true;
+                    self.currentScopeMut().flags.strict = true;
                 }
             },
             else => {},
@@ -256,7 +256,7 @@ pub const ScopeTracker = struct {
     }
 
     /// Returns a mutable pointer to the current scope.
-    pub inline fn currentScopePtr(self: *ScopeTracker) *Scope {
+    pub inline fn currentScopeMut(self: *ScopeTracker) *Scope {
         return &self.scopes.items[@intFromEnum(self.currentScopeId())];
     }
 
@@ -266,7 +266,7 @@ pub const ScopeTracker = struct {
     }
 
     /// Returns a mutable pointer to the scope for the given ID.
-    pub inline fn getScopePtr(self: *ScopeTracker, id: ScopeId) *Scope {
+    pub inline fn getScopeMut(self: *ScopeTracker, id: ScopeId) *Scope {
         return &self.scopes.items[@intFromEnum(id)];
     }
 
