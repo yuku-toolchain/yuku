@@ -177,7 +177,7 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
 
         try parser.report(closing_span, try parser.formatMessage(
             "Expected closing tag for '<{s}>' but found '</{s}>'",
-            .{ parser.source[opening_span.start..opening_span.end], parser.source[closing_span.start..closing_span.end] },
+            .{ parser.tree.source[opening_span.start..opening_span.end], parser.tree.source[closing_span.start..closing_span.end] },
         ), .{
             .help = "JSX opening and closing tags must have matching names",
             .labels = try parser.makeLabels(&.{parser.label(opening_span, "opening tag")}),
@@ -198,8 +198,8 @@ fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool
 
     if (len_a != len_b) return false;
 
-    const text_a = parser.source[span_a.start..span_a.end];
-    const text_b = parser.source[span_b.start..span_b.end];
+    const text_a = parser.tree.source[span_a.start..span_a.end];
+    const text_b = parser.tree.source[span_b.start..span_b.end];
 
     return std.mem.eql(u8, text_a, text_b);
 }

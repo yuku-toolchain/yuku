@@ -124,13 +124,13 @@ pub const Comment = struct {
 
 /// Must be deinitialized to free the arena-allocated memory.
 ///
-/// The tree is mutable after parsing: existing nodes can be replaced via
-/// `setData`, and new nodes, child lists, or source text can be appended.
+/// The tree is mutable after parsing, existing nodes can be replaced via
+/// `setData`, and new nodes, child lists.
 /// All allocations go into the arena, so `deinit` frees everything at once.
 ///
-/// Read-only consumers take `*const ParseTree`; code that transforms the
+/// Read-only consumers take `*const ParseTree`, code that transforms the
 /// tree takes `*ParseTree`. Zig's const correctness enforces this at
-/// compile time — no separate "mutable tree" type needed.
+/// compile time.
 pub const ParseTree = struct {
     /// Root node of the AST (always a Program node)
     program: NodeIndex,
@@ -169,8 +169,6 @@ pub const ParseTree = struct {
         self.arena.deinit();
     }
 
-    // -- read interface --
-
     /// Gets the data for the node at the given index.
     pub inline fn getData(self: *const ParseTree, index: NodeIndex) NodeData {
         return self.nodes.items(.data)[@intFromEnum(index)];
@@ -190,8 +188,6 @@ pub const ParseTree = struct {
     pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
         return self.source[start..][0..len];
     }
-
-    // -- mutation interface --
 
     /// Overwrites an existing node's data in-place.
     pub inline fn setData(self: *ParseTree, index: NodeIndex, data: NodeData) void {
