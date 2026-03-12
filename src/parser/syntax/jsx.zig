@@ -49,7 +49,7 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
             .jsx_element = .{
                 .opening_element = opening,
                 .children = ast.IndexRange.empty,
-                .closing_element = ast.null_node,
+                .closing_element = .null,
             },
         }, .{ .start = start, .end = opening_end });
     }
@@ -315,7 +315,7 @@ fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .assign) {
         // boolean attribute: <elem disabled />
         return try parser.createNode(.{
-            .jsx_attribute = .{ .name = name, .value = ast.null_node },
+            .jsx_attribute = .{ .name = name, .value = .null },
         }, .{ .start = name_start, .end = parser.getSpan(name).end });
     }
 

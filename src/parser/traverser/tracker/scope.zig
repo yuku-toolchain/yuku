@@ -232,12 +232,12 @@ pub const ScopeTracker = struct {
     fn isNamedFunctionExpression(func: ast.Function) bool {
         return switch (func.type) {
             .function_declaration, .ts_declare_function => false,
-            else => !ast.isNull(func.id),
+            else => func.id != .null,
         };
     }
 
     fn isNamedClassExpression(cls: ast.Class) bool {
-        return cls.type != .class_declaration and !ast.isNull(cls.id);
+        return cls.type != .class_declaration and cls.id != .null;
     }
 
     /// Returns the ID of the current scope.

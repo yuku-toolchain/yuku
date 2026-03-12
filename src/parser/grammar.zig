@@ -20,7 +20,7 @@ pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Er
         .object_expression => |obj| {
             const properties = parser.getExtra(obj.properties);
             for (properties) |prop| {
-                if (ast.isNull(prop)) continue;
+                if (prop == .null) continue;
 
                 const prop_data = parser.getData(prop);
 
@@ -42,7 +42,7 @@ pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Er
         .array_expression => |arr| {
             const elements = parser.getExtra(arr.elements);
             for (elements) |elem| {
-                if (ast.isNull(elem)) continue;
+                if (elem == .null) continue;
                 try validateNoCoverInitializedSyntax(parser, elem);
             }
         },

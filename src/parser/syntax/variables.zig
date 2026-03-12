@@ -80,7 +80,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.getSpan(id);
 
-    var init: ast.NodeIndex = ast.null_node;
+    var init: ast.NodeIndex = .null;
     var end = id_span.end;
 
     const is_using = kind == .using or kind == .await_using;

@@ -28,7 +28,7 @@ pub fn walk(comptime C: type, comptime V: type, visitor: *V, ctx: *C) Allocator.
 }
 
 fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeIndex, ctx: *C) Allocator.Error!Action {
-    if (ast.isNull(index)) return .proceed;
+    if (index == .null) return .proceed;
 
     const data = ctx.tree.getData(index);
 

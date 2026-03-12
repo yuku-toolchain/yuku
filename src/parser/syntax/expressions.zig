@@ -67,7 +67,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     const tag = parser.current_token.tag;
 
     if (tag == .increment or tag == .decrement) {
-        return parseUpdateExpression(parser, true, ast.null_node);
+        return parseUpdateExpression(parser, true, .null);
     }
 
     if (tag == .at) {
@@ -346,7 +346,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
     var delegate = false;
 
-    var argument: ast.NodeIndex = ast.null_node;
+    var argument: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .star and !parser.current_token.hasLineTerminatorBefore()) {
         delegate = true;
@@ -370,7 +370,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    if (delegate and ast.isNull(argument)) {
+    if (delegate and argument == .null) {
         try parser.reportExpected(parser.current_token.span, "Expected expression after 'yield*'", .{});
         return null;
     }

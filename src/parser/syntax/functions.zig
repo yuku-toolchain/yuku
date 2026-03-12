@@ -69,9 +69,9 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     };
 
     const id = if (parser.current_token.tag.isIdentifierLike())
-        try patterns.parseBindingIdentifier(parser) orelse ast.null_node
+        try patterns.parseBindingIdentifier(parser) orelse .null
     else
-        ast.null_node;
+        .null;
 
     // params/body are validated in the function's generator context.
     // example: `function* yield(){}` ok, but `function* f(yield){}` is not.
@@ -81,7 +81,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     // name is required for regular function declarations, but optional for:
     // - function expressions
     // - export default function
-    if (!opts.is_expression and !opts.is_default_export and ast.isNull(id)) {
+    if (!opts.is_expression and !opts.is_default_export and id == .null) {
         try parser.report(
             parser.current_token.span,
             "Function declaration requires a name",
@@ -105,7 +105,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
     )) return null;
 
-    var body = ast.null_node;
+    var body: ast.NodeIndex = .null;
 
     if (opts.is_declare) {
         if (parser.current_token.tag == .left_brace) {
@@ -117,10 +117,10 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
             return null;
         }
     } else {
-        body = try parseFunctionBody(parser) orelse ast.null_node;
+        body = try parseFunctionBody(parser) orelse .null;
     }
 
-    const end = if (!ast.isNull(body)) parser.getSpan(body).end else params_end;
+    const end = if (body != .null) parser.getSpan(body).end else params_end;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
@@ -190,18 +190,18 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
     const params_checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(params_checkpoint);
 
-    var rest = ast.null_node;
+    var rest: ast.NodeIndex = .null;
 
     while (true) {
         if (parser.current_token.tag == .right_paren or parser.current_token.tag == .eof) break;
 
         if (parser.current_token.tag == .spread) {
-            rest = try patterns.parseBindingRestElement(parser) orelse ast.null_node;
-            if (!ast.isNull(rest)) {
+            rest = try patterns.parseBindingRestElement(parser) orelse .null;
+            if (rest != .null) {
                 end = parser.getSpan(rest).end;
             }
 
-            if (parser.current_token.tag == .comma and !ast.isNull(rest)) {
+            if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
                     .{ .start = parser.getSpan(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
@@ -244,7 +244,7 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
 pub fn isSimpleParametersList(parser: *Parser, formal_parameters: ast.NodeIndex) bool {
     const data = parser.getData(formal_parameters).formal_parameters;
 
-    if (!ast.isNull(data.rest)) {
+    if (data.rest != .null) {
         return false;
     }
 

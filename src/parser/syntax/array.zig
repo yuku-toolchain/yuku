@@ -26,7 +26,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     while (parser.current_token.tag != .right_bracket and parser.current_token.tag != .eof) {
         // elision (holes): [,,,]
         if (parser.current_token.tag == .comma) {
-            try parser.scratch_cover.append(parser.allocator(), ast.null_node);
+            try parser.scratch_cover.append(parser.allocator(), .null);
             try parser.advance() orelse return null;
             continue;
         }
@@ -117,11 +117,11 @@ pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range:
 fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
     const elements = parser.getExtra(elements_range);
 
-    var rest: ast.NodeIndex = ast.null_node;
+    var rest: ast.NodeIndex = .null;
     var elements_len = elements_range.len;
 
     for (elements, 0..) |elem, i| {
-        if (ast.isNull(elem)) continue;
+        if (elem == .null) continue;
 
         const elem_data = parser.getData(elem);
 

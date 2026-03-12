@@ -277,7 +277,7 @@ fn parseSwitchCase(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume 'case' or 'default'
 
-    var test_expr: ast.NodeIndex = ast.null_node;
+    var test_expr: ast.NodeIndex = .null;
 
     if (!is_default) {
         test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
@@ -349,7 +349,7 @@ pub fn parseIfStatement(parser: *Parser) Error!?ast.NodeIndex {
     const consequent = try parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
     var end = parser.getSpan(consequent).end;
-    var alternate: ast.NodeIndex = ast.null_node;
+    var alternate: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .@"else") {
         try parser.advance() orelse return null; // consume 'else'
@@ -451,7 +451,7 @@ fn parseBreakStatement(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume 'break'
 
-    var label: ast.NodeIndex = ast.null_node;
+    var label: ast.NodeIndex = .null;
 
     // break [no LineTerminator here] LabelIdentifier;
     if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
@@ -471,7 +471,7 @@ fn parseContinueStatement(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume 'continue'
 
-    var label: ast.NodeIndex = ast.null_node;
+    var label: ast.NodeIndex = .null;
 
     // continue [no LineTerminator here] LabelIdentifier;
     if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
@@ -500,7 +500,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume 'return'
 
-    var argument: ast.NodeIndex = ast.null_node;
+    var argument: ast.NodeIndex = .null;
 
     // return [no LineTerminator here] Expression?
     if (!parser.canInsertImplicitSemicolon(parser.current_token) and parser.current_token.tag != .semicolon) {
@@ -540,8 +540,8 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
 
     const block = try parseBlockStatement(parser) orelse return null;
 
-    var handler: ast.NodeIndex = ast.null_node;
-    var finalizer: ast.NodeIndex = ast.null_node;
+    var handler: ast.NodeIndex = .null;
+    var finalizer: ast.NodeIndex = .null;
     var end = parser.getSpan(block).end;
 
     if (parser.current_token.tag == .@"catch") {
@@ -555,7 +555,7 @@ fn parseTryStatement(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.getSpan(finalizer).end;
     }
 
-    if (ast.isNull(handler) and ast.isNull(finalizer)) {
+    if (handler == .null and finalizer == .null) {
         try parser.report(parser.current_token.span, "Try statement requires catch or finally clause", .{});
         return null;
     }
@@ -574,7 +574,7 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'catch'
 
-    var param: ast.NodeIndex = ast.null_node;
+    var param: ast.NodeIndex = .null;
 
     // optional catch binding: catch (param) or catch
     if (parser.current_token.tag == .left_paren) {

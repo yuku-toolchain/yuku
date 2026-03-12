@@ -383,7 +383,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
 fn parseExportAllDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '*'
 
-    var exported: ast.NodeIndex = ast.null_node;
+    var exported: ast.NodeIndex = .null;
 
     // export * as name from 'module'
     if (parser.current_token.tag == .as) {
@@ -418,7 +418,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
     const result = try parseExportSpecifiers(parser) orelse return null;
     const specifiers = result.specifiers;
 
-    var source: ast.NodeIndex = ast.null_node;
+    var source: ast.NodeIndex = .null;
     var attributes: ast.IndexRange = ast.IndexRange.empty;
     var end = parser.current_token.span.start;
 
@@ -462,7 +462,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
 
     return try parser.createNode(.{
         .export_named_declaration = .{
-            .declaration = ast.null_node,
+            .declaration = .null,
             .specifiers = specifiers,
             .source = source,
             .attributes = attributes,
@@ -504,7 +504,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         .export_named_declaration = .{
             .declaration = declaration,
             .specifiers = ast.IndexRange.empty,
-            .source = ast.null_node,
+            .source = .null,
             .attributes = ast.IndexRange.empty,
         },
     }, .{ .start = start, .end = parser.getSpan(declaration).end });
@@ -692,7 +692,7 @@ pub fn parseDynamicImport(parser: *Parser, import_keyword: ast.NodeIndex, phase:
     // source expression
     const source = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-    var options: ast.NodeIndex = ast.null_node;
+    var options: ast.NodeIndex = .null;
 
     // check for options argument (only for regular imports, not phase imports)
     if (phase == null and parser.current_token.tag == .comma) {

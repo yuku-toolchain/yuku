@@ -41,16 +41,16 @@ pub fn parseClassDecorated(
     const class_type: ast.ClassType = if (opts.is_expression and !opts.is_default_export) .class_expression else .class_declaration;
 
     // optional class name
-    var id: ast.NodeIndex = ast.null_node;
+    var id: ast.NodeIndex = .null;
 
     if (parser.current_token.tag.isIdentifierLike() and parser.current_token.tag != .extends) {
-        id = try patterns.parseBindingIdentifier(parser) orelse ast.null_node;
+        id = try patterns.parseBindingIdentifier(parser) orelse .null;
     }
 
     // name is required for regular class declarations, but optional for:
     // - class expressions
     // - export default class
-    if (!opts.is_expression and !opts.is_default_export and ast.isNull(id)) {
+    if (!opts.is_expression and !opts.is_default_export and id == .null) {
         try parser.report(
             parser.current_token.span,
             "Class declaration requires a name",
@@ -60,7 +60,7 @@ pub fn parseClassDecorated(
     }
 
     // optional extends clause
-    var super_class: ast.NodeIndex = ast.null_node;
+    var super_class: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null; // consume 'extends'
@@ -142,7 +142,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     var is_accessor = false;
     var kind: ast.MethodDefinitionKind = .method;
     var computed = false;
-    var key: ast.NodeIndex = ast.null_node;
+    var key: ast.NodeIndex = .null;
 
     // check for 'static' modifier
     if (parser.current_token.tag == .static) {
@@ -181,7 +181,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for 'async' modifier (only if no key yet)
-    if (ast.isNull(key) and parser.current_token.tag == .async) {
+    if (key == .null and parser.current_token.tag == .async) {
         const async_token = parser.current_token;
 
         try parser.advanceWithoutEscapeCheck() orelse return null;
@@ -201,13 +201,13 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for generator (*)
-    if (ast.isNull(key) and parser.current_token.tag == .star) {
+    if (key == .null and parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
 
     // check for get/set/accessor modifier (only if no key yet and not async/generator)
-    if (ast.isNull(key) and !is_async and !is_generator) {
+    if (key == .null and !is_async and !is_generator) {
         const cur_tag = parser.current_token.tag;
 
         if (cur_tag == .get or cur_tag == .set or cur_tag == .accessor) {
@@ -240,7 +240,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // parse the key if not already determined
-    if (ast.isNull(key)) {
+    if (key == .null) {
         const key_result = try parseClassElementKey(parser) orelse return null;
         key = key_result.key orelse return null;
         computed = key_result.computed;
@@ -443,7 +443,7 @@ fn parseMethodDefinition(
     const params_data = parser.getData(params).formal_parameters;
 
     if (kind == .get) {
-        if (params_data.items.len != 0 or !ast.isNull(params_data.rest)) {
+        if (params_data.items.len != 0 or params_data.rest != .null) {
             try parser.report(
                 parser.getSpan(params),
                 "Getter must have no parameters",
@@ -453,7 +453,7 @@ fn parseMethodDefinition(
     }
 
     if (kind == .set) {
-        if (params_data.items.len != 1 or !ast.isNull(params_data.rest)) {
+        if (params_data.items.len != 1 or params_data.rest != .null) {
             try parser.report(
                 parser.getSpan(params),
                 "Setter must have exactly one parameter",
@@ -471,7 +471,7 @@ fn parseMethodDefinition(
     const func = try parser.createNode(
         .{ .function = .{
             .type = .function_expression,
-            .id = ast.null_node,
+            .id = .null,
             .generator = is_generator,
             .async = is_async,
             .params = params,
@@ -511,7 +511,7 @@ fn parsePropertyDefinition(
         }
     }
 
-    var value: ast.NodeIndex = ast.null_node;
+    var value: ast.NodeIndex = .null;
     var end = parser.getSpan(key).end;
 
     if (parser.current_token.tag == .assign) {

@@ -306,10 +306,8 @@ pub const ParseTree = struct {
 
 };
 
-/// index into the ast node array. `null_node` for optional nodes.
-pub const NodeIndex = enum(u32) { _ };
-
-pub const null_node: NodeIndex = @enumFromInt(std.math.maxInt(u32));
+/// Index into the AST node array. `.null` for optional nodes.
+pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 
 /// range of indices in the extra array for storing node lists.
 pub const IndexRange = struct {
@@ -636,9 +634,9 @@ pub const Class = struct {
     type: ClassType,
     /// Decorator[]
     decorators: IndexRange,
-    /// BindingIdentifier (optional, may be null_node for class expressions)
+    /// BindingIdentifier (optional, may be `.null` for class expressions)
     id: NodeIndex,
-    /// Expression (optional, may be null_node if no extends clause)
+    /// Expression (optional, may be `.null` if no extends clause)
     super_class: NodeIndex,
     /// ClassBody
     body: NodeIndex,
@@ -669,7 +667,7 @@ pub const PropertyDefinition = struct {
     decorators: IndexRange,
     /// PropertyKey (IdentifierName | PrivateIdentifier | Expression)
     key: NodeIndex,
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     value: NodeIndex,
     computed: bool,
     static: bool,
@@ -763,7 +761,7 @@ pub const VariableDeclaration = struct {
 pub const VariableDeclarator = struct {
     /// BindingPattern
     id: NodeIndex,
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     init: NodeIndex,
 };
 
@@ -780,7 +778,7 @@ pub const IfStatement = struct {
     @"test": NodeIndex,
     /// Statement (the if-body)
     consequent: NodeIndex,
-    /// Statement (optional, may be null_node for no else clause)
+    /// Statement (optional, may be `.null` for no else clause)
     alternate: NodeIndex,
 };
 
@@ -833,14 +831,14 @@ pub const ForOfStatement = struct {
 /// `break;` or `break label;`
 /// https://tc39.es/ecma262/#sec-break-statement
 pub const BreakStatement = struct {
-    /// LabelIdentifier (optional, may be null_node)
+    /// LabelIdentifier (optional, may be `.null`)
     label: NodeIndex,
 };
 
 /// `continue;` or `continue label;`
 /// https://tc39.es/ecma262/#sec-continue-statement
 pub const ContinueStatement = struct {
-    /// LabelIdentifier (optional, may be null_node)
+    /// LabelIdentifier (optional, may be `.null`)
     label: NodeIndex,
 };
 
@@ -856,7 +854,7 @@ pub const LabeledStatement = struct {
 /// `case test: consequent` or `default: consequent`
 /// https://tc39.es/ecma262/#prod-CaseClause
 pub const SwitchCase = struct {
-    /// Expression (optional, null_node for default case)
+    /// Expression (optional, `.null` for default case)
     @"test": NodeIndex,
     /// Statement[]
     consequent: IndexRange,
@@ -865,7 +863,7 @@ pub const SwitchCase = struct {
 /// `return;` or `return expression;`
 /// https://tc39.es/ecma262/#sec-return-statement
 pub const ReturnStatement = struct {
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     argument: NodeIndex,
 };
 
@@ -881,16 +879,16 @@ pub const ThrowStatement = struct {
 pub const TryStatement = struct {
     /// BlockStatement
     block: NodeIndex,
-    /// CatchClause (optional, may be null_node)
+    /// CatchClause (optional, may be `.null`)
     handler: NodeIndex,
-    /// BlockStatement (optional, may be null_node)
+    /// BlockStatement (optional, may be `.null`)
     finalizer: NodeIndex,
 };
 
 /// `catch (param) { body }`
 /// https://tc39.es/ecma262/#prod-Catch
 pub const CatchClause = struct {
-    /// BindingPattern (optional, may be null_node for `catch { }`)
+    /// BindingPattern (optional, may be `.null` for `catch { }`)
     param: NodeIndex,
     /// BlockStatement
     body: NodeIndex,
@@ -1033,7 +1031,7 @@ pub const BindingRestElement = struct {
 pub const ArrayPattern = struct {
     /// (BindingPattern | null)[] - null for holes
     elements: IndexRange,
-    /// BindingRestElement (optional, may be null_node)
+    /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
 };
 
@@ -1042,7 +1040,7 @@ pub const ArrayPattern = struct {
 pub const ObjectPattern = struct {
     /// BindingProperty[]
     properties: IndexRange,
-    /// BindingRestElement (optional, may be null_node)
+    /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
 };
 
@@ -1125,13 +1123,13 @@ pub const FunctionType = enum {
 /// https://tc39.es/ecma262/#sec-function-definitions
 pub const Function = struct {
     type: FunctionType,
-    /// BindingIdentifier (optional, may be null_node for anonymous functions)
+    /// BindingIdentifier (optional, may be `.null` for anonymous functions)
     id: NodeIndex,
     generator: bool,
     async: bool,
     /// FormalParameters
     params: NodeIndex,
-    /// FunctionBody (optional, may be null_node for declarations/overloads)
+    /// FunctionBody (optional, may be `.null` for declarations/overloads)
     body: NodeIndex,
 };
 
@@ -1151,7 +1149,7 @@ pub const BlockStatement = struct {
 pub const FormalParameters = struct {
     /// FormalParameter[]
     items: IndexRange,
-    /// BindingRestElement (optional, may be null_node)
+    /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
     kind: FormalParameterKind,
 };
@@ -1249,7 +1247,7 @@ pub const AwaitExpression = struct {
 /// `yield expression` or `yield* expression`
 /// https://tc39.es/ecma262/#sec-generator-function-definitions-runtime-semantics-evaluation
 pub const YieldExpression = struct {
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     argument: NodeIndex,
     /// true for `yield*`, false for `yield`
     delegate: bool,
@@ -1292,7 +1290,7 @@ pub const ImportPhase = enum {
 pub const ImportExpression = struct {
     /// Expression - the module specifier
     source: NodeIndex,
-    /// Expression (optional, may be null_node) - import options/attributes
+    /// Expression (optional, may be `.null`) - import options/attributes
     options: NodeIndex,
     /// import phase: source, defer, or null (regular import)
     phase: ?ImportPhase,
@@ -1347,11 +1345,11 @@ pub const ImportAttribute = struct {
 /// `export { foo, bar }` or `export { foo } from 'source'` or `export var/let/const/function/class`
 /// https://tc39.es/ecma262/#prod-ExportDeclaration
 pub const ExportNamedDeclaration = struct {
-    /// Declaration (optional, may be null_node) - for `export var x`
+    /// Declaration (optional, may be `.null`) - for `export var x`
     declaration: NodeIndex,
     /// ExportSpecifier[]
     specifiers: IndexRange,
-    /// StringLiteral (optional, may be null_node) - for re-exports
+    /// StringLiteral (optional, may be `.null`) - for re-exports
     source: NodeIndex,
     /// ImportAttribute[] - export attributes/assertions
     attributes: IndexRange,
@@ -1367,7 +1365,7 @@ pub const ExportDefaultDeclaration = struct {
 /// `export * from 'source'` or `export * as name from 'source'`
 /// https://tc39.es/ecma262/#prod-ExportDeclaration
 pub const ExportAllDeclaration = struct {
-    /// ModuleExportName (optional, may be null_node) - for `export * as name`
+    /// ModuleExportName (optional, may be `.null`) - for `export * as name`
     exported: NodeIndex,
     /// StringLiteral - the module specifier
     source: NodeIndex,
@@ -1403,7 +1401,7 @@ pub const JSXElement = struct {
     opening_element: NodeIndex,
     /// (JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild)[]
     children: IndexRange,
-    /// JSXClosingElement (optional, may be null_node for self-closing tags)
+    /// JSXClosingElement (optional, may be `.null` for self-closing tags)
     closing_element: NodeIndex,
 };
 
@@ -1471,7 +1469,7 @@ pub const JSXMemberExpression = struct {
 pub const JSXAttribute = struct {
     /// JSXIdentifier | JSXNamespacedName
     name: NodeIndex,
-    /// StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment (optional, may be null_node for boolean-like attributes)
+    /// StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment (optional, may be `.null` for boolean-like attributes)
     value: NodeIndex,
 };
 
@@ -1618,7 +1616,3 @@ pub const Node = struct {
 };
 
 pub const NodeList = std.MultiArrayList(Node);
-
-pub inline fn isNull(index: NodeIndex) bool {
-    return index == null_node;
-}

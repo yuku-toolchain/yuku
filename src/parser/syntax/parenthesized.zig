@@ -237,7 +237,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
     const params_range = try parser.createExtra(&[_]ast.NodeIndex{param});
 
     const params = try parser.createNode(
-        .{ .formal_parameters = .{ .items = params_range, .rest = ast.null_node, .kind = .arrow_formal_parameters } },
+        .{ .formal_parameters = .{ .items = params_range, .rest = .null, .kind = .arrow_formal_parameters } },
         parser.getSpan(id),
     );
 
@@ -278,11 +278,11 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
     const checkpoint = parser.scratch_cover.begin();
     defer parser.scratch_cover.reset(checkpoint);
 
-    var rest: ast.NodeIndex = ast.null_node;
+    var rest: ast.NodeIndex = .null;
 
     const elements = parser.getExtra(cover.elements);
     for (elements) |elem| {
-        if (!ast.isNull(rest)) {
+        if (rest != .null) {
             try parser.report(
                 parser.getSpan(rest),
                 "Rest parameter must be last formal parameter",

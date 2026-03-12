@@ -97,7 +97,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     var kind: ast.PropertyKind = .init;
     var computed = false;
 
-    var key: ast.NodeIndex = ast.null_node;
+    var key: ast.NodeIndex = .null;
     var key_identifier_token: ?Token = null;
 
     // check for async, consume it, then decide if it's a modifier or key based on what follows
@@ -120,13 +120,13 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // check for generator, only if we don't already have a key
-    if (ast.isNull(key) and parser.current_token.tag == .star) {
+    if (key == .null and parser.current_token.tag == .star) {
         is_generator = true;
         try parser.advance() orelse return null;
     }
 
     // check for get/set, only if no async/generator modifiers and no key yet
-    if (ast.isNull(key) and !is_async and !is_generator) {
+    if (key == .null and !is_async and !is_generator) {
         const cur_tag = parser.current_token.tag;
         if (cur_tag == .get or cur_tag == .set) {
             const get_set_token = parser.current_token;
@@ -146,7 +146,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     // parse property key if not already determined
-    if (ast.isNull(key)) {
+    if (key == .null) {
         if (parser.current_token.tag == .left_bracket) {
             computed = true;
             try parser.advance() orelse return null;
@@ -335,7 +335,7 @@ fn parseObjectMethodProperty(
 
     // validate getter has no parameters
     if (kind == .get) {
-        if (params_data.items.len != 0 or !ast.isNull(params_data.rest)) {
+        if (params_data.items.len != 0 or params_data.rest != .null) {
             try parser.report(
                 parser.getSpan(params),
                 "Getter must have no parameters",
@@ -347,7 +347,7 @@ fn parseObjectMethodProperty(
 
     // validate setter has exactly one parameter
     if (kind == .set) {
-        if (params_data.items.len != 1 or !ast.isNull(params_data.rest)) {
+        if (params_data.items.len != 1 or params_data.rest != .null) {
             try parser.report(
                 parser.getSpan(params),
                 "Setter must have exactly one parameter",
@@ -367,7 +367,7 @@ fn parseObjectMethodProperty(
     const func = try parser.createNode(
         .{ .function = .{
             .type = .function_expression,
-            .id = ast.null_node,
+            .id = .null,
             .generator = is_generator,
             .async = is_async,
             .params = params,
@@ -417,7 +417,7 @@ pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_ran
 fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
     const properties = parser.getExtra(properties_range);
 
-    var rest: ast.NodeIndex = ast.null_node;
+    var rest: ast.NodeIndex = .null;
     var properties_len = properties_range.len;
 
     for (properties, 0..) |prop, i| {

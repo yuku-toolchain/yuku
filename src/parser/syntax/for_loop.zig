@@ -35,7 +35,7 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
 
 fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .semicolon) {
-        return parseForStatementRest(parser, start, ast.null_node, is_for_await);
+        return parseForStatementRest(parser, start, .null, is_for_await);
     }
 
     const decl_start = parser.current_token.span.start;
@@ -204,14 +204,14 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex, is_fo
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop init", null)) return null;
 
-    var test_expr: ast.NodeIndex = ast.null_node;
+    var test_expr: ast.NodeIndex = .null;
     if (parser.current_token.tag != .semicolon) {
         test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop condition", null)) return null;
 
-    var update: ast.NodeIndex = ast.null_node;
+    var update: ast.NodeIndex = .null;
     if (parser.current_token.tag != .right_paren) {
         update = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
@@ -276,7 +276,7 @@ fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
     const decl_start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
 
-    var init: ast.NodeIndex = ast.null_node;
+    var init: ast.NodeIndex = .null;
     var end = parser.getSpan(id).end;
 
     if (parser.current_token.tag == .assign) {
@@ -315,7 +315,7 @@ fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
 fn validateRegularForDeclarator(parser: *Parser, declarator: ast.NodeIndex, kind: ast.VariableKind) Error!bool {
     const data = parser.getData(declarator).variable_declarator;
 
-    if (!ast.isNull(data.init)) return true;
+    if (data.init != .null) return true;
 
     if (parser.getData(data.id) != .binding_identifier) {
         try parser.report(parser.getSpan(data.id), "Destructuring declaration in for loop initializer must be initialized", .{

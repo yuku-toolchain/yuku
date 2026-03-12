@@ -53,7 +53,7 @@ pub const Serializer = struct {
     }
 
     fn writeNode(self: *Self, index: ast.NodeIndex) Error!void {
-        if (ast.isNull(index)) return self.writeNull();
+        if (index == .null) return self.writeNull();
 
         const data = self.tree.getData(index);
         const span = self.tree.getSpan(index);
@@ -168,7 +168,7 @@ pub const Serializer = struct {
 
     fn writeArrowFunction(self: *Self, data: ast.ArrowFunctionExpression, span: ast.Span) !void {
         try self.begin("ArrowFunctionExpression", span);
-        try self.fieldNode("id", ast.null_node);
+        try self.fieldNode("id", .null);
         try self.fieldBool("generator", false);
         try self.fieldBool("async", data.async);
         try self.field("params");
@@ -270,7 +270,7 @@ pub const Serializer = struct {
         try self.field("elements");
         try self.beginArray();
         for (self.getExtra(data.elements)) |idx| try self.elemNode(idx);
-        if (!ast.isNull(data.rest)) try self.elemNode(data.rest);
+        if (data.rest != .null) try self.elemNode(data.rest);
         try self.endArray();
         try self.endObject();
     }
@@ -280,7 +280,7 @@ pub const Serializer = struct {
         try self.field("properties");
         try self.beginArray();
         for (self.getExtra(data.properties)) |idx| try self.elemNode(idx);
-        if (!ast.isNull(data.rest)) try self.elemNode(data.rest);
+        if (data.rest != .null) try self.elemNode(data.rest);
         try self.endArray();
         try self.endObject();
     }
@@ -466,18 +466,18 @@ pub const Serializer = struct {
         for (self.getExtra(data.items)) |idx| {
             try self.elemNode(self.tree.getData(idx).formal_parameter.pattern);
         }
-        if (!ast.isNull(data.rest)) try self.elemNode(data.rest);
+        if (data.rest != .null) try self.elemNode(data.rest);
         try self.endArray();
     }
 
     fn writeFunctionParams(self: *Self, params_index: ast.NodeIndex) !void {
         try self.beginArray();
-        if (!ast.isNull(params_index)) {
+        if (params_index != .null) {
             const params = self.tree.getData(params_index).formal_parameters;
             for (self.getExtra(params.items)) |idx| {
                 try self.elemNode(self.tree.getData(idx).formal_parameter.pattern);
             }
-            if (!ast.isNull(params.rest)) try self.elemNode(params.rest);
+            if (params.rest != .null) try self.elemNode(params.rest);
         }
         try self.endArray();
     }
