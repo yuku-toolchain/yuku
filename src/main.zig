@@ -8,12 +8,12 @@ const transform = traverser.transform;
 pub fn main(init: std.process.Init) !void {
     const allocator = init.arena.allocator();
 
-    const source = "const a = x + y";
+    const source = "const \xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E = \"hello\";";
 
     var builder = try parser.build(std.heap.page_allocator, source, .{});
 
-    var t = TransformVisit{};
-    try transform.traverse(TransformVisit, &builder, &t);
+    // no transform for this test
+    _ = &TransformVisit{};
 
     var tree = builder.toTree(.{});
     defer tree.deinit();
@@ -57,7 +57,7 @@ const TransformVisit = struct {
         index: ast.NodeIndex,
         ctx: *transform.Ctx,
     ) !traverser.Action {
-        ctx.tree.replaceData(index, .{ .binding_identifier = .{ .name = try ctx.tree.createString("new_name") } });
+        ctx.tree.replaceData(index, .{ .binding_identifier = .{ .name = try ctx.tree.addString("new_name") } });
 
         return .proceed;
     }

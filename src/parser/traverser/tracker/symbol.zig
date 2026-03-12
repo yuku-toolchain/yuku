@@ -71,7 +71,8 @@ pub const SymbolTable = struct {
     /// First symbol in each scope, indexed by scope ID.
     /// `.none` if the scope has no symbols.
     scope_symbols: []const SymbolId,
-    strings: []const u8,
+    source: []const u8,
+    synthetic: []const u8,
     allocator: Allocator,
 
     /// Frees all resources.
@@ -94,12 +95,12 @@ pub const SymbolTable = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: SymbolTable, sym: Symbol) []const u8 {
-        return ast.StringTable.resolve(self.strings, sym.name);
+        return sym.name.resolve(self.source, self.synthetic);
     }
 
     /// Returns the source name of a reference as a string slice.
     pub inline fn getRefName(self: SymbolTable, ref: Reference) []const u8 {
-        return ast.StringTable.resolve(self.strings, ref.name);
+        return ref.name.resolve(self.source, self.synthetic);
     }
 
     /// Returns an iterator over all symbols declared in the given scope.
@@ -421,7 +422,8 @@ pub const SymbolTracker = struct {
             .symbols = try self.symbols.toOwnedSlice(self.allocator),
             .references = try self.references.toOwnedSlice(self.allocator),
             .scope_symbols = try self.scope_symbols.toOwnedSlice(self.allocator),
-            .strings = self.tree.strings,
+            .source = self.tree.source,
+            .synthetic = self.tree.synthetic,
             .allocator = self.allocator,
         };
     }

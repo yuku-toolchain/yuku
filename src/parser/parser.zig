@@ -68,7 +68,7 @@ pub const Parser = struct {
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
-            .builder = ast.TreeBuilder.init(child_allocator),
+            .builder = ast.TreeBuilder.init(child_allocator, source),
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
@@ -126,7 +126,7 @@ pub const Parser = struct {
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = try self.builder.createString(self.source[h.start..][0..h.len]),
+                        .value = self.builder.sourceSlice(h.start, h.start + h.len),
                     } else null,
                 },
             },
@@ -136,9 +136,12 @@ pub const Parser = struct {
         self.builder.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
 
         for (self.lexer.comments.items) |*comment| {
-            comment.value = try self.builder.createString(switch (comment.type) {
-                .line => self.source[comment.start + 2 .. comment.end],
-                .block => self.source[comment.start + 2 .. comment.end - 2],
+            comment.value = self.builder.sourceSlice(switch (comment.type) {
+                .line => comment.start + 2,
+                .block => comment.start + 2,
+            }, switch (comment.type) {
+                .line => comment.end,
+                .block => comment.end - 2,
             });
         }
         self.builder.comments = try self.lexer.comments.toOwnedSlice(alloc);
@@ -461,7 +464,6 @@ pub const Parser = struct {
 
         try self.builder.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.builder.extra.ensureTotalCapacity(alloc, estimated_extra);
-        try self.builder.strings.buffer.ensureTotalCapacity(alloc, source_len / 4);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);

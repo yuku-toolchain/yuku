@@ -4,8 +4,6 @@ const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
 pub const Span = TokenSpan;
-pub const StringId = util.StringId;
-pub const StringTable = util.StringTable;
 
 pub const Severity = enum {
     @"error",
@@ -101,7 +99,7 @@ pub const Lang = enum {
 pub const Comment = struct {
     type: Type,
     /// Comment content (without delimiters).
-    value: StringId = .empty,
+    value: StringId = StringId.empty,
     start: u32,
     end: u32,
 
@@ -116,6 +114,26 @@ pub const Comment = struct {
             };
         }
     };
+};
+
+pub const StringId = struct {
+    start: u32 = 0,
+    end: u32 = 0,
+
+    pub const empty: StringId = .{};
+
+    pub inline fn resolve(id: StringId, source: []const u8, synthetic: []const u8) []const u8 {
+        if (id.start == id.end) return "";
+        const src_len: u32 = @intCast(source.len);
+        if (id.start >= src_len) {
+            return synthetic[id.start - src_len .. id.end - src_len];
+        }
+        return source[id.start..id.end];
+    }
+
+    pub inline fn eql(self: StringId, other: StringId) bool {
+        return self.start == other.start and self.end == other.end;
+    }
 };
 
 /// Mutable AST builder backed by growable arrays.
@@ -133,17 +151,27 @@ pub const TreeBuilder = struct {
     nodes: NodeList = .empty,
     /// Extra data storage for variadic node children.
     extra: std.ArrayList(NodeIndex) = .empty,
-    /// Interned string storage for AST node text content.
-    strings: StringTable = .{},
     /// Diagnostics (errors, warnings, etc.) encountered during parsing.
     diagnostics: []const Diagnostic = &.{},
     /// Comments found in the source code.
     comments: []const Comment = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
+    /// Original source buffer for resolving source-relative StringIds.
+    source: []const u8 = "",
+    /// Storage for strings created during transforms (not in original source).
+    /// StringIds with offsets >= source.len resolve against this buffer.
+    synthetic: std.ArrayList(u8) = .empty,
 
-    pub fn init(child_allocator: std.mem.Allocator) TreeBuilder {
-        return .{ .arena = std.heap.ArenaAllocator.init(child_allocator) };
+    pub fn init(child_allocator: std.mem.Allocator, source: []const u8) TreeBuilder {
+        const self = TreeBuilder{
+            .arena = std.heap.ArenaAllocator.init(child_allocator),
+            .source = source
+        };
+
+        try self.builder.synthetic.ensureTotalCapacity(self.allocator(), 256);
+
+        return self;
     }
 
     /// Frees all memory owned by this tree builder.
@@ -162,10 +190,11 @@ pub const TreeBuilder = struct {
             .program = self.program,
             .nodes = self.nodes.toOwnedSlice(),
             .extra = self.extra.items,
-            .strings = self.strings.buffer.items,
             .diagnostics = self.diagnostics,
             .comments = self.comments,
             .arena = self.arena,
+            .source = self.source,
+            .synthetic = self.synthetic.items,
             .source_type = meta.source_type,
             .lang = meta.lang,
         };
@@ -223,14 +252,26 @@ pub const TreeBuilder = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Creates a string for use in AST nodes.
-    pub inline fn createString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
-        return self.strings.intern(self.arena.allocator(), str);
+    /// Creates a string reference into the original source buffer.
+    /// Used internally by the parser, transform users should use `addString` instead.
+    pub inline fn sourceSlice(_: *TreeBuilder, start: u32, end: u32) StringId {
+        return .{ .start = start, .end = end };
     }
 
-    /// Returns the string content for a `StringId` used in AST nodes.
+    /// Creates a new string and returns its ID.
+    /// Copies bytes into the synthetic buffer. Use this in transforms and
+    /// when building ASTs programmatically.
+    pub fn addString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
+        const src_len: u32 = @intCast(self.source.len);
+        const start: u32 = src_len + @as(u32, @intCast(self.synthetic.items.len));
+        try self.synthetic.appendSlice(self.arena.allocator(), str);
+        const end: u32 = src_len + @as(u32, @intCast(self.synthetic.items.len));
+        return .{ .start = start, .end = end };
+    }
+
+    /// Returns the string content for a `StringId`.
     pub inline fn getString(self: *const TreeBuilder, id: StringId) []const u8 {
-        return self.strings.get(id);
+        return id.resolve(self.source, self.synthetic.items);
     }
 };
 
@@ -247,14 +288,16 @@ pub const ParseTree = struct {
     nodes: NodeList.Slice,
     /// Extra data storage for variadic node children.
     extra: []const NodeIndex,
-    /// Interned string data for AST node text content.
-    strings: []const u8,
     /// Diagnostics (errors, warnings, etc.) encountered during parsing.
     diagnostics: []const Diagnostic,
     /// Comments found in the source code.
     comments: []const Comment,
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
+    /// Original source buffer for resolving source-relative StringIds.
+    source: []const u8,
+    /// Synthetic string buffer for transform-created strings.
+    synthetic: []const u8 = "",
     /// Source type (script or module).
     source_type: SourceType,
     /// Language variant (js, ts, jsx, tsx, dts).
@@ -301,9 +344,8 @@ pub const ParseTree = struct {
 
     /// Returns the string content for a `StringId` used in AST nodes.
     pub inline fn getString(self: *const ParseTree, id: StringId) []const u8 {
-        return StringTable.resolve(self.strings, id);
+        return id.resolve(self.source, self.synthetic);
     }
-
 };
 
 /// Index into the AST node array. `.null` for optional nodes.

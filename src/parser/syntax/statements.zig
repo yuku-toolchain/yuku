@@ -62,7 +62,7 @@ fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.Node
     const expression_data = parser.builder.getData(expression);
 
     if (parser.context.in_directive_prologue and expression_data == .string_literal) {
-        return parseDirective(parser, expression, expression_data);
+        return parseDirective(parser, expression);
     }
 
     // labeled statement: identifier ':'
@@ -90,11 +90,13 @@ fn parseExpressionStatementWithExpression(
     );
 }
 
-fn parseDirective(parser: *Parser, expression: ast.NodeIndex, expression_data: ast.NodeData) Error!?ast.NodeIndex {
+fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeIndex {
     const string_literal_span = parser.builder.getSpan(expression);
 
-    const raw = parser.builder.getString(expression_data.string_literal.raw);
-    const value_text = raw[1 .. raw.len - 1]; // strip quotes
+    // strip quotes: the span covers the full string literal including quotes
+    const value_start = string_literal_span.start + 1;
+    const value_end = string_literal_span.end - 1;
+    const value_text = parser.source[value_start..value_end];
 
     // "use strict" directive enables strict mode for the current scope
     if (std.mem.eql(u8, value_text, "use strict")) {
@@ -104,7 +106,7 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex, expression_data: a
     return try parser.builder.createNode(.{
         .directive = .{
             .expression = expression,
-            .value = try parser.builder.createString(value_text),
+            .value = parser.builder.sourceSlice(value_start, value_end),
         },
     }, .{
         .start = string_literal_span.start,

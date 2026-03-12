@@ -18,6 +18,9 @@ pub const Serializer = struct {
     needs_comma_bits: [8]u64 = .{0} ** 8,
     scratch: std.ArrayList(u8) = .empty,
     isTs: bool,
+    /// UTF-16 position map. Built from source for parsed trees.
+    /// null for manually-built trees (positions pass through unchanged).
+    pos_map: ?[]u32,
     in_jsx_attribute: bool = false,
 
     const Self = @This();
@@ -25,8 +28,14 @@ pub const Serializer = struct {
     const NodeTag = std.meta.Tag(ast.NodeData);
 
     pub fn serialize(tree: *const ast.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
-        var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.strings.len * 8 + 4096);
+        var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.nodes.len * 64 + 4096);
         errdefer buffer.deinit(allocator);
+
+        const pos_map: ?[]u32 = if (tree.source.len > 0)
+            try buildUtf16PosMap(allocator, tree.source)
+        else
+            null;
+        defer if (pos_map) |m| allocator.free(m);
 
         var self = Self{
             .tree = tree,
@@ -38,6 +47,7 @@ pub const Serializer = struct {
                 .ts, .tsx, .dts => true,
                 else => false,
             },
+            .pos_map = pos_map,
         };
         defer self.scratch.deinit(allocator);
 
@@ -665,7 +675,11 @@ pub const Serializer = struct {
 
     fn fieldPos(self: *Self, key: []const u8, byte_pos: u32) !void {
         try self.field(key);
-        try self.writeInt(byte_pos);
+        if (self.pos_map) |map| {
+            try self.writeInt(map[@min(byte_pos, map.len - 1)]);
+        } else {
+            try self.writeInt(byte_pos);
+        }
     }
 
     fn fieldNode(self: *Self, key: []const u8, node: ast.NodeIndex) !void {
@@ -930,6 +944,26 @@ pub const Serializer = struct {
         }
     }
 };
+
+/// Builds a lookup table mapping byte positions to UTF-16 code unit offsets.
+/// ESTree positions use UTF-16 code units (matching JavaScript's string indexing).
+fn buildUtf16PosMap(allocator: std.mem.Allocator, source: []const u8) ![]u32 {
+    var map = try allocator.alloc(u32, source.len + 1);
+    var byte_pos: usize = 0;
+    var utf16_pos: u32 = 0;
+
+    while (byte_pos < source.len) {
+        map[byte_pos] = utf16_pos;
+        const len = std.unicode.utf8ByteSequenceLength(source[byte_pos]) catch 1;
+        utf16_pos += if (len == 4) 2 else 1;
+        for (1..len) |i| {
+            if (byte_pos + i < source.len) map[byte_pos + i] = utf16_pos;
+        }
+        byte_pos += len;
+    }
+    map[source.len] = utf16_pos;
+    return map;
+}
 
 fn parseJSNumeric(outbuf: []u8, str: []const u8) ![]const u8 {
     var buf: [128]u8 = undefined;

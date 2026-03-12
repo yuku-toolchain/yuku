@@ -171,7 +171,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.builder.createNode(
-                .{ .identifier_name = .{ .name = try parser.builder.createString(parser.getTokenText(static_token)) } },
+                .{ .identifier_name = .{ .name = parser.builder.sourceSlice(static_token.span.start, static_token.span.end) } },
                 static_token.span,
             );
         } else {
@@ -194,7 +194,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             key = try parser.builder.createNode(
-                .{ .identifier_name = .{ .name = try parser.builder.createString(parser.getTokenText(async_token)) } },
+                .{ .identifier_name = .{ .name = parser.builder.sourceSlice(async_token.span.start, async_token.span.end) } },
                 async_token.span,
             );
         }
@@ -232,7 +232,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 }
             } else {
                 key = try parser.builder.createNode(
-                    .{ .identifier_name = .{ .name = try parser.builder.createString(parser.getTokenText(modifier_token)) } },
+                    .{ .identifier_name = .{ .name = parser.builder.sourceSlice(modifier_token.span.start, modifier_token.span.end) } },
                     modifier_token.span,
                 );
             }
@@ -361,7 +361,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         const key = try parser.builder.createNode(
-            .{ .identifier_name = .{ .name = try parser.builder.createString(parser.getTokenText(token)) } },
+            .{ .identifier_name = .{ .name = parser.builder.sourceSlice(token.span.start, token.span.end) } },
             token.span,
         );
         return .{ .key = key, .computed = false };
