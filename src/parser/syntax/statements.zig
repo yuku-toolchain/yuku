@@ -93,19 +93,18 @@ fn parseExpressionStatementWithExpression(
 fn parseDirective(parser: *Parser, expression: ast.NodeIndex, expression_data: ast.NodeData) Error!?ast.NodeIndex {
     const string_literal_span = parser.getSpan(expression);
 
-    const value_start = expression_data.string_literal.raw_start + 1;
-    const value_len: u16 = expression_data.string_literal.raw_len - 2;
+    const raw = parser.getString(expression_data.string_literal.raw);
+    const value_text = raw[1 .. raw.len - 1]; // strip quotes
 
     // "use strict" directive enables strict mode for the current scope
-    if (std.mem.eql(u8, parser.getSourceText(value_start, value_len), "use strict")) {
+    if (std.mem.eql(u8, value_text, "use strict")) {
         _ = parser.enterStrictMode();
     }
 
     return try parser.createNode(.{
         .directive = .{
             .expression = expression,
-            .value_start = value_start,
-            .value_len = value_len,
+            .value = try parser.intern(value_text),
         },
     }, .{
         .start = string_literal_span.start,
@@ -199,8 +198,7 @@ fn parseLabeledStatement(parser: *Parser, identifier: ast.NodeIndex) Error!?ast.
     // IdentifierReference to LabelIdentifier
     const label = try parser.createNode(.{
         .label_identifier = .{
-            .name_start = id_data.identifier_reference.name_start,
-            .name_len = id_data.identifier_reference.name_len,
+            .name = id_data.identifier_reference.name,
         },
     }, id_span);
 

@@ -19,12 +19,12 @@ pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
     switch (key_data) {
         .identifier_name => |id| {
             return .{
-                .name = parser.getSourceText(id.name_start, id.name_len),
+                .name = parser.getString(id.name),
                 .span = parser.getSpan(key),
             };
         },
         .string_literal => |str| {
-            const raw = parser.getSourceText(str.raw_start, str.raw_len);
+            const raw = parser.getString(str.raw);
             if (raw.len < 2) return null;
             return .{
                 .name = raw[1 .. raw.len - 1],

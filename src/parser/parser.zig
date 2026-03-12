@@ -126,13 +126,23 @@ pub const Parser = struct {
                 .program = .{
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
-                    .hashbang = self.lexer.hashbang,
+                    .hashbang = if (self.lexer.hashbang) |h| .{
+                        .value = try self.intern(self.source[h.start..][0..h.len]),
+                    } else null,
                 },
             },
             .{ .start = 0, .end = end },
         );
 
         self.builder.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
+
+        // Intern comment text content
+        for (self.lexer.comments.items) |*comment| {
+            comment.value = try self.builder.intern(switch (comment.type) {
+                .line => self.source[comment.start + 2 .. comment.end],
+                .block => self.source[comment.start + 2 .. comment.end - 2],
+            });
+        }
         self.builder.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
 
@@ -248,16 +258,27 @@ pub const Parser = struct {
         return self.builder.getExtra(range);
     }
 
-    pub inline fn getSourceText(self: *const Parser, start: u32, len: u16) []const u8 {
-        return self.source[start..][0..len];
-    }
-
     pub inline fn getSpanText(self: *const Parser, span: ast.Span) []const u8 {
         return self.source[span.start..span.end];
     }
 
     pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
         return token.text(self.source);
+    }
+
+    /// Interns a string for use in AST nodes.
+    pub inline fn intern(self: *Parser, str: []const u8) Error!ast.StringId {
+        return self.builder.intern(str);
+    }
+
+    /// Interns the text of a token.
+    pub inline fn internToken(self: *Parser, token: Token) Error!ast.StringId {
+        return self.builder.intern(token.text(self.source));
+    }
+
+    /// Resolves an interned string.
+    pub inline fn getString(self: *const Parser, id: ast.StringId) []const u8 {
+        return self.builder.getString(id);
     }
 
     inline fn nextToken(self: *Parser) Error!?Token {
@@ -484,6 +505,7 @@ pub const Parser = struct {
 
         try self.builder.nodes.ensureTotalCapacity(alloc, estimated_nodes);
         try self.builder.extra.ensureTotalCapacity(alloc, estimated_extra);
+        try self.builder.strings.buffer.ensureTotalCapacity(alloc, source_len / 4);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);

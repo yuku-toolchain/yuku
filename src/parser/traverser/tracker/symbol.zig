@@ -12,10 +12,8 @@ pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
 /// A declared binding (variable, function, class, import, or parameter).
 pub const Symbol = struct {
-    /// Byte offset of the name in the source text.
-    name_start: u32,
-    /// Length of the name in bytes.
-    name_len: u16,
+    /// Interned name of the symbol.
+    name: ast.StringId,
     kind: Kind,
     flags: Flags,
     /// The scope this symbol is declared in.
@@ -56,10 +54,8 @@ pub const Symbol = struct {
 
 /// An identifier reference (a use of a name, not a declaration).
 pub const Reference = struct {
-    /// Byte offset of the name in the source text.
-    name_start: u32,
-    /// Length of the name in bytes.
-    name_len: u16,
+    /// Interned name of the reference.
+    name: ast.StringId,
     /// The scope this reference appears in (used for resolution).
     scope: sc.ScopeId,
     /// The AST node for this reference.
@@ -75,7 +71,7 @@ pub const SymbolTable = struct {
     /// First symbol in each scope, indexed by scope ID.
     /// `.none` if the scope has no symbols.
     scope_symbols: []const SymbolId,
-    source: []const u8,
+    strings: []const u8,
     allocator: Allocator,
 
     /// Frees all resources.
@@ -98,12 +94,12 @@ pub const SymbolTable = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: SymbolTable, sym: Symbol) []const u8 {
-        return self.source[sym.name_start..][0..sym.name_len];
+        return ast.StringTable.resolve(self.strings, sym.name);
     }
 
     /// Returns the source name of a reference as a string slice.
     pub inline fn getRefName(self: SymbolTable, ref: Reference) []const u8 {
-        return self.source[ref.name_start..][0..ref.name_len];
+        return ast.StringTable.resolve(self.strings, ref.name);
     }
 
     /// Returns an iterator over all symbols declared in the given scope.
@@ -116,8 +112,7 @@ pub const SymbolTable = struct {
         var it = self.scopeSymbols(scope);
         while (it.next()) |id| {
             const sym = self.symbols[@intFromEnum(id)];
-            if (sym.name_len == name.len and
-                std.mem.eql(u8, self.source[sym.name_start..][0..sym.name_len], name))
+            if (std.mem.eql(u8, self.getName(sym), name))
             {
                 return id;
             }
@@ -308,10 +303,10 @@ pub const SymbolTracker = struct {
         switch (data) {
             .binding_identifier => |id| {
                 const target = self.resolveTargetScope(scope);
-                _ = try self.declare(id.name_start, id.name_len, target, index);
+                _ = try self.declare(id.name, target, index);
             },
             .identifier_reference => |id| {
-                _ = try self.addReference(id.name_start, id.name_len, scope.currentScopeId(), index);
+                _ = try self.addReference(id.name, scope.currentScopeId(), index);
             },
             else => {},
         }
@@ -351,14 +346,13 @@ pub const SymbolTracker = struct {
 
     /// Creates a new symbol in the given scope using the current binding context.
     /// Returns the ID of the newly created symbol.
-    pub fn declare(self: *SymbolTracker, name_start: u32, name_len: u16, target_scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!SymbolId {
+    pub fn declare(self: *SymbolTracker, name: ast.StringId, target_scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!SymbolId {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
         const scope_idx = @intFromEnum(target_scope);
 
         // prepend to the scope's linked list (new symbol becomes the head)
         try self.symbols.append(self.allocator, .{
-            .name_start = name_start,
-            .name_len = name_len,
+            .name = name,
             .kind = self.binding_kind,
             .flags = .{
                 .exported = self.is_export,
@@ -377,11 +371,10 @@ pub const SymbolTracker = struct {
 
     /// Records a new identifier reference in the given scope.
     /// Returns the ID of the newly created reference.
-    pub fn addReference(self: *SymbolTracker, name_start: u32, name_len: u16, scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!ReferenceId {
+    pub fn addReference(self: *SymbolTracker, name: ast.StringId, scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!ReferenceId {
         const id: ReferenceId = @enumFromInt(@as(u32, @intCast(self.references.items.len)));
         try self.references.append(self.allocator, .{
-            .name_start = name_start,
-            .name_len = name_len,
+            .name = name,
             .scope = scope,
             .node = node,
             .resolved = .none,
@@ -403,7 +396,7 @@ pub const SymbolTracker = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: *const SymbolTracker, sym: Symbol) []const u8 {
-        return self.tree.getSourceText(sym.name_start, sym.name_len);
+        return self.tree.getString(sym.name);
     }
 
     /// Returns an iterator over all symbols declared in the given scope.
@@ -416,10 +409,8 @@ pub const SymbolTracker = struct {
         var it = self.scopeSymbols(scope);
         while (it.next()) |id| {
             const sym = self.symbols.items[@intFromEnum(id)];
-            if (sym.name_len == name.len) {
-                if (std.mem.eql(u8, self.tree.getSourceText(sym.name_start, sym.name_len), name))
-                    return id;
-            }
+            if (std.mem.eql(u8, self.tree.getString(sym.name), name))
+                return id;
         }
         return null;
     }
@@ -430,7 +421,7 @@ pub const SymbolTracker = struct {
             .symbols = try self.symbols.toOwnedSlice(self.allocator),
             .references = try self.references.toOwnedSlice(self.allocator),
             .scope_symbols = try self.scope_symbols.toOwnedSlice(self.allocator),
-            .source = self.tree.source,
+            .strings = self.tree.strings,
             .allocator = self.allocator,
         };
     }

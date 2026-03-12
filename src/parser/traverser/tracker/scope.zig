@@ -158,7 +158,7 @@ pub const ScopeTracker = struct {
     pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         switch (data) {
             .directive => |d| {
-                if (std.mem.eql(u8, self.tree.getSourceText(d.value_start, d.value_len), "use strict")) {
+                if (std.mem.eql(u8, self.tree.getString(d.value), "use strict")) {
                     self.currentScopeMut().flags.strict = true;
                 }
             },

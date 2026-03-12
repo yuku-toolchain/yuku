@@ -113,7 +113,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         } else {
             // it's a key named "async"
             key = try parser.createNode(
-                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.len()) } },
+                .{ .identifier_name = .{ .name = try parser.internToken(async_token) } },
                 async_token.span,
             );
         }
@@ -138,7 +138,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
                 kind = if (cur_tag == .get) .get else .set;
             } else {
                 key = try parser.createNode(
-                    .{ .identifier_name = .{ .name_start = get_set_token.span.start, .name_len = @intCast(get_set_token.len()) } },
+                    .{ .identifier_name = .{ .name = try parser.internToken(get_set_token) } },
                     get_set_token.span,
                 );
             }
@@ -224,7 +224,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         const default_value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
 
         const id_ref = try parser.createNode(
-            .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
+            .{ .identifier_reference = .{ .name = key_data.identifier_name.name } },
             key_span,
         );
 
@@ -270,7 +270,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     const value = try parser.createNode(
-        .{ .identifier_reference = .{ .name_start = key_data.identifier_name.name_start, .name_len = key_data.identifier_name.name_len } },
+        .{ .identifier_reference = .{ .name = key_data.identifier_name.name } },
         key_span,
     );
 

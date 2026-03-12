@@ -171,7 +171,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.createNode(
-                .{ .identifier_name = .{ .name_start = static_token.span.start, .name_len = @intCast(static_token.len()) } },
+                .{ .identifier_name = .{ .name = try parser.internToken(static_token) } },
                 static_token.span,
             );
         } else {
@@ -194,7 +194,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             key = try parser.createNode(
-                .{ .identifier_name = .{ .name_start = async_token.span.start, .name_len = @intCast(async_token.len()) } },
+                .{ .identifier_name = .{ .name = try parser.internToken(async_token) } },
                 async_token.span,
             );
         }
@@ -232,7 +232,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 }
             } else {
                 key = try parser.createNode(
-                    .{ .identifier_name = .{ .name_start = modifier_token.span.start, .name_len = @intCast(modifier_token.len()) } },
+                    .{ .identifier_name = .{ .name = try parser.internToken(modifier_token) } },
                     modifier_token.span,
                 );
             }
@@ -254,7 +254,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         if (data == .private_identifier) {
             const pi = data.private_identifier;
 
-            const name = parser.getSourceText(pi.name_start, pi.name_len);
+            const name = parser.getString(pi.name);
 
             if (ecmascript.eqlStringValue(name, "constructor")) {
                 try parser.report(
@@ -361,7 +361,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         const key = try parser.createNode(
-            .{ .identifier_name = .{ .name_start = token.span.start, .name_len = @intCast(token.len()) } },
+            .{ .identifier_name = .{ .name = try parser.internToken(token) } },
             token.span,
         );
         return .{ .key = key, .computed = false };

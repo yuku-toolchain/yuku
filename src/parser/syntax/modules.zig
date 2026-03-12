@@ -229,8 +229,7 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
         parser.replaceData(imported, .{
             .binding_identifier = .{
-                .name_start = id_data.name_start,
-                .name_len = id_data.name_len,
+                .name = id_data.name,
             },
         });
 
@@ -346,8 +345,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
 
             declaration = try parser.createNode(.{
                 .identifier_reference = .{
-                    .name_start = async_start,
-                    .name_len = @intCast(async_end - async_start),
+                    .name = try parser.intern(parser.source[async_start..async_end]),
                 },
             }, .{ .start = async_start, .end = async_end });
         }
@@ -448,7 +446,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             const local_tag: TokenTag = @enumFromInt(@intFromEnum(local_tags[i]));
 
             if (local_tag.isReserved()) {
-                const local_name = parser.getSourceText(local_data.identifier_name.name_start, local_data.identifier_name.name_len);
+                const local_name = parser.getString(local_data.identifier_name.name);
 
                 try parser.reportFmt(
                     local_span,

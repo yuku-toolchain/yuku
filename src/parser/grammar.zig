@@ -100,8 +100,7 @@ pub fn expressionToPattern(
     switch (data) {
         .identifier_reference => |id| {
             parser.replaceData(expr, .{ .binding_identifier = .{
-                .name_start = id.name_start,
-                .name_len = id.name_len,
+                .name = id.name,
             } });
         },
 

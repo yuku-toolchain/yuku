@@ -4,6 +4,39 @@ const TokenTag = @import("token.zig").TokenTag;
 
 pub const Span = TokenSpan;
 
+/// Handle to an interned string. Resolve via `TreeBuilder.getString()` or `ParseTree.getString()`.
+pub const StringId = enum(u32) { empty = std.math.maxInt(u32), _ };
+
+/// Compact string storage. Strings are stored as length-prefixed entries
+/// in a flat byte buffer. StringId is the byte offset of the entry.
+pub const StringTable = struct {
+    buffer: std.ArrayList(u8) = .empty,
+
+    pub inline fn intern(self: *StringTable, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
+        const offset: u32 = @intCast(self.buffer.items.len);
+        const len: u32 = @intCast(str.len);
+        const needed = 4 + str.len;
+        if (self.buffer.items.len + needed > self.buffer.capacity) {
+            try self.buffer.ensureUnusedCapacity(alloc, needed);
+        }
+        self.buffer.appendSliceAssumeCapacity(std.mem.asBytes(&len));
+        self.buffer.appendSliceAssumeCapacity(str);
+        return @enumFromInt(offset);
+    }
+
+    pub inline fn get(self: *const StringTable, id: StringId) []const u8 {
+        return resolve(self.buffer.items, id);
+    }
+
+    /// Resolve a StringId from a finalized string buffer.
+    pub inline fn resolve(buffer: []const u8, id: StringId) []const u8 {
+        if (id == .empty) return "";
+        const offset = @intFromEnum(id);
+        const len: u32 = @bitCast(buffer[offset..][0..4].*);
+        return buffer[offset + 4 ..][0..len];
+    }
+};
+
 pub const Severity = enum {
     @"error",
     warning,
@@ -97,6 +130,8 @@ pub const Lang = enum {
 
 pub const Comment = struct {
     type: Type,
+    /// Interned comment content (without delimiters).
+    value: StringId = .empty,
     start: u32,
     end: u32,
 
@@ -111,15 +146,6 @@ pub const Comment = struct {
             };
         }
     };
-
-    pub fn getValue(self: Comment, source: []const u8) []const u8 {
-        return switch (self.type) {
-            // Skip "//" prefix
-            .line => source[self.start + 2 .. self.end],
-            // Skip "/*" prefix and "*/" suffix
-            .block => source[self.start + 2 .. self.end - 2],
-        };
-    }
 };
 
 /// Mutable AST builder backed by growable arrays.
@@ -137,6 +163,8 @@ pub const TreeBuilder = struct {
     nodes: NodeList = .empty,
     /// Extra data storage for variadic node children.
     extra: std.ArrayList(NodeIndex) = .empty,
+    /// Interned string storage for AST node text content.
+    strings: StringTable = .{},
     /// Diagnostics (errors, warnings, etc.) encountered during parsing.
     diagnostics: []const Diagnostic = &.{},
     /// Comments found in the source code.
@@ -165,6 +193,7 @@ pub const TreeBuilder = struct {
             .source = meta.source,
             .nodes = self.nodes.toOwnedSlice(),
             .extra = self.extra.items,
+            .strings = self.strings.buffer.items,
             .diagnostics = self.diagnostics,
             .comments = self.comments,
             .arena = self.arena,
@@ -224,6 +253,16 @@ pub const TreeBuilder = struct {
         try self.extra.appendSlice(self.arena.allocator(), children);
         return .{ .start = start, .len = @intCast(children.len) };
     }
+
+    /// Interns a string for use in AST nodes.
+    pub inline fn intern(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
+        return self.strings.intern(self.arena.allocator(), str);
+    }
+
+    /// Resolves an interned string.
+    pub inline fn getString(self: *const TreeBuilder, id: StringId) []const u8 {
+        return self.strings.get(id);
+    }
 };
 
 /// Immutable parse tree returned by `parse()`.
@@ -241,6 +280,8 @@ pub const ParseTree = struct {
     nodes: NodeList.Slice,
     /// Extra data storage for variadic node children.
     extra: []const NodeIndex,
+    /// Interned string data for AST node text content.
+    strings: []const u8,
     /// Diagnostics (errors, warnings, etc.) encountered during parsing.
     diagnostics: []const Diagnostic,
     /// Comments found in the source code.
@@ -292,10 +333,9 @@ pub const ParseTree = struct {
         return self.extra[range.start..][0..range.len];
     }
 
-    /// Returns a slice of the source text at the given offset and length.
-    /// Used for compact name fields stored as (start, len) in node data.
-    pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
-        return self.source[start..][0..len];
+    /// Resolves an interned string.
+    pub inline fn getString(self: *const ParseTree, id: StringId) []const u8 {
+        return StringTable.resolve(self.strings, id);
     }
 
     /// Returns the source text covered by the given span.
@@ -923,14 +963,13 @@ pub const WithStatement = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
-    raw_start: u32,
-    raw_len: u16,
+    /// Raw string text including quotes.
+    raw: StringId,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
     kind: Kind,
 
     pub const Kind = enum {
@@ -953,8 +992,7 @@ pub const NumericLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
 };
 
 pub const BooleanLiteral = struct {
@@ -963,10 +1001,8 @@ pub const BooleanLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-regular-expression-literals
 pub const RegExpLiteral = struct {
-    pattern_start: u32,
-    pattern_len: u16,
-    flags_start: u32,
-    flags_len: u8,
+    pattern: StringId,
+    flags: StringId,
 };
 
 /// https://tc39.es/ecma262/#sec-template-literals
@@ -979,48 +1015,39 @@ pub const TemplateLiteral = struct {
 
 /// quasi
 pub const TemplateElement = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
     tail: bool,
     /// True when this quasi's cooked template value is undefined per
     /// ECMAScript TV semantics.
-    /// This happens when the quasi contains a NotEscapeSequence.
-    /// Untagged templates are syntax errors, tagged templates allow this and
-    /// produce undefined cooked values.
     is_cooked_undefined: bool = false,
 };
 
 /// used in expressions
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const IdentifierReference = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// `#name`.
-/// `name_start` and `name_len` refer to the identifier name without the `#` prefix.
+/// `name` refers to the identifier name without the `#` prefix.
 pub const PrivateIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// used in declarations
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const BindingIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// property keys, meta properties
 pub const IdentifierName = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// https://tc39.es/ecma262/#prod-LabelIdentifier
 pub const LabelIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// `pattern = init`
@@ -1106,17 +1133,15 @@ pub const Program = struct {
 };
 
 pub const Hashbang = struct {
-    value_start: u32,
-    value_len: u16,
+    value: StringId,
 };
 
 /// `"use strict";`
 pub const Directive = struct {
     /// StringLiteral
     expression: NodeIndex,
-    /// value without quotes
-    value_start: u32,
-    value_len: u16,
+    /// Directive value without quotes.
+    value: StringId,
 };
 
 pub const FunctionType = enum {
@@ -1458,8 +1483,7 @@ pub const JSXClosingFragment = struct {};
 /// used in jsx tag names and attributes
 /// https://facebook.github.io/jsx/#prod-JSXIdentifier
 pub const JSXIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// `<namespace:name />`
@@ -1508,8 +1532,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// text content inside JSX elements
 pub const JSXText = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
 };
 
 /// `{...children}`

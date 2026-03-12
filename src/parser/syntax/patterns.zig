@@ -38,8 +38,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.createNode(
         .{
             .binding_identifier = .{
-                .name_start = current.span.start,
-                .name_len = @intCast(current.len()),
+                .name = try parser.internToken(current),
             },
         },
         current.span,
