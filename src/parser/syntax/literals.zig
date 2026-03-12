@@ -11,7 +11,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.createNode(.{
         .string_literal = .{
-            .raw = try parser.internToken(token),
+            .raw = try parser.builder.internString(parser.getTokenText(token)),
         },
     }, token.span);
 }
@@ -38,14 +38,14 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.createNode(.{
             .bigint_literal = .{
-                .raw = try parser.internToken(token),
+                .raw = try parser.builder.internString(parser.getTokenText(token)),
             },
         }, token.span);
     }
 
     return try parser.createNode(.{
         .numeric_literal = .{
-            .raw = try parser.internToken(token),
+            .raw = try parser.builder.internString(parser.getTokenText(token)),
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
@@ -63,8 +63,8 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.createNode(.{
         .regexp_literal = .{
-            .pattern = try parser.intern(parser.source[regex.span.start + 1 ..][0..regex.pattern.len]),
-            .flags = try parser.intern(parser.source[regex.span.end - regex.flags.len ..][0..regex.flags.len]),
+            .pattern = try parser.builder.internString(parser.source[regex.span.start + 1 ..][0..regex.pattern.len]),
+            .flags = try parser.builder.internString(parser.source[regex.span.end - regex.flags.len ..][0..regex.flags.len]),
         },
     }, regex.span);
 }
@@ -156,7 +156,7 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
 
     return parser.createNode(.{
         .template_element = .{
-            .raw = try parser.intern(parser.source[span.start..span.end]),
+            .raw = try parser.builder.internString(parser.source[span.start..span.end]),
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },
@@ -186,7 +186,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.createNode(.{
         .identifier_reference = .{
-            .name = try parser.internToken(token),
+            .name = try parser.builder.internString(parser.getTokenText(token)),
         },
     }, token.span);
 }
@@ -198,7 +198,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.createNode(.{
         .private_identifier = .{
-            .name = try parser.intern(parser.source[token.span.start + 1 .. token.span.end]),
+            .name = try parser.builder.internString(parser.source[token.span.start + 1 .. token.span.end]),
         },
     }, token.span);
 }
@@ -210,7 +210,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.createNode(.{
         .identifier_name = .{
-            .name = try parser.internToken(token),
+            .name = try parser.builder.internString(parser.getTokenText(token)),
         },
     }, token.span);
 }
@@ -223,7 +223,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.createNode(.{
         .label_identifier = .{
-            .name = try parser.internToken(current),
+            .name = try parser.builder.internString(parser.getTokenText(current)),
         },
     }, current.span);
 }

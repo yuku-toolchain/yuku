@@ -38,7 +38,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.createNode(
         .{
             .binding_identifier = .{
-                .name = try parser.internToken(current),
+                .name = try parser.builder.internString(parser.getTokenText(current)),
             },
         },
         current.span,
@@ -56,7 +56,7 @@ fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const start = parser.getSpan(left).start;
+    const start = parser.builder.getSpan(left).start;
 
     if (parser.current_token.tag != .assign) return left;
 
@@ -66,7 +66,7 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     return try parser.createNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
-        .{ .start = start, .end = parser.getSpan(right).end },
+        .{ .start = start, .end = parser.builder.getSpan(right).end },
     );
 }
 
@@ -75,7 +75,7 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume ...
 
     const argument = try parseBindingPattern(parser) orelse return null;
-    const end = parser.getSpan(argument).end;
+    const end = parser.builder.getSpan(argument).end;
 
     return try parser.createNode(
         .{ .binding_rest_element = .{ .argument = argument } },
@@ -84,7 +84,7 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {
-    return switch (parser.getData(index)) {
+    return switch (parser.builder.getData(index)) {
         .array_pattern, .object_pattern => true,
         .assignment_pattern => |pattern| isDestructuringPattern(parser, pattern.left),
         else => false,

@@ -40,8 +40,8 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
     }
 
     const opening = try parseJsxOpeningElement(parser, context) orelse return null;
-    const opening_data = parser.getData(opening).jsx_opening_element;
-    const opening_end = parser.getSpan(opening).end;
+    const opening_data = parser.builder.getData(opening).jsx_opening_element;
+    const opening_end = parser.builder.getSpan(opening).end;
 
     // self-closing element: <elem />
     if (opening_data.self_closing) {
@@ -65,7 +65,7 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
             .children = children,
             .closing_element = closing,
         },
-    }, .{ .start = start, .end = parser.getSpan(closing).end });
+    }, .{ .start = start, .end = parser.builder.getSpan(closing).end });
 }
 
 // https://facebook.github.io/jsx/#prod-JSXFragment
@@ -172,8 +172,8 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
     if (!try parser.expect(.greater_than, "Expected '>' to close JSX closing element", "Add '>' to complete the closing tag")) return null;
 
     if (!jsxNamesMatch(parser, opening_name, name)) {
-        const opening_span = parser.getSpan(opening_name);
-        const closing_span = parser.getSpan(name);
+        const opening_span = parser.builder.getSpan(opening_name);
+        const closing_span = parser.builder.getSpan(name);
 
         try parser.report(closing_span, try parser.formatMessage(
             "Expected closing tag for '<{s}>' but found '</{s}>'",
@@ -190,8 +190,8 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
 }
 
 fn jsxNamesMatch(parser: *const Parser, a: ast.NodeIndex, b: ast.NodeIndex) bool {
-    const span_a = parser.getSpan(a);
-    const span_b = parser.getSpan(b);
+    const span_a = parser.builder.getSpan(a);
+    const span_b = parser.builder.getSpan(b);
 
     const len_a = span_a.end - span_a.start;
     const len_b = span_b.end - span_b.start;
@@ -221,7 +221,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         if (text_token.len() > 0) {
             const text_node = try parser.createNode(.{
                 .jsx_text = .{
-                    .raw = try parser.internToken(text_token),
+                    .raw = try parser.builder.internString(parser.getTokenText(text_token)),
                 },
             }, text_token.span);
 
@@ -239,12 +239,12 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
 
                 // nested element
                 const child = try parseJsxElement(parser, .child) orelse return null;
-                scan_from = parser.getSpan(child).end;
+                scan_from = parser.builder.getSpan(child).end;
                 try parser.scratch_b.append(parser.allocator(), child);
             },
             .left_brace => {
                 const child = try parseJsxChildFromLeftBrace(parser) orelse return null;
-                scan_from = parser.getSpan(child).end;
+                scan_from = parser.builder.getSpan(child).end;
                 try parser.scratch_b.append(parser.allocator(), child);
             },
             else => break,
@@ -310,13 +310,13 @@ fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     // regular attribute: name or name=value
     const name = try parseJsxAttributeName(parser) orelse return null;
-    const name_start = parser.getSpan(name).start;
+    const name_start = parser.builder.getSpan(name).start;
 
     if (parser.current_token.tag != .assign) {
         // boolean attribute: <elem disabled />
         return try parser.createNode(.{
             .jsx_attribute = .{ .name = name, .value = .null },
-        }, .{ .start = name_start, .end = parser.getSpan(name).end });
+        }, .{ .start = name_start, .end = parser.builder.getSpan(name).end });
     }
 
     try parser.advance() orelse return null; // consume '='
@@ -324,7 +324,7 @@ fn parseJsxAttribute(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.createNode(.{
         .jsx_attribute = .{ .name = name, .value = value },
-    }, .{ .start = name_start, .end = parser.getSpan(value).end });
+    }, .{ .start = name_start, .end = parser.builder.getSpan(value).end });
 }
 
 // https://facebook.github.io/jsx/#prod-JSXAttributeName
@@ -332,7 +332,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var name = try parser.createNode(.{
         .jsx_identifier = .{
-            .name = try parser.intern(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
+            .name = try parser.builder.internString(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
         },
     }, parser.current_token.span);
 
@@ -353,7 +353,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 
         const local = try parser.createNode(.{
             .jsx_identifier = .{
-                .name = try parser.intern(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
+                .name = try parser.builder.internString(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;
@@ -379,10 +379,10 @@ fn parseJsxAttributeValue(parser: *Parser) Error!?ast.NodeIndex {
             const container = try parseJsxExpressionContainer(parser, .tag) orelse return null;
 
             // validate non-empty
-            const expr = parser.getData(container).jsx_expression_container.expression;
-            if (parser.getData(expr) == .jsx_empty_expression) {
+            const expr = parser.builder.getData(container).jsx_expression_container.expression;
+            if (parser.builder.getData(expr) == .jsx_empty_expression) {
                 try parser.report(
-                    parser.getSpan(container),
+                    parser.builder.getSpan(container),
                     "JSX attribute value cannot be an empty expression",
                     .{ .help = "Replace {} with a valid expression or remove the braces to use a string literal" },
                 );
@@ -484,7 +484,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var name = try parser.createNode(.{
         .jsx_identifier = .{
-            .name = try parser.intern(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
+            .name = try parser.builder.internString(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
         },
     }, parser.current_token.span);
 
@@ -507,7 +507,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         is_member = true;
         const property = try parser.createNode(.{
             .jsx_identifier = .{
-                .name = try parser.intern(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
+                .name = try parser.builder.internString(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;
@@ -534,7 +534,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
 
         const local = try parser.createNode(.{
             .jsx_identifier = .{
-                .name = try parser.intern(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
+                .name = try parser.builder.internString(parser.source[parser.current_token.span.start..parser.current_token.span.end]),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;

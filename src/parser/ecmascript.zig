@@ -15,20 +15,20 @@ pub const PropName = struct {
 
 /// https://tc39.es/ecma262/#sec-static-semantics-propname
 pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
-    const key_data = parser.getData(key);
+    const key_data = parser.builder.getData(key);
     switch (key_data) {
         .identifier_name => |id| {
             return .{
-                .name = parser.getString(id.name),
-                .span = parser.getSpan(key),
+                .name = parser.builder.getString(id.name),
+                .span = parser.builder.getSpan(key),
             };
         },
         .string_literal => |str| {
-            const raw = parser.getString(str.raw);
+            const raw = parser.builder.getString(str.raw);
             if (raw.len < 2) return null;
             return .{
                 .name = raw[1 .. raw.len - 1],
-                .span = parser.getSpan(key),
+                .span = parser.builder.getSpan(key),
             };
         },
         // currently only handles identifier_name and string_literal,

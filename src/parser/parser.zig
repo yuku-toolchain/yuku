@@ -126,7 +126,7 @@ pub const Parser = struct {
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = try self.intern(self.source[h.start..][0..h.len]),
+                        .value = try self.builder.internString(self.source[h.start..][0..h.len]),
                     } else null,
                 },
             },
@@ -237,25 +237,6 @@ pub const Parser = struct {
         return .{ .start = start, .len = len };
     }
 
-    pub inline fn getSpan(self: *const Parser, index: ast.NodeIndex) ast.Span {
-        return self.builder.getSpan(index);
-    }
-
-    pub inline fn getData(self: *const Parser, index: ast.NodeIndex) ast.NodeData {
-        return self.builder.getData(index);
-    }
-
-    pub inline fn replaceData(self: *Parser, index: ast.NodeIndex, data: ast.NodeData) void {
-        self.builder.replaceData(index, data);
-    }
-
-    pub inline fn replaceSpan(self: *Parser, index: ast.NodeIndex, span: ast.Span) void {
-        self.builder.replaceSpan(index, span);
-    }
-
-    pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {
-        return self.builder.getExtra(range);
-    }
 
     pub inline fn getSpanText(self: *const Parser, span: ast.Span) []const u8 {
         return self.source[span.start..span.end];
@@ -263,21 +244,6 @@ pub const Parser = struct {
 
     pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
         return token.text(self.source);
-    }
-
-    /// Interns a string for use in AST nodes.
-    pub inline fn intern(self: *Parser, str: []const u8) Error!ast.StringId {
-        return self.builder.internString(str);
-    }
-
-    /// Interns the text of a token.
-    pub inline fn internToken(self: *Parser, token: Token) Error!ast.StringId {
-        return self.builder.internString(token.text(self.source));
-    }
-
-    /// Resolves an interned string.
-    pub inline fn getString(self: *const Parser, id: ast.StringId) []const u8 {
-        return self.builder.getString(id);
     }
 
     inline fn nextToken(self: *Parser) Error!?Token {

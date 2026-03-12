@@ -54,7 +54,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
 
-            const spread_end = parser.getSpan(argument).end;
+            const spread_end = parser.builder.getSpan(argument).end;
 
             // for now, store as spread_element; will convert to rest param for arrow functions
             const rest = try parser.createNode(
@@ -79,7 +79,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
         try parser.scratch_cover.append(parser.allocator(), element);
 
-        end = parser.getSpan(element).end;
+        end = parser.builder.getSpan(element).end;
 
         // comma or end
         if (parser.current_token.tag == .comma) {
@@ -123,7 +123,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
 /// convert cover to CallExpression.
 pub fn coverToCallExpression(parser: *Parser, cover: ParenthesizedCover, callee: ast.NodeIndex) Error!?ast.NodeIndex {
-    const elements = parser.getExtra(cover.elements);
+    const elements = parser.builder.getExtra(cover.elements);
     // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
         try grammar.validateNoCoverInitializedSyntax(parser, elem);
@@ -131,13 +131,13 @@ pub fn coverToCallExpression(parser: *Parser, cover: ParenthesizedCover, callee:
 
     return try parser.createNode(
         .{ .call_expression = .{ .callee = callee, .arguments = cover.elements, .optional = false } },
-        .{ .start = parser.getSpan(callee).start, .end = cover.end },
+        .{ .start = parser.builder.getSpan(callee).start, .end = cover.end },
     );
 }
 
 /// convert cover to ParenthesizedExpression.
 pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
-    const elements = parser.getExtra(cover.elements);
+    const elements = parser.builder.getExtra(cover.elements);
     // empty parens () without arrow is invalid
     if (elements.len == 0) {
         try parser.report(
@@ -159,9 +159,9 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
 
     // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
-        if (parser.getData(elem) == .spread_element) {
+        if (parser.builder.getData(elem) == .spread_element) {
             try parser.report(
-                parser.getSpan(elem),
+                parser.builder.getSpan(elem),
                 "Rest element is not allowed in parenthesized expression",
                 .{ .help = "Spread in parentheses is only valid for arrow function parameters." },
             );
@@ -179,8 +179,8 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
         );
     }
 
-    const first_span = parser.getSpan(elements[0]);
-    const last_span = parser.getSpan(elements[elements.len - 1]);
+    const first_span = parser.builder.getSpan(elements[0]);
+    const last_span = parser.builder.getSpan(elements[elements.len - 1]);
 
     const seq_expr = try parser.createNode(
         .{ .sequence_expression = .{ .expressions = cover.elements } },
@@ -210,7 +210,7 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
             .params = params,
             .body = body_result.body,
         } },
-        .{ .start = arrow_start, .end = parser.getSpan(body_result.body).end },
+        .{ .start = arrow_start, .end = parser.builder.getSpan(body_result.body).end },
     );
 }
 
@@ -230,7 +230,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
 
     const param = try parser.createNode(
         .{ .formal_parameter = .{ .pattern = id } },
-        parser.getSpan(id),
+        parser.builder.getSpan(id),
     );
 
     // create formal_parameters with single param
@@ -238,7 +238,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
 
     const params = try parser.createNode(
         .{ .formal_parameters = .{ .items = params_range, .rest = .null, .kind = .arrow_formal_parameters } },
-        parser.getSpan(id),
+        parser.builder.getSpan(id),
     );
 
     // parse arrow body
@@ -251,7 +251,7 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
             .params = params,
             .body = body_result.body,
         } },
-        .{ .start = start, .end = parser.getSpan(body_result.body).end },
+        .{ .start = start, .end = parser.builder.getSpan(body_result.body).end },
     );
 }
 
@@ -280,11 +280,11 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
     var rest: ast.NodeIndex = .null;
 
-    const elements = parser.getExtra(cover.elements);
+    const elements = parser.builder.getExtra(cover.elements);
     for (elements) |elem| {
         if (rest != .null) {
             try parser.report(
-                parser.getSpan(rest),
+                parser.builder.getSpan(rest),
                 "Rest parameter must be last formal parameter",
                 .{ .help = "Move the rest parameter to the end of the parameter list" },
             );
@@ -292,14 +292,14 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             return null;
         }
 
-        if (parser.getData(elem) == .spread_element) {
+        if (parser.builder.getData(elem) == .spread_element) {
             // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, elem, .binding);
             rest = elem;
 
             if (cover.has_trailing_comma) {
                 try parser.report(
-                    parser.getSpan(elem),
+                    parser.builder.getSpan(elem),
                     "Rest parameter must be last formal parameter",
                     .{ .help = "Remove the trailing comma after the rest parameter" },
                 );
@@ -330,12 +330,12 @@ fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Nod
 
     return try parser.createNode(
         .{ .formal_parameter = .{ .pattern = expr } },
-        parser.getSpan(expr),
+        parser.builder.getSpan(expr),
     );
 }
 
 pub fn unwrapParens(parser: *Parser, node: ast.NodeIndex) ast.NodeIndex {
-    const data = parser.getData(node);
+    const data = parser.builder.getData(node);
 
     if (data == .parenthesized_expression) {
         return unwrapParens(parser, data.parenthesized_expression.expression);

@@ -34,7 +34,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
-            const spread_end = parser.getSpan(argument).end;
+            const spread_end = parser.builder.getSpan(argument).end;
             const spread = try parser.createNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
@@ -45,7 +45,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
             // property
             const prop = try parseCoverProperty(parser) orelse return null;
             try parser.scratch_cover.append(parser.allocator(), prop);
-            end = parser.getSpan(prop).end;
+            end = parser.builder.getSpan(prop).end;
         }
 
         // comma or end
@@ -113,7 +113,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         } else {
             // it's a key named "async"
             key = try parser.createNode(
-                .{ .identifier_name = .{ .name = try parser.internToken(async_token) } },
+                .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(async_token)) } },
                 async_token.span,
             );
         }
@@ -138,7 +138,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
                 kind = if (cur_tag == .get) .get else .set;
             } else {
                 key = try parser.createNode(
-                    .{ .identifier_name = .{ .name = try parser.internToken(get_set_token) } },
+                    .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(get_set_token)) } },
                     get_set_token.span,
                 );
             }
@@ -172,7 +172,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    const key_span = parser.getSpan(key);
+    const key_span = parser.builder.getSpan(key);
 
     // method definition, key followed by (
     if (parser.current_token.tag == .left_paren) {
@@ -195,7 +195,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         const value = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
         return try parser.createNode(
             .{ .object_property = .{ .key = key, .value = value, .kind = .init, .method = false, .shorthand = false, .computed = computed } },
-            .{ .start = prop_start, .end = parser.getSpan(value).end },
+            .{ .start = prop_start, .end = parser.builder.getSpan(value).end },
         );
     }
 
@@ -210,7 +210,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
-        const key_data = parser.getData(key);
+        const key_data = parser.builder.getData(key);
         if (key_data != .identifier_name) {
             try parser.report(
                 key_span,
@@ -230,14 +230,14 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
         const assign_expr = try parser.createNode(
             .{ .assignment_expression = .{ .left = id_ref, .right = default_value, .operator = .assign } },
-            .{ .start = key_span.start, .end = parser.getSpan(default_value).end },
+            .{ .start = key_span.start, .end = parser.builder.getSpan(default_value).end },
         );
 
         parser.state.cover_has_init_name = true;
 
         return try parser.createNode(
             .{ .object_property = .{ .key = key, .value = assign_expr, .kind = .init, .method = false, .shorthand = true, .computed = false } },
-            .{ .start = prop_start, .end = parser.getSpan(default_value).end },
+            .{ .start = prop_start, .end = parser.builder.getSpan(default_value).end },
         );
     }
 
@@ -258,7 +258,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    const key_data = parser.getData(key);
+    const key_data = parser.builder.getData(key);
 
     if (key_data != .identifier_name) {
         try parser.report(
@@ -331,13 +331,13 @@ fn parseObjectMethodProperty(
     if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
 
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
-    const params_data = parser.getData(params).formal_parameters;
+    const params_data = parser.builder.getData(params).formal_parameters;
 
     // validate getter has no parameters
     if (kind == .get) {
         if (params_data.items.len != 0 or params_data.rest != .null) {
             try parser.report(
-                parser.getSpan(params),
+                parser.builder.getSpan(params),
                 "Getter must have no parameters",
                 .{ .help = "Remove all parameters from the getter." },
             );
@@ -349,7 +349,7 @@ fn parseObjectMethodProperty(
     if (kind == .set) {
         if (params_data.items.len != 1 or params_data.rest != .null) {
             try parser.report(
-                parser.getSpan(params),
+                parser.builder.getSpan(params),
                 "Setter must have exactly one parameter",
                 .{ .help = "Setters accept exactly one argument." },
             );
@@ -361,7 +361,7 @@ fn parseObjectMethodProperty(
 
     // parse body
     const body = try functions.parseFunctionBody(parser) orelse return null;
-    const body_end = parser.getSpan(body).end;
+    const body_end = parser.builder.getSpan(body).end;
 
     // create function expression for the method value
     const func = try parser.createNode(
@@ -415,13 +415,13 @@ pub fn toObjectPattern(parser: *Parser, expr_node: ast.NodeIndex, properties_ran
 }
 
 fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
-    const properties = parser.getExtra(properties_range);
+    const properties = parser.builder.getExtra(properties_range);
 
     var rest: ast.NodeIndex = .null;
     var properties_len = properties_range.len;
 
     for (properties, 0..) |prop, i| {
-        const prop_data = parser.getData(prop);
+        const prop_data = parser.builder.getData(prop);
 
         if (prop_data == .spread_element) {
             if (parser.state.cover_has_trailing_comma == span.start) {
@@ -433,7 +433,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
             }
 
             if (i != properties.len - 1) {
-                try parser.report(parser.getSpan(prop), "Rest element must be the last property", .{
+                try parser.report(parser.builder.getSpan(prop), "Rest element must be the last property", .{
                     .help = "No properties can follow the rest element in a destructuring pattern.",
                 });
             }
@@ -447,21 +447,21 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
         }
 
         if (prop_data != .object_property) {
-            try parser.report(parser.getSpan(prop), "Invalid property in object pattern", .{});
+            try parser.report(parser.builder.getSpan(prop), "Invalid property in object pattern", .{});
             continue;
         }
 
         const obj_prop = prop_data.object_property;
 
         if (obj_prop.method) {
-            try parser.report(parser.getSpan(prop), "Method cannot appear in destructuring pattern", .{
+            try parser.report(parser.builder.getSpan(prop), "Method cannot appear in destructuring pattern", .{
                 .help = "Use a regular property instead of a method definition.",
             });
             continue;
         }
 
         if (obj_prop.kind != .init) {
-            try parser.report(parser.getSpan(prop), "Getter/setter cannot appear in destructuring pattern", .{
+            try parser.report(parser.builder.getSpan(prop), "Getter/setter cannot appear in destructuring pattern", .{
                 .help = "Use a regular property instead of a getter or setter.",
             });
             continue;
@@ -469,7 +469,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
 
         try grammar.expressionToPattern(parser, obj_prop.value, context);
 
-        parser.replaceData(prop, .{ .binding_property = .{
+        parser.builder.replaceData(prop, .{ .binding_property = .{
             .key = obj_prop.key,
             .value = obj_prop.value,
             .shorthand = obj_prop.shorthand,
@@ -483,7 +483,7 @@ fn toObjectPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, properties_
     } };
 
     if (mutate_node) |node| {
-        parser.replaceData(node, pattern_data);
+        parser.builder.replaceData(node, pattern_data);
         return node;
     }
 

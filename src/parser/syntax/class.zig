@@ -69,7 +69,7 @@ pub fn parseClassDecorated(
 
     // class body
     const body = try parseClassBody(parser) orelse return null;
-    const body_end = parser.getSpan(body).end;
+    const body_end = parser.builder.getSpan(body).end;
 
     return try parser.createNode(.{
         .class = .{
@@ -153,9 +153,9 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // static { } - static block
         if (parser.current_token.tag == .left_brace) {
             if (decorators.len != 0) {
-                const first = parser.getExtra(decorators)[0];
+                const first = parser.builder.getExtra(decorators)[0];
                 try parser.report(
-                    parser.getSpan(first),
+                    parser.builder.getSpan(first),
                     "Decorators cannot be applied to static blocks",
                     .{ .help = "Remove the decorator or apply it to a method or field instead." },
                 );
@@ -171,7 +171,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.createNode(
-                .{ .identifier_name = .{ .name = try parser.internToken(static_token) } },
+                .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(static_token)) } },
                 static_token.span,
             );
         } else {
@@ -194,7 +194,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             key = try parser.createNode(
-                .{ .identifier_name = .{ .name = try parser.internToken(async_token) } },
+                .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(async_token)) } },
                 async_token.span,
             );
         }
@@ -232,7 +232,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 }
             } else {
                 key = try parser.createNode(
-                    .{ .identifier_name = .{ .name = try parser.internToken(modifier_token) } },
+                    .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(modifier_token)) } },
                     modifier_token.span,
                 );
             }
@@ -249,16 +249,16 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // ClassElementName : PrivateIdentifier
     //    It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
     if (!computed) {
-        const data = parser.getData(key);
+        const data = parser.builder.getData(key);
 
         if (data == .private_identifier) {
             const pi = data.private_identifier;
 
-            const name = parser.getString(pi.name);
+            const name = parser.builder.getString(pi.name);
 
             if (ecmascript.eqlStringValue(name, "constructor")) {
                 try parser.report(
-                    parser.getSpan(key),
+                    parser.builder.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
                     .{ .help = "Use a different name for this private member." },
                 );
@@ -361,7 +361,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         const key = try parser.createNode(
-            .{ .identifier_name = .{ .name = try parser.internToken(token) } },
+            .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(token)) } },
             token.span,
         );
         return .{ .key = key, .computed = false };
@@ -396,14 +396,14 @@ fn parseMethodDefinition(
     if (kind == .constructor) {
         if (is_async) {
             try parser.report(
-                parser.getSpan(key),
+                parser.builder.getSpan(key),
                 "Constructor cannot be async",
                 .{ .help = "Remove the 'async' modifier from the constructor." },
             );
         }
         if (is_generator) {
             try parser.report(
-                parser.getSpan(key),
+                parser.builder.getSpan(key),
                 "Constructor cannot be a generator",
                 .{ .help = "Remove the '*' from the constructor." },
             );
@@ -411,13 +411,13 @@ fn parseMethodDefinition(
     } else if (is_generator) {
         if (kind == .get) {
             try parser.report(
-                parser.getSpan(key),
+                parser.builder.getSpan(key),
                 "Getter cannot be a generator",
                 .{ .help = "Remove the '*' from the getter definition." },
             );
         } else if (kind == .set) {
             try parser.report(
-                parser.getSpan(key),
+                parser.builder.getSpan(key),
                 "Setter cannot be a generator",
                 .{ .help = "Remove the '*' from the setter definition." },
             );
@@ -440,12 +440,12 @@ fn parseMethodDefinition(
     if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
 
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
-    const params_data = parser.getData(params).formal_parameters;
+    const params_data = parser.builder.getData(params).formal_parameters;
 
     if (kind == .get) {
         if (params_data.items.len != 0 or params_data.rest != .null) {
             try parser.report(
-                parser.getSpan(params),
+                parser.builder.getSpan(params),
                 "Getter must have no parameters",
                 .{ .help = "Remove all parameters from the getter." },
             );
@@ -455,7 +455,7 @@ fn parseMethodDefinition(
     if (kind == .set) {
         if (params_data.items.len != 1 or params_data.rest != .null) {
             try parser.report(
-                parser.getSpan(params),
+                parser.builder.getSpan(params),
                 "Setter must have exactly one parameter",
                 .{ .help = "Setters accept exactly one argument." },
             );
@@ -466,7 +466,7 @@ fn parseMethodDefinition(
 
     // body
     const body = try functions.parseFunctionBody(parser) orelse return null;
-    const body_end = parser.getSpan(body).end;
+    const body_end = parser.builder.getSpan(body).end;
 
     const func = try parser.createNode(
         .{ .function = .{
@@ -512,12 +512,12 @@ fn parsePropertyDefinition(
     }
 
     var value: ast.NodeIndex = .null;
-    var end = parser.getSpan(key).end;
+    var end = parser.builder.getSpan(key).end;
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null; // consume '='
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        end = parser.getSpan(value).end;
+        end = parser.builder.getSpan(value).end;
     }
 
     const tag = parser.current_token.tag;

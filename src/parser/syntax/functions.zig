@@ -120,7 +120,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         body = try parseFunctionBody(parser) orelse .null;
     }
 
-    const end = if (body != .null) parser.getSpan(body).end else params_end;
+    const end = if (body != .null) parser.builder.getSpan(body).end else params_end;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
@@ -198,12 +198,12 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         if (parser.current_token.tag == .spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
             if (rest != .null) {
-                end = parser.getSpan(rest).end;
+                end = parser.builder.getSpan(rest).end;
             }
 
             if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
-                    .{ .start = parser.getSpan(rest).start, .end = parser.current_token.span.end },
+                    .{ .start = parser.builder.getSpan(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
                     .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
                 );
@@ -213,7 +213,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         } else {
             const param = try parseFormalParamater(parser) orelse break;
 
-            end = parser.getSpan(param).end;
+            end = parser.builder.getSpan(param).end;
 
             try parser.scratch_a.append(parser.allocator(), param);
         }
@@ -237,21 +237,21 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
-    return try parser.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.getSpan(pattern));
+    return try parser.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.builder.getSpan(pattern));
 }
 
 // https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
 pub fn isSimpleParametersList(parser: *Parser, formal_parameters: ast.NodeIndex) bool {
-    const data = parser.getData(formal_parameters).formal_parameters;
+    const data = parser.builder.getData(formal_parameters).formal_parameters;
 
     if (data.rest != .null) {
         return false;
     }
 
-    const items = parser.getExtra(data.items);
+    const items = parser.builder.getExtra(data.items);
     for (items) |item| {
-        const param = parser.getData(item).formal_parameter;
-        const pattern = parser.getData(param.pattern);
+        const param = parser.builder.getData(item).formal_parameter;
+        const pattern = parser.builder.getData(param.pattern);
         if (pattern != .binding_identifier) {
             return false;
         }

@@ -49,7 +49,7 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
         //  a++()        <- can't call an update expression
         //  () => {}()   <- can't call an arrow function
         // breaking here produces natural "expected semicolon" error.
-        if (current_precedence > maxLeftPrecedence(parser.getData(left))) break;
+        if (current_precedence > maxLeftPrecedence(parser.builder.getData(left))) break;
 
         if (opts.respect_allow_in and current_token.tag == .in and !parser.context.allow_in) break;
 
@@ -216,16 +216,16 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
 /// x => ...
 fn parseSimpleArrowFunction(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const data = parser.getData(left);
+    const data = parser.builder.getData(left);
 
     if (data != .identifier_reference) {
-        try parser.report(parser.getSpan(left), "Unexpected '=>'", .{
+        try parser.report(parser.builder.getSpan(left), "Unexpected '=>'", .{
             .help = "'=>' is only valid after a single identifier or a parenthesized parameter list",
         });
         return null;
     }
 
-    return parenthesized.identifierToArrowFunction(parser, left, false, parser.getSpan(left).start);
+    return parenthesized.identifierToArrowFunction(parser, left, false, parser.builder.getSpan(left).start);
 }
 
 /// async function or async arrow function
@@ -233,7 +233,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     const is_escaped = parser.current_token.isEscaped();
 
     const async_id = try literals.parseIdentifier(parser) orelse return null;
-    const async_span = parser.getSpan(async_id);
+    const async_span = parser.builder.getSpan(async_id);
 
     // async function ...
     if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.tag == .function) {
@@ -295,7 +295,7 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     const argument = try parseExpression(parser, Precedence.Unary, .{}) orelse return null;
-    const argument_span = parser.getSpan(argument);
+    const argument_span = parser.builder.getSpan(argument);
 
     if (parser.current_token.tag == .exponent) {
         try parser.report(
@@ -319,7 +319,7 @@ fn parseUnaryExpression(parser: *Parser) Error!?ast.NodeIndex {
 /// `await expression`
 pub fn parseAwaitExpression(parser: *Parser, await_start: u32) Error!?ast.NodeIndex {
     const argument = try parseExpression(parser, Precedence.Unary, .{}) orelse return null;
-    const argument_span = parser.getSpan(argument);
+    const argument_span = parser.builder.getSpan(argument);
 
     if (parser.current_token.tag == .exponent) {
         try parser.report(
@@ -366,7 +366,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
 
             argument = expr;
 
-            end = parser.getSpan(argument).end;
+            end = parser.builder.getSpan(argument).end;
         }
     }
 
@@ -425,7 +425,7 @@ pub fn parseImportExpression(parser: *Parser, name_from_param: ?ast.NodeIndex) E
 fn parseImportMetaOrPhaseImport(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '.'
 
-    const name_span = parser.getSpan(name);
+    const name_span = parser.builder.getSpan(name);
 
     // import.source() or import.defer()
     if (parser.current_token.tag == .source) {
@@ -452,7 +452,7 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: ast.NodeIndex) Error!?ast
 
     return try parser.createNode(
         .{ .meta_property = .{ .meta = name, .property = property } },
-        .{ .start = name_span.start, .end = parser.getSpan(property).end },
+        .{ .start = name_span.start, .end = parser.builder.getSpan(property).end },
     );
 }
 
@@ -473,7 +473,7 @@ fn parseNewTarget(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
 
     return try parser.createNode(
         .{ .meta_property = .{ .meta = name, .property = property } },
-        .{ .start = parser.getSpan(name).start, .end = parser.getSpan(property).end },
+        .{ .start = parser.builder.getSpan(name).start, .end = parser.builder.getSpan(property).end },
     );
 }
 
@@ -544,7 +544,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume ')'
 
         break :blk arguments_end;
-    } else parser.getSpan(callee).end;
+    } else parser.builder.getSpan(callee).end;
 
     return try parser.createNode(
         .{ .new_expression = .{ .callee = callee, .arguments = arguments } },
@@ -559,7 +559,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
 
     if (prefix) {
         const argument = try parseExpression(parser, Precedence.Unary, .{}) orelse return null;
-        const span = parser.getSpan(argument);
+        const span = parser.builder.getSpan(argument);
 
         const unwrapped = parenthesized.unwrapParens(parser, argument);
 
@@ -581,7 +581,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
     const unwrapped = parenthesized.unwrapParens(parser, left);
 
     if (!isSimpleAssignmentTarget(parser, unwrapped)) {
-        const span = parser.getSpan(left);
+        const span = parser.builder.getSpan(left);
         try parser.report(
             span,
             "Invalid operand for increment/decrement operator",
@@ -592,7 +592,7 @@ fn parseUpdateExpression(parser: *Parser, prefix: bool, left: ast.NodeIndex) Err
 
     return try parser.createNode(
         .{ .update_expression = .{ .argument = unwrapped, .operator = operator, .prefix = false } },
-        .{ .start = parser.getSpan(left).start, .end = operator_token.span.end },
+        .{ .start = parser.builder.getSpan(left).start, .end = operator_token.span.end },
     );
 }
 
@@ -606,9 +606,9 @@ fn parseBinaryExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) E
 
     const right = try parseExpression(parser, next_precedence, .{}) orelse return null;
 
-    if (parser.getData(right) == .private_identifier) {
+    if (parser.builder.getData(right) == .private_identifier) {
         try parser.report(
-            parser.getSpan(right),
+            parser.builder.getSpan(right),
             "Private names are only allowed in property accesses (`obj.#field`) or in `in` expressions (`#field in obj`)",
             .{},
         );
@@ -616,7 +616,7 @@ fn parseBinaryExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) E
 
     return try parser.createNode(
         .{ .binary_expression = .{ .left = left, .right = right, .operator = operator } },
-        .{ .start = parser.getSpan(left).start, .end = parser.getSpan(right).end },
+        .{ .start = parser.builder.getSpan(left).start, .end = parser.builder.getSpan(right).end },
     );
 }
 
@@ -628,16 +628,16 @@ fn parseLogicalExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) 
     const current_operator = ast.LogicalOperator.fromToken(operator_token.tag);
 
     // check for operator mixing: can't mix ?? with && or ||
-    const left_data = parser.getData(left);
-    const right_data = parser.getData(right);
+    const left_data = parser.builder.getData(left);
+    const right_data = parser.builder.getData(right);
 
     if (left_data == .logical_expression or right_data == .logical_expression) {
         const operator_to_check = if (left_data == .logical_expression) left_data.logical_expression.operator else right_data.logical_expression.operator;
 
         if ((current_operator == .nullish_coalescing) != (operator_to_check == .nullish_coalescing)) {
-            const left_span = parser.getSpan(left);
+            const left_span = parser.builder.getSpan(left);
             try parser.report(
-                .{ .start = left_span.start, .end = parser.getSpan(right).end },
+                .{ .start = left_span.start, .end = parser.builder.getSpan(right).end },
                 "Logical expressions and nullish coalescing cannot be mixed",
                 .{ .help = "Wrap either expression in parentheses" },
             );
@@ -653,7 +653,7 @@ fn parseLogicalExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) 
                 .operator = current_operator,
             },
         },
-        .{ .start = parser.getSpan(left).start, .end = parser.getSpan(right).end },
+        .{ .start = parser.builder.getSpan(left).start, .end = parser.builder.getSpan(right).end },
     );
 }
 
@@ -674,7 +674,7 @@ fn parseSequenceExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex)
 
     return try parser.createNode(
         .{ .sequence_expression = .{ .expressions = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint) } },
-        .{ .start = parser.getSpan(left).start, .end = parser.getSpan(last).end },
+        .{ .start = parser.builder.getSpan(left).start, .end = parser.builder.getSpan(last).end },
     );
 }
 
@@ -682,7 +682,7 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u8, left: ast.NodeInde
     const operator_token = parser.current_token;
     const operator = ast.AssignmentOperator.fromToken(operator_token.tag);
 
-    const left_span = parser.getSpan(left);
+    const left_span = parser.builder.getSpan(left);
 
     try grammar.expressionToPattern(parser, left, .assignable);
 
@@ -713,13 +713,13 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u8, left: ast.NodeInde
 
     return try parser.createNode(
         .{ .assignment_expression = .{ .left = left, .right = right, .operator = operator } },
-        .{ .start = left_span.start, .end = parser.getSpan(right).end },
+        .{ .start = left_span.start, .end = parser.builder.getSpan(right).end },
     );
 }
 
 /// `test ? consequent : alternate`
 fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.NodeIndex) Error!?ast.NodeIndex {
-    const test_span = parser.getSpan(@"test");
+    const test_span = parser.builder.getSpan(@"test");
 
     try parser.advance() orelse return null; // consume '?'
 
@@ -748,13 +748,13 @@ fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.Node
                 .alternate = alternate,
             },
         },
-        .{ .start = test_span.start, .end = parser.getSpan(alternate).end },
+        .{ .start = test_span.start, .end = parser.builder.getSpan(alternate).end },
     );
 }
 
 /// AssignmentTarget: can be simple (identifier/member) or pattern (destructuring)
 pub fn isValidAssignmentTarget(parser: *Parser, index: ast.NodeIndex, operator: ast.AssignmentOperator) bool {
-    const data = parser.getData(index);
+    const data = parser.builder.getData(index);
 
     // object and array patterns as assignment targets are only
     // valid if the operator is assignment (=)
@@ -772,7 +772,7 @@ pub fn isValidAssignmentTarget(parser: *Parser, index: ast.NodeIndex, operator: 
 
 /// SimpleAssignmentTarget: only identifier and member expressions (no destructuring)
 pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
-    return switch (parser.getData(index)) {
+    return switch (parser.builder.getData(index)) {
         .identifier_reference, .binding_identifier => true,
         .member_expression => |m| !m.optional, // optional chaining is not a valid assignment target
         else => false,
@@ -856,7 +856,7 @@ fn parseMemberProperty(parser: *Parser, object_node: ast.NodeIndex, optional: bo
             .computed = false,
             .optional = optional,
         },
-    }, .{ .start = parser.getSpan(object_node).start, .end = parser.getSpan(prop).end });
+    }, .{ .start = parser.builder.getSpan(object_node).start, .end = parser.builder.getSpan(prop).end });
 }
 
 /// obj[expr]
@@ -893,12 +893,12 @@ fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, op
             .computed = true,
             .optional = optional,
         },
-    }, .{ .start = parser.getSpan(object_node).start, .end = end });
+    }, .{ .start = parser.builder.getSpan(object_node).start, .end = end });
 }
 
 /// func(args)
 fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bool) Error!?ast.NodeIndex {
-    const start = parser.getSpan(callee_node).start;
+    const start = parser.builder.getSpan(callee_node).start;
     const open_paren_span = parser.current_token.span;
     try parser.advance() orelse return null; // consume '('
 
@@ -946,7 +946,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
                 return null;
             };
 
-            const arg_span = parser.getSpan(argument);
+            const arg_span = parser.builder.getSpan(argument);
 
             break :blk try parser.createNode(.{
                 .spread_element = .{ .argument = argument },
@@ -972,7 +972,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
 
 /// tag`template`
 fn parseTaggedTemplateExpression(parser: *Parser, tag_node: ast.NodeIndex) Error!?ast.NodeIndex {
-    const start = parser.getSpan(tag_node).start;
+    const start = parser.builder.getSpan(tag_node).start;
 
     const quasi = if (parser.current_token.tag == .no_substitution_template)
         try literals.parseNoSubstitutionTemplate(parser, true)
@@ -981,7 +981,7 @@ fn parseTaggedTemplateExpression(parser: *Parser, tag_node: ast.NodeIndex) Error
 
     if (quasi == null) return null;
 
-    const quasi_span = parser.getSpan(quasi.?);
+    const quasi_span = parser.builder.getSpan(quasi.?);
 
     return try parser.createNode(.{
         .tagged_template_expression = .{
@@ -993,7 +993,7 @@ fn parseTaggedTemplateExpression(parser: *Parser, tag_node: ast.NodeIndex) Error
 
 /// optional chain: a?.b, a?.[b], a?.()
 fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const chain_start = parser.getSpan(left).start;
+    const chain_start = parser.builder.getSpan(left).start;
     try parser.advance() orelse return null; // consume '?.'
 
     // first optional operation
@@ -1026,7 +1026,7 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
 
     return try parser.createNode(.{
         .chain_expression = .{ .expression = expr },
-    }, .{ .start = chain_start, .end = parser.getSpan(expr).end });
+    }, .{ .start = chain_start, .end = parser.builder.getSpan(expr).end });
 }
 
 /// parse element after ?. (property access, computed, or call), '?.' already consumed
