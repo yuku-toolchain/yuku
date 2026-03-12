@@ -8,12 +8,12 @@ const transform = traverser.transform;
 pub fn main(init: std.process.Init) !void {
     const allocator = init.arena.allocator();
 
-    const source = "const \xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E = \"hello\";";
+    const source = "const a = x + y";
 
     var builder = try parser.build(std.heap.page_allocator, source, .{});
 
-    // no transform for this test
-    _ = &TransformVisit{};
+    var t = TransformVisit{};
+    try transform.traverse(TransformVisit, &builder, &t);
 
     var tree = builder.toTree(.{});
     defer tree.deinit();
