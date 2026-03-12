@@ -10,21 +10,21 @@ pub fn main(init: std.process.Init) !void {
 
     const source = "const a = x + y";
 
-    var mut_tree = try parser.parseMut(std.heap.page_allocator, source, .{});
+    var builder = try parser.build(std.heap.page_allocator, source, .{});
 
-    var t = PlusToMul{};
-    try transform.traverse(PlusToMul, &mut_tree, &t);
+    var t = TransformVisit{};
+    try transform.traverse(TransformVisit, &builder, &t);
 
-    var tree = mut_tree.finalize();
+    var tree = builder.toTree(.{ .source = source });
     defer tree.deinit();
 
     const json = try parser.estree.toJSON(&tree, allocator, .{});
     std.debug.print("{s}\n", .{json});
 }
 
-const PlusToMul = struct {
+const TransformVisit = struct {
     pub fn enter_binary_expression(
-        _: *PlusToMul,
+        _: *TransformVisit,
         expr: ast.BinaryExpression,
         index: ast.NodeIndex,
         ctx: *transform.Ctx,
@@ -32,13 +32,13 @@ const PlusToMul = struct {
         const span = ctx.tree.getSpan(index);
 
         const inner = try ctx.tree.createNode(
-             .{ .binary_expression = .{
-                 .left = expr.left,
-                 .right = expr.right,
-                 .operator = .multiply,
-             } },
-             span,
-         );
+            .{ .binary_expression = .{
+                .left = expr.left,
+                .right = expr.right,
+                .operator = .multiply,
+            } },
+            span,
+        );
 
         if (expr.operator == .add) {
             ctx.tree.replaceData(index, .{ .parenthesized_expression = .{

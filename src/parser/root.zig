@@ -1,7 +1,7 @@
 const parser = @import("parser.zig");
 
 pub const parse = parser.parse;
-pub const parseMut = parser.parseMut;
+pub const build = parser.build;
 pub const Options = parser.Options;
 
 pub const ast = @import("ast.zig");

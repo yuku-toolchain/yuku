@@ -16,7 +16,7 @@ pub const Action = enum {
 /// Walks the AST tree, calling visitor hooks at each node.
 ///
 /// `C` is the context type. It must have a `.tree` field (either a
-/// `*const ParseTree` or `*ParseTreeMut`) so the walker can access
+/// `*const ParseTree` or `*TreeBuilder`) so the walker can access
 /// child nodes. Contexts can also define `enter`, `exit`, and
 /// `post_enter` methods if used with `Layer`.
 ///

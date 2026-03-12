@@ -122,6 +122,110 @@ pub const Comment = struct {
     }
 };
 
+/// Mutable AST builder backed by growable arrays.
+///
+/// Used during parsing to construct the tree and by the transform
+/// traverser for in-place mutations. Can also be used standalone to
+/// build ASTs programmatically.
+///
+/// Call `toTree()` to convert into an immutable `ParseTree` when done.
+/// Call `deinit()` to free without converting.
+pub const TreeBuilder = struct {
+    /// Root node of the AST (always a Program node).
+    program: NodeIndex = undefined,
+    /// All nodes in the AST.
+    nodes: NodeList = .empty,
+    /// Extra data storage for variadic node children.
+    extra: std.ArrayList(NodeIndex) = .empty,
+    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
+    diagnostics: []const Diagnostic = &.{},
+    /// Comments found in the source code.
+    comments: []const Comment = &.{},
+    /// Arena allocator owning all the memory.
+    arena: std.heap.ArenaAllocator,
+
+    pub fn init(child_allocator: std.mem.Allocator) TreeBuilder {
+        return .{ .arena = std.heap.ArenaAllocator.init(child_allocator) };
+    }
+
+    /// Frees all memory owned by this tree builder.
+    pub fn deinit(self: *const TreeBuilder) void {
+        self.arena.deinit();
+    }
+
+    pub inline fn allocator(self: *TreeBuilder) std.mem.Allocator {
+        return self.arena.allocator();
+    }
+
+    /// Converts into an immutable `ParseTree`, transferring ownership.
+    /// This builder should not be used after calling this.
+    pub fn toTree(self: *TreeBuilder, meta: ParseTree.Meta) ParseTree {
+        return .{
+            .program = self.program,
+            .source = meta.source,
+            .nodes = self.nodes.toOwnedSlice(),
+            .extra = self.extra.items,
+            .diagnostics = self.diagnostics,
+            .comments = self.comments,
+            .arena = self.arena,
+            .source_type = meta.source_type,
+            .lang = meta.lang,
+        };
+    }
+
+    /// Returns true if the tree contains any errors.
+    pub inline fn hasErrors(self: *const TreeBuilder) bool {
+        for (self.diagnostics) |d| {
+            if (d.severity == .@"error") return true;
+        }
+        return false;
+    }
+
+    /// Returns true if the tree contains any diagnostics.
+    pub inline fn hasDiagnostics(self: *const TreeBuilder) bool {
+        return self.diagnostics.len > 0;
+    }
+
+    /// Returns the data for the node at the given index.
+    pub inline fn getData(self: *const TreeBuilder, index: NodeIndex) NodeData {
+        return self.nodes.items(.data)[@intFromEnum(index)];
+    }
+
+    /// Returns the span for the node at the given index.
+    pub inline fn getSpan(self: *const TreeBuilder, index: NodeIndex) Span {
+        return self.nodes.items(.span)[@intFromEnum(index)];
+    }
+
+    /// Returns the extra node indices for the given range.
+    pub inline fn getExtra(self: *const TreeBuilder, range: IndexRange) []const NodeIndex {
+        return self.extra.items[range.start..][0..range.len];
+    }
+
+    /// Replaces an existing node's data in-place.
+    pub inline fn replaceData(self: *TreeBuilder, index: NodeIndex, data: NodeData) void {
+        self.nodes.items(.data)[@intFromEnum(index)] = data;
+    }
+
+    /// Replaces an existing node's span in-place.
+    pub inline fn replaceSpan(self: *TreeBuilder, index: NodeIndex, span: Span) void {
+        self.nodes.items(.span)[@intFromEnum(index)] = span;
+    }
+
+    /// Creates a new node. Returns its index.
+    pub inline fn createNode(self: *TreeBuilder, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+        const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
+        try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        return index;
+    }
+
+    /// Creates a new child list. Returns its range.
+    pub inline fn createExtra(self: *TreeBuilder, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+        const start: u32 = @intCast(self.extra.items.len);
+        try self.extra.appendSlice(self.arena.allocator(), children);
+        return .{ .start = start, .len = @intCast(children.len) };
+    }
+};
+
 /// Immutable parse tree returned by `parse()`.
 ///
 /// All node storage is finalized into compact slices. Use the `get*`
@@ -147,6 +251,13 @@ pub const ParseTree = struct {
     source_type: SourceType,
     /// Language variant (js, ts, jsx, tsx, dts).
     lang: Lang,
+
+    /// Metadata needed to convert a `TreeBuilder` into a `ParseTree`.
+    pub const Meta = struct {
+        source: []const u8 = "",
+        source_type: SourceType = .module,
+        lang: Lang = .js,
+    };
 
     /// Returns true if the parse tree contains any errors.
     pub inline fn hasErrors(self: *const ParseTree) bool {
@@ -190,120 +301,6 @@ pub const ParseTree = struct {
     /// Returns the source text covered by the given span.
     pub inline fn getSpanText(self: *const ParseTree, span: Span) []const u8 {
         return self.source[span.start..span.end];
-    }
-};
-
-/// Mutable parse tree returned by `parseMut()`.
-///
-/// Backed by growable array lists, allowing in-place node replacement
-/// and insertion. Used during parsing and by the transform traverser.
-///
-/// Call `finalize()` to convert into an immutable `ParseTree` when
-/// mutations are complete. Call `deinit()` to free without finalizing.
-pub const ParseTreeMut = struct {
-    /// Root node of the AST (always a Program node).
-    program: NodeIndex,
-    /// Source code that was parsed.
-    source: []const u8,
-    /// All nodes in the AST.
-    nodes: NodeList,
-    /// Extra data storage for variadic node children.
-    extra: std.ArrayList(NodeIndex),
-    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
-    diagnostics: []const Diagnostic,
-    /// Comments found in the source code.
-    comments: []const Comment,
-    /// Arena allocator owning all the memory.
-    arena: std.heap.ArenaAllocator,
-    /// Source type (script or module).
-    source_type: SourceType,
-    /// Language variant (js, ts, jsx, tsx, dts).
-    lang: Lang,
-
-    /// Converts this mutable tree into an immutable `ParseTree`.
-    ///
-    /// Transfers ownership of all data into the returned tree.
-    /// This `ParseTreeMut` should not be used after calling this.
-    pub fn finalize(self: *ParseTreeMut) ParseTree {
-        return .{
-            .program = self.program,
-            .source = self.source,
-            .nodes = self.nodes.toOwnedSlice(),
-            .extra = self.extra.items,
-            .diagnostics = self.diagnostics,
-            .comments = self.comments,
-            .arena = self.arena,
-            .source_type = self.source_type,
-            .lang = self.lang,
-        };
-    }
-
-    /// Returns true if the parse tree contains any errors.
-    pub inline fn hasErrors(self: *const ParseTreeMut) bool {
-        for (self.diagnostics) |d| {
-            if (d.severity == .@"error") return true;
-        }
-        return false;
-    }
-
-    /// Returns true if the parse tree contains any diagnostics.
-    pub inline fn hasDiagnostics(self: *const ParseTreeMut) bool {
-        return self.diagnostics.len > 0;
-    }
-
-    /// Frees all memory owned by this parse tree.
-    pub fn deinit(self: *const ParseTreeMut) void {
-        self.arena.deinit();
-    }
-
-    /// Returns the data for the node at the given index.
-    pub inline fn getData(self: *const ParseTreeMut, index: NodeIndex) NodeData {
-        return self.nodes.items(.data)[@intFromEnum(index)];
-    }
-
-    /// Returns the span for the node at the given index.
-    pub inline fn getSpan(self: *const ParseTreeMut, index: NodeIndex) Span {
-        return self.nodes.items(.span)[@intFromEnum(index)];
-    }
-
-    /// Returns the extra node indices for the given range.
-    pub inline fn getExtra(self: *const ParseTreeMut, range: IndexRange) []const NodeIndex {
-        return self.extra.items[range.start..][0..range.len];
-    }
-
-    /// Returns a slice of the source text at the given offset and length.
-    /// Used for compact name fields stored as (start, len) in node data.
-    pub inline fn getSourceText(self: *const ParseTreeMut, start: u32, len: u16) []const u8 {
-        return self.source[start..][0..len];
-    }
-
-    /// Returns the source text covered by the given span.
-    pub inline fn getSpanText(self: *const ParseTreeMut, span: Span) []const u8 {
-        return self.source[span.start..span.end];
-    }
-
-    /// Replaces an existing node's data in-place.
-    pub inline fn replaceData(self: *ParseTreeMut, index: NodeIndex, data: NodeData) void {
-        self.nodes.items(.data)[@intFromEnum(index)] = data;
-    }
-
-    /// Replaces an existing node's span in-place.
-    pub inline fn replaceSpan(self: *ParseTreeMut, index: NodeIndex, span: Span) void {
-        self.nodes.items(.span)[@intFromEnum(index)] = span;
-    }
-
-    /// Creates a new node in the arena. Returns its index.
-    pub inline fn createNode(self: *ParseTreeMut, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
-        const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
-        try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
-        return index;
-    }
-
-    /// Creates a new child list in the arena. Returns its range.
-    pub inline fn createExtra(self: *ParseTreeMut, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
-        const start: u32 = @intCast(self.extra.items.len);
-        try self.extra.appendSlice(self.arena.allocator(), children);
-        return .{ .start = start, .len = @intCast(children.len) };
     }
 };
 

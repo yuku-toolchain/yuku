@@ -46,7 +46,10 @@ const ParserState = struct {
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
-    tree: ast.ParseTreeMut,
+    builder: ast.TreeBuilder,
+    source: []const u8,
+    source_type: ast.SourceType,
+    lang: ast.Lang,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     current_token: Token,
@@ -65,35 +68,37 @@ pub const Parser = struct {
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
-            .tree = .{
-                .program = undefined,
-                .source = source,
-                .nodes = .empty,
-                .extra = .empty,
-                .diagnostics = &.{},
-                .comments = &.{},
-                .arena = std.heap.ArenaAllocator.init(child_allocator),
-                .source_type = options.source_type,
-                .lang = options.lang,
-            },
+            .builder = ast.TreeBuilder.init(child_allocator),
+            .source = source,
+            .source_type = options.source_type,
+            .lang = options.lang,
             .lexer = undefined,
             .current_token = undefined,
         };
     }
 
     pub inline fn allocator(self: *Parser) std.mem.Allocator {
-        return self.tree.arena.allocator();
+        return self.builder.allocator();
     }
 
     pub fn parse(self: *Parser) Error!ast.ParseTree {
-        var tree = try self.parseMut();
-        return tree.finalize();
+        try self.parseInner();
+        return self.builder.toTree(.{
+            .source = self.source,
+            .source_type = self.source_type,
+            .lang = self.lang,
+        });
     }
 
-    pub fn parseMut(self: *Parser) Error!ast.ParseTreeMut {
+    pub fn build(self: *Parser) Error!ast.TreeBuilder {
+        try self.parseInner();
+        return self.builder;
+    }
+
+    fn parseInner(self: *Parser) Error!void {
         const alloc = self.allocator();
 
-        self.lexer = try lexer.Lexer.init(self.tree.source, alloc, self.tree.source_type);
+        self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type);
 
         if (self.isModule()) _ = self.enterStrictMode();
 
@@ -108,7 +113,7 @@ pub const Parser = struct {
             self.current_token = Token.eof(0);
         };
 
-        errdefer self.tree.arena.deinit();
+        errdefer self.builder.arena.deinit();
 
         try self.ensureCapacity();
 
@@ -116,10 +121,10 @@ pub const Parser = struct {
 
         const end = self.current_token.span.end;
 
-        self.tree.program = try self.createNode(
+        self.builder.program = try self.createNode(
             .{
                 .program = .{
-                    .source_type = if (self.tree.source_type == .module) .module else .script,
+                    .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = self.lexer.hashbang,
                 },
@@ -127,10 +132,8 @@ pub const Parser = struct {
             .{ .start = 0, .end = end },
         );
 
-        self.tree.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
-        self.tree.comments = try self.lexer.comments.toOwnedSlice(alloc);
-
-        return self.tree;
+        self.builder.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
+        self.builder.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
 
     const BodyKind = enum {
@@ -168,15 +171,15 @@ pub const Parser = struct {
     }
 
     pub inline fn isTs(self: *Parser) bool {
-        return self.tree.lang == .ts or self.tree.lang == .tsx or self.tree.lang == .dts;
+        return self.lang == .ts or self.lang == .tsx or self.lang == .dts;
     }
 
     pub inline fn isJsx(self: *Parser) bool {
-        return self.tree.lang == .tsx or self.tree.lang == .jsx;
+        return self.lang == .tsx or self.lang == .jsx;
     }
 
     pub inline fn isModule(self: *Parser) bool {
-        return self.tree.source_type == .module;
+        return self.source_type == .module;
     }
 
     pub inline fn isStrictMode(self: *Parser) bool {
@@ -202,23 +205,23 @@ pub const Parser = struct {
     }
 
     pub inline fn createNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
-        return self.tree.createNode(data, span);
+        return self.builder.createNode(data, span);
     }
 
     pub inline fn createExtra(self: *Parser, indices: []const ast.NodeIndex) Error!ast.IndexRange {
-        return self.tree.createExtra(indices);
+        return self.builder.createExtra(indices);
     }
 
     pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
-        const start: u32 = @intCast(self.tree.extra.items.len);
+        const start: u32 = @intCast(self.builder.extra.items.len);
         const slice = scratch.items.items[checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
-            if (self.tree.extra.items.len + slice.len <= self.tree.extra.capacity) {
-                self.tree.extra.appendSliceAssumeCapacity(slice);
+            if (self.builder.extra.items.len + slice.len <= self.builder.extra.capacity) {
+                self.builder.extra.appendSliceAssumeCapacity(slice);
             } else {
-                try self.tree.extra.appendSlice(self.allocator(), slice);
+                try self.builder.extra.appendSlice(self.allocator(), slice);
             }
         }
 
@@ -226,35 +229,35 @@ pub const Parser = struct {
     }
 
     pub inline fn getSpan(self: *const Parser, index: ast.NodeIndex) ast.Span {
-        return self.tree.getSpan(index);
+        return self.builder.getSpan(index);
     }
 
     pub inline fn getData(self: *const Parser, index: ast.NodeIndex) ast.NodeData {
-        return self.tree.getData(index);
+        return self.builder.getData(index);
     }
 
     pub inline fn replaceData(self: *Parser, index: ast.NodeIndex, data: ast.NodeData) void {
-        self.tree.replaceData(index, data);
+        self.builder.replaceData(index, data);
     }
 
     pub inline fn replaceSpan(self: *Parser, index: ast.NodeIndex, span: ast.Span) void {
-        self.tree.replaceSpan(index, span);
+        self.builder.replaceSpan(index, span);
     }
 
     pub inline fn getExtra(self: *const Parser, range: ast.IndexRange) []const ast.NodeIndex {
-        return self.tree.getExtra(range);
+        return self.builder.getExtra(range);
     }
 
     pub inline fn getSourceText(self: *const Parser, start: u32, len: u16) []const u8 {
-        return self.tree.getSourceText(start, len);
+        return self.source[start..][0..len];
     }
 
     pub inline fn getSpanText(self: *const Parser, span: ast.Span) []const u8 {
-        return self.tree.getSpanText(span);
+        return self.source[span.start..span.end];
     }
 
     pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
-        return token.text(self.tree.source);
+        return token.text(self.source);
     }
 
     inline fn nextToken(self: *Parser) Error!?Token {
@@ -382,7 +385,7 @@ pub const Parser = struct {
 
     pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
         if (token.tag == .eof) return "end of file";
-        return token.tag.toString() orelse token.text(self.tree.source);
+        return token.tag.toString() orelse token.text(self.source);
     }
 
     pub const ReportOptions = struct {
@@ -450,10 +453,10 @@ pub const Parser = struct {
               return self.lexer.nextToken() catch |e| {
                   if (e == error.OutOfMemory) return error.OutOfMemory;
 
-                  if (self.lexer.cursor < self.tree.source.len) {
+                  if (self.lexer.cursor < self.source.len) {
                       self.lexer.cursor += 1;
                   } else {
-                      return Token.eof(@intCast(self.tree.source.len));
+                      return Token.eof(@intCast(self.source.len));
                   }
 
                   continue;
@@ -462,10 +465,10 @@ pub const Parser = struct {
     }
 
     fn ensureCapacity(self: *Parser) Error!void {
-        if (self.tree.nodes.capacity > 0) return;
+        if (self.builder.nodes.capacity > 0) return;
 
         const alloc = self.allocator();
-        const source_len = self.tree.source.len;
+        const source_len = self.source.len;
 
         const estimated_nodes = if (source_len < 10_000)
             @max(512, source_len / 2)
@@ -479,8 +482,8 @@ pub const Parser = struct {
         else
             estimated_nodes / 3;
 
-        try self.tree.nodes.ensureTotalCapacity(alloc, estimated_nodes);
-        try self.tree.extra.ensureTotalCapacity(alloc, estimated_extra);
+        try self.builder.nodes.ensureTotalCapacity(alloc, estimated_nodes);
+        try self.builder.extra.ensureTotalCapacity(alloc, estimated_extra);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
@@ -518,14 +521,14 @@ pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Op
     return p.parse();
 }
 
-/// Parses JavaScript/TypeScript source into a `ParseTreeMut`.
+/// Parses JavaScript/TypeScript source into a `TreeBuilder`.
 ///
 /// Use this when you need to modify the tree after parsing (e.g. with
-/// the transform traverser). Call `finalize()` on the returned tree to
+/// the transform traverser). Call `toTree()` on the returned builder to
 /// convert it into an immutable `ParseTree` when mutations are complete.
 ///
-/// The caller owns the returned tree and must call `deinit()` when done.
-pub fn parseMut(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.ParseTreeMut {
+/// The caller owns the returned builder and must call `deinit()` when done.
+pub fn build(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.TreeBuilder {
     var p = Parser.init(child_allocator, source, options);
-    return p.parseMut();
+    return p.build();
 }

@@ -1,6 +1,6 @@
 //! # Transform Traverser
 //!
-//! Walks a `ParseTreeMut` and lets visitor hooks mutate the AST in place.
+//! Walks a `TreeBuilder` and lets visitor hooks mutate the AST in place.
 //! The context exposes the mutable tree directly via `ctx.tree`, giving
 //! access to all read and write operations: `getData`, `getSpan`, `replaceData`,
 //! `replaceSpan`, `createNode`, and `createExtra`.
@@ -89,7 +89,7 @@ const wk = @import("walk.zig");
 const Allocator = std.mem.Allocator;
 
 pub const Ctx = struct {
-    tree: *ast.ParseTreeMut,
+    tree: *ast.TreeBuilder,
     path: wk.NodePath = .{},
 
     pub fn enter(self: *Ctx, index: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
@@ -102,7 +102,7 @@ pub const Ctx = struct {
 };
 
 /// Walks the tree with path tracking and mutation support.
-pub fn traverse(comptime V: type, tree: *ast.ParseTreeMut, visitor: *V) Allocator.Error!void {
+pub fn traverse(comptime V: type, tree: *ast.TreeBuilder, visitor: *V) Allocator.Error!void {
     var ctx = Ctx{ .tree = tree };
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
