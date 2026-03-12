@@ -84,7 +84,6 @@ pub const Parser = struct {
     pub fn parse(self: *Parser) Error!ast.ParseTree {
         try self.parseInner();
         return self.builder.toTree(.{
-            .source = self.source,
             .source_type = self.source_type,
             .lang = self.lang,
         });
@@ -138,7 +137,7 @@ pub const Parser = struct {
 
         // Intern comment text content
         for (self.lexer.comments.items) |*comment| {
-            comment.value = try self.builder.intern(switch (comment.type) {
+            comment.value = try self.builder.internString(switch (comment.type) {
                 .line => self.source[comment.start + 2 .. comment.end],
                 .block => self.source[comment.start + 2 .. comment.end - 2],
             });
@@ -268,12 +267,12 @@ pub const Parser = struct {
 
     /// Interns a string for use in AST nodes.
     pub inline fn intern(self: *Parser, str: []const u8) Error!ast.StringId {
-        return self.builder.intern(str);
+        return self.builder.internString(str);
     }
 
     /// Interns the text of a token.
     pub inline fn internToken(self: *Parser, token: Token) Error!ast.StringId {
-        return self.builder.intern(token.text(self.source));
+        return self.builder.internString(token.text(self.source));
     }
 
     /// Resolves an interned string.

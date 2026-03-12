@@ -15,7 +15,7 @@ pub fn main(init: std.process.Init) !void {
     var t = TransformVisit{};
     try transform.traverse(TransformVisit, &builder, &t);
 
-    var tree = builder.toTree(.{ .source = source });
+    var tree = builder.toTree(.{});
     defer tree.deinit();
 
     const json = try parser.estree.toJSON(&tree, allocator, .{});

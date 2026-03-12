@@ -1,41 +1,11 @@
 const std = @import("std");
+const util = @import("util");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
 pub const Span = TokenSpan;
-
-/// Handle to an interned string. Resolve via `TreeBuilder.getString()` or `ParseTree.getString()`.
-pub const StringId = enum(u32) { empty = std.math.maxInt(u32), _ };
-
-/// Compact string storage. Strings are stored as length-prefixed entries
-/// in a flat byte buffer. StringId is the byte offset of the entry.
-pub const StringTable = struct {
-    buffer: std.ArrayList(u8) = .empty,
-
-    pub inline fn intern(self: *StringTable, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
-        const offset: u32 = @intCast(self.buffer.items.len);
-        const len: u32 = @intCast(str.len);
-        const needed = 4 + str.len;
-        if (self.buffer.items.len + needed > self.buffer.capacity) {
-            try self.buffer.ensureUnusedCapacity(alloc, needed);
-        }
-        self.buffer.appendSliceAssumeCapacity(std.mem.asBytes(&len));
-        self.buffer.appendSliceAssumeCapacity(str);
-        return @enumFromInt(offset);
-    }
-
-    pub inline fn get(self: *const StringTable, id: StringId) []const u8 {
-        return resolve(self.buffer.items, id);
-    }
-
-    /// Resolve a StringId from a finalized string buffer.
-    pub inline fn resolve(buffer: []const u8, id: StringId) []const u8 {
-        if (id == .empty) return "";
-        const offset = @intFromEnum(id);
-        const len: u32 = @bitCast(buffer[offset..][0..4].*);
-        return buffer[offset + 4 ..][0..len];
-    }
-};
+pub const StringId = util.StringId;
+pub const StringTable = util.StringTable;
 
 pub const Severity = enum {
     @"error",
@@ -130,7 +100,7 @@ pub const Lang = enum {
 
 pub const Comment = struct {
     type: Type,
-    /// Interned comment content (without delimiters).
+    /// Comment content (without delimiters).
     value: StringId = .empty,
     start: u32,
     end: u32,
@@ -190,7 +160,6 @@ pub const TreeBuilder = struct {
     pub fn toTree(self: *TreeBuilder, meta: ParseTree.Meta) ParseTree {
         return .{
             .program = self.program,
-            .source = meta.source,
             .nodes = self.nodes.toOwnedSlice(),
             .extra = self.extra.items,
             .strings = self.strings.buffer.items,
@@ -255,11 +224,11 @@ pub const TreeBuilder = struct {
     }
 
     /// Interns a string for use in AST nodes.
-    pub inline fn intern(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
+    pub inline fn internString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
         return self.strings.intern(self.arena.allocator(), str);
     }
 
-    /// Resolves an interned string.
+    /// Returns the string content for a `StringId` used in AST nodes.
     pub inline fn getString(self: *const TreeBuilder, id: StringId) []const u8 {
         return self.strings.get(id);
     }
@@ -274,8 +243,6 @@ pub const TreeBuilder = struct {
 pub const ParseTree = struct {
     /// Root node of the AST (always a Program node).
     program: NodeIndex,
-    /// Source code that was parsed.
-    source: []const u8,
     /// All nodes in the AST, stored as a struct-of-arrays slice.
     nodes: NodeList.Slice,
     /// Extra data storage for variadic node children.
@@ -295,7 +262,6 @@ pub const ParseTree = struct {
 
     /// Metadata needed to convert a `TreeBuilder` into a `ParseTree`.
     pub const Meta = struct {
-        source: []const u8 = "",
         source_type: SourceType = .module,
         lang: Lang = .js,
     };
@@ -333,15 +299,11 @@ pub const ParseTree = struct {
         return self.extra[range.start..][0..range.len];
     }
 
-    /// Resolves an interned string.
+    /// Returns the string content for a `StringId` used in AST nodes.
     pub inline fn getString(self: *const ParseTree, id: StringId) []const u8 {
         return StringTable.resolve(self.strings, id);
     }
 
-    /// Returns the source text covered by the given span.
-    pub inline fn getSpanText(self: *const ParseTree, span: Span) []const u8 {
-        return self.source[span.start..span.end];
-    }
 };
 
 /// index into the ast node array. `null_node` for optional nodes.
