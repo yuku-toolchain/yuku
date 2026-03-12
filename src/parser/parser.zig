@@ -126,7 +126,7 @@ pub const Parser = struct {
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = try self.builder.internString(self.source[h.start..][0..h.len]),
+                        .value = try self.builder.createString(self.source[h.start..][0..h.len]),
                     } else null,
                 },
             },
@@ -135,9 +135,8 @@ pub const Parser = struct {
 
         self.builder.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
 
-        // Intern comment text content
         for (self.lexer.comments.items) |*comment| {
-            comment.value = try self.builder.internString(switch (comment.type) {
+            comment.value = try self.builder.createString(switch (comment.type) {
                 .line => self.source[comment.start + 2 .. comment.end],
                 .block => self.source[comment.start + 2 .. comment.end - 2],
             });

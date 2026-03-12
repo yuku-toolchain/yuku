@@ -345,7 +345,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
 
             declaration = try parser.builder.createNode(.{
                 .identifier_reference = .{
-                    .name = try parser.builder.internString(parser.source[async_start..async_end]),
+                    .name = try parser.builder.createString(parser.source[async_start..async_end]),
                 },
             }, .{ .start = async_start, .end = async_end });
         }

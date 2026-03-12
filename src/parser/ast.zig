@@ -223,8 +223,8 @@ pub const TreeBuilder = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Interns a string for use in AST nodes.
-    pub inline fn internString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
+    /// Creates a string for use in AST nodes.
+    pub inline fn createString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
         return self.strings.intern(self.arena.allocator(), str);
     }
 

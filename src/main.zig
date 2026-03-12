@@ -57,7 +57,7 @@ const TransformVisit = struct {
         index: ast.NodeIndex,
         ctx: *transform.Ctx,
     ) !traverser.Action {
-        ctx.tree.replaceData(index, .{ .binding_identifier = .{ .name = try ctx.tree.internString("new_name") } });
+        ctx.tree.replaceData(index, .{ .binding_identifier = .{ .name = try ctx.tree.createString("new_name") } });
 
         return .proceed;
     }

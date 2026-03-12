@@ -104,7 +104,7 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex, expression_data: a
     return try parser.builder.createNode(.{
         .directive = .{
             .expression = expression,
-            .value = try parser.builder.internString(value_text),
+            .value = try parser.builder.createString(value_text),
         },
     }, .{
         .start = string_literal_span.start,
