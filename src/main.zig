@@ -50,4 +50,19 @@ const TransformVisit = struct {
 
         return .proceed;
     }
+
+    pub fn enter_binding_identifier(
+        _: *TransformVisit,
+        _: ast.BindingIdentifier,
+        index: ast.NodeIndex,
+        ctx: *transform.Ctx,
+    ) !traverser.Action {
+        ctx.tree.replaceData(index, .{
+            .binding_identifier = .{
+                .name = try ctx.tree.internString("new_name")
+            }
+        });
+
+        return .proceed;
+    }
 };
