@@ -45,7 +45,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
         );
     }
 
-    return try parser.createNode(
+    return try parser.builder.createNode(
         .{
             .variable_declaration = .{
                 .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
@@ -121,7 +121,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
         );
     }
 
-    return try parser.createNode(
+    return try parser.builder.createNode(
         .{ .variable_declarator = .{ .id = id, .init = init } },
         .{ .start = start, .end = end },
     );

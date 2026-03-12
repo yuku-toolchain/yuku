@@ -120,7 +120,7 @@ pub const Parser = struct {
 
         const end = self.current_token.span.end;
 
-        self.builder.program = try self.createNode(
+        self.builder.program = try self.builder.createNode(
             .{
                 .program = .{
                     .source_type = if (self.source_type == .module) .module else .script,
@@ -211,14 +211,6 @@ pub const Parser = struct {
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
         self.lexer.mode = mode;
-    }
-
-    pub inline fn createNode(self: *Parser, data: ast.NodeData, span: ast.Span) Error!ast.NodeIndex {
-        return self.builder.createNode(data, span);
-    }
-
-    pub inline fn createExtra(self: *Parser, indices: []const ast.NodeIndex) Error!ast.IndexRange {
-        return self.builder.createExtra(indices);
     }
 
     pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {

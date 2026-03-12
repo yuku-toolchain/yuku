@@ -24,7 +24,7 @@ pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try expressions.parseLeftHandSideExpression(parser) orelse return null;
     const end = parser.builder.getSpan(expression).end;
 
-    return try parser.createNode(.{
+    return try parser.builder.createNode(.{
         .decorator = .{
             .expression = expression,
         },

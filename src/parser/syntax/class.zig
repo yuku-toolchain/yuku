@@ -71,7 +71,7 @@ pub fn parseClassDecorated(
     const body = try parseClassBody(parser) orelse return null;
     const body_end = parser.builder.getSpan(body).end;
 
-    return try parser.createNode(.{
+    return try parser.builder.createNode(.{
         .class = .{
             .type = class_type,
             .decorators = decorators,
@@ -121,7 +121,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the class, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.createNode(.{
+    return try parser.builder.createNode(.{
         .class_body = .{ .body = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint) },
     }, .{ .start = start, .end = end });
 }
@@ -170,7 +170,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // if next token is '(' or nothing that could be a class element key, 'static' is the key
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
-            key = try parser.createNode(
+            key = try parser.builder.createNode(
                 .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(static_token)) } },
                 static_token.span,
             );
@@ -193,7 +193,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
             is_async = true;
         } else {
-            key = try parser.createNode(
+            key = try parser.builder.createNode(
                 .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(async_token)) } },
                 async_token.span,
             );
@@ -231,7 +231,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                     is_accessor = true;
                 }
             } else {
-                key = try parser.createNode(
+                key = try parser.builder.createNode(
                     .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(modifier_token)) } },
                     modifier_token.span,
                 );
@@ -360,7 +360,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
 
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
-        const key = try parser.createNode(
+        const key = try parser.builder.createNode(
             .{ .identifier_name = .{ .name = try parser.builder.internString(parser.getTokenText(token)) } },
             token.span,
         );
@@ -468,7 +468,7 @@ fn parseMethodDefinition(
     const body = try functions.parseFunctionBody(parser) orelse return null;
     const body_end = parser.builder.getSpan(body).end;
 
-    const func = try parser.createNode(
+    const func = try parser.builder.createNode(
         .{ .function = .{
             .type = .function_expression,
             .id = .null,
@@ -480,7 +480,7 @@ fn parseMethodDefinition(
         .{ .start = func_start, .end = body_end },
     );
 
-    return try parser.createNode(
+    return try parser.builder.createNode(
         .{ .method_definition = .{
             .decorators = decorators,
             .key = key,
@@ -533,7 +533,7 @@ fn parsePropertyDefinition(
         return null;
     }
 
-    return try parser.createNode(
+    return try parser.builder.createNode(
         .{ .property_definition = .{
             .decorators = decorators,
             .key = key,
@@ -571,7 +571,7 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
 
-    return try parser.createNode(
+    return try parser.builder.createNode(
         .{ .static_block = .{ .body = body } },
         .{ .start = start, .end = end },
     );
