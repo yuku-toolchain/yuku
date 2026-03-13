@@ -122,17 +122,73 @@ pub const StringId = struct {
 
     pub const empty: StringId = .{};
 
-    pub inline fn resolve(id: StringId, source: []const u8, synthetic: []const u8) []const u8 {
+    pub inline fn eql(self: StringId, other: StringId) bool {
+        return self.start == other.start and self.end == other.end;
+    }
+
+    /// Resolves this ID against a source + extra buffer pair.
+    inline fn resolve(id: StringId, source: []const u8, extra: []const u8) []const u8 {
         if (id.start == id.end) return "";
         const src_len: u32 = @intCast(source.len);
         if (id.start >= src_len) {
-            return synthetic[id.start - src_len .. id.end - src_len];
+            return extra[id.start - src_len .. id.end - src_len];
         }
         return source[id.start..id.end];
     }
+};
 
-    pub inline fn eql(self: StringId, other: StringId) bool {
-        return self.start == other.start and self.end == other.end;
+/// Immutable string storage backing a finalized `ParseTree`.
+///
+/// Provides zero-copy access to the original source text and any strings
+/// created during transforms or programmatic building.
+pub const StringPool = struct {
+    /// The original source text passed to the parser.
+    /// Empty for trees built programmatically with `TreeBuilder.initEmpty()`.
+    source: []const u8 = "",
+    /// Strings added after parsing (via `TreeBuilder.addString()`).
+    extra: []const u8 = "",
+
+    /// Returns the string content for the given `StringId`.
+    pub inline fn get(self: StringPool, id: StringId) []const u8 {
+        return id.resolve(self.source, self.extra);
+    }
+};
+
+/// Growable string storage used by `TreeBuilder` during parsing and transforms.
+///
+/// Wraps the original source buffer (zero-copy) and a growable buffer for
+/// new strings.
+pub const MutableStringPool = struct {
+    /// The original source text. Empty when building from scratch.
+    source: []const u8 = "",
+    /// Growable buffer for strings created via `add()`.
+    extra: std.ArrayList(u8) = .empty,
+
+    /// Returns the string content for the given `StringId`.
+    pub inline fn get(self: *const MutableStringPool, id: StringId) []const u8 {
+        return id.resolve(self.source, self.extra.items);
+    }
+
+    /// Creates a `StringId` referencing a range in the original source.
+    /// Used internally by the parser; transform users should use `add()`.
+    pub inline fn sourceSlice(_: *const MutableStringPool, start: u32, end: u32) StringId {
+        return .{ .start = start, .end = end };
+    }
+
+    /// Copies `str` into the extra buffer and returns a `StringId` for it.
+    /// Use this in transforms and when building ASTs programmatically.
+    pub fn add(self: *MutableStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
+        const src_len: u32 = @intCast(self.source.len);
+        const start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
+        try self.extra.appendSlice(alloc, str);
+        const end: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
+        return .{ .start = start, .end = end };
+    }
+
+    /// Converts into an immutable `StringPool`. The `MutableStringPool`
+    /// should not be used after calling this.
+    pub fn freeze(self: *const MutableStringPool) StringPool {
+        return .{ .source = self.source, .extra = self.extra.items };
     }
 };
 
@@ -157,21 +213,25 @@ pub const TreeBuilder = struct {
     comments: []const Comment = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
-    /// Original source buffer for resolving source-relative StringIds.
-    source: []const u8 = "",
-    /// Storage for strings created during transforms (not in original source).
-    /// StringIds with offsets >= source.len resolve against this buffer.
-    synthetic: std.ArrayList(u8) = .empty,
+    /// All strings referenced by AST nodes.
+    /// Use `getString()` to read and `addString()` to create new strings.
+    strings: MutableStringPool,
 
+    /// Creates a tree builder for parsing or transforming source code.
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8) TreeBuilder {
-        const self = TreeBuilder{
+        return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
-            .source = source
+            .strings = .{ .source = source },
         };
+    }
 
-        try self.builder.synthetic.ensureTotalCapacity(self.allocator(), 256);
-
-        return self;
+    /// Creates a tree builder for building ASTs programmatically
+    /// (no source text). Use `addString()` to create all strings.
+    pub fn initEmpty(child_allocator: std.mem.Allocator) TreeBuilder {
+        return .{
+            .arena = std.heap.ArenaAllocator.init(child_allocator),
+            .strings = .{},
+        };
     }
 
     /// Frees all memory owned by this tree builder.
@@ -193,8 +253,7 @@ pub const TreeBuilder = struct {
             .diagnostics = self.diagnostics,
             .comments = self.comments,
             .arena = self.arena,
-            .source = self.source,
-            .synthetic = self.synthetic.items,
+            .strings = self.strings.freeze(),
             .source_type = meta.source_type,
             .lang = meta.lang,
         };
@@ -252,26 +311,21 @@ pub const TreeBuilder = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Creates a string reference into the original source buffer.
-    /// Used internally by the parser, transform users should use `addString` instead.
-    pub inline fn sourceSlice(_: *TreeBuilder, start: u32, end: u32) StringId {
-        return .{ .start = start, .end = end };
+    /// Creates a `StringId` referencing a range in the original source.
+    /// Used internally by the parser; transform users should use `addString()`.
+    pub inline fn sourceSlice(self: *TreeBuilder, start: u32, end: u32) StringId {
+        return self.strings.sourceSlice(start, end);
     }
 
-    /// Creates a new string and returns its ID.
-    /// Copies bytes into the synthetic buffer. Use this in transforms and
-    /// when building ASTs programmatically.
+    /// Copies `str` into the string pool and returns its `StringId`.
+    /// Use this in transforms and when building ASTs programmatically.
     pub fn addString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
-        const src_len: u32 = @intCast(self.source.len);
-        const start: u32 = src_len + @as(u32, @intCast(self.synthetic.items.len));
-        try self.synthetic.appendSlice(self.arena.allocator(), str);
-        const end: u32 = src_len + @as(u32, @intCast(self.synthetic.items.len));
-        return .{ .start = start, .end = end };
+        return self.strings.add(self.arena.allocator(), str);
     }
 
     /// Returns the string content for a `StringId`.
     pub inline fn getString(self: *const TreeBuilder, id: StringId) []const u8 {
-        return id.resolve(self.source, self.synthetic.items);
+        return self.strings.get(id);
     }
 };
 
@@ -294,10 +348,10 @@ pub const ParseTree = struct {
     comments: []const Comment,
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
-    /// Original source buffer for resolving source-relative StringIds.
-    source: []const u8,
-    /// Synthetic string buffer for transform-created strings.
-    synthetic: []const u8 = "",
+    /// All strings referenced by AST nodes.
+    /// Use `getString()` to resolve a `StringId` to its text.
+    /// Access `strings.source` for the original source text (e.g. for error reporting).
+    strings: StringPool,
     /// Source type (script or module).
     source_type: SourceType,
     /// Language variant (js, ts, jsx, tsx, dts).
@@ -344,7 +398,7 @@ pub const ParseTree = struct {
 
     /// Returns the string content for a `StringId` used in AST nodes.
     pub inline fn getString(self: *const ParseTree, id: StringId) []const u8 {
-        return id.resolve(self.source, self.synthetic);
+        return self.strings.get(id);
     }
 };
 

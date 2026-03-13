@@ -31,8 +31,8 @@ pub const Serializer = struct {
         var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.nodes.len * 64 + 4096);
         errdefer buffer.deinit(allocator);
 
-        const pos_map: ?[]u32 = if (tree.source.len > 0)
-            try buildUtf16PosMap(allocator, tree.source)
+        const pos_map: ?[]u32 = if (tree.strings.source.len > 0)
+            try buildUtf16PosMap(allocator, tree.strings.source)
         else
             null;
         defer if (pos_map) |m| allocator.free(m);

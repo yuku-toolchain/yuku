@@ -12,7 +12,7 @@ pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
 /// A declared binding (variable, function, class, import, or parameter).
 pub const Symbol = struct {
-    /// Interned name of the symbol.
+    /// Name of the symbol.
     name: ast.StringId,
     kind: Kind,
     flags: Flags,
@@ -71,8 +71,8 @@ pub const SymbolTable = struct {
     /// First symbol in each scope, indexed by scope ID.
     /// `.none` if the scope has no symbols.
     scope_symbols: []const SymbolId,
-    source: []const u8,
-    synthetic: []const u8,
+    /// String pool for resolving symbol and reference names.
+    strings: ast.StringPool,
     allocator: Allocator,
 
     /// Frees all resources.
@@ -95,12 +95,12 @@ pub const SymbolTable = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: SymbolTable, sym: Symbol) []const u8 {
-        return sym.name.resolve(self.source, self.synthetic);
+        return self.strings.get(sym.name);
     }
 
     /// Returns the source name of a reference as a string slice.
     pub inline fn getRefName(self: SymbolTable, ref: Reference) []const u8 {
-        return ref.name.resolve(self.source, self.synthetic);
+        return self.strings.get(ref.name);
     }
 
     /// Returns an iterator over all symbols declared in the given scope.
@@ -422,8 +422,7 @@ pub const SymbolTracker = struct {
             .symbols = try self.symbols.toOwnedSlice(self.allocator),
             .references = try self.references.toOwnedSlice(self.allocator),
             .scope_symbols = try self.scope_symbols.toOwnedSlice(self.allocator),
-            .source = self.tree.source,
-            .synthetic = self.tree.synthetic,
+            .strings = self.tree.strings,
             .allocator = self.allocator,
         };
     }
