@@ -298,14 +298,22 @@ pub const TreeBuilder = struct {
     /// Creates a new node. Returns its index.
     pub inline fn createNode(self: *TreeBuilder, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
-        try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        if (self.nodes.len < self.nodes.capacity) {
+            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
+        } else {
+            try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        }
         return index;
     }
 
     /// Creates a new child list. Returns its range.
     pub inline fn createExtra(self: *TreeBuilder, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
-        try self.extra.appendSlice(self.arena.allocator(), children);
+        if (self.extra.items.len + children.len <= self.extra.capacity) {
+            self.extra.appendSliceAssumeCapacity(children);
+        } else {
+            try self.extra.appendSlice(self.arena.allocator(), children);
+        }
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
