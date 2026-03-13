@@ -2,55 +2,63 @@ const std = @import("std");
 const parser = @import("parser");
 
 const ast = parser.ast;
-
 const traverser = parser.traverser;
-const basic = traverser.basic;
+const transform = traverser.transform;
 
 pub fn main(init: std.process.Init) !void {
-    const Io = init.io;
-
     const allocator = init.arena.allocator();
 
-    const file_path = "test.js";
+    const source = "const a = x + y";
 
-    const contents = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
+    var builder = try parser.build(std.heap.page_allocator, source, .{});
 
-    const tree = try parser.parse(std.heap.page_allocator, contents, .{ .lang = .fromPath(file_path), .source_type = .fromPath(file_path) });
+    var t = TransformVisit{};
+    try transform.traverse(TransformVisit, &builder, &t);
+
+    var tree = builder.toTree(.{});
     defer tree.deinit();
 
-    // const Visitor = struct {
-    //     pub fn enter_identifier_reference(_: *@This(), _: ast.IdentifierReference, _: ast.NodeIndex, _: *basic.Ctx) traverser.Action {
-    //         return .proceed;
-    //     }
-    // };
-
-    // var visitor = Visitor{};
-
-    // _ = try basic.traverse(Visitor, &tree, &visitor);
-
-    const start = std.Io.Clock.Timestamp.now(Io, .real);
-
-    _ = try parser.estree.toJSON(&tree, allocator, .{});
-
-    const end = std.Io.Clock.Timestamp.now(Io, .real);
-
-    const taken_ms = @as(f64, @floatFromInt(start.durationTo(end).raw.toNanoseconds())) / std.time.ns_per_ms;
-
-    std.debug.print("\ntook: {d:.2}ms\n", .{ taken_ms });
+    const json = try parser.estree.toJSON(&tree, allocator, .{});
+    std.debug.print("{s}\n", .{json});
 }
 
-fn getLineAndColumn(contents: []const u8, offset: usize) struct { line: usize, col: usize } {
-    var line: usize = 1;
-    var col: usize = 1;
+const TransformVisit = struct {
+    pub fn enter_binary_expression(
+        _: *TransformVisit,
+        expr: ast.BinaryExpression,
+        index: ast.NodeIndex,
+        ctx: *transform.Ctx,
+    ) !traverser.Action {
+        const span = ctx.tree.getSpan(index);
 
-    for (contents[0..@min(offset, contents.len)]) |char| {
-        if (char == '\n') {
-            line += 1;
-            col = 1;
-        } else {
-            col += 1;
+        const inner = try ctx.tree.createNode(
+            .{ .binary_expression = .{
+                .left = expr.left,
+                .right = expr.right,
+                .operator = .multiply,
+            } },
+            span,
+        );
+
+        if (expr.operator == .add) {
+            ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
+                .expression = inner,
+            } });
+
+            ctx.tree.replaceSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
         }
+
+        return .proceed;
     }
 
-    return .{ .line = line, .col = col };
-}
+    pub fn enter_binding_identifier(
+        _: *TransformVisit,
+        _: ast.BindingIdentifier,
+        index: ast.NodeIndex,
+        ctx: *transform.Ctx,
+    ) !traverser.Action {
+        ctx.tree.replaceData(index, .{ .binding_identifier = .{ .name = try ctx.tree.addString("new_name") } });
+
+        return .proceed;
+    }
+};

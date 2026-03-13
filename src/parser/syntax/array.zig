@@ -26,7 +26,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     while (parser.current_token.tag != .right_bracket and parser.current_token.tag != .eof) {
         // elision (holes): [,,,]
         if (parser.current_token.tag == .comma) {
-            try parser.scratch_cover.append(parser.allocator(), ast.null_node);
+            try parser.scratch_cover.append(parser.allocator(), .null);
             try parser.advance() orelse return null;
             continue;
         }
@@ -36,8 +36,8 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             const spread_start = parser.current_token.span.start;
             try parser.advance() orelse return null;
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
-            const spread_end = parser.getSpan(argument).end;
-            const spread = try parser.addNode(
+            const spread_end = parser.b.getSpan(argument).end;
+            const spread = try parser.b.createNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
             );
@@ -47,7 +47,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             // regular element - parse as cover element
             const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             try parser.scratch_cover.append(parser.allocator(), element);
-            end = parser.getSpan(element).end;
+            end = parser.b.getSpan(element).end;
         }
 
         // comma or end
@@ -82,7 +82,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
     end = parser.current_token.span.end;
     try parser.advance() orelse return null; // consume ]
 
-    const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const elements = try parser.createExtraFromScratch(&parser.scratch_cover, checkpoint);
 
     return .{
         .elements = elements,
@@ -94,7 +94,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
 /// convert array cover to ArrayExpression.
 /// validates that the expression does not contain CoverInitializedName when validate=true.
 pub fn coverToExpression(parser: *Parser, cover: ArrayCover, validate: bool) Error!?ast.NodeIndex {
-    const array_expression = try parser.addNode(
+    const array_expression = try parser.b.createNode(
         .{ .array_expression = .{ .elements = cover.elements } },
         .{ .start = cover.start, .end = cover.end },
     );
@@ -115,15 +115,15 @@ pub fn toArrayPattern(parser: *Parser, expr_node: ast.NodeIndex, elements_range:
 }
 
 fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_range: ast.IndexRange, span: ast.Span, comptime context: grammar.PatternContext) Error!ast.NodeIndex {
-    const elements = parser.getExtra(elements_range);
+    const elements = parser.b.getExtra(elements_range);
 
-    var rest: ast.NodeIndex = ast.null_node;
+    var rest: ast.NodeIndex = .null;
     var elements_len = elements_range.len;
 
     for (elements, 0..) |elem, i| {
-        if (ast.isNull(elem)) continue;
+        if (elem == .null) continue;
 
-        const elem_data = parser.getData(elem);
+        const elem_data = parser.b.getData(elem);
 
         if (elem_data == .spread_element) {
             if (parser.state.cover_has_trailing_comma == span.start) {
@@ -135,7 +135,7 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
             }
 
             if (i != elements_len - 1) {
-                try parser.report(parser.getSpan(elem), "Rest element must be the last element", .{
+                try parser.report(parser.b.getSpan(elem), "Rest element must be the last element", .{
                     .help = "No elements can follow the rest element in a destructuring pattern.",
                 });
             }
@@ -156,9 +156,9 @@ fn toArrayPatternImpl(parser: *Parser, mutate_node: ?ast.NodeIndex, elements_ran
     } };
 
     if (mutate_node) |node| {
-        parser.setData(node, pattern_data);
+        parser.b.replaceData(node, pattern_data);
         return node;
     }
 
-    return try parser.addNode(pattern_data, span);
+    return try parser.b.createNode(pattern_data, span);
 }

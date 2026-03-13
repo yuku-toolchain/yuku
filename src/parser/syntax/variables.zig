@@ -18,14 +18,14 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
 
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
-    var end = parser.getSpan(first_declarator).end;
+    var end = parser.b.getSpan(first_declarator).end;
 
     // additional declarators: let a, b, c;
     while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
         const declarator = try parseVariableDeclarator(parser, kind) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
-        end = parser.getSpan(declarator).end;
+        end = parser.b.getSpan(declarator).end;
     }
 
     const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
@@ -45,10 +45,10 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
         );
     }
 
-    return try parser.addNode(
+    return try parser.b.createNode(
         .{
             .variable_declaration = .{
-                .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+                .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
                 .kind = kind,
             },
         },
@@ -78,9 +78,9 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
 fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
-    const id_span = parser.getSpan(id);
+    const id_span = parser.b.getSpan(id);
 
-    var init: ast.NodeIndex = ast.null_node;
+    var init: ast.NodeIndex = .null;
     var end = id_span.end;
 
     const is_using = kind == .using or kind == .await_using;
@@ -99,7 +99,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
 
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-        end = parser.getSpan(init).end;
+        end = parser.b.getSpan(init).end;
     } else if (is_destructuring) {
         try parser.report(
             id_span,
@@ -121,7 +121,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
         );
     }
 
-    return try parser.addNode(
+    return try parser.b.createNode(
         .{ .variable_declarator = .{ .id = id, .init = init } },
         .{ .start = start, .end = end },
     );

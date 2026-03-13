@@ -1,4 +1,6 @@
 // converts the parsed tree to estree/typescript-estree compatible JSON string.
+// and.... i know this is slow tbh, and only recommended for testing purposes.
+// we will find and build a fast way to pass AST to JS later, in meantime, this serializer to JSON string is enough.
 
 const std = @import("std");
 const ast = @import("ast.zig");
@@ -18,7 +20,7 @@ pub const Serializer = struct {
     needs_comma_bits: [8]u64 = .{0} ** 8,
     scratch: std.ArrayList(u8) = .empty,
     isTs: bool,
-    pos_map: []u32,
+    pos_map: ?[]u32,
     in_jsx_attribute: bool = false,
 
     const Self = @This();
@@ -26,11 +28,15 @@ pub const Serializer = struct {
     const NodeTag = std.meta.Tag(ast.NodeData);
 
     pub fn serialize(tree: *const ast.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
-        var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.source.len * 4);
+        var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.nodes.len * 64 + 4096);
         errdefer buffer.deinit(allocator);
 
-        const pos_map = try buildUtf16PosMap(allocator, tree.source);
-        defer allocator.free(pos_map);
+        const pos_map: ?[]u32 = if (tree.strings.source.len > 0)
+            try buildUtf16PosMap(allocator, tree.strings.source)
+        else
+            null;
+
+        defer if (pos_map) |m| allocator.free(m);
 
         var self = Self{
             .tree = tree,
@@ -44,6 +50,7 @@ pub const Serializer = struct {
             },
             .pos_map = pos_map,
         };
+
         defer self.scratch.deinit(allocator);
 
         try self.beginObject();
@@ -58,7 +65,7 @@ pub const Serializer = struct {
     }
 
     fn writeNode(self: *Self, index: ast.NodeIndex) Error!void {
-        if (ast.isNull(index)) return self.writeNull();
+        if (index == .null) return self.writeNull();
 
         const data = self.tree.getData(index);
         const span = self.tree.getSpan(index);
@@ -133,7 +140,7 @@ pub const Serializer = struct {
         try self.fieldString("sourceType", if (data.source_type == .module) "module" else "script");
         try self.field("hashbang");
         if (data.hashbang) |h| {
-            try self.writeString(self.tree.getSourceText(h.value_start, h.value_len));
+            try self.writeString(self.tree.getString(h.value));
         } else {
             try self.writeNull();
         }
@@ -147,7 +154,7 @@ pub const Serializer = struct {
     fn writeDirective(self: *Self, data: ast.Directive, span: ast.Span) !void {
         try self.begin("ExpressionStatement", span);
         try self.fieldNode("expression", data.expression);
-        try self.fieldString("directive", self.tree.getSourceText(data.value_start, data.value_len));
+        try self.fieldString("directive", self.tree.getString(data.value));
         try self.endObject();
     }
 
@@ -173,7 +180,7 @@ pub const Serializer = struct {
 
     fn writeArrowFunction(self: *Self, data: ast.ArrowFunctionExpression, span: ast.Span) !void {
         try self.begin("ArrowFunctionExpression", span);
-        try self.fieldNode("id", ast.null_node);
+        try self.fieldNode("id", .null);
         try self.fieldBool("generator", false);
         try self.fieldBool("async", data.async);
         try self.field("params");
@@ -275,7 +282,7 @@ pub const Serializer = struct {
         try self.field("elements");
         try self.beginArray();
         for (self.getExtra(data.elements)) |idx| try self.elemNode(idx);
-        if (!ast.isNull(data.rest)) try self.elemNode(data.rest);
+        if (data.rest != .null) try self.elemNode(data.rest);
         try self.endArray();
         try self.endObject();
     }
@@ -285,7 +292,7 @@ pub const Serializer = struct {
         try self.field("properties");
         try self.beginArray();
         for (self.getExtra(data.properties)) |idx| try self.elemNode(idx);
-        if (!ast.isNull(data.rest)) try self.elemNode(data.rest);
+        if (data.rest != .null) try self.elemNode(data.rest);
         try self.endArray();
         try self.endObject();
     }
@@ -325,12 +332,12 @@ pub const Serializer = struct {
 
     fn writeJSXIdentifier(self: *Self, data: ast.JSXIdentifier, span: ast.Span) !void {
         try self.begin("JSXIdentifier", span);
-        try self.fieldString("name", self.tree.getSourceText(data.name_start, data.name_len));
+        try self.fieldString("name", self.tree.getString(data.name));
         try self.endObject();
     }
 
     fn writeJSXText(self: *Self, data: ast.JSXText, span: ast.Span) !void {
-        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
+        const raw = self.tree.getString(data.raw);
         try self.begin("JSXText", span);
         try self.fieldString("value", raw);
         try self.fieldString("raw", raw);
@@ -340,19 +347,19 @@ pub const Serializer = struct {
     fn writeIdentifier(self: *Self, data: anytype, span: ast.Span) !void {
         try self.begin("Identifier", span);
         try self.field("name");
-        try self.writeDecodedString(self.tree.getSourceText(data.name_start, data.name_len));
+        try self.writeDecodedString(self.tree.getString(data.name));
         try self.endObject();
     }
 
     fn writePrivateIdentifier(self: *Self, data: ast.PrivateIdentifier, span: ast.Span) !void {
         try self.begin("PrivateIdentifier", span);
         try self.field("name");
-        try self.writeDecodedString(self.tree.getSourceText(data.name_start, data.name_len));
+        try self.writeDecodedString(self.tree.getString(data.name));
         try self.endObject();
     }
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
-        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
+        const raw = self.tree.getString(data.raw);
         try self.begin("Literal", span);
         try self.field("value");
         if (self.in_jsx_attribute)
@@ -364,7 +371,7 @@ pub const Serializer = struct {
     }
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
-        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
+        const raw = self.tree.getString(data.raw);
         var buf: [64]u8 = undefined;
         const num_str: ?[]const u8 = parseJSNumeric(&buf, raw) catch null;
 
@@ -384,7 +391,7 @@ pub const Serializer = struct {
     }
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
-        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
+        const raw = self.tree.getString(data.raw);
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, "(BigInt) ");
         try self.scratch.appendSlice(self.allocator, raw);
@@ -415,8 +422,8 @@ pub const Serializer = struct {
     }
 
     fn writeRegExpLiteral(self: *Self, data: ast.RegExpLiteral, span: ast.Span) !void {
-        const pattern = self.tree.getSourceText(data.pattern_start, data.pattern_len);
-        const flags = self.tree.getSourceText(data.flags_start, data.flags_len);
+        const pattern = self.tree.getString(data.pattern);
+        const flags = self.tree.getString(data.flags);
 
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, flags);
@@ -436,7 +443,7 @@ pub const Serializer = struct {
     }
 
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
-        const raw = self.tree.getSourceText(data.raw_start, data.raw_len);
+        const raw = self.tree.getString(data.raw);
 
         // normalize line endings: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
         self.scratch.clearRetainingCapacity();
@@ -471,18 +478,18 @@ pub const Serializer = struct {
         for (self.getExtra(data.items)) |idx| {
             try self.elemNode(self.tree.getData(idx).formal_parameter.pattern);
         }
-        if (!ast.isNull(data.rest)) try self.elemNode(data.rest);
+        if (data.rest != .null) try self.elemNode(data.rest);
         try self.endArray();
     }
 
     fn writeFunctionParams(self: *Self, params_index: ast.NodeIndex) !void {
         try self.beginArray();
-        if (!ast.isNull(params_index)) {
+        if (params_index != .null) {
             const params = self.tree.getData(params_index).formal_parameters;
             for (self.getExtra(params.items)) |idx| {
                 try self.elemNode(self.tree.getData(idx).formal_parameter.pattern);
             }
-            if (!ast.isNull(params.rest)) try self.elemNode(params.rest);
+            if (params.rest != .null) try self.elemNode(params.rest);
         }
         try self.endArray();
     }
@@ -528,7 +535,7 @@ pub const Serializer = struct {
             }
             try self.beginObject();
             try self.fieldString("type", comment.type.toString());
-            try self.fieldString("value", comment.getValue(self.tree.source));
+            try self.fieldString("value", self.tree.getString(comment.value));
             try self.fieldPos("start", comment.start);
             try self.fieldPos("end", comment.end);
             try self.endObject();
@@ -670,7 +677,11 @@ pub const Serializer = struct {
 
     fn fieldPos(self: *Self, key: []const u8, byte_pos: u32) !void {
         try self.field(key);
-        try self.writeInt(self.pos_map[@min(byte_pos, self.pos_map.len - 1)]);
+        if (self.pos_map) |map| {
+            try self.writeInt(map[@min(byte_pos, map.len - 1)]);
+        } else {
+            try self.writeInt(byte_pos);
+        }
     }
 
     fn fieldNode(self: *Self, key: []const u8, node: ast.NodeIndex) !void {
@@ -936,6 +947,8 @@ pub const Serializer = struct {
     }
 };
 
+/// Builds a lookup table mapping byte positions to UTF-16 code unit offsets.
+/// ESTree positions use UTF-16 code units (matching JavaScript's string indexing).
 fn buildUtf16PosMap(allocator: std.mem.Allocator, source: []const u8) ![]u32 {
     var map = try allocator.alloc(u32, source.len + 1);
     var byte_pos: usize = 0;

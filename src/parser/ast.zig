@@ -1,4 +1,5 @@
 const std = @import("std");
+const util = @import("util");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
@@ -97,6 +98,8 @@ pub const Lang = enum {
 
 pub const Comment = struct {
     type: Type,
+    /// Comment content (without delimiters).
+    value: StringId = StringId.empty,
     start: u32,
     end: u32,
 
@@ -111,81 +114,302 @@ pub const Comment = struct {
             };
         }
     };
+};
 
-    pub fn getValue(self: Comment, source: []const u8) []const u8 {
-        return switch (self.type) {
-            // Skip "//" prefix
-            .line => source[self.start + 2 .. self.end],
-            // Skip "/*" prefix and "*/" suffix
-            .block => source[self.start + 2 .. self.end - 2],
-        };
+pub const StringId = struct {
+    start: u32 = 0,
+    end: u32 = 0,
+
+    pub const empty: StringId = .{};
+
+    pub inline fn eql(self: StringId, other: StringId) bool {
+        return self.start == other.start and self.end == other.end;
+    }
+
+    /// Resolves this ID against a source + extra buffer pair.
+    inline fn resolve(id: StringId, source: []const u8, extra: []const u8) []const u8 {
+        if (id.start == id.end) return "";
+        const src_len: u32 = @intCast(source.len);
+        if (id.start >= src_len) {
+            return extra[id.start - src_len .. id.end - src_len];
+        }
+        return source[id.start..id.end];
     }
 };
 
-/// Must be deinitialized to free the arena-allocated memory.
-pub const ParseTree = struct {
-    /// Root node of the AST (always a Program node)
-    program: NodeIndex,
-    /// Source code that was parsed
-    source: []const u8,
-    /// All nodes in the AST
-    nodes: NodeList.Slice,
-    /// Extra data storage for variadic node children
-    extra: []NodeIndex,
-    /// Diagnostics (errors, warnings, etc.) encountered during parsing
-    diagnostics: []const Diagnostic,
-    /// Comments collected in source code
-    comments: []const Comment,
-    /// Arena allocator owning all the memory
-    arena: std.heap.ArenaAllocator,
-    /// Source type (script or module)
-    source_type: SourceType,
-    /// Language variant (js, ts, jsx, tsx, dts)
-    lang: Lang,
+/// Immutable string storage backing a finalized `ParseTree`.
+///
+/// Provides zero-copy access to the original source text and any strings
+/// created during transforms or programmatic building.
+pub const StringPool = struct {
+    /// The original source text passed to the parser.
+    /// Empty for trees built programmatically with `TreeBuilder.initEmpty()`.
+    source: []const u8 = "",
+    /// Strings added after parsing (via `TreeBuilder.addString()`).
+    extra: []const u8 = "",
 
-    /// Returns true if the parse tree contains any errors.
-    pub inline fn hasErrors(self: ParseTree) bool {
+    /// Returns the string content for the given `StringId`.
+    pub inline fn get(self: StringPool, id: StringId) []const u8 {
+        return id.resolve(self.source, self.extra);
+    }
+};
+
+/// Growable string storage used by `TreeBuilder` during parsing and transforms.
+///
+/// Wraps the original source buffer (zero-copy) and a growable buffer for
+/// new strings.
+pub const MutableStringPool = struct {
+    /// The original source text. Empty when building from scratch.
+    source: []const u8 = "",
+    /// Growable buffer for strings created via `add()`.
+    extra: std.ArrayList(u8) = .empty,
+
+    /// Returns the string content for the given `StringId`.
+    pub inline fn get(self: *const MutableStringPool, id: StringId) []const u8 {
+        return id.resolve(self.source, self.extra.items);
+    }
+
+    /// Creates a `StringId` referencing a range in the original source.
+    pub inline fn sourceSlice(_: *const MutableStringPool, start: u32, end: u32) StringId {
+        return .{ .start = start, .end = end };
+    }
+
+    /// Copies `str` into the extra buffer and returns a `StringId` for it.
+    pub fn add(self: *MutableStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
+        const src_len: u32 = @intCast(self.source.len);
+        const start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
+        try self.extra.appendSlice(alloc, str);
+        const end: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
+        return .{ .start = start, .end = end };
+    }
+
+    /// Converts into an immutable `StringPool`. The `MutableStringPool`
+    /// should not be used after calling this.
+    pub fn freeze(self: *const MutableStringPool) StringPool {
+        return .{ .source = self.source, .extra = self.extra.items };
+    }
+};
+
+/// Mutable AST builder backed by growable arrays.
+///
+/// Used during parsing to construct the tree and by the transform
+/// traverser for in-place mutations. Can also be used standalone to
+/// build ASTs programmatically.
+///
+/// Call `toTree()` to convert into an immutable `ParseTree` when done.
+/// Call `deinit()` to free without converting.
+pub const TreeBuilder = struct {
+    /// Root node of the AST (always a Program node).
+    program: NodeIndex = undefined,
+    /// All nodes in the AST.
+    nodes: NodeList = .empty,
+    /// Extra data storage for variadic node children.
+    extra: std.ArrayList(NodeIndex) = .empty,
+    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
+    diagnostics: []const Diagnostic = &.{},
+    /// Comments found in the source code.
+    comments: []const Comment = &.{},
+    /// Arena allocator owning all the memory.
+    arena: std.heap.ArenaAllocator,
+    /// All strings referenced by AST nodes.
+    /// Use `getString()` to read and `addString()` to create new strings.
+    strings: MutableStringPool,
+
+    /// Creates a tree builder for parsing or transforming source code.
+    pub fn init(child_allocator: std.mem.Allocator, source: []const u8) TreeBuilder {
+        return .{
+            .arena = std.heap.ArenaAllocator.init(child_allocator),
+            .strings = .{ .source = source },
+        };
+    }
+
+    /// Creates a tree builder for building ASTs programmatically
+    /// (no source text). Use `addString()` to create all strings.
+    pub fn initEmpty(child_allocator: std.mem.Allocator) TreeBuilder {
+        return .{
+            .arena = std.heap.ArenaAllocator.init(child_allocator),
+            .strings = .{},
+        };
+    }
+
+    /// Frees all memory owned by this tree builder.
+    pub fn deinit(self: *const TreeBuilder) void {
+        self.arena.deinit();
+    }
+
+    pub inline fn allocator(self: *TreeBuilder) std.mem.Allocator {
+        return self.arena.allocator();
+    }
+
+    /// Converts into an immutable `ParseTree`, transferring ownership.
+    /// This builder should not be used after calling this.
+    pub fn toTree(self: *TreeBuilder, meta: ParseTree.Meta) ParseTree {
+        return .{
+            .program = self.program,
+            .nodes = self.nodes.toOwnedSlice(),
+            .extra = self.extra.items,
+            .diagnostics = self.diagnostics,
+            .comments = self.comments,
+            .arena = self.arena,
+            .strings = self.strings.freeze(),
+            .source_type = meta.source_type,
+            .lang = meta.lang,
+        };
+    }
+
+    /// Returns true if the tree contains any errors.
+    pub inline fn hasErrors(self: *const TreeBuilder) bool {
         for (self.diagnostics) |d| {
             if (d.severity == .@"error") return true;
         }
         return false;
     }
 
-    /// Returns true if the parse tree contains any diagnostics (errors, warnings, etc.).
-    pub inline fn hasDiagnostics(self: ParseTree) bool {
+    /// Returns true if the tree contains any diagnostics.
+    pub inline fn hasDiagnostics(self: *const TreeBuilder) bool {
         return self.diagnostics.len > 0;
     }
 
-    /// Frees all memory allocated by this parse tree.
+    /// Returns the data for the node at the given index.
+    pub inline fn getData(self: *const TreeBuilder, index: NodeIndex) NodeData {
+        return self.nodes.items(.data)[@intFromEnum(index)];
+    }
+
+    /// Returns the span for the node at the given index.
+    pub inline fn getSpan(self: *const TreeBuilder, index: NodeIndex) Span {
+        return self.nodes.items(.span)[@intFromEnum(index)];
+    }
+
+    /// Returns the extra node indices for the given range.
+    pub inline fn getExtra(self: *const TreeBuilder, range: IndexRange) []const NodeIndex {
+        return self.extra.items[range.start..][0..range.len];
+    }
+
+    /// Replaces an existing node's data in-place.
+    pub inline fn replaceData(self: *TreeBuilder, index: NodeIndex, data: NodeData) void {
+        self.nodes.items(.data)[@intFromEnum(index)] = data;
+    }
+
+    /// Replaces an existing node's span in-place.
+    pub inline fn replaceSpan(self: *TreeBuilder, index: NodeIndex, span: Span) void {
+        self.nodes.items(.span)[@intFromEnum(index)] = span;
+    }
+
+    /// Creates a new node. Returns its index.
+    pub inline fn createNode(self: *TreeBuilder, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+        const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
+        if (self.nodes.len < self.nodes.capacity) {
+            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
+        } else {
+            try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+        }
+        return index;
+    }
+
+    /// Creates a new child list. Returns its range.
+    pub inline fn createExtra(self: *TreeBuilder, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+        const start: u32 = @intCast(self.extra.items.len);
+        if (self.extra.items.len + children.len <= self.extra.capacity) {
+            self.extra.appendSliceAssumeCapacity(children);
+        } else {
+            try self.extra.appendSlice(self.arena.allocator(), children);
+        }
+        return .{ .start = start, .len = @intCast(children.len) };
+    }
+
+    /// Creates a `StringId` referencing a range in the original source.
+    /// Used internally by the parser; transform users should use `addString()`.
+    pub inline fn sourceSlice(self: *TreeBuilder, start: u32, end: u32) StringId {
+        return self.strings.sourceSlice(start, end);
+    }
+
+    /// Copies `str` into the string pool and returns its `StringId`.
+    /// Use this in transforms and when building ASTs programmatically.
+    pub fn addString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
+        return self.strings.add(self.arena.allocator(), str);
+    }
+
+    /// Returns the string content for a `StringId`.
+    pub inline fn getString(self: *const TreeBuilder, id: StringId) []const u8 {
+        return self.strings.get(id);
+    }
+};
+
+/// Immutable parse tree returned by `parse()`.
+///
+/// All node storage is finalized into compact slices. Use the `get*`
+/// methods to read nodes, spans, extra data, and source text.
+///
+/// Call `deinit()` when done to free all memory.
+pub const ParseTree = struct {
+    /// Root node of the AST (always a Program node).
+    program: NodeIndex,
+    /// All nodes in the AST, stored as a struct-of-arrays slice.
+    nodes: NodeList.Slice,
+    /// Extra data storage for variadic node children.
+    extra: []const NodeIndex,
+    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
+    diagnostics: []const Diagnostic,
+    /// Comments found in the source code.
+    comments: []const Comment,
+    /// Arena allocator owning all the memory.
+    arena: std.heap.ArenaAllocator,
+    /// All strings referenced by AST nodes.
+    /// Use `getString()` to resolve a `StringId` to its text.
+    /// Access `strings.source` for the original source text (e.g. for error reporting).
+    strings: StringPool,
+    /// Source type (script or module).
+    source_type: SourceType,
+    /// Language variant (js, ts, jsx, tsx, dts).
+    lang: Lang,
+
+    /// Metadata needed to convert a `TreeBuilder` into a `ParseTree`.
+    pub const Meta = struct {
+        source_type: SourceType = .module,
+        lang: Lang = .js,
+    };
+
+    /// Returns true if the parse tree contains any errors.
+    pub inline fn hasErrors(self: *const ParseTree) bool {
+        for (self.diagnostics) |d| {
+            if (d.severity == .@"error") return true;
+        }
+        return false;
+    }
+
+    /// Returns true if the parse tree contains any diagnostics.
+    pub inline fn hasDiagnostics(self: *const ParseTree) bool {
+        return self.diagnostics.len > 0;
+    }
+
+    /// Frees all memory owned by this parse tree.
     pub fn deinit(self: *const ParseTree) void {
         self.arena.deinit();
     }
 
-    /// Gets the data for the node at the given index.
+    /// Returns the data for the node at the given index.
     pub inline fn getData(self: *const ParseTree, index: NodeIndex) NodeData {
         return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
-    /// Gets the span for the node at the given index.
+    /// Returns the span for the node at the given index.
     pub inline fn getSpan(self: *const ParseTree, index: NodeIndex) Span {
         return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
-    /// Gets the extra node indices for the given range.
+    /// Returns the extra node indices for the given range.
     pub inline fn getExtra(self: *const ParseTree, range: IndexRange) []const NodeIndex {
         return self.extra[range.start..][0..range.len];
     }
 
-    /// Gets a slice of the source text at the given position.
-    pub inline fn getSourceText(self: *const ParseTree, start: u32, len: u16) []const u8 {
-        return self.source[start..][0..len];
+    /// Returns the string content for a `StringId` used in AST nodes.
+    pub inline fn getString(self: *const ParseTree, id: StringId) []const u8 {
+        return self.strings.get(id);
     }
 };
 
-/// index into the ast node array. `null_node` for optional nodes.
-pub const NodeIndex = enum(u32) { _ };
-
-pub const null_node: NodeIndex = @enumFromInt(std.math.maxInt(u32));
+/// Index into the AST node array. `.null` for optional nodes.
+pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 
 /// range of indices in the extra array for storing node lists.
 pub const IndexRange = struct {
@@ -512,9 +736,9 @@ pub const Class = struct {
     type: ClassType,
     /// Decorator[]
     decorators: IndexRange,
-    /// BindingIdentifier (optional, may be null_node for class expressions)
+    /// BindingIdentifier (optional, may be `.null` for class expressions)
     id: NodeIndex,
-    /// Expression (optional, may be null_node if no extends clause)
+    /// Expression (optional, may be `.null` if no extends clause)
     super_class: NodeIndex,
     /// ClassBody
     body: NodeIndex,
@@ -545,7 +769,7 @@ pub const PropertyDefinition = struct {
     decorators: IndexRange,
     /// PropertyKey (IdentifierName | PrivateIdentifier | Expression)
     key: NodeIndex,
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     value: NodeIndex,
     computed: bool,
     static: bool,
@@ -639,7 +863,7 @@ pub const VariableDeclaration = struct {
 pub const VariableDeclarator = struct {
     /// BindingPattern
     id: NodeIndex,
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     init: NodeIndex,
 };
 
@@ -656,7 +880,7 @@ pub const IfStatement = struct {
     @"test": NodeIndex,
     /// Statement (the if-body)
     consequent: NodeIndex,
-    /// Statement (optional, may be null_node for no else clause)
+    /// Statement (optional, may be `.null` for no else clause)
     alternate: NodeIndex,
 };
 
@@ -709,14 +933,14 @@ pub const ForOfStatement = struct {
 /// `break;` or `break label;`
 /// https://tc39.es/ecma262/#sec-break-statement
 pub const BreakStatement = struct {
-    /// LabelIdentifier (optional, may be null_node)
+    /// LabelIdentifier (optional, may be `.null`)
     label: NodeIndex,
 };
 
 /// `continue;` or `continue label;`
 /// https://tc39.es/ecma262/#sec-continue-statement
 pub const ContinueStatement = struct {
-    /// LabelIdentifier (optional, may be null_node)
+    /// LabelIdentifier (optional, may be `.null`)
     label: NodeIndex,
 };
 
@@ -732,7 +956,7 @@ pub const LabeledStatement = struct {
 /// `case test: consequent` or `default: consequent`
 /// https://tc39.es/ecma262/#prod-CaseClause
 pub const SwitchCase = struct {
-    /// Expression (optional, null_node for default case)
+    /// Expression (optional, `.null` for default case)
     @"test": NodeIndex,
     /// Statement[]
     consequent: IndexRange,
@@ -741,7 +965,7 @@ pub const SwitchCase = struct {
 /// `return;` or `return expression;`
 /// https://tc39.es/ecma262/#sec-return-statement
 pub const ReturnStatement = struct {
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     argument: NodeIndex,
 };
 
@@ -757,16 +981,16 @@ pub const ThrowStatement = struct {
 pub const TryStatement = struct {
     /// BlockStatement
     block: NodeIndex,
-    /// CatchClause (optional, may be null_node)
+    /// CatchClause (optional, may be `.null`)
     handler: NodeIndex,
-    /// BlockStatement (optional, may be null_node)
+    /// BlockStatement (optional, may be `.null`)
     finalizer: NodeIndex,
 };
 
 /// `catch (param) { body }`
 /// https://tc39.es/ecma262/#prod-Catch
 pub const CatchClause = struct {
-    /// BindingPattern (optional, may be null_node for `catch { }`)
+    /// BindingPattern (optional, may be `.null` for `catch { }`)
     param: NodeIndex,
     /// BlockStatement
     body: NodeIndex,
@@ -801,14 +1025,13 @@ pub const WithStatement = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
-    raw_start: u32,
-    raw_len: u16,
+    /// Raw string text including quotes.
+    raw: StringId,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
     kind: Kind,
 
     pub const Kind = enum {
@@ -831,8 +1054,7 @@ pub const NumericLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
 };
 
 pub const BooleanLiteral = struct {
@@ -841,10 +1063,8 @@ pub const BooleanLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-regular-expression-literals
 pub const RegExpLiteral = struct {
-    pattern_start: u32,
-    pattern_len: u16,
-    flags_start: u32,
-    flags_len: u8,
+    pattern: StringId,
+    flags: StringId,
 };
 
 /// https://tc39.es/ecma262/#sec-template-literals
@@ -857,48 +1077,39 @@ pub const TemplateLiteral = struct {
 
 /// quasi
 pub const TemplateElement = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
     tail: bool,
     /// True when this quasi's cooked template value is undefined per
     /// ECMAScript TV semantics.
-    /// This happens when the quasi contains a NotEscapeSequence.
-    /// Untagged templates are syntax errors, tagged templates allow this and
-    /// produce undefined cooked values.
     is_cooked_undefined: bool = false,
 };
 
 /// used in expressions
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const IdentifierReference = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// `#name`.
-/// `name_start` and `name_len` refer to the identifier name without the `#` prefix.
+/// `name` refers to the identifier name without the `#` prefix.
 pub const PrivateIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// used in declarations
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const BindingIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// property keys, meta properties
 pub const IdentifierName = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// https://tc39.es/ecma262/#prod-LabelIdentifier
 pub const LabelIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// `pattern = init`
@@ -922,7 +1133,7 @@ pub const BindingRestElement = struct {
 pub const ArrayPattern = struct {
     /// (BindingPattern | null)[] - null for holes
     elements: IndexRange,
-    /// BindingRestElement (optional, may be null_node)
+    /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
 };
 
@@ -931,7 +1142,7 @@ pub const ArrayPattern = struct {
 pub const ObjectPattern = struct {
     /// BindingProperty[]
     properties: IndexRange,
-    /// BindingRestElement (optional, may be null_node)
+    /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
 };
 
@@ -984,17 +1195,15 @@ pub const Program = struct {
 };
 
 pub const Hashbang = struct {
-    value_start: u32,
-    value_len: u16,
+    value: StringId,
 };
 
 /// `"use strict";`
 pub const Directive = struct {
     /// StringLiteral
     expression: NodeIndex,
-    /// value without quotes
-    value_start: u32,
-    value_len: u16,
+    /// Directive value without quotes.
+    value: StringId,
 };
 
 pub const FunctionType = enum {
@@ -1016,13 +1225,13 @@ pub const FunctionType = enum {
 /// https://tc39.es/ecma262/#sec-function-definitions
 pub const Function = struct {
     type: FunctionType,
-    /// BindingIdentifier (optional, may be null_node for anonymous functions)
+    /// BindingIdentifier (optional, may be `.null` for anonymous functions)
     id: NodeIndex,
     generator: bool,
     async: bool,
     /// FormalParameters
     params: NodeIndex,
-    /// FunctionBody (optional, may be null_node for declarations/overloads)
+    /// FunctionBody (optional, may be `.null` for declarations/overloads)
     body: NodeIndex,
 };
 
@@ -1042,7 +1251,7 @@ pub const BlockStatement = struct {
 pub const FormalParameters = struct {
     /// FormalParameter[]
     items: IndexRange,
-    /// BindingRestElement (optional, may be null_node)
+    /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
     kind: FormalParameterKind,
 };
@@ -1140,7 +1349,7 @@ pub const AwaitExpression = struct {
 /// `yield expression` or `yield* expression`
 /// https://tc39.es/ecma262/#sec-generator-function-definitions-runtime-semantics-evaluation
 pub const YieldExpression = struct {
-    /// Expression (optional, may be null_node)
+    /// Expression (optional, may be `.null`)
     argument: NodeIndex,
     /// true for `yield*`, false for `yield`
     delegate: bool,
@@ -1183,7 +1392,7 @@ pub const ImportPhase = enum {
 pub const ImportExpression = struct {
     /// Expression - the module specifier
     source: NodeIndex,
-    /// Expression (optional, may be null_node) - import options/attributes
+    /// Expression (optional, may be `.null`) - import options/attributes
     options: NodeIndex,
     /// import phase: source, defer, or null (regular import)
     phase: ?ImportPhase,
@@ -1238,11 +1447,11 @@ pub const ImportAttribute = struct {
 /// `export { foo, bar }` or `export { foo } from 'source'` or `export var/let/const/function/class`
 /// https://tc39.es/ecma262/#prod-ExportDeclaration
 pub const ExportNamedDeclaration = struct {
-    /// Declaration (optional, may be null_node) - for `export var x`
+    /// Declaration (optional, may be `.null`) - for `export var x`
     declaration: NodeIndex,
     /// ExportSpecifier[]
     specifiers: IndexRange,
-    /// StringLiteral (optional, may be null_node) - for re-exports
+    /// StringLiteral (optional, may be `.null`) - for re-exports
     source: NodeIndex,
     /// ImportAttribute[] - export attributes/assertions
     attributes: IndexRange,
@@ -1258,7 +1467,7 @@ pub const ExportDefaultDeclaration = struct {
 /// `export * from 'source'` or `export * as name from 'source'`
 /// https://tc39.es/ecma262/#prod-ExportDeclaration
 pub const ExportAllDeclaration = struct {
-    /// ModuleExportName (optional, may be null_node) - for `export * as name`
+    /// ModuleExportName (optional, may be `.null`) - for `export * as name`
     exported: NodeIndex,
     /// StringLiteral - the module specifier
     source: NodeIndex,
@@ -1294,7 +1503,7 @@ pub const JSXElement = struct {
     opening_element: NodeIndex,
     /// (JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild)[]
     children: IndexRange,
-    /// JSXClosingElement (optional, may be null_node for self-closing tags)
+    /// JSXClosingElement (optional, may be `.null` for self-closing tags)
     closing_element: NodeIndex,
 };
 
@@ -1336,8 +1545,7 @@ pub const JSXClosingFragment = struct {};
 /// used in jsx tag names and attributes
 /// https://facebook.github.io/jsx/#prod-JSXIdentifier
 pub const JSXIdentifier = struct {
-    name_start: u32,
-    name_len: u16,
+    name: StringId,
 };
 
 /// `<namespace:name />`
@@ -1363,7 +1571,7 @@ pub const JSXMemberExpression = struct {
 pub const JSXAttribute = struct {
     /// JSXIdentifier | JSXNamespacedName
     name: NodeIndex,
-    /// StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment (optional, may be null_node for boolean-like attributes)
+    /// StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment (optional, may be `.null` for boolean-like attributes)
     value: NodeIndex,
 };
 
@@ -1386,8 +1594,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// text content inside JSX elements
 pub const JSXText = struct {
-    raw_start: u32,
-    raw_len: u16,
+    raw: StringId,
 };
 
 /// `{...children}`
@@ -1511,7 +1718,3 @@ pub const Node = struct {
 };
 
 pub const NodeList = std.MultiArrayList(Node);
-
-pub inline fn isNull(index: NodeIndex) bool {
-    return index == null_node;
-}

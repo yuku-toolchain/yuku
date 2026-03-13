@@ -35,7 +35,7 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
 
 fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .semicolon) {
-        return parseForStatementRest(parser, start, ast.null_node, is_for_await);
+        return parseForStatementRest(parser, start, .null, is_for_await);
     }
 
     const decl_start = parser.current_token.span.start;
@@ -108,7 +108,7 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
 /// for loop starting with a variable declaration (var/let/const/using/await using).
 fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind: ast.VariableKind, decl_start: u32) Error!?ast.NodeIndex {
     const first = try parseForLoopDeclarator(parser) orelse return null;
-    const first_end = parser.getSpan(first).end;
+    const first_end = parser.b.getSpan(first).end;
 
     // for-in / for-of: single declarator
     if (parser.current_token.tag == .in) {
@@ -148,12 +148,12 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
 
         try parser.scratch_a.append(parser.allocator(), declarator);
 
-        end = parser.getSpan(declarator).end;
+        end = parser.b.getSpan(declarator).end;
     }
 
-    const decl = try parser.addNode(.{
+    const decl = try parser.b.createNode(.{
         .variable_declaration = .{
-            .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+            .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
             .kind = kind,
         },
     }, .{ .start = decl_start, .end = end });
@@ -182,7 +182,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     if (parser.current_token.tag == .of) {
         // for ( [lookahead ∉ { async of }] LeftHandSideExpression of AssignmentExpression )
         if (!is_for_await and isAsyncIdentifier(parser, expr)) {
-            try parser.report(parser.getSpan(expr), "'for (async of ...)' is not allowed, it is ambiguous with 'for await'", .{
+            try parser.report(parser.b.getSpan(expr), "'for (async of ...)' is not allowed, it is ambiguous with 'for await'", .{
                 .help = "Use a different variable name or add parentheses: 'for ((async) of ...)'",
             });
         }
@@ -204,14 +204,14 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex, is_fo
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop init", null)) return null;
 
-    var test_expr: ast.NodeIndex = ast.null_node;
+    var test_expr: ast.NodeIndex = .null;
     if (parser.current_token.tag != .semicolon) {
         test_expr = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
 
     if (!try parser.expect(.semicolon, "Expected ';' after for-loop condition", null)) return null;
 
-    var update: ast.NodeIndex = ast.null_node;
+    var update: ast.NodeIndex = .null;
     if (parser.current_token.tag != .right_paren) {
         update = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     }
@@ -220,14 +220,14 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex, is_fo
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .for_statement = .{
             .init = init,
             .@"test" = test_expr,
             .update = update,
             .body = body,
         },
-    }, .{ .start = start, .end = parser.getSpan(body).end });
+    }, .{ .start = start, .end = parser.b.getSpan(body).end });
 }
 
 /// for(left in right) body
@@ -243,13 +243,13 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .for_in_statement = .{
             .left = left,
             .right = right,
             .body = body,
         },
-    }, .{ .start = start, .end = parser.getSpan(body).end });
+    }, .{ .start = start, .end = parser.b.getSpan(body).end });
 }
 
 /// for(left of right) body
@@ -262,30 +262,30 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .for_of_statement = .{
             .left = left,
             .right = right,
             .body = body,
             .await = is_for_await,
         },
-    }, .{ .start = start, .end = parser.getSpan(body).end });
+    }, .{ .start = start, .end = parser.b.getSpan(body).end });
 }
 
 fn parseForLoopDeclarator(parser: *Parser) Error!?ast.NodeIndex {
     const decl_start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
 
-    var init: ast.NodeIndex = ast.null_node;
-    var end = parser.getSpan(id).end;
+    var init: ast.NodeIndex = .null;
+    var end = parser.b.getSpan(id).end;
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        end = parser.getSpan(init).end;
+        end = parser.b.getSpan(init).end;
     }
 
-    return try parser.addNode(.{ .variable_declarator = .{ .id = id, .init = init } }, .{ .start = decl_start, .end = end });
+    return try parser.b.createNode(.{ .variable_declarator = .{ .id = id, .init = init } }, .{ .start = decl_start, .end = end });
 }
 
 fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: ast.NodeIndex, decl_start: u32, decl_end: u32) Error!ast.NodeIndex {
@@ -293,39 +293,39 @@ fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: 
     defer parser.scratch_a.reset(checkpoint);
     try parser.scratch_a.append(parser.allocator(), declarator);
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .variable_declaration = .{
-            .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
+            .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
             .kind = kind,
         },
     }, .{ .start = decl_start, .end = decl_end });
 }
 
 fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
-    const data = parser.getData(expr);
+    const data = parser.b.getData(expr);
 
     if (data != .identifier_reference) return false;
 
     const id = data.identifier_reference;
 
-    return id.name_len == 5 and std.mem.eql(u8, parser.getSourceText(id.name_start, id.name_len), "async");
+    return std.mem.eql(u8, parser.b.getString(id.name), "async");
 }
 
 /// in a regular for-loop, destructuring patterns and const declarations require an initializer.
 fn validateRegularForDeclarator(parser: *Parser, declarator: ast.NodeIndex, kind: ast.VariableKind) Error!bool {
-    const data = parser.getData(declarator).variable_declarator;
+    const data = parser.b.getData(declarator).variable_declarator;
 
-    if (!ast.isNull(data.init)) return true;
+    if (data.init != .null) return true;
 
-    if (parser.getData(data.id) != .binding_identifier) {
-        try parser.report(parser.getSpan(data.id), "Destructuring declaration in for loop initializer must be initialized", .{
+    if (parser.b.getData(data.id) != .binding_identifier) {
+        try parser.report(parser.b.getSpan(data.id), "Destructuring declaration in for loop initializer must be initialized", .{
             .help = "Add '= value' to provide the object or array to destructure from.",
         });
         return false;
     }
 
     if (kind == .@"const") {
-        try parser.report(parser.getSpan(data.id), "'const' declarations in for loop initializer must be initialized", .{
+        try parser.report(parser.b.getSpan(data.id), "'const' declarations in for loop initializer must be initialized", .{
             .help = "Add '= value' to initialize the constant in the for loop.",
         });
         return false;

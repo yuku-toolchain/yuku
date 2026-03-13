@@ -9,10 +9,9 @@ const expressions = @import("expressions.zig");
 pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .string_literal = .{
-            .raw_start = token.span.start,
-            .raw_len = @intCast(token.len()),
+            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }
@@ -20,7 +19,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .boolean_literal = .{ .value = token.tag == .true },
     }, token.span);
 }
@@ -28,7 +27,7 @@ pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.addNode(.{ .null_literal = .{} }, token.span);
+    return try parser.b.createNode(.{ .null_literal = .{} }, token.span);
 }
 
 pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -37,18 +36,16 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     // bigint literal is a separate node
     if (token.tag == .bigint_literal) {
-        return try parser.addNode(.{
+        return try parser.b.createNode(.{
             .bigint_literal = .{
-                .raw_start = token.span.start,
-                .raw_len = @intCast(token.len()),
+                .raw = parser.b.sourceSlice(token.span.start, token.span.end),
             },
         }, token.span);
     }
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .numeric_literal = .{
-            .raw_start = token.span.start,
-            .raw_len = @intCast(token.len()),
+            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
@@ -64,12 +61,10 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithRescannedToken(parser.lexer.createToken(.regex_literal, regex.span.start, regex.span.end)) orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .regexp_literal = .{
-            .pattern_start = @intCast(regex.span.start + 1),
-            .pattern_len = @intCast(regex.pattern.len),
-            .flags_start = @intCast(regex.span.end - regex.flags.len),
-            .flags_len = @intCast(regex.flags.len),
+            .pattern = parser.b.sourceSlice(regex.span.start + 1, regex.span.start + 1 + @as(u32, @intCast(regex.pattern.len))),
+            .flags = parser.b.sourceSlice(regex.span.end - @as(u32, @intCast(regex.flags.len)), regex.span.end),
         },
     }, regex.span);
 }
@@ -81,9 +76,9 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
 
     try parser.advance() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .template_literal = .{
-            .quasis = try parser.addExtra(&[_]ast.NodeIndex{element}),
+            .quasis = try parser.b.createExtra(&[_]ast.NodeIndex{element}),
             .expressions = ast.IndexRange.empty,
         },
     }, token.span);
@@ -142,10 +137,10 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
         if (is_tail) break;
     }
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .template_literal = .{
-            .quasis = try parser.addExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
-            .expressions = try parser.addExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
+            .quasis = try parser.createExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
+            .expressions = try parser.createExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
         },
     }, .{ .start = start, .end = end });
 }
@@ -159,10 +154,9 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
         try parser.report(span, "Bad escape sequence in untagged template literal", .{});
     }
 
-    return parser.addNode(.{
+    return parser.b.createNode(.{
         .template_element = .{
-            .raw_start = span.start,
-            .raw_len = @intCast(span.end - span.start),
+            .raw = parser.b.sourceSlice(span.start, span.end),
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },
@@ -190,10 +184,9 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .identifier_reference = .{
-            .name_start = token.span.start,
-            .name_len = @intCast(token.len()),
+            .name = parser.b.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }
@@ -203,10 +196,9 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .private_identifier = .{
-            .name_start = token.span.start + 1, // skip '#'
-            .name_len = @intCast(token.len() - 1),
+            .name = parser.b.sourceSlice(token.span.start + 1, token.span.end),
         },
     }, token.span);
 }
@@ -216,10 +208,9 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .identifier_name = .{
-            .name_start = token.span.start,
-            .name_len = @intCast(token.len()),
+            .name = parser.b.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }
@@ -230,10 +221,9 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const current = parser.current_token;
     try parser.advance() orelse return null;
 
-    return try parser.addNode(.{
+    return try parser.b.createNode(.{
         .label_identifier = .{
-            .name_start = current.span.start,
-            .name_len = @intCast(current.len()),
+            .name = parser.b.sourceSlice(current.span.start, current.span.end),
         },
     }, current.span);
 }

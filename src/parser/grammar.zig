@@ -14,15 +14,15 @@ pub inline fn parseExpressionInCover(parser: *Parser, precedence: u8) Error!?ast
 
 /// validate that an expression doesn't contain CoverInitializedName.
 pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Error!void {
-    const data = parser.getData(expr);
+    const data = parser.b.getData(expr);
 
     switch (data) {
         .object_expression => |obj| {
-            const properties = parser.getExtra(obj.properties);
+            const properties = parser.b.getExtra(obj.properties);
             for (properties) |prop| {
-                if (ast.isNull(prop)) continue;
+                if (prop == .null) continue;
 
-                const prop_data = parser.getData(prop);
+                const prop_data = parser.b.getData(prop);
 
                 switch (prop_data) {
                     .object_property => |obj_prop| {
@@ -40,9 +40,9 @@ pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Er
             }
         },
         .array_expression => |arr| {
-            const elements = parser.getExtra(arr.elements);
+            const elements = parser.b.getExtra(arr.elements);
             for (elements) |elem| {
-                if (ast.isNull(elem)) continue;
+                if (elem == .null) continue;
                 try validateNoCoverInitializedSyntax(parser, elem);
             }
         },
@@ -58,7 +58,7 @@ pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Er
             return validateNoCoverInitializedSyntax(parser, paren.expression);
         },
         .sequence_expression => |seq| {
-            for (parser.getExtra(seq.expressions)) |e| {
+            for (parser.b.getExtra(seq.expressions)) |e| {
                 try validateNoCoverInitializedSyntax(parser, e);
             }
         },
@@ -69,13 +69,13 @@ pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Er
 /// check if a node is a CoverInitializedName (assignment expression with = operator).
 /// CoverInitializedName: { a = 1 } where the value is AssignmentExpression
 pub inline fn isCoverInitializedName(parser: *Parser, node: ast.NodeIndex) bool {
-    const data = parser.getData(node);
+    const data = parser.b.getData(node);
     return data == .assignment_expression and data.assignment_expression.operator == .assign;
 }
 
 pub inline fn reportCoverInitializedNameError(parser: *Parser, node: ast.NodeIndex) Error!void {
     try parser.report(
-        parser.getSpan(node),
+        parser.b.getSpan(node),
         "Shorthand property cannot have a default value in object expression",
         .{ .help = "Use '{ a: a = 1 }' syntax or this is only valid in destructuring patterns." },
     );
@@ -95,20 +95,19 @@ pub fn expressionToPattern(
     expr: ast.NodeIndex,
     comptime context: PatternContext,
 ) Error!void {
-    const data = parser.getData(expr);
+    const data = parser.b.getData(expr);
 
     switch (data) {
         .identifier_reference => |id| {
-            parser.setData(expr, .{ .binding_identifier = .{
-                .name_start = id.name_start,
-                .name_len = id.name_len,
+            parser.b.replaceData(expr, .{ .binding_identifier = .{
+                .name = id.name,
             } });
         },
 
         .assignment_expression => |assign| {
             if (assign.operator != .assign) {
                 try parser.report(
-                    parser.getSpan(expr),
+                    parser.b.getSpan(expr),
                     "Invalid assignment operator in destructuring pattern",
                     .{ .help = "Only '=' is allowed in destructuring defaults, not compound operators like '+='." },
                 );
@@ -117,38 +116,38 @@ pub fn expressionToPattern(
 
             try expressionToPattern(parser, assign.left, context);
 
-            parser.setData(expr, .{ .assignment_pattern = .{
+            parser.b.replaceData(expr, .{ .assignment_pattern = .{
                 .left = assign.left,
                 .right = assign.right,
             } });
         },
 
         .array_expression => |arr| {
-            try array.toArrayPattern(parser, expr, arr.elements, parser.getSpan(expr), context);
+            try array.toArrayPattern(parser, expr, arr.elements, parser.b.getSpan(expr), context);
         },
 
         .object_expression => |obj| {
-            try object.toObjectPattern(parser, expr, obj.properties, parser.getSpan(expr), context);
+            try object.toObjectPattern(parser, expr, obj.properties, parser.b.getSpan(expr), context);
         },
 
         .spread_element => |spread| {
             const arg = spread.argument;
             try expressionToPattern(parser, arg, context);
 
-            if (parser.getData(arg) == .assignment_pattern) {
+            if (parser.b.getData(arg) == .assignment_pattern) {
                 try parser.report(
-                    parser.getSpan(expr),
+                    parser.b.getSpan(expr),
                     "A rest element cannot have an initializer",
                     .{ .help = "Remove the '= ...' from the rest element." },
                 );
             }
 
-            parser.setData(expr, .{ .binding_rest_element = .{ .argument = arg } });
+            parser.b.replaceData(expr, .{ .binding_rest_element = .{ .argument = arg } });
         },
 
         .chain_expression => {
             try parser.report(
-                parser.getSpan(expr),
+                parser.b.getSpan(expr),
                 "Optional chaining is not allowed in destructuring pattern",
                 .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
             );
@@ -157,7 +156,7 @@ pub fn expressionToPattern(
         .member_expression => {
             if (context != .assignable) {
                 try parser.report(
-                    parser.getSpan(expr),
+                    parser.b.getSpan(expr),
                     "Member expression is not allowed in binding pattern",
                     .{ .help = "Function parameters and variable declarations can only bind to identifiers, not member expressions like 'obj.prop' or 'obj[key]'. Use a simple identifier instead." },
                 );
@@ -167,7 +166,7 @@ pub fn expressionToPattern(
         .parenthesized_expression => |paren| {
             if (context != .assignable) {
                 try parser.report(
-                    parser.getSpan(expr),
+                    parser.b.getSpan(expr),
                     "Parentheses are not allowed in this binding pattern",
                     .{ .help = "Remove the extra parentheses. Binding patterns can only be identifiers, destructuring patterns, or assignment patterns, not parenthesized expressions." },
                 );
@@ -178,22 +177,22 @@ pub fn expressionToPattern(
 
             if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
-                    parser.getSpan(paren.expression),
+                    parser.b.getSpan(paren.expression),
                     "Parenthesized expression in destructuring pattern must be a simple assignment target",
                     .{ .help = "Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in destructuring patterns." },
                 );
                 return;
             }
 
-            parser.setData(expr, parser.getData(paren.expression));
-            parser.setSpan(expr, parser.getSpan(paren.expression));
+            parser.b.replaceData(expr, parser.b.getData(paren.expression));
+            parser.b.replaceSpan(expr, parser.b.getSpan(paren.expression));
         },
 
         .binding_identifier, .array_pattern, .object_pattern, .assignment_pattern => {},
 
         else => {
             try parser.report(
-                parser.getSpan(expr),
+                parser.b.getSpan(expr),
                 "Invalid element in destructuring pattern",
                 .{ .help = "Expected an identifier, array pattern, object pattern, or assignment pattern." },
             );

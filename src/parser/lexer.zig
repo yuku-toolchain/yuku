@@ -79,7 +79,7 @@ pub const Lexer = struct {
     cursor: u32,
 
     source_type: ast.SourceType,
-    hashbang: ?ast.Hashbang = null,
+    hashbang: ?struct { start: u32, len: u16 } = null,
 
     pub inline fn isStrictMode(self: *const Lexer) bool {
         return self.state.strict_mode;
@@ -112,7 +112,7 @@ pub const Lexer = struct {
             while (end < self.source.len and self.source[end] != '\n' and self.source[end] != '\r') {
                 end += 1;
             }
-            self.hashbang = .{ .value_start = 2, .value_len = @intCast(end - 2) };
+            self.hashbang = .{ .start = 2, .len = @intCast(end - 2) };
             self.cursor = end;
         }
     }

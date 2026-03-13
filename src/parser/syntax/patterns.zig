@@ -35,11 +35,10 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.addNode(
+    return try parser.b.createNode(
         .{
             .binding_identifier = .{
-                .name_start = current.span.start,
-                .name_len = @intCast(current.len()),
+                .name = parser.b.sourceSlice(current.span.start, current.span.end),
             },
         },
         current.span,
@@ -57,7 +56,7 @@ fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const start = parser.getSpan(left).start;
+    const start = parser.b.getSpan(left).start;
 
     if (parser.current_token.tag != .assign) return left;
 
@@ -65,9 +64,9 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-    return try parser.addNode(
+    return try parser.b.createNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
-        .{ .start = start, .end = parser.getSpan(right).end },
+        .{ .start = start, .end = parser.b.getSpan(right).end },
     );
 }
 
@@ -76,16 +75,16 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume ...
 
     const argument = try parseBindingPattern(parser) orelse return null;
-    const end = parser.getSpan(argument).end;
+    const end = parser.b.getSpan(argument).end;
 
-    return try parser.addNode(
+    return try parser.b.createNode(
         .{ .binding_rest_element = .{ .argument = argument } },
         .{ .start = start, .end = end },
     );
 }
 
 pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {
-    return switch (parser.getData(index)) {
+    return switch (parser.b.getData(index)) {
         .array_pattern, .object_pattern => true,
         .assignment_pattern => |pattern| isDestructuringPattern(parser, pattern.left),
         else => false,
