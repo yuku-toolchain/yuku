@@ -35,6 +35,7 @@ pub const Serializer = struct {
             try buildUtf16PosMap(allocator, tree.strings.source)
         else
             null;
+
         defer if (pos_map) |m| allocator.free(m);
 
         var self = Self{
@@ -49,6 +50,7 @@ pub const Serializer = struct {
             },
             .pos_map = pos_map,
         };
+
         defer self.scratch.deinit(allocator);
 
         try self.beginObject();
