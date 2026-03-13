@@ -69,9 +69,9 @@ pub fn parseClassDecorated(
 
     // class body
     const body = try parseClassBody(parser) orelse return null;
-    const body_end = parser.builder.getSpan(body).end;
+    const body_end = parser.b.getSpan(body).end;
 
-    return try parser.builder.createNode(.{
+    return try parser.b.createNode(.{
         .class = .{
             .type = class_type,
             .decorators = decorators,
@@ -121,7 +121,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the class, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.builder.createNode(.{
+    return try parser.b.createNode(.{
         .class_body = .{ .body = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint) },
     }, .{ .start = start, .end = end });
 }
@@ -153,9 +153,9 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // static { } - static block
         if (parser.current_token.tag == .left_brace) {
             if (decorators.len != 0) {
-                const first = parser.builder.getExtra(decorators)[0];
+                const first = parser.b.getExtra(decorators)[0];
                 try parser.report(
-                    parser.builder.getSpan(first),
+                    parser.b.getSpan(first),
                     "Decorators cannot be applied to static blocks",
                     .{ .help = "Remove the decorator or apply it to a method or field instead." },
                 );
@@ -170,8 +170,8 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // if next token is '(' or nothing that could be a class element key, 'static' is the key
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
-            key = try parser.builder.createNode(
-                .{ .identifier_name = .{ .name = parser.builder.sourceSlice(static_token.span.start, static_token.span.end) } },
+            key = try parser.b.createNode(
+                .{ .identifier_name = .{ .name = parser.b.sourceSlice(static_token.span.start, static_token.span.end) } },
                 static_token.span,
             );
         } else {
@@ -193,8 +193,8 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
             is_async = true;
         } else {
-            key = try parser.builder.createNode(
-                .{ .identifier_name = .{ .name = parser.builder.sourceSlice(async_token.span.start, async_token.span.end) } },
+            key = try parser.b.createNode(
+                .{ .identifier_name = .{ .name = parser.b.sourceSlice(async_token.span.start, async_token.span.end) } },
                 async_token.span,
             );
         }
@@ -231,8 +231,8 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                     is_accessor = true;
                 }
             } else {
-                key = try parser.builder.createNode(
-                    .{ .identifier_name = .{ .name = parser.builder.sourceSlice(modifier_token.span.start, modifier_token.span.end) } },
+                key = try parser.b.createNode(
+                    .{ .identifier_name = .{ .name = parser.b.sourceSlice(modifier_token.span.start, modifier_token.span.end) } },
                     modifier_token.span,
                 );
             }
@@ -249,16 +249,16 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // ClassElementName : PrivateIdentifier
     //    It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
     if (!computed) {
-        const data = parser.builder.getData(key);
+        const data = parser.b.getData(key);
 
         if (data == .private_identifier) {
             const pi = data.private_identifier;
 
-            const name = parser.builder.getString(pi.name);
+            const name = parser.b.getString(pi.name);
 
             if (ecmascript.eqlStringValue(name, "constructor")) {
                 try parser.report(
-                    parser.builder.getSpan(key),
+                    parser.b.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
                     .{ .help = "Use a different name for this private member." },
                 );
@@ -360,8 +360,8 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
 
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
-        const key = try parser.builder.createNode(
-            .{ .identifier_name = .{ .name = parser.builder.sourceSlice(token.span.start, token.span.end) } },
+        const key = try parser.b.createNode(
+            .{ .identifier_name = .{ .name = parser.b.sourceSlice(token.span.start, token.span.end) } },
             token.span,
         );
         return .{ .key = key, .computed = false };
@@ -396,14 +396,14 @@ fn parseMethodDefinition(
     if (kind == .constructor) {
         if (is_async) {
             try parser.report(
-                parser.builder.getSpan(key),
+                parser.b.getSpan(key),
                 "Constructor cannot be async",
                 .{ .help = "Remove the 'async' modifier from the constructor." },
             );
         }
         if (is_generator) {
             try parser.report(
-                parser.builder.getSpan(key),
+                parser.b.getSpan(key),
                 "Constructor cannot be a generator",
                 .{ .help = "Remove the '*' from the constructor." },
             );
@@ -411,13 +411,13 @@ fn parseMethodDefinition(
     } else if (is_generator) {
         if (kind == .get) {
             try parser.report(
-                parser.builder.getSpan(key),
+                parser.b.getSpan(key),
                 "Getter cannot be a generator",
                 .{ .help = "Remove the '*' from the getter definition." },
             );
         } else if (kind == .set) {
             try parser.report(
-                parser.builder.getSpan(key),
+                parser.b.getSpan(key),
                 "Setter cannot be a generator",
                 .{ .help = "Remove the '*' from the setter definition." },
             );
@@ -440,12 +440,12 @@ fn parseMethodDefinition(
     if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
 
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
-    const params_data = parser.builder.getData(params).formal_parameters;
+    const params_data = parser.b.getData(params).formal_parameters;
 
     if (kind == .get) {
         if (params_data.items.len != 0 or params_data.rest != .null) {
             try parser.report(
-                parser.builder.getSpan(params),
+                parser.b.getSpan(params),
                 "Getter must have no parameters",
                 .{ .help = "Remove all parameters from the getter." },
             );
@@ -455,7 +455,7 @@ fn parseMethodDefinition(
     if (kind == .set) {
         if (params_data.items.len != 1 or params_data.rest != .null) {
             try parser.report(
-                parser.builder.getSpan(params),
+                parser.b.getSpan(params),
                 "Setter must have exactly one parameter",
                 .{ .help = "Setters accept exactly one argument." },
             );
@@ -466,9 +466,9 @@ fn parseMethodDefinition(
 
     // body
     const body = try functions.parseFunctionBody(parser) orelse return null;
-    const body_end = parser.builder.getSpan(body).end;
+    const body_end = parser.b.getSpan(body).end;
 
-    const func = try parser.builder.createNode(
+    const func = try parser.b.createNode(
         .{ .function = .{
             .type = .function_expression,
             .id = .null,
@@ -480,7 +480,7 @@ fn parseMethodDefinition(
         .{ .start = func_start, .end = body_end },
     );
 
-    return try parser.builder.createNode(
+    return try parser.b.createNode(
         .{ .method_definition = .{
             .decorators = decorators,
             .key = key,
@@ -512,12 +512,12 @@ fn parsePropertyDefinition(
     }
 
     var value: ast.NodeIndex = .null;
-    var end = parser.builder.getSpan(key).end;
+    var end = parser.b.getSpan(key).end;
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null; // consume '='
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        end = parser.builder.getSpan(value).end;
+        end = parser.b.getSpan(value).end;
     }
 
     const tag = parser.current_token.tag;
@@ -533,7 +533,7 @@ fn parsePropertyDefinition(
         return null;
     }
 
-    return try parser.builder.createNode(
+    return try parser.b.createNode(
         .{ .property_definition = .{
             .decorators = decorators,
             .key = key,
@@ -571,7 +571,7 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
 
-    return try parser.builder.createNode(
+    return try parser.b.createNode(
         .{ .static_block = .{ .body = body } },
         .{ .start = start, .end = end },
     );

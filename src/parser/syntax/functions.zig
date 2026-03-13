@@ -120,7 +120,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         body = try parseFunctionBody(parser) orelse .null;
     }
 
-    const end = if (body != .null) parser.builder.getSpan(body).end else params_end;
+    const end = if (body != .null) parser.b.getSpan(body).end else params_end;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
@@ -138,7 +138,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         }
     }
 
-    return try parser.builder.createNode(.{
+    return try parser.b.createNode(.{
         .function = .{
             .type = function_type,
             .id = id,
@@ -180,7 +180,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.builder.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.b.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Error!?ast.NodeIndex {
@@ -198,12 +198,12 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         if (parser.current_token.tag == .spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
             if (rest != .null) {
-                end = parser.builder.getSpan(rest).end;
+                end = parser.b.getSpan(rest).end;
             }
 
             if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
-                    .{ .start = parser.builder.getSpan(rest).start, .end = parser.current_token.span.end },
+                    .{ .start = parser.b.getSpan(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
                     .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
                 );
@@ -213,7 +213,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         } else {
             const param = try parseFormalParamater(parser) orelse break;
 
-            end = parser.builder.getSpan(param).end;
+            end = parser.b.getSpan(param).end;
 
             try parser.scratch_a.append(parser.allocator(), param);
         }
@@ -223,7 +223,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         } else break;
     }
 
-    return try parser.builder.createNode(.{ .formal_parameters = .{
+    return try parser.b.createNode(.{ .formal_parameters = .{
         .items = try parser.createExtraFromScratch(&parser.scratch_a, params_checkpoint),
         .rest = rest,
         .kind = kind,
@@ -237,21 +237,21 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
-    return try parser.builder.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.builder.getSpan(pattern));
+    return try parser.b.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.b.getSpan(pattern));
 }
 
 // https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
 pub fn isSimpleParametersList(parser: *Parser, formal_parameters: ast.NodeIndex) bool {
-    const data = parser.builder.getData(formal_parameters).formal_parameters;
+    const data = parser.b.getData(formal_parameters).formal_parameters;
 
     if (data.rest != .null) {
         return false;
     }
 
-    const items = parser.builder.getExtra(data.items);
+    const items = parser.b.getExtra(data.items);
     for (items) |item| {
-        const param = parser.builder.getData(item).formal_parameter;
-        const pattern = parser.builder.getData(param.pattern);
+        const param = parser.b.getData(item).formal_parameter;
+        const pattern = parser.b.getData(param.pattern);
         if (pattern != .binding_identifier) {
             return false;
         }

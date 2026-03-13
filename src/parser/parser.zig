@@ -46,7 +46,7 @@ const ParserState = struct {
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
-    builder: ast.TreeBuilder,
+    b: ast.TreeBuilder,
     source: []const u8,
     source_type: ast.SourceType,
     lang: ast.Lang,
@@ -68,7 +68,7 @@ pub const Parser = struct {
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
         return .{
-            .builder = ast.TreeBuilder.init(child_allocator, source),
+            .b = ast.TreeBuilder.init(child_allocator, source),
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
@@ -78,12 +78,12 @@ pub const Parser = struct {
     }
 
     pub inline fn allocator(self: *Parser) std.mem.Allocator {
-        return self.builder.allocator();
+        return self.b.allocator();
     }
 
     pub fn parse(self: *Parser) Error!ast.ParseTree {
         try self.parseInner();
-        return self.builder.toTree(.{
+        return self.b.toTree(.{
             .source_type = self.source_type,
             .lang = self.lang,
         });
@@ -91,7 +91,7 @@ pub const Parser = struct {
 
     pub fn build(self: *Parser) Error!ast.TreeBuilder {
         try self.parseInner();
-        return self.builder;
+        return self.b;
     }
 
     fn parseInner(self: *Parser) Error!void {
@@ -112,7 +112,7 @@ pub const Parser = struct {
             self.current_token = Token.eof(0);
         };
 
-        errdefer self.builder.arena.deinit();
+        errdefer self.b.arena.deinit();
 
         try self.ensureCapacity();
 
@@ -120,23 +120,23 @@ pub const Parser = struct {
 
         const end = self.current_token.span.end;
 
-        self.builder.program = try self.builder.createNode(
+        self.b.program = try self.b.createNode(
             .{
                 .program = .{
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = self.builder.sourceSlice(h.start, h.start + h.len),
+                        .value = self.b.sourceSlice(h.start, h.start + h.len),
                     } else null,
                 },
             },
             .{ .start = 0, .end = end },
         );
 
-        self.builder.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
+        self.b.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
 
         for (self.lexer.comments.items) |*comment| {
-            comment.value = self.builder.sourceSlice(switch (comment.type) {
+            comment.value = self.b.sourceSlice(switch (comment.type) {
                 .line => comment.start + 2,
                 .block => comment.start + 2,
             }, switch (comment.type) {
@@ -144,7 +144,7 @@ pub const Parser = struct {
                 .block => comment.end - 2,
             });
         }
-        self.builder.comments = try self.lexer.comments.toOwnedSlice(alloc);
+        self.b.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
 
     const BodyKind = enum {
@@ -216,15 +216,15 @@ pub const Parser = struct {
     }
 
     pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
-        const start: u32 = @intCast(self.builder.extra.items.len);
+        const start: u32 = @intCast(self.b.extra.items.len);
         const slice = scratch.items.items[checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
-            if (self.builder.extra.items.len + slice.len <= self.builder.extra.capacity) {
-                self.builder.extra.appendSliceAssumeCapacity(slice);
+            if (self.b.extra.items.len + slice.len <= self.b.extra.capacity) {
+                self.b.extra.appendSliceAssumeCapacity(slice);
             } else {
-                try self.builder.extra.appendSlice(self.allocator(), slice);
+                try self.b.extra.appendSlice(self.allocator(), slice);
             }
         }
 
@@ -445,7 +445,7 @@ pub const Parser = struct {
     }
 
     fn ensureCapacity(self: *Parser) Error!void {
-        if (self.builder.nodes.capacity > 0) return;
+        if (self.b.nodes.capacity > 0) return;
 
         const alloc = self.allocator();
         const source_len = self.source.len;
@@ -462,8 +462,8 @@ pub const Parser = struct {
         else
             estimated_nodes / 3;
 
-        try self.builder.nodes.ensureTotalCapacity(alloc, estimated_nodes);
-        try self.builder.extra.ensureTotalCapacity(alloc, estimated_extra);
+        try self.b.nodes.ensureTotalCapacity(alloc, estimated_nodes);
+        try self.b.extra.ensureTotalCapacity(alloc, estimated_extra);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
