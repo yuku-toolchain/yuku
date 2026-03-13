@@ -170,13 +170,11 @@ pub const MutableStringPool = struct {
     }
 
     /// Creates a `StringId` referencing a range in the original source.
-    /// Used internally by the parser; transform users should use `add()`.
     pub inline fn sourceSlice(_: *const MutableStringPool, start: u32, end: u32) StringId {
         return .{ .start = start, .end = end };
     }
 
     /// Copies `str` into the extra buffer and returns a `StringId` for it.
-    /// Use this in transforms and when building ASTs programmatically.
     pub fn add(self: *MutableStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
         const src_len: u32 = @intCast(self.source.len);
         const start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
