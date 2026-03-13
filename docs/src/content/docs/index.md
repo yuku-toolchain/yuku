@@ -20,7 +20,7 @@ A high-performance JavaScript/TypeScript toolchain written in Zig, bringing mode
 </div>
 
 :::note
-**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. A visitor/traverser API and TypeScript support are currently in progress.
+**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. The traverser system (basic, scoped, semantic, and transform traversers) is functional. TypeScript support is currently in progress.
 :::
 
 ## Why Yuku
@@ -42,7 +42,7 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 | [JavaScript/JSX Parser](/parser) | Complete |
 | [AST](/parser/ast) | Complete |
 | TypeScript Parsing | In Progress |
-| [Visitor/Traverser](/parser/traverse) | Planned |
+| [Traverser](/parser/traverse) | In Progress |
 | Module Resolver | Planned |
 
 ## Quick start

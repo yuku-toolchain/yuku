@@ -93,11 +93,11 @@ defer tree.deinit(); // frees everything at once
 | Field | Type | Description |
 |-------|------|-------------|
 | `program` | `NodeIndex` | Root node (always a `Program`) |
-| `source` | `[]const u8` | The original source code |
 | `nodes` | `NodeList.Slice` | All AST nodes |
-| `extra` | `[]NodeIndex` | Extra data for variadic children (arrays of child nodes) |
+| `extra` | `[]const NodeIndex` | Extra data for variadic children (arrays of child nodes) |
 | `diagnostics` | `[]const Diagnostic` | Errors and warnings from parsing |
 | `comments` | `[]const Comment` | All comments found in the source |
+| `strings` | `StringPool` | All strings referenced by AST nodes. Access `strings.source` for the original source text. |
 | `source_type` | `SourceType` | Whether parsed as module or script |
 | `lang` | `Lang` | Language variant used |
 
@@ -119,9 +119,52 @@ const span = tree.getSpan(some_node_index);
 // Get the children stored in an IndexRange
 const children = tree.getExtra(some_index_range);
 
-// Get source text by position
-const text = tree.getSourceText(start, len);
+// Get string content from a StringId
+const text = tree.getString(some_string_id);
 ```
+
+## The `TreeBuilder`
+
+If you need to modify the AST after parsing (e.g. with the transform traverser), use `parser.build()` instead of `parser.parse()`. It returns a mutable `TreeBuilder`:
+
+```zig
+var builder = try parser.build(allocator, source, .{});
+
+// Run transforms on the mutable tree...
+// var t = MyTransform{};
+// try transform.traverse(MyTransform, &builder, &t);
+
+// Convert to an immutable ParseTree when done
+var tree = builder.toTree(.{});
+defer tree.deinit();
+```
+
+The `TreeBuilder` supports all the same read methods as `ParseTree` (`getData`, `getSpan`, `getExtra`, `getString`), plus mutation methods:
+
+| Method | Description |
+|--------|-------------|
+| `replaceData(index, data)` | Replace a node's data in place |
+| `replaceSpan(index, span)` | Replace a node's source span |
+| `createNode(data, span)` | Append a new node, returns its `NodeIndex` |
+| `createExtra(children)` | Allocate a child list, returns an `IndexRange` |
+| `addString(str)` | Add a new string to the pool, returns a `StringId` |
+
+Call `builder.toTree(meta)` to finalize into an immutable `ParseTree`. The builder should not be used after this.
+
+:::tip[Traversing and Building ASTs]
+The `TreeBuilder` is used together with the **traverser system** to walk, analyze, and transform the AST. Yuku provides four traversal modes, each building on the previous:
+
+- **Basic** — walk the tree with parent/ancestor access at each node, no allocator needed.
+- **Scoped** — adds automatic JavaScript lexical scope tracking. At each node, query the current scope, walk ancestor scopes, check strict mode, and more. Returns a complete `ScopeTree` after traversal.
+- **Semantic** — adds symbol and reference tracking on top of scopes. At each node, access all declarations and references discovered so far, iterate symbols within a scope, and navigate the scope-symbol hierarchy. Returns a `ScopeTree` + `SymbolTable` after traversal.
+- **Transform** — operates on a mutable `TreeBuilder`, letting you replace nodes, create new nodes, add strings, and restructure the tree while traversing it.
+
+All modes give you full navigation at every node — parents, ancestors, children, siblings, scopes, symbols — so you can read, analyze, or restructure the AST however you need, with full context, at any point during traversal.
+
+You can also use `TreeBuilder.initEmpty()` to build ASTs programmatically from scratch — either standalone, or from within a visitor hook while traversing another tree, with full access to the current context (ancestors, scopes, symbols) to guide the construction.
+
+See the [Traverse documentation](/parser/traverse) for the full guide on visitor hooks, actions, and usage examples for each mode.
+:::
 
 ### Checking for Errors
 

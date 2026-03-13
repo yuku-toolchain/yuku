@@ -66,31 +66,31 @@ for (statements) |stmt| {
 
 ### Optional Nodes
 
-Optional child nodes use `null_node` (the maximum `u32` value) to indicate "not present":
+Optional child nodes use `.null` (the maximum `u32` value) to indicate "not present":
 
 ```zig
-const ast = parser.ast;
-
 const if_stmt = tree.getData(node).if_statement;
 
 // The else clause is optional
-if (!ast.isNull(if_stmt.alternate)) {
+if (if_stmt.alternate != .null) {
     const else_body = tree.getData(if_stmt.alternate);
     // process else...
 }
 ```
 
-## Zero-Copy Source References
+## String References
 
-String values in the AST (identifiers, string literals, numeric literals, etc.) are not copied. Instead, each node stores a `_start` (u32) and `_len` (u16) that reference directly into the original source buffer:
+String values in the AST (identifiers, string literals, numeric literals, etc.) are stored as `StringId` values. A `StringId` is a `{ start: u32, end: u32 }` pair that can reference either the original source buffer (zero-copy) or strings added programmatically via `TreeBuilder.addString()`.
 
 ```zig
 const id = tree.getData(node).identifier_reference;
-const name = tree.getSourceText(id.name_start, id.name_len);
-// "name" is a slice of the original source
+const name = tree.getString(id.name);
+// "name" is resolved from the string pool
 ```
 
-This applies to all text-carrying nodes: identifiers, string literals, numeric literals, BigInt literals, regex patterns, template elements, and more. The original source bytes are reused, avoiding any string allocation or copying during parsing.
+Use `tree.getString(id)` (on `ParseTree`) or `builder.getString(id)` (on `TreeBuilder`) to resolve any `StringId` to its text.
+
+This applies to all text-carrying nodes: identifiers, string literals, numeric literals, BigInt literals, regex patterns, template elements, and more. When parsing source code, the original source bytes are referenced directly (zero-copy). When building or transforming ASTs programmatically, new strings are stored in a growable buffer alongside the source.
 
 ## Node Types
 
@@ -103,7 +103,7 @@ The root node of every AST.
 | Node | Fields | Description |
 |------|--------|-------------|
 | `program` | `source_type`, `body: IndexRange`, `hashbang: ?Hashbang` | Root node. `body` contains all top-level statements. |
-| `directive` | `expression: NodeIndex`, `value_start`, `value_len` | String directives like `"use strict"`. |
+| `directive` | `expression: NodeIndex`, `value: StringId` | String directives like `"use strict"`. |
 
 ### Statements
 
@@ -113,14 +113,14 @@ The root node of every AST.
 | `expression_statement` | `expression: NodeIndex` | `expr;` |
 | `empty_statement` | (none) | `;` |
 | `debugger_statement` | (none) | `debugger;` |
-| `return_statement` | `argument: NodeIndex` | `return expr;` (argument may be null_node) |
+| `return_statement` | `argument: NodeIndex` | `return expr;` (argument may be `.null`) |
 | `throw_statement` | `argument: NodeIndex` | `throw expr;` |
 | `break_statement` | `label: NodeIndex` | `break;` or `break label;` |
 | `continue_statement` | `label: NodeIndex` | `continue;` or `continue label;` |
 | `labeled_statement` | `label: NodeIndex`, `body: NodeIndex` | `label: stmt` |
 | `if_statement` | `test`, `consequent`, `alternate: NodeIndex` | `if (test) consequent else alternate` |
 | `switch_statement` | `discriminant: NodeIndex`, `cases: IndexRange` | `switch (x) { ... }` |
-| `switch_case` | `test: NodeIndex`, `consequent: IndexRange` | `case x:` or `default:` (test is null_node for default) |
+| `switch_case` | `test: NodeIndex`, `consequent: IndexRange` | `case x:` or `default:` (test is `.null` for default) |
 | `for_statement` | `init`, `test`, `update`, `body: NodeIndex` | `for (init; test; update) body` |
 | `for_in_statement` | `left`, `right`, `body: NodeIndex` | `for (left in right) body` |
 | `for_of_statement` | `left`, `right`, `body: NodeIndex`, `await: bool` | `for (left of right) body` |
@@ -148,17 +148,17 @@ The root node of every AST.
 
 | Node | Fields | Description |
 |------|--------|-------------|
-| `identifier_reference` | `name_start`, `name_len` | Variable reference (`foo`) |
+| `identifier_reference` | `name: StringId` | Variable reference (`foo`) |
 | `this_expression` | (none) | `this` |
 | `super` | (none) | `super` |
 | `null_literal` | (none) | `null` |
 | `boolean_literal` | `value: bool` | `true` or `false` |
-| `numeric_literal` | `raw_start`, `raw_len`, `kind` | `42`, `0xFF`, `0o77`, `0b10` |
-| `bigint_literal` | `raw_start`, `raw_len` | `42n` |
-| `string_literal` | `raw_start`, `raw_len` | `"hello"` or `'hello'` |
-| `regexp_literal` | `pattern_start`, `pattern_len`, `flags_start`, `flags_len` | `/pattern/flags` |
+| `numeric_literal` | `raw: StringId`, `kind` | `42`, `0xFF`, `0o77`, `0b10` |
+| `bigint_literal` | `raw: StringId` | `42n` |
+| `string_literal` | `raw: StringId` | `"hello"` or `'hello'` |
+| `regexp_literal` | `pattern: StringId`, `flags: StringId` | `/pattern/flags` |
 | `template_literal` | `quasis: IndexRange`, `expressions: IndexRange` | `` `hello ${name}` `` |
-| `template_element` | `raw_start`, `raw_len`, `tail`, `is_cooked_undefined` | Text part of a template |
+| `template_element` | `raw: StringId`, `tail`, `is_cooked_undefined` | Text part of a template |
 | `tagged_template_expression` | `tag`, `quasi: NodeIndex` | `` tag`template` `` |
 | `array_expression` | `elements: IndexRange` | `[a, b, c]` |
 | `object_expression` | `properties: IndexRange` | `{a: 1, b}` |
@@ -202,14 +202,14 @@ Patterns appear in variable declarations, function parameters, assignment target
 
 | Node | Fields | Description |
 |------|--------|-------------|
-| `binding_identifier` | `name_start`, `name_len` | Simple identifier binding (`x`) |
+| `binding_identifier` | `name: StringId` | Simple identifier binding (`x`) |
 | `array_pattern` | `elements: IndexRange`, `rest: NodeIndex` | `[a, b, ...rest]` |
 | `object_pattern` | `properties: IndexRange`, `rest: NodeIndex` | `{a, b: c, ...rest}` |
 | `binding_property` | `key`, `value: NodeIndex`, `shorthand`, `computed: bool` | Property in object pattern |
 | `assignment_pattern` | `left`, `right: NodeIndex` | `pattern = default` |
 | `binding_rest_element` | `argument: NodeIndex` | `...rest` |
 
-Array pattern elements can be `null_node` to represent holes: `[a, , b]`.
+Array pattern elements can be ``.null`` to represent holes: `[a, , b]`.
 
 ### Identifiers
 
@@ -225,13 +225,13 @@ const foo = bar.baz;
 
 | Node | Fields | Description |
 |------|--------|-------------|
-| `binding_identifier` | `name_start`, `name_len` | Declaration position (`let x`, `function f`) |
-| `identifier_reference` | `name_start`, `name_len` | Expression position (reading a variable) |
-| `identifier_name` | `name_start`, `name_len` | Property keys, member access (`obj.prop`) |
-| `label_identifier` | `name_start`, `name_len` | Labels in `break`/`continue` |
-| `private_identifier` | `name_start`, `name_len` | `#name` (the stored name excludes the `#` prefix) |
+| `binding_identifier` | `name: StringId` | Declaration position (`let x`, `function f`) |
+| `identifier_reference` | `name: StringId` | Expression position (reading a variable) |
+| `identifier_name` | `name: StringId` | Property keys, member access (`obj.prop`) |
+| `label_identifier` | `name: StringId` | Labels in `break`/`continue` |
+| `private_identifier` | `name: StringId` | `#name` (the stored name excludes the `#` prefix) |
 
-All identifier types store source position and length, referencing the original source text directly.
+All identifier types store a `StringId` referencing the identifier text. Use `tree.getString(id.name)` to get the string value.
 
 ### Imports and Exports
 
@@ -257,14 +257,14 @@ Import phases support source phase imports (`import source x from "x"`) and defe
 | `jsx_opening_element` | `name: NodeIndex`, `attributes: IndexRange`, `self_closing: bool` | `<Foo bar={x}>` |
 | `jsx_closing_element` | `name: NodeIndex` | `</Foo>` |
 | `jsx_fragment` | `opening_fragment`, `closing_fragment: NodeIndex`, `children: IndexRange` | `<>...</>` |
-| `jsx_identifier` | `name_start`, `name_len` | Tag and attribute names |
+| `jsx_identifier` | `name: StringId` | Tag and attribute names |
 | `jsx_namespaced_name` | `namespace`, `name: NodeIndex` | `ns:name` |
 | `jsx_member_expression` | `object`, `property: NodeIndex` | `Foo.Bar` |
 | `jsx_attribute` | `name`, `value: NodeIndex` | `name={value}` or `name="str"` |
 | `jsx_spread_attribute` | `argument: NodeIndex` | `{...props}` |
 | `jsx_expression_container` | `expression: NodeIndex` | `{expr}` |
 | `jsx_empty_expression` | (none) | `{}` (empty expression container) |
-| `jsx_text` | `raw_start`, `raw_len` | Text content between tags |
+| `jsx_text` | `raw: StringId` | Text content between tags |
 
 ## Operators
 
@@ -293,7 +293,7 @@ Comments are collected separately from the AST during parsing:
 for (tree.comments) |comment| {
     // comment.type is .line or .block
     // comment.start, comment.end are byte positions
-    const text = comment.getValue(tree.source);
+    const text = tree.getString(comment.value);
     // For line comments: text excludes the "//" prefix
     // For block comments: text excludes "/*" and "*/"
 }
