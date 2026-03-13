@@ -1,4 +1,6 @@
 // converts the parsed tree to estree/typescript-estree compatible JSON string.
+// and.... i know this is slow tbh, and only recommended for testing purposes.
+// we will find and build a fast way to pass AST to JS later, in meantime, this serializer to JSOn string is enough.
 
 const std = @import("std");
 const ast = @import("ast.zig");
