@@ -151,19 +151,19 @@ The `TreeBuilder` supports all the same read methods as `ParseTree` (`getData`, 
 
 Call `builder.toTree(meta)` to finalize into an immutable `ParseTree`. The builder should not be used after this.
 
-:::tip[Traversing and Building ASTs]
-The `TreeBuilder` is used together with the **traverser system** to walk, analyze, and transform the AST. Yuku provides four traversal modes, each building on the previous:
+:::tip[Traversal and AST Construction]
+Yuku provides a rich **traverser system** with four modes for walking, analyzing, and transforming the AST:
 
-- **Basic** — walk the tree with parent/ancestor access at each node, no allocator needed.
-- **Scoped** — adds automatic JavaScript lexical scope tracking. At each node, query the current scope, walk ancestor scopes, check strict mode, and more. Returns a complete `ScopeTree` after traversal.
-- **Semantic** — adds symbol and reference tracking on top of scopes. At each node, access all declarations and references discovered so far, iterate symbols within a scope, and navigate the scope-symbol hierarchy. Returns a `ScopeTree` + `SymbolTable` after traversal.
-- **Transform** — operates on a mutable `TreeBuilder`, letting you replace nodes, create new nodes, add strings, and restructure the tree while traversing it.
+| Mode | Description | Result |
+|------|-------------|--------|
+| **Basic** | Walk with parent and ancestor access. No allocator needed. | |
+| **Scoped** | Automatic lexical scope tracking. Query scopes, walk ancestors, check strict mode, and more. | `ScopeTree` |
+| **Semantic** | Symbol and reference tracking on top of scopes. Iterate declarations, resolve bindings, navigate the scope-symbol hierarchy. | `ScopeTree` + `SymbolTable` |
+| **Transform** | Operates on a mutable `TreeBuilder`. Replace nodes, create new ones, add strings, and restructure the tree during traversal safely. | |
 
-All modes give you full navigation at every node — parents, ancestors, children, siblings, scopes, symbols — so you can read, analyze, or restructure the AST however you need, with full context, at any point during traversal.
+Every mode gives you full context at every node: parents, ancestors, children, siblings, and any scope or symbol information accumulated so far. You can also use `TreeBuilder.initEmpty()` to build an AST from scratch, either standalone or from within a visitor hook on another tree with full access to the traversal context.
 
-You can also use `TreeBuilder.initEmpty()` to build ASTs programmatically from scratch — either standalone, or from within a visitor hook while traversing another tree, with full access to the current context (ancestors, scopes, symbols) to guide the construction.
-
-See the [Traverse documentation](/parser/traverse) for the full guide on visitor hooks, actions, and usage examples for each mode.
+See the [Traverse documentation](/parser/traverse) for the complete guide.
 :::
 
 ### Checking for Errors
