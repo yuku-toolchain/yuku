@@ -20,8 +20,6 @@ pub const Serializer = struct {
     needs_comma_bits: [8]u64 = .{0} ** 8,
     scratch: std.ArrayList(u8) = .empty,
     isTs: bool,
-    /// UTF-16 position map. Built from source for parsed trees.
-    /// null for manually-built trees (positions pass through unchanged).
     pos_map: ?[]u32,
     in_jsx_attribute: bool = false,
 
