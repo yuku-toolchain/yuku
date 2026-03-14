@@ -164,17 +164,14 @@ pub const MutableStringPool = struct {
     /// Growable buffer for strings created via `add()`.
     extra: std.ArrayList(u8) = .empty,
 
-    /// Returns the string content for the given `StringId`.
     pub inline fn get(self: *const MutableStringPool, id: StringId) []const u8 {
         return id.resolve(self.source, self.extra.items);
     }
 
-    /// Creates a `StringId` referencing a range in the original source.
     pub inline fn sourceSlice(_: *const MutableStringPool, start: u32, end: u32) StringId {
         return .{ .start = start, .end = end };
     }
 
-    /// Copies `str` into the extra buffer and returns a `StringId` for it.
     pub fn add(self: *MutableStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
         const src_len: u32 = @intCast(self.source.len);
         const start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
