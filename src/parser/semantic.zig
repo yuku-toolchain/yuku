@@ -15,22 +15,28 @@ pub const AnalysisError = Allocator.Error;
 pub const Analysis = struct {
     result: semantic.Result,
     diagnostics: []const ast.Diagnostic = &.{},
+    arena: std.heap.ArenaAllocator,
 
     pub fn deinit(self: *Analysis) void {
         self.result.deinit();
+        self.arena.deinit();
     }
 };
 
 pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) AnalysisError!Analysis {
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    errdefer arena.deinit();
+
     var visitor = SemanticVisit{
-        .allocator = allocator,
+        .allocator = arena.allocator(),
     };
 
     const result = try semantic.traverse(SemanticVisit, tree, &visitor, allocator);
 
     return .{
         .result = result,
-        .diagnostics = try visitor.diagnostics.toOwnedSlice(allocator),
+        .diagnostics = try visitor.diagnostics.toOwnedSlice(arena.allocator()),
+        .arena = arena,
     };
 }
 

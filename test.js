@@ -1,2 +1,4 @@
-const a = 10;
-const a = 10;
+function name(a, b) {
+	const c = "wow";
+	const b = a;
+}
