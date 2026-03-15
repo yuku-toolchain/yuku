@@ -113,10 +113,9 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
     // for-in / for-of: single declarator
     if (parser.current_token.tag == .in) {
         if(kind == .using or kind == .await_using) {
-            try parser.reportFmt(
+            try parser.report(
                 .{ .start = decl_start, .end = first_end },
-                "The left-hand side of a for...in statement cannot be an {s} declaration.",
-                .{kind.toString()},
+                try parser.fmt("The left-hand side of a for...in statement cannot be an {s} declaration.", .{kind.toString()}),
                 .{ .help = "Did you mean to use a for...of statement?" });
         }
 

@@ -89,8 +89,8 @@ const SemanticVisit = struct {
         return .{ .span = span, .message = message };
     }
 
-    pub fn labels(self: *Self, ls: []const ast.Label) Allocator.Error![]const ast.Label {
-        return try self.allocator.dupe(ast.Label, ls);
+    pub fn labels(self: *Self, items: []const ast.Label) Allocator.Error![]const ast.Label {
+        return try self.allocator.dupe(ast.Label, items);
     }
 
     pub fn fmt(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {

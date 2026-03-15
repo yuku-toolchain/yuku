@@ -175,12 +175,12 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
         const opening_span = parser.b.getSpan(opening_name);
         const closing_span = parser.b.getSpan(name);
 
-        try parser.report(closing_span, try parser.formatMessage(
+        try parser.report(closing_span, try parser.fmt(
             "Expected closing tag for '<{s}>' but found '</{s}>'",
             .{ parser.getSpanText(opening_span), parser.getSpanText(closing_span) },
         ), .{
             .help = "JSX opening and closing tags must have matching names",
-            .labels = try parser.makeLabels(&.{parser.label(opening_span, "opening tag")}),
+            .labels = try parser.labels(&.{parser.label(opening_span, "opening tag")}),
         });
 
         return null;

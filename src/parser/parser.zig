@@ -393,20 +393,15 @@ pub const Parser = struct {
         try self.report(span, expected_message, opts);
     }
 
-    pub fn reportFmt(self: *Parser, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Error!void {
-        const message = try std.fmt.allocPrint(self.allocator(), format, args);
-        try self.report(span, message, opts);
-    }
-
     pub fn label(_: *Parser, span: ast.Span, message: []const u8) ast.Label {
         return .{ .span = span, .message = message };
     }
 
-    pub fn makeLabels(self: *Parser, labels: []const ast.Label) Error![]const ast.Label {
-        return try self.allocator().dupe(ast.Label, labels);
+    pub fn labels(self: *Parser, items: []const ast.Label) Error![]const ast.Label {
+        return try self.allocator().dupe(ast.Label, items);
     }
 
-    pub fn formatMessage(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
+    pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 

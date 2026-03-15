@@ -113,10 +113,9 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
             .{ .help = "Add '= value' to initialize the constant, or use 'let' if you need to assign it later." },
         );
     } else if (is_using) {
-        try parser.reportFmt(
+        try parser.report(
             id_span,
-            "'{s}' declarations must be initialized",
-            .{kind.toString()},
+            try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
             .{ .help = "Disposable resources require an initial value that implements the dispose protocol." },
         );
     }

@@ -71,7 +71,7 @@ pub fn parseCover(parser: *Parser) Error!?ObjectCover {
             "Unterminated object",
             .{
                 .help = "Add a closing '}' to complete the object.",
-                .labels = try parser.makeLabels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
+                .labels = try parser.labels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
             },
         );
         return null;
@@ -162,10 +162,9 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         } else if (parser.current_token.tag.isNumericLiteral()) {
             key = try literals.parseNumericLiteral(parser) orelse return null;
         } else {
-            try parser.reportFmt(
+            try parser.report(
                 parser.current_token.span,
-                "Unexpected token '{s}' as property key",
-                .{parser.describeToken(parser.current_token)},
+                try parser.fmt("Unexpected token '{s}' as property key", .{parser.describeToken(parser.current_token)}),
                 .{ .help = "Property keys must be identifiers, strings, numbers, or computed expressions [expr]." },
             );
             return null;

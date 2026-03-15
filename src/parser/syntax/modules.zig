@@ -446,11 +446,10 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             if (local_tag.isReserved()) {
                 const local_name = parser.b.getString(local_data.identifier_name.name);
 
-                try parser.reportFmt(
+                try parser.report(
                     local_span,
                     "A reserved word cannot be used as an exported binding without 'from'",
-                    .{},
-                    .{ .help = try parser.formatMessage("Did you mean `export {{ {s} as {s} }} from 'some-module'`?", .{ local_name, local_name }) },
+                    .{ .help = try parser.fmt("Did you mean `export {{ {s} as {s} }} from 'some-module'`?", .{ local_name, local_name }) },
                 );
             }
 

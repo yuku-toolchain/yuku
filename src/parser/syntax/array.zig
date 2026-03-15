@@ -73,7 +73,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             "Unterminated array",
             .{
                 .help = "Add a closing ']' to complete the array.",
-                .labels = try parser.makeLabels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
+                .labels = try parser.labels(&.{parser.label(.{ .start = start, .end = start + 1 }, "Opened here")}),
             },
         );
         return null;
