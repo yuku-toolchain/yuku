@@ -72,13 +72,6 @@ pub const Scope = struct {
 /// The result of a scoped traversal. Contains all scopes created during the walk.
 pub const ScopeTree = struct {
     scopes: []const Scope,
-    allocator: Allocator,
-
-    /// Frees all resources.
-    pub fn deinit(self: *ScopeTree) void {
-        self.allocator.free(self.scopes);
-        self.* = undefined;
-    }
 
     /// Returns the scope for the given ID.
     pub inline fn getScope(self: ScopeTree, id: ScopeId) Scope {
@@ -111,12 +104,13 @@ pub const ScopeTracker = struct {
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
 
-    pub fn init(tree: *const ast.TreeBuilder, allocator: Allocator) Allocator.Error!ScopeTracker {
-        var self = ScopeTracker{ .tree = tree, .allocator = allocator };
+    pub fn init(tree: *ast.TreeBuilder) Allocator.Error!ScopeTracker {
+        const alloc = tree.allocator();
+        var self = ScopeTracker{ .tree = tree, .allocator = alloc };
 
         const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));
-        try self.scopes.ensureTotalCapacity(allocator, estimated_scopes);
-        try self.scope_stack.ensureTotalCapacity(allocator, 64);
+        try self.scopes.ensureTotalCapacity(alloc, estimated_scopes);
+        try self.scope_stack.ensureTotalCapacity(alloc, 64);
 
         try self.pushRoot();
         return self;
@@ -281,15 +275,7 @@ pub const ScopeTracker = struct {
     }
 
     /// Finalizes into an immutable `ScopeTree`.
-    pub fn toScopeTree(self: *ScopeTracker) Allocator.Error!ScopeTree {
-        self.scope_stack.deinit(self.allocator);
-        return .{ .scopes = try self.scopes.toOwnedSlice(self.allocator), .allocator = self.allocator };
-    }
-
-    /// Frees all resources. Only needed if the traversal is aborted early,
-    /// normally call `toScopeTree` instead.
-    pub fn deinit(self: *ScopeTracker) void {
-        self.scopes.deinit(self.allocator);
-        self.scope_stack.deinit(self.allocator);
+    pub fn toScopeTree(self: *ScopeTracker) ScopeTree {
+        return .{ .scopes = self.scopes.items };
     }
 };

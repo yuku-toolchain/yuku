@@ -15,14 +15,12 @@ pub const AnalysisError = Allocator.Error;
 /// Runs semantic analysis on a `TreeBuilder`.
 /// Returns the scope tree and symbol table for further use.
 pub fn analyze(builder: *ast.TreeBuilder) AnalysisError!semantic.Result {
-    const alloc = builder.arena.allocator();
-
     var visitor = SemanticVisit{
         .builder = builder,
-        .allocator = alloc,
+        .allocator = builder.allocator(),
     };
 
-    return try semantic.traverse(SemanticVisit, builder, &visitor, alloc);
+    return try semantic.traverse(SemanticVisit, builder, &visitor);
 }
 
 const SemanticVisit = struct {

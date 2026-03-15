@@ -84,15 +84,6 @@ pub const SymbolTable = struct {
     scope_symbols: []const SymbolId,
     /// String pool for resolving symbol and reference names.
     strings: ast.StringPool,
-    allocator: Allocator,
-
-    /// Frees all resources.
-    pub fn deinit(self: *SymbolTable) void {
-        self.allocator.free(self.symbols);
-        self.allocator.free(self.references);
-        self.allocator.free(self.scope_symbols);
-        self.* = undefined;
-    }
 
     /// Returns the symbol for the given ID.
     pub inline fn getSymbol(self: SymbolTable, id: SymbolId) Symbol {
@@ -211,14 +202,15 @@ pub const SymbolTracker = struct {
     is_default_export: bool = false,
     //
 
-    pub fn init(tree: *const ast.TreeBuilder, allocator: Allocator) Allocator.Error!SymbolTracker {
-        var self = SymbolTracker{ .tree = tree, .allocator = allocator };
+    pub fn init(tree: *ast.TreeBuilder) Allocator.Error!SymbolTracker {
+        const alloc = tree.allocator();
+        var self = SymbolTracker{ .tree = tree, .allocator = alloc };
 
         const estimated_symbols: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 32)));
 
-        try self.symbols.ensureTotalCapacity(allocator, estimated_symbols);
-        try self.references.ensureTotalCapacity(allocator, estimated_symbols);
-        try self.scope_symbols.ensureTotalCapacity(allocator, estimated_symbols / 2);
+        try self.symbols.ensureTotalCapacity(alloc, estimated_symbols);
+        try self.references.ensureTotalCapacity(alloc, estimated_symbols);
+        try self.scope_symbols.ensureTotalCapacity(alloc, estimated_symbols / 2);
 
         return self;
     }
@@ -428,21 +420,12 @@ pub const SymbolTracker = struct {
     }
 
     /// Finalizes into an immutable `SymbolTable`.
-    pub fn toSymbolTable(self: *SymbolTracker) Allocator.Error!SymbolTable {
+    pub fn toSymbolTable(self: *SymbolTracker) SymbolTable {
         return .{
-            .symbols = try self.symbols.toOwnedSlice(self.allocator),
-            .references = try self.references.toOwnedSlice(self.allocator),
-            .scope_symbols = try self.scope_symbols.toOwnedSlice(self.allocator),
+            .symbols = self.symbols.items,
+            .references = self.references.items,
+            .scope_symbols = self.scope_symbols.items,
             .strings = self.tree.strings.freeze(),
-            .allocator = self.allocator,
         };
-    }
-
-    /// Frees all resources. Only needed if the traversal is aborted early;
-    /// normally call `toSymbolTable` instead.
-    pub fn deinit(self: *SymbolTracker) void {
-        self.symbols.deinit(self.allocator);
-        self.references.deinit(self.allocator);
-        self.scope_symbols.deinit(self.allocator);
     }
 };
