@@ -33,8 +33,12 @@ const configs: TestConfig[] = [
 		type: "should_fail",
 		languages: ["js"],
 	},
-	// uncomment when we add semantic checks (first need a visitor/traverser)
-	// { path: "test/suite/js/semantic", type: "should_fail", languages: ["js"] },
+	{
+		path: "test/suite/js/semantic",
+		type: "should_fail",
+		languages: ["js"],
+		skipOnCI: true,
+	},
 	{ path: "test/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
 	{ path: "test/suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
 	{

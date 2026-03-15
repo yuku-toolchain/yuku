@@ -30,8 +30,9 @@ pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error
 const SemanticVisit = struct {
     const Self = @This();
 
-    pub fn enter_variable_declaration(_: *Self, _: ast.VariableDeclaration, _: ast.NodeIndex, _: *SemanticCtx) Action {
-        std.debug.print("var decl", .{});
+    pub fn enter_binding_identifier(_: *Self, _: ast.BindingIdentifier, _: ast.NodeIndex, ctx: *SemanticCtx) Action {
+        _ = ctx.symbols.resolveTargetScope(&ctx.scope);
+
         return .proceed;
     }
 };
