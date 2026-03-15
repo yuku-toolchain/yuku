@@ -98,11 +98,33 @@ pub const ScopeTree = struct {
     };
 };
 
+const ScopeStack = struct {
+    const capacity = 256;
+
+    buf: [capacity]ScopeId = undefined,
+    len: usize = 0,
+
+    pub fn push(self: *ScopeStack, id: ScopeId) void {
+        if (self.len < capacity) {
+            self.buf[self.len] = id;
+        }
+        self.len += 1;
+    }
+
+    pub fn pop(self: *ScopeStack) void {
+        self.len -= 1;
+    }
+
+    pub inline fn top(self: *const ScopeStack) ScopeId {
+        return if (self.len > 0 and self.len <= capacity) self.buf[self.len - 1] else .root;
+    }
+};
+
 pub const ScopeTracker = struct {
     tree: *const ast.TreeBuilder,
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .{},
-    scope_stack: std.ArrayList(ScopeId) = .{},
+    scope_stack: ScopeStack = .{},
 
     pub fn init(tree: *ast.TreeBuilder) Allocator.Error!ScopeTracker {
         const alloc = tree.allocator();
@@ -110,13 +132,12 @@ pub const ScopeTracker = struct {
 
         const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));
         try self.scopes.ensureTotalCapacity(alloc, estimated_scopes);
-        try self.scope_stack.ensureTotalCapacity(alloc, 64);
 
-        try self.pushRoot();
+        self.pushRoot();
         return self;
     }
 
-    fn pushRoot(self: *ScopeTracker) Allocator.Error!void {
+    fn pushRoot(self: *ScopeTracker) void {
         self.scopes.appendAssumeCapacity(.{
             .node = self.tree.program,
             .parent = .none,
@@ -125,10 +146,18 @@ pub const ScopeTracker = struct {
             .flags = .{},
         });
 
-        self.scope_stack.appendAssumeCapacity(.root);
+        self.scope_stack.push(.root);
 
         if (self.tree.source_type == .module) {
-            try self.pushScope(.module, self.tree.program, .{ .strict = true });
+            self.scopes.appendAssumeCapacity(.{
+                .node = self.tree.program,
+                .parent = .root,
+                .hoist_target = @enumFromInt(1),
+                .kind = .module,
+                .flags = .{ .strict = true },
+            });
+
+            self.scope_stack.push(@enumFromInt(1));
         }
     }
 
@@ -145,7 +174,7 @@ pub const ScopeTracker = struct {
             .flags = flags,
         });
 
-        try self.scope_stack.append(self.allocator, id);
+        self.scope_stack.push(id);
     }
 
     // processes a node on enter, pushes scopes for scope-creating nodes and
@@ -200,20 +229,20 @@ pub const ScopeTracker = struct {
     pub fn exit(self: *ScopeTracker, data: ast.NodeData) void {
         switch (data) {
             .function => |func| {
-                _ = self.scope_stack.pop();
+                self.scope_stack.pop();
                 if (isNamedFunctionExpression(func))
-                    _ = self.scope_stack.pop();
+                    self.scope_stack.pop();
             },
             .arrow_function_expression,
             .block_statement,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
             .static_block,
-            => _ = self.scope_stack.pop(),
+            => self.scope_stack.pop(),
             .class => |cls| {
-                _ = self.scope_stack.pop();
+                self.scope_stack.pop();
                 if (isNamedClassExpression(cls))
-                    _ = self.scope_stack.pop();
+                    self.scope_stack.pop();
             },
             else => {},
         }
@@ -236,7 +265,7 @@ pub const ScopeTracker = struct {
 
     /// Returns the ID of the current scope.
     pub inline fn currentScopeId(self: *const ScopeTracker) ScopeId {
-        return self.scope_stack.getLast();
+        return self.scope_stack.top();
     }
 
     /// Returns the ID of the nearest hoist target scope (where `var` lands).

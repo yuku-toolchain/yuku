@@ -189,9 +189,12 @@ pub const MutableStringPool = struct {
 
 /// Mutable AST builder backed by growable arrays.
 ///
-/// Used during parsing to construct the tree and by the transform
-/// traverser for in-place mutations. Can also be used standalone to
-/// build ASTs programmatically.
+/// Used during parsing to construct the tree, by semantic analysis to
+/// append diagnostics and build scope/symbol data, and by the transform
+/// traverser for in-place mutations. All allocations use the builder's
+/// arena, so `toTree()` produces a self-contained `ParseTree` whose
+/// `deinit()` frees everything at once — AST nodes, diagnostics, scopes,
+/// symbols, and strings.
 ///
 /// Call `toTree()` to convert into an immutable `ParseTree` when done.
 /// Call `deinit()` to free without converting.
@@ -354,7 +357,7 @@ pub const ParseTree = struct {
     nodes: NodeList.Slice,
     /// Extra data storage for variadic node children.
     extra: []const NodeIndex,
-    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
+    /// Diagnostics (errors, warnings, etc.) from parsing and semantic analysis.
     diagnostics: []const Diagnostic,
     /// Comments found in the source code.
     comments: []const Comment,

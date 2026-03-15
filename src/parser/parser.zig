@@ -498,11 +498,9 @@ pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Op
 
 /// Parses JavaScript/TypeScript source into a `TreeBuilder`.
 ///
-/// Use this when you need to modify the tree after parsing (e.g. with
-/// the transform traverser). Call `toTree()` on the returned builder to
-/// convert it into an immutable `ParseTree` when mutations are complete.
-///
-/// The caller owns the returned builder and must call `deinit()` when done.
+/// Use this when you need to run semantic analysis or transforms before
+/// finalizing. Call `toTree()` on the returned builder to convert it
+/// into an immutable `ParseTree` when all processing is complete.
 pub fn build(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.TreeBuilder {
     var p = Parser.init(child_allocator, source, options);
     return p.build();
