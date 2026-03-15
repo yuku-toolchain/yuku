@@ -1475,7 +1475,7 @@ pub const ExportAllDeclaration = struct {
 /// `export { local as exported }`
 /// https://tc39.es/ecma262/#prod-ExportSpecifier
 pub const ExportSpecifier = struct {
-    /// ModuleExportName (IdentifierName/IdentifierReference or StringLiteral) - local binding
+    /// IdentifierReference (local export) or ModuleExportName/IdentifierName/StringLiteral (re-export with 'from')
     local: NodeIndex,
     /// ModuleExportName (IdentifierName or StringLiteral) - exported name
     exported: NodeIndex,
