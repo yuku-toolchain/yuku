@@ -80,7 +80,7 @@ if (if_stmt.alternate != .null) {
 
 ## String References
 
-String values in the AST (identifiers, string literals, numeric literals, etc.) are stored as `StringId` values. A `StringId` is a `{ start: u32, end: u32 }` pair that can reference either the original source buffer (zero-copy) or strings added programmatically via `TreeBuilder.addString()`.
+String values in the AST (identifiers, string literals, numeric literals, etc.) are stored as `StringId` values. A `StringId` is a `{ start: u32, end: u32 }` pair that can reference either the original source buffer (zero-copy) or strings added programmatically via `tree.addString()`.
 
 ```zig
 const id = tree.getData(node).identifier_reference;
@@ -88,7 +88,7 @@ const name = tree.getString(id.name);
 // "name" is resolved from the string pool
 ```
 
-Use `tree.getString(id)` (on `ParseTree`) or `builder.getString(id)` (on `TreeBuilder`) to resolve any `StringId` to its text.
+Use `tree.getString(id)` to resolve any `StringId` to its text.
 
 This applies to all text-carrying nodes: identifiers, string literals, numeric literals, BigInt literals, regex patterns, template elements, and more. When parsing source code, the original source bytes are referenced directly (zero-copy). When building or transforming ASTs programmatically, new strings are stored in a growable buffer alongside the source.
 

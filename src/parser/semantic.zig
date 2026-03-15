@@ -12,27 +12,24 @@ const SemanticCtx = semantic.Ctx;
 
 pub const AnalysisError = Allocator.Error;
 
-/// Runs semantic analysis on a `TreeBuilder`.
+/// Runs semantic analysis on a tree.
 ///
-/// Appends semantic diagnostics directly to `builder.diagnostics`,
-/// so they appear alongside parse errors in `tree.diagnostics` after
-/// `finalize()`.
-///
-/// All allocations use the builder's arena, the returned
-/// scope tree and symbol table are valid as long as the tree is alive.
-pub fn analyze(builder: *ast.TreeBuilder) AnalysisError!semantic.Result {
+/// Appends diagnostics directly to the tree alongside parse errors.
+/// All allocations use the tree's arena, so the returned scope tree
+/// and symbol table are valid as long as the tree is alive.
+pub fn analyze(tree: *ast.Tree) AnalysisError!semantic.Result {
     var visitor = SemanticVisit{
-        .builder = builder,
-        .allocator = builder.allocator(),
+        .tree = tree,
+        .allocator = tree.allocator(),
     };
 
-    return try semantic.traverse(SemanticVisit, builder, &visitor);
+    return try semantic.traverse(SemanticVisit, tree, &visitor);
 }
 
 const SemanticVisit = struct {
     const Self = @This();
 
-    builder: *ast.TreeBuilder,
+    tree: *ast.Tree,
     allocator: Allocator,
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
@@ -80,7 +77,7 @@ const SemanticVisit = struct {
     };
 
     pub fn report(self: *Self, span: ast.Span, message: []const u8, opts: ReportOptions) Allocator.Error!void {
-        try self.builder.appendDiagnostic(.{
+        try self.tree.appendDiagnostic(.{
             .severity = opts.severity,
             .message = message,
             .span = span,

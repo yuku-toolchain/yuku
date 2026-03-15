@@ -7,7 +7,7 @@ const Allocator = std.mem.Allocator;
 /// Simplest traverser context. Only tracks the path from root to
 /// the current node. No scope or symbol tracking.
 pub const Ctx = struct {
-    tree: *const ast.TreeBuilder,
+    tree: *const ast.Tree,
     path: wk.NodePath = .{},
 
     pub fn enter(self: *Ctx, index: ast.NodeIndex, _: ast.NodeData) Allocator.Error!void {
@@ -20,7 +20,7 @@ pub const Ctx = struct {
 };
 
 /// Walks the tree with path tracking only. No allocator needed.
-pub fn traverse(comptime V: type, tree: *const ast.TreeBuilder, visitor: *V) Allocator.Error!void {
+pub fn traverse(comptime V: type, tree: *const ast.Tree, visitor: *V) Allocator.Error!void {
     var ctx = Ctx{ .tree = tree };
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };

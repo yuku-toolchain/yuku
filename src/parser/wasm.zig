@@ -35,21 +35,17 @@ pub export fn parse(
         else => .js,
     };
 
-    const options = parser.Options{
+    var tree = parser.parse(wasm_allocator, source, .{
         .source_type = st,
         .lang = l,
-    };
-
-    var tree = parser.parse(wasm_allocator, source, options) catch {
+    }) catch {
         return 0;
     };
+    defer tree.deinit();
 
     _ = semantic.analyze(&tree) catch {};
 
-    var parse_tree = tree.finalize();
-    defer parse_tree.deinit();
-
-    const json_str = parser.estree.toJSON(&parse_tree, wasm_allocator, .{ .pretty = false }) catch {
+    const json_str = parser.estree.toJSON(&tree, wasm_allocator, .{ .pretty = false }) catch {
         return 0;
     };
 

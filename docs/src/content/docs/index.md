@@ -69,7 +69,7 @@ Parse some JavaScript:
 ```zig
 const parser = @import("parser");
 
-var tree = try parser.parseTree(allocator, "const x = 5;", .{});
+var tree = try parser.parse(allocator, "const x = 5;", .{});
 defer tree.deinit();
 ```
 

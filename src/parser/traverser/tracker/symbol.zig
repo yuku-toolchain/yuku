@@ -187,7 +187,7 @@ const TargetScope = enum {
 ///
 /// The split lets user hooks see the world between these two phases.
 pub const SymbolTracker = struct {
-    tree: *const ast.TreeBuilder,
+    tree: *const ast.Tree,
     allocator: Allocator,
     symbols: std.ArrayList(Symbol) = .{},
     references: std.ArrayList(Reference) = .{},
@@ -202,7 +202,7 @@ pub const SymbolTracker = struct {
     is_default_export: bool = false,
     //
 
-    pub fn init(tree: *ast.TreeBuilder) Allocator.Error!SymbolTracker {
+    pub fn init(tree: *ast.Tree) Allocator.Error!SymbolTracker {
         const alloc = tree.allocator();
         var self = SymbolTracker{ .tree = tree, .allocator = alloc };
 

@@ -121,12 +121,12 @@ const ScopeStack = struct {
 };
 
 pub const ScopeTracker = struct {
-    tree: *const ast.TreeBuilder,
+    tree: *const ast.Tree,
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: ScopeStack = .{},
 
-    pub fn init(tree: *ast.TreeBuilder) Allocator.Error!ScopeTracker {
+    pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {
         const alloc = tree.allocator();
         var self = ScopeTracker{ .tree = tree, .allocator = alloc };
 

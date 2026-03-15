@@ -18,12 +18,12 @@ pub const SymbolTable = sy.SymbolTable;
 pub const SymbolTracker = sy.SymbolTracker;
 
 pub const Ctx = struct {
-    tree: *const ast.TreeBuilder,
+    tree: *const ast.Tree,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
 
-    pub fn init(tree: *ast.TreeBuilder) Allocator.Error!Ctx {
+    pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
         return .{
             .tree = tree,
             .scope = try ScopeTracker.init(tree),
@@ -56,7 +56,7 @@ pub const Result = struct {
 
 /// Walks the tree with full path, scope, and symbol tracking.
 /// Returns a `Result` containing the scope tree and symbol table.
-pub fn traverse(comptime V: type, tree: *ast.TreeBuilder, visitor: *V) Allocator.Error!Result {
+pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Result {
     var ctx = try Ctx.init(tree);
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };

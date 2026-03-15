@@ -16,19 +16,16 @@ pub fn main(init: std.process.Init) !void {
     defer allocator.free(source);
 
     var tree = try parser.parse(allocator, source, .{});
+    defer tree.deinit();
 
-    const result = try semantic.analyze(&tree);
-    _ = result;
+    _ = try semantic.analyze(&tree);
 
-    var pt = tree.finalize();
-    defer pt.deinit();
-
-    const json = try parser.estree.toJSON(&pt, allocator, .{});
+    const json = try parser.estree.toJSON(&tree, allocator, .{});
     defer allocator.free(json);
 
     std.debug.print("{s}\n", .{json});
 
-    for (pt.diagnostics) |err| {
+    for (tree.diagnostics.items) |err| {
         const start_pos = getLineAndColumn(source, err.span.start);
         const end_pos = getLineAndColumn(source, err.span.end);
 
