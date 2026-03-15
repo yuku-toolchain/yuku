@@ -60,12 +60,12 @@ const SemanticVisit = struct {
         const current_span = ctx.tree.getSpan(node_index);
         const existing_span = ctx.tree.getSpan(existing.node);
 
-        try self.report(current_span, try self.fmtMsg("Identifier '{s}' has already been declared", .{name}), .{
-            .labels = try self.makeLabels(&.{
-                self.label(existing_span, try self.fmtMsg("'{s}' was first declared as a {s} here", .{ name, existing.kind.toString() })),
+        try self.report(current_span, try self.fmt("Identifier '{s}' has already been declared", .{name}), .{
+            .labels = try self.labels(&.{
+                self.label(existing_span, try self.fmt("'{s}' was first declared as a {s} here", .{ name, existing.kind.toString() })),
                 self.label(current_span, "cannot be redeclared here"),
             }),
-            .help = try self.fmtMsg("Consider removing or renaming this declaration of '{s}'", .{name}),
+            .help = try self.fmt("Consider removing or renaming this declaration of '{s}'", .{name}),
         });
     }
 
@@ -89,11 +89,11 @@ const SemanticVisit = struct {
         return .{ .span = span, .message = message };
     }
 
-    pub fn makeLabels(self: *Self, labels: []const ast.Label) Allocator.Error![]const ast.Label {
-        return try self.allocator.dupe(ast.Label, labels);
+    pub fn labels(self: *Self, ls: []const ast.Label) Allocator.Error![]const ast.Label {
+        return try self.allocator.dupe(ast.Label, ls);
     }
 
-    pub fn fmtMsg(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
+    pub fn fmt(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
         return try std.fmt.allocPrint(self.allocator, format, args);
     }
 };
