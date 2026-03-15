@@ -457,24 +457,16 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             // convert local from identifier_name to identifier_reference
             // since it references a local binding (not a re-export)
             if (local_data == .identifier_name) {
-                if (specifier.local == specifier.exported) {
-                    // local and exported share the same node, create a new node for local
-                    const new_local = try parser.b.createNode(.{
-                        .identifier_reference = .{ .name = local_data.identifier_name.name },
-                    }, local_span);
+                const new_local = try parser.b.createNode(.{
+                    .identifier_reference = .{ .name = local_data.identifier_name.name },
+                }, local_span);
 
-                    parser.b.replaceData(spec_idx, .{
-                        .export_specifier = .{
-                            .local = new_local,
-                            .exported = specifier.exported,
-                        },
-                    });
-                } else {
-                    // local and exported are different nodes, convert local in place
-                    parser.b.replaceData(specifier.local, .{
-                        .identifier_reference = .{ .name = local_data.identifier_name.name },
-                    });
-                }
+                parser.b.replaceData(spec_idx, .{
+                    .export_specifier = .{
+                        .local = new_local,
+                        .exported = specifier.exported,
+                    },
+                });
             }
         }
     }

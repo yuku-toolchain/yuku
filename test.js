@@ -1,5 +1,5 @@
 import { j } from "wow";
 
-function cool(nice) {
-	wow;
-}
+const j = wow;
+
+function cool() {}
