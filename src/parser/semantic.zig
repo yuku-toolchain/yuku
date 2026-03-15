@@ -1,8 +1,44 @@
-// implement semantic analysis
-// scopes
-// symbol tables
-// etc etc
-//
+const std = @import("std");
+const traverser = @import("traverser/root.zig");
+const ast = @import("ast.zig");
+
+const Allocator = std.mem.Allocator;
+
+const semantic = traverser.semantic;
+
+const Action = traverser.Action;
+const SemanticCtx = semantic.Ctx;
+
+pub const AnalysisResult = struct {
+    scope_tree: semantic.ScopeTree,
+    symbol_table: semantic.SymbolTable,
+
+    pub fn deinit(self: *AnalysisResult) void {
+        self.scope_tree.deinit();
+        self.symbol_table.deinit();
+    }
+};
+
+pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!AnalysisResult {
+    var visitor = SemanticVisit{};
+
+    const result = try semantic.traverse(SemanticVisit, tree, &visitor, allocator);
+
+    return .{
+        .scope_tree = result.scope_tree,
+        .symbol_table = result.symbol_table,
+    };
+}
+
+const SemanticVisit = struct {
+    const Self = @This();
+
+    pub fn enter_variable_declaration(_: *Self, _: ast.VariableDeclaration, _: ast.NodeIndex, _: *SemanticCtx) Action {
+        std.debug.print("var decl", .{});
+        return .proceed;
+    }
+};
+
 // TODO:
 //
 // Redeclaration checks.
