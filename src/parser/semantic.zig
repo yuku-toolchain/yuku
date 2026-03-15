@@ -16,7 +16,7 @@ pub const AnalysisError = Allocator.Error;
 ///
 /// Appends semantic diagnostics directly to `builder.diagnostics`,
 /// so they appear alongside parse errors in `tree.diagnostics` after
-/// `toTree()`.
+/// `finalize()`.
 ///
 /// All allocations use the builder's arena, the returned
 /// scope tree and symbol table are valid as long as the tree is alive.

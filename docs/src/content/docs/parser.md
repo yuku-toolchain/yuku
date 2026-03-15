@@ -37,23 +37,34 @@ Yuku requires the latest Zig nightly build. It stays up to date with Zig's lates
 const std = @import("std");
 const parser = @import("parser");
 
+const semantic = parser.semantic;
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
-    const tree = try parser.parse(allocator, "const x = 5;", .{
-        .lang = .js, // or .fromPath(file_path)
-        .source_type = .module, // .fromPath(file_path)
-    });
-    
-    defer tree.deinit();
+    // Parse source into a TreeBuilder
+    var tree = try parser.parse(allocator, "const x = 5;", .{});
 
-    // Check for errors
-    if (tree.hasErrors()) {
-        for (tree.diagnostics) |d| {
-            std.debug.print("{s}\n", .{d.message});
-        }
+    // Run semantic analysis (appends errors to tree, builds scope/symbol data)
+    const result = try semantic.analyze(&tree);
+    _ = result; // result.scope_tree, result.symbol_table
+
+    // Finalize into an immutable ParseTree
+    var pt = tree.finalize();
+    defer pt.deinit(); // frees everything: AST, diagnostics, scopes, symbols
+
+    // Check for errors (parse + semantic errors are unified)
+    for (pt.diagnostics) |d| {
+        std.debug.print("{s}\n", .{d.message});
     }
 }
+```
+
+If you only need to parse without semantic analysis or transforms, use `parseTree()` as a shorthand:
+
+```zig
+var tree = try parser.parseTree(allocator, "const x = 5;", .{});
+defer tree.deinit();
 ```
 
 ## Options
@@ -81,90 +92,72 @@ Determines how the code is parsed and evaluated, following the [ECMAScript sourc
 | `.module` | ES module semantics with strict mode enabled (default) |
 | `.script` | Classic script semantics with sloppy mode |
 
-## The `ParseTree`
+## How It Works
 
-Calling `parser.parse()` returns a `ParseTree`. This struct owns all the memory the parser allocated and provides access to every part of the result.
+The parser pipeline has three phases:
 
-```zig
-const tree = try parser.parse(allocator, source, .{});
-defer tree.deinit(); // frees everything at once
+```
+source  ->  parser.parse()  ->  TreeBuilder  ->  .finalize()  ->  ParseTree
+                                     |                            |
+                              analyze / transform           finalized, immutable
+                              append diagnostics            single deinit() frees all
+                              allocate on arena
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `program` | `NodeIndex` | Root node (always a `Program`) |
-| `nodes` | `NodeList.Slice` | All AST nodes |
-| `extra` | `[]const NodeIndex` | Extra data for variadic children (arrays of child nodes) |
-| `diagnostics` | `[]const Diagnostic` | Errors and warnings from parsing |
-| `comments` | `[]const Comment` | All comments found in the source |
-| `strings` | `StringPool` | All strings referenced by AST nodes. Access `strings.source` for the original source text. |
-| `source_type` | `SourceType` | Whether parsed as module or script |
-| `lang` | `Lang` | Language variant used |
+**`parser.parse()`** parses source into a `TreeBuilder`. The tree is complete and readable, but still mutable: you can run semantic analysis (which appends diagnostics and builds scope/symbol data on the tree's arena), run transforms (which mutate nodes), or do both.
+
+**`.finalize()`** finalizes the builder into an immutable `ParseTree`. After this, the builder should not be used. The `ParseTree` owns all the memory (AST nodes, diagnostics, scopes, symbols, strings) and `deinit()` frees everything at once.
 
 ### Memory Model
 
-The parser uses an `ArenaAllocator` internally. The allocator you pass to `parse()` is the backing allocator for that arena. All memory the parser allocates (nodes, diagnostics, comments, extra data) lives in this arena.
+All memory lives in an `ArenaAllocator`. The allocator you pass to `parse()` is the backing allocator for that arena. Everything the parser, semantic analysis, and transforms allocate goes into this arena: nodes, diagnostics, scope data, symbol data, strings.
 
-When you call `tree.deinit()`, the entire arena is freed in one operation. There is no need to free individual nodes or arrays.
-
-### Reading Nodes
-
-```zig
-// Get the data (what kind of node, with its fields) for a node
-const data = tree.getData(some_node_index);
-
-// Get the source location of a node
-const span = tree.getSpan(some_node_index);
-
-// Get the children stored in an IndexRange
-const children = tree.getExtra(some_index_range);
-
-// Get string content from a StringId
-const text = tree.getString(some_string_id);
-```
+When you call `deinit()` on the `ParseTree` (or `TreeBuilder` if you skip finalization), the entire arena is freed in one operation. No individual frees needed.
 
 ## The `TreeBuilder`
 
-If you need to modify the AST after parsing (e.g. with the transform traverser), use `parser.build()` instead of `parser.parse()`. It returns a mutable `TreeBuilder`:
-
-```zig
-var builder = try parser.build(allocator, source, .{});
-
-// Run transforms on the mutable tree...
-// var t = MyTransform{};
-// try transform.traverse(MyTransform, &builder, &t);
-
-// Convert to an immutable ParseTree when done
-var tree = builder.toTree(.{});
-defer tree.deinit();
-```
-
-The `TreeBuilder` supports all the same read methods as `ParseTree` (`getData`, `getSpan`, `getExtra`, `getString`), plus mutation methods:
+`parser.parse()` returns a `TreeBuilder`. It supports all read methods (`getData`, `getSpan`, `getExtra`, `getString`), plus mutation and diagnostic methods:
 
 | Method | Description |
 |--------|-------------|
+| `getData(index)` | Read a node's data |
+| `getSpan(index)` | Read a node's source span |
+| `getExtra(range)` | Read a child list |
+| `getString(id)` | Resolve a `StringId` to text |
 | `replaceData(index, data)` | Replace a node's data in place |
 | `replaceSpan(index, span)` | Replace a node's source span |
 | `createNode(data, span)` | Append a new node, returns its `NodeIndex` |
 | `createExtra(children)` | Allocate a child list, returns an `IndexRange` |
 | `addString(str)` | Add a new string to the pool, returns a `StringId` |
+| `appendDiagnostic(diag)` | Add a diagnostic (error, warning, etc.) |
+| `finalize()` | Finalize into an immutable `ParseTree` |
+| `deinit()` | Free all memory without finalizing |
 
-Call `builder.toTree(meta)` to finalize into an immutable `ParseTree`. The builder should not be used after this.
+Call `finalize()` to finalize into an immutable `ParseTree`. The builder should not be used after this.
 
-:::tip[Traversal and AST Construction]
-Yuku provides a rich **traverser system** with four modes for walking, analyzing, and transforming the AST:
+## The `ParseTree`
 
-| Mode | Description | Result |
-|------|-------------|--------|
-| **Basic** | Walk with parent and ancestor access. No allocator needed. | |
-| **Scoped** | Automatic lexical scope tracking. Query scopes, walk ancestors, check strict mode, and more. | `ScopeTree` |
-| **Semantic** | Symbol and reference tracking on top of scopes. Iterate declarations, resolve bindings, navigate the scope-symbol hierarchy. | `ScopeTree` + `SymbolTable` |
-| **Transform** | Operates on a mutable `TreeBuilder`. Replace nodes, create new ones, add strings, and restructure the tree during traversal safely. | |
+The immutable result of `finalize()` (or `parser.parseTree()` for the shorthand). All data is finalized into compact slices.
 
-Every mode gives you full context at every node: parents, ancestors, children, siblings, and any scope or symbol information accumulated so far. You can also use `TreeBuilder.initEmpty()` to build an AST from scratch, either standalone or from within a visitor hook on another tree with full access to the traversal context.
+| Field | Type | Description |
+|-------|------|-------------|
+| `program` | `NodeIndex` | Root node (always a `Program`) |
+| `nodes` | `NodeList.Slice` | All AST nodes |
+| `extra` | `[]const NodeIndex` | Extra data for variadic children |
+| `diagnostics` | `[]const Diagnostic` | All errors and warnings (parse + semantic) |
+| `comments` | `[]const Comment` | All comments found in the source |
+| `strings` | `StringPool` | All strings. Access `strings.source` for the original source text. |
+| `source_type` | `SourceType` | Whether parsed as module or script |
+| `lang` | `Lang` | Language variant used |
 
-See the [Traverse documentation](/parser/traverse) for the complete guide.
-:::
+### Reading Nodes
+
+```zig
+const data = tree.getData(some_node_index);
+const span = tree.getSpan(some_node_index);
+const children = tree.getExtra(some_index_range);
+const text = tree.getString(some_string_id);
+```
 
 ### Checking for Errors
 
@@ -184,6 +177,21 @@ for (tree.diagnostics) |d| {
     // d.labels    -- additional labeled spans for context
 }
 ```
+
+:::tip[Traversal and AST Construction]
+Yuku provides a **traverser system** with four modes for walking, analyzing, and transforming the AST:
+
+| Mode | Description | Result |
+|------|-------------|--------|
+| **Basic** | Walk with parent and ancestor access. No allocator needed. | |
+| **Scoped** | Automatic lexical scope tracking. Query scopes, walk ancestors, check strict mode, and more. | `ScopeTree` |
+| **Semantic** | Full scope and symbol tracking. Iterate declarations, resolve bindings, navigate the scope-symbol hierarchy. | `ScopeTree` + `SymbolTable` |
+| **Transform** | Mutate the AST during traversal. Replace nodes, create new ones, add strings, and restructure the tree safely. | |
+
+All traversers operate on a `TreeBuilder`. Read-only traversers (basic, scoped, semantic) access the tree through `*const TreeBuilder`, so they cannot accidentally mutate the AST. The transform traverser gets `*TreeBuilder` for full mutation access.
+
+See the [Traverse documentation](/parser/traverse) for the complete guide.
+:::
 
 ### JSON Serialization
 

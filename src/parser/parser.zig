@@ -84,14 +84,18 @@ pub const Parser = struct {
         return self.b.allocator();
     }
 
-    pub fn parse(self: *Parser) Error!ast.ParseTree {
-        try self.parseInner();
-        return self.b.toTree();
-    }
-
-    pub fn build(self: *Parser) Error!ast.TreeBuilder {
+    /// Parses source into a `TreeBuilder` for further processing
+    /// (semantic analysis, transforms). Call `finalize()` when done.
+    pub fn parse(self: *Parser) Error!ast.TreeBuilder {
         try self.parseInner();
         return self.b;
+    }
+
+    /// Parses source directly into an immutable `ParseTree`.
+    /// Convenience for when no analysis or transforms are needed.
+    pub fn parseTree(self: *Parser) Error!ast.ParseTree {
+        try self.parseInner();
+        return self.b.finalize();
     }
 
     fn parseInner(self: *Parser) Error!void {
@@ -488,20 +492,21 @@ const ScratchBuffer = struct {
     }
 };
 
-/// Parses JavaScript/TypeScript source into an immutable `ParseTree`.
+/// Parses JavaScript/TypeScript source into a `TreeBuilder`.
 ///
-/// The caller owns the returned tree and must call `deinit()` when done.
-pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.ParseTree {
+/// The returned builder can be passed to semantic analysis, transforms,
+/// or any traverser. Call `finalize()` to convert into an immutable
+/// `ParseTree`, or call `deinit()` to free without finalizing.
+pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.TreeBuilder {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
 }
 
-/// Parses JavaScript/TypeScript source into a `TreeBuilder`.
+/// Parses JavaScript/TypeScript source directly into an immutable `ParseTree`.
 ///
-/// Use this when you need to run semantic analysis or transforms before
-/// finalizing. Call `toTree()` on the returned builder to convert it
-/// into an immutable `ParseTree` when all processing is complete.
-pub fn build(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.TreeBuilder {
+/// Convenience for when no semantic analysis or transforms are needed.
+/// The caller owns the returned tree and must call `deinit()` when done.
+pub fn parseTree(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.ParseTree {
     var p = Parser.init(child_allocator, source, options);
-    return p.build();
+    return p.parseTree();
 }

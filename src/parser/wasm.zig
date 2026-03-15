@@ -40,13 +40,13 @@ pub export fn parse(
         .lang = l,
     };
 
-    var builder = parser.build(wasm_allocator, source, options) catch {
+    var tree = parser.parse(wasm_allocator, source, options) catch {
         return 0;
     };
 
-    _ = semantic.analyze(&builder) catch {};
+    _ = semantic.analyze(&tree) catch {};
 
-    var parse_tree = builder.toTree();
+    var parse_tree = tree.finalize();
     defer parse_tree.deinit();
 
     const json_str = parser.estree.toJSON(&parse_tree, wasm_allocator, .{ .pretty = false }) catch {

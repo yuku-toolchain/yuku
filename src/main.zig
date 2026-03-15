@@ -15,20 +15,20 @@ pub fn main(init: std.process.Init) !void {
     const source = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
     defer allocator.free(source);
 
-    var builder = try parser.build(allocator, source, .{});
+    var tree = try parser.parse(allocator, source, .{});
 
-    const result = try semantic.analyze(&builder);
+    const result = try semantic.analyze(&tree);
     _ = result;
 
-    var tree = builder.toTree();
-    defer tree.deinit();
+    var pt = tree.finalize();
+    defer pt.deinit();
 
-    const json = try parser.estree.toJSON(&tree, allocator, .{});
+    const json = try parser.estree.toJSON(&pt, allocator, .{});
     defer allocator.free(json);
 
     std.debug.print("{s}\n", .{json});
 
-    for (tree.diagnostics) |err| {
+    for (pt.diagnostics) |err| {
         const start_pos = getLineAndColumn(source, err.span.start);
         const end_pos = getLineAndColumn(source, err.span.end);
 

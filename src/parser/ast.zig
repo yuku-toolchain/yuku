@@ -192,11 +192,11 @@ pub const MutableStringPool = struct {
 /// Used during parsing to construct the tree, by semantic analysis to
 /// append diagnostics and build scope/symbol data, and by the transform
 /// traverser for in-place mutations. All allocations use the builder's
-/// arena, so `toTree()` produces a self-contained `ParseTree` whose
+/// arena, so `finalize()` produces a self-contained `ParseTree` whose
 /// `deinit()` frees everything at once: AST nodes, diagnostics, scopes,
 /// symbols, and strings.
 ///
-/// Call `toTree()` to convert into an immutable `ParseTree` when done.
+/// Call `finalize()` to convert into an immutable `ParseTree` when done.
 /// Call `deinit()` to free without converting.
 pub const TreeBuilder = struct {
     /// Root node of the AST (always a Program node).
@@ -245,9 +245,9 @@ pub const TreeBuilder = struct {
         return self.arena.allocator();
     }
 
-    /// Converts into an immutable `ParseTree`, transferring ownership.
-    /// This builder should not be used after calling this.
-    pub fn toTree(self: *TreeBuilder) ParseTree {
+    /// Finalizes into an immutable `ParseTree`, transferring ownership.
+    /// The builder should not be used after this.
+    pub fn finalize(self: *TreeBuilder) ParseTree {
         return .{
             .program = self.program,
             .nodes = self.nodes.toOwnedSlice(),
