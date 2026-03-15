@@ -109,11 +109,11 @@ pub const SymbolTable = struct {
     }
 
     /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
-    pub fn findInScope(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+    pub fn findInScope(self: SymbolTable, scope: sc.ScopeId, name: ast.StringId) ?SymbolId {
         var it = self.scopeSymbols(scope);
         while (it.next()) |id| {
             const sym = self.symbols[@intFromEnum(id)];
-            if (std.mem.eql(u8, self.getName(sym), name))
+            if (sym.name.eql(name))
             {
                 return id;
             }
@@ -122,7 +122,7 @@ pub const SymbolTable = struct {
     }
 
     /// Walks up the scope chain from `scope` looking for a symbol with `name`.
-    pub fn resolve(self: SymbolTable, scope: sc.ScopeId, name: []const u8, scope_tree: sc.ScopeTree) ?SymbolId {
+    pub fn resolve(self: SymbolTable, scope: sc.ScopeId, name: ast.StringId, scope_tree: sc.ScopeTree) ?SymbolId {
         var it = scope_tree.ancestors(scope);
         while (it.next()) |ancestor| {
             if (self.findInScope(ancestor, name)) |id| return id;
@@ -134,7 +134,7 @@ pub const SymbolTable = struct {
     pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) void {
         for (self.asReferenceMut()) |*ref| {
             if (ref.resolved == .none) {
-                ref.resolved = self.resolve(ref.scope, self.getRefName(ref), scope_tree) orelse .none;
+                ref.resolved = self.resolve(ref.scope, ref.name, scope_tree) orelse .none;
             }
         }
     }
@@ -406,11 +406,11 @@ pub const SymbolTracker = struct {
     }
 
     /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
-    pub fn findInScope(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+    pub fn findInScope(self: *const SymbolTracker, scope: sc.ScopeId, name: ast.StringId) ?SymbolId {
         var it = self.scopeSymbols(scope);
         while (it.next()) |id| {
             const sym = self.symbols.items[@intFromEnum(id)];
-            if (std.mem.eql(u8, self.tree.getString(sym.name), name))
+            if (sym.name.eql(name))
                 return id;
         }
         return null;

@@ -11,6 +11,7 @@ const SemanticCtx = semantic.Ctx;
 
 pub const Analysis = struct {
     result: semantic.Result,
+    diagnostics: []const ast.Diagnostic = &.{},
 
     pub fn deinit(self: *Analysis) void {
         self.result.deinit();
@@ -30,8 +31,12 @@ pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error
 const SemanticVisit = struct {
     const Self = @This();
 
-    pub fn enter_binding_identifier(_: *Self, _: ast.BindingIdentifier, _: ast.NodeIndex, ctx: *SemanticCtx) Action {
-        _ = ctx.symbols.resolveTargetScope(&ctx.scope);
+    pub fn enter_binding_identifier(_: *Self, id: ast.BindingIdentifier, _: ast.NodeIndex, ctx: *SemanticCtx) Action {
+        const target = ctx.symbols.resolveTargetScope(&ctx.scope);
+
+        if(ctx.symbols.findInScope(target, id.name)) |sym| {
+            _ = ctx.symbols.getSymbol(sym);
+        }
 
         return .proceed;
     }
