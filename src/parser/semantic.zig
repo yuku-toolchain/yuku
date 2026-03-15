@@ -10,12 +10,10 @@ const Action = traverser.Action;
 const SemanticCtx = semantic.Ctx;
 
 pub const AnalysisResult = struct {
-    scope_tree: semantic.ScopeTree,
-    symbol_table: semantic.SymbolTable,
+    result: semantic.Result,
 
     pub fn deinit(self: *AnalysisResult) void {
-        self.scope_tree.deinit();
-        self.symbol_table.deinit();
+        self.result.deinit();
     }
 };
 
@@ -25,8 +23,7 @@ pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error
     const result = try semantic.traverse(SemanticVisit, tree, &visitor, allocator);
 
     return .{
-        .scope_tree = result.scope_tree,
-        .symbol_table = result.symbol_table,
+        .result = result,
     };
 }
 

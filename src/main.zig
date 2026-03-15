@@ -10,6 +10,9 @@ pub fn main(init: std.process.Init) !void {
 
     var tree = try parser.parse(std.heap.page_allocator, source, .{});
 
-    var result = try semantic.analyze(&tree, allocator);
-    defer result.deinit();
+    var analysis = try semantic.analyze(&tree, allocator);
+    defer analysis.deinit();
+
+    // const scope_tree = analysis.result.scope_tree;
+    // const symbol_table = analysis.result.symbol_table;
 }
