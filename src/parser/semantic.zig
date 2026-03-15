@@ -9,15 +9,15 @@ const semantic = traverser.semantic;
 const Action = traverser.Action;
 const SemanticCtx = semantic.Ctx;
 
-pub const AnalysisResult = struct {
+pub const Analysis = struct {
     result: semantic.Result,
 
-    pub fn deinit(self: *AnalysisResult) void {
+    pub fn deinit(self: *Analysis) void {
         self.result.deinit();
     }
 };
 
-pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!AnalysisResult {
+pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Analysis {
     var visitor = SemanticVisit{};
 
     const result = try semantic.traverse(SemanticVisit, tree, &visitor, allocator);
