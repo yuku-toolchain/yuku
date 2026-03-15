@@ -193,7 +193,7 @@ pub const MutableStringPool = struct {
 /// append diagnostics and build scope/symbol data, and by the transform
 /// traverser for in-place mutations. All allocations use the builder's
 /// arena, so `toTree()` produces a self-contained `ParseTree` whose
-/// `deinit()` frees everything at once — AST nodes, diagnostics, scopes,
+/// `deinit()` frees everything at once: AST nodes, diagnostics, scopes,
 /// symbols, and strings.
 ///
 /// Call `toTree()` to convert into an immutable `ParseTree` when done.
