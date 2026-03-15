@@ -12,11 +12,11 @@ pub const ScopeTracker = sc.ScopeTracker;
 
 /// Traverser context that tracks path and JavaScript lexical scopes.
 pub const Ctx = struct {
-    tree: *const ast.ParseTree,
+    tree: *const ast.TreeBuilder,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
 
-    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Ctx {
+    pub fn init(tree: *const ast.TreeBuilder, allocator: Allocator) Allocator.Error!Ctx {
         return .{ .tree = tree, .scope = try ScopeTracker.init(tree, allocator) };
     }
 
@@ -42,7 +42,7 @@ pub const Ctx = struct {
 };
 
 /// Walks the tree with path and scope tracking. Returns a `ScopeTree`.
-pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
+pub fn traverse(comptime V: type, tree: *const ast.TreeBuilder, visitor: *V, allocator: Allocator) Allocator.Error!ScopeTree {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
 

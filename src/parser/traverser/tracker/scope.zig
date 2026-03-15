@@ -106,12 +106,12 @@ pub const ScopeTree = struct {
 };
 
 pub const ScopeTracker = struct {
-    tree: *const ast.ParseTree,
+    tree: *const ast.TreeBuilder,
     allocator: Allocator,
     scopes: std.ArrayList(Scope) = .{},
     scope_stack: std.ArrayList(ScopeId) = .{},
 
-    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!ScopeTracker {
+    pub fn init(tree: *const ast.TreeBuilder, allocator: Allocator) Allocator.Error!ScopeTracker {
         var self = ScopeTracker{ .tree = tree, .allocator = allocator };
 
         const estimated_scopes: u32 = @max(16, @as(u32, @intCast(tree.nodes.len / 16)));

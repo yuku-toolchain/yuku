@@ -18,12 +18,12 @@ pub const SymbolTable = sy.SymbolTable;
 pub const SymbolTracker = sy.SymbolTracker;
 
 pub const Ctx = struct {
-    tree: *const ast.ParseTree,
+    tree: *const ast.TreeBuilder,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
 
-    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Ctx {
+    pub fn init(tree: *const ast.TreeBuilder, allocator: Allocator) Allocator.Error!Ctx {
         return .{
             .tree = tree,
             .scope = try ScopeTracker.init(tree, allocator),
@@ -76,7 +76,7 @@ pub const Result = struct {
 
 /// Walks the tree with full path, scope, and symbol tracking.
 /// Returns a `Result` containing the scope tree and symbol table.
-pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!Result {
+pub fn traverse(comptime V: type, tree: *const ast.TreeBuilder, visitor: *V, allocator: Allocator) Allocator.Error!Result {
     var ctx = try Ctx.init(tree, allocator);
     errdefer ctx.deinit();
 

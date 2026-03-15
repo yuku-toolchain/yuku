@@ -67,8 +67,11 @@ pub const Parser = struct {
     state: ParserState = .{},
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
+        var b = ast.TreeBuilder.init(child_allocator, source);
+        b.source_type = options.source_type;
+        b.lang = options.lang;
         return .{
-            .b = ast.TreeBuilder.init(child_allocator, source),
+            .b = b,
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
@@ -83,10 +86,7 @@ pub const Parser = struct {
 
     pub fn parse(self: *Parser) Error!ast.ParseTree {
         try self.parseInner();
-        return self.b.toTree(.{
-            .source_type = self.source_type,
-            .lang = self.lang,
-        });
+        return self.b.toTree();
     }
 
     pub fn build(self: *Parser) Error!ast.TreeBuilder {
@@ -133,7 +133,7 @@ pub const Parser = struct {
             .{ .start = 0, .end = end },
         );
 
-        self.b.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
+        self.b.diagnostics = self.diagnostics;
 
         for (self.lexer.comments.items) |*comment| {
             comment.value = self.b.sourceSlice(switch (comment.type) {

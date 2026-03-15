@@ -202,8 +202,8 @@ pub const TreeBuilder = struct {
     nodes: NodeList = .empty,
     /// Extra data storage for variadic node children.
     extra: std.ArrayList(NodeIndex) = .empty,
-    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
-    diagnostics: []const Diagnostic = &.{},
+    /// Diagnostics (errors, warnings, etc.) collected during parsing and analysis.
+    diagnostics: std.ArrayList(Diagnostic) = .empty,
     /// Comments found in the source code.
     comments: []const Comment = &.{},
     /// Arena allocator owning all the memory.
@@ -211,6 +211,10 @@ pub const TreeBuilder = struct {
     /// All strings referenced by AST nodes.
     /// Use `getString()` to read and `addString()` to create new strings.
     strings: MutableStringPool,
+    /// Source type (script or module).
+    source_type: SourceType = .module,
+    /// Language variant (js, ts, jsx, tsx, dts).
+    lang: Lang = .js,
 
     /// Creates a tree builder for parsing or transforming source code.
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8) TreeBuilder {
@@ -240,23 +244,23 @@ pub const TreeBuilder = struct {
 
     /// Converts into an immutable `ParseTree`, transferring ownership.
     /// This builder should not be used after calling this.
-    pub fn toTree(self: *TreeBuilder, meta: ParseTree.Meta) ParseTree {
+    pub fn toTree(self: *TreeBuilder) ParseTree {
         return .{
             .program = self.program,
             .nodes = self.nodes.toOwnedSlice(),
             .extra = self.extra.items,
-            .diagnostics = self.diagnostics,
+            .diagnostics = self.diagnostics.items,
             .comments = self.comments,
             .arena = self.arena,
             .strings = self.strings.freeze(),
-            .source_type = meta.source_type,
-            .lang = meta.lang,
+            .source_type = self.source_type,
+            .lang = self.lang,
         };
     }
 
     /// Returns true if the tree contains any errors.
     pub inline fn hasErrors(self: *const TreeBuilder) bool {
-        for (self.diagnostics) |d| {
+        for (self.diagnostics.items) |d| {
             if (d.severity == .@"error") return true;
         }
         return false;
@@ -264,7 +268,12 @@ pub const TreeBuilder = struct {
 
     /// Returns true if the tree contains any diagnostics.
     pub inline fn hasDiagnostics(self: *const TreeBuilder) bool {
-        return self.diagnostics.len > 0;
+        return self.diagnostics.items.len > 0;
+    }
+
+    /// Appends a diagnostic to the builder.
+    pub fn appendDiagnostic(self: *TreeBuilder, diag: Diagnostic) error{OutOfMemory}!void {
+        try self.diagnostics.append(self.arena.allocator(), diag);
     }
 
     /// Returns the data for the node at the given index.
@@ -359,12 +368,6 @@ pub const ParseTree = struct {
     source_type: SourceType,
     /// Language variant (js, ts, jsx, tsx, dts).
     lang: Lang,
-
-    /// Metadata needed to convert a `TreeBuilder` into a `ParseTree`.
-    pub const Meta = struct {
-        source_type: SourceType = .module,
-        lang: Lang = .js,
-    };
 
     /// Returns true if the parse tree contains any errors.
     pub inline fn hasErrors(self: *const ParseTree) bool {

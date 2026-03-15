@@ -12,39 +12,24 @@ const SemanticCtx = semantic.Ctx;
 
 pub const AnalysisError = Allocator.Error;
 
-pub const Analysis = struct {
-    result: semantic.Result,
-    diagnostics: []const ast.Diagnostic = &.{},
-    arena: std.heap.ArenaAllocator,
-
-    pub fn deinit(self: *Analysis) void {
-        self.result.deinit();
-        self.arena.deinit();
-    }
-};
-
-pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) AnalysisError!Analysis {
-    var arena = std.heap.ArenaAllocator.init(allocator);
-    errdefer arena.deinit();
+/// Runs semantic analysis on a `TreeBuilder`.
+/// Returns the scope tree and symbol table for further use.
+pub fn analyze(builder: *ast.TreeBuilder) AnalysisError!semantic.Result {
+    const alloc = builder.arena.allocator();
 
     var visitor = SemanticVisit{
-        .allocator = arena.allocator(),
+        .builder = builder,
+        .allocator = alloc,
     };
 
-    const result = try semantic.traverse(SemanticVisit, tree, &visitor, allocator);
-
-    return .{
-        .result = result,
-        .diagnostics = try visitor.diagnostics.toOwnedSlice(arena.allocator()),
-        .arena = arena,
-    };
+    return try semantic.traverse(SemanticVisit, builder, &visitor, alloc);
 }
 
 const SemanticVisit = struct {
     const Self = @This();
 
+    builder: *ast.TreeBuilder,
     allocator: Allocator,
-    diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
@@ -75,12 +60,12 @@ const SemanticVisit = struct {
         const current_span = ctx.tree.getSpan(node_index);
         const existing_span = ctx.tree.getSpan(existing.node);
 
-        try self.reportFmt(current_span, "Identifier '{s}' has already been declared", .{name}, .{
+        try self.report(current_span, try self.fmtMsg("Identifier '{s}' has already been declared", .{name}), .{
             .labels = try self.makeLabels(&.{
-                self.label(existing_span, try self.formatMessage("'{s}' was first declared as a {s} here", .{ name, existing.kind.toString() })),
+                self.label(existing_span, try self.fmtMsg("'{s}' was first declared as a {s} here", .{ name, existing.kind.toString() })),
                 self.label(current_span, "cannot be redeclared here"),
             }),
-            .help = try self.formatMessage("Consider removing or renaming this declaration of '{s}'", .{name}),
+            .help = try self.fmtMsg("Consider removing or renaming this declaration of '{s}'", .{name}),
         });
     }
 
@@ -91,18 +76,13 @@ const SemanticVisit = struct {
     };
 
     pub fn report(self: *Self, span: ast.Span, message: []const u8, opts: ReportOptions) Allocator.Error!void {
-        try self.diagnostics.append(self.allocator, .{
+        try self.builder.appendDiagnostic(.{
             .severity = opts.severity,
             .message = message,
             .span = span,
             .help = opts.help,
             .labels = opts.labels,
         });
-    }
-
-    pub fn reportFmt(self: *Self, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Allocator.Error!void {
-        const message = try std.fmt.allocPrint(self.allocator, format, args);
-        try self.report(span, message, opts);
     }
 
     pub fn label(_: *Self, span: ast.Span, message: []const u8) ast.Label {
@@ -113,7 +93,7 @@ const SemanticVisit = struct {
         return try self.allocator.dupe(ast.Label, labels);
     }
 
-    pub fn formatMessage(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
+    pub fn fmtMsg(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
         return try std.fmt.allocPrint(self.allocator, format, args);
     }
 };

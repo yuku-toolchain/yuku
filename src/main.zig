@@ -15,7 +15,12 @@ pub fn main(init: std.process.Init) !void {
     const source = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
     defer allocator.free(source);
 
-    var tree = try parser.parse(allocator, source, .{});
+    var builder = try parser.build(allocator, source, .{});
+
+    const result = try semantic.analyze(&builder);
+    _ = result;
+
+    var tree = builder.toTree();
     defer tree.deinit();
 
     const json = try parser.estree.toJSON(&tree, allocator, .{});
@@ -23,10 +28,7 @@ pub fn main(init: std.process.Init) !void {
 
     std.debug.print("{s}\n", .{json});
 
-    var analysis = try semantic.analyze(&tree, allocator);
-    defer analysis.deinit();
-
-    for (analysis.diagnostics) |err| {
+    for (tree.diagnostics) |err| {
         const start_pos = getLineAndColumn(source, err.span.start);
         const end_pos = getLineAndColumn(source, err.span.end);
 
