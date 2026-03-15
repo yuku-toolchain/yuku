@@ -5,9 +5,12 @@ const ast = @import("ast.zig");
 const Allocator = std.mem.Allocator;
 
 const semantic = traverser.semantic;
+const Symbol = semantic.Symbol;
 
 const Action = traverser.Action;
 const SemanticCtx = semantic.Ctx;
+
+pub const AnalysisError = Allocator.Error;
 
 pub const Analysis = struct {
     result: semantic.Result,
@@ -18,29 +21,94 @@ pub const Analysis = struct {
     }
 };
 
-diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
-
-pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Analysis {
-    var visitor = SemanticVisit{};
+pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) AnalysisError!Analysis {
+    var visitor = SemanticVisit{
+        .allocator = allocator,
+    };
 
     const result = try semantic.traverse(SemanticVisit, tree, &visitor, allocator);
 
     return .{
         .result = result,
+        .diagnostics = try visitor.diagnostics.toOwnedSlice(allocator),
     };
 }
 
 const SemanticVisit = struct {
     const Self = @This();
 
-    pub fn enter_binding_identifier(_: *Self, id: ast.BindingIdentifier, _: ast.NodeIndex, ctx: *SemanticCtx) Action {
+    allocator: Allocator,
+    diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
+
+    pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
 
-        if(ctx.symbols.findInScope(target, id.name)) |sym| {
-            _ = ctx.symbols.getSymbol(sym);
+        if (ctx.symbols.findInScope(target, ctx.tree.getString(id.name))) |sym| {
+            const existing = ctx.symbols.getSymbol(sym);
+            const new_kind = ctx.symbols.currentBindingKind();
+
+            if (!canRedeclare(existing.kind, new_kind)) {
+                try self.reportRedeclaration(id, node_index, existing, ctx);
+            }
         }
 
         return .proceed;
+    }
+
+    fn isLexicalLike(kind: Symbol.Kind) bool {
+        return kind == .lexical or kind == .class or kind == .import or kind == .parameter;
+    }
+
+    fn canRedeclare(existing: Symbol.Kind, new: Symbol.Kind) bool {
+        if (isLexicalLike(existing) or isLexicalLike(new)) return false;
+        return true;
+    }
+
+    fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
+        const name = ctx.tree.getString(id.name);
+        const current_span = ctx.tree.getSpan(node_index);
+        const existing_span = ctx.tree.getSpan(existing.node);
+
+        try self.reportFmt(current_span, "Identifier '{s}' has already been declared", .{name}, .{
+            .labels = try self.makeLabels(&.{
+                self.label(existing_span, try self.formatMessage("'{s}' was first declared as a {s} here", .{ name, existing.kind.toString() })),
+                self.label(current_span, "cannot be redeclared here"),
+            }),
+            .help = try self.formatMessage("Consider removing or renaming this declaration of '{s}'", .{name}),
+        });
+    }
+
+    const ReportOptions = struct {
+        severity: ast.Severity = .@"error",
+        help: ?[]const u8 = null,
+        labels: []const ast.Label = &.{},
+    };
+
+    pub fn report(self: *Self, span: ast.Span, message: []const u8, opts: ReportOptions) Allocator.Error!void {
+        try self.diagnostics.append(self.allocator, .{
+            .severity = opts.severity,
+            .message = message,
+            .span = span,
+            .help = opts.help,
+            .labels = opts.labels,
+        });
+    }
+
+    pub fn reportFmt(self: *Self, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Allocator.Error!void {
+        const message = try std.fmt.allocPrint(self.allocator, format, args);
+        try self.report(span, message, opts);
+    }
+
+    pub fn label(_: *Self, span: ast.Span, message: []const u8) ast.Label {
+        return .{ .span = span, .message = message };
+    }
+
+    pub fn makeLabels(self: *Self, labels: []const ast.Label) Allocator.Error![]const ast.Label {
+        return try self.allocator.dupe(ast.Label, labels);
+    }
+
+    pub fn formatMessage(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
+        return try std.fmt.allocPrint(self.allocator, format, args);
     }
 };
 

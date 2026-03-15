@@ -4,15 +4,59 @@ const parser = @import("parser");
 const semantic = parser.semantic;
 
 pub fn main(init: std.process.Init) !void {
-    const allocator = init.arena.allocator();
+    const Io = init.io;
 
-    const source = "const a = x + y";
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
-    var tree = try parser.parse(std.heap.page_allocator, source, .{});
+    const file_path = "test.js";
+
+    const source = try std.Io.Dir.cwd().readFileAlloc(Io, file_path, allocator, std.Io.Limit.limited(10 * 1024 * 1024));
+    defer allocator.free(source);
+
+    var tree = try parser.parse(allocator, source, .{});
+    defer tree.deinit();
+
+    const json = try parser.estree.toJSON(&tree, allocator, .{});
+    defer allocator.free(json);
+
+    std.debug.print("{s}\n", .{json});
 
     var analysis = try semantic.analyze(&tree, allocator);
     defer analysis.deinit();
 
-    // const scope_tree = analysis.result.scope_tree;
-    // const symbol_table = analysis.result.symbol_table;
+    for (analysis.diagnostics) |err| {
+        const start_pos = getLineAndColumn(source, err.span.start);
+        const end_pos = getLineAndColumn(source, err.span.end);
+
+        std.debug.print("\nError: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ err.message, start_pos.line, start_pos.col, end_pos.line, end_pos.col });
+
+        if (err.help) |help| std.debug.print("  Help: {s}\n\n", .{help});
+
+        if (err.labels.len > 0) {
+            for (err.labels) |label| {
+                const label_start_pos = getLineAndColumn(source, label.span.start);
+                const label_end_pos = getLineAndColumn(source, label.span.end);
+
+                std.debug.print("  Label: {s} at test.js:{d}:{d} to test.js:{d}:{d}\n", .{ label.message, label_start_pos.line, label_start_pos.col, label_end_pos.line, label_end_pos.col });
+            }
+        }
+    }
+}
+
+fn getLineAndColumn(source: []const u8, offset: usize) struct { line: usize, col: usize } {
+    var line: usize = 1;
+    var col: usize = 1;
+
+    for (source[0..@min(offset, source.len)]) |char| {
+        if (char == '\n') {
+            line += 1;
+            col = 1;
+        } else {
+            col += 1;
+        }
+    }
+
+    return .{ .line = line, .col = col };
 }
