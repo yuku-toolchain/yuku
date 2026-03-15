@@ -18,6 +18,8 @@ pub const Analysis = struct {
     }
 };
 
+diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
+
 pub fn analyze(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Analysis {
     var visitor = SemanticVisit{};
 
