@@ -13,6 +13,8 @@ pub inline fn parseExpressionInCover(parser: *Parser, precedence: u8) Error!?ast
 }
 
 /// validate that an expression doesn't contain CoverInitializedName.
+/// only called when `state.cover_has_init_name` is set during parsing,
+/// so the recursive walk here is bounded to cases that actually need it.
 pub fn validateNoCoverInitializedSyntax(parser: *Parser, expr: ast.NodeIndex) Error!void {
     const data = parser.b.getData(expr);
 
