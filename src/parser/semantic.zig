@@ -14,10 +14,12 @@ pub const AnalysisError = Allocator.Error;
 
 /// Runs semantic analysis on a `TreeBuilder`.
 ///
-/// The semantic errors are appeneded as normal errors to the tree, when you do toTree on the builder and get the tree, the semantic errors will be included in the diagnostics.
+/// Appends semantic diagnostics directly to `builder.diagnostics`,
+/// so they appear alongside parse errors in `tree.diagnostics` after
+/// `toTree()`.
 ///
-/// Returns the scope tree and symbol table. These are valid as long
-/// as the tree (or builder) is alive.
+/// All allocations use the builder's arena, the returned
+/// scope tree and symbol table are valid as long as the tree is alive.
 pub fn analyze(builder: *ast.TreeBuilder) AnalysisError!semantic.Result {
     var visitor = SemanticVisit{
         .builder = builder,
