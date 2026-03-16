@@ -16,6 +16,7 @@ export enum Lang {
 export interface ParseOptions {
 	sourceType?: "script" | "module";
 	lang?: "js" | "ts" | "jsx" | "tsx" | "dts";
+	semanticErrors?: boolean;
 }
 
 // we will expand this later
@@ -29,6 +30,7 @@ interface WasmExports {
 		sourceLen: number,
 		sourceType: number,
 		lang: number,
+		semanticErrors: number,
 	) => bigint; // returns packed u64: high 32 bits = length, low 32 bits = pointer
 	memory: WebAssembly.Memory;
 }
@@ -76,8 +78,9 @@ function parseInternal(
 		// options are numbers, so normalize them to pass to wasm
 		const sourceType = normalizeSourceType(options.sourceType);
 		const lang = normalizeLang(options.lang);
+		const semanticErrors = options.semanticErrors ? 1 : 0;
 
-		const result = wasm.parse(sourcePtr, sourceLen, sourceType, lang);
+		const result = wasm.parse(sourcePtr, sourceLen, sourceType, lang, semanticErrors);
 
 		if (result === 0n) {
 			throw new Error("Failed to parse source code");

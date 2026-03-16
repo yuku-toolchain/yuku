@@ -22,6 +22,7 @@ pub export fn parse(
     len: u32,
     source_type: u32,
     lang: u32,
+    semantic_errors: u32,
 ) u64 {
     const source: []const u8 = if (len == 0) &[_]u8{} else source_bytes[0..len];
 
@@ -43,7 +44,9 @@ pub export fn parse(
     };
     defer tree.deinit();
 
-    _ = semantic.analyze(&tree) catch {};
+    if (semantic_errors != 0) {
+        _ = semantic.analyze(&tree) catch {};
+    }
 
     const json_str = parser.estree.toJSON(&tree, wasm_allocator, .{ .pretty = false }) catch {
         return 0;
