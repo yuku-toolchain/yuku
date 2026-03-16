@@ -435,20 +435,83 @@ ctx.tree.replaceData(index, .{ .parenthesized_expression = .{ .expression = inne
 
 ## Building ASTs from Scratch
 
-You can build an AST programmatically using `Tree.initEmpty()`, which creates a tree with no source text:
+`Tree.initEmpty()` creates a tree with no source text for programmatic AST construction. Since there is no source, all strings must be created with `addString()`. A valid tree starts from a `program` root node:
 
 ```zig
-var tree = ast.Tree.initEmpty(allocator);
-defer tree.deinit();
+const ast = parser.ast;
 
-const name = try tree.addString("hello");
-const id = try tree.createNode(
-    .{ .binding_identifier = .{ .name = name } },
+var out = ast.Tree.initEmpty(allocator);
+defer out.deinit();
+
+// Create a string literal node: "hello"
+const hello_str = try out.addString("hello");
+const hello = try out.createNode(
+    .{ .string_literal = .{ .value = hello_str } },
+    .{ .start = 0, .end = 0 },
+);
+
+// Create an expression statement wrapping the literal
+const stmt = try out.createNode(
+    .{ .expression_statement = .{ .expression = hello } },
+    .{ .start = 0, .end = 0 },
+);
+
+// Build the program body (list of statements)
+const body = try out.createExtra(&.{stmt});
+
+// Create the root program node
+out.program = try out.createNode(
+    .{ .program = .{ .source_type = .module, .body = body } },
     .{ .start = 0, .end = 0 },
 );
 ```
 
-This is useful for code generation, or from within a transform visitor hook where you need to construct new subtrees and splice them into the traversed tree.
+### Building a New AST While Traversing Another
+
+A powerful pattern is traversing one tree (with full context: scopes, symbols, path) while building a completely separate output tree. This is how transpilers work:
+
+```zig
+const Transpiler = struct {
+    out: *ast.Tree,
+
+    pub fn enter_function(
+        self: *Transpiler,
+        func: ast.Function,
+        index: ast.NodeIndex,
+        ctx: *semantic.Ctx,
+    ) !traverser.Action {
+        // Full context from the source tree:
+        const is_strict = ctx.scope.isStrict();
+        const scope_id = ctx.scope.currentScopeId();
+        const source_span = ctx.tree.getSpan(index);
+
+        // Build nodes in the output tree:
+        const name_str = try self.out.addString("transpiledFn");
+        const name_node = try self.out.createNode(
+            .{ .binding_identifier = .{ .name = name_str } },
+            source_span,
+        );
+        // ... continue building output AST using source context ...
+
+        return .proceed;
+    }
+};
+
+// Usage:
+var source_tree = try parser.parse(allocator, source, .{});
+defer source_tree.deinit();
+
+var out = ast.Tree.initEmpty(allocator);
+defer out.deinit();
+
+var transpiler = Transpiler{ .out = &out };
+const result = try semantic.traverse(Transpiler, &source_tree, &transpiler);
+
+// out now contains a new AST built with full knowledge of the source tree's
+// scopes, symbols, and structure
+```
+
+You get the full power of any traverser mode (scopes, symbols, path navigation) on the source tree while constructing an entirely separate output tree. The two trees have independent arenas and lifetimes.
 
 ## Execution Order
 
