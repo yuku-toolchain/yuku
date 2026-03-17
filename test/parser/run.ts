@@ -4,7 +4,7 @@ import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
 import { deserializeAstJson, serializeAstJson } from "yuku-shared";
-import { parseSync, preload } from "../npm/parser-wasm/dist";
+import { parseSync, preload } from "../../npm/parser-wasm/dist";
 
 await preload();
 
@@ -27,20 +27,24 @@ interface TestConfig {
 }
 
 const configs: TestConfig[] = [
-	{ path: "test/suite/js/pass", type: "snapshot", languages: ["js"] },
+	{ path: "test/parser/suite/js/pass", type: "snapshot", languages: ["js"] },
 	{
-		path: "test/suite/js/fail",
+		path: "test/parser/suite/js/fail",
 		type: "should_fail",
 		languages: ["js"],
 	},
 	{
-		path: "test/suite/js/semantic",
+		path: "test/parser/suite/js/semantic",
 		type: "should_fail",
 		languages: ["js"],
 		skipOnCI: true,
 	},
-	{ path: "test/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
-	{ path: "test/suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
+	{ path: "test/parser/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
+	{
+		path: "test/parser/suite/jsx/fail",
+		type: "should_fail",
+		languages: ["jsx"],
+	},
 	{
 		path: "test/misc/jsx",
 		type: "snapshot",
@@ -136,7 +140,11 @@ const runTest = async (
 		const lang = getLanguage(file);
 		const sourceType = file.includes(".module.") ? "module" : "script";
 
-		const parsed = parseSync(content, { sourceType, lang, semanticErrors: true });
+		const parsed = parseSync(content, {
+			sourceType,
+			lang,
+			semanticErrors: true,
+		});
 
 		const hasErrors = parsed.errors && parsed.errors.length > 0;
 
@@ -329,8 +337,8 @@ const saveResults = async () => {
 
 	lines.push("");
 
-	await Bun.write("test/results.txt", lines.join("\n"));
-	console.log("\nResults saved to test/results.txt");
+	await Bun.write("test/parser/results.txt", lines.join("\n"));
+	console.log("\nResults saved to test/parser/results.txt");
 };
 
 await saveResults();

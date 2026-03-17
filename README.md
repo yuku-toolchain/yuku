@@ -31,15 +31,6 @@ cd yuku
 zig build
 ```
 
-> [!IMPORTANT]
-> Requires the latest Zig nightly build. Yuku stays up to date with Zig's latest development version.
-
-`src/main.zig` parses `test.js` and prints the AST as JSON. Edit `test.js` and run:
-
-```bash
-zig build run
-```
-
 ### Testing
 
 Run the full test suite (45,000+ files from Test262 and others) with AST matching:

@@ -6,7 +6,7 @@ const TEST_SUITE_REPO_URL =
 	"https://github.com/yuku-toolchain/parser-test-suite";
 const REMOVE_FILES = ["README.md", ".gitignore"];
 
-const shouldLoad = !(await Bun.file("test/suite").exists());
+const shouldLoad = !(await Bun.file("test/parser/suite").exists());
 
 if (!shouldLoad) {
 	process.exit(0);
