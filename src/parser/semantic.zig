@@ -37,23 +37,19 @@ const SemanticVisit = struct {
 
         if (ctx.symbols.findInScope(target, ctx.tree.getString(id.name))) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
-            const new_kind = ctx.symbols.currentBindingKind();
+            const current_kind = ctx.symbols.currentBindingKind();
 
-            if (!canRedeclare(existing.kind, new_kind)) {
+            // Section 14.2.1:  "It is a Syntax Error if the LexicallyDeclaredNames
+            //                   of StatementList contains any duplicate entries."
+            // Section 16.1.4:  "It is a Syntax Error if any element of the
+            //                   LexicallyDeclaredNames ... also occurs in the
+            //                   VarDeclaredNames ..."
+            if (existing.kind.isLexical() or current_kind.isLexical()) {
                 try self.reportRedeclaration(id, node_index, existing, ctx);
             }
         }
 
         return .proceed;
-    }
-
-    fn isLexicalLike(kind: Symbol.Kind) bool {
-        return kind == .lexical or kind == .class or kind == .import or kind == .parameter;
-    }
-
-    fn canRedeclare(existing: Symbol.Kind, new: Symbol.Kind) bool {
-        if (isLexicalLike(existing) or isLexicalLike(new)) return false;
-        return true;
     }
 
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {

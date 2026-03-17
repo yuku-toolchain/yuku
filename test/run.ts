@@ -136,7 +136,7 @@ const runTest = async (
 		const lang = getLanguage(file);
 		const sourceType = file.includes(".module.") ? "module" : "script";
 
-		const parsed = parseSync(content, { sourceType, lang });
+		const parsed = parseSync(content, { sourceType, lang, semanticErrors: true });
 
 		const hasErrors = parsed.errors && parsed.errors.length > 0;
 

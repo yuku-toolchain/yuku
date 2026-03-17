@@ -101,9 +101,11 @@ pub fn expressionToPattern(
 
     switch (data) {
         .identifier_reference => |id| {
-            parser.b.replaceData(expr, .{ .binding_identifier = .{
-                .name = id.name,
-            } });
+            if(context == .binding) {
+                parser.b.replaceData(expr, .{ .binding_identifier = .{
+                    .name = id.name,
+                } });
+            }
         },
 
         .assignment_expression => |assign| {

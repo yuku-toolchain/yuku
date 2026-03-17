@@ -1,5 +1,5 @@
-import { j } from "wow";
-
-const j = wow;
-
-function cool() {}
+function a([b]) {
+	c();
+	var d;
+	const b = cool;
+}

@@ -47,6 +47,13 @@ pub const Symbol = struct {
                 .import => "import",
             };
         }
+
+        pub fn isLexical(kind: Kind) bool {
+            return switch (kind) {
+                .lexical, .class, .import => true,
+                else => false,
+            };
+        }
     };
 
     /// Per-symbol flags for export status and mutability.
