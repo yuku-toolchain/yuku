@@ -1,0 +1,21 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 30,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": []
+  },
+  "comments": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Expected ';' after for-loop init, but found 'id'",
+      "help": null,
+      "start": 11,
+      "end": 13,
+      "labels": []
+    }
+  ]
+}

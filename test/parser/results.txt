@@ -5,10 +5,10 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       41991
+Passed:       42021
 Failed:       2468
 AST mismatch: 0/37196
-Total:        44459
+Total:        44489
 Coverage:     94.45%
 
 Results by Suite
@@ -2498,3 +2498,9 @@ Results by Suite
 
 ✓ test/parser/suite/jsx/fail
   Passed: 14/14 (100.00%)
+
+✓ test/parser/misc/jsx
+  Passed: 1/1 (100.00%)
+
+✓ test/parser/misc/js
+  Passed: 29/29 (100.00%)

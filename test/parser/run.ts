@@ -46,13 +46,13 @@ const configs: TestConfig[] = [
 		languages: ["jsx"],
 	},
 	{
-		path: "test/misc/jsx",
+		path: "test/parser/misc/jsx",
 		type: "snapshot",
 		languages: ["jsx"],
 		checkAstOnError: true,
 	},
 	{
-		path: "test/misc/js",
+		path: "test/parser/misc/js",
 		type: "snapshot",
 		languages: ["js"],
 		checkAstOnError: true,
