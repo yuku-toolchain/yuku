@@ -7,6 +7,9 @@ console.log();
 
 const source = `
   function* (blue){
+    const hello;
+
+
     const blue = "nice"
   };
 `;
@@ -19,4 +22,4 @@ console.log(result.program);
 
 console.log();
 
-printDiagnostics(source, result.errors, "test.js");
+printDiagnostics(source, result.diagnostics, "test.js");

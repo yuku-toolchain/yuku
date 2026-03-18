@@ -146,7 +146,7 @@ const runTest = async (
 			semanticErrors: true,
 		});
 
-		const hasErrors = parsed.errors && parsed.errors.length > 0;
+		const hasErrors = parsed.diagnostics && parsed.diagnostics.length > 0;
 
 		if (type === "should_pass") {
 			if (hasErrors) {

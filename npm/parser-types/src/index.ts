@@ -54,7 +54,7 @@ export interface DiagnosticLabel {
 
 /**
  * A diagnostic produced during parsing or semantic analysis.
- * The parser is error-tolerant — an AST is always produced even when errors exist.
+ * The parser is error-tolerant — an AST is always produced even when diagnostics exist.
  */
 export interface Diagnostic {
 	severity: "error" | "warning" | "hint" | "info";
@@ -75,6 +75,6 @@ export interface ParseResult {
 	program: Program;
 	/** All comments in source order. */
 	comments: Comment[];
-	/** Syntax errors, and semantic errors when {@link ParseOptions.semanticErrors} is enabled. */
-	errors: Diagnostic[];
+	/** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
+	diagnostics: Diagnostic[];
 }

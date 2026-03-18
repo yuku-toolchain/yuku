@@ -57,7 +57,7 @@ pub const Serializer = struct {
         try self.fieldNode("program", tree.program);
         try self.field("comments");
         try self.writeComments();
-        try self.field("errors");
+        try self.field("diagnostics");
         try self.writeDiagnostics();
         try self.endObject();
 
