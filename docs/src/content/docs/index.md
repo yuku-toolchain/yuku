@@ -29,7 +29,7 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 **Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 45,000+ tests from [Test262](https://github.com/tc39/test262) with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches.
 
-**Fast by design.** The parser is built using data-oriented design principles and generous performance engineering. It is competitive with leading parsers like [Oxc](https://oxc.rs). [See benchmarks](https://github.com/yuku-toolchain/parser-benchmark).
+**Fast by design.** The parser is built using data-oriented design principles and generous performance engineering.
 
 <div align="center" style="margin: 1.5rem 0;">
 
