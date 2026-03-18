@@ -1,6 +1,6 @@
 ---
-title: Yuku
-description: High-performance JavaScript/TypeScript toolchain in Zig
+title: Yuku — JavaScript/TypeScript Toolchain in Zig
+description: Yuku is a high-performance JavaScript and TypeScript parser and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 head:
   - tag: style
     content: |
@@ -13,7 +13,7 @@ head:
 
 <h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku</h1>
 
-A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
+A high-performance JavaScript/TypeScript parser and toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
 
 <br />
 

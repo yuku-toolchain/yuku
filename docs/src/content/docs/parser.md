@@ -1,6 +1,6 @@
 ---
 title: Parser
-description: Yuku's JavaScript/TypeScript parser
+description: A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
 ---
 
 Yuku's parser turns JavaScript and TypeScript source code into an Abstract Syntax Tree (AST). Single-pass, recursive descent, full ECMAScript spec compliance, comprehensive error recovery.

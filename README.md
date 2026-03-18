@@ -13,7 +13,7 @@
   [![NPM Version](https://img.shields.io/npm/v/yuku?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku)
   [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
-A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
+Yuku is a high-performance JavaScript and TypeScript parser and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
 [Documentation](https://yuku.fyi)
 

@@ -1,6 +1,6 @@
 ---
-title: AST
-description: The Abstract Syntax Tree produced by Yuku's parser
+title: AST Reference
+description: Complete AST node reference for Yuku's JavaScript and TypeScript parser.
 ---
 
 Internally, Yuku uses an optimized AST designed for performance in Zig. When serialized to JSON or exposed through Node.js bindings, this internal AST is converted to an [ESTree](https://github.com/estree/estree)-compatible format, matching the output of [Oxc](https://oxc.rs):

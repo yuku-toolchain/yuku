@@ -1,6 +1,6 @@
 ---
-title: Traverse
-description: Walking, analyzing, and transforming the AST
+title: AST Traversal
+description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system. Scoped, semantic, and transform traversal modes in Zig.
 ---
 
 Yuku's traverser system walks the AST and calls your visitor hooks at every node. There are four modes, each adding more context on top of the previous:
