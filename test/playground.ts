@@ -1,16 +1,22 @@
+import { printDiagnostics } from "../npm/parser-types/dist/print";
 import { parse } from "../npm/parser-wasm/dist";
 
 console.clear();
 
 console.log();
 
-const result = await parse(
-	`function* a(){ (b = yield* c) => 1; } const a = cool`,
-	{
-		semanticErrors: true,
-	},
-);
+const source = `
+  function* (blue){
+    const blue = "nice"
+  };
+`;
 
-console.log(JSON.stringify(result, null, 2));
+const result = await parse(source, {
+	semanticErrors: true,
+});
+
+console.log(result.program);
 
 console.log();
+
+printDiagnostics(source, result.errors, "test.js");

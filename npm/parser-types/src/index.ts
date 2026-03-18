@@ -1,5 +1,3 @@
-export * from "./ast";
-
 import type { Program } from "./ast";
 
 /** How the source code should be parsed. */
@@ -39,17 +37,17 @@ export interface Comment {
 	type: "Line" | "Block";
 	/** Comment text without the delimiters. */
 	value: string;
-	/** UTF-8 byte offset. */
+	/** UTF-16 byte offset. */
 	start: number;
-	/** UTF-8 byte offset. */
+	/** UTF-16 byte offset. */
 	end: number;
 }
 
 /** A labeled source span attached to a {@link Diagnostic}. */
 export interface DiagnosticLabel {
-	/** UTF-8 byte offset. */
+	/** UTF-16 byte offset. */
 	start: number;
-	/** UTF-8 byte offset. */
+	/** UTF-16 byte offset. */
 	end: number;
 	message: string;
 }
@@ -63,9 +61,9 @@ export interface Diagnostic {
 	message: string;
 	/** Fix suggestion, or `null` if unavailable. */
 	help: string | null;
-	/** UTF-8 byte offset. */
+	/** UTF-16 byte offset. */
 	start: number;
-	/** UTF-8 byte offset. */
+	/** UTF-16 byte offset. */
 	end: number;
 	/** Additional source spans providing context. */
 	labels: DiagnosticLabel[];

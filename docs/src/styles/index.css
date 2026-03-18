@@ -65,12 +65,12 @@ table code {
 }
 
 .header {
-	padding: 16px !important;
+	padding: 16px;
 }
 
 .header > .header {
 	grid-template-columns: 270px auto;
-	padding: 0 !important;
+	padding: 0;
 }
 
 .content-panel,

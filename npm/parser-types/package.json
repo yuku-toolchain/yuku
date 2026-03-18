@@ -15,6 +15,18 @@
 				"default": "./dist/index.js"
 			}
 		},
+		"./print": {
+			"import": {
+				"types": "./dist/print.d.ts",
+				"default": "./dist/print.js"
+			}
+		},
+		"./ast": {
+			"import": {
+				"types": "./dist/ast.d.ts",
+				"default": "./dist/ast.js"
+			}
+		},
 		"./package.json": "./package.json"
 	},
 	"funding": "https://github.com/sponsors/arshad-yaseen",
@@ -28,7 +40,7 @@
 		}
 	],
 	"scripts": {
-		"build": "bunup --exports"
+		"build": "bunup src/index.ts src/print.ts src/ast.ts --exports"
 	},
 	"peerDependencies": {
 		"typescript": ">=4.5.0"
