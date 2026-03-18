@@ -229,6 +229,24 @@ pub const NodePath = struct {
         return self.len;
     }
 
+    /// Returns an iterator that walks from the current node up to the root.
+    pub fn ancestors(self: *const NodePath) AncestorIterator {
+        return .{ .buf = &self.buf, .pos = self.len };
+    }
+
+    /// Walks up from the current node to root, yielding each node index.
+    pub const AncestorIterator = struct {
+        buf: *const [capacity]ast.NodeIndex,
+        pos: usize,
+
+        /// Returns the next ancestor node index, or `null` when the root has been passed.
+        pub fn next(self: *AncestorIterator) ?ast.NodeIndex {
+            if (self.pos == 0) return null;
+            self.pos -= 1;
+            return if (self.pos < capacity) self.buf[self.pos] else null;
+        }
+    };
+
     /// Adds a node to the path when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {
         if (self.len < capacity) {

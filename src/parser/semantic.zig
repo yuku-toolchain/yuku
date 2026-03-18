@@ -52,6 +52,34 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    pub fn enter_yield_expression(self: *Self, _: ast.YieldExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (isInFormalParameters(ctx)) {
+            try self.report(ctx.tree.getSpan(node_index), "Yield expression is not allowed in formal parameters", .{});
+        }
+
+        return .proceed;
+    }
+
+    pub fn enter_await_expression(self: *Self, _: ast.AwaitExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (isInFormalParameters(ctx)) {
+            try self.report(ctx.tree.getSpan(node_index), "Await expression is not allowed in formal parameters", .{});
+        }
+
+        return .proceed;
+    }
+
+    fn isInFormalParameters(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .formal_parameter => return true,
+                .program, .function, .arrow_function_expression => return false,
+                else => {},
+            }
+        }
+        return false;
+    }
+
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
         const name = ctx.tree.getString(id.name);
         const current_span = ctx.tree.getSpan(node_index);
