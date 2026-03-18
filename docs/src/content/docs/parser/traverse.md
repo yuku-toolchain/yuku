@@ -1,6 +1,6 @@
 ---
 title: AST Traversal
-description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system. Scoped, semantic, and transform traversal modes in Zig.
+description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system. Navigate any direction (up to parents, down into children, sideways to siblings) with full context. Scoped, semantic, and transform traversal modes in Zig.
 ---
 
 Yuku's traverser system walks the AST and calls your visitor hooks at every node. There are four modes, each adding more context on top of the previous:
@@ -31,7 +31,7 @@ const MyVisitor = struct {
 };
 ```
 
-The hook name must match a field in `ast.NodeData`. Typos and wrong payload types are caught at compile time.
+The hook name must match a field in `ast.NodeData`. All hooks are validated at compile time: a misspelled hook name (e.g. `enter_funciton`) or a wrong payload type will produce a clear compile error. No silent mismatches.
 
 ### Catch-All Hooks
 
@@ -70,7 +70,7 @@ ctx.tree          // the tree (*const Tree or *Tree in transform mode)
 ctx.path          // path from root to current node
 
 // In scoped and semantic modes:
-ctx.scope         // scope tracker (current scope, strict mode, ancestors)
+ctx.scope         // scope tracker (current scope, flags, strict mode, ancestors)
 
 // In semantic mode:
 ctx.symbols       // symbol tracker (declarations, references, binding context)
@@ -92,25 +92,24 @@ No allocator needed. No result returned.
 
 ### Path Navigation
 
-The path is a stack of `NodeIndex` values from root to the current node:
+The path is a stack of `NodeIndex` values from root to the current node. Combined with the full tree reference, you can navigate in any direction: up to ancestors, down into children, or sideways to siblings.
 
 ```zig
 pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *basic.Ctx) traverser.Action {
+    // Navigate up
     const parent = ctx.path.parent();          // parent NodeIndex, or null at root
     const grandparent = ctx.path.ancestor(2);  // 0 = current, 1 = parent, 2 = grandparent
     const depth = ctx.path.depth();            // nesting depth (0 at root)
 
-    // Read parent's data if it exists
+    // Navigate sideways or down — the full tree is always accessible
     if (ctx.path.parent()) |p| {
         const parent_data = ctx.tree.getData(p);
-        // ...
+        // inspect siblings via parent's children, or descend into any subtree
     }
 
     return .proceed;
 }
 ```
-
-The path buffer has a capacity of 256 levels, which is more than enough for real-world JavaScript.
 
 ## Scoped Traverser
 
@@ -513,25 +512,6 @@ const result = try semantic.traverse(Transpiler, &source_tree, &transpiler);
 
 You get the full power of any traverser mode (scopes, symbols, path navigation) on the source tree while constructing an entirely separate output tree. The two trees have independent arenas and lifetimes.
 
-## Execution Order
-
-Understanding the exact hook execution order is important for advanced visitors. For each node:
-
-```
-1. ctx.enter(index, data)           push path, scope, binding context
-2. enter_node(data, index, ctx)     catch-all enter hook (if defined)
-3. enter_<type>(payload, index, ctx)  typed enter hook (if defined)
-4. ctx.post_enter(index, data)      declare symbols (semantic only)
-5.   ... walk each child recursively ...
-6. exit_<type>(payload, index, ctx)  typed exit hook (if defined)
-7. exit_node(data, index, ctx)      catch-all exit hook (if defined)
-8. ctx.exit(data)                   pop path, scope, binding context
-```
-
-Steps 1, 4, and 8 are handled by the Layer middleware. Your visitor only implements steps 2-3 and 6-7.
-
-If your enter hook returns `.skip`, steps 4-5 are skipped (children are not walked, symbols are not declared). If it returns `.stop`, the entire traversal ends.
-
 ## Combining Modes
 
 The traverser modes are composable. You can run multiple passes:
@@ -548,15 +528,3 @@ const result = try parser.semantic.analyze(&tree);
 ```
 
 Since transforms and scope/symbol tracking cannot safely run in the same pass (mutations would invalidate tracked state), the design enforces this separation at the type level: read-only traversers get `*const Tree`, transform gets `*Tree`.
-
-## Summary
-
-| Feature | Basic | Scoped | Semantic | Transform |
-|---------|-------|--------|----------|-----------|
-| Path navigation | yes | yes | yes | yes |
-| Scope tracking | | yes | yes | |
-| Symbol tracking | | | yes | |
-| AST mutation | | | | yes |
-| Tree access | `*const` | `*const` | `*const` | `*Tree` |
-| Allocates | no | arena | arena | no |
-| Returns | | `ScopeTree` | `Result` | |
