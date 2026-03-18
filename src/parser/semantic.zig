@@ -1,3 +1,6 @@
+// this is wip, even though redeclaration checks etc are done,
+// there are still a lot of semantic errors to cover
+
 const std = @import("std");
 const traverser = @import("traverser/root.zig");
 const ast = @import("ast.zig");
@@ -55,6 +58,14 @@ const SemanticVisit = struct {
     pub fn enter_yield_expression(self: *Self, _: ast.YieldExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (isInFormalParameters(ctx)) {
             try self.report(ctx.tree.getSpan(node_index), "Yield expression is not allowed in formal parameters", .{});
+        }
+
+        return .proceed;
+    }
+
+    pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module) {
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{});
         }
 
         return .proceed;

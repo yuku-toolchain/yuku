@@ -6,15 +6,15 @@ console.clear();
 console.log();
 
 const source = `
-  function foo(a, b, c) {
-    arguments[0] = 1;
-    arguments[1] = 'str';
-    arguments[2] = 2.1;
-    return 10 === a && 'sss' === b && 1 === c;
-  }
+  import "./setup_FIXTURE.js";
+  assert.sameValue(globalThis.evaluations.length, 0, "import defer does not trigger evaluation");
+  Object.getOwnPropertySymbols(ns);
+  assert(globalThis.evaluations.length > 0, "It triggers evaluation");
 `;
 
 const result = await parse(source, {
+	lang: "js",
+	sourceType: "script",
 	semanticErrors: true,
 });
 
