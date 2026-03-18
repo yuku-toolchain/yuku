@@ -39,7 +39,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe);
 
     const profiler_module = b.createModule(.{
-        .root_source_file = b.path("profiler/main.zig"),
+        .root_source_file = b.path("profiler/profile.zig"),
         .target = target,
         .optimize = optimize,
     });

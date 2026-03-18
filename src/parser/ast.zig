@@ -137,15 +137,15 @@ pub const StringId = struct {
     }
 };
 
-/// Immutable string storage backing a finalized `ParseTree`.
+/// Immutable string storage.
 ///
 /// Provides zero-copy access to the original source text and any strings
 /// created during transforms or programmatic building.
 pub const StringPool = struct {
     /// The original source text passed to the parser.
-    /// Empty for trees built programmatically with `TreeBuilder.initEmpty()`.
+    /// Empty for trees built programmatically with `Tree.initEmpty()`.
     source: []const u8 = "",
-    /// Strings added after parsing (via `TreeBuilder.addString()`).
+    /// Strings added after parsing (via `Tree.addString()`).
     extra: []const u8 = "",
 
     /// Returns the string content for the given `StringId`.
@@ -154,7 +154,7 @@ pub const StringPool = struct {
     }
 };
 
-/// Growable string storage used by `TreeBuilder` during parsing and transforms.
+/// Growable string storage used by `Tree` during parsing and transforms.
 ///
 /// Wraps the original source buffer (zero-copy) and a growable buffer for
 /// new strings.
@@ -187,23 +187,21 @@ pub const MutableStringPool = struct {
     }
 };
 
-/// Mutable AST builder backed by growable arrays.
+/// The AST. Backed by growable arrays and an arena allocator.
 ///
-/// Used during parsing to construct the tree and by the transform
-/// traverser for in-place mutations. Can also be used standalone to
-/// build ASTs programmatically.
-///
-/// Call `toTree()` to convert into an immutable `ParseTree` when done.
-/// Call `deinit()` to free without converting.
-pub const TreeBuilder = struct {
+/// Returned by `parser.parse()`. Readable immediately after parsing.
+/// Can be enriched with semantic analysis or transforms. All
+/// allocations go into the tree's arena, and `deinit()` frees
+/// everything at once.
+pub const Tree = struct {
     /// Root node of the AST (always a Program node).
     program: NodeIndex = undefined,
     /// All nodes in the AST.
     nodes: NodeList = .empty,
     /// Extra data storage for variadic node children.
     extra: std.ArrayList(NodeIndex) = .empty,
-    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
-    diagnostics: []const Diagnostic = &.{},
+    /// Diagnostics (errors, warnings, etc.) collected during parsing and analysis.
+    diagnostics: std.ArrayList(Diagnostic) = .empty,
     /// Comments found in the source code.
     comments: []const Comment = &.{},
     /// Arena allocator owning all the memory.
@@ -211,89 +209,82 @@ pub const TreeBuilder = struct {
     /// All strings referenced by AST nodes.
     /// Use `getString()` to read and `addString()` to create new strings.
     strings: MutableStringPool,
+    /// Source type (script or module).
+    source_type: SourceType = .module,
+    /// Language variant (js, ts, jsx, tsx, dts).
+    lang: Lang = .js,
 
-    /// Creates a tree builder for parsing or transforming source code.
-    pub fn init(child_allocator: std.mem.Allocator, source: []const u8) TreeBuilder {
+    /// Creates a tree for parsing or transforming source code.
+    pub fn init(child_allocator: std.mem.Allocator, source: []const u8) Tree {
         return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
             .strings = .{ .source = source },
         };
     }
 
-    /// Creates a tree builder for building ASTs programmatically
+    /// Creates an empty tree for building ASTs programmatically
     /// (no source text). Use `addString()` to create all strings.
-    pub fn initEmpty(child_allocator: std.mem.Allocator) TreeBuilder {
+    pub fn initEmpty(child_allocator: std.mem.Allocator) Tree {
         return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
             .strings = .{},
         };
     }
 
-    /// Frees all memory owned by this tree builder.
-    pub fn deinit(self: *const TreeBuilder) void {
+    /// Frees all memory owned by this tree.
+    pub fn deinit(self: *const Tree) void {
         self.arena.deinit();
     }
 
-    pub inline fn allocator(self: *TreeBuilder) std.mem.Allocator {
+    pub inline fn allocator(self: *Tree) std.mem.Allocator {
         return self.arena.allocator();
     }
 
-    /// Converts into an immutable `ParseTree`, transferring ownership.
-    /// This builder should not be used after calling this.
-    pub fn toTree(self: *TreeBuilder, meta: ParseTree.Meta) ParseTree {
-        return .{
-            .program = self.program,
-            .nodes = self.nodes.toOwnedSlice(),
-            .extra = self.extra.items,
-            .diagnostics = self.diagnostics,
-            .comments = self.comments,
-            .arena = self.arena,
-            .strings = self.strings.freeze(),
-            .source_type = meta.source_type,
-            .lang = meta.lang,
-        };
-    }
-
     /// Returns true if the tree contains any errors.
-    pub inline fn hasErrors(self: *const TreeBuilder) bool {
-        for (self.diagnostics) |d| {
+    pub inline fn hasErrors(self: *const Tree) bool {
+        for (self.diagnostics.items) |d| {
             if (d.severity == .@"error") return true;
         }
         return false;
     }
 
     /// Returns true if the tree contains any diagnostics.
-    pub inline fn hasDiagnostics(self: *const TreeBuilder) bool {
-        return self.diagnostics.len > 0;
+    pub inline fn hasDiagnostics(self: *const Tree) bool {
+        return self.diagnostics.items.len > 0;
+    }
+
+    /// Appends a diagnostic to the tree.
+    pub fn appendDiagnostic(self: *Tree, diag: Diagnostic) error{OutOfMemory}!void {
+        try self.diagnostics.append(self.arena.allocator(), diag);
     }
 
     /// Returns the data for the node at the given index.
-    pub inline fn getData(self: *const TreeBuilder, index: NodeIndex) NodeData {
+    pub inline fn getData(self: *const Tree, index: NodeIndex) NodeData {
         return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
     /// Returns the span for the node at the given index.
-    pub inline fn getSpan(self: *const TreeBuilder, index: NodeIndex) Span {
+    pub inline fn getSpan(self: *const Tree, index: NodeIndex) Span {
         return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
     /// Returns the extra node indices for the given range.
-    pub inline fn getExtra(self: *const TreeBuilder, range: IndexRange) []const NodeIndex {
+    pub inline fn getExtra(self: *const Tree, range: IndexRange) []const NodeIndex {
         return self.extra.items[range.start..][0..range.len];
     }
 
     /// Replaces an existing node's data in-place.
-    pub inline fn replaceData(self: *TreeBuilder, index: NodeIndex, data: NodeData) void {
+    pub inline fn replaceData(self: *Tree, index: NodeIndex, data: NodeData) void {
         self.nodes.items(.data)[@intFromEnum(index)] = data;
     }
 
     /// Replaces an existing node's span in-place.
-    pub inline fn replaceSpan(self: *TreeBuilder, index: NodeIndex, span: Span) void {
+    pub inline fn replaceSpan(self: *Tree, index: NodeIndex, span: Span) void {
         self.nodes.items(.span)[@intFromEnum(index)] = span;
     }
 
     /// Creates a new node. Returns its index.
-    pub inline fn createNode(self: *TreeBuilder, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+    pub inline fn createNode(self: *Tree, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
         if (self.nodes.len < self.nodes.capacity) {
             self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
@@ -304,7 +295,7 @@ pub const TreeBuilder = struct {
     }
 
     /// Creates a new child list. Returns its range.
-    pub inline fn createExtra(self: *TreeBuilder, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+    pub inline fn createExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
         const start: u32 = @intCast(self.extra.items.len);
         if (self.extra.items.len + children.len <= self.extra.capacity) {
             self.extra.appendSliceAssumeCapacity(children);
@@ -316,94 +307,22 @@ pub const TreeBuilder = struct {
 
     /// Creates a `StringId` referencing a range in the original source.
     /// Used internally by the parser; transform users should use `addString()`.
-    pub inline fn sourceSlice(self: *TreeBuilder, start: u32, end: u32) StringId {
+    pub inline fn sourceSlice(self: *Tree, start: u32, end: u32) StringId {
         return self.strings.sourceSlice(start, end);
     }
 
     /// Copies `str` into the string pool and returns its `StringId`.
     /// Use this in transforms and when building ASTs programmatically.
-    pub fn addString(self: *TreeBuilder, str: []const u8) error{OutOfMemory}!StringId {
+    pub fn addString(self: *Tree, str: []const u8) error{OutOfMemory}!StringId {
         return self.strings.add(self.arena.allocator(), str);
     }
 
     /// Returns the string content for a `StringId`.
-    pub inline fn getString(self: *const TreeBuilder, id: StringId) []const u8 {
+    pub inline fn getString(self: *const Tree, id: StringId) []const u8 {
         return self.strings.get(id);
     }
 };
 
-/// Immutable parse tree returned by `parse()`.
-///
-/// All node storage is finalized into compact slices. Use the `get*`
-/// methods to read nodes, spans, extra data, and source text.
-///
-/// Call `deinit()` when done to free all memory.
-pub const ParseTree = struct {
-    /// Root node of the AST (always a Program node).
-    program: NodeIndex,
-    /// All nodes in the AST, stored as a struct-of-arrays slice.
-    nodes: NodeList.Slice,
-    /// Extra data storage for variadic node children.
-    extra: []const NodeIndex,
-    /// Diagnostics (errors, warnings, etc.) encountered during parsing.
-    diagnostics: []const Diagnostic,
-    /// Comments found in the source code.
-    comments: []const Comment,
-    /// Arena allocator owning all the memory.
-    arena: std.heap.ArenaAllocator,
-    /// All strings referenced by AST nodes.
-    /// Use `getString()` to resolve a `StringId` to its text.
-    /// Access `strings.source` for the original source text (e.g. for error reporting).
-    strings: StringPool,
-    /// Source type (script or module).
-    source_type: SourceType,
-    /// Language variant (js, ts, jsx, tsx, dts).
-    lang: Lang,
-
-    /// Metadata needed to convert a `TreeBuilder` into a `ParseTree`.
-    pub const Meta = struct {
-        source_type: SourceType = .module,
-        lang: Lang = .js,
-    };
-
-    /// Returns true if the parse tree contains any errors.
-    pub inline fn hasErrors(self: *const ParseTree) bool {
-        for (self.diagnostics) |d| {
-            if (d.severity == .@"error") return true;
-        }
-        return false;
-    }
-
-    /// Returns true if the parse tree contains any diagnostics.
-    pub inline fn hasDiagnostics(self: *const ParseTree) bool {
-        return self.diagnostics.len > 0;
-    }
-
-    /// Frees all memory owned by this parse tree.
-    pub fn deinit(self: *const ParseTree) void {
-        self.arena.deinit();
-    }
-
-    /// Returns the data for the node at the given index.
-    pub inline fn getData(self: *const ParseTree, index: NodeIndex) NodeData {
-        return self.nodes.items(.data)[@intFromEnum(index)];
-    }
-
-    /// Returns the span for the node at the given index.
-    pub inline fn getSpan(self: *const ParseTree, index: NodeIndex) Span {
-        return self.nodes.items(.span)[@intFromEnum(index)];
-    }
-
-    /// Returns the extra node indices for the given range.
-    pub inline fn getExtra(self: *const ParseTree, range: IndexRange) []const NodeIndex {
-        return self.extra[range.start..][0..range.len];
-    }
-
-    /// Returns the string content for a `StringId` used in AST nodes.
-    pub inline fn getString(self: *const ParseTree, id: StringId) []const u8 {
-        return self.strings.get(id);
-    }
-};
 
 /// Index into the AST node array. `.null` for optional nodes.
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
@@ -1475,7 +1394,7 @@ pub const ExportAllDeclaration = struct {
 /// `export { local as exported }`
 /// https://tc39.es/ecma262/#prod-ExportSpecifier
 pub const ExportSpecifier = struct {
-    /// ModuleExportName (IdentifierName/IdentifierReference or StringLiteral) - local binding
+    /// IdentifierReference (local export) or ModuleExportName/IdentifierName/StringLiteral (re-export with 'from')
     local: NodeIndex,
     /// ModuleExportName (IdentifierName or StringLiteral) - exported name
     exported: NodeIndex,

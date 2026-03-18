@@ -18,16 +18,16 @@ pub const SymbolTable = sy.SymbolTable;
 pub const SymbolTracker = sy.SymbolTracker;
 
 pub const Ctx = struct {
-    tree: *const ast.ParseTree,
+    tree: *const ast.Tree,
     path: wk.NodePath = .{},
     scope: ScopeTracker,
     symbols: SymbolTracker,
 
-    pub fn init(tree: *const ast.ParseTree, allocator: Allocator) Allocator.Error!Ctx {
+    pub fn init(tree: *ast.Tree) Allocator.Error!Ctx {
         return .{
             .tree = tree,
-            .scope = try ScopeTracker.init(tree, allocator),
-            .symbols = try SymbolTracker.init(tree, allocator),
+            .scope = try ScopeTracker.init(tree),
+            .symbols = try SymbolTracker.init(tree),
         };
     }
 
@@ -46,43 +46,25 @@ pub const Ctx = struct {
         self.scope.exit(data);
         self.path.pop();
     }
-
-    /// Finalizes into a `Result` containing the scope tree and symbol table.
-    pub fn toResult(self: *Ctx) Allocator.Error!Result {
-        return .{
-            .scope_tree = try self.scope.toScopeTree(),
-            .symbol_table = try self.symbols.toSymbolTable(),
-        };
-    }
-
-    /// Frees all resources. Only needed if the traversal is aborted early.
-    pub fn deinit(self: *Ctx) void {
-        self.scope.deinit();
-        self.symbols.deinit();
-    }
 };
 
 /// Combined output of a semantic traversal.
 pub const Result = struct {
     scope_tree: ScopeTree,
     symbol_table: SymbolTable,
-
-    /// Frees both the scope tree and symbol table.
-    pub fn deinit(self: *Result) void {
-        self.scope_tree.deinit();
-        self.symbol_table.deinit();
-    }
 };
 
 /// Walks the tree with full path, scope, and symbol tracking.
 /// Returns a `Result` containing the scope tree and symbol table.
-pub fn traverse(comptime V: type, tree: *const ast.ParseTree, visitor: *V, allocator: Allocator) Allocator.Error!Result {
-    var ctx = try Ctx.init(tree, allocator);
-    errdefer ctx.deinit();
+pub fn traverse(comptime V: type, tree: *ast.Tree, visitor: *V) Allocator.Error!Result {
+    var ctx = try Ctx.init(tree);
 
     var layer = wk.Layer(Ctx, V){ .inner = visitor };
 
     try wk.walk(Ctx, wk.Layer(Ctx, V), &layer, &ctx);
 
-    return try ctx.toResult();
+    return .{
+        .scope_tree = ctx.scope.toScopeTree(),
+        .symbol_table = ctx.symbols.toSymbolTable(),
+    };
 }

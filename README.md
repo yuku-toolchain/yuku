@@ -13,15 +13,17 @@
   [![NPM Version](https://img.shields.io/npm/v/yuku?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku)
   [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
-A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
-
-[Documentation](https://yuku.fyi)
+Yuku is a high-performance JavaScript and TypeScript parser and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
 </div>
 
 > **Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. A visitor/traverser API and TypeScript support are currently in progress. See the [Roadmap](#roadmap) for details.
 
-## Contributing
+## 📖 Documentation
+
+Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
+
+## 🤝 Contributing
 
 Yuku is pure Zig with no external dependencies.
 
@@ -29,15 +31,6 @@ Yuku is pure Zig with no external dependencies.
 git clone https://github.com/yuku-toolchain/yuku.git
 cd yuku
 zig build
-```
-
-> [!IMPORTANT]
-> Requires the latest Zig nightly build. Yuku stays up to date with Zig's latest development version.
-
-`src/main.zig` parses `test.js` and prints the AST as JSON. Edit `test.js` and run:
-
-```bash
-zig build run
 ```
 
 ### Testing
@@ -55,8 +48,8 @@ The first run will download the test suite (wait for it to finish). After the ru
 - [x] JavaScript Parser
 - [x] WASM
 - [x] JSX Support
-- [ ] Visitor/Traverser (In Progress)
-- [ ] TypeScript Support
+- [ ] TypeScript Support (In Progress)
+- [ ] Visitor/Traverser
 - [ ] Documentation
 - [ ] Module Resolver
 - [ ] TypeScript Declaration Transpiler, Minifier, and Bundler

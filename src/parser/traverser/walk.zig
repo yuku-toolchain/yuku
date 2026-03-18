@@ -16,7 +16,7 @@ pub const Action = enum {
 /// Walks the AST tree, calling visitor hooks at each node.
 ///
 /// `C` is the context type. It must have a `.tree` field (either a
-/// `*const ParseTree` or `*TreeBuilder`) so the walker can access
+/// `*const Tree` or `*Tree`) so the walker can access
 /// child nodes. Contexts can also define `enter`, `exit`, and
 /// `post_enter` methods if used with `Layer`.
 ///
@@ -228,6 +228,24 @@ pub const NodePath = struct {
     pub inline fn depth(self: *const NodePath) usize {
         return self.len;
     }
+
+    /// Returns an iterator that walks from the current node up to the root.
+    pub fn ancestors(self: *const NodePath) AncestorIterator {
+        return .{ .buf = &self.buf, .pos = self.len };
+    }
+
+    /// Walks up from the current node to root, yielding each node index.
+    pub const AncestorIterator = struct {
+        buf: *const [capacity]ast.NodeIndex,
+        pos: usize,
+
+        /// Returns the next ancestor node index, or `null` when the root has been passed.
+        pub fn next(self: *AncestorIterator) ?ast.NodeIndex {
+            if (self.pos == 0) return null;
+            self.pos -= 1;
+            return if (self.pos < capacity) self.buf[self.pos] else null;
+        }
+    };
 
     /// Adds a node to the path when entering it.
     pub fn push(self: *NodePath, index: ast.NodeIndex) void {

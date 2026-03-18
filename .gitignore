@@ -7,6 +7,6 @@ operator-precedence.md
 jsx-roadmap.md
 **/dist
 .astro/
-test/suite
+test/**/suite
 profiler/files
 zig-pkg

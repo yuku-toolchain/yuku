@@ -367,10 +367,9 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         return .{ .key = key, .computed = false };
     }
 
-    try parser.reportFmt(
+    try parser.report(
         parser.current_token.span,
-        "Unexpected token '{s}' as class element key",
-        .{parser.describeToken(parser.current_token)},
+        try parser.fmt("Unexpected token '{s}' as class element key", .{parser.describeToken(parser.current_token)}),
         .{ .help = "Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr]." },
     );
 

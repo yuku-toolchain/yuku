@@ -12,7 +12,7 @@ pub const EstreeJsonOptions = struct {
 };
 
 pub const Serializer = struct {
-    tree: *const ast.ParseTree,
+    tree: *const ast.Tree,
     buffer: *std.ArrayList(u8),
     allocator: std.mem.Allocator,
     depth: u32 = 0,
@@ -27,7 +27,7 @@ pub const Serializer = struct {
     const Error = error{ InvalidCharacter, NoSpaceLeft, OutOfMemory, Overflow };
     const NodeTag = std.meta.Tag(ast.NodeData);
 
-    pub fn serialize(tree: *const ast.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
+    pub fn serialize(tree: *const ast.Tree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
         var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.nodes.len * 64 + 4096);
         errdefer buffer.deinit(allocator);
 
@@ -57,7 +57,7 @@ pub const Serializer = struct {
         try self.fieldNode("program", tree.program);
         try self.field("comments");
         try self.writeComments();
-        try self.field("errors");
+        try self.field("diagnostics");
         try self.writeDiagnostics();
         try self.endObject();
 
@@ -545,7 +545,7 @@ pub const Serializer = struct {
 
     fn writeDiagnostics(self: *Self) !void {
         try self.beginArray();
-        for (self.tree.diagnostics) |diag| {
+        for (self.tree.diagnostics.items) |diag| {
             try self.sep();
             if (self.options.pretty) {
                 try self.writeByte('\n');
@@ -1009,6 +1009,6 @@ fn parseJSNumeric(outbuf: []u8, str: []const u8) ![]const u8 {
     return std.fmt.bufPrint(outbuf, "{e}", .{val});
 }
 
-pub fn toJSON(tree: *const ast.ParseTree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
+pub fn toJSON(tree: *const ast.Tree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
     return Serializer.serialize(tree, allocator, options);
 }

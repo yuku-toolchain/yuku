@@ -219,7 +219,6 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
 
-        // convert identifier_name to binding_identifier
         // since it is now a binding identifier, we need to validate like reserved words, etc.
         if (!try literals.validateIdentifier(parser, "an imported binding", imported_token)) {
             return null;
@@ -227,13 +226,12 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
         const id_data = imported_data.identifier_name;
 
-        parser.b.replaceData(imported, .{
+        // create a new binding_identifier node for local, keeping imported as identifier_name
+        local = try parser.b.createNode(.{
             .binding_identifier = .{
                 .name = id_data.name,
             },
-        });
-
-        local = imported;
+        }, parser.b.getSpan(imported));
     }
 
     const end = parser.b.getSpan(local).end;
@@ -448,12 +446,26 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             if (local_tag.isReserved()) {
                 const local_name = parser.b.getString(local_data.identifier_name.name);
 
-                try parser.reportFmt(
+                try parser.report(
                     local_span,
                     "A reserved word cannot be used as an exported binding without 'from'",
-                    .{},
-                    .{ .help = try parser.formatMessage("Did you mean `export {{ {s} as {s} }} from 'some-module'`?", .{ local_name, local_name }) },
+                    .{ .help = try parser.fmt("Did you mean `export {{ {s} as {s} }} from 'some-module'`?", .{ local_name, local_name }) },
                 );
+            }
+
+            // convert local from identifier_name to identifier_reference
+            // since it references a local binding (not a re-export)
+            if (local_data == .identifier_name) {
+                const new_local = try parser.b.createNode(.{
+                    .identifier_reference = .{ .name = local_data.identifier_name.name },
+                }, local_span);
+
+                parser.b.replaceData(spec_idx, .{
+                    .export_specifier = .{
+                        .local = new_local,
+                        .exported = specifier.exported,
+                    },
+                });
             }
         }
     }

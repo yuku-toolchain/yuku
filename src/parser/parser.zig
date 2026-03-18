@@ -46,7 +46,7 @@ const ParserState = struct {
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
-    b: ast.TreeBuilder,
+    b: ast.Tree,
     source: []const u8,
     source_type: ast.SourceType,
     lang: ast.Lang,
@@ -67,8 +67,11 @@ pub const Parser = struct {
     state: ParserState = .{},
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
+        var b = ast.Tree.init(child_allocator, source);
+        b.source_type = options.source_type;
+        b.lang = options.lang;
         return .{
-            .b = ast.TreeBuilder.init(child_allocator, source),
+            .b = b,
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
@@ -81,15 +84,7 @@ pub const Parser = struct {
         return self.b.allocator();
     }
 
-    pub fn parse(self: *Parser) Error!ast.ParseTree {
-        try self.parseInner();
-        return self.b.toTree(.{
-            .source_type = self.source_type,
-            .lang = self.lang,
-        });
-    }
-
-    pub fn build(self: *Parser) Error!ast.TreeBuilder {
+    pub fn parse(self: *Parser) Error!ast.Tree {
         try self.parseInner();
         return self.b;
     }
@@ -133,7 +128,7 @@ pub const Parser = struct {
             .{ .start = 0, .end = end },
         );
 
-        self.b.diagnostics = try self.diagnostics.toOwnedSlice(alloc);
+        self.b.diagnostics = self.diagnostics;
 
         for (self.lexer.comments.items) |*comment| {
             comment.value = self.b.sourceSlice(switch (comment.type) {
@@ -393,20 +388,15 @@ pub const Parser = struct {
         try self.report(span, expected_message, opts);
     }
 
-    pub fn reportFmt(self: *Parser, span: ast.Span, comptime format: []const u8, args: anytype, opts: ReportOptions) Error!void {
-        const message = try std.fmt.allocPrint(self.allocator(), format, args);
-        try self.report(span, message, opts);
-    }
-
     pub fn label(_: *Parser, span: ast.Span, message: []const u8) ast.Label {
         return .{ .span = span, .message = message };
     }
 
-    pub fn makeLabels(self: *Parser, labels: []const ast.Label) Error![]const ast.Label {
-        return try self.allocator().dupe(ast.Label, labels);
+    pub fn labels(self: *Parser, items: []const ast.Label) Error![]const ast.Label {
+        return try self.allocator().dupe(ast.Label, items);
     }
 
-    pub fn formatMessage(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
+    pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
@@ -493,22 +483,9 @@ const ScratchBuffer = struct {
     }
 };
 
-/// Parses JavaScript/TypeScript source into an immutable `ParseTree`.
-///
-/// The caller owns the returned tree and must call `deinit()` when done.
-pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.ParseTree {
+/// Parses JavaScript/TypeScript source into a `Tree`.
+/// Call `deinit()` when done to free all memory.
+pub fn parse(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.Tree {
     var p = Parser.init(child_allocator, source, options);
     return p.parse();
-}
-
-/// Parses JavaScript/TypeScript source into a `TreeBuilder`.
-///
-/// Use this when you need to modify the tree after parsing (e.g. with
-/// the transform traverser). Call `toTree()` on the returned builder to
-/// convert it into an immutable `ParseTree` when mutations are complete.
-///
-/// The caller owns the returned builder and must call `deinit()` when done.
-pub fn build(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Error!ast.TreeBuilder {
-    var p = Parser.init(child_allocator, source, options);
-    return p.build();
 }

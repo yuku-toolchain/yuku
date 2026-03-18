@@ -23,7 +23,6 @@ export default defineConfig({
 						{
 							label: "Traverse",
 							slug: "parser/traverse",
-							badge: "Coming Soon",
 						},
 						{
 							label: "Architecture",

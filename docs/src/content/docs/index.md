@@ -1,6 +1,6 @@
 ---
-title: Yuku
-description: High-performance JavaScript/TypeScript toolchain in Zig
+title: Yuku — JavaScript/TypeScript Toolchain in Zig
+description: Yuku is a high-performance JavaScript and TypeScript parser and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 head:
   - tag: style
     content: |
@@ -13,7 +13,7 @@ head:
 
 <h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku</h1>
 
-A high-performance JavaScript/TypeScript toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
+A high-performance JavaScript/TypeScript parser and toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
 
 <br />
 
@@ -31,6 +31,14 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 **Fast by design.** The parser is built using data-oriented design principles and generous performance engineering. It is competitive with leading parsers like [Oxc](https://oxc.rs). [See benchmarks](https://github.com/yuku-toolchain/parser-benchmark).
 
+<div align="center" style="margin: 1.5rem 0;">
+
+![Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript.png)
+
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · Apple M3 · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
+
+</div>
+
 **Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
 
 **Modern JavaScript.** Full support for modern and experimental features including decorators, source phase imports, deferred imports, `using`/`await using` declarations, and more.
@@ -41,8 +49,8 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 |-----------|--------|
 | [JavaScript/JSX Parser](/parser) | Complete |
 | [AST](/parser/ast) | Complete |
+| [Traverser](/parser/traverse) | Complete |
 | TypeScript Parsing | In Progress |
-| [Traverser](/parser/traverse) | In Progress |
 | Module Resolver | Planned |
 
 ## Quick start
@@ -69,7 +77,7 @@ Parse some JavaScript:
 ```zig
 const parser = @import("parser");
 
-const tree = try parser.parse(allocator, "const x = 5;", .{});
+var tree = try parser.parse(allocator, "const x = 5;", .{});
 defer tree.deinit();
 ```
 

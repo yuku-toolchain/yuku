@@ -2,6 +2,7 @@ const std = @import("std");
 const parser = @import("parser");
 const wasm_allocator = std.heap.wasm_allocator;
 
+const semantic = parser.semantic;
 const ast = parser.ast;
 
 pub export fn alloc(size: usize) ?[*]u8 {
@@ -21,6 +22,7 @@ pub export fn parse(
     len: u32,
     source_type: u32,
     lang: u32,
+    semantic_errors: u32,
 ) u64 {
     const source: []const u8 = if (len == 0) &[_]u8{} else source_bytes[0..len];
 
@@ -34,17 +36,19 @@ pub export fn parse(
         else => .js,
     };
 
-    const options = parser.Options{
+    var tree = parser.parse(wasm_allocator, source, .{
         .source_type = st,
         .lang = l,
-    };
-
-    var parse_tree = parser.parse(wasm_allocator, source, options) catch {
+    }) catch {
         return 0;
     };
-    defer parse_tree.deinit();
+    defer tree.deinit();
 
-    const json_str = parser.estree.toJSON(&parse_tree, wasm_allocator, .{ .pretty = false }) catch {
+    if (semantic_errors != 0) {
+        _ = semantic.analyze(&tree) catch {};
+    }
+
+    const json_str = parser.estree.toJSON(&tree, wasm_allocator, .{ .pretty = false }) catch {
         return 0;
     };
 

@@ -240,10 +240,9 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
     }
 
     if (token.tag.isUnconditionallyReserved()) {
-        try parser.reportFmt(
+        try parser.report(
             token.span,
-            "'{s}' is a reserved word and cannot be used as {s}",
-            .{ parser.describeToken(token), as_what },
+            try parser.fmt("'{s}' is a reserved word and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
             .{},
         );
 
@@ -251,10 +250,9 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
     }
 
     if (token.tag.isStrictModeReserved() and parser.isStrictMode()) {
-        try parser.reportFmt(
+        try parser.report(
             token.span,
-            "'{s}' is reserved in strict mode and cannot be used as {s}",
-            .{ parser.describeToken(token), as_what },
+            try parser.fmt("'{s}' is reserved in strict mode and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
             .{},
         );
 
@@ -262,10 +260,9 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
     }
 
     if (token.tag == .yield and parser.context.yield_is_keyword) {
-        try parser.reportFmt(
+        try parser.report(
             token.span,
-            "Cannot use 'yield' as {s} in a generator context",
-            .{as_what},
+            try parser.fmt("Cannot use 'yield' as {s} in a generator context", .{as_what}),
             .{},
         );
 
@@ -273,10 +270,9 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
     }
 
     if (token.tag == .await and parser.context.await_is_keyword) {
-        try parser.reportFmt(
+        try parser.report(
             token.span,
-            "Cannot use `await` as {s} in an async or module context",
-            .{as_what},
+            try parser.fmt("Cannot use `await` as {s} in an async or module context", .{as_what}),
             .{},
         );
 

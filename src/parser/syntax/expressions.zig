@@ -143,10 +143,9 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
         else => {},
     }
 
-    try parser.reportFmt(
+    try parser.report(
         current.span,
-        "Unexpected token '{s}' in expression",
-        .{parser.describeToken(current)},
+        try parser.fmt("Unexpected token '{s}' in expression", .{parser.describeToken(current)}),
         .{ .help = "This token cannot be used here. Expected an operator, semicolon, or end of expression." },
     );
 
@@ -179,10 +178,9 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts)
 
             const token = parser.current_token;
 
-            try parser.reportFmt(
+            try parser.report(
                 token.span,
-                "Unexpected token '{s}'",
-                .{parser.describeToken(token)},
+                try parser.fmt("Unexpected token '{s}'", .{parser.describeToken(token)}),
                 .{ .help = "Expected an expression" },
             );
 
@@ -536,7 +534,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
                 "Expected ')' after constructor arguments",
                 .{
                     .help = "Constructor calls must end with ')'.",
-                    .labels = try parser.makeLabels(&.{parser.label(open_paren_span, "Opened here")}),
+                    .labels = try parser.labels(&.{parser.label(open_paren_span, "Opened here")}),
                 },
             );
             return null;
@@ -879,7 +877,7 @@ fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, op
             "Expected ']' after computed property",
             .{
                 .help = "Computed member access must end with ']'.",
-                .labels = try parser.makeLabels(&.{parser.label(open_bracket_span, "Opened here")}),
+                .labels = try parser.labels(&.{parser.label(open_bracket_span, "Opened here")}),
             },
         );
         return null;
@@ -911,7 +909,7 @@ fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bo
             "Expected ')' after function arguments",
             .{
                 .help = "Function calls must end with ')'. Check for missing commas or unclosed parentheses.",
-                .labels = try parser.makeLabels(&.{parser.label(open_paren_span, "Opened here")}),
+                .labels = try parser.labels(&.{parser.label(open_paren_span, "Opened here")}),
             },
         );
         return null;
