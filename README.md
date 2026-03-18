@@ -15,13 +15,15 @@
 
 Yuku is a high-performance JavaScript and TypeScript parser and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
 
-[Documentation](https://yuku.fyi)
-
 </div>
 
 > **Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. A visitor/traverser API and TypeScript support are currently in progress. See the [Roadmap](#roadmap) for details.
 
-## Contributing
+## 📖 Documentation
+
+Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
+
+## 🤝 Contributing
 
 Yuku is pure Zig with no external dependencies.
 
