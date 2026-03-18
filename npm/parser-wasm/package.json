@@ -31,7 +31,8 @@
     "build": "bunup --exports --target browser --format iife,esm && cp ../../zig-out/bin/yuku.wasm dist"
   },
   "dependencies": {
-    "yuku-shared": "workspace:*"
+    "yuku-shared": "workspace:*",
+    "yuku-parser-types": "workspace:*"
   },
   "peerDependencies": {
     "typescript": ">=4.5.0"

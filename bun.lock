@@ -16,16 +16,16 @@
     },
     "docs": {
       "name": "yuku-docs",
-      "version": "0.2.17",
+      "version": "0.2.19",
       "dependencies": {
         "@astrojs/starlight": "^0.37.1",
         "astro": "^5.6.1",
         "sharp": "^0.34.2",
       },
     },
-    "npm/parser": {
-      "name": "yuku-parser",
-      "version": "0.2.17",
+    "npm/parser-types": {
+      "name": "yuku-parser-types",
+      "version": "0.2.19",
       "devDependencies": {
         "bunup": "^0.16.22",
       },
@@ -38,8 +38,9 @@
     },
     "npm/parser-wasm": {
       "name": "yuku-parser-wasm",
-      "version": "0.2.17",
+      "version": "0.2.19",
       "dependencies": {
+        "yuku-parser-types": "workspace:*",
         "yuku-shared": "workspace:*",
       },
       "devDependencies": {
@@ -54,7 +55,7 @@
     },
     "npm/shared": {
       "name": "yuku-shared",
-      "version": "0.2.17",
+      "version": "0.2.19",
       "devDependencies": {
         "bunup": "^0.16.22",
       },
@@ -1151,7 +1152,7 @@
 
     "yuku-docs": ["yuku-docs@workspace:docs"],
 
-    "yuku-parser": ["yuku-parser@workspace:npm/parser"],
+    "yuku-parser-types": ["yuku-parser-types@workspace:npm/parser-types"],
 
     "yuku-parser-wasm": ["yuku-parser-wasm@workspace:npm/parser-wasm"],
 

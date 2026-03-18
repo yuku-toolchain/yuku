@@ -1,26 +1,12 @@
+import type {
+	ParseOptions,
+	ParseResult,
+	SourceLang,
+	SourceType,
+} from "yuku-parser-types";
 import { deserializeAstJson } from "yuku-shared";
 
-export enum SourceType {
-	Script = 0,
-	Module = 1,
-}
-
-export enum Lang {
-	JS = 0,
-	TS = 1,
-	JSX = 2,
-	TSX = 3,
-	DTS = 4,
-}
-
-export interface ParseOptions {
-	sourceType?: "script" | "module";
-	lang?: "js" | "ts" | "jsx" | "tsx" | "dts";
-	semanticErrors?: boolean;
-}
-
-// we will expand this later
-type YukuAST = Record<string, any>;
+export type * from "yuku-parser-types";
 
 interface WasmExports {
 	alloc: (size: number) => number;
@@ -53,7 +39,7 @@ function parseInternal(
 	wasm: WasmExports,
 	source: string,
 	options: ParseOptions,
-): YukuAST {
+): ParseResult {
 	const encoder = new TextEncoder();
 	const sourceBytes = encoder.encode(source);
 	const sourceLen = sourceBytes.length;
@@ -80,7 +66,13 @@ function parseInternal(
 		const lang = normalizeLang(options.lang);
 		const semanticErrors = options.semanticErrors ? 1 : 0;
 
-		const result = wasm.parse(sourcePtr, sourceLen, sourceType, lang, semanticErrors);
+		const result = wasm.parse(
+			sourcePtr,
+			sourceLen,
+			sourceType,
+			lang,
+			semanticErrors,
+		);
 
 		if (result === 0n) {
 			throw new Error("Failed to parse source code");
@@ -101,7 +93,7 @@ function parseInternal(
 
 			const jsonStr = decoder.decode(jsonBytes);
 
-			return deserializeAstJson<YukuAST>(jsonStr);
+			return deserializeAstJson<ParseResult>(jsonStr);
 		} finally {
 			wasm.free(resultPtr, jsonLen);
 		}
@@ -113,16 +105,16 @@ function parseInternal(
 }
 
 /**
- * Parse JavaScript/TypeScript source code into a Yuku AST.
+ * Parse JavaScript/TypeScript source code into an ESTree/TypeScript-ESTree compatible AST.
  *
  * @param source - Source code to parse
  * @param options - Parse options
- * @returns Yuku AST
+ * @returns The parse result containing the AST, comments, and diagnostics
  * @throws Error if parsing fails
  *
  * @example
  * ```ts
- * const ast = await parse('const x = 5;', {
+ * const result = await parse('const x = 5;', {
  *   sourceType: 'module',
  *   lang: 'js'
  * });
@@ -131,7 +123,7 @@ function parseInternal(
 export async function parse(
 	source: string,
 	options: ParseOptions = {},
-): Promise<YukuAST> {
+): Promise<ParseResult> {
 	const wasm = await getWasmInstance();
 	return parseInternal(wasm, source, options);
 }
@@ -142,19 +134,22 @@ export async function parse(
  *
  * @param source - Source code to parse
  * @param options - Parse options
- * @returns Yuku AST
+ * @returns The parse result containing the AST, comments, and diagnostics
  * @throws Error if WASM not loaded or parsing fails
  *
  * @example
  * ```ts
  * await preload(); // Load WASM first
- * const ast = parseSync('const x = 5;', {
+ * const result = parseSync('const x = 5;', {
  *   sourceType: 'module',
  *   lang: 'js'
  * });
  * ```
  */
-export function parseSync(source: string, options: ParseOptions = {}): YukuAST {
+export function parseSync(
+	source: string,
+	options: ParseOptions = {},
+): ParseResult {
 	if (!wasmInstance) {
 		throw new Error(
 			"WASM not loaded. Call parse() first or manually call preload()",
@@ -178,21 +173,21 @@ export async function preload(): Promise<void> {
 	await getWasmInstance();
 }
 
-function normalizeSourceType(sourceType?: "script" | "module"): SourceType {
-	return sourceType === "script" ? SourceType.Script : SourceType.Module;
+function normalizeSourceType(sourceType?: SourceType): number {
+	return sourceType === "script" ? 0 : 1;
 }
 
-function normalizeLang(lang?: "js" | "ts" | "jsx" | "tsx" | "dts"): Lang {
+function normalizeLang(lang?: SourceLang): number {
 	switch (lang) {
 		case "ts":
-			return Lang.TS;
+			return 1;
 		case "jsx":
-			return Lang.JSX;
+			return 2;
 		case "tsx":
-			return Lang.TSX;
+			return 3;
 		case "dts":
-			return Lang.DTS;
+			return 4;
 		default:
-			return Lang.JS;
+			return 0;
 	}
 }
