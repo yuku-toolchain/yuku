@@ -20,7 +20,7 @@ A high-performance JavaScript/TypeScript parser and toolchain written in Zig, br
 </div>
 
 :::note
-**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. The traverser system (basic, scoped, semantic, and transform traversers) is functional. TypeScript support is currently in progress.
+**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. TypeScript support is currently in progress.
 :::
 
 ## Why Yuku
