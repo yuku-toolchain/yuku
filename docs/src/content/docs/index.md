@@ -31,6 +31,14 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 **Fast by design.** The parser is built using data-oriented design principles and generous performance engineering. It is competitive with leading parsers like [Oxc](https://oxc.rs). [See benchmarks](https://github.com/yuku-toolchain/parser-benchmark).
 
+<div align="center" style="margin: 1.5rem 0;">
+
+![Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript.png)
+
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · Apple M3 · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
+
+</div>
+
 **Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
 
 **Modern JavaScript.** Full support for modern and experimental features including decorators, source phase imports, deferred imports, `using`/`await using` declarations, and more.
