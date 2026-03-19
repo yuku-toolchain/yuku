@@ -1,5 +1,3 @@
-function cool() {
+function cool() {}
 
-}
-
-const cool = "wow"
+const cool = "wow";
