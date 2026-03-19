@@ -3,8 +3,8 @@ import { basename, dirname, join } from "node:path";
 import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
+import { parseSync, preload } from "yuku-parser-wasm";
 import { deserializeAstJson, serializeAstJson } from "yuku-shared";
-import { parseSync, preload } from "../../npm/parser-wasm/dist";
 
 await preload();
 

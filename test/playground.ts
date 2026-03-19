@@ -1,5 +1,5 @@
-import { printDiagnostics } from "../npm/parser-types/dist/print";
-import { parse } from "../npm/parser-wasm/dist";
+import { printDiagnostics } from "yuku-parser-types/print";
+import { parse } from "yuku-parser-wasm";
 
 console.clear();
 
