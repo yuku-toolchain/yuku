@@ -46,8 +46,6 @@ The first run will download the test suite (wait for it to finish). After the ru
 - [x] JavaScript Parser
 - [x] WASM
 - [x] JSX Support
+- [x] Visitor/Traverser
 - [ ] TypeScript Support (In Progress)
-- [ ] Visitor/Traverser
-- [ ] Documentation
 - [ ] Module Resolver
-- [ ] TypeScript Declaration Transpiler, Minifier, and Bundler
