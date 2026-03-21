@@ -1,1 +1,1 @@
-delete #x;
+cool?.cool = x;
