@@ -1,3 +1,1 @@
-function cool() {}
-
-const cool = "wow";
+delete #x;
