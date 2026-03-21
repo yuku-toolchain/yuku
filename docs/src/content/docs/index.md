@@ -35,7 +35,7 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 ![Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript.png)
 
-<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · Apple M3 · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro | 6 cores · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
 
 </div>
 
