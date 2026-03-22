@@ -95,7 +95,9 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Function parameters must be enclosed in parentheses: function name(a, b) {}",
     )) return null;
 
-    const params = try parseFormalParamaters(parser, .formal_parameters) orelse return null;
+    const is_unique_formal_parameters = is_generator or opts.is_async;
+
+    const params = try parseFormalParamaters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters) orelse return null;
 
     const params_end = parser.current_token.span.end; // including )
 
