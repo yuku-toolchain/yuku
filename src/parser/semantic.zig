@@ -117,6 +117,29 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    pub fn enter_unary_expression(self: *Self, expr: ast.UnaryExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (expr.operator == .delete) {
+            const target = unwrapParens(ctx.tree, expr.argument);
+            switch (ctx.tree.getData(target)) {
+                .member_expression => |m| if (!m.computed and ctx.tree.getData(m.property) == .private_identifier) {
+                    try self.report(ctx.tree.getSpan(node_index), "Private fields cannot be deleted", .{});
+                },
+                else => {},
+            }
+        }
+        return .proceed;
+    }
+
+    fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
+        var current = node;
+        while (true) {
+            switch (tree.getData(current)) {
+                .parenthesized_expression => |p| current = p.expression,
+                else => return current,
+            }
+        }
+    }
+
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
         return findFormalParameters(ctx) != null;
     }

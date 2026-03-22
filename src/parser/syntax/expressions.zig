@@ -158,7 +158,17 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts)
     }
 
     return switch (parser.current_token.tag) {
-        .private_identifier => literals.parsePrivateIdentifier(parser),
+        .private_identifier => blk: {
+            const node = try literals.parsePrivateIdentifier(parser) orelse break :blk null;
+            if (parser.current_token.tag != .in) {
+                try parser.report(
+                    parser.b.getSpan(node),
+                    "Private names are only valid in property accesses (`obj.#field`) or `in` expressions (`#field in obj`)",
+                    .{},
+                );
+            }
+            break :blk node;
+        },
         .string_literal => literals.parseStringLiteral(parser),
         .true, .false => literals.parseBooleanLiteral(parser),
         .null_literal => literals.parseNullLiteral(parser),

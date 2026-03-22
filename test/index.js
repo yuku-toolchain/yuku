@@ -1,1 +1,4 @@
-for (let let of []) {}
+class C {
+  #x;
+  method(obj) { #x }
+}
