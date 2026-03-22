@@ -4,6 +4,7 @@
 const std = @import("std");
 const traverser = @import("traverser/root.zig");
 const ast = @import("ast.zig");
+const ecmascript = @import("ecmascript.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -49,6 +50,34 @@ const SemanticVisit = struct {
             //                   VarDeclaredNames ..."
             if (existing.kind.isLexical() or current_kind.isLexical()) {
                 try self.reportRedeclaration(id, node_index, existing, ctx);
+
+                return .proceed;
+            }
+
+            if (existing.kind == .parameter) {
+                // the existing binding is a parameter, so find up for the formal_parameters
+                // which this parameter belongs to
+                if (findFormalParameters(ctx)) |formal_parameters| {
+                    // UniqueFormalParameters : FormalParameters
+                    //  - It is a Syntax Error if the BoundNames of FormalParameters contains any duplicate elements.
+                    //
+                    // Multiple occurrences of the same BindingIdentifier in a FormalParameterList is only allowed for
+                    // functions which have simple parameter lists and which are not defined in strict mode code.
+                    if (
+                        ctx.scope.isStrict() or
+                        formal_parameters.kind == .unique_formal_parameters or
+                        formal_parameters.kind == .arrow_formal_parameters
+                    ) {
+                        try self.reportRedeclaration(id, node_index, existing, ctx);
+                    }
+
+                    // FormalParameters : FormalParameterList
+                    //  - It is a Syntax Error if IsSimpleParameterList of FormalParameterList is false and the BoundNames
+                    //    of FormalParameterList contains any duplicate elements.
+                    else if (ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
+                        try self.reportRedeclaration(id, node_index, existing, ctx);
+                    }
+                }
             }
         }
 
@@ -80,15 +109,19 @@ const SemanticVisit = struct {
     }
 
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
+        return findFormalParameters(ctx) != null;
+    }
+
+    fn findFormalParameters(ctx: *SemanticCtx) ?ast.FormalParameters {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             switch (ctx.tree.getData(i)) {
-                .formal_parameter => return true,
-                .program, .function, .arrow_function_expression => return false,
+                .formal_parameters => |params| return params,
+                .program, .function, .arrow_function_expression => return null,
                 else => {},
             }
         }
-        return false;
+        return null;
     }
 
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
