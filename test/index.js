@@ -1,1 +1,1 @@
-function f(x = 0, x) {}
+for (let let of []) {}

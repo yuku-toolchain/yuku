@@ -37,9 +37,18 @@ const SemanticVisit = struct {
     allocator: Allocator,
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        const name = ctx.tree.getString(id.name);
+
+        if (!ctx.scope.isStrict() and
+            ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
+            std.mem.eql(u8, name, "let"))
+        {
+            try self.report(ctx.tree.getSpan(node_index), "`let` cannot be declared as a variable name inside of a `let` declaration", .{});
+        }
+
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
 
-        if (ctx.symbols.findInScope(target, ctx.tree.getString(id.name))) |sym| {
+        if (ctx.symbols.findInScope(target, name)) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
             const current_kind = ctx.symbols.currentBindingKind();
 
