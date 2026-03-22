@@ -5,6 +5,7 @@ const ast = @import("ast.zig");
 const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");
 const array = @import("syntax/array.zig");
+const parenthesized = @import("syntax/parenthesized.zig");
 
 /// parse an expression within a cover grammar context without validation.
 /// validation is deferred until the top-level context is known.
@@ -183,7 +184,7 @@ pub fn expressionToPattern(
                 return;
             }
 
-            if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
+            if (!expressions.isSimpleAssignmentTarget(parser, parenthesized.unwrapParens(parser, paren.expression))) {
                 try parser.report(
                     parser.b.getSpan(paren.expression),
                     "Parenthesized expression in assignment pattern must be a simple assignment target",
