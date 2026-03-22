@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       42640
-Failed:       1849
+Passed:       42525
+Failed:       1964
 AST mismatch: 0/37226
 Total:        44489
-Coverage:     95.84%
+Coverage:     95.59%
 
 Results by Suite
 ----------------
@@ -21,13 +21,14 @@ Results by Suite
   Passed: 3622/3622 (100.00%)
 
 ✗ test/parser/suite/js/semantic
-  Passed: 1778/3627 (49.02%)
-  Failed: 1849
+  Passed: 1663/3627 (45.85%)
+  Failed: 1964
   Failures:
     - test/parser/suite/js/semantic/eb60cf929d81e775.module.js
     - test/parser/suite/js/semantic/0a2feada963f30c5.js
     - test/parser/suite/js/semantic/5946f5e9f8b9ded6.js
     - test/parser/suite/js/semantic/603b1c1762041200.module.js
+    - test/parser/suite/js/semantic/3c531efcda5f8f9e.js
     - test/parser/suite/js/semantic/102c07fa659bdc3b.js
     - test/parser/suite/js/semantic/35aca4718c51e350.js
     - test/parser/suite/js/semantic/c3cb63f64d39c6bc.js
@@ -42,13 +43,16 @@ Results by Suite
     - test/parser/suite/js/semantic/42982ed7062ae931.module.js
     - test/parser/suite/js/semantic/c882f592f3b38337.module.js
     - test/parser/suite/js/semantic/04b9612459a56ede.module.js
+    - test/parser/suite/js/semantic/1d7ae7a934264571.js
     - test/parser/suite/js/semantic/6887910eabb6aa71.module.js
     - test/parser/suite/js/semantic/f84e7be142d13da4.js
     - test/parser/suite/js/semantic/1d069f498ff06d15.module.js
     - test/parser/suite/js/semantic/e9507a792bf8dbfa.js
     - test/parser/suite/js/semantic/c06df922631aeabc.module.js
     - test/parser/suite/js/semantic/36157e7215ab2a39.module.js
+    - test/parser/suite/js/semantic/28256abffdd999d3.js
     - test/parser/suite/js/semantic/7a801844b740c150.js
+    - test/parser/suite/js/semantic/29f5d615a08770fe.js
     - test/parser/suite/js/semantic/abd5dbf2db47a63f.js
     - test/parser/suite/js/semantic/903b3f9a0ac6fae6.js
     - test/parser/suite/js/semantic/037afeec19165316.module.js
@@ -78,6 +82,7 @@ Results by Suite
     - test/parser/suite/js/semantic/74e66ef7ef7d59bd.js
     - test/parser/suite/js/semantic/fe33079db7d58d74.js
     - test/parser/suite/js/semantic/465d6bf786b081c0.js
+    - test/parser/suite/js/semantic/15082306e8336dde.js
     - test/parser/suite/js/semantic/fb170ea4cc5daf1a.module.js
     - test/parser/suite/js/semantic/7a964712d5220b79.module.js
     - test/parser/suite/js/semantic/47ae14af022534a0.js
@@ -86,24 +91,31 @@ Results by Suite
     - test/parser/suite/js/semantic/ba2bfa1952f3e537.module.js
     - test/parser/suite/js/semantic/978419451af40ff9.module.js
     - test/parser/suite/js/semantic/1b792ad1578e2076.module.js
+    - test/parser/suite/js/semantic/719cf31ee88c28d5.js
     - test/parser/suite/js/semantic/de07a50e8f528926.js
+    - test/parser/suite/js/semantic/65452eb8baae5939.js
     - test/parser/suite/js/semantic/85ce5704fd5f4dd1.js
     - test/parser/suite/js/semantic/fad853abaabff9fc.module.js
     - test/parser/suite/js/semantic/cbfca86a60bed7bc.js
     - test/parser/suite/js/semantic/b87898c2db13449a.module.js
     - test/parser/suite/js/semantic/36d8ccdd500d7d7b.module.js
     - test/parser/suite/js/semantic/3e656e6b11f301b0.js
+    - test/parser/suite/js/semantic/6c0ad6f4bb7c57fa.module.js
     - test/parser/suite/js/semantic/c777816c119a0175.js
+    - test/parser/suite/js/semantic/34adb41e2f36dc18.js
     - test/parser/suite/js/semantic/14fad5931c430dff.module.js
     - test/parser/suite/js/semantic/12ebf6f3b00fc3fa.js
     - test/parser/suite/js/semantic/26b99cddb165fb13.module.js
     - test/parser/suite/js/semantic/d71a6900b46761f8.js
     - test/parser/suite/js/semantic/8d2870226258eaea.js
+    - test/parser/suite/js/semantic/121ea0b19492facd.module.js
     - test/parser/suite/js/semantic/f0c88018559ddad7.module.js
     - test/parser/suite/js/semantic/815ed6253b78b4da.js
     - test/parser/suite/js/semantic/d2350ad0d14b2122.module.js
     - test/parser/suite/js/semantic/20e2a99748fb5ad5.module.js
     - test/parser/suite/js/semantic/fe68564c21bdb519.js
+    - test/parser/suite/js/semantic/072c3d8d3639b208.js
+    - test/parser/suite/js/semantic/0d29c444ecbe413f.js
     - test/parser/suite/js/semantic/ec93b40c2e19fac2.js
     - test/parser/suite/js/semantic/8b64d03e2c6486fb.js
     - test/parser/suite/js/semantic/fa56fc427be3e801.module.js
@@ -117,6 +129,7 @@ Results by Suite
     - test/parser/suite/js/semantic/343cb98766e6f5d9.js
     - test/parser/suite/js/semantic/3dabeca76119d501.module.js
     - test/parser/suite/js/semantic/f3943346692438ba.js
+    - test/parser/suite/js/semantic/1fe53739bd50b9ca.js
     - test/parser/suite/js/semantic/1684c608bffc511c.js
     - test/parser/suite/js/semantic/d76a6ab8347fca64.js
     - test/parser/suite/js/semantic/b29161fdad89c28f.module.js
@@ -149,6 +162,7 @@ Results by Suite
     - test/parser/suite/js/semantic/c13dc229a6043b8a.js
     - test/parser/suite/js/semantic/75c4090fc29d3059.module.js
     - test/parser/suite/js/semantic/a3751f208965bf8b.js
+    - test/parser/suite/js/semantic/721fb4563d10b9aa.js
     - test/parser/suite/js/semantic/f7f9bb74dc8d96ac.module.js
     - test/parser/suite/js/semantic/c861cda117b28537.js
     - test/parser/suite/js/semantic/e8f3bbd8830b5338.js
@@ -191,6 +205,9 @@ Results by Suite
     - test/parser/suite/js/semantic/e6bf6eec9bccde06.module.js
     - test/parser/suite/js/semantic/32a3e279226eefa0.module.js
     - test/parser/suite/js/semantic/3d4a8d7c19c25bd5.js
+    - test/parser/suite/js/semantic/07fb448785c28afd.module.js
+    - test/parser/suite/js/semantic/43060f1998c6b413.js
+    - test/parser/suite/js/semantic/79b9189ada8b5aa9.js
     - test/parser/suite/js/semantic/db714a577f9d4de5.module.js
     - test/parser/suite/js/semantic/70d8622e54d2c214.module.js
     - test/parser/suite/js/semantic/da237024815a0e13.js
@@ -201,6 +218,8 @@ Results by Suite
     - test/parser/suite/js/semantic/faef15e1ce9fd48c.module.js
     - test/parser/suite/js/semantic/9900cd8c698586f0.module.js
     - test/parser/suite/js/semantic/3f5eefa02597ded3.js
+    - test/parser/suite/js/semantic/0f808e8f4d2980cf.js
+    - test/parser/suite/js/semantic/06d46c7d12c5fe4b.module.js
     - test/parser/suite/js/semantic/d8598e1ceba9557d.js
     - test/parser/suite/js/semantic/191c32a5056e2e5d.js
     - test/parser/suite/js/semantic/1e1288938554991e.js
@@ -231,6 +250,7 @@ Results by Suite
     - test/parser/suite/js/semantic/343111c54547b952.js
     - test/parser/suite/js/semantic/8ffe04111c1a982d.module.js
     - test/parser/suite/js/semantic/78dd660c4d7661fa.js
+    - test/parser/suite/js/semantic/df3ba851a3157a9f.js
     - test/parser/suite/js/semantic/0fb456678d4bfc51.module.js
     - test/parser/suite/js/semantic/5bea28b3ae22f0d4.module.js
     - test/parser/suite/js/semantic/ae9df9e1a4c401e6.js
@@ -299,11 +319,13 @@ Results by Suite
     - test/parser/suite/js/semantic/c570b0dab9ed058c.js
     - test/parser/suite/js/semantic/281755b433cb24aa.js
     - test/parser/suite/js/semantic/3d3525bcdb365af8.js
+    - test/parser/suite/js/semantic/096c1f35b7822ec6.js
     - test/parser/suite/js/semantic/a661ad72322e9481.js
     - test/parser/suite/js/semantic/782d096245de4836.module.js
     - test/parser/suite/js/semantic/227c9b7aff6a3a91.js
     - test/parser/suite/js/semantic/ec27cba8a834a50e.js
     - test/parser/suite/js/semantic/a2f99303eecab290.js
+    - test/parser/suite/js/semantic/0e7da3c9bd3d694d.js
     - test/parser/suite/js/semantic/23f28df87415a9a7.js
     - test/parser/suite/js/semantic/dde0f3b68ee88398.js
     - test/parser/suite/js/semantic/6ca3d0735b39db05.module.js
@@ -316,6 +338,7 @@ Results by Suite
     - test/parser/suite/js/semantic/919f5c124b8d52f6.module.js
     - test/parser/suite/js/semantic/0c05753a91d04a39.js
     - test/parser/suite/js/semantic/bbf1857db4b29bba.js
+    - test/parser/suite/js/semantic/33d2a9a43fc71ede.js
     - test/parser/suite/js/semantic/a3b3f80a43adbccd.js
     - test/parser/suite/js/semantic/8a674055428121ad.module.js
     - test/parser/suite/js/semantic/049070f015f6ee59.js
@@ -340,6 +363,7 @@ Results by Suite
     - test/parser/suite/js/semantic/ff3742e834b6ca38.js
     - test/parser/suite/js/semantic/d1e136e608a8709d.js
     - test/parser/suite/js/semantic/cb5304d7abc733a3.module.js
+    - test/parser/suite/js/semantic/ccddf0b08d067fad.js
     - test/parser/suite/js/semantic/2c872d567d0048bf.js
     - test/parser/suite/js/semantic/cf6241d836f7f9b1.js
     - test/parser/suite/js/semantic/c372090bfd86398d.module.js
@@ -367,6 +391,7 @@ Results by Suite
     - test/parser/suite/js/semantic/973cbc9ece13acbc.module.js
     - test/parser/suite/js/semantic/b54a26f97b626bfb.js
     - test/parser/suite/js/semantic/0700a8b28c19f49a.js
+    - test/parser/suite/js/semantic/f0c567cfa3ebac2d.js
     - test/parser/suite/js/semantic/72e377afc42e5c8f.js
     - test/parser/suite/js/semantic/0124c72efb43f37f.js
     - test/parser/suite/js/semantic/befdd242bb65ee01.module.js
@@ -380,6 +405,7 @@ Results by Suite
     - test/parser/suite/js/semantic/7ec29e31ee4d9fcd.module.js
     - test/parser/suite/js/semantic/4d6a3feec80b94ff.js
     - test/parser/suite/js/semantic/97617e38752eb81f.module.js
+    - test/parser/suite/js/semantic/6f8f02474b429df6.js
     - test/parser/suite/js/semantic/805c7f7e24771841.js
     - test/parser/suite/js/semantic/e777215433af6809.module.js
     - test/parser/suite/js/semantic/6680a1444884625b.module.js
@@ -388,6 +414,7 @@ Results by Suite
     - test/parser/suite/js/semantic/9ce9f2d4b616dd2d.module.js
     - test/parser/suite/js/semantic/2cfa21d258d48da0.js
     - test/parser/suite/js/semantic/a0a08001fb20c53f.module.js
+    - test/parser/suite/js/semantic/1674f9aa3c3d3799.module.js
     - test/parser/suite/js/semantic/83b0df9def0bd6f4.js
     - test/parser/suite/js/semantic/95768a750c75b822.js
     - test/parser/suite/js/semantic/92a90327b0e0f383.module.js
@@ -429,6 +456,7 @@ Results by Suite
     - test/parser/suite/js/semantic/14d1d9ec5f97bd4e.module.js
     - test/parser/suite/js/semantic/e5988c89f46d96c1.module.js
     - test/parser/suite/js/semantic/d41bef9dbb22f114.js
+    - test/parser/suite/js/semantic/7d0d618069226989.js
     - test/parser/suite/js/semantic/cb40195491b6613b.js
     - test/parser/suite/js/semantic/bd320eba790d65a4.js
     - test/parser/suite/js/semantic/6a4a39dfd3855681.js
@@ -444,10 +472,12 @@ Results by Suite
     - test/parser/suite/js/semantic/d8dbb7b4a07f063a.js
     - test/parser/suite/js/semantic/76465e2c7af91e73.js
     - test/parser/suite/js/semantic/f27ee23db6d56911.js
+    - test/parser/suite/js/semantic/a3d41299d4510bda.module.js
     - test/parser/suite/js/semantic/3da63aeee95d12b0.js
     - test/parser/suite/js/semantic/126221967461dba0.module.js
     - test/parser/suite/js/semantic/13cdd4a744f88d1e.module.js
     - test/parser/suite/js/semantic/1efa7c2106f8e2ce.js
+    - test/parser/suite/js/semantic/934c36d7f430d3cd.js
     - test/parser/suite/js/semantic/2b31f0059730965e.module.js
     - test/parser/suite/js/semantic/761785f06c6c5b5d.js
     - test/parser/suite/js/semantic/d92beccacbf5218c.js
@@ -468,6 +498,7 @@ Results by Suite
     - test/parser/suite/js/semantic/b0f1507b8eff58c2.module.js
     - test/parser/suite/js/semantic/579b32bbe6066c2e.module.js
     - test/parser/suite/js/semantic/dd960ca106bb9e2e.module.js
+    - test/parser/suite/js/semantic/799dc7bffbc55064.js
     - test/parser/suite/js/semantic/8b6f72421d103ca3.module.js
     - test/parser/suite/js/semantic/24130575cb001945.module.js
     - test/parser/suite/js/semantic/98c7fb7947f7eae4.module.js
@@ -503,7 +534,9 @@ Results by Suite
     - test/parser/suite/js/semantic/77e9781cd3b631d8.js
     - test/parser/suite/js/semantic/7089e0fbb1d3f4d2.js
     - test/parser/suite/js/semantic/ee3bf6b50e45aa94.js
+    - test/parser/suite/js/semantic/3601bbe3af8a4754.js
     - test/parser/suite/js/semantic/2a23f5d5d4e3831a.js
+    - test/parser/suite/js/semantic/66dbfdbaebf9d88a.js
     - test/parser/suite/js/semantic/d070112b8eb9781e.module.js
     - test/parser/suite/js/semantic/10fda5cd119b39a5.module.js
     - test/parser/suite/js/semantic/98a39a69fde7eadc.module.js
@@ -532,6 +565,7 @@ Results by Suite
     - test/parser/suite/js/semantic/540fe548c19b2197.js
     - test/parser/suite/js/semantic/4b62020bf1f6f84d.module.js
     - test/parser/suite/js/semantic/bc55e869283b5a3c.js
+    - test/parser/suite/js/semantic/fcf7d5f91dc73ec5.js
     - test/parser/suite/js/semantic/7d57dfa13ff132ec.module.js
     - test/parser/suite/js/semantic/8b8dde7047f352d9.js
     - test/parser/suite/js/semantic/df90f22f94d1d105.module.js
@@ -564,6 +598,7 @@ Results by Suite
     - test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
     - test/parser/suite/js/semantic/e5b05ef73d29bb9e.module.js
     - test/parser/suite/js/semantic/cdceb01cec39f8d0.js
+    - test/parser/suite/js/semantic/9926198623c407aa.js
     - test/parser/suite/js/semantic/dcdd387a8ad7357d.js
     - test/parser/suite/js/semantic/5be861c7380e46af.module.js
     - test/parser/suite/js/semantic/4976517826d83371.module.js
@@ -580,19 +615,24 @@ Results by Suite
     - test/parser/suite/js/semantic/8c0dcbcb0ba9a5c6.js
     - test/parser/suite/js/semantic/85c4d114427facfb.module.js
     - test/parser/suite/js/semantic/37ead50e894affbb.js
+    - test/parser/suite/js/semantic/eff33d0149da9e64.js
     - test/parser/suite/js/semantic/f2ab25e48a86f455.js
     - test/parser/suite/js/semantic/7ddfcbf875759edf.module.js
     - test/parser/suite/js/semantic/75bb6594d6ad253f.js
+    - test/parser/suite/js/semantic/08fb1b0d653eae52.js
     - test/parser/suite/js/semantic/fd60b09bd8096790.module.js
     - test/parser/suite/js/semantic/96fd70d03d1efaae.module.js
     - test/parser/suite/js/semantic/69f7be30da088880.js
     - test/parser/suite/js/semantic/d6828a45cebf554c.js
     - test/parser/suite/js/semantic/f05229cf9180cd9f.module.js
+    - test/parser/suite/js/semantic/8ca671fe9044019a.js
+    - test/parser/suite/js/semantic/f8aaa2d7563da609.js
     - test/parser/suite/js/semantic/c7f442602538d403.module.js
     - test/parser/suite/js/semantic/e8d5a922b291c24a.module.js
     - test/parser/suite/js/semantic/9aca423f0d25634e.module.js
     - test/parser/suite/js/semantic/277ec371718b3aa0.js
     - test/parser/suite/js/semantic/0c4c5d93f343cdc3.module.js
+    - test/parser/suite/js/semantic/11dd73d1434b0cfa.js
     - test/parser/suite/js/semantic/ae0ea990d8678f17.js
     - test/parser/suite/js/semantic/2bbf1e7f7752c546.js
     - test/parser/suite/js/semantic/96909e1dce85ca53.js
@@ -610,6 +650,7 @@ Results by Suite
     - test/parser/suite/js/semantic/d992362d94b561a6.module.js
     - test/parser/suite/js/semantic/9ba842b571b1df57.js
     - test/parser/suite/js/semantic/724414dc804124c5.js
+    - test/parser/suite/js/semantic/b4fa46fcee35d296.js
     - test/parser/suite/js/semantic/3d036b0601962208.js
     - test/parser/suite/js/semantic/bf550124280e0c91.module.js
     - test/parser/suite/js/semantic/40ededefd4cbcf68.module.js
@@ -619,6 +660,8 @@ Results by Suite
     - test/parser/suite/js/semantic/8a4ad81e83d40ad7.js
     - test/parser/suite/js/semantic/3c97613274574690.module.js
     - test/parser/suite/js/semantic/e1d373aa5d926fde.js
+    - test/parser/suite/js/semantic/c30912e9a46930a8.js
+    - test/parser/suite/js/semantic/699b1c93038ef316.js
     - test/parser/suite/js/semantic/449b3a85ca3fb515.js
     - test/parser/suite/js/semantic/4680ed4404e9674a.js
     - test/parser/suite/js/semantic/784c15f4c53eb305.js
@@ -631,6 +674,7 @@ Results by Suite
     - test/parser/suite/js/semantic/97f0359d3c11dbcd.module.js
     - test/parser/suite/js/semantic/96fa6bd56ba8f425.js
     - test/parser/suite/js/semantic/b0a80dd767a7dd9c.module.js
+    - test/parser/suite/js/semantic/9f2d32c81099e613.js
     - test/parser/suite/js/semantic/d8b6a56583bdefab.module.js
     - test/parser/suite/js/semantic/3affe39f527b906e.module.js
     - test/parser/suite/js/semantic/b688b7f0231f59d0.js
@@ -639,6 +683,7 @@ Results by Suite
     - test/parser/suite/js/semantic/324d47cad7c154d9.module.js
     - test/parser/suite/js/semantic/57e064e8a3ca6756.module.js
     - test/parser/suite/js/semantic/9cac1ee1dffeac6a.module.js
+    - test/parser/suite/js/semantic/9553abad6e93d941.js
     - test/parser/suite/js/semantic/67c88ec8e8f9b73e.module.js
     - test/parser/suite/js/semantic/48feaa33c91851f2.module.js
     - test/parser/suite/js/semantic/4a705a9a7134313b.module.js
@@ -678,6 +723,7 @@ Results by Suite
     - test/parser/suite/js/semantic/cf561bd002d2c9b2.module.js
     - test/parser/suite/js/semantic/9b920ccacabc4e19.js
     - test/parser/suite/js/semantic/23090ef3bf992766.js
+    - test/parser/suite/js/semantic/51133e692c5afe53.js
     - test/parser/suite/js/semantic/c4e665091d299228.js
     - test/parser/suite/js/semantic/74c92c4851ca7f28.js
     - test/parser/suite/js/semantic/29ad3064c5197af3.js
@@ -705,6 +751,7 @@ Results by Suite
     - test/parser/suite/js/semantic/a75bfa84ae7ce2dc.js
     - test/parser/suite/js/semantic/31c7d16cf3a39b1e.module.js
     - test/parser/suite/js/semantic/818141605e98714b.js
+    - test/parser/suite/js/semantic/adc0783854d665d3.js
     - test/parser/suite/js/semantic/2ee61877dc80a257.js
     - test/parser/suite/js/semantic/00b5935e92cb70cf.js
     - test/parser/suite/js/semantic/f2db53245b89c72f.js
@@ -727,6 +774,7 @@ Results by Suite
     - test/parser/suite/js/semantic/651ea8d989575edc.js
     - test/parser/suite/js/semantic/6ceece6b84eb38c1.js
     - test/parser/suite/js/semantic/7e34dc0aa11f53ae.js
+    - test/parser/suite/js/semantic/65cf8f2d72acdc16.js
     - test/parser/suite/js/semantic/7159f2eab607fc42.js
     - test/parser/suite/js/semantic/4ae8ff355e763fa3.js
     - test/parser/suite/js/semantic/08f957bc2a1f1a2b.module.js
@@ -749,6 +797,7 @@ Results by Suite
     - test/parser/suite/js/semantic/283aa1417f07078f.module.js
     - test/parser/suite/js/semantic/bb41f0778f00f131.module.js
     - test/parser/suite/js/semantic/a9b31c0197bf943e.module.js
+    - test/parser/suite/js/semantic/2100738e3a002ce4.js
     - test/parser/suite/js/semantic/70ffd301a225e734.js
     - test/parser/suite/js/semantic/18af7dfd6654aedb.js
     - test/parser/suite/js/semantic/4c2354b4cd055a48.module.js
@@ -758,6 +807,7 @@ Results by Suite
     - test/parser/suite/js/semantic/6c1a69bbea5150e2.module.js
     - test/parser/suite/js/semantic/f10b90321b04cfb7.js
     - test/parser/suite/js/semantic/a389f9db36139d15.js
+    - test/parser/suite/js/semantic/d4702a07bc2faa34.js
     - test/parser/suite/js/semantic/8a0fc8ea31727188.js
     - test/parser/suite/js/semantic/7b86de9a133208a4.module.js
     - test/parser/suite/js/semantic/d756882da49b5122.js
@@ -783,6 +833,7 @@ Results by Suite
     - test/parser/suite/js/semantic/e3d43f39440f2b97.js
     - test/parser/suite/js/semantic/2c0f785914da9d0b.js
     - test/parser/suite/js/semantic/bbf81bc1923c1a5e.js
+    - test/parser/suite/js/semantic/1571d4b72cecffcd.module.js
     - test/parser/suite/js/semantic/65b5d7677cec4ffd.module.js
     - test/parser/suite/js/semantic/8e6c01d547025519.module.js
     - test/parser/suite/js/semantic/c43fab38afd5044c.js
@@ -798,6 +849,9 @@ Results by Suite
     - test/parser/suite/js/semantic/fb40f86db65f8e6a.js
     - test/parser/suite/js/semantic/1a0b4ab6c0207b84.js
     - test/parser/suite/js/semantic/fa652663d4281822.js
+    - test/parser/suite/js/semantic/5b5305570146ad29.js
+    - test/parser/suite/js/semantic/4b5ec6b958c03387.module.js
+    - test/parser/suite/js/semantic/4d3ec880eac4d64e.js
     - test/parser/suite/js/semantic/3ca06422d3c3abe6.js
     - test/parser/suite/js/semantic/e256ee8e7aff6957.js
     - test/parser/suite/js/semantic/06593c3474233eca.js
@@ -926,6 +980,7 @@ Results by Suite
     - test/parser/suite/js/semantic/aa9c2c243f1686ab.js
     - test/parser/suite/js/semantic/6eae8f66e3f6fcd1.module.js
     - test/parser/suite/js/semantic/fbc4f371ccda7a27.js
+    - test/parser/suite/js/semantic/037288fd640be294.js
     - test/parser/suite/js/semantic/e421d953546800f5.js
     - test/parser/suite/js/semantic/51fe41481b052604.js
     - test/parser/suite/js/semantic/519ce1b1f223f73d.module.js
@@ -946,8 +1001,10 @@ Results by Suite
     - test/parser/suite/js/semantic/24df811d7cdbe816.module.js
     - test/parser/suite/js/semantic/09e2a8b8fbab45c1.module.js
     - test/parser/suite/js/semantic/0e853cc26610d31a.module.js
+    - test/parser/suite/js/semantic/7e2c23c249a48806.js
     - test/parser/suite/js/semantic/2a0bc5f1bae0e6b5.module.js
     - test/parser/suite/js/semantic/7c3af0a8e143ba7c.module.js
+    - test/parser/suite/js/semantic/6d81d6992d004169.js
     - test/parser/suite/js/semantic/8ef4f0b1c6fc9871.module.js
     - test/parser/suite/js/semantic/a495cd1b22c5689e.js
     - test/parser/suite/js/semantic/d7f93af9b1344a73.js
@@ -961,6 +1018,8 @@ Results by Suite
     - test/parser/suite/js/semantic/d880e8e678023e20.js
     - test/parser/suite/js/semantic/0b7a511a9772994b.js
     - test/parser/suite/js/semantic/f76cbe3bf9ba7ba9.module.js
+    - test/parser/suite/js/semantic/b4e310a6d021ac99.js
+    - test/parser/suite/js/semantic/eee2c8a576b16484.js
     - test/parser/suite/js/semantic/3394d1c5fc8f066c.js
     - test/parser/suite/js/semantic/f31c87c7dad52a1c.module.js
     - test/parser/suite/js/semantic/67b7e4ea4a30f2c6.module.js
@@ -994,6 +1053,7 @@ Results by Suite
     - test/parser/suite/js/semantic/105ffb01ec9f8aad.js
     - test/parser/suite/js/semantic/6c4fe38464c16309.js
     - test/parser/suite/js/semantic/a2e9b74f3189ae78.module.js
+    - test/parser/suite/js/semantic/4f189143bf02af35.js
     - test/parser/suite/js/semantic/0e74198f1a7ae211.js
     - test/parser/suite/js/semantic/e299aa99dc3d30e8.js
     - test/parser/suite/js/semantic/d35e1046b7425b3a.js
@@ -1006,6 +1066,7 @@ Results by Suite
     - test/parser/suite/js/semantic/15e6b8396aa63c7a.js
     - test/parser/suite/js/semantic/bf9b13289b7ee793.module.js
     - test/parser/suite/js/semantic/9488fd949479819f.module.js
+    - test/parser/suite/js/semantic/374e0bafead55a33.js
     - test/parser/suite/js/semantic/1ceb908ebceb9398.js
     - test/parser/suite/js/semantic/a49630e381ef33c3.js
     - test/parser/suite/js/semantic/5608727078b3c9f5.js
@@ -1014,6 +1075,7 @@ Results by Suite
     - test/parser/suite/js/semantic/0da6496ed75822b1.js
     - test/parser/suite/js/semantic/dac6b631f7f91a9a.module.js
     - test/parser/suite/js/semantic/ebe5ced8d936c0f3.js
+    - test/parser/suite/js/semantic/4d874e7795f77f83.js
     - test/parser/suite/js/semantic/037ecd1db38c230c.js
     - test/parser/suite/js/semantic/e081a55d497ecba3.js
     - test/parser/suite/js/semantic/0b83079b62219d30.js
@@ -1024,10 +1086,12 @@ Results by Suite
     - test/parser/suite/js/semantic/65d486f32ca9a77c.module.js
     - test/parser/suite/js/semantic/bdbae9f5e59b9a1d.js
     - test/parser/suite/js/semantic/0f106449d4ad390b.js
+    - test/parser/suite/js/semantic/3852c71b83d0f4d6.js
     - test/parser/suite/js/semantic/53b4e9d03648e9ee.js
     - test/parser/suite/js/semantic/52946a5d180ba7ee.js
     - test/parser/suite/js/semantic/1bb457ab82ed723a.module.js
     - test/parser/suite/js/semantic/2b050de45ab44c8c.js
+    - test/parser/suite/js/semantic/775048edf4597f60.js
     - test/parser/suite/js/semantic/b7da9af7a387c9c7.js
     - test/parser/suite/js/semantic/576cfd46f20a4c39.module.js
     - test/parser/suite/js/semantic/11413d1203575930.js
@@ -1040,6 +1104,7 @@ Results by Suite
     - test/parser/suite/js/semantic/ec8d1dfb30b18099.js
     - test/parser/suite/js/semantic/d2ad5119ba137870.module.js
     - test/parser/suite/js/semantic/af62399548261189.module.js
+    - test/parser/suite/js/semantic/84662a4e8c9aeac1.js
     - test/parser/suite/js/semantic/492a249140633033.module.js
     - test/parser/suite/js/semantic/f37c4e37fa620f8e.module.js
     - test/parser/suite/js/semantic/dae49da3552bcf41.js
@@ -1080,6 +1145,7 @@ Results by Suite
     - test/parser/suite/js/semantic/0aba380d13ff463c.module.js
     - test/parser/suite/js/semantic/d2221eba7aff42e3.js
     - test/parser/suite/js/semantic/ce37c69e8e4b4eef.module.js
+    - test/parser/suite/js/semantic/ff4aec7103718ad2.js
     - test/parser/suite/js/semantic/6bb0c570ef383981.js
     - test/parser/suite/js/semantic/3db5225c6a017594.js
     - test/parser/suite/js/semantic/6e28dd84d745d983.js
@@ -1088,6 +1154,7 @@ Results by Suite
     - test/parser/suite/js/semantic/8032ef90ac65a259.module.js
     - test/parser/suite/js/semantic/92fd8e24864fde0a.module.js
     - test/parser/suite/js/semantic/261dcf9eebd52089.js
+    - test/parser/suite/js/semantic/1c3a51b5700a7b86.js
     - test/parser/suite/js/semantic/4728730db638dc0e.module.js
     - test/parser/suite/js/semantic/d33299b545e367a3.js
     - test/parser/suite/js/semantic/6404eba6ff959b8f.js
@@ -1133,6 +1200,7 @@ Results by Suite
     - test/parser/suite/js/semantic/07e8f46956f19683.js
     - test/parser/suite/js/semantic/5d93862c089ffe24.module.js
     - test/parser/suite/js/semantic/9678a11fb3216f87.module.js
+    - test/parser/suite/js/semantic/388b224f676299f2.js
     - test/parser/suite/js/semantic/1e5ab7e0695abf73.js
     - test/parser/suite/js/semantic/f87eda3e920311ce.js
     - test/parser/suite/js/semantic/aaf7c856c16d58fc.js
@@ -1187,6 +1255,7 @@ Results by Suite
     - test/parser/suite/js/semantic/61419d1022bf7756.module.js
     - test/parser/suite/js/semantic/dca2e8a6a1548d68.module.js
     - test/parser/suite/js/semantic/1ac45358d9e0dd2a.js
+    - test/parser/suite/js/semantic/0b1755d49f7c1aef.js
     - test/parser/suite/js/semantic/7276d2d5d55eaa4e.js
     - test/parser/suite/js/semantic/d1ba0fd6d74c92ad.js
     - test/parser/suite/js/semantic/efe0e7dcea3c9e78.js
@@ -1194,15 +1263,20 @@ Results by Suite
     - test/parser/suite/js/semantic/b13a72ca35327c5e.js
     - test/parser/suite/js/semantic/32e192aa88853cad.module.js
     - test/parser/suite/js/semantic/a2ec39c5505e0200.js
+    - test/parser/suite/js/semantic/7007dce7342d5eca.js
+    - test/parser/suite/js/semantic/32bd9918bbad7ff5.js
     - test/parser/suite/js/semantic/4e45b5542eb2f15e.module.js
     - test/parser/suite/js/semantic/c37fec0060a33c09.module.js
     - test/parser/suite/js/semantic/fd8b9953a962a34f.js
     - test/parser/suite/js/semantic/01d4fc5c5a3c5dc4.module.js
     - test/parser/suite/js/semantic/7b875b983e3a9ec8.js
+    - test/parser/suite/js/semantic/b2fb4b63425f36df.js
     - test/parser/suite/js/semantic/5bbe9e622a442e36.js
+    - test/parser/suite/js/semantic/9002f697e6fe5571.js
     - test/parser/suite/js/semantic/d1087b3f88bca9ab.module.js
     - test/parser/suite/js/semantic/e25b19185b3988dc.js
     - test/parser/suite/js/semantic/cad236c7cb8987bb.module.js
+    - test/parser/suite/js/semantic/e9f5de41b7e4483d.js
     - test/parser/suite/js/semantic/752f6bdd51771edb.module.js
     - test/parser/suite/js/semantic/b473201fc70fdd48.js
     - test/parser/suite/js/semantic/184b9d21f63806cd.module.js
@@ -1212,6 +1286,7 @@ Results by Suite
     - test/parser/suite/js/semantic/c0044f28f0620a60.js
     - test/parser/suite/js/semantic/da9203fbbc024397.js
     - test/parser/suite/js/semantic/a8739e3cf494b422.js
+    - test/parser/suite/js/semantic/61bbf22e63a1b213.js
     - test/parser/suite/js/semantic/6534fe231f5fa601.js
     - test/parser/suite/js/semantic/e808e347646c2670.js
     - test/parser/suite/js/semantic/f404f7ff29ba5d1a.js
@@ -1222,7 +1297,9 @@ Results by Suite
     - test/parser/suite/js/semantic/5387f95894818530.module.js
     - test/parser/suite/js/semantic/7e7699ee6069f799.js
     - test/parser/suite/js/semantic/34aa7f65abf79bc9.js
+    - test/parser/suite/js/semantic/5aee8ec8445ed16e.js
     - test/parser/suite/js/semantic/98e868bac7ece180.module.js
+    - test/parser/suite/js/semantic/58a85b78922b677c.js
     - test/parser/suite/js/semantic/59bb71fa8849a99a.js
     - test/parser/suite/js/semantic/19d69e5a9a4c0791.js
     - test/parser/suite/js/semantic/6ebcc9e1fe8f520c.js
@@ -1274,11 +1351,13 @@ Results by Suite
     - test/parser/suite/js/semantic/bbb8ffa7313f4250.js
     - test/parser/suite/js/semantic/dbf081f01e6780fc.js
     - test/parser/suite/js/semantic/763f10017d45fd6a.module.js
+    - test/parser/suite/js/semantic/6364ca95b5961606.js
     - test/parser/suite/js/semantic/84a6ea824cac8e3b.js
     - test/parser/suite/js/semantic/73d061b5d635a807.js
     - test/parser/suite/js/semantic/87946387ad39dde7.js
     - test/parser/suite/js/semantic/d868cb3eba295d1c.js
     - test/parser/suite/js/semantic/2b3665fe3e0bc267.js
+    - test/parser/suite/js/semantic/7a7f48f2ae9de97d.js
     - test/parser/suite/js/semantic/7a4619d256ebac5e.js
     - test/parser/suite/js/semantic/f9d44f5aa2f3ffc3.js
     - test/parser/suite/js/semantic/f25183676693850d.js
@@ -1323,6 +1402,8 @@ Results by Suite
     - test/parser/suite/js/semantic/7be9be4918d25634.module.js
     - test/parser/suite/js/semantic/c412905e229d6f2b.module.js
     - test/parser/suite/js/semantic/323287ec6a080447.js
+    - test/parser/suite/js/semantic/488cf7b4fa2ceebc.js
+    - test/parser/suite/js/semantic/2f3fe9ced938f487.js
     - test/parser/suite/js/semantic/0f1ab712e9e4ffe4.module.js
     - test/parser/suite/js/semantic/8263f00a5a0146fe.module.js
     - test/parser/suite/js/semantic/8db87564097affa8.js
@@ -1332,6 +1413,7 @@ Results by Suite
     - test/parser/suite/js/semantic/7fc6f3a6590d207d.module.js
     - test/parser/suite/js/semantic/b2b0551b46b0b7fc.module.js
     - test/parser/suite/js/semantic/55aae13283ed222c.module.js
+    - test/parser/suite/js/semantic/9affea2885ce2a5d.js
     - test/parser/suite/js/semantic/02ab45e6d656dda7.js
     - test/parser/suite/js/semantic/9ddc22375c711f5d.module.js
     - test/parser/suite/js/semantic/540a7b8bc0e1ec25.module.js
@@ -1344,6 +1426,7 @@ Results by Suite
     - test/parser/suite/js/semantic/e6df184bda496945.module.js
     - test/parser/suite/js/semantic/a78377af7c928d1b.module.js
     - test/parser/suite/js/semantic/0480a01376640ddd.js
+    - test/parser/suite/js/semantic/9c1e8600383383d2.js
     - test/parser/suite/js/semantic/91e14a85744e958d.js
     - test/parser/suite/js/semantic/e155fb6504f4fa45.module.js
     - test/parser/suite/js/semantic/0d3d64aad31d6f88.module.js
@@ -1352,6 +1435,7 @@ Results by Suite
     - test/parser/suite/js/semantic/df7b4240314e5529.js
     - test/parser/suite/js/semantic/94d9cb2c7562a7ec.js
     - test/parser/suite/js/semantic/e32c44df86093c18.js
+    - test/parser/suite/js/semantic/0ebd9fbff8295647.js
     - test/parser/suite/js/semantic/a4d809499ee1bf8b.module.js
     - test/parser/suite/js/semantic/0e431f0ebb564049.js
     - test/parser/suite/js/semantic/159c17331c90a465.js
@@ -1390,6 +1474,7 @@ Results by Suite
     - test/parser/suite/js/semantic/26a10a2c36beef84.js
     - test/parser/suite/js/semantic/d6138138ee6a3014.module.js
     - test/parser/suite/js/semantic/f0ebb3b5adde3217.js
+    - test/parser/suite/js/semantic/f7bdfc4d514b1da3.js
     - test/parser/suite/js/semantic/cc6318d17933a537.js
     - test/parser/suite/js/semantic/4c61d859dfe7253b.module.js
     - test/parser/suite/js/semantic/00c619f81bd33c7a.js
@@ -1405,6 +1490,7 @@ Results by Suite
     - test/parser/suite/js/semantic/202ca97e11422827.module.js
     - test/parser/suite/js/semantic/4286a88aed2001ee.js
     - test/parser/suite/js/semantic/1f60e730ece29967.js
+    - test/parser/suite/js/semantic/5325c297d972e33c.js
     - test/parser/suite/js/semantic/1bcaab66e31dbfed.js
     - test/parser/suite/js/semantic/db5fc189706fed82.js
     - test/parser/suite/js/semantic/acedb058fc26b244.module.js
@@ -1414,11 +1500,13 @@ Results by Suite
     - test/parser/suite/js/semantic/de5d829c11f69e01.js
     - test/parser/suite/js/semantic/5c5302cdcd422513.js
     - test/parser/suite/js/semantic/94352c69fe0ccb19.js
+    - test/parser/suite/js/semantic/9d962f2a727e2e33.js
     - test/parser/suite/js/semantic/fb85c6575a8d38af.js
     - test/parser/suite/js/semantic/f23a71fdf984532f.js
     - test/parser/suite/js/semantic/a85d00daea8a7fe1.module.js
     - test/parser/suite/js/semantic/3abbddaa6f253dec.js
     - test/parser/suite/js/semantic/0bef4f7efb24a578.module.js
+    - test/parser/suite/js/semantic/5c592bcb3302fe35.js
     - test/parser/suite/js/semantic/5529555236f65506.js
     - test/parser/suite/js/semantic/416fe9978e93ac03.module.js
     - test/parser/suite/js/semantic/6053e73b65c1f1f7.module.js
@@ -1442,8 +1530,10 @@ Results by Suite
     - test/parser/suite/js/semantic/200f2f8994ebd536.module.js
     - test/parser/suite/js/semantic/fa8e55653a52b500.module.js
     - test/parser/suite/js/semantic/ab7b2a28354f1f54.js
+    - test/parser/suite/js/semantic/8207fabc2218cd26.js
     - test/parser/suite/js/semantic/8c774fee069e681a.module.js
     - test/parser/suite/js/semantic/a4feba0316ea5fbd.js
+    - test/parser/suite/js/semantic/6390f4b3cc6551d8.js
     - test/parser/suite/js/semantic/6c2e4285d80875ef.js
     - test/parser/suite/js/semantic/2f8f2a79e9e9bdcf.module.js
     - test/parser/suite/js/semantic/c6984380e52bbb83.module.js
@@ -1491,9 +1581,11 @@ Results by Suite
     - test/parser/suite/js/semantic/141df7dfb3f4ba30.js
     - test/parser/suite/js/semantic/9521a03d607f8602.js
     - test/parser/suite/js/semantic/0ccce1d3c51e8ada.js
+    - test/parser/suite/js/semantic/c9fdf2889edbe490.js
     - test/parser/suite/js/semantic/05346c0ac87526a1.js
     - test/parser/suite/js/semantic/524c5114bbf59c98.js
     - test/parser/suite/js/semantic/f66c9076aa9d1715.module.js
+    - test/parser/suite/js/semantic/0e16b54d1cac419c.js
     - test/parser/suite/js/semantic/19944d83d50f0bbb.js
     - test/parser/suite/js/semantic/0c7bc3c6c3e5b4ff.module.js
     - test/parser/suite/js/semantic/d05b7bed797d7a0c.module.js
@@ -1513,10 +1605,12 @@ Results by Suite
     - test/parser/suite/js/semantic/38594572e7bb32f4.module.js
     - test/parser/suite/js/semantic/41c41f2f802fc048.module.js
     - test/parser/suite/js/semantic/f4683acac02955e8.module.js
+    - test/parser/suite/js/semantic/d256b432a1e40f87.js
     - test/parser/suite/js/semantic/defa14facef67818.js
     - test/parser/suite/js/semantic/a168d53ed6285ee3.module.js
     - test/parser/suite/js/semantic/a69abe26040adeba.js
     - test/parser/suite/js/semantic/0b92961b828d597c.js
+    - test/parser/suite/js/semantic/6ab46768ae290507.js
     - test/parser/suite/js/semantic/6069a4f3fbe23850.js
     - test/parser/suite/js/semantic/858b72be7f8f19d7.js
     - test/parser/suite/js/semantic/46182c3419fa45f9.module.js
@@ -1533,6 +1627,7 @@ Results by Suite
     - test/parser/suite/js/semantic/42599d36fb8fed6a.js
     - test/parser/suite/js/semantic/c78c6ec1f3b21e50.module.js
     - test/parser/suite/js/semantic/519612321e89641b.module.js
+    - test/parser/suite/js/semantic/497de7e7f315df90.js
     - test/parser/suite/js/semantic/302b9f99ef555d26.js
     - test/parser/suite/js/semantic/d0557cb699a7c1de.js
     - test/parser/suite/js/semantic/189bbd9b03da721e.js
@@ -1587,22 +1682,27 @@ Results by Suite
     - test/parser/suite/js/semantic/cf68dd8907f3daee.js
     - test/parser/suite/js/semantic/8eee941cb3ea50fb.module.js
     - test/parser/suite/js/semantic/66bd51a76df63bdc.js
+    - test/parser/suite/js/semantic/da8b4e0da1b46b15.js
     - test/parser/suite/js/semantic/3d5a22066defe69f.js
     - test/parser/suite/js/semantic/485def7d22717667.js
     - test/parser/suite/js/semantic/c1ed1d9a04f79681.js
     - test/parser/suite/js/semantic/a08d13006a773832.js
+    - test/parser/suite/js/semantic/8727c7702b31d4c1.js
     - test/parser/suite/js/semantic/0284d77a3e7b3600.js
+    - test/parser/suite/js/semantic/a9a4c092df230735.module.js
     - test/parser/suite/js/semantic/bac80aee32999637.js
     - test/parser/suite/js/semantic/141984ba1d762024.module.js
     - test/parser/suite/js/semantic/481cb733780fe9d3.js
     - test/parser/suite/js/semantic/1101a12a779973d3.module.js
     - test/parser/suite/js/semantic/3d5969e02c02bd8f.js
+    - test/parser/suite/js/semantic/541ece9a851c0b98.js
     - test/parser/suite/js/semantic/ca379fd62ce32150.js
     - test/parser/suite/js/semantic/c7b97adeea59f69f.module.js
     - test/parser/suite/js/semantic/5b6d8e0eaffb7483.js
     - test/parser/suite/js/semantic/c4736dfb6c20f876.module.js
     - test/parser/suite/js/semantic/8b5f754935f163af.js
     - test/parser/suite/js/semantic/115ba7f7e199eb20.js
+    - test/parser/suite/js/semantic/ce117260444bccb3.js
     - test/parser/suite/js/semantic/cc3a712aaffdd07f.js
     - test/parser/suite/js/semantic/2226edabbd2261a7.module.js
     - test/parser/suite/js/semantic/f0f16b655e08b92c.js
@@ -1641,11 +1741,13 @@ Results by Suite
     - test/parser/suite/js/semantic/9b8af880b7591a51.module.js
     - test/parser/suite/js/semantic/a101c2c550ac4cdf.module.js
     - test/parser/suite/js/semantic/3a399ffe064a4fdc.module.js
+    - test/parser/suite/js/semantic/50012a27e90506a0.module.js
     - test/parser/suite/js/semantic/ee01d971b6d831a9.js
     - test/parser/suite/js/semantic/3ba284be05ae1405.js
     - test/parser/suite/js/semantic/b5d9e23a4ac78f38.js
     - test/parser/suite/js/semantic/6f304a9f8503662a.js
     - test/parser/suite/js/semantic/18ad9aeb1330f2f9.module.js
+    - test/parser/suite/js/semantic/dc5e968640b17e36.js
     - test/parser/suite/js/semantic/08b527a4146318e1.js
     - test/parser/suite/js/semantic/fce9b100e837ac76.js
     - test/parser/suite/js/semantic/33aec60ac4f4c6b9.js
@@ -1708,15 +1810,18 @@ Results by Suite
     - test/parser/suite/js/semantic/37a48c3137d7bd7d.js
     - test/parser/suite/js/semantic/210fb79a19872227.js
     - test/parser/suite/js/semantic/c90f846ff8cf39cc.module.js
+    - test/parser/suite/js/semantic/80614618009878a1.js
     - test/parser/suite/js/semantic/dfe5fc432c4d38a4.js
     - test/parser/suite/js/semantic/c1fd53b7229d31ef.js
     - test/parser/suite/js/semantic/5b995e680c9c2945.module.js
     - test/parser/suite/js/semantic/41f3d03965bbcd2d.module.js
     - test/parser/suite/js/semantic/56847c52b6a05b23.js
+    - test/parser/suite/js/semantic/0e6a3cea443bb750.js
     - test/parser/suite/js/semantic/ffd72ac71e713447.js
     - test/parser/suite/js/semantic/8f12b5b733b9b694.js
     - test/parser/suite/js/semantic/043430309f052005.module.js
     - test/parser/suite/js/semantic/bde1a5ea9aebf9d2.module.js
+    - test/parser/suite/js/semantic/a72f28144106cb30.js
     - test/parser/suite/js/semantic/58d834cad69de69d.js
     - test/parser/suite/js/semantic/051992c12a9e1bc7.module.js
     - test/parser/suite/js/semantic/5ca77ee4bc623766.module.js
@@ -1731,10 +1836,12 @@ Results by Suite
     - test/parser/suite/js/semantic/8ed2a171ab34c301.module.js
     - test/parser/suite/js/semantic/050a006ae573e260.js
     - test/parser/suite/js/semantic/debc6d4cdb1450ab.module.js
+    - test/parser/suite/js/semantic/6f27cc9ea1cc3a55.js
     - test/parser/suite/js/semantic/bde66a9587eeb0d5.js
     - test/parser/suite/js/semantic/0f53a4230a810e42.module.js
     - test/parser/suite/js/semantic/213b70c9912c5c50.js
     - test/parser/suite/js/semantic/1bd9810e90ed9466.module.js
+    - test/parser/suite/js/semantic/942af9b799c51478.js
     - test/parser/suite/js/semantic/a157424306915066.module.js
     - test/parser/suite/js/semantic/c030fa00c5cdb573.module.js
     - test/parser/suite/js/semantic/6b0a1a78d37247ee.module.js
@@ -1753,6 +1860,7 @@ Results by Suite
     - test/parser/suite/js/semantic/de50ad8e48fd05b1.module.js
     - test/parser/suite/js/semantic/48800e68f2e748f1.module.js
     - test/parser/suite/js/semantic/8eed647d52eb779d.module.js
+    - test/parser/suite/js/semantic/9a2103e77ebf56dc.js
     - test/parser/suite/js/semantic/3f6fd744861ee7c3.module.js
     - test/parser/suite/js/semantic/8a6549558d83d0ee.js
     - test/parser/suite/js/semantic/a80c388114d769ae.js
@@ -1763,6 +1871,7 @@ Results by Suite
     - test/parser/suite/js/semantic/358bcab5c93dda3c.js
     - test/parser/suite/js/semantic/f8cc2c48224925b5.module.js
     - test/parser/suite/js/semantic/4554c00dbb28cad8.js
+    - test/parser/suite/js/semantic/99e1636e2611e749.js
     - test/parser/suite/js/semantic/50a90939bf074012.js
     - test/parser/suite/js/semantic/a87c5d5237b34393.module.js
     - test/parser/suite/js/semantic/d54b2db4548f1d82.module.js
@@ -1789,6 +1898,7 @@ Results by Suite
     - test/parser/suite/js/semantic/779af5fcf11e3a41.js
     - test/parser/suite/js/semantic/0f99634bca2684e3.js
     - test/parser/suite/js/semantic/2b9da745cf36d7e4.module.js
+    - test/parser/suite/js/semantic/826edd4bd228b4e0.js
     - test/parser/suite/js/semantic/338cd972c06a9c4c.module.js
     - test/parser/suite/js/semantic/b835afce8e0026ab.module.js
     - test/parser/suite/js/semantic/5d4d5b3a6c09edae.module.js
@@ -1805,8 +1915,10 @@ Results by Suite
     - test/parser/suite/js/semantic/9d6798746b0097ed.module.js
     - test/parser/suite/js/semantic/fbacebe72fb15fed.js
     - test/parser/suite/js/semantic/50f8aca790e5303a.module.js
+    - test/parser/suite/js/semantic/28a290e703792c87.js
     - test/parser/suite/js/semantic/5059efc702f08060.js
     - test/parser/suite/js/semantic/e5982d290bb18c79.js
+    - test/parser/suite/js/semantic/aa8d872e9a74cfb8.js
     - test/parser/suite/js/semantic/d036e73d4a43a463.js
     - test/parser/suite/js/semantic/c8dc3f91247e8503.js
     - test/parser/suite/js/semantic/44e063308150cd0b.module.js
@@ -1814,6 +1926,7 @@ Results by Suite
     - test/parser/suite/js/semantic/236e09dd149c3e8a.module.js
     - test/parser/suite/js/semantic/f14575e73b03ff6f.js
     - test/parser/suite/js/semantic/7690876ac504d137.module.js
+    - test/parser/suite/js/semantic/2c12f2a406c5b286.js
     - test/parser/suite/js/semantic/a6229f3898ef3d54.module.js
     - test/parser/suite/js/semantic/79a0f1983037ac04.module.js
     - test/parser/suite/js/semantic/bc04ce895077f312.js
@@ -1824,6 +1937,7 @@ Results by Suite
     - test/parser/suite/js/semantic/a75d12dab83090ea.module.js
     - test/parser/suite/js/semantic/046a528ec3520adb.module.js
     - test/parser/suite/js/semantic/4000ca4984f2706b.module.js
+    - test/parser/suite/js/semantic/83c639fddac00712.js
     - test/parser/suite/js/semantic/7484ac91150c8352.js
     - test/parser/suite/js/semantic/207ab320d76af409.module.js
     - test/parser/suite/js/semantic/18d5d5a39cf07fea.js
@@ -1839,6 +1953,7 @@ Results by Suite
     - test/parser/suite/js/semantic/10d70d9a9af9f72a.js
     - test/parser/suite/js/semantic/e6d9bbe4cc08e523.module.js
     - test/parser/suite/js/semantic/2a68af44f7d51d8f.js
+    - test/parser/suite/js/semantic/23f59b4039a07298.js
     - test/parser/suite/js/semantic/d61f2c557f1a2d42.js
     - test/parser/suite/js/semantic/f9e0efceb5690fdd.module.js
     - test/parser/suite/js/semantic/2453d25212b105b7.js
