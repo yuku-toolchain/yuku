@@ -5,6 +5,7 @@ const ast = @import("ast.zig");
 const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");
 const array = @import("syntax/array.zig");
+const parenthesized = @import("syntax/parenthesized.zig");
 
 /// parse an expression within a cover grammar context without validation.
 /// validation is deferred until the top-level context is known.
@@ -112,7 +113,10 @@ pub fn expressionToPattern(
             if (assign.operator != .assign) {
                 try parser.report(
                     parser.b.getSpan(expr),
-                    "Invalid assignment operator in destructuring pattern",
+                    if (context == .binding)
+                        "Invalid assignment operator in binding pattern"
+                    else
+                        "Invalid assignment operator in assignment pattern",
                     .{ .help = "Only '=' is allowed in destructuring defaults, not compound operators like '+='." },
                 );
                 return;
@@ -152,7 +156,10 @@ pub fn expressionToPattern(
         .chain_expression => {
             try parser.report(
                 parser.b.getSpan(expr),
-                "Optional chaining is not allowed in destructuring pattern",
+                if (context == .binding)
+                    "Optional chaining is not allowed in binding pattern"
+                else
+                    "Optional chaining is not allowed in assignment pattern",
                 .{ .help = "Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns." },
             );
         },
@@ -177,16 +184,17 @@ pub fn expressionToPattern(
                 return;
             }
 
-            try expressionToPattern(parser, paren.expression, context);
-
-            if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
+            if (!expressions.isSimpleAssignmentTarget(parser, parenthesized.unwrapParens(parser, paren.expression))) {
                 try parser.report(
                     parser.b.getSpan(paren.expression),
-                    "Parenthesized expression in destructuring pattern must be a simple assignment target",
-                    .{ .help = "Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in destructuring patterns." },
+                    "Parenthesized expression in assignment pattern must be a simple assignment target",
+                    .{ .help = "Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns." },
                 );
+
                 return;
             }
+
+            try expressionToPattern(parser, paren.expression, context);
 
             parser.b.replaceData(expr, parser.b.getData(paren.expression));
             parser.b.replaceSpan(expr, parser.b.getSpan(paren.expression));
@@ -197,7 +205,10 @@ pub fn expressionToPattern(
         else => {
             try parser.report(
                 parser.b.getSpan(expr),
-                "Invalid element in destructuring pattern",
+                if (context == .binding)
+                    "Invalid element in binding pattern"
+                else
+                    "Invalid element in assignment pattern",
                 .{ .help = "Expected an identifier, array pattern, object pattern, or assignment pattern." },
             );
         },

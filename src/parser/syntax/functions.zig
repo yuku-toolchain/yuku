@@ -95,7 +95,9 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Function parameters must be enclosed in parentheses: function name(a, b) {}",
     )) return null;
 
-    const params = try parseFormalParamaters(parser, .formal_parameters) orelse return null;
+    const is_unique_formal_parameters = is_generator or opts.is_async;
+
+    const params = try parseFormalParamaters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters) orelse return null;
 
     const params_end = parser.current_token.span.end; // including )
 
@@ -238,24 +240,4 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     return try parser.b.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.b.getSpan(pattern));
-}
-
-// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
-pub fn isSimpleParametersList(parser: *Parser, formal_parameters: ast.NodeIndex) bool {
-    const data = parser.b.getData(formal_parameters).formal_parameters;
-
-    if (data.rest != .null) {
-        return false;
-    }
-
-    const items = parser.b.getExtra(data.items);
-    for (items) |item| {
-        const param = parser.b.getData(item).formal_parameter;
-        const pattern = parser.b.getData(param.pattern);
-        if (pattern != .binding_identifier) {
-            return false;
-        }
-    }
-
-    return true;
 }

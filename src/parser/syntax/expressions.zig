@@ -684,16 +684,6 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u8, left: ast.NodeInde
 
     try grammar.expressionToPattern(parser, left, .assignable);
 
-    // validate that left side can be assigned to
-    if (!isValidAssignmentTarget(parser, left, operator)) {
-        try parser.report(
-            left_span,
-            "Invalid left-hand side in assignment",
-            .{ .help = "The left side of an assignment must be a variable, property access, or destructuring pattern." },
-        );
-        return null;
-    }
-
     // logical assignments (&&=, ||=, ??=) require simple targets
     const is_logical = operator == .logical_and_assign or operator == .logical_or_assign or operator == .nullish_assign;
     if (is_logical and !isSimpleAssignmentTarget(parser, left)) {
@@ -748,24 +738,6 @@ fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.Node
         },
         .{ .start = test_span.start, .end = parser.b.getSpan(alternate).end },
     );
-}
-
-/// AssignmentTarget: can be simple (identifier/member) or pattern (destructuring)
-pub fn isValidAssignmentTarget(parser: *Parser, index: ast.NodeIndex, operator: ast.AssignmentOperator) bool {
-    const data = parser.b.getData(index);
-
-    // object and array patterns as assignment targets are only
-    // valid if the operator is assignment (=)
-    if (operator == .assign and (data == .object_pattern or data == .array_pattern))
-        return true;
-
-    return switch (data) {
-        // SimpleAssignmentTarget
-        .identifier_reference, .binding_identifier => true,
-        .member_expression => |m| !m.optional,
-
-        else => false,
-    };
 }
 
 /// SimpleAssignmentTarget: only identifier and member expressions (no destructuring)

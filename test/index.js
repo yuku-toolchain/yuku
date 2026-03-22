@@ -1,5 +1,1 @@
-function cool() {
-
-}
-
-const cool = "wow"
+for (let let of []) {}
