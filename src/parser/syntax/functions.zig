@@ -241,23 +241,3 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.b.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.b.getSpan(pattern));
 }
-
-// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
-pub fn isSimpleParametersList(parser: *Parser, formal_parameters: ast.NodeIndex) bool {
-    const data = parser.b.getData(formal_parameters).formal_parameters;
-
-    if (data.rest != .null) {
-        return false;
-    }
-
-    const items = parser.b.getExtra(data.items);
-    for (items) |item| {
-        const param = parser.b.getData(item).formal_parameter;
-        const pattern = parser.b.getData(param.pattern);
-        if (pattern != .binding_identifier) {
-            return false;
-        }
-    }
-
-    return true;
-}

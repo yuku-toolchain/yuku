@@ -37,19 +37,6 @@ pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
     }
 }
 
-/// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
-pub fn isSimpleParameterList(tree: *const ast.Tree, params: ast.FormalParameters) bool {
-    if (params.rest != .null) return false;
-    for (tree.getExtra(params.items)) |param_idx| {
-        const pattern = tree.getData(param_idx).formal_parameter.pattern;
-        switch (tree.getData(pattern)) {
-            .binding_identifier => {},
-            else => return false,
-        }
-    }
-    return true;
-}
-
 /// https://tc39.es/ecma262/#sec-static-semantics-stringvalue
 pub fn eqlStringValue(source: []const u8, expected: []const u8) bool {
     if (std.mem.findScalar(u8, source, '\\') == null) {
@@ -76,4 +63,17 @@ pub fn eqlStringValue(source: []const u8, expected: []const u8) bool {
     }
 
     return ei == expected.len;
+}
+
+/// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
+pub fn isSimpleParameterList(tree: *const ast.Tree, params: ast.FormalParameters) bool {
+    if (params.rest != .null) return false;
+    for (tree.getExtra(params.items)) |param_idx| {
+        const pattern = tree.getData(param_idx).formal_parameter.pattern;
+        switch (tree.getData(pattern)) {
+            .binding_identifier => {},
+            else => return false,
+        }
+    }
+    return true;
 }
