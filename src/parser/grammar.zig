@@ -183,16 +183,17 @@ pub fn expressionToPattern(
                 return;
             }
 
-            try expressionToPattern(parser, paren.expression, context);
-
             if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
                     parser.b.getSpan(paren.expression),
                     "Parenthesized expression in assignment pattern must be a simple assignment target",
                     .{ .help = "Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns." },
                 );
+
                 return;
             }
+
+            try expressionToPattern(parser, paren.expression, context);
 
             parser.b.replaceData(expr, parser.b.getData(paren.expression));
             parser.b.replaceSpan(expr, parser.b.getSpan(paren.expression));

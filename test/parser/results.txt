@@ -5,11 +5,11 @@ Running TypeScript, Test262 and Babel test suites with AST matching against the 
 
 Summary
 -------
-Passed:       42303
-Failed:       2186
+Passed:       42281
+Failed:       2208
 AST mismatch: 0/37226
 Total:        44489
-Coverage:     95.09%
+Coverage:     95.04%
 
 Results by Suite
 ----------------
@@ -17,8 +17,32 @@ Results by Suite
 ✓ test/parser/suite/js/pass
   Passed: 37141/37141 (100.00%)
 
-✓ test/parser/suite/js/fail
-  Passed: 3622/3622 (100.00%)
+✗ test/parser/suite/js/fail
+  Passed: 3600/3622 (99.39%)
+  Failed: 22
+  Failures:
+    - test/parser/suite/js/fail/c0b411765a336b5c.js
+    - test/parser/suite/js/fail/50a060984b757dc1.js
+    - test/parser/suite/js/fail/168502012959421f.js
+    - test/parser/suite/js/fail/044c5bf67cc5c3b7.js
+    - test/parser/suite/js/fail/783aeb8c90c3775d.js
+    - test/parser/suite/js/fail/4b5e3a154805acfc.js
+    - test/parser/suite/js/fail/b77eb0de7ab0f782.js
+    - test/parser/suite/js/fail/c628d0f4d78990c6.js
+    - test/parser/suite/js/fail/dc14ac854168468f.js
+    - test/parser/suite/js/fail/dfc6f1cc5533e0bb.js
+    - test/parser/suite/js/fail/4057830522dfbc8d.js
+    - test/parser/suite/js/fail/2884c585d2f035a5.js
+    - test/parser/suite/js/fail/a793dd27762c8ec8.js
+    - test/parser/suite/js/fail/3d00cdb20c1f3b95.js
+    - test/parser/suite/js/fail/db41a80ccf646002.js
+    - test/parser/suite/js/fail/cdcbf79d1f3adb45.js
+    - test/parser/suite/js/fail/85e01e277c70c997.js
+    - test/parser/suite/js/fail/39bc1efa848f636d.js
+    - test/parser/suite/js/fail/90cd97db35a1a503.js
+    - test/parser/suite/js/fail/939b16a89d0e8704.js
+    - test/parser/suite/js/fail/75b52e0f57aab958.js
+    - test/parser/suite/js/fail/edd19a6136405ec9.js
 
 ✗ test/parser/suite/js/semantic
   Passed: 1441/3627 (39.73%)
