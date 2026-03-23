@@ -150,20 +150,6 @@ const SemanticVisit = struct {
             switch (ctx.tree.getData(i)) {
                 .formal_parameters => |params| return params,
                 .program, .function, .arrow_function_expression => return null,
-            else => {},
-        }
-    }
-
-    fn isInFormalParameters(ctx: *SemanticCtx) bool {
-        return findFormalParameters(ctx) != null;
-    }
-
-    fn findFormalParameters(ctx: *SemanticCtx) ?ast.FormalParameters {
-        var iter = ctx.path.ancestors();
-        while (iter.next()) |i| {
-            switch (ctx.tree.getData(i)) {
-                .formal_parameters => |params| return params,
-                .program, .function, .arrow_function_expression => return null,
                 else => {},
             }
         }
