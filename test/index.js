@@ -1,1 +1,7 @@
-function* gen(a = yield 1) {}
+class B {}
+
+class A {
+	constructor(a) {
+		super();
+	}
+}

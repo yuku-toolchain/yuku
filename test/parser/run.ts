@@ -33,12 +33,12 @@ const configs: TestConfig[] = [
 		type: "should_fail",
 		languages: ["js"],
 	},
-	// {
-	// 	path: "test/parser/suite/js/semantic",
-	// 	type: "should_fail",
-	// 	languages: ["js"],
-	// 	skipOnCI: true,
-	// },
+	{
+		path: "test/parser/suite/js/semantic",
+		type: "should_fail",
+		languages: ["js"],
+		skipOnCI: true,
+	},
 	{ path: "test/parser/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
 	{
 		path: "test/parser/suite/jsx/fail",
