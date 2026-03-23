@@ -38,9 +38,13 @@ fn walkNode(comptime C: type, comptime V: type, visitor: *V, index: ast.NodeInde
         .proceed => {},
     }
 
-    // re-read, if a visitor replaced this node during enter, walk the
-    // replacement's children instead of the (now stale) originals.
-    const current = ctx.tree.getData(index);
+    // if a visitor replaced this node during enter, re-read so we walk
+    // the replacement's children. skip when the tree is const since no
+    // mutation is possible.
+    const current = if (comptime @typeInfo(@TypeOf(ctx.tree)).pointer.is_const)
+        data
+    else
+        ctx.tree.getData(index);
 
     const result = try walkChildren(C, V, visitor, current, ctx);
 

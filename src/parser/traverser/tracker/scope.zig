@@ -177,7 +177,7 @@ pub const ScopeTracker = struct {
         self.scope_stack.push(id);
     }
 
-    // processes a node on enter, pushes scopes for scope-creating nodes and
+    // processes a node on enter, pushes scopes for scope-creating nodes.
     pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         switch (data) {
             .directive => |d| {
@@ -185,43 +185,37 @@ pub const ScopeTracker = struct {
                     self.currentScopeMut().flags.strict = true;
                 }
             },
-            else => {},
-        }
-
-        // inherit strict mode from parent scope
-        const flags: Scope.Flags = .{
-            .strict = self.currentScope().flags.strict,
-        };
-
-        switch (data) {
             .function => |func| {
+                const flags = self.inheritedFlags();
                 // named function expressions get an extra scope for their name.
                 // we push it before the function scope so it sits between
                 // outer and body. see Scope.Kind.expression_name for details.
                 if (isNamedFunctionExpression(func))
                     try self.pushScope(.expression_name, index, flags);
-
                 try self.pushScope(.function, index, flags);
             },
-            .arrow_function_expression => try self.pushScope(.function, index, flags),
-            .block_statement => try self.pushScope(.block, index, flags),
-            .for_statement,
-            .for_in_statement, .for_of_statement,
+            .arrow_function_expression => try self.pushScope(.function, index, self.inheritedFlags()),
+            .block_statement,
+            .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause,
             // switch creates one block scope for all case clauses
             .switch_statement,
-            => try self.pushScope(.block, index, flags),
+            => try self.pushScope(.block, index, self.inheritedFlags()),
             .class => |cls| {
+                const flags = self.inheritedFlags();
                 // same as named function expressions, named class expressions
                 // get an extra scope for their name.
                 if (isNamedClassExpression(cls))
                     try self.pushScope(.expression_name, index, flags);
-
                 try self.pushScope(.class, index, flags);
             },
-            .static_block => try self.pushScope(.static_block, index, flags),
+            .static_block => try self.pushScope(.static_block, index, self.inheritedFlags()),
             else => {},
         }
+    }
+
+    inline fn inheritedFlags(self: *const ScopeTracker) Scope.Flags {
+        return .{ .strict = self.currentScope().flags.strict };
     }
 
     // mirrors `enter`, pops the same number of scopes that were pushed.
