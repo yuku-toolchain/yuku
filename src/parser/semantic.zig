@@ -1,5 +1,5 @@
-// this is wip, even though redeclaration checks etc are done,
-// there are still a lot of semantic errors to cover
+// this is wip, even though redeclaration checks and some of the most important semantic errors are done,
+// there are still more semantic errors to cover (but lower priority for now)
 
 const std = @import("std");
 const traverser = @import("traverser/root.zig");
