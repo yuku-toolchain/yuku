@@ -174,6 +174,51 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// Section 14.9.2: It is a Syntax Error if this BreakStatement is not nested,
+    /// directly or indirectly (but not crossing function or static initialization
+    /// block boundaries), within an IterationStatement or a SwitchStatement.
+    pub fn enter_break_statement(self: *Self, stmt: ast.BreakStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (stmt.label != .null) {
+            const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
+            switch (findLabel(ctx, label_name)) {
+                .found => {},
+                .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label `{s}`", .{label_name}), .{}),
+                .crossed_boundary => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Cannot break to label `{s}` across function boundaries", .{label_name}), .{}),
+            }
+        } else {
+            if (!isInsideBreakable(ctx)) {
+                try self.report(ctx.tree.getSpan(node_index), "Illegal break statement", .{
+                    .help = "A `break` statement can only be used within an enclosing iteration or switch statement",
+                });
+            }
+        }
+        return .proceed;
+    }
+
+    /// Section 14.8.2: It is a Syntax Error if this ContinueStatement is not nested,
+    /// directly or indirectly (but not crossing function or static initialization
+    /// block boundaries), within an IterationStatement.
+    pub fn enter_continue_statement(self: *Self, stmt: ast.ContinueStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (stmt.label != .null) {
+            const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
+            switch (findLabelForContinue(ctx, label_name)) {
+                .found => {},
+                .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label `{s}`", .{label_name}), .{}),
+                .crossed_boundary => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Cannot continue to label `{s}` across function boundaries", .{label_name}), .{}),
+                .not_iteration => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Label `{s}` does not denote an iteration statement", .{label_name}), .{
+                    .help = "A `continue` statement can only jump to a label of an enclosing `for`, `while`, `do-while`, `for-in`, or `for-of` statement",
+                }),
+            }
+        } else {
+            if (!isInsideIteration(ctx)) {
+                try self.report(ctx.tree.getSpan(node_index), "Illegal continue statement", .{
+                    .help = "A `continue` statement can only be used within an enclosing iteration statement",
+                });
+            }
+        }
+        return .proceed;
+    }
+
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
         var current = node;
         while (true) {
@@ -277,6 +322,84 @@ const SemanticVisit = struct {
             }
         }
         return false;
+    }
+
+    fn isIterationStatement(data: ast.NodeData) bool {
+        return switch (data) {
+            .for_statement, .for_in_statement, .for_of_statement, .while_statement, .do_while_statement => true,
+            else => false,
+        };
+    }
+
+    fn isFunctionBoundary(data: ast.NodeData) bool {
+        return switch (data) {
+            .function, .arrow_function_expression, .static_block => true,
+            else => false,
+        };
+    }
+
+    /// check if we're inside a loop or switch (for unlabeled `break`).
+    fn isInsideBreakable(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            const data = ctx.tree.getData(i);
+            if (isIterationStatement(data) or data == .switch_statement) return true;
+            if (isFunctionBoundary(data)) return false;
+        }
+        return false;
+    }
+
+    /// check if we're inside a loop (for unlabeled `continue`).
+    fn isInsideIteration(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            const data = ctx.tree.getData(i);
+            if (isIterationStatement(data)) return true;
+            if (isFunctionBoundary(data)) return false;
+        }
+        return false;
+    }
+
+    const LabelSearch = enum { found, not_found, crossed_boundary };
+
+    /// find a matching labeled statement for `break label;`.
+    fn findLabel(ctx: *SemanticCtx, name: []const u8) LabelSearch {
+        var crossed_boundary = false;
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            const data = ctx.tree.getData(i);
+            if (data == .labeled_statement) {
+                const lbl_name = ctx.tree.getString(ctx.tree.getData(data.labeled_statement.label).label_identifier.name);
+                if (std.mem.eql(u8, lbl_name, name))
+                    return if (crossed_boundary) .crossed_boundary else .found;
+            }
+            if (isFunctionBoundary(data)) crossed_boundary = true;
+        }
+        return .not_found;
+    }
+
+    const ContinueLabelSearch = enum { found, not_found, crossed_boundary, not_iteration };
+
+    /// find a matching labeled statement for `continue label;`.
+    /// the label must directly wrap an iteration statement (or another label).
+    fn findLabelForContinue(ctx: *SemanticCtx, name: []const u8) ContinueLabelSearch {
+        var crossed_boundary = false;
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            const data = ctx.tree.getData(i);
+            if (data == .labeled_statement) {
+                const ls = data.labeled_statement;
+                const lbl_name = ctx.tree.getString(ctx.tree.getData(ls.label).label_identifier.name);
+                if (std.mem.eql(u8, lbl_name, name)) {
+                    if (crossed_boundary) return .crossed_boundary;
+                    const body = ctx.tree.getData(ls.body);
+                    if (isIterationStatement(body) or body == .labeled_statement) return .found;
+                    return .not_iteration;
+                }
+            }
+            if (isFunctionBoundary(data)) crossed_boundary = true;
+        }
+        return .not_found;
     }
 
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
