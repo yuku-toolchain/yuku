@@ -7,6 +7,9 @@ const Allocator = std.mem.Allocator;
 /// ID for a symbol. `.none` means no symbol.
 pub const SymbolId = enum(u32) { none = std.math.maxInt(u32), _ };
 
+/// Per-scope hash map from name to symbol ID.
+const ScopeMap = std.StringHashMapUnmanaged(SymbolId);
+
 /// ID for a reference. `.none` means no reference.
 pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 
@@ -19,8 +22,6 @@ pub const Symbol = struct {
     /// The scope this symbol is declared in.
     scope: sc.ScopeId,
     node: ast.NodeIndex,
-    /// Next symbol in the same scope, or `.none` if this is the last one.
-    next_in_scope: SymbolId,
 
     /// What kind of JavaScript declaration created this symbol.
     pub const Kind = enum(u8) {
@@ -86,9 +87,8 @@ pub const Reference = struct {
 pub const SymbolTable = struct {
     symbols: []const Symbol,
     references: []const Reference,
-    /// First symbol in each scope, indexed by scope ID.
-    /// `.none` if the scope has no symbols.
-    scope_symbols: []const SymbolId,
+    /// Per-scope hash maps, indexed by scope ID.
+    scope_maps: []const ScopeMap,
     /// String pool for resolving symbol and reference names.
     strings: ast.StringPool,
 
@@ -112,22 +112,14 @@ pub const SymbolTable = struct {
         return self.strings.get(ref.name);
     }
 
-    /// Returns an iterator over all symbols declared in the given scope.
-    pub fn scopeSymbols(self: SymbolTable, scope: sc.ScopeId) ScopeSymbolIterator {
-        return .{ .symbols = self.symbols, .current = self.scope_symbols[@intFromEnum(scope)] };
+    /// Returns an iterator over all symbol IDs declared in the given scope.
+    pub fn scopeSymbols(self: SymbolTable, scope: sc.ScopeId) ScopeMap.ValueIterator {
+        return self.scope_maps[@intFromEnum(scope)].valueIterator();
     }
 
     /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
     pub fn findInScope(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        var it = self.scopeSymbols(scope);
-        while (it.next()) |id| {
-            const sym = self.symbols[@intFromEnum(id)];
-            if (std.mem.eql(u8, self.getName(sym), name))
-            {
-                return id;
-            }
-        }
-        return null;
+        return self.scope_maps[@intFromEnum(scope)].get(name);
     }
 
     /// Walks up the scope chain from `scope` looking for a symbol with `name`.
@@ -141,30 +133,12 @@ pub const SymbolTable = struct {
 
     /// Resolves all unresolved references by walking up scope chains.
     pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) void {
-        for (self.asReferenceMut()) |*ref| {
+        for (@constCast(self.references)) |*ref| {
             if (ref.resolved == .none) {
-                ref.resolved = self.resolve(ref.scope, self.getRefName(ref), scope_tree) orelse .none;
+                ref.resolved = self.resolve(ref.scope, self.getRefName(ref.*), scope_tree) orelse .none;
             }
         }
     }
-
-    fn asReferenceMut(self: *SymbolTable) []Reference {
-        return @constCast(self.references);
-    }
-
-    /// Walks the symbols declared in a single scope, following `next_in_scope` links.
-    pub const ScopeSymbolIterator = struct {
-        symbols: []const Symbol,
-        current: SymbolId,
-
-        /// Returns the next symbol ID in this scope, or `null` when done.
-        pub fn next(self: *ScopeSymbolIterator) ?SymbolId {
-            const id = self.current;
-            if (id == .none) return null;
-            self.current = self.symbols[@intFromEnum(id)].next_in_scope;
-            return id;
-        }
-    };
 };
 
 // where a binding should be declared. set by setBindingContext when
@@ -198,8 +172,8 @@ pub const SymbolTracker = struct {
     allocator: Allocator,
     symbols: std.ArrayList(Symbol) = .{},
     references: std.ArrayList(Reference) = .{},
-    /// First symbol in each scope, indexed by scope ID.
-    scope_symbols: std.ArrayList(SymbolId) = .{},
+    /// Per-scope hash maps for O(1) name lookup.
+    scope_maps: std.ArrayList(ScopeMap) = .{},
 
     // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,
@@ -217,7 +191,7 @@ pub const SymbolTracker = struct {
 
         try self.symbols.ensureTotalCapacity(alloc, estimated_symbols);
         try self.references.ensureTotalCapacity(alloc, estimated_symbols);
-        try self.scope_symbols.ensureTotalCapacity(alloc, estimated_symbols / 2);
+        try self.scope_maps.ensureTotalCapacity(alloc, estimated_symbols / 2);
 
         return self;
     }
@@ -300,16 +274,13 @@ pub const SymbolTracker = struct {
 
     /// Phase 2: actually creates the symbol or reference.
     pub fn declareBindings(self: *SymbolTracker, index: ast.NodeIndex, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
-        // keep scope_symbols in sync with scope count. new scopes might
+        // keep scope_maps in sync with scope count. new scopes might
         // have been created since the last time we were called.
         const scope_count = scope.scopes.items.len;
-
-        try self.scope_symbols.ensureTotalCapacity(self.allocator, scope_count);
-
-        while (self.scope_symbols.items.len < scope_count) {
-            self.scope_symbols.appendAssumeCapacity(.none);
+        try self.scope_maps.ensureTotalCapacity(self.allocator, scope_count);
+        while (self.scope_maps.items.len < scope_count) {
+            self.scope_maps.appendAssumeCapacity(.empty);
         }
-        //
 
         switch (data) {
             .binding_identifier => |id| {
@@ -361,7 +332,6 @@ pub const SymbolTracker = struct {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
         const scope_idx = @intFromEnum(target_scope);
 
-        // prepend to the scope's linked list (new symbol becomes the head)
         try self.symbols.append(self.allocator, .{
             .name = name,
             .kind = self.binding_kind,
@@ -372,10 +342,9 @@ pub const SymbolTracker = struct {
             },
             .scope = target_scope,
             .node = node,
-            .next_in_scope = self.scope_symbols.items[scope_idx],
         });
 
-        self.scope_symbols.items[scope_idx] = id;
+        try self.scope_maps.items[scope_idx].put(self.allocator, self.tree.getString(name), id);
 
         return id;
     }
@@ -410,20 +379,16 @@ pub const SymbolTracker = struct {
         return self.tree.getString(sym.name);
     }
 
-    /// Returns an iterator over all symbols declared in the given scope.
-    pub fn scopeSymbols(self: *const SymbolTracker, scope: sc.ScopeId) SymbolTable.ScopeSymbolIterator {
-        return .{ .symbols = self.symbols.items, .current = self.scope_symbols.items[@intFromEnum(scope)] };
+    /// Returns an iterator over all symbol IDs declared in the given scope.
+    pub fn scopeSymbols(self: *const SymbolTracker, scope: sc.ScopeId) ScopeMap.ValueIterator {
+        return self.scope_maps.items[@intFromEnum(scope)].valueIterator();
     }
 
     /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
     pub fn findInScope(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
-        var it = self.scopeSymbols(scope);
-        while (it.next()) |id| {
-            const sym = self.symbols.items[@intFromEnum(id)];
-            if (std.mem.eql(u8, self.tree.getString(sym.name), name))
-                return id;
-        }
-        return null;
+        const idx = @intFromEnum(scope);
+        if (idx >= self.scope_maps.items.len) return null;
+        return self.scope_maps.items[idx].get(name);
     }
 
     /// Finalizes into an immutable `SymbolTable`.
@@ -431,7 +396,7 @@ pub const SymbolTracker = struct {
         return .{
             .symbols = self.symbols.items,
             .references = self.references.items,
-            .scope_symbols = self.scope_symbols.items,
+            .scope_maps = self.scope_maps.items,
             .strings = self.tree.strings.freeze(),
         };
     }

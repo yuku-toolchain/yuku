@@ -280,21 +280,21 @@ symbol.flags.is_ambient   // TypeScript declare
 
 ### Iterating Symbols in a Scope
 
-Symbols within a scope form a linked list. You can iterate them during traversal or after:
+You can iterate all symbols declared in a given scope:
 
 ```zig
 // During traversal (on the tracker):
 var it = ctx.symbols.scopeSymbols(scope_id);
-while (it.next()) |sym_id| {
-    const sym = ctx.symbols.getSymbol(sym_id);
+while (it.next()) |sym_id_ptr| {
+    const sym = ctx.symbols.getSymbol(sym_id_ptr.*);
     const name = ctx.symbols.getName(sym);
     // ...
 }
 
 // After traversal (on the table):
 var it = result.symbol_table.scopeSymbols(scope_id);
-while (it.next()) |sym_id| {
-    const sym = result.symbol_table.getSymbol(sym_id);
+while (it.next()) |sym_id_ptr| {
+    const sym = result.symbol_table.getSymbol(sym_id_ptr.*);
     // ...
 }
 ```

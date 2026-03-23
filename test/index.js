@@ -1,4 +1,4 @@
-label: {
+{
 	for (;;) {
 		continue label;
 	}
