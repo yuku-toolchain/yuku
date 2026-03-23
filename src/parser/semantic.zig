@@ -146,6 +146,21 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// Section 15.2.1, 15.5.1, 15.6.1, 15.8.1:
+    ///   It is a Syntax Error if FormalParameters/FunctionBody Contains SuperProperty is true.
+    /// Section 16.1.2.1 / 16.2.1.1:
+    ///   It is a Syntax Error if StatementList/ModuleItemList Contains super.
+    pub fn enter_member_expression(self: *Self, expr: ast.MemberExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.getData(expr.object) == .super) {
+            if (!isSuperPropertyValid(ctx)) {
+                try self.report(ctx.tree.getSpan(node_index), "'super' property access is only valid inside a method or class body", .{
+                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
+                });
+            }
+        }
+        return .proceed;
+    }
+
     pub fn enter_unary_expression(self: *Self, expr: ast.UnaryExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (expr.operator == .delete) {
             const target = unwrapParens(ctx.tree, expr.argument);
@@ -217,6 +232,51 @@ const SemanticVisit = struct {
             }
         }
         return .not_in_constructor;
+    }
+
+    /// determines if a `super.property` access is in a valid position.
+    ///
+    /// SuperProperty is more permissive than SuperCall. It is valid inside:
+    /// - any class method (constructor, regular, getter, setter, static)
+    /// - object literal methods/getters/setters
+    /// - class field initializers and static blocks
+    /// - arrow functions inheriting from the above
+    ///
+    /// it is not valid in standalone functions or top-level code.
+    fn isSuperPropertyValid(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                // Section 8.5.1: Arrow functions are transparent for SuperProperty.
+                .arrow_function_expression => {},
+
+                // Section 8.5.1: regular functions are opaque to `Contains`.
+                // valid only if this function is the value of a class method
+                // or object literal method/getter/setter.
+                .function => {
+                    if (iter.next()) |parent| {
+                        const data = ctx.tree.getData(parent);
+                        // class method (any kind, constructor, method, get, set)
+                        if (data == .method_definition) return true;
+                        // object literal method/getter/setter
+                        if (data == .object_property) {
+                            const prop = data.object_property;
+                            if (prop.method or prop.kind != .init) return true;
+                        }
+                    }
+
+                    return false;
+                },
+
+                // SuperProperty is valid in field initializers and static blocks
+                // (unlike SuperCall which is banned here).
+                .property_definition, .static_block => return true,
+
+                .program => return false,
+                else => {},
+            }
+        }
+        return false;
     }
 
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
