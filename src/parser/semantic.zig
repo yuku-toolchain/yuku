@@ -1,5 +1,5 @@
-// this is wip, even though redeclaration checks etc are done,
-// there are still a lot of semantic errors to cover
+// this is wip, even though redeclaration checks and some of the most important semantic errors are done,
+// there are still more semantic errors to cover (but lower priority for now)
 
 const std = @import("std");
 const traverser = @import("traverser/root.zig");
@@ -117,6 +117,168 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    pub fn enter_call_expression(self: *Self, expr: ast.CallExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.getData(expr.callee) == .super) {
+            switch (superCallValidity(ctx)) {
+                .valid => {},
+                // ClassElement : MethodDefinition
+                //   It is a Syntax Error if PropName of MethodDefinition is not "constructor"
+                //   and HasDirectSuper of MethodDefinition is true.
+                // FieldDefinition : ClassElementName Initializer?
+                //   It is a Syntax Error if Initializer is present and Initializer Contains SuperCall is true.
+                // ClassStaticBlockBody : ClassStaticBlockStatementList
+                //   It is a Syntax Error if ClassStaticBlockStatementList Contains SuperCall is true.
+                .not_in_constructor => try self.report(ctx.tree.getSpan(node_index), "'super()' is only valid in a constructor of a derived class", .{
+                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
+                }),
+                // ClassTail : ClassHeritage? { ClassBody }
+                //   It is a Syntax Error if ClassHeritage is not present and the following
+                //   algorithm returns true:
+                //     1. Let constructor be ConstructorMethod of ClassBody.
+                //     2. If constructor is empty, return false.
+                //     3. Return HasDirectSuper of constructor.
+                .no_extends => try self.report(ctx.tree.getSpan(node_index), "'super()' is only valid in a constructor of a derived class", .{
+                    .help = "Add an 'extends' clause to the class or remove the 'super()' call",
+                }),
+            }
+        }
+        return .proceed;
+    }
+
+    /// Section 15.2.1, 15.5.1, 15.6.1, 15.8.1:
+    ///   It is a Syntax Error if FormalParameters/FunctionBody Contains SuperProperty is true.
+    /// Section 16.1.2.1 / 16.2.1.1:
+    ///   It is a Syntax Error if StatementList/ModuleItemList Contains super.
+    pub fn enter_member_expression(self: *Self, expr: ast.MemberExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.getData(expr.object) == .super) {
+            if (!isSuperPropertyValid(ctx)) {
+                try self.report(ctx.tree.getSpan(node_index), "'super' property access is only valid inside a method or class body", .{
+                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
+                });
+            }
+        }
+        return .proceed;
+    }
+
+    pub fn enter_unary_expression(self: *Self, expr: ast.UnaryExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (expr.operator == .delete) {
+            const target = unwrapParens(ctx.tree, expr.argument);
+            switch (ctx.tree.getData(target)) {
+                .member_expression => |m| if (!m.computed and ctx.tree.getData(m.property) == .private_identifier) {
+                    try self.report(ctx.tree.getSpan(node_index), "Private fields cannot be deleted", .{});
+                },
+                else => {},
+            }
+        }
+        return .proceed;
+    }
+
+    fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
+        var current = node;
+        while (true) {
+            switch (tree.getData(current)) {
+                .parenthesized_expression => |p| current = p.expression,
+                else => return current,
+            }
+        }
+    }
+
+    const SuperCallValidity = enum { valid, not_in_constructor, no_extends };
+
+    /// determines if a `super()` call is in a valid position.
+    ///
+    /// `super()` is only permitted directly inside a constructor of a derived
+    /// class (one with an `extends` clause).
+    ///
+    /// arrow functions are transparent for `super`, Section 8.5.1 defines that
+    /// `Contains` passes through arrow functions for `SuperCall`.
+    /// Regular functions are opaque boundaries, they always return `false`
+    /// for `Contains`.
+    fn superCallValidity(ctx: *SemanticCtx) SuperCallValidity {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                // Section 8.5.1: ArrowFunction does not close over `SuperCall`,
+                // `Contains` passes through to the enclosing scope.
+                .arrow_function_expression => {},
+
+                // Section 8.5.1: Regular functions are opaque to `Contains`.
+                // The only valid case is the function that is the *value* of
+                // a constructor MethodDefinition in a class with `extends`.
+                .function => {
+                    if (iter.next()) |parent| {
+                        if (ctx.tree.getData(parent) == .method_definition and
+                            ctx.tree.getData(parent).method_definition.kind == .constructor)
+                        {
+                            while (iter.next()) |ancestor| {
+                                if (ctx.tree.getData(ancestor) == .class)
+                                    return if (ctx.tree.getData(ancestor).class.super_class != .null)
+                                        .valid
+                                    else
+                                        .no_extends;
+                            }
+                        }
+                    }
+                    return .not_in_constructor;
+                },
+
+                // Section 15.7.1: FieldDefinition, SuperCall in Initializer is a Syntax Error.
+                // Section 15.7.1: ClassStaticBlockBody, SuperCall in StatementList is a Syntax Error.
+                .property_definition, .static_block => return .not_in_constructor,
+
+                .program => return .not_in_constructor,
+                else => {},
+            }
+        }
+        return .not_in_constructor;
+    }
+
+    /// determines if a `super.property` access is in a valid position.
+    ///
+    /// SuperProperty is more permissive than SuperCall. It is valid inside:
+    /// - any class method (constructor, regular, getter, setter, static)
+    /// - object literal methods/getters/setters
+    /// - class field initializers and static blocks
+    /// - arrow functions inheriting from the above
+    ///
+    /// it is not valid in standalone functions or top-level code.
+    fn isSuperPropertyValid(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                // Section 8.5.1: Arrow functions are transparent for SuperProperty.
+                .arrow_function_expression => {},
+
+                // Section 8.5.1: regular functions are opaque to `Contains`.
+                // valid only if this function is the value of a class method
+                // or object literal method/getter/setter.
+                .function => {
+                    if (iter.next()) |parent| {
+                        const data = ctx.tree.getData(parent);
+                        // class method (any kind, constructor, method, get, set)
+                        if (data == .method_definition) return true;
+                        // object literal method/getter/setter
+                        if (data == .object_property) {
+                            const prop = data.object_property;
+                            if (prop.method or prop.kind != .init) return true;
+                        }
+                    }
+
+                    return false;
+                },
+
+                // SuperProperty is valid in field initializers and static blocks
+                // (unlike SuperCall which is banned here).
+                .property_definition, .static_block => return true,
+
+                .program => return false,
+                else => {},
+            }
+        }
+        return false;
+    }
+
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
         return findFormalParameters(ctx) != null;
     }
@@ -181,8 +343,8 @@ const SemanticVisit = struct {
 // Redeclaration checks.
 // It is a Syntax Error if FunctionBodyContainsUseStrict of FunctionBody is true and IsSimpleParameterList of FormalParameters is false.
 // It is a Syntax Error if any element of the BoundNames of FormalParameters also occurs in the LexicallyDeclaredNames of FunctionBody.
-// It is a Syntax Error if FormalParameters Contains SuperProperty is true.
 // It is a Syntax Error if FunctionBody Contains SuperProperty is true.
+// It is a Syntax Error if FormalParameters Contains SuperProperty is true.
 // It is a Syntax Error if FormalParameters Contains SuperCall is true.
 // It is a Syntax Error if FormalParameters Contains YieldExpression is true.
 // It is a Syntax Error if FormalParameters Contains AwaitExpression is true.
