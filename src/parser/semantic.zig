@@ -117,6 +117,7 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+<<<<<<< HEAD
     pub fn enter_unary_expression(self: *Self, expr: ast.UnaryExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (expr.operator == .delete) {
             const target = unwrapParens(ctx.tree, expr.argument);
@@ -153,6 +154,21 @@ const SemanticVisit = struct {
                 else => {},
             }
         }
+=======
+    fn isInFormalParameters(ctx: *SemanticCtx) bool {
+        return findFormalParameters(ctx) != null;
+    }
+
+    fn findFormalParameters(ctx: *SemanticCtx) ?ast.FormalParameters {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .formal_parameters => |params| return params,
+                .program, .function, .arrow_function_expression => return null,
+                else => {},
+            }
+        }
+>>>>>>> main
         return null;
     }
 

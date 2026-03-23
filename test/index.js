@@ -1,4 +1,2 @@
-class C {
-  #x;
-  method(obj) { #x }
+for (const let of []) {
 }
