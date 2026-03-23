@@ -117,6 +117,15 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    pub fn enter_call_expression(self: *Self, expr: ast.CallExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.getData(expr.callee) == .super) {
+            if (!isSuperCallValid(ctx)) {
+                try self.report(ctx.tree.getSpan(node_index), "Super calls are not permitted outside constructors or in nested functions inside constructors", .{});
+            }
+        }
+        return .proceed;
+    }
+
     pub fn enter_unary_expression(self: *Self, expr: ast.UnaryExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (expr.operator == .delete) {
             const target = unwrapParens(ctx.tree, expr.argument);
@@ -138,6 +147,35 @@ const SemanticVisit = struct {
                 else => return current,
             }
         }
+    }
+
+    /// checks whether a super() call at the current position is valid.
+    ///
+    /// super() is only permitted directly inside a class constructor. Arrow
+    /// functions are transparent (they inherit the super binding from their
+    /// enclosing scope), but regular functions, methods, static blocks, and
+    /// property initializers each create a new super-binding boundary.
+    fn isSuperCallValid(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .arrow_function_expression => {},
+
+                .function => {
+                    if (iter.next()) |parent| {
+                        return ctx.tree.getData(parent) == .method_definition and
+                            ctx.tree.getData(parent).method_definition.kind == .constructor;
+                    }
+                    return false;
+                },
+
+                .property_definition, .static_block => return false,
+
+                .program => return false,
+                else => {},
+            }
+        }
+        return false;
     }
 
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
@@ -204,8 +242,8 @@ const SemanticVisit = struct {
 // Redeclaration checks.
 // It is a Syntax Error if FunctionBodyContainsUseStrict of FunctionBody is true and IsSimpleParameterList of FormalParameters is false.
 // It is a Syntax Error if any element of the BoundNames of FormalParameters also occurs in the LexicallyDeclaredNames of FunctionBody.
-// It is a Syntax Error if FormalParameters Contains SuperProperty is true.
 // It is a Syntax Error if FunctionBody Contains SuperProperty is true.
+// It is a Syntax Error if FormalParameters Contains SuperProperty is true.
 // It is a Syntax Error if FormalParameters Contains SuperCall is true.
 // It is a Syntax Error if FormalParameters Contains YieldExpression is true.
 // It is a Syntax Error if FormalParameters Contains AwaitExpression is true.

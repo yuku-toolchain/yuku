@@ -1,1 +1,1 @@
-delete #cool
+function* gen(a = yield 1) {}
