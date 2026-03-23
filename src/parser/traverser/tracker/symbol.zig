@@ -274,13 +274,10 @@ pub const SymbolTracker = struct {
 
     /// Phase 2: actually creates the symbol or reference.
     pub fn declareBindings(self: *SymbolTracker, index: ast.NodeIndex, data: ast.NodeData, scope: *const sc.ScopeTracker) Allocator.Error!void {
-        // keep scope_maps in sync with scope count. new scopes might
-        // have been created since the last time we were called.
-        const scope_count = scope.scopes.items.len;
-        try self.scope_maps.ensureTotalCapacity(self.allocator, scope_count);
-        while (self.scope_maps.items.len < scope_count) {
-            self.scope_maps.appendAssumeCapacity(.empty);
-        }
+        // keep scope_maps in sync with scope count. only runs when
+        // new scopes were created since the last call.
+        if (self.scope_maps.items.len < scope.scopes.items.len)
+            try self.syncScopeMaps(scope);
 
         switch (data) {
             .binding_identifier => |id| {
@@ -389,6 +386,14 @@ pub const SymbolTracker = struct {
         const idx = @intFromEnum(scope);
         if (idx >= self.scope_maps.items.len) return null;
         return self.scope_maps.items[idx].get(name);
+    }
+
+    fn syncScopeMaps(self: *SymbolTracker, scope: *const sc.ScopeTracker) Allocator.Error!void {
+        const scope_count = scope.scopes.items.len;
+        try self.scope_maps.ensureTotalCapacity(self.allocator, scope_count);
+        while (self.scope_maps.items.len < scope_count) {
+            self.scope_maps.appendAssumeCapacity(.empty);
+        }
     }
 
     /// Finalizes into an immutable `SymbolTable`.
