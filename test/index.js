@@ -1,2 +1,1 @@
-for (const let of []) {
-}
+delete #cool
