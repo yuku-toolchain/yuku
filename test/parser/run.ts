@@ -268,8 +268,8 @@ for (const [config, files] of configFiles) {
 
 clearProgress();
 
-const getSnapName = (path: string): string => {
-	return `${path.replace(/^suite\//, "").replace(/\//g, "_")}.snap`;
+const getResultName = (path: string): string => {
+	return `${path.replace(/^suite\//, "").replace(/\//g, "_")}.txt`;
 };
 
 await mkdir(RESULTS_DIR, { recursive: true });
@@ -324,7 +324,7 @@ for (const [, result] of results) {
 
 	lines.push("");
 	await Bun.write(
-		`${RESULTS_DIR}/${getSnapName(result.path)}`,
+		`${RESULTS_DIR}/${getResultName(result.path)}`,
 		lines.join("\n"),
 	);
 }
