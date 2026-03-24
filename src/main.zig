@@ -2,7 +2,7 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main(init: std.process.Init) !void {
-    const file_path = "../test/index.js";
+    const file_path = "test/index.js";
 
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, file_path, init.arena.allocator(), std.Io.Limit.limited(10 * 1024 * 1024));
 

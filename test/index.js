@@ -1,5 +1,0 @@
-{
-	for (;;) {
-		continue label;
-	}
-}
