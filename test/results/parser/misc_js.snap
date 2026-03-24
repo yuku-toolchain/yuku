@@ -1,0 +1,35 @@
+misc/js
+=======
+Passed:       29/29 (100.00%)
+Failed:       0
+AST mismatch: 0/29
+
+✓ test/parser/misc/js/accessor-line-terminator.js
+✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
+✓ test/parser/misc/js/async-arrow-function-line-terminator-2.js
+✓ test/parser/misc/js/async-function-call-with-arguments.js
+✓ test/parser/misc/js/async-function-call-with-spread-arguments.js
+✓ test/parser/misc/js/async-function-call.js
+✓ test/parser/misc/js/async-function-line-terminator-1.js
+✓ test/parser/misc/js/async-function-line-terminator-2.js
+✓ test/parser/misc/js/async-function.js
+✓ test/parser/misc/js/await-exponentiation-left.module.js
+✓ test/parser/misc/js/await-using-new-line.js
+✓ test/parser/misc/js/await-using.js
+✓ test/parser/misc/js/bigint-class-property-key.js
+✓ test/parser/misc/js/bigint-object-key.js
+✓ test/parser/misc/js/class-extends-simple-arrow-function.js
+✓ test/parser/misc/js/class-static-block-await-context.js
+✓ test/parser/misc/js/dynamic-import-in-script.js
+✓ test/parser/misc/js/dynamic-import.module.js
+✓ test/parser/misc/js/export-default-using.module.js
+✓ test/parser/misc/js/for-await-errors.module.js
+✓ test/parser/misc/js/for-using-with-line-terminator.js
+✓ test/parser/misc/js/import-defer-normal.module.js
+✓ test/parser/misc/js/import-defer-original.module.js
+✓ test/parser/misc/js/import-expression-call.js
+✓ test/parser/misc/js/just-await-using.js
+✓ test/parser/misc/js/tagged-template-with-optional-chaining.js
+✓ test/parser/misc/js/tagged-template.js
+✓ test/parser/misc/js/using-export.module.js
+✓ test/parser/misc/js/using-var.js

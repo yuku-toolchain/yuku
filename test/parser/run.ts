@@ -3,6 +3,8 @@ import { basename, dirname, join } from "node:path";
 import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
+import type { Diagnostic } from "yuku-parser-types";
+import { formatDiagnostics } from "yuku-parser-types/print";
 import { parseSync, preload } from "yuku-parser-wasm";
 import { deserializeAstJson, serializeAstJson } from "yuku-shared";
 
@@ -11,6 +13,9 @@ await preload();
 console.clear();
 console.log("");
 
+const TEST_DIR = "test";
+const PARSER_TEST_DIR = `${TEST_DIR}/parser`;
+const RESULTS_DIR = `${TEST_DIR}/results/parser`;
 const isCI = !!process.env.CI;
 const updateSnapshots = process.argv.includes("--update-snapshots");
 
@@ -21,43 +26,41 @@ interface TestConfig {
 	path: string;
 	type: TestType;
 	languages: Language[];
-	exclude?: string[]; // file paths to exclude
+	exclude?: string[];
 	skipOnCI?: boolean;
 	checkAstOnError?: boolean;
 }
 
 const configs: TestConfig[] = [
-	{ path: "test/parser/suite/js/pass", type: "snapshot", languages: ["js"] },
+	{ path: "suite/js/pass", type: "snapshot", languages: ["js"] },
+	{ path: "suite/js/fail", type: "should_fail", languages: ["js"] },
 	{
-		path: "test/parser/suite/js/fail",
+		path: "suite/js/semantic",
 		type: "should_fail",
 		languages: ["js"],
+		skipOnCI: true,
 	},
-	// {
-	// 	path: "test/parser/suite/js/semantic",
-	// 	type: "should_fail",
-	// 	languages: ["js"],
-	// 	skipOnCI: true,
-	// },
-	{ path: "test/parser/suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
+	{ path: "suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
+	{ path: "suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
 	{
-		path: "test/parser/suite/jsx/fail",
-		type: "should_fail",
-		languages: ["jsx"],
-	},
-	{
-		path: "test/parser/misc/jsx",
+		path: "misc/jsx",
 		type: "snapshot",
 		languages: ["jsx"],
 		checkAstOnError: true,
 	},
 	{
-		path: "test/parser/misc/js",
+		path: "misc/js",
 		type: "snapshot",
 		languages: ["js"],
 		checkAstOnError: true,
 	},
 ];
+
+interface DiagnosticEntry {
+	file: string;
+	source: string;
+	diagnostics: Diagnostic[];
+}
 
 interface TestResult {
 	path: string;
@@ -67,6 +70,8 @@ interface TestResult {
 	failures: string[];
 	astMismatches: number;
 	astComparisons: number;
+	fileResults: { file: string; passed: boolean }[];
+	diagnosticEntries: DiagnosticEntry[];
 }
 
 const results = new Map<string, TestResult>();
@@ -94,21 +99,16 @@ const isTestArtifact = (path: string): boolean => {
 	);
 };
 
-const isExcluded = (path: string, excludePatterns: string[] = []): boolean => {
-	return excludePatterns.some((pattern) => {
-		return path.includes(pattern) || basename(path) === pattern;
-	});
-};
-
 const shouldIncludeFile = (
 	path: string,
 	languages: Language[],
 	exclude?: string[],
 ): boolean => {
 	if (isTestArtifact(path)) return false;
-	if (isExcluded(path, exclude)) return false;
-	const lang = getLanguage(path);
-	return languages.includes(lang);
+	if (exclude?.some((p) => path.includes(p) || basename(path) === p)) {
+		return false;
+	}
+	return languages.includes(getLanguage(path));
 };
 
 let progressCurrent = 0;
@@ -162,6 +162,11 @@ const runTest = async (
 				result.failures.push(file);
 				return false;
 			}
+			result.diagnosticEntries.push({
+				file,
+				source: content,
+				diagnostics: parsed.diagnostics,
+			});
 			result.passed++;
 			return true;
 		}
@@ -172,13 +177,11 @@ const runTest = async (
 				return false;
 			}
 
-			const dir = dirname(file);
-			const snapshotsDir = join(dir, "snapshots");
+			const snapshotsDir = join(dirname(file), "snapshots");
 			const base = getBaseName(file);
 			const snapshotFile = join(snapshotsDir, `${base}.snapshot.json`);
-			const snapshotExists = await Bun.file(snapshotFile).exists();
 
-			if (!snapshotExists) {
+			if (!(await Bun.file(snapshotFile).exists())) {
 				await mkdir(snapshotsDir, { recursive: true });
 				await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
 				result.passed++;
@@ -186,7 +189,6 @@ const runTest = async (
 			}
 
 			const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
-
 			result.astComparisons++;
 
 			if (!equal(parsed, snapshot)) {
@@ -196,14 +198,12 @@ const runTest = async (
 					return true;
 				}
 
-				const difference = diff(snapshot, parsed, { contextLines: 2 });
-
 				clearProgress();
-
-				console.log(`\nx ${file}\n${difference}\n`);
+				console.log(
+					`\nx ${file}\n${diff(snapshot, parsed, { contextLines: 2 })}\n`,
+				);
 				result.failures.push(`${file} (AST mismatch)`);
 				result.astMismatches++;
-
 				return false;
 			}
 
@@ -218,7 +218,7 @@ const runTest = async (
 };
 
 const collectFiles = async (config: TestConfig): Promise<string[]> => {
-	const glob = new Glob(`${config.path}/**/*`);
+	const glob = new Glob(`${PARSER_TEST_DIR}/${config.path}/**/*`);
 	const files: string[] = [];
 	for await (const file of glob.scan(".")) {
 		if (shouldIncludeFile(file, config.languages, config.exclude)) {
@@ -237,6 +237,8 @@ const runCategory = async (config: TestConfig, files: string[]) => {
 		failures: [],
 		astMismatches: 0,
 		astComparisons: 0,
+		fileResults: [],
+		diagnosticEntries: [],
 	};
 	results.set(config.path, result);
 
@@ -244,6 +246,7 @@ const runCategory = async (config: TestConfig, files: string[]) => {
 
 	for (const file of files) {
 		const passed = await runTest(file, config, result);
+		result.fileResults.push({ file, passed });
 		updateProgress(file, passed);
 	}
 
@@ -263,86 +266,71 @@ for (const [config, files] of configFiles) {
 	await runCategory(config, files);
 }
 
-for (const config of configs) {
-	if (config.skipOnCI && isCI) {
-		console.log(`\nSkipping ${config.path} on CI`);
-	}
-}
-
 clearProgress();
 
-let totalPassed = 0;
+const getSnapName = (path: string): string => {
+	return `${path.replace(/^suite\//, "").replace(/\//g, "_")}.snap`;
+};
+
+await mkdir(RESULTS_DIR, { recursive: true });
+
 let totalFailed = 0;
-let totalTests = 0;
-let totalAstMismatches = 0;
-let totalAstComparisons = 0;
 
 for (const [, result] of results) {
-	const status = result.failed === 0 ? "✓" : "x";
-
-	console.log(`${status} ${result.path} ${result.passed}/${result.total}`);
-
-	result.failures.forEach((f) => {
-		console.log(`  x ${f}`);
-	});
-	console.log();
-
 	if (result.total === 0) continue;
-	totalPassed += result.passed;
-	totalFailed += result.failed;
-	totalTests += result.total;
-	totalAstMismatches += result.astMismatches;
-	totalAstComparisons += result.astComparisons;
-}
 
-const passRate = ((totalPassed / totalTests) * 100).toFixed(2);
+	totalFailed += result.failures.length;
 
-console.log(`\n${totalPassed}/${totalTests} (${passRate}%)`);
+	const diagMap = new Map<string, DiagnosticEntry>();
+	for (const entry of result.diagnosticEntries) {
+		diagMap.set(entry.file, entry);
+	}
 
-const saveResults = async () => {
+	const suiteRate = ((result.passed / result.total) * 100).toFixed(2);
 	const lines: string[] = [
-		"Test Results",
-		"============",
-		"",
-		"Running TypeScript, Test262 and Babel test suites with AST matching against the ESTree/TypeScript-ESTree AST.",
-		"",
-		"Summary",
-		"-------",
-		`Passed:       ${totalPassed}`,
-		`Failed:       ${totalFailed}`,
-		`AST mismatch: ${totalAstMismatches}/${totalAstComparisons}`,
-		`Total:        ${totalTests}`,
-		`Coverage:     ${passRate}%`,
-		"",
-		"Results by Suite",
-		"----------------",
+		result.path,
+		"=".repeat(result.path.length),
+		`Passed:       ${result.passed}/${result.total} (${suiteRate}%)`,
+		`Failed:       ${result.failed}`,
 	];
 
-	for (const [, result] of results) {
-		if (result.total === 0) continue;
-		const status = result.failed === 0 ? "✓" : "✗";
-		const suiteRate = ((result.passed / result.total) * 100).toFixed(2);
-		lines.push("");
-		lines.push(`${status} ${result.path}`);
-		lines.push(`  Passed: ${result.passed}/${result.total} (${suiteRate}%)`);
-
-		if (result.failures.length > 0) {
-			lines.push(`  Failed: ${result.failed}`);
-			lines.push("  Failures:");
-			for (const failure of result.failures) {
-				lines.push(`    - ${failure}`);
-			}
-		}
+	if (result.astComparisons > 0) {
+		lines.push(
+			`AST mismatch: ${result.astMismatches}/${result.astComparisons}`,
+		);
 	}
 
 	lines.push("");
 
-	await Bun.write("test/parser/results.txt", lines.join("\n"));
-	console.log("\nResults saved to test/parser/results.txt");
-};
+	const sorted = [...result.fileResults].sort((a, b) =>
+		a.file.localeCompare(b.file),
+	);
 
-await saveResults();
+	for (const { file, passed } of sorted) {
+		const icon = passed ? "✓" : "✗";
+		lines.push(`${icon} ${file}`);
 
-if (totalFailed > 0) {
+		const entry = diagMap.get(file);
+		if (entry && entry.diagnostics.length > 0) {
+			lines.push(
+				formatDiagnostics(entry.source, [entry.diagnostics[0]], file, {
+					colors: false,
+					showFilename: false,
+				}),
+			);
+			lines.push("");
+		}
+	}
+
+	lines.push("");
+	await Bun.write(
+		`${RESULTS_DIR}/${getSnapName(result.path)}`,
+		lines.join("\n"),
+	);
+}
+
+console.log(`Results saved to ${RESULTS_DIR}/\n`);
+
+if (isCI && totalFailed > 0) {
 	process.exit(1);
 }

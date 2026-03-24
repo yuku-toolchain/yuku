@@ -113,7 +113,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         if (parser.current_token.tag == .left_brace) {
             try parser.report(
                 parser.current_token.span,
-                parser.tsFmt("1183", "An implementation cannot be declared in ambient contexts."),
+                parser.withTsCode("1183", "An implementation cannot be declared in ambient contexts."),
                 .{ .help = "Remove the function body or remove the 'declare' modifier" },
             );
             return null;
