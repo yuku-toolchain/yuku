@@ -1,0 +1,7 @@
+misc/jsx
+========
+Passed:       1/1 (100.00%)
+Failed:       0
+AST mismatch: 0/1
+
+✓ test/parser/misc/jsx/self-closing-element-attribute-value.jsx

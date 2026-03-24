@@ -1,0 +1,146 @@
+suite/jsx/fail
+==============
+Passed:       14/14 (100.00%)
+Failed:       0
+
+✓ test/parser/suite/jsx/fail/007be3029be81746.jsx
+error: Expected string literal or JSX expression for attribute value, but found 'bar'
+   |
+ 1 | <Foo bar=bar() />
+   |          ^^^
+ 2 | 
+   |
+   = help: JSX attribute values must be either a string literal (e.g. "value") or an expression in braces (e.g. {expression})
+
+
+✓ test/parser/suite/jsx/fail/2577591d02114569.module.jsx
+error: Expected JSX element name, but found '!'
+   |
+ 1 | <!--a
+   |  ^
+ 2 | 
+   |
+   = help: JSX element names must start with a valid identifier
+
+
+✓ test/parser/suite/jsx/fail/356094f49f10eea4.jsx
+error: Expected '>' to close JSX closing fragment, but found 'something'
+   |
+ 1 | <></something>
+   |     ^^^^^^^^^
+ 2 | 
+   |
+   = help: Add '>' to complete the fragment closing tag
+
+
+✓ test/parser/suite/jsx/fail/59c4f348793b3069.jsx
+error: Expected JSX element name, but found '>'
+   |
+ 1 | <something></>
+   |              ^
+ 2 | 
+   |
+   = help: JSX element names must start with a valid identifier
+
+
+✓ test/parser/suite/jsx/fail/61cfbf64eeb67395.jsx
+error: Unterminated string literal
+   |
+ 1 | <foo bar="
+   |          ^
+ 2 | 
+   | ^
+   |
+   = help: Try adding a closing quote here to complete the string
+
+
+✓ test/parser/suite/jsx/fail/6833af8cb657a514.jsx
+error: JSX tag names cannot start with a backslash
+   |
+ 1 | <\u{2F804}></\u{2F804}>
+   |  ^
+   |
+   = help: JSX tag names must be plain identifiers without escape sequences
+
+
+✓ test/parser/suite/jsx/fail/8180a2618d705c3d.jsx
+error: Expected closing tag for '<Foo>' but found '</Bar>'
+   |
+ 1 | <Foo></Bar>
+   |        ^^^
+   |  ~~~ opening tag
+ 2 | 
+   |
+   = help: JSX opening and closing tags must have matching names
+
+
+✓ test/parser/suite/jsx/fail/88a2834963715677.jsx
+error: Expected '/' in JSX closing fragment, but found 'end of file'
+   |
+ 1 | <><></>
+ 2 | 
+   | ^
+   |
+   = help: Add '/' to close the fragment
+
+
+✓ test/parser/suite/jsx/fail/94783750f32a8832.jsx
+error: Expected '/' in JSX closing element, but found 'end of file'
+   |
+ 1 | <foo>yes
+ 2 | 
+   | ^
+   |
+   = help: Add '/' after '<' to close the element
+
+
+✓ test/parser/suite/jsx/fail/b226f7bb3b73ae99.jsx
+error: Expected '>' to close JSX opening element, but found '.'
+   |
+ 1 | <a:b.c />
+   |     ^
+ 2 | 
+   |
+   = help: Add '>' to close the JSX tag
+
+
+✓ test/parser/suite/jsx/fail/b91c8baa37a8f937.jsx
+error: Line terminator not allowed in regular expression literal
+   |
+ 1 | var x = <div>one</div><div>two</div>;
+   |                                ^
+ 2 | 
+   |
+   = help: Try removing the line break here or escaping it within the regex pattern
+
+
+✓ test/parser/suite/jsx/fail/daff53a98ac58ae5.jsx
+error: Expected '>' to close JSX opening element, but found ':'
+   |
+ 1 | <a.b:c />
+   |     ^
+ 2 | 
+   |
+   = help: Add '>' to close the JSX tag
+
+
+✓ test/parser/suite/jsx/fail/e0dfc08ed604931a.jsx
+error: Expected '>' to close JSX opening element, but found '='
+   |
+ 1 | < key="nope"></>
+   |      ^
+ 2 | 
+   |
+   = help: Add '>' to close the JSX tag
+
+
+✓ test/parser/suite/jsx/fail/f7cb5b3ea1fefffa.jsx
+error: JSX attribute value cannot be an empty expression
+   |
+ 1 | <foo bar={} />
+   |          ^^
+ 2 | 
+   |
+   = help: Replace {} with a valid expression or remove the braces to use a string literal
+
+

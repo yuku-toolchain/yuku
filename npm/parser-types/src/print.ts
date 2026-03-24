@@ -179,11 +179,21 @@ function renderUnderlines(
 	return rows;
 }
 
-export function printDiagnostics(
+const ANSI_CODES = [R, B, DIM, RED, YEL, BLU, CYN];
+
+export interface FormatDiagnosticsOptions {
+	/** Whether to include ANSI color codes in the output. @default true */
+	colors?: boolean;
+	/** Whether to show the `--> filename:line:col` location line. @default true */
+	showFilename?: boolean;
+}
+
+export function formatDiagnostics(
 	source: string,
 	diagnostics: Diagnostic[],
 	filename: string,
-): void {
+	options?: FormatDiagnosticsOptions,
+): string {
 	const sourceLines = source.split("\n");
 	const output: string[] = [];
 
@@ -218,9 +228,11 @@ export function printDiagnostics(
 		const blankGutter = `${DIM}${" ".repeat(gw)} |${R}`;
 
 		output.push(`${B}${sevColor}${diag.severity}${R}${B}: ${diag.message}${R}`);
-		output.push(
-			`${DIM}${" ".repeat(gw)} --> ${filename}:${pos.line + 1}:${pos.col + 1}${R}`,
-		);
+		if (options?.showFilename !== false) {
+			output.push(
+				`${DIM}${" ".repeat(gw)} --> ${filename}:${pos.line + 1}:${pos.col + 1}${R}`,
+			);
+		}
 		output.push(blankGutter);
 
 		let prev = -2;
@@ -255,5 +267,19 @@ export function printDiagnostics(
 		if (di < diagnostics.length - 1) output.push("");
 	}
 
-	console.log(output.join("\n"));
+	let result = output.join("\n");
+	if (options?.colors === false) {
+		for (const code of ANSI_CODES) {
+			result = result.replaceAll(code, "");
+		}
+	}
+	return result;
+}
+
+export function printDiagnostics(
+	source: string,
+	diagnostics: Diagnostic[],
+	filename: string,
+): void {
+	console.log(formatDiagnostics(source, diagnostics, filename));
 }

@@ -39,7 +39,7 @@ Run the full test suite (45,000+ files from Test262 and others) with AST matchin
 bun run test
 ```
 
-The first run will download the test suite (wait for it to finish). After the run completes, check `test/results.txt` for results.
+The first run will download the test suite (wait for it to finish). After the run completes, check `test/results` for results.
 
 ## Roadmap
 
