@@ -400,6 +400,10 @@ pub const Parser = struct {
         return try std.fmt.allocPrint(self.allocator(), format, args);
     }
 
+    pub fn tsFmt(_: *Parser, comptime code: []const u8, comptime message: []const u8) Error![]u8 {
+        return "TS(" ++ code ++ "): " ++ message;
+    }
+
     fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
         while (self.current_token.tag != .eof) {
             self.current_token = try self.recoverNextToken();
