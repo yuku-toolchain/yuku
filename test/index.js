@@ -1,5 +1,1 @@
-{
-	for (;;) {
-		continue label;
-	}
-}
+function outer() { function f() {}  var f; }

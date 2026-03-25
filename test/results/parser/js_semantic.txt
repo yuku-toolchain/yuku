@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       2002/3560 (56.24%)
-Failed:       1558
+Passed:       2129/3560 (59.80%)
+Failed:       1431
 
 ✗ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
@@ -250,7 +250,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  6 |     return yield;
    |
 
-✗ test/parser/suite/js/semantic/02cd7982ee18f4b7.js
+✓ test/parser/suite/js/semantic/02cd7982ee18f4b7.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {} var f }
+   |                              ^
+   |                   ~ 'f' was first declared as a function here
+   |                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/02db3924db62fe4b.module.js
 ✓ test/parser/suite/js/semantic/02ea8b2ade05bd70.js
 error: Identifier 'a' has already been declared
@@ -517,7 +527,17 @@ error: 'private' is reserved in strict mode and cannot be used as an identifier
    |                                  ^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/05346c0ac87526a1.js
+✓ test/parser/suite/js/semantic/05346c0ac87526a1.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: function* f() {} }
+   |                                                ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/0535c81451a3a075.js
 error: Use of undefined label `LABEL2`
    |
@@ -642,7 +662,17 @@ error: Await expression is not allowed in formal parameters
    |                      ^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/0700a8b28c19f49a.js
+✓ test/parser/suite/js/semantic/0700a8b28c19f49a.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {} async function f() {} }
+   |                                        ^
+   |                  ~ 'f' was first declared as a function here
+   |                                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/070f530a20bd113d.module.js
 ✓ test/parser/suite/js/semantic/0722914cfa337d18.js
 error: Cannot use import statement outside a module
@@ -799,7 +829,19 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/09e1067378b653eb.js
+✓ test/parser/suite/js/semantic/09e1067378b653eb.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { async function* f() {}; var f; }
+   |                                 ^
+   |                     ~ 'f' was first declared as a function here
+   |                                 ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/09e2a8b8fbab45c1.module.js
 ✓ test/parser/suite/js/semantic/09e84f25af85b836.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -833,7 +875,17 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/0a0efcbda1232b27.js
+✓ test/parser/suite/js/semantic/0a0efcbda1232b27.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | (async function() { 'use strict'; { await using f = null; var f; } })
+   |                                                               ^
+   |                                                 ~ 'f' was first declared as a variable here
+   |                                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/0a2feada963f30c5.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -1000,7 +1052,20 @@ error: 'with' statements are not allowed in strict mode
 11 |   binding = 123;
    |
 
-✗ test/parser/suite/js/semantic/0c4c5d93f343cdc3.module.js
+✓ test/parser/suite/js/semantic/0c4c5d93f343cdc3.module.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | {
+ 2 |   function a() {}
+   |            ~ 'a' was first declared as a function here
+ 3 |   function a() {}
+   |            ^
+   |            ~ cannot be redeclared here
+ 4 | }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/0c7bc3c6c3e5b4ff.module.js
 ✓ test/parser/suite/js/semantic/0c81e22716fd4098.js
 error: Identifier 'b' has already been declared
@@ -1030,7 +1095,17 @@ error: Cannot use `export default` declaration outside a module
  2 | F.foo = '';
    |
 
-✗ test/parser/suite/js/semantic/0cda0bd08ee5f32a.js
+✓ test/parser/suite/js/semantic/0cda0bd08ee5f32a.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | for(const a = 1;;) { var a; }
+   |                          ^
+   |           ~ 'a' was first declared as a variable here
+   |                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/0ce0dc27a3d92ee0.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -1385,7 +1460,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/11413d1203575930.js
+✓ test/parser/suite/js/semantic/11413d1203575930.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { default: const a = 2; case 3: var a; }
+   |                                               ^
+   |                            ~ 'a' was first declared as a variable here
+   |                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/1159ce295d2cd8dc.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -1973,7 +2058,17 @@ error: Cannot use `await` as an identifier in an async or module context
  5 |     });
    |
 
-✗ test/parser/suite/js/semantic/176729df4ccd0a63.js
+✓ test/parser/suite/js/semantic/176729df4ccd0a63.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {} async function f() {} }
+   |                                  ^
+   |            ~ 'f' was first declared as a function here
+   |                                  ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/17692c132140f264.module.js
 ✗ test/parser/suite/js/semantic/179f3c1a69f82720.js
 ✓ test/parser/suite/js/semantic/17c51c1a47117905.js
@@ -1995,7 +2090,17 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/17e333ed35a3631e.module.js
-✗ test/parser/suite/js/semantic/18042da1d318897c.js
+✓ test/parser/suite/js/semantic/18042da1d318897c.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {} var f }
+   |                             ^
+   |                  ~ 'f' was first declared as a function here
+   |                             ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/181bb86cacc84c73.js
 error: Cannot use `export default` declaration outside a module
    |
@@ -2198,7 +2303,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |     ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/19d69e5a9a4c0791.js
+✓ test/parser/suite/js/semantic/19d69e5a9a4c0791.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {}; var f; }
+   |                         ^
+   |             ~ 'f' was first declared as a function here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/19d939575d0fdce3.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -2219,7 +2334,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/19e4308ef83dc278.js
+✓ test/parser/suite/js/semantic/19e4308ef83dc278.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | { var a; const a = 1; }
+   |                ^
+   |       ~ 'a' was first declared as a variable here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/19f2388512b1f301.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -2305,7 +2430,17 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
    |     ^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/1ac45358d9e0dd2a.js
+✓ test/parser/suite/js/semantic/1ac45358d9e0dd2a.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {} function* f() {} }
+   |                             ^
+   |            ~ 'f' was first declared as a function here
+   |                             ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/1ad439ca32f43bbc.js
 error: Cannot use import statement outside a module
    |
@@ -2495,7 +2630,17 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/1dde017cefa05259.js
+✓ test/parser/suite/js/semantic/1dde017cefa05259.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { let f; { var f; } }
+   |                ^
+   |       ~ 'f' was first declared as a variable here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/1e1288938554991e.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -2590,7 +2735,19 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/1f52011a5303e31c.js
+✓ test/parser/suite/js/semantic/1f52011a5303e31c.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (const x of []) {
+   |            ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/js/semantic/1f60e730ece29967.js
 ✓ test/parser/suite/js/semantic/1f80ccbe0fb74da7.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -2621,7 +2778,17 @@ error: Private fields cannot be deleted
  4 | }
    |
 
-✗ test/parser/suite/js/semantic/1fb0f28411e92b03.module.js
+✓ test/parser/suite/js/semantic/1fb0f28411e92b03.module.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function f() {} default: function f() {} }
+   |                                                        ^
+   |                               ~ 'f' was first declared as a function here
+   |                                                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/1fc70bca408f884c.js
 error: Cannot use `export` declaration outside a module
    |
@@ -2731,7 +2898,17 @@ error: 'with' statements are not allowed in strict mode
 44 |     st_p1 = p1;
    |
 
-✗ test/parser/suite/js/semantic/20aef9b4eadb727b.js
+✓ test/parser/suite/js/semantic/20aef9b4eadb727b.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } class f {}; }
+   |                    ^
+   |         ~ 'f' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/20c24abf03791e95.js
 ✓ test/parser/suite/js/semantic/20cad068fe8f22b3.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -2810,7 +2987,17 @@ error: Cannot use `await` as an identifier in an async or module context
  5 |     }));
    |
 
-✗ test/parser/suite/js/semantic/215bb25237c08f53.js
+✓ test/parser/suite/js/semantic/215bb25237c08f53.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { let f; var f }
+   |              ^
+   |       ~ 'f' was first declared as a variable here
+   |              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/216be5e317867299.module.js
 ✓ test/parser/suite/js/semantic/2188f58fe7edb16a.module.js
 error: 'with' statements are not allowed in strict mode
@@ -2930,7 +3117,17 @@ error: Use of undefined label `a`
 ✗ test/parser/suite/js/semantic/22927552f24f1ae2.module.js
 ✗ test/parser/suite/js/semantic/22dfaf2ae6b91e21.js
 ✗ test/parser/suite/js/semantic/22e0c7f12c99dffe.module.js
-✗ test/parser/suite/js/semantic/23090ef3bf992766.js
+✓ test/parser/suite/js/semantic/23090ef3bf992766.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: function f() {} }
+   |                                               ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/230d8d27eb9e11d9.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -2939,7 +3136,17 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
  2 | {}
    |
 
-✗ test/parser/suite/js/semantic/230f5e3112d1e3f9.js
+✓ test/parser/suite/js/semantic/230f5e3112d1e3f9.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: let a; default: var a; }
+   |                                         ^
+   |                         ~ 'a' was first declared as a variable here
+   |                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/23199b3534b3eed7.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -3583,7 +3790,17 @@ error: 'with' statements are not allowed in strict mode
 13 |     p1 = "w1";
    |
 
-✗ test/parser/suite/js/semantic/2c872d567d0048bf.js
+✓ test/parser/suite/js/semantic/2c872d567d0048bf.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } async function* f() {}; }
+   |                              ^
+   |         ~ 'f' was first declared as a variable here
+   |                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/2c93b15c648b17dc.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -3790,7 +4007,17 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/2fbd1ae01dcb6bd4.module.js
 ✗ test/parser/suite/js/semantic/2fcc5b7e8d0ff3c9.js
-✗ test/parser/suite/js/semantic/2fe86826c0f955d6.js
+✓ test/parser/suite/js/semantic/2fe86826c0f955d6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {}; var f; }
+   |                        ^
+   |            ~ 'f' was first declared as a function here
+   |                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/2ff12d67f245ef39.js
 ✓ test/parser/suite/js/semantic/2ff71b4c3603175f.js
 error: Identifier 'a' has already been declared
@@ -3985,7 +4212,17 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/33693c2909cbd2e1.js
+✓ test/parser/suite/js/semantic/33693c2909cbd2e1.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { const f = 0; var f; }
+   |                    ^
+   |         ~ 'f' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/337550b7517b9406.js
 error: Identifier 'f' has already been declared
    |
@@ -3998,7 +4235,17 @@ error: Identifier 'f' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/338cd972c06a9c4c.module.js
-✗ test/parser/suite/js/semantic/3394d1c5fc8f066c.js
+✓ test/parser/suite/js/semantic/3394d1c5fc8f066c.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function f() {} default: async function* f() {} }
+   |                                                               ^
+   |                               ~ 'f' was first declared as a function here
+   |                                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/33aec60ac4f4c6b9.js
 ✗ test/parser/suite/js/semantic/33d2a9a43fc71ede.js
 ✓ test/parser/suite/js/semantic/33d43e9f01bda5ce.js
@@ -4067,7 +4314,17 @@ error: Illegal continue statement
    = help: A `continue` statement can only be used within an enclosing iteration statement
 
 
-✗ test/parser/suite/js/semantic/34d1b5497fe48bf8.js
+✓ test/parser/suite/js/semantic/34d1b5497fe48bf8.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | { var a; let a; }
+   |              ^
+   |       ~ 'a' was first declared as a variable here
+   |              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/34d82fb0549cd4d1.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -4703,14 +4960,44 @@ error: Cannot use import statement outside a module
 
 ✗ test/parser/suite/js/semantic/3d4a8d7c19c25bd5.js
 ✗ test/parser/suite/js/semantic/3d5969e02c02bd8f.js
-✗ test/parser/suite/js/semantic/3d5a22066defe69f.js
+✓ test/parser/suite/js/semantic/3d5a22066defe69f.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {}; { var f; } }
+   |                           ^
+   |             ~ 'f' was first declared as a function here
+   |                           ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/3d61f0e5eb4a56fb.js
 ✗ test/parser/suite/js/semantic/3d916e1909d232f1.module.js
 ✗ test/parser/suite/js/semantic/3da54400b9158bd5.js
-✗ test/parser/suite/js/semantic/3da63aeee95d12b0.js
+✓ test/parser/suite/js/semantic/3da63aeee95d12b0.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } async function f() {}; }
+   |                             ^
+   |         ~ 'f' was first declared as a variable here
+   |                             ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/3dabeca76119d501.module.js
 ✗ test/parser/suite/js/semantic/3db5225c6a017594.js
-✗ test/parser/suite/js/semantic/3dc2deaafc74c4ad.js
+✓ test/parser/suite/js/semantic/3dc2deaafc74c4ad.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { default: var a; case 2: const a = 3; }
+   |                                           ^
+   |                          ~ 'a' was first declared as a variable here
+   |                                           ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/3dc8c212bd518a06.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -5007,7 +5294,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  8 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/42599d36fb8fed6a.js
+✓ test/parser/suite/js/semantic/42599d36fb8fed6a.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | (function() { 'use strict'; { let f; var f; } })
+   |                                          ^
+   |                                   ~ 'f' was first declared as a variable here
+   |                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/4269000f2e90133c.module.js
 error: 'implements' is reserved in strict mode and cannot be used as an identifier
    |
@@ -5277,7 +5574,17 @@ error: Cannot use `await` as an identifier in an async or module context
 
 ✗ test/parser/suite/js/semantic/46182c3419fa45f9.module.js
 ✗ test/parser/suite/js/semantic/461d2385bb8ee501.module.js
-✗ test/parser/suite/js/semantic/463085e34274e090.js
+✓ test/parser/suite/js/semantic/463085e34274e090.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | (function() { 'use strict'; { const f = 1; var f; } })
+   |                                                ^
+   |                                     ~ 'f' was first declared as a variable here
+   |                                                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/4631526839e914de.module.js
 ✓ test/parser/suite/js/semantic/4640ccd665354c45.js
 error: Cannot use import statement outside a module
@@ -5457,7 +5764,17 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/485b6b09f8dc91ef.js
 ✗ test/parser/suite/js/semantic/485def7d22717667.js
-✗ test/parser/suite/js/semantic/486c54fc366356e6.js
+✓ test/parser/suite/js/semantic/486c54fc366356e6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } const f = 0; }
+   |                    ^
+   |         ~ 'f' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/4873ebaea99e5bd6.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -5569,7 +5886,17 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/4a705a9a7134313b.module.js
 ✗ test/parser/suite/js/semantic/4a8523e8eabb6721.module.js
-✗ test/parser/suite/js/semantic/4a8f16e67942fe7a.js
+✓ test/parser/suite/js/semantic/4a8f16e67942fe7a.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: var a; default: let a; }
+   |                                         ^
+   |                         ~ 'a' was first declared as a variable here
+   |                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/4a91136a1e3c98cf.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -5713,7 +6040,17 @@ error: Cannot use import statement outside a module
  2 | export var local1 = 23;
    |
 
-✗ test/parser/suite/js/semantic/4c09931b90501f5b.js
+✓ test/parser/suite/js/semantic/4c09931b90501f5b.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; let f }
+   |              ^
+   |       ~ 'f' was first declared as a variable here
+   |              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/4c1ee527b6920671.module.js
 ✗ test/parser/suite/js/semantic/4c2354b4cd055a48.module.js
 ✗ test/parser/suite/js/semantic/4c383249ce4e32b5.module.js
@@ -5873,7 +6210,17 @@ error: Cannot use `export` declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/4e10bb3d581b9a8e.js
+✓ test/parser/suite/js/semantic/4e10bb3d581b9a8e.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: let a; case 3: var a; }
+   |                                        ^
+   |                         ~ 'a' was first declared as a variable here
+   |                                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/4e112f1225e229c4.js
 ✓ test/parser/suite/js/semantic/4e12bb4b1d278bab.module.js
 error: Identifier 'a' has already been declared
@@ -5919,7 +6266,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/4e9192cbc932b260.module.js
-✗ test/parser/suite/js/semantic/4ea211ac97a75ed6.js
+✓ test/parser/suite/js/semantic/4ea211ac97a75ed6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function f() {} default: async function f() {} }
+   |                                                              ^
+   |                               ~ 'f' was first declared as a function here
+   |                                                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/4ee62d8dc4f7e253.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -5963,7 +6320,17 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/4f8a940b12d0f4a3.js
+✓ test/parser/suite/js/semantic/4f8a940b12d0f4a3.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: let f; default: var f }
+   |                                          ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/4fa243c634fbe609.js
 error: Identifier 'x' has already been declared
    |
@@ -6146,7 +6513,17 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/519612321e89641b.module.js
 ✗ test/parser/suite/js/semantic/519ce1b1f223f73d.module.js
-✗ test/parser/suite/js/semantic/51ae5df278f3d4bf.js
+✓ test/parser/suite/js/semantic/51ae5df278f3d4bf.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: async function* f() {} }
+   |                                                      ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                                      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/51c38328d60aa690.js
 ✗ test/parser/suite/js/semantic/51e5a52e36642bf2.module.js
 ✓ test/parser/suite/js/semantic/51eed2594d44edf8.js
@@ -6302,7 +6679,17 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/5342710338bba6c5.module.js
-✗ test/parser/suite/js/semantic/5348015b9195b7dc.js
+✓ test/parser/suite/js/semantic/5348015b9195b7dc.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function f() {} default: async function f() {} }
+   |                                                                    ^
+   |                                     ~ 'f' was first declared as a function here
+   |                                                                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/535e50d8b6e5020e.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -6562,7 +6949,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/56847c52b6a05b23.js
+✓ test/parser/suite/js/semantic/56847c52b6a05b23.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { let f; var f; }
+   |              ^
+   |       ~ 'f' was first declared as a variable here
+   |              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/568c940c764b007a.module.js
 ✓ test/parser/suite/js/semantic/56935fcc12e499e9.js
 error: 'super' property access is only valid inside a method or class body
@@ -6665,7 +7062,19 @@ error: Expected ';' after for-loop init, but found ')'
 ✗ test/parser/suite/js/semantic/57d408fff22b3bfe.js
 ✗ test/parser/suite/js/semantic/57ddf6956d63bc7e.js
 ✗ test/parser/suite/js/semantic/57e064e8a3ca6756.module.js
-✗ test/parser/suite/js/semantic/57e12c6555b60706.js
+✓ test/parser/suite/js/semantic/57e12c6555b60706.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (const x in {}) {
+   |            ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/js/semantic/57f4e4685e795dd4.js
 ✗ test/parser/suite/js/semantic/5810cb789c707307.js
 ✓ test/parser/suite/js/semantic/58138942ebdf48d1.js
@@ -6733,7 +7142,19 @@ error: Identifier 'b' has already been declared
 ✗ test/parser/suite/js/semantic/58e580fc16cfe086.module.js
 ✗ test/parser/suite/js/semantic/5906e37750820b34.module.js
 ✗ test/parser/suite/js/semantic/59191c24ad4a4b35.js
-✗ test/parser/suite/js/semantic/5946f5e9f8b9ded6.js
+✓ test/parser/suite/js/semantic/5946f5e9f8b9ded6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { const f = 0; var f; }
+   |                      ^
+   |           ~ 'f' was first declared as a variable here
+   |                      ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/594b2040e40576f3.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -7012,7 +7433,19 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/5be53921aa4152b6.js
+✓ test/parser/suite/js/semantic/5be53921aa4152b6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { async function f() {}; var f; }
+   |                                ^
+   |                    ~ 'f' was first declared as a function here
+   |                                ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/5be861c7380e46af.module.js
 ✗ test/parser/suite/js/semantic/5bea28b3ae22f0d4.module.js
 ✓ test/parser/suite/js/semantic/5bfae6a3f1f905e0.js
@@ -7168,7 +7601,19 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/5e1cbe1737b1bbc6.module.js
-✗ test/parser/suite/js/semantic/5e38a7ed6c4f66da.js
+✓ test/parser/suite/js/semantic/5e38a7ed6c4f66da.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (const x = 0; false; ) {
+   |            ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/5e425337318a9c33.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7197,7 +7642,17 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/5e9098b468f523f7.js
+✓ test/parser/suite/js/semantic/5e9098b468f523f7.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {} function f() {} }
+   |                                   ^
+   |                   ~ 'f' was first declared as a function here
+   |                                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/5eb7bf047c42aea4.js
 error: Cannot use `export` declaration outside a module
    |
@@ -7246,7 +7701,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 ✗ test/parser/suite/js/semantic/5f3757da39f1f23b.js
 ✗ test/parser/suite/js/semantic/5f6c26cf3848f722.js
 ✗ test/parser/suite/js/semantic/5f6d5c284563fe6b.module.js
-✗ test/parser/suite/js/semantic/5fbb2be3511cb11d.js
+✓ test/parser/suite/js/semantic/5fbb2be3511cb11d.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function* f() {} default: async function* f() {} }
+   |                                                                ^
+   |                                ~ 'f' was first declared as a function here
+   |                                                                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/5fd5115916f20f64.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -7307,7 +7772,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | let x;
    |
 
-✗ test/parser/suite/js/semantic/60b65fc40a4ce7b2.js
+✓ test/parser/suite/js/semantic/60b65fc40a4ce7b2.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function* f() {} default: async function f() {} }
+   |                                                               ^
+   |                                ~ 'f' was first declared as a function here
+   |                                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/60e38811ac6c054a.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7405,7 +7880,17 @@ error: Cannot use import statement outside a module
  2 | var test262;
    |
 
-✗ test/parser/suite/js/semantic/629fa2c35661e808.js
+✓ test/parser/suite/js/semantic/629fa2c35661e808.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {} var f }
+   |                       ^
+   |            ~ 'f' was first declared as a function here
+   |                       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/62b2ee28e50396b1.js
 error: Cannot use import statement outside a module
    |
@@ -7537,10 +8022,30 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✗ test/parser/suite/js/semantic/63f808d2d25cfd03.js
-✗ test/parser/suite/js/semantic/63fd62d4dc09cbd7.js
+✓ test/parser/suite/js/semantic/63fd62d4dc09cbd7.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {}; { var f; } }
+   |                                ^
+   |                  ~ 'f' was first declared as a function here
+   |                                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/63fe04829ab5007e.module.js
 ✗ test/parser/suite/js/semantic/640347b3086107cd.module.js
-✗ test/parser/suite/js/semantic/6404eba6ff959b8f.js
+✓ test/parser/suite/js/semantic/6404eba6ff959b8f.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: const a = 3; case 4: var a; }
+   |                                              ^
+   |                           ~ 'a' was first declared as a variable here
+   |                                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/640c8242e832e4da.module.js
 ✓ test/parser/suite/js/semantic/640ddf7c10e5a839.js
 error: Yield expression is not allowed in formal parameters
@@ -7549,7 +8054,17 @@ error: Yield expression is not allowed in formal parameters
    |                      ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/640e43f0bf49c9a8.js
+✓ test/parser/suite/js/semantic/640e43f0bf49c9a8.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {} async function* f() {} }
+   |                                   ^
+   |            ~ 'f' was first declared as a function here
+   |                                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/641e6d80aecae22a.module.js
 error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
@@ -7655,7 +8170,17 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6534fe231f5fa601.js
+✓ test/parser/suite/js/semantic/6534fe231f5fa601.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; function* f() {} }
+   |                    ^
+   |       ~ 'f' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/65401ed8dc152370.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -7666,7 +8191,17 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
 ✗ test/parser/suite/js/semantic/65452eb8baae5939.js
 ✗ test/parser/suite/js/semantic/656ae090a367940a.module.js
 ✗ test/parser/suite/js/semantic/6592c9e18d21e698.js
-✗ test/parser/suite/js/semantic/65a2f5ce64f84412.js
+✓ test/parser/suite/js/semantic/65a2f5ce64f84412.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: const f = 0 }
+   |                                            ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                            ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/65a85193ac986427.module.js
 ✓ test/parser/suite/js/semantic/65aa2a9691fcfde5.module.js
 error: 'with' statements are not allowed in strict mode
@@ -7727,7 +8262,17 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/6653aea49db40d35.js
+✓ test/parser/suite/js/semantic/6653aea49db40d35.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: var a; default: const a = 3; }
+   |                                           ^
+   |                         ~ 'a' was first declared as a variable here
+   |                                           ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/665ab370012f20cf.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7748,7 +8293,19 @@ error: 'super()' is only valid in a constructor of a derived class
 
 ✗ test/parser/suite/js/semantic/6680a1444884625b.module.js
 ✗ test/parser/suite/js/semantic/6680edbe4224679b.module.js
-✗ test/parser/suite/js/semantic/66bd51a76df63bdc.js
+✓ test/parser/suite/js/semantic/66bd51a76df63bdc.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (let x of []) {
+   |          ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/js/semantic/66bd9903ea05f8cc.module.js
 ✗ test/parser/suite/js/semantic/66c3d686d1737232.js
 ✓ test/parser/suite/js/semantic/66d2dbcb692491ec.js
@@ -7821,7 +8378,17 @@ error: Cannot use `export *` declaration outside a module
  2 | export * from "./namespace-import-star-as-and-export-2_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/6790dccc9d20b9ba.js
+✓ test/parser/suite/js/semantic/6790dccc9d20b9ba.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {}; { var f; } }
+   |                                 ^
+   |                   ~ 'f' was first declared as a function here
+   |                                 ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/67b7e4ea4a30f2c6.module.js
 ✓ test/parser/suite/js/semantic/67be63b10a6e8640.module.js
 error: Expected ';' after for-loop init, but found ')'
@@ -7832,7 +8399,17 @@ error: Expected ';' after for-loop init, but found ')'
 
 ✗ test/parser/suite/js/semantic/67c714796e7f40a4.js
 ✗ test/parser/suite/js/semantic/67c88ec8e8f9b73e.module.js
-✗ test/parser/suite/js/semantic/67d2ff6b1360f5ed.js
+✓ test/parser/suite/js/semantic/67d2ff6b1360f5ed.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; function f() {} }
+   |                   ^
+   |       ~ 'f' was first declared as a variable here
+   |                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6809f997e2355e87.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -7858,7 +8435,17 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/6861617c24d989a3.js
+✓ test/parser/suite/js/semantic/6861617c24d989a3.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {} function* f() {} }
+   |                              ^
+   |             ~ 'f' was first declared as a function here
+   |                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/686fdffaf470aa0b.module.js
 ✗ test/parser/suite/js/semantic/6887910eabb6aa71.module.js
 ✓ test/parser/suite/js/semantic/688a941ddfb2d920.js
@@ -7893,7 +8480,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/6934a4517dc0e8e5.js
+✓ test/parser/suite/js/semantic/6934a4517dc0e8e5.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: const f = 0; default: var f }
+   |                                                ^
+   |                            ~ 'f' was first declared as a variable here
+   |                                                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6943936b04175ef5.js
 error: Cannot use import statement outside a module
    |
@@ -7933,7 +8530,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/69f7be30da088880.js
+✓ test/parser/suite/js/semantic/69f7be30da088880.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {} function* f() {} }
+   |                                   ^
+   |                  ~ 'f' was first declared as a function here
+   |                                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6a218750a221c68b.js
 error: Cannot use import statement outside a module
    |
@@ -8108,7 +8715,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/6bb0c570ef383981.js
+✓ test/parser/suite/js/semantic/6bb0c570ef383981.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {}; var f; }
+   |                              ^
+   |                  ~ 'f' was first declared as a function here
+   |                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6bb272e52a903c4c.js
 error: Identifier 'b' has already been declared
    |
@@ -8144,7 +8761,17 @@ error: Private fields cannot be deleted
  6 |   }
    |
 
-✗ test/parser/suite/js/semantic/6c2e4285d80875ef.js
+✓ test/parser/suite/js/semantic/6c2e4285d80875ef.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { class f {}; var f; }
+   |                   ^
+   |         ~ 'f' was first declared as a class here
+   |                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6c477b1ecaf24c7c.js
 error: Cannot continue to label `b` across function boundaries
    |
@@ -8197,7 +8824,19 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/6ceece6b84eb38c1.js
+✓ test/parser/suite/js/semantic/6ceece6b84eb38c1.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { class f {}; var f; }
+   |                     ^
+   |           ~ 'f' was first declared as a class here
+   |                     ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6cf6fc598ffc9d33.module.js
 error: 'interface' is reserved in strict mode and cannot be used as an identifier
    |
@@ -8414,8 +9053,28 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/6fa3cb6693fd9a5a.js
-✗ test/parser/suite/js/semantic/6fa55fc2a5900db8.js
+✓ test/parser/suite/js/semantic/6fa3cb6693fd9a5a.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function* f() {} default: var f }
+   |                                                          ^
+   |                                      ~ 'f' was first declared as a function here
+   |                                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
+✓ test/parser/suite/js/semantic/6fa55fc2a5900db8.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {} var f }
+   |                        ^
+   |             ~ 'f' was first declared as a function here
+   |                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/6fb10d729c79e7b4.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -8497,7 +9156,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/70ffd301a225e734.js
+✓ test/parser/suite/js/semantic/70ffd301a225e734.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } function f() {} }
+   |                       ^
+   |         ~ 'f' was first declared as a variable here
+   |                       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/710d6530a6d3ecdd.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -8692,7 +9361,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/738e17d71f395e31.js
+✓ test/parser/suite/js/semantic/738e17d71f395e31.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function f() {} default: var f }
+   |                                                   ^
+   |                               ~ 'f' was first declared as a function here
+   |                                                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/739abc0fe7e30141.js
 ✓ test/parser/suite/js/semantic/739b78faef2001c6.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -8829,7 +9508,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/74e50f7c11ccff35.js
+✓ test/parser/suite/js/semantic/74e50f7c11ccff35.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | for(let a in 1) { var a; }
+   |                       ^
+   |         ~ 'a' was first declared as a variable here
+   |                       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/74e66ef7ef7d59bd.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -8940,7 +9629,17 @@ error: Cannot use import statement outside a module
 
 ✗ test/parser/suite/js/semantic/763f10017d45fd6a.module.js
 ✗ test/parser/suite/js/semantic/76465e2c7af91e73.js
-✗ test/parser/suite/js/semantic/766ec156d439301e.js
+✓ test/parser/suite/js/semantic/766ec156d439301e.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {} function f() {} }
+   |                                  ^
+   |                  ~ 'f' was first declared as a function here
+   |                                  ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/767f39d87adb3ab0.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -9261,7 +9960,17 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✗ test/parser/suite/js/semantic/7aefcbff77945d48.js
-✗ test/parser/suite/js/semantic/7af74bb79cfc3f92.js
+✓ test/parser/suite/js/semantic/7af74bb79cfc3f92.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | (function() { 'use strict'; { using f = null; var f; } })
+   |                                                   ^
+   |                                     ~ 'f' was first declared as a variable here
+   |                                                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/7b128866ed79a165.js
 error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
@@ -9272,7 +9981,17 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/7b23e12275700e79.module.js
-✗ test/parser/suite/js/semantic/7b44c7d16afc4574.js
+✓ test/parser/suite/js/semantic/7b44c7d16afc4574.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function f() {} async function* f() {} }
+   |                                         ^
+   |                  ~ 'f' was first declared as a function here
+   |                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/7b548a7c8ae2394a.module.js
 ✓ test/parser/suite/js/semantic/7b60688fbf8723d0.js
 error: Identifier 'a' has already been declared
@@ -9657,7 +10376,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/805c7f7e24771841.js
+✓ test/parser/suite/js/semantic/805c7f7e24771841.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | for(const a in 1) { var a; }
+   |                         ^
+   |           ~ 'a' was first declared as a variable here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/80614618009878a1.js
 ✓ test/parser/suite/js/semantic/80a58aff9f583b7e.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -9790,7 +10519,19 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/825321db94c7d5fc.js
+✓ test/parser/suite/js/semantic/825321db94c7d5fc.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { function* f() {}; var f; }
+   |                           ^
+   |               ~ 'f' was first declared as a function here
+   |                           ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/8263f00a5a0146fe.module.js
 ✗ test/parser/suite/js/semantic/826edd4bd228b4e0.js
 ✓ test/parser/suite/js/semantic/82c93f9933c9710a.js
@@ -10043,7 +10784,17 @@ error: 'with' statements are not allowed in strict mode
  4 | });
    |
 
-✗ test/parser/suite/js/semantic/85013c3fcb5fe341.js
+✓ test/parser/suite/js/semantic/85013c3fcb5fe341.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function* f() {} default: async function f() {} }
+   |                                                                     ^
+   |                                      ~ 'f' was first declared as a function here
+   |                                                                     ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/8532372c3c69037f.module.js
 ✓ test/parser/suite/js/semantic/8539c34861661a12.js
 error: 'interface' is reserved in strict mode and cannot be used as an identifier
@@ -10184,7 +10935,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/879307750f26460e.js
+✓ test/parser/suite/js/semantic/879307750f26460e.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | { let a; var a; }
+   |              ^
+   |       ~ 'a' was first declared as a variable here
+   |              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/87946387ad39dde7.js
 ✗ test/parser/suite/js/semantic/879c075c866d56cf.js
 ✓ test/parser/suite/js/semantic/87a56fe3377476d7.js
@@ -10928,7 +11689,17 @@ error: Cannot use import statement outside a module
  2 | import './eval-self-once.js';
    |
 
-✗ test/parser/suite/js/semantic/92206f659bbf77d9.js
+✓ test/parser/suite/js/semantic/92206f659bbf77d9.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function* f() {} default: function f() {} }
+   |                                                               ^
+   |                                      ~ 'f' was first declared as a function here
+   |                                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/9239d4d6c418e6a4.module.js
 ✓ test/parser/suite/js/semantic/92683d6bbe81630f.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -11306,7 +12077,17 @@ error: Use of undefined label `a`
    |                ^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/96fa6bd56ba8f425.js
+✓ test/parser/suite/js/semantic/96fa6bd56ba8f425.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {} function* f() {} }
+   |                                    ^
+   |                   ~ 'f' was first declared as a function here
+   |                                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/96fd70d03d1efaae.module.js
 ✗ test/parser/suite/js/semantic/9716357f0b225a1a.module.js
 ✓ test/parser/suite/js/semantic/971cf622ebaef28e.module.js
@@ -11417,8 +12198,28 @@ error: Yield expression is not allowed in formal parameters
    |                                 ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/98306694a17bd551.js
-✗ test/parser/suite/js/semantic/98352a983a7c9f92.js
+✓ test/parser/suite/js/semantic/98306694a17bd551.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function f() {} default: function* f() {} }
+   |                                                               ^
+   |                                     ~ 'f' was first declared as a function here
+   |                                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
+✓ test/parser/suite/js/semantic/98352a983a7c9f92.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function* f() {} default: async function* f() {} }
+   |                                                                      ^
+   |                                      ~ 'f' was first declared as a function here
+   |                                                                      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/983c1d0124c11190.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11601,7 +12402,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/9a69cd3aca16ef66.js
+✓ test/parser/suite/js/semantic/9a69cd3aca16ef66.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } function* f() {}; }
+   |                        ^
+   |         ~ 'f' was first declared as a variable here
+   |                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/9a812522ef29d004.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -11663,7 +12474,17 @@ error: 'with' statements are not allowed in strict mode
 ✗ test/parser/suite/js/semantic/9b6eb26d5da7adb4.module.js
 ✗ test/parser/suite/js/semantic/9b8af880b7591a51.module.js
 ✗ test/parser/suite/js/semantic/9b8d5da90c30fe63.js
-✗ test/parser/suite/js/semantic/9b920ccacabc4e19.js
+✓ test/parser/suite/js/semantic/9b920ccacabc4e19.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function f() {} default: function* f() {} }
+   |                                                         ^
+   |                               ~ 'f' was first declared as a function here
+   |                                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/9ba32e30c16b9a4b.js
 error: Cannot use import statement outside a module
    |
@@ -11959,7 +12780,19 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
    |     ^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/9f5184cd95ce5f13.js
+✓ test/parser/suite/js/semantic/9f5184cd95ce5f13.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (let x; false; ) {
+   |          ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/9f6664a91a34a697.js
 error: Cannot use import statement outside a module
    |
@@ -12262,7 +13095,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/a2f99303eecab290.js
+✓ test/parser/suite/js/semantic/a2f99303eecab290.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: var a; case 3: const a = 4; }
+   |                                          ^
+   |                         ~ 'a' was first declared as a variable here
+   |                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/a309eddadea2e88f.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -12333,7 +13176,19 @@ error: 'with' statements are not allowed in strict mode
  8 | }
    |
 
-✗ test/parser/suite/js/semantic/a389f9db36139d15.js
+✓ test/parser/suite/js/semantic/a389f9db36139d15.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { let f; var f; }
+   |                ^
+   |         ~ 'f' was first declared as a variable here
+   |                ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/a390a7291eea83b8.module.js
 ✗ test/parser/suite/js/semantic/a39272532edef4c6.module.js
 ✗ test/parser/suite/js/semantic/a39c92ae9be165cc.js
@@ -12401,7 +13256,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/a3dbe90ffbbaef52.js
+✓ test/parser/suite/js/semantic/a3dbe90ffbbaef52.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function f() {} default: var f }
+   |                                                         ^
+   |                                     ~ 'f' was first declared as a function here
+   |                                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/a3e3787dd1c0a0bc.module.js
 ✗ test/parser/suite/js/semantic/a3e9cdb74c31dedf.module.js
 ✓ test/parser/suite/js/semantic/a41e5072dd6dda98.module.js
@@ -12902,7 +13767,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | let x = {};
    |
 
-✗ test/parser/suite/js/semantic/aa796531364c9806.js
+✓ test/parser/suite/js/semantic/aa796531364c9806.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | for(let a;;) { var a; }
+   |                    ^
+   |         ~ 'a' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/aa83e06a5ca45ef3.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -13037,7 +13912,17 @@ error: 'protected' is reserved in strict mode and cannot be used as an identifie
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/ac3921480b299e26.js
+✓ test/parser/suite/js/semantic/ac3921480b299e26.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: const a = 3; default: var a; }
+   |                                               ^
+   |                           ~ 'a' was first declared as a variable here
+   |                                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/ac3b4fb560d60fe6.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -13173,7 +14058,17 @@ error: Use of undefined label `nonexist`
  5 |         __str+=""+index+index_n;
    |
 
-✗ test/parser/suite/js/semantic/ae5246e73b3a2095.js
+✓ test/parser/suite/js/semantic/ae5246e73b3a2095.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {} async function* f() {} }
+   |                                    ^
+   |             ~ 'f' was first declared as a function here
+   |                                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/ae54fdaa598e16a4.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -13209,7 +14104,17 @@ error: 'with' statements are not allowed in strict mode
 11 |   with (innerScope) {
    |
 
-✗ test/parser/suite/js/semantic/aecc5068d346867a.js
+✓ test/parser/suite/js/semantic/aecc5068d346867a.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | { let a; { var a; } }
+   |                ^
+   |       ~ 'a' was first declared as a variable here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/aee7ae9a9789061f.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -13278,7 +14183,21 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |                ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/afa2fe9f63006bc1.js
+✓ test/parser/suite/js/semantic/afa2fe9f63006bc1.js
+error: Identifier 'f' has already been declared
+   |
+ 2 | {
+ 3 | function f() {}
+   |          ~ 'f' was first declared as a function here
+ 4 | {
+ 5 |             var f;
+   |                 ^
+   |                 ~ cannot be redeclared here
+ 6 |         }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/afb62e15f6ec3366.js
 error: Cannot use import statement outside a module
    |
@@ -14105,7 +15024,17 @@ error: Identifier 'f' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/bac80aee32999637.js
-✗ test/parser/suite/js/semantic/bad2150b6c74a6d3.module.js
+✓ test/parser/suite/js/semantic/bad2150b6c74a6d3.module.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {} function f() {} }
+   |                            ^
+   |            ~ 'f' was first declared as a function here
+   |                            ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/bae8da49446bc02e.js
 error: Identifier 'x' has already been declared
    |
@@ -14276,7 +15205,17 @@ error: 'with' statements are not allowed in strict mode
 44 |     st_p1 = p1;
    |
 
-✗ test/parser/suite/js/semantic/bd6d1e619ecd12e3.js
+✓ test/parser/suite/js/semantic/bd6d1e619ecd12e3.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { default: var a; case 2: let a; }
+   |                                         ^
+   |                          ~ 'a' was first declared as a variable here
+   |                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/bd6ed447e5113039.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -14363,7 +15302,17 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/be3409ff81c974a0.module.js
 ✗ test/parser/suite/js/semantic/be57f8938fbf1376.module.js
-✗ test/parser/suite/js/semantic/be6422926dcf1251.js
+✓ test/parser/suite/js/semantic/be6422926dcf1251.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; class f {} }
+   |                ^
+   |       ~ 'f' was first declared as a variable here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/be840fd54e06a8e9.js
 error: Cannot use `export default` declaration outside a module
    |
@@ -14730,7 +15679,17 @@ error: 'with' statements are not allowed in strict mode
  4 |     b;
    |
 
-✗ test/parser/suite/js/semantic/c3297c15b9479cfc.js
+✓ test/parser/suite/js/semantic/c3297c15b9479cfc.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: async function f() {} }
+   |                                                     ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                                     ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/c33da51b85893244.module.js
 ✓ test/parser/suite/js/semantic/c3677319d4b89bc7.js
 error: Identifier 'A' has already been declared
@@ -14793,7 +15752,17 @@ error: Cannot use `export` declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/c3cb63f64d39c6bc.js
+✓ test/parser/suite/js/semantic/c3cb63f64d39c6bc.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function* f() {} default: function f() {} }
+   |                                                         ^
+   |                                ~ 'f' was first declared as a function here
+   |                                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/c412905e229d6f2b.module.js
 ✗ test/parser/suite/js/semantic/c417dc80e0a8d933.module.js
 ✓ test/parser/suite/js/semantic/c418f2aa6ac28540.module.js
@@ -15012,7 +15981,17 @@ error: 'with' statements are not allowed in strict mode
    |                              ^^^^
    |
 
-✗ test/parser/suite/js/semantic/c64846422c8fcb25.js
+✓ test/parser/suite/js/semantic/c64846422c8fcb25.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | for(let a of 1) { var a; }
+   |                       ^
+   |         ~ 'a' was first declared as a variable here
+   |                       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/c6724850f8089bbb.js
 error: Cannot use import statement outside a module
    |
@@ -15259,7 +16238,17 @@ error: 'with' statements are not allowed in strict mode
  4 |     ((1), b)();
    |
 
-✗ test/parser/suite/js/semantic/c917c0c8cf4b956d.js
+✓ test/parser/suite/js/semantic/c917c0c8cf4b956d.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function f() {} default: async function* f() {} }
+   |                                                                     ^
+   |                                     ~ 'f' was first declared as a function here
+   |                                                                     ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/c9276d58d3d3ccab.js
 ✓ test/parser/suite/js/semantic/c92dc954a0ce196d.js
 error: Cannot use `export default` declaration outside a module
@@ -15338,7 +16327,17 @@ error: 'with' statements are not allowed in strict mode
 12 |     p1 = 'x1';
    |
 
-✗ test/parser/suite/js/semantic/ca379fd62ce32150.js
+✓ test/parser/suite/js/semantic/ca379fd62ce32150.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function f() {} { var f; } }
+   |                         ^
+   |            ~ 'f' was first declared as a function here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/ca450ebe11a7e7c9.js
 error: Cannot use import statement outside a module
    |
@@ -15514,7 +16513,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/cc6318d17933a537.js
+✓ test/parser/suite/js/semantic/cc6318d17933a537.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {} function f() {} }
+   |                             ^
+   |             ~ 'f' was first declared as a function here
+   |                             ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/cc698af08b56cb84.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -15593,7 +16602,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  7 |       return yield;
    |
 
-✗ test/parser/suite/js/semantic/cd72d41ffd4b46b4.js
+✓ test/parser/suite/js/semantic/cd72d41ffd4b46b4.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { { var f; } let f; }
+   |                  ^
+   |         ~ 'f' was first declared as a variable here
+   |                  ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/cd947cc3cb942409.js
 error: Cannot use import statement outside a module
    |
@@ -15620,7 +16639,19 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✗ test/parser/suite/js/semantic/cdb9bd6096e2732c.module.js
-✗ test/parser/suite/js/semantic/cdc278afcc71f666.js
+✓ test/parser/suite/js/semantic/cdc278afcc71f666.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (let x in {}) {
+   |          ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/js/semantic/cdca52810bbe4532.module.js
 ✗ test/parser/suite/js/semantic/cdceb01cec39f8d0.js
 ✗ test/parser/suite/js/semantic/cddc74f578049dc6.module.js
@@ -15775,7 +16806,17 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✗ test/parser/suite/js/semantic/d05b7bed797d7a0c.module.js
-✗ test/parser/suite/js/semantic/d061d9eb77d41c32.js
+✓ test/parser/suite/js/semantic/d061d9eb77d41c32.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; async function f() {} }
+   |                         ^
+   |       ~ 'f' was first declared as a variable here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/d0693faaf9ea64f8.js
 error: Cannot use `export default` declaration outside a module
    |
@@ -15894,7 +16935,17 @@ error: Identifier 'f' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/d1adbde9a7568742.module.js
-✗ test/parser/suite/js/semantic/d1ba0fd6d74c92ad.js
+✓ test/parser/suite/js/semantic/d1ba0fd6d74c92ad.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: class f {} }
+   |                                            ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                            ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/d1c5a57e3b4700cd.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -15965,7 +17016,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/d2350ad0d14b2122.module.js
-✗ test/parser/suite/js/semantic/d23c5a261861eeaf.js
+✓ test/parser/suite/js/semantic/d23c5a261861eeaf.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { class f {}; { var f; } }
+   |                     ^
+   |         ~ 'f' was first declared as a class here
+   |                     ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/d23cb970205be6b7.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -16182,7 +17243,21 @@ error: Cannot use import statement outside a module
  2 | import.defer("./imports-tla_FIXTURE.js").then(ns => {
    |
 
-✗ test/parser/suite/js/semantic/d3abc733f495ba2b.module.js
+✓ test/parser/suite/js/semantic/d3abc733f495ba2b.module.js
+error: Identifier 'a' has already been declared
+   |
+ 3 |   case 1:
+ 4 |     function a() {}
+   |              ~ 'a' was first declared as a function here
+ 5 |   case 2:
+ 6 |     function a() {}
+   |              ^
+   |              ~ cannot be redeclared here
+ 7 | }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/d3c61a29aca22055.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -16286,7 +17361,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/d556b2b9bcdcb105.js
 ✗ test/parser/suite/js/semantic/d56a71ee38f4929e.module.js
-✗ test/parser/suite/js/semantic/d56a8c497db156e6.js
+✓ test/parser/suite/js/semantic/d56a8c497db156e6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {}; var f; }
+   |                               ^
+   |                   ~ 'f' was first declared as a function here
+   |                               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/d5c8181740237339.js
 error: Cannot use import statement outside a module
    |
@@ -16661,7 +17746,17 @@ error: 'with' statements are not allowed in strict mode
 44 |     st_p1 = p1;
    |
 
-✗ test/parser/suite/js/semantic/da237024815a0e13.js
+✓ test/parser/suite/js/semantic/da237024815a0e13.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { class f {} var f }
+   |                  ^
+   |         ~ 'f' was first declared as a class here
+   |                  ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/da27232e999248dc.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -16694,7 +17789,17 @@ error: Cannot use `export default` declaration outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/da8298630b660a63.js
+✓ test/parser/suite/js/semantic/da8298630b660a63.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: var f; default: let f }
+   |                                          ^
+   |                          ~ 'f' was first declared as a variable here
+   |                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/da8b4e0da1b46b15.js
 ✓ test/parser/suite/js/semantic/da9203fbbc024397.js
 error: 'super' property access is only valid inside a method or class body
@@ -16935,7 +18040,17 @@ error: 'with' statements are not allowed in strict mode
 13 |       count++;
    |
 
-✗ test/parser/suite/js/semantic/dcdd387a8ad7357d.js
+✓ test/parser/suite/js/semantic/dcdd387a8ad7357d.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function* f() {} default: var f }
+   |                                                    ^
+   |                                ~ 'f' was first declared as a function here
+   |                                                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/dce7a1fb8ded48a9.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -17122,7 +18237,19 @@ error: Private fields cannot be deleted
    |
 
 ✗ test/parser/suite/js/semantic/df3ba851a3157a9f.js
-✗ test/parser/suite/js/semantic/df467a64051990d6.module.js
+✓ test/parser/suite/js/semantic/df467a64051990d6.module.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (await using x of []) {
+   |                  ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/df56725bbfa3adcb.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -17169,7 +18296,17 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep-then_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/df84c672bf74a63c.js
+✓ test/parser/suite/js/semantic/df84c672bf74a63c.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | { const a = 1; var a; }
+   |                    ^
+   |         ~ 'a' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/df90f22f94d1d105.module.js
 ✓ test/parser/suite/js/semantic/df94f63081badc85.js
 error: Identifier 'f' has already been declared
@@ -17202,7 +18339,17 @@ error: Cannot use import statement outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/dffd0b723afae46e.js
+✓ test/parser/suite/js/semantic/dffd0b723afae46e.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { const f = 0; var f }
+   |                    ^
+   |         ~ 'f' was first declared as a variable here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/dffeefbee0abfacc.module.js
 ✓ test/parser/suite/js/semantic/e01265e2211e48b3.js
 error: Expected ';' after for-loop init, but found ')'
@@ -17401,7 +18548,17 @@ error: Illegal continue statement
 
 
 ✗ test/parser/suite/js/semantic/e25b19185b3988dc.js
-✗ test/parser/suite/js/semantic/e262ea7682c36f92.js
+✓ test/parser/suite/js/semantic/e262ea7682c36f92.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | { function a(){} function* a(){} }
+   |                            ^
+   |            ~ 'a' was first declared as a function here
+   |                            ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/e26d0b7439791934.js
 error: Cannot use import statement outside a module
    |
@@ -17445,7 +18602,17 @@ error: Private fields cannot be deleted
  5 | ;
    |
 
-✗ test/parser/suite/js/semantic/e32c44df86093c18.js
+✓ test/parser/suite/js/semantic/e32c44df86093c18.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: function* f() {} default: function* f() {} }
+   |                                                          ^
+   |                                ~ 'f' was first declared as a function here
+   |                                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/e338e8a0691b24af.js
 error: Cannot use import statement outside a module
    |
@@ -17845,7 +19012,17 @@ error: Private fields cannot be deleted
    |
 
 ✗ test/parser/suite/js/semantic/e8d5a922b291c24a.module.js
-✗ test/parser/suite/js/semantic/e8d632416155feb6.js
+✓ test/parser/suite/js/semantic/e8d632416155feb6.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; const f = 0 }
+   |                ^
+   |       ~ 'f' was first declared as a variable here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/e8e205b4540aca2e.module.js
 ✓ test/parser/suite/js/semantic/e8f3bbd8830b5338.js
 error: 'super' property access is only valid inside a method or class body
@@ -17864,7 +19041,17 @@ error: Cannot use `export` declaration outside a module
    |
 
 ✗ test/parser/suite/js/semantic/e925131dec457165.module.js
-✗ test/parser/suite/js/semantic/e929ff0c0dcb70c0.js
+✓ test/parser/suite/js/semantic/e929ff0c0dcb70c0.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | for(const a of 1) { var a; }
+   |                         ^
+   |           ~ 'a' was first declared as a variable here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/e93aaf8e47668e9f.js
 error: Cannot use `export default` declaration outside a module
    |
@@ -17885,7 +19072,19 @@ error: `let` cannot be declared as a variable name inside of a `let` declaration
    |
 
 ✗ test/parser/suite/js/semantic/e9507a792bf8dbfa.js
-✗ test/parser/suite/js/semantic/e9567f5fd990d5cd.js
+✓ test/parser/suite/js/semantic/e9567f5fd990d5cd.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | function x() {
+ 2 |   { function f() {}; var f; }
+   |                          ^
+   |              ~ 'f' was first declared as a function here
+   |                          ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/e9a5a5270a3b2303.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -18088,7 +19287,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/ebe5ced8d936c0f3.js
+✓ test/parser/suite/js/semantic/ebe5ced8d936c0f3.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function f() {} default: function f() {} }
+   |                                                              ^
+   |                                     ~ 'f' was first declared as a function here
+   |                                                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/ec1d6b1627f8897a.js
 error: Cannot use `export` declaration outside a module
    |
@@ -18144,7 +19353,19 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/ec9428d873a56056.js
+✓ test/parser/suite/js/semantic/ec9428d873a56056.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | for (using x of []) {
+   |            ~ 'x' was first declared as a variable here
+ 2 |   var x;
+   |       ^
+   |       ~ cannot be redeclared here
+ 3 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/ec99a663d6f3983d.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -18363,7 +19584,17 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/ef31d273b93b7048.js
+✓ test/parser/suite/js/semantic/ef31d273b93b7048.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { default: let a; case 2: var a; }
+   |                                         ^
+   |                          ~ 'a' was first declared as a variable here
+   |                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/ef3ffc18615fe6bd.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -18384,7 +19615,17 @@ error: Cannot use `export default` declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/ef84ce42bb4bd520.js
+✓ test/parser/suite/js/semantic/ef84ce42bb4bd520.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { function* f() {} async function f() {} }
+   |                                   ^
+   |             ~ 'f' was first declared as a function here
+   |                                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/efa3fdd09594aa5d.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -18743,7 +19984,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/f35ad1d8c1a5dc9c.js
+✓ test/parser/suite/js/semantic/f35ad1d8c1a5dc9c.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: class f {} default: var f }
+   |                                              ^
+   |                            ~ 'f' was first declared as a class here
+   |                                              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/f368d13b74b63fbc.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -18902,7 +20153,17 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✗ test/parser/suite/js/semantic/f63c11830810c826.module.js
-✗ test/parser/suite/js/semantic/f6518b92a5dddab7.js
+✓ test/parser/suite/js/semantic/f6518b92a5dddab7.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { const f = 0; { var f; } }
+   |                      ^
+   |         ~ 'f' was first declared as a variable here
+   |                      ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/f658dbaa20c36388.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -18998,7 +20259,17 @@ error: Use of undefined label `undef`
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/f7a22b99c6cf1943.js
+✓ test/parser/suite/js/semantic/f7a22b99c6cf1943.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {} async function f() {} }
+   |                                         ^
+   |                   ~ 'f' was first declared as a function here
+   |                                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/f7b942dcc0205252.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -19287,7 +20558,17 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✗ test/parser/suite/js/semantic/faef15e1ce9fd48c.module.js
-✗ test/parser/suite/js/semantic/faf0f6cf1530de37.js
+✓ test/parser/suite/js/semantic/faf0f6cf1530de37.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | switch(1) { case 2: var a; case 3: let a; }
+   |                                        ^
+   |                         ~ 'a' was first declared as a variable here
+   |                                        ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/js/semantic/faf4bec9206ec9ee.module.js
 ✗ test/parser/suite/js/semantic/fb050194e807f348.module.js
 ✗ test/parser/suite/js/semantic/fb130c395c6aafe7.js
@@ -19432,7 +20713,17 @@ error: Cannot use `export` declaration outside a module
  2 | export const y = await (function () {});
    |
 
-✗ test/parser/suite/js/semantic/fce9b100e837ac76.js
+✓ test/parser/suite/js/semantic/fce9b100e837ac76.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { async function* f() {} async function* f() {} }
+   |                                          ^
+   |                   ~ 'f' was first declared as a function here
+   |                                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/fcf7d5f91dc73ec5.js
 ✓ test/parser/suite/js/semantic/fd167642d02f2c66.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -19473,7 +20764,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  5 |     }
    |
 
-✗ test/parser/suite/js/semantic/fd8b9953a962a34f.js
+✓ test/parser/suite/js/semantic/fd8b9953a962a34f.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | { var f; async function* f() {} }
+   |                          ^
+   |       ~ 'f' was first declared as a variable here
+   |                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✓ test/parser/suite/js/semantic/fd9366f6e2656da8.js
 error: Cannot use `export *` declaration outside a module
    |
@@ -19483,7 +20784,17 @@ error: Cannot use `export *` declaration outside a module
    |
 
 ✗ test/parser/suite/js/semantic/fd9664a45c5f3f3a.module.js
-✗ test/parser/suite/js/semantic/fdb3d836922f053c.js
+✓ test/parser/suite/js/semantic/fdb3d836922f053c.js
+error: Identifier 'f' has already been declared
+   |
+ 1 | switch (0) { case 1: async function* f() {} default: function* f() {} }
+   |                                                                ^
+   |                                      ~ 'f' was first declared as a function here
+   |                                                                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'f'
+
+
 ✗ test/parser/suite/js/semantic/fdbbddf369b207e1.module.js
 ✓ test/parser/suite/js/semantic/fdd017ab8577b7d0.module.js
 error: 'with' statements are not allowed in strict mode

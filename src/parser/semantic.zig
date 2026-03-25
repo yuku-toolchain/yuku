@@ -46,45 +46,51 @@ const SemanticVisit = struct {
             try self.report(ctx.tree.getSpan(node_index), "`let` cannot be declared as a variable name inside of a `let` declaration", .{});
         }
 
+        // redeclaration checks
+
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
+        const current_kind = ctx.symbols.currentBindingKind();
+        const target_scope_kind = ctx.scope.getScope(target).kind;
 
-        if (ctx.symbols.findInScope(target, name)) |sym| {
+        if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
-            const current_kind = ctx.symbols.currentBindingKind();
 
-            // Section 14.2.1:  "It is a Syntax Error if the LexicallyDeclaredNames
-            //                   of StatementList contains any duplicate entries."
-            // Section 16.1.4:  "It is a Syntax Error if any element of the
-            //                   LexicallyDeclaredNames ... also occurs in the
-            //                   VarDeclaredNames ..."
-            if (existing.kind.isLexical() or current_kind.isLexical()) {
+            // Section 14.2.1, 14.12.1, 16.1.4: LexicallyDeclaredNames must
+            // not contain duplicates, and must not overlap with VarDeclaredNames.
+            if (existing.kind.isBlockScoped(target_scope_kind) or
+                current_kind.isBlockScoped(target_scope_kind))
+            {
                 try self.reportRedeclaration(id, node_index, existing, ctx);
-
                 return .proceed;
             }
 
+            // duplicate parameter names are only allowed for functions with
+            // simple parameter lists that are not in strict mode code.
             if (existing.kind == .parameter) {
-                // the existing binding is a parameter, so find up for the formal_parameters
-                // which this parameter belongs to
                 if (findFormalParameters(ctx)) |formal_parameters| {
-                    // UniqueFormalParameters : FormalParameters
-                    //  - It is a Syntax Error if the BoundNames of FormalParameters contains any duplicate elements.
-                    //
-                    // Multiple occurrences of the same BindingIdentifier in a FormalParameterList is only allowed for
-                    // functions which have simple parameter lists and which are not defined in strict mode code.
                     if (
                         ctx.scope.isStrict() or
                         formal_parameters.kind == .unique_formal_parameters or
                         formal_parameters.kind == .arrow_formal_parameters
                     ) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
-                    }
-
-                    // FormalParameters : FormalParameterList
-                    //  - It is a Syntax Error if IsSimpleParameterList of FormalParameterList is false and the BoundNames
-                    //    of FormalParameterList contains any duplicate elements.
-                    else if (ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
+                    } else if (ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
+                    }
+                }
+            }
+        }
+
+        // a hoisted var must also check intermediate block scopes for
+        // conflicting block-scoped declarations (e.g. `{ let x; var x; }`).
+        if (current_kind == .hoisted) {
+            var iter = ctx.scope.ancestors(ctx.scope.currentScopeId());
+            while (iter.next()) |scope_id| {
+                if (scope_id == target) break;
+                if (ctx.symbols.findInScope(scope_id, name)) |sym| {
+                    if (ctx.symbols.getSymbol(sym).kind.isBlockScoped(.block)) {
+                        try self.reportRedeclaration(id, node_index, ctx.symbols.getSymbol(sym), ctx);
+                        break;
                     }
                 }
             }
@@ -537,6 +543,6 @@ const SemanticVisit = struct {
 // - It is a Syntax Error if ModuleItemList Contains super.
 // - It is a Syntax Error if ModuleItemList Contains NewTarget (except in functions).
 // 'let' is reserved in strict mode code.
-// export statements cannot be outside of a module. (done)
+// export statements cannot be outside of a module.
 // 'default' case cannot appear more than once in a switch statement.
 // for-in/of loop variable declaration may not have an initializer

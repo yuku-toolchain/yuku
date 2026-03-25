@@ -49,10 +49,15 @@ pub const Symbol = struct {
             };
         }
 
-        pub fn isLexical(kind: Kind) bool {
+        /// Whether this kind is a LexicallyDeclaredName in the given scope.
+        ///
+        /// `function` declarations are lexical inside blocks but var-like at
+        /// function scope (Section 14.2.1, 14.12.1).
+        pub fn isBlockScoped(kind: Kind, scope_kind: sc.Scope.Kind) bool {
             return switch (kind) {
                 .lexical, .class, .import => true,
-                else => false,
+                .function => scope_kind == .block,
+                .hoisted, .parameter => false,
             };
         }
     };
@@ -89,6 +94,8 @@ pub const SymbolTable = struct {
     references: []const Reference,
     /// Per-scope hash maps, indexed by scope ID.
     scope_maps: []const ScopeMap,
+    /// Hoisted vars passing through intermediate block scopes (Section 14.2.1).
+    hoisting_variables: []const ScopeMap,
     /// String pool for resolving symbol and reference names.
     strings: ast.StringPool,
 
@@ -122,11 +129,18 @@ pub const SymbolTable = struct {
         return self.scope_maps[@intFromEnum(scope)].get(name);
     }
 
+    /// Searches for a declared symbol or a hoisted var passing through `scope`.
+    pub fn findInScopeOrHoisted(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+        if (self.findInScope(scope, name)) |id| return id;
+        const idx = @intFromEnum(scope);
+        return self.hoisting_variables[idx].get(name);
+    }
+
     /// Walks up the scope chain from `scope` looking for a symbol with `name`.
     pub fn resolve(self: SymbolTable, scope: sc.ScopeId, name: []const u8, scope_tree: sc.ScopeTree) ?SymbolId {
         var it = scope_tree.ancestors(scope);
         while (it.next()) |ancestor| {
-            if (self.findInScope(ancestor, name)) |id| return id;
+            if (self.findInScopeOrHoisted(ancestor, name)) |id| return id;
         }
         return null;
     }
@@ -172,8 +186,12 @@ pub const SymbolTracker = struct {
     allocator: Allocator,
     symbols: std.ArrayList(Symbol) = .{},
     references: std.ArrayList(Reference) = .{},
-    /// Per-scope hash maps for O(1) name lookup.
+    /// Per-scope hash maps for name lookup.
     scope_maps: std.ArrayList(ScopeMap) = .{},
+    /// Hoisted vars passing through intermediate block scopes.
+    /// A `var` inside a block hoists to the function scope, but the name
+    /// is still "taken" in each block it passes through (Section 14.2.1).
+    hoisting_variables: std.ArrayList(ScopeMap) = .{},
 
     // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,
@@ -192,6 +210,7 @@ pub const SymbolTracker = struct {
         try self.symbols.ensureTotalCapacity(alloc, estimated_symbols);
         try self.references.ensureTotalCapacity(alloc, estimated_symbols);
         try self.scope_maps.ensureTotalCapacity(alloc, estimated_symbols / 2);
+        try self.hoisting_variables.ensureTotalCapacity(alloc, estimated_symbols / 2);
 
         return self;
     }
@@ -282,7 +301,22 @@ pub const SymbolTracker = struct {
         switch (data) {
             .binding_identifier => |id| {
                 const target = self.resolveTargetScope(scope);
-                _ = try self.declare(id.name, target, index);
+                const sym_id = try self.declare(id.name, target, index);
+
+                // Register hoisted vars in each intermediate block scope's
+                // hoisting_variables so that findInScopeOrHoisted can detect
+                // conflicts with later lexical declarations.
+                if (self.binding_kind == .hoisted) {
+                    const name_str = self.tree.getString(id.name);
+                    var iter = scope.ancestors(scope.currentScopeId());
+                    while (iter.next()) |s| {
+                        if (s == target) break;
+                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, name_str);
+                        if (!gop.found_existing) {
+                            gop.value_ptr.* = sym_id;
+                        }
+                    }
+                }
             },
             .identifier_reference => |id| {
                 _ = try self.addReference(id.name, scope.currentScopeId(), index);
@@ -388,11 +422,23 @@ pub const SymbolTracker = struct {
         return self.scope_maps.items[idx].get(name);
     }
 
+    /// Searches for a declared symbol or a hoisted var passing through `scope`.
+    pub fn findInScopeOrHoisted(self: *const SymbolTracker, scope: sc.ScopeId, name: []const u8) ?SymbolId {
+        if (self.findInScope(scope, name)) |id| return id;
+        const idx = @intFromEnum(scope);
+        if (idx < self.hoisting_variables.items.len) return self.hoisting_variables.items[idx].get(name);
+        return null;
+    }
+
     fn syncScopeMaps(self: *SymbolTracker, scope: *const sc.ScopeTracker) Allocator.Error!void {
         const scope_count = scope.scopes.items.len;
         try self.scope_maps.ensureTotalCapacity(self.allocator, scope_count);
         while (self.scope_maps.items.len < scope_count) {
             self.scope_maps.appendAssumeCapacity(.empty);
+        }
+        try self.hoisting_variables.ensureTotalCapacity(self.allocator, scope_count);
+        while (self.hoisting_variables.items.len < scope_count) {
+            self.hoisting_variables.appendAssumeCapacity(.empty);
         }
     }
 
@@ -402,6 +448,7 @@ pub const SymbolTracker = struct {
             .symbols = self.symbols.items,
             .references = self.references.items,
             .scope_maps = self.scope_maps.items,
+            .hoisting_variables = self.hoisting_variables.items,
             .strings = self.tree.strings.freeze(),
         };
     }
