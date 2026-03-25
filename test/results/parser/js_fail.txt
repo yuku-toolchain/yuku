@@ -14754,13 +14754,11 @@ error: Shorthand property must be an identifier
 
 
 ✓ test/parser/suite/js/fail/6aeff33ceda72475.js
-error: Expected '{' to start class body, but found 'B'
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | class A extends yield B { }
-   |                       ^
+   |                 ^^^^^
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/suite/js/fail/6b009cd9e51cc6d9.js
 error: Rest element must be the last element

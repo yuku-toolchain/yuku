@@ -202,9 +202,8 @@ pub const ScopeTracker = struct {
             .switch_statement,
             => try self.pushScope(.block, index, self.inheritedFlags()),
             .class => |cls| {
-                const flags = self.inheritedFlags();
-                // same as named function expressions, named class expressions
-                // get an extra scope for their name.
+                // Section 15.7.14: class bodies are always strict mode.
+                const flags = Scope.Flags{ .strict = true };
                 if (isNamedClassExpression(cls))
                     try self.pushScope(.expression_name, index, flags);
                 try self.pushScope(.class, index, flags);
