@@ -39,11 +39,17 @@ const SemanticVisit = struct {
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
 
-        if (!ctx.scope.isStrict() and
-            ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
-            std.mem.eql(u8, name, "let"))
-        {
-            try self.report(ctx.tree.getSpan(node_index), "`let` cannot be declared as a variable name inside of a `let` declaration", .{});
+        if (ctx.scope.isStrict()) {
+            // Section 12.1.1: BindingIdentifier cannot be "eval" or "arguments" in strict mode.
+            if (std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments")) {
+                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' cannot be used as a binding name in strict mode", .{name}), .{});
+            }
+        } else {
+            if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
+                std.mem.eql(u8, name, "let"))
+            {
+                try self.report(ctx.tree.getSpan(node_index), "`let` cannot be declared as a variable name inside of a `let` declaration", .{});
+            }
         }
 
         // redeclaration checks

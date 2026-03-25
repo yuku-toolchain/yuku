@@ -51,12 +51,13 @@ pub const Symbol = struct {
 
         /// Whether this kind is a LexicallyDeclaredName in the given scope.
         ///
-        /// `function` declarations are lexical inside blocks but var-like at
-        /// function scope (Section 14.2.1, 14.12.1).
+        /// `function` declarations are lexical inside blocks and at module
+        /// top level, but var-like at function/global scope
+        /// (Section 14.2.1, 14.12.1, 16.2.1.6).
         pub fn isBlockScoped(kind: Kind, scope_kind: sc.Scope.Kind) bool {
             return switch (kind) {
                 .lexical, .class, .import => true,
-                .function => scope_kind == .block,
+                .function => scope_kind == .block or scope_kind == .module,
                 .hoisted, .parameter => false,
             };
         }
