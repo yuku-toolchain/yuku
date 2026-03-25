@@ -109,6 +109,30 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module) {
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use `export` declaration outside a module", .{});
+        }
+
+        return .proceed;
+    }
+
+    pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module) {
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use `export default` declaration outside a module", .{});
+        }
+
+        return .proceed;
+    }
+
+    pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module) {
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use `export *` declaration outside a module", .{});
+        }
+
+        return .proceed;
+    }
+
     pub fn enter_await_expression(self: *Self, _: ast.AwaitExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (isInFormalParameters(ctx)) {
             try self.report(ctx.tree.getSpan(node_index), "Await expression is not allowed in formal parameters", .{});
@@ -513,6 +537,6 @@ const SemanticVisit = struct {
 // - It is a Syntax Error if ModuleItemList Contains super.
 // - It is a Syntax Error if ModuleItemList Contains NewTarget (except in functions).
 // 'let' is reserved in strict mode code.
-// export statements cannot be outside of a module.
+// export statements cannot be outside of a module. (done)
 // 'default' case cannot appear more than once in a switch statement.
 // for-in/of loop variable declaration may not have an initializer
