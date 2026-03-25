@@ -276,35 +276,34 @@ const SemanticVisit = struct {
     }
 
     /// Section 14.7.5.1: for-of loop variable may not have an initializer.
-    pub fn enter_for_of_statement(self: *Self, stmt: ast.ForOfStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (hasForInOfInitializer(ctx.tree, stmt.left, false, false))
-            try self.report(ctx.tree.getSpan(node_index), "for-of loop variable declaration may not have an initializer", .{});
+    pub fn enter_for_of_statement(self: *Self, stmt: ast.ForOfStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkHasForInOfInitializer(ctx, stmt.left);
         return .proceed;
     }
 
     /// Section 14.7.5.1: for-in loop variable may not have an initializer.
     /// Annex B.3.5 allows `for (var x = expr in ...)` in sloppy mode with a simple binding.
-    pub fn enter_for_in_statement(self: *Self, stmt: ast.ForInStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (hasForInOfInitializer(ctx.tree, stmt.left, true, ctx.scope.isStrict()))
-            try self.report(ctx.tree.getSpan(node_index), "for-in loop variable declaration may not have an initializer", .{});
+    pub fn enter_for_in_statement(self: *Self, stmt: ast.ForInStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkHasForInOfInitializer(ctx, stmt.left);
         return .proceed;
     }
 
-    fn hasForInOfInitializer(tree: *const ast.Tree, left: ast.NodeIndex, is_for_in: bool, is_strict: bool) bool {
-        if (tree.getData(left) != .variable_declaration) return false;
-        const decl = tree.getData(left).variable_declaration;
-        for (tree.getExtra(decl.declarators)) |child| {
-            const declarator = tree.getData(child).variable_declarator;
+    fn checkHasForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
+        const left_data = ctx.tree.getData(left);
+
+        if (left_data != .variable_declaration) return;
+
+        const decl = left_data.variable_declaration;
+
+        for (ctx.tree.getExtra(decl.declarators)) |child| {
+            const declarator = ctx.tree.getData(child).variable_declarator;
+
             if (declarator.init == .null) continue;
-            // Annex B.3.5: `for (var x = expr in ...)` allowed in sloppy mode
-            // with a simple BindingIdentifier (not destructuring).
-            if (is_for_in and !is_strict and
-                decl.kind == .@"var" and
-                tree.getData(declarator.id) == .binding_identifier)
-                continue;
-            return true;
+
+            try self.report(ctx.tree.getSpan(child), "for-in/of loop variable declaration may not have an initializer", .{});
+
+            return;
         }
-        return false;
     }
 
     /// Section 13.15.1: assignment to eval/arguments is not allowed in strict mode.
