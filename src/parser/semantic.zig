@@ -337,14 +337,6 @@ const SemanticVisit = struct {
         try self.report(tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
     }
 
-    /// Section 13.16.1: 'with' statements are not allowed in strict mode code.
-    pub fn enter_with_statement(self: *Self, _: ast.WithStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict()) {
-            try self.report(ctx.tree.getSpan(node_index), "'with' statements are not allowed in strict mode", .{});
-        }
-        return .proceed;
-    }
-
     /// Section 14.9.2: It is a Syntax Error if this BreakStatement is not nested,
     /// directly or indirectly (but not crossing function or static initialization
     /// block boundaries), within an IterationStatement or a SwitchStatement.
