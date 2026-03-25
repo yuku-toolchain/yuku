@@ -132,6 +132,29 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// Section B.3.3: In strict mode code, functions can only be declared at
+    /// top level or inside a block.
+    pub fn enter_function(self: *Self, func: ast.Function, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (func.type == .function_declaration and ctx.scope.isStrict()) {
+            if (ctx.path.parent()) |parent| {
+                switch (ctx.tree.getData(parent)) {
+                    // valid: top-level, block body, switch case, labeled statement
+                    .program, .function_body, .class_body, .static_block,
+                    .block_statement, .switch_case, .labeled_statement,
+                    .export_named_declaration, .export_default_declaration,
+                    => {},
+                    // invalid: bare consequent/alternate of if, loop body, etc.
+                    else => {
+                        try self.report(ctx.tree.getSpan(node_index), "In strict mode code, functions can only be declared at top level or inside a block", .{});
+
+                        return .skip;
+                    },
+                }
+            }
+        }
+        return .proceed;
+    }
+
     pub fn enter_yield_expression(self: *Self, _: ast.YieldExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (isInFormalParameters(ctx)) {
             try self.report(ctx.tree.getSpan(node_index), "Yield expression is not allowed in formal parameters", .{});

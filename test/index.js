@@ -1,4 +1,2 @@
-if (true) function f() {
-  return 'function declaration';
-} else function _f() {}
+if (true) function f() {} else function _f() {}
 var f = 123;
