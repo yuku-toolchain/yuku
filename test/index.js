@@ -1,2 +1,1 @@
-if (true) function f() {} else function _f() {}
-var f = 123;
+switch (0) { case 1: var f; default: function* f() {} }
