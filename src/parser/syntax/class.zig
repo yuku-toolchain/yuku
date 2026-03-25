@@ -36,6 +36,10 @@ pub fn parseClassDecorated(
 
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 
+    // classes are always strict
+    const prev_strict = parser.enterStrictMode();
+    defer parser.restoreStrictMode(prev_strict);
+
     // export default class produces a declaration with optional name
     // regular class expression allows optional name but produces expression
     const class_type: ast.ClassType = if (opts.is_expression and !opts.is_default_export) .class_expression else .class_declaration;
@@ -91,10 +95,6 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
         "Expected '{' to start class body",
         "Class body must be enclosed in braces: class Name { ... }",
     )) return null;
-
-    // class bodies are always in strict mode (https://tc39.es/ecma262/#sec-class-definitions)
-    const prev_strict = parser.enterStrictMode();
-    defer parser.restoreStrictMode(prev_strict);
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);

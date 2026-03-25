@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3020/3560 (84.83%)
-Failed:       540
+Passed:       3026/3560 (85.00%)
+Failed:       534
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -104,7 +104,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/0158b9ee978c4cdd.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments;
    |     ^^^^^^^^^
@@ -171,7 +171,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/01d70460b0a51772.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | async function foo (eval) {  }
    |                     ^^^^
@@ -187,7 +187,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/01e1d287dd86dbfa.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   *f(p = eval("var arguments = 'param'")) {
  3 |     function arguments() {}
@@ -366,7 +366,7 @@ error: `let` cannot be declared as a variable name inside of a `let` declaration
 
 ✗ test/parser/suite/js/semantic/037288fd640be294.js
 ✓ test/parser/suite/js/semantic/037afeec19165316.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function f(p = eval("var arguments")) {
  3 |   let arguments;
@@ -425,14 +425,14 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/040001f3b0eb3bde.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function eval() { function a() { "use strict" } }
    |          ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/04085488918c8ae6.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* (arguments, p = eval("var arguments")) {};
@@ -482,7 +482,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/046a528ec3520adb.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function* f(p = eval("var arguments = 'param'")) {
  3 |   function arguments() {}
@@ -774,7 +774,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/06c80c59b7beb18f.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let argument, eval;
    |               ^^^^
@@ -870,7 +870,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/078df0e4cc1dc11d.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function foo (eval) {  })
    |                      ^^^^
@@ -884,7 +884,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/0798a317bc3dd082.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments = 'param'")) {
  2 |   function arguments() {}
@@ -1010,7 +1010,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/09325b43ed63f170.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a = 42, arguments;
    |             ^^^^^^^^^
@@ -1036,7 +1036,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/097db55279b272e7.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   f(p = eval("var arguments")) {
  3 |     var arguments;
@@ -1149,7 +1149,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/0a4b7a958f2ece4a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* (p = eval("var arguments = 'param'")) {
  3 |   var arguments;
@@ -1175,7 +1175,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/0a80b13b3d7530db.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval, arguments;
    |     ^^^^
@@ -1242,7 +1242,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/0b3b1260d478fa98.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | var f = function (x = args = arguments) {
  3 |   let arguments;
@@ -1498,7 +1498,7 @@ error: Identifier 'param1' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/0db94e93d7a5da51.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var af = eval => eval;
    |          ^^^^
@@ -1564,7 +1564,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/0e431f0ebb564049.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() { 'use strict'; function b(arguments) {} }
    |                                         ^^^^^^^^^
@@ -1620,7 +1620,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/0f1ab712e9e4ffe4.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function foo(eval) {});
    |               ^^^^
@@ -1634,7 +1634,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/0f1e3ddb76ab3884.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; var arguments;
    |                   ^^^^^^^^^
@@ -1728,7 +1728,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/0fb456678d4bfc51.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function*(eval) { });
    |                  ^^^^
@@ -1865,7 +1865,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/10b6a3f672111a41.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function arguments() { }
    |          ^^^^^^^^^
@@ -1891,7 +1891,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/10d70d9a9af9f72a.js
 ✓ test/parser/suite/js/semantic/10d8477d9928d6fd.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* (p = eval("var arguments")) {
  3 |   var arguments;
@@ -1910,7 +1910,7 @@ error: Cannot use `export` declaration outside a module
 
 ✗ test/parser/suite/js/semantic/10fda5cd119b39a5.module.js
 ✓ test/parser/suite/js/semantic/1101a12a779973d3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   *f(p = eval("var arguments")) {
  3 |     function arguments() {}
@@ -2219,7 +2219,7 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✓ test/parser/suite/js/semantic/13cdd4a744f88d1e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function arguments() {});
    |           ^^^^^^^^^
@@ -2246,7 +2246,7 @@ error: Identifier 'param' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/141984ba1d762024.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function (p = eval("var arguments")) {
  3 |   var arguments;
@@ -2333,7 +2333,7 @@ error: Identifier 'param' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/14e4c6b2711619f5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* (p = eval("var arguments = 'param'")) {
  3 |   let arguments;
@@ -2381,7 +2381,7 @@ error: Identifier 'f' has already been declared
 
 ✗ test/parser/suite/js/semantic/15082306e8336dde.js
 ✓ test/parser/suite/js/semantic/15113cab1ebf4b25.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -2450,7 +2450,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/15e6b8396aa63c7a.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; function eval() { } }
    |                                      ^^^^
@@ -2505,7 +2505,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/166671f93cc0cd3b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments = 'param'")) {
  2 |   var arguments;
@@ -2628,7 +2628,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/176016aa643c1401.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async *f(p = eval("var arguments = 'param'")) {
  4 |     let arguments;
@@ -2637,7 +2637,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/17639ca23846c19e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments"), arguments) {};
    |                                              ^^^^^^^^^
@@ -2780,7 +2780,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 
 ✗ test/parser/suite/js/semantic/189c7430e656fd64.module.js
 ✓ test/parser/suite/js/semantic/18ad9aeb1330f2f9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments = 'param'")) {
  2 |   function arguments() {}
@@ -2789,7 +2789,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/18af7dfd6654aedb.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; function eval(){}
    |                        ^^^^
@@ -2920,7 +2920,7 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
    |
 
 ✓ test/parser/suite/js/semantic/19944d83d50f0bbb.js
-error: 'let' cannot be used as a binding name in strict mode
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | var C = class let {};
    |               ^^^
@@ -3013,7 +3013,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/1a0417b82388670f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | const f = (p = eval("var arguments = 'param'")) => {
  4 |   function arguments() {}
@@ -3103,7 +3103,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/1a7800a74a866638.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval = 1, arguments = 2
    |     ^^^^
@@ -3143,7 +3143,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/1ae555b34fdc6291.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; (function eval() { }()) }
    |                                       ^^^^
@@ -3265,7 +3265,7 @@ error: Use of undefined label `LABEL`
    |
 
 ✓ test/parser/suite/js/semantic/1c741a81929a72ec.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments")) {
  2 |   var arguments;
@@ -3343,7 +3343,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/1cfe88de98c0758c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | const f = (p = eval("var arguments = 'param'")) => {
  4 |   var arguments = "local";
@@ -3361,7 +3361,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/1d38a63682de9abf.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function (p = eval("var arguments")) {
  3 |   function arguments() {}
@@ -3370,7 +3370,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/1d3dd296a717e478.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (eval = 1) => 2
    |  ^^^^
@@ -3378,7 +3378,7 @@ error: 'eval' cannot be used as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/1d47bf1a88c01528.js
 ✓ test/parser/suite/js/semantic/1d560e10c4deba45.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments = 'param'")) {
  2 |   let arguments;
@@ -3508,7 +3508,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/1efa7c2106f8e2ce.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class a { *b(eval){} };
    |              ^^^^
@@ -3548,7 +3548,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/1f60e730ece29967.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; let [eval] = 1;
    |                    ^^^^
@@ -3734,7 +3734,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/208124e0c66b8ac1.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments = 'param'")) {
  2 |   function arguments() {}
@@ -3783,7 +3783,7 @@ error: Cannot use import statement outside a module
 ✗ test/parser/suite/js/semantic/20e2a99748fb5ad5.module.js
 ✗ test/parser/suite/js/semantic/2100738e3a002ce4.js
 ✓ test/parser/suite/js/semantic/210fb79a19872227.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; eval => 1
    |               ^^^^
@@ -3900,7 +3900,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/219e8204385b9574.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | const f = (p = eval("var arguments = 'param'"), q = () => arguments) => {
  4 |   function arguments() {}
@@ -3949,7 +3949,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2214a660fcaa7870.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments = 'param'")) {
  2 |   var arguments;
@@ -4031,7 +4031,7 @@ error: In strict mode code, functions can only be declared at top level or insid
 
 ✗ test/parser/suite/js/semantic/22dfaf2ae6b91e21.js
 ✓ test/parser/suite/js/semantic/22e0c7f12c99dffe.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments")) {
  2 |   var arguments;
@@ -4096,7 +4096,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/236e09dd149c3e8a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var obj = { set _11_1_5_1_fun(eval) {}};
    |                               ^^^^
@@ -4138,7 +4138,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/24130575cb001945.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async *f(p = eval("var arguments = 'param'")) {
  4 |     function arguments() {}
@@ -4180,7 +4180,7 @@ error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/2484158f4a4987fa.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !{ set a(eval){} };
    |                        ^^^^
@@ -4195,7 +4195,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 | })();
    |
 
-✗ test/parser/suite/js/semantic/2495d83d9e4c8fb0.js
+✓ test/parser/suite/js/semantic/2495d83d9e4c8fb0.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | class l\u0065t {}
+   |       ^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/24b36eba40a8a364.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -4231,7 +4237,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/2547701ce77c3a3c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
 16 |   return typeof arguments;
 17 |   function arguments() {
@@ -4310,7 +4316,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/2617f2010a4ab9d8.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function* eval() { });
    |                  ^^^^
@@ -4358,7 +4364,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/26b99cddb165fb13.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | async(eval) => {  }
    |       ^^^^
@@ -4500,7 +4506,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/296ddea2964a8ce3.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function eval() {}
    |          ^^^^
@@ -4545,7 +4551,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/29e7564c28f20ea6.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function f(arguments, p = eval("var arguments = 'param'")) {}
@@ -4582,7 +4588,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/2a0bc5f1bae0e6b5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async f(p = eval("var arguments = 'param'")) {
  4 |     let arguments;
@@ -4742,7 +4748,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2b1b82b80f67f925.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let eval = (1), arguments = (2);
    |     ^^^^
@@ -4762,7 +4768,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/2b31f0059730965e.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let eval;
    |     ^^^^
@@ -4790,7 +4796,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/2b9da745cf36d7e4.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   f(p = eval("var arguments = 'param'")) {
  3 |     let arguments;
@@ -4929,7 +4935,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2c71d9a2dd35a512.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function (p = eval("var arguments = 'param'"), arguments) {};
@@ -5034,7 +5040,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/2d3ee31fcc1e967f.js
-✗ test/parser/suite/js/semantic/2d4d01ceb1e2f54f.js
+✓ test/parser/suite/js/semantic/2d4d01ceb1e2f54f.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | var C = class yi\u0065ld {};
+   |               ^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/2d590397a834c83a.js
 error: Cannot use import statement outside a module
    |
@@ -5056,7 +5068,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/2dae582489877ee5.js
-error: 'static' cannot be used as a binding name in strict mode
+error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
  1 | class static {}
    |       ^^^^^^
@@ -5196,7 +5208,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2f1a8a66fea4c128.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function f(arguments, p = eval("var arguments")) {};
@@ -5435,7 +5447,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/322988f2423b424c.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, eval = 42;
    |        ^^^^
@@ -5449,7 +5461,7 @@ error: `import.meta` is only valid in module code
    |
 
 ✓ test/parser/suite/js/semantic/324d47cad7c154d9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function f(p = eval("var arguments")) {
  3 |   function arguments() {}
@@ -5479,7 +5491,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/32d00dc879065324.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(arguments, p = eval("var arguments = 'param'")) {}
    |            ^^^^^^^^^
@@ -5688,7 +5700,7 @@ error: Cannot use import statement outside a module
 
 ✗ test/parser/suite/js/semantic/349c826f55163c71.js
 ✓ test/parser/suite/js/semantic/34aa7f65abf79bc9.js
-error: 'static' cannot be used as a binding name in strict mode
+error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
  1 | (class static {})
    |        ^^^^^^
@@ -5888,7 +5900,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/36157e7215ab2a39.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function f(arguments, p = eval("var arguments = 'param'")) {};
@@ -5897,7 +5909,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/3631a78b4cebaaa1.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function f(p = eval("var arguments"), arguments) {};
@@ -5907,7 +5919,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/3644a964c2a8522c.js
 ✓ test/parser/suite/js/semantic/365ccd9447c3eeb3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | async function arguments () {  }
    |                ^^^^^^^^^
@@ -5923,7 +5935,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/36d8ccdd500d7d7b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function testcase() {
  2 |   var arguments = undefined;
@@ -5950,7 +5962,7 @@ error: 'private' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/3706a9d8eb3d2271.js
 ✓ test/parser/suite/js/semantic/372097a44c33daf2.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | eval => 1
    | ^^^^
@@ -5983,7 +5995,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/374e0bafead55a33.js
 ✓ test/parser/suite/js/semantic/3752eb3c22bb0bf2.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval, arguments;
    |     ^^^^
@@ -6125,7 +6137,7 @@ error: Identifier 'f' has already been declared
 ✗ test/parser/suite/js/semantic/38403a55a81cbab5.module.js
 ✗ test/parser/suite/js/semantic/3852c71b83d0f4d6.js
 ✓ test/parser/suite/js/semantic/38594572e7bb32f4.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function () {
  2 |   function arguments() {
@@ -6168,7 +6180,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/38d36f98b1df9310.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async f(p = eval("var arguments = 'param'")) {
  4 |     var arguments;
@@ -6194,7 +6206,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/391cb6f6f56e419d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var arguments = 42;
@@ -6289,7 +6301,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/3a29281d7d6fba5a.module.js
 ✓ test/parser/suite/js/semantic/3a399ffe064a4fdc.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments"), arguments) {}
    |                                        ^^^^^^^^^
@@ -6316,7 +6328,7 @@ error: Identifier 'b' has already been declared
 
 ✗ test/parser/suite/js/semantic/3a81b79ccdbdac4b.js
 ✓ test/parser/suite/js/semantic/3a9e8d5d266ca8cc.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !function (eval){}
    |                          ^^^^
@@ -6341,14 +6353,14 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/3aee43d088dc0f1a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | for (var eval in null) {}
    |          ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/3affe39f527b906e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* (p = eval("var arguments"), arguments) {};
@@ -6392,7 +6404,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/3b934775022940f3.js
-error: 'static' cannot be used as a binding name in strict mode
+error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
  1 | var C = class static {};
    |               ^^^^^^
@@ -6583,7 +6595,7 @@ error: Identifier 'f' has already been declared
 
 ✗ test/parser/suite/js/semantic/3d61f0e5eb4a56fb.js
 ✓ test/parser/suite/js/semantic/3d916e1909d232f1.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function*(arguments) { });
    |                  ^^^^^^^^^
@@ -6651,7 +6663,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/3e269ee1512b1a5e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 42;
    |     ^^^^^^^^^
@@ -6704,7 +6716,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/3eb89655453a8eb2.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | THE_ANSWER = "Answer to Life, the Universe, and Everything";
  2 | var arguments = THE_ANSWER;
@@ -6736,7 +6748,7 @@ error: for-of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/3f0112f11626650a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var af = arguments => 1;
    |          ^^^^^^^^^
@@ -6771,7 +6783,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/3f5eefa02597ded3.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; arguments=>1
    |               ^^^^^^^^^
@@ -6855,7 +6867,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/400509618baadbab.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments = 'param'")) {
  2 |   function arguments() {}
@@ -6872,7 +6884,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/4038a243a38eb9ac.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let eval;
    |     ^^^^
@@ -6914,7 +6926,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/40c7050a4beb1e56.js
 ✓ test/parser/suite/js/semantic/40c7f0f0afdf48d6.js
-error: 'static' cannot be used as a binding name in strict mode
+error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
  1 | class static {}
    |       ^^^^^^
@@ -6982,7 +6994,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/414555a182df9082.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments"), arguments) {};
    |                                               ^^^^^^^^^
@@ -7016,7 +7028,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/416fe9978e93ac03.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   *f(arguments, p = eval("var arguments")) {}
@@ -7036,7 +7048,7 @@ error: Identifier 'c' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/41c41f2f802fc048.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   *f(p = eval("var arguments = 'param'")) {
  3 |     let arguments;
@@ -7045,7 +7057,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/41c7955c6fecea62.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function arguments() {});
    |           ^^^^^^^^^
@@ -7146,7 +7158,7 @@ error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/4286a88aed2001ee.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class eval {}
    |       ^^^^
@@ -7205,7 +7217,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/42c6e4aae800f514.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async *f(p = eval("var arguments = 'param'"), arguments) {}
@@ -7320,7 +7332,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/44053a65c9b77afe.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; ({ b: function b(eval) { } }); }
    |                                              ^^^^
@@ -7344,7 +7356,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/4497d48f4bdf5f47.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval;
    |     ^^^^
@@ -7390,7 +7402,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/44e962c04e0c6ce3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function f(p = eval("var arguments = 'param'")) {
  3 |   var arguments;
@@ -7556,7 +7568,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/466784af3ca30ec9.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class a { b(eval){} };
    |             ^^^^
@@ -7574,7 +7586,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/469c8837b072bc2a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function arguments() {}
    |          ^^^^^^^^^
@@ -7582,7 +7594,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/46b1d624bc7a8bbe.js
 ✓ test/parser/suite/js/semantic/46bd9ab178c0dc87.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function eval () { })
    |                 ^^^^
@@ -7627,7 +7639,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/471117c73bdcff7f.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | (function () {
  4 |   var eval = $262.createRealm().global.eval;
@@ -7720,7 +7732,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/47d4467672fb5977.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var a, arguments = 42, b;
@@ -7815,7 +7827,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/492a249140633033.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var a, arguments, b;
@@ -7833,7 +7845,7 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/494cd7f69a2a08f3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments = 'param'")) {
  2 |   let arguments;
@@ -7921,7 +7933,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/4a705a9a7134313b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var a = 42, arguments;
@@ -7967,7 +7979,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/4ae8ff355e763fa3.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; function* a(eval){}
    |                           ^^^^
@@ -8040,7 +8052,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/4b874f17b5e2b9ba.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | ({set a (eval) {}});
    |          ^^^^
@@ -8069,7 +8081,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/4bd16a2b6041c864.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(arguments, p = eval("var arguments = 'param'")) {}
    |             ^^^^^^^^^
@@ -8181,7 +8193,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/4c8a931f9d1f55bf.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function __func(arguments) {
    |                 ^^^^^^^^^
@@ -8294,7 +8306,7 @@ error: In strict mode code, functions can only be declared at top level or insid
 
 ✗ test/parser/suite/js/semantic/4d6a3feec80b94ff.js
 ✓ test/parser/suite/js/semantic/4d6aacd8457175ef.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, arguments = 42, b;
    |        ^^^^^^^^^
@@ -8550,7 +8562,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/50208b425cec1733.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; (eval, a) => 1
    |                ^^^^
@@ -8627,7 +8639,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/50a90939bf074012.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class Foo {
  2 |   async foo(eval) { }
@@ -8666,7 +8678,7 @@ error: Identifier 'x' has already been declared
 
 ✗ test/parser/suite/js/semantic/50e4cd4d8fb1cdaa.js
 ✓ test/parser/suite/js/semantic/50f8aca790e5303a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval;
    |     ^^^^
@@ -8739,7 +8751,7 @@ error: Identifier 'f' has already been declared
 
 ✗ test/parser/suite/js/semantic/51c38328d60aa690.js
 ✓ test/parser/suite/js/semantic/51e5a52e36642bf2.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | eval=>1
    | ^^^^
@@ -8989,7 +9001,7 @@ error: An export name cannot include a unicode lone surrogate
    |
 
 ✓ test/parser/suite/js/semantic/53a2b5f3f76aa40a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | for (var arguments in null) {}
    |          ^^^^^^^^^
@@ -9067,7 +9079,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/54e70df597a4f9a3.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | try { } catch (eval) { }
    |                ^^^^
@@ -9288,7 +9300,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/56c5fa9461e30c98.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | function* g(x = args = arguments) {
  3 |   let arguments;
@@ -9360,7 +9372,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/576dd70d1dbc43a6.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, arguments = 42;
    |        ^^^^^^^^^
@@ -9384,7 +9396,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/579b32bbe6066c2e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (arguments, p = eval("var arguments")) {};
    |                   ^^^^^^^^^
@@ -9540,7 +9552,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/58e580fc16cfe086.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | var g = function* (x = args = arguments) {
  3 |   function arguments() {}
@@ -9549,7 +9561,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/5906e37750820b34.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* (p = eval("var arguments")) {
  3 |   let arguments;
@@ -9598,7 +9610,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/597371b072009028.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function f(p = eval("var arguments = 'param'")) {
  3 |   function arguments() {}
@@ -9623,7 +9635,7 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✓ test/parser/suite/js/semantic/599dff255c5ec792.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | eval => 'use strict'
    | ^^^^
@@ -9737,7 +9749,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/5a2a5611d2f27ed8.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !function eval(){}
    |                         ^^^^
@@ -9788,7 +9800,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/5a97cc7ef7d3a277.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async f(p = eval("var arguments")) {
  4 |     function arguments() {}
@@ -9841,7 +9853,7 @@ error: `let` cannot be declared as a variable name inside of a `let` declaration
    |
 
 ✓ test/parser/suite/js/semantic/5b2b34d31f70c577.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function* f(p = eval("var arguments = 'param'")) {
  3 |   let arguments;
@@ -9889,7 +9901,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/5b995e680c9c2945.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | export { x };
  3 | import { x as eval } from './early-import-as-eval.js';
@@ -10047,7 +10059,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/5cdf3752874f7db9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* f(p = eval("var arguments")) {
  3 |   function arguments() {}
@@ -10108,7 +10120,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/5d5b1ee363b729c5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var arguments, a;
@@ -10133,7 +10145,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/5d93862c089ffe24.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | void {
  2 |   set x(eval) {}
@@ -10168,7 +10180,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/5e1cbe1737b1bbc6.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (eval, a = 1) => 2
    |  ^^^^
@@ -10412,7 +10424,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/61419d1022bf7756.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var argument, eval;
    |               ^^^^
@@ -10421,7 +10433,7 @@ error: 'eval' cannot be used as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/61465bfb21efb91c.module.js
 ✓ test/parser/suite/js/semantic/614c87ca66a3f4aa.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function eval() {});
    |           ^^^^
@@ -10471,7 +10483,13 @@ error: Deleting a variable in strict mode is not allowed
  5 |   if (e !== "catchme") {}
    |
 
-✗ test/parser/suite/js/semantic/61f080c1bf5f0b16.js
+✓ test/parser/suite/js/semantic/61f080c1bf5f0b16.js
+error: 'let' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | var C = class l\u0065t {};
+   |               ^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/620683ff2a11b42f.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -10612,7 +10630,7 @@ error: Identifier 'x' has already been declared
 
 ✗ test/parser/suite/js/semantic/6390f4b3cc6551d8.js
 ✓ test/parser/suite/js/semantic/63a7dc011c859959.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments = 'param'"), arguments) {};
    |                                                          ^^^^^^^^^
@@ -10720,7 +10738,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/640347b3086107cd.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function eval() {});
    |           ^^^^
@@ -10738,7 +10756,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/640c8242e832e4da.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let argument, eval;
    |               ^^^^
@@ -10771,7 +10789,7 @@ error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/6431a4bf0c1a1191.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function arguments () {  })
    |                 ^^^^^^^^^
@@ -10917,7 +10935,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
 ✗ test/parser/suite/js/semantic/65452eb8baae5939.js
 ✗ test/parser/suite/js/semantic/656ae090a367940a.module.js
 ✓ test/parser/suite/js/semantic/6592c9e18d21e698.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class a {b(eval){}}
    |            ^^^^
@@ -11068,7 +11086,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/6680a1444884625b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var arguments;
@@ -11077,7 +11095,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/6680edbe4224679b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async *f(arguments, p = eval("var arguments = 'param'")) {}
@@ -11110,7 +11128,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/66c3d686d1737232.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !function* eval(){}
    |                          ^^^^
@@ -11159,7 +11177,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/6753ed10c10d8d51.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | async function foo (arguments) {  }
    |                     ^^^^^^^^^
@@ -11204,7 +11222,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/67b7e4ea4a30f2c6.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | function* g(x = args = arguments) {
  3 |   function arguments() {}
@@ -11257,7 +11275,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/680a0954199aa6c2.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | try { } catch (arguments) { }
    |                ^^^^^^^^^
@@ -11273,7 +11291,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/683db402a6418fdc.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var arguments = 42, a;
@@ -11307,7 +11325,7 @@ error: Identifier 'f' has already been declared
 
 ✗ test/parser/suite/js/semantic/686fdffaf470aa0b.module.js
 ✓ test/parser/suite/js/semantic/6887910eabb6aa71.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments")) {
  2 |   let arguments;
@@ -11335,7 +11353,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/68bd9dfd71705a78.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function eval() {}
    |          ^^^^
@@ -11373,7 +11391,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/69588b8b75ced61d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var _13_1_4_fun = function (arguments) { };
    |                             ^^^^^^^^^
@@ -11584,7 +11602,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/6b69a0fe360a554b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | const f = (p = eval("var arguments = 'param'"), arguments) => {};
@@ -11640,7 +11658,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/6bfbb5581e7be7fa.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !function arguments(){}
    |                         ^^^^^^^^^
@@ -11711,7 +11729,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/6c8cefeeac8d076e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   return arguments => arguments;
@@ -11812,7 +11830,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/6d7e18532b1d6d2a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments")) {
  2 |   var arguments;
@@ -11870,14 +11888,14 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/6dd17972eccf6550.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; try { } catch (arguments) { } }
    |                                            ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/6de9157cb82e5f45.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function foo(eval) {}
    |              ^^^^
@@ -11925,7 +11943,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/6e8b5a703807310b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function foo(arguments) {});
    |               ^^^^^^^^^
@@ -11969,7 +11987,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/6f0eac5beb85394c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async *f(p = eval("var arguments")) {
  4 |     let arguments;
@@ -12032,7 +12050,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/6f7a7e482f12ee19.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -12151,7 +12169,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/70d8622e54d2c214.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | ({
  2 |   async foo(eval) { }
@@ -12242,7 +12260,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/7156a048a11854c0.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | function __func() {
  3 |   var arguments = THE_ANSWER;
@@ -12286,7 +12304,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/71a6c2caa7ad2d73.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments = 'param'")) {
  2 |   var arguments;
@@ -12328,7 +12346,7 @@ error: Cannot use import statement outside a module
 
 ✗ test/parser/suite/js/semantic/721fb4563d10b9aa.js
 ✓ test/parser/suite/js/semantic/724414dc804124c5.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; ({ b: 1, c(eval) { } }); }
    |                                        ^^^^
@@ -12376,7 +12394,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/72f27aecbe097058.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function (arguments, p = eval("var arguments = 'param'")) {};
@@ -12394,14 +12412,14 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/73298cb8636154f2.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a = function eval() { };
    |                  ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/732d493316f50cbe.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; (function arguments() { }()) }
    |                                       ^^^^^^^^^
@@ -12452,7 +12470,7 @@ error: Identifier 'f' has already been declared
 error: 'with' statements are not allowed in strict mode
    |
  1 | class C extends (function B() { with ({}); return B; }()) {}
-   |                                 ^^^^^^^^^^
+   |                                 ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/739b78faef2001c6.js
@@ -12472,7 +12490,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/73ca403c69cade6f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -12675,7 +12693,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/752f6bdd51771edb.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(arguments, p = eval("var arguments = 'param'")) {};
    |                     ^^^^^^^^^
@@ -12720,7 +12738,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/75c5c1f986a5430b.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval, a = 42;
    |     ^^^^
@@ -12775,7 +12793,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/763f10017d45fd6a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   *f(arguments, p = eval("var arguments = 'param'")) {}
@@ -12837,7 +12855,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/7690876ac504d137.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function f(p = eval("var arguments = 'param'")) {
  3 |   function arguments() {}
@@ -12917,7 +12935,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/778c73e1a4e6d54e.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; arguments => 1
    |               ^^^^^^^^^
@@ -13035,7 +13053,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/787c5e22e02e0116.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   for (var arguments in null) {}
@@ -13082,14 +13100,14 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/790a34467d7d9d58.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function eval() { }
    |          ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/793998850bb50732.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   f(arguments, p = eval("var arguments")) {}
@@ -13151,7 +13169,7 @@ error: Identifier 'smoosh' has already been declared
 
 ✗ test/parser/suite/js/semantic/79b9189ada8b5aa9.js
 ✓ test/parser/suite/js/semantic/79c4b346bfb73294.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; function arguments() { } }
    |                                      ^^^^^^^^^
@@ -13193,7 +13211,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/7a4619d256ebac5e.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; ({ b: function eval() { } }); }
    |                                            ^^^^
@@ -13408,7 +13426,7 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/7c3af0a8e143ba7c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | const f = (p = eval("var arguments = 'param'"), q = () => arguments, arguments) => {};
@@ -13443,7 +13461,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/7cf05fbcf191e20a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | arguments => (1);
    | ^^^^^^^^^
@@ -13532,7 +13550,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/7ddfcbf875759edf.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* f(p = eval("var arguments = 'param'")) {
  3 |   let arguments;
@@ -13659,7 +13677,7 @@ error: Identifier 'fn4' has already been declared
 
 ✗ test/parser/suite/js/semantic/7f0bcb9dc2bd9584.module.js
 ✓ test/parser/suite/js/semantic/7f13554234f6c26f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function f(p = eval("var arguments = 'param'")) {
  3 |   let arguments;
@@ -13744,7 +13762,7 @@ error: Cannot use `export *` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/7fe279c5efa30b34.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | ((function () {
  2 |   function arguments() {
@@ -13935,7 +13953,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/818141605e98714b.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; ({ b: 1, set c(eval) { } }); }
    |                                            ^^^^
@@ -13957,7 +13975,7 @@ error: `let` cannot be declared as a variable name inside of a `let` declaration
    |
 
 ✓ test/parser/suite/js/semantic/81ab6fc807e341cc.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | const f = (p = eval("var arguments = 'param'"), q = () => arguments) => {
  4 |   let arguments = "local";
@@ -14025,7 +14043,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/8263f00a5a0146fe.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function (p = eval("var arguments = 'param'")) {
  3 |   var arguments;
@@ -14054,7 +14072,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/83084ad418d01c03.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var af = eval => 1;
    |          ^^^^
@@ -14069,7 +14087,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/83469b7a4b5e8da0.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async f(p = eval("var arguments")) {
  4 |     let arguments;
@@ -14164,7 +14182,7 @@ error: 'super' property access is only valid inside a method or class body
 
 ✗ test/parser/suite/js/semantic/83c639fddac00712.js
 ✓ test/parser/suite/js/semantic/83d1c241572ab924.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* (p = eval("var arguments = 'param'"), arguments) {};
@@ -14234,7 +14252,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/84414a948742dc6a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(arguments, p = eval("var arguments")) {};
    |                     ^^^^^^^^^
@@ -14304,7 +14322,7 @@ error: 'implements' is reserved in strict mode and cannot be used as an identifi
    |
 
 ✓ test/parser/suite/js/semantic/84ef3bbaa772075f.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (class eval {})
    |        ^^^^
@@ -14332,7 +14350,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/8532372c3c69037f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async f(p = eval("var arguments = 'param'"), arguments) {}
@@ -14427,7 +14445,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/86829241d546e537.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function (p = eval("var arguments"), arguments) {};
@@ -14532,7 +14550,7 @@ error: Cannot continue to label `LABEL1` across function boundaries
    |
 
 ✓ test/parser/suite/js/semantic/88612c088d7b1c89.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async f(arguments, p = eval("var arguments")) {}
@@ -14559,7 +14577,7 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/89228a4e79f6f596.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async f(arguments, p = eval("var arguments = 'param'")) {}
@@ -14746,7 +14764,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/8b015dc59b9b7fff.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a = (function eval() {});
    |                   ^^^^
@@ -14793,7 +14811,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/8b6f72421d103ca3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments = 'param'"), arguments) {}
    |                                                 ^^^^^^^^^
@@ -14872,14 +14890,14 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/8c6595589877c45e.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; var eval;
    |                   ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/8c774fee069e681a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var af = (eval) => 1;
    |           ^^^^
@@ -14894,7 +14912,7 @@ error: Expected ';' after for-loop init, but found 'in'
    |
 
 ✓ test/parser/suite/js/semantic/8ce30bb40ffff192.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | arguments => 1
    | ^^^^^^^^^
@@ -14947,7 +14965,7 @@ error: for-of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/8d7627d8f8cc16c8.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; (eval, a = 1) => 2
    |                ^^^^
@@ -14981,7 +14999,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/8dc32ac61e8951ba.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var a, arguments = 42;
@@ -15095,7 +15113,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/8eed647d52eb779d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* (p = eval("var arguments = 'param'")) {
  3 |   function arguments() {}
@@ -15104,14 +15122,14 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/8eee941cb3ea50fb.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, eval;
    |        ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/8ef4f0b1c6fc9871.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments")) {
  2 |   var arguments;
@@ -15144,7 +15162,7 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
 ✗ test/parser/suite/js/semantic/8f2d88f14f125b42.js
 ✗ test/parser/suite/js/semantic/8f5e572b154c5d39.module.js
 ✓ test/parser/suite/js/semantic/8f72321a88ad015f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(arguments, p = eval("var arguments")) {}
    |            ^^^^^^^^^
@@ -15429,7 +15447,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/92083a1637cc9def.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function* f(p = eval("var arguments = 'param'"), arguments) {}
@@ -15500,7 +15518,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/92eccde29b8c2fba.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | void {
  2 |   set x(arguments) {}
@@ -15509,7 +15527,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/92fd8e24864fde0a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function eval() { });
    |           ^^^^
@@ -15525,7 +15543,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/930d98014f640989.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   *f(p = eval("var arguments"), arguments) {}
@@ -15671,7 +15689,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/947b2d4e8ce0c641.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function (arguments, p = eval("var arguments")) {};
@@ -15704,7 +15722,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/94cb828d5dcfd136.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | try { } catch (arguments) { }
    |                ^^^^^^^^^
@@ -15776,7 +15794,7 @@ error: Identifier 'b' has already been declared
 
 ✗ test/parser/suite/js/semantic/9568a2322038429b.js
 ✓ test/parser/suite/js/semantic/95768a750c75b822.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; eval=>1
    |               ^^^^
@@ -15818,7 +15836,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/95bf27d640eada27.js
 ✓ test/parser/suite/js/semantic/95c4810b20741e13.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() { 'use strict'; function b(eval) {} }
    |                                         ^^^^
@@ -15880,14 +15898,14 @@ error: Identifier 'b' has already been declared
 
 ✗ test/parser/suite/js/semantic/96533ed6c7244382.module.js
 ✓ test/parser/suite/js/semantic/9678a11fb3216f87.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (arguments, p = eval("var arguments = 'param'")) {};
    |                    ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/9678ba057364c2ca.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments = 'param'")) {
  2 |   var arguments;
@@ -15991,14 +16009,14 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/96fd70d03d1efaae.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function eval() {});
    |           ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/9716357f0b225a1a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* f(p = eval("var arguments")) {
  3 |   var arguments;
@@ -16088,14 +16106,14 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/978419451af40ff9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function foo(arguments) {}
    |              ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/9786d06ece1b3cd4.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; (arguments, a) => 1
    |                ^^^^^^^^^
@@ -16127,7 +16145,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/97ae93242be835d8.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var arguments;
@@ -16136,7 +16154,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/97b9db49d00bd150.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   f(p = eval("var arguments"), arguments) {}
@@ -16156,7 +16174,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/97f0359d3c11dbcd.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   {
  3 |     function arguments() {}
@@ -16241,7 +16259,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/987442878ab414e7.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (class arguments {})
    |        ^^^^^^^^^
@@ -16403,7 +16421,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/9a14a32ab3a5801b.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; function arguments(){}
    |                        ^^^^^^^^^
@@ -16468,7 +16486,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/9aca423f0d25634e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments")) {
  2 |   function arguments() {}
@@ -16616,7 +16634,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/9c14b0874ad2c3e5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments = 'param'")) {
  2 |   let arguments;
@@ -16640,7 +16658,7 @@ error: for-of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/9c42fca948b9b299.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments")) {
  2 |   function arguments() {}
@@ -16685,7 +16703,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/9c95e412dab5be62.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function (p = eval("var arguments = 'param'")) {
  3 |   let arguments;
@@ -16723,7 +16741,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/9ce9f2d4b616dd2d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var af = arguments => arguments;
    |          ^^^^^^^^^
@@ -16739,7 +16757,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/9d34ce31f7ddf777.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | async(arguments) => {  }
    |       ^^^^^^^^^
@@ -16820,7 +16838,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/9dba2dd0505a4f58.js
 ✓ test/parser/suite/js/semantic/9ddc22375c711f5d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -16972,7 +16990,7 @@ error: Cannot use `export` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/9f1beda47284e213.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments, a;
    |     ^^^^^^^^^
@@ -17076,7 +17094,7 @@ error: Cannot use `export` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/a0a08001fb20c53f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function* f(p = eval("var arguments"), arguments) {}
@@ -17123,7 +17141,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/a101c2c550ac4cdf.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function f(p = eval("var arguments")) {
  3 |   var arguments;
@@ -17132,7 +17150,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a108541e5894f7ff.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function f(p = eval("var arguments")) {
  3 |   function arguments() {}
@@ -17221,7 +17239,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a1a206369a2f810e.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (eval, a) => (1);
    |  ^^^^
@@ -17484,7 +17502,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/a39272532edef4c6.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function eval() { }
    |          ^^^^
@@ -17576,7 +17594,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/a3e9cdb74c31dedf.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval = 42;
    |     ^^^^
@@ -17680,14 +17698,14 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
    |
 
 ✓ test/parser/suite/js/semantic/a4feba0316ea5fbd.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; function* eval(){}
    |                         ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/a52e36a15ade0a79.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* f(arguments, p = eval("var arguments")) {};
@@ -17695,7 +17713,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a52f99bb55f1e044.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, eval, b;
    |        ^^^^
@@ -17738,7 +17756,7 @@ error: Identifier '__func' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/a59404e65bff0479.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let eval, arguments;
    |     ^^^^
@@ -17787,7 +17805,7 @@ error: Private fields cannot be deleted
 
 ✗ test/parser/suite/js/semantic/a610a46980d6cc37.js
 ✓ test/parser/suite/js/semantic/a6229f3898ef3d54.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments")) {
  2 |   var arguments;
@@ -17796,7 +17814,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a622bc925508b963.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; function a(eval){}
    |                          ^^^^
@@ -17817,7 +17835,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/a64f69ab3c01598f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments"), arguments) {};
    |                                                ^^^^^^^^^
@@ -17853,7 +17871,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/a677d8c792b976df.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function _13_1_1_fun(eval) { }
    |                      ^^^^
@@ -17913,7 +17931,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/a6dea8f25f16da93.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let argument, eval;
    |               ^^^^
@@ -17970,7 +17988,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a78377af7c928d1b.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | for (var eval in arrObj) { }
    |          ^^^^
@@ -17986,7 +18004,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/a7c836ab760b1fa1.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments")) {
  2 |   function arguments() {}
@@ -18016,7 +18034,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/a7e83c52347ea1f9.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | try {} catch (eval) {}
    |               ^^^^
@@ -18211,7 +18229,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/aa1f422cf14eb82e.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval, arguments;
    |     ^^^^
@@ -18228,7 +18246,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/aa36a4d845bb6019.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f() {
  2 |   var arguments, arguments = 42;
@@ -18401,7 +18419,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/abe07ddcc6b1cbc0.js
 ✓ test/parser/suite/js/semantic/abeb08e62f7ce97a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* f(p = eval("var arguments = 'param'"), arguments) {};
@@ -18519,7 +18537,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/acedb058fc26b244.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | async function eval () {  }
    |                ^^^^
@@ -18688,7 +18706,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/af1d905ed056724f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a = function arguments() { };
    |                  ^^^^^^^^^
@@ -18865,7 +18883,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/b0a80dd767a7dd9c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | const f = (p = eval("var arguments = 'param'")) => {
  4 |   let arguments = "local";
@@ -18874,7 +18892,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b0b672417c467be2.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   *f(p = eval("var arguments = 'param'"), arguments) {}
@@ -19002,7 +19020,7 @@ error: Identifier 'G' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/b18d7eeeb352139b.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | eval => ("use strict");
    | ^^^^
@@ -19036,7 +19054,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/b24170a7f8ad2657.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments;
    |     ^^^^^^^^^
@@ -19060,7 +19078,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/b29161fdad89c28f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function* f(arguments, p = eval("var arguments")) {}
@@ -19077,7 +19095,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b2b0551b46b0b7fc.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments")) {
  2 |   function arguments() {}
@@ -19141,16 +19159,22 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/b371c0830346bca5.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function eval() {
    |          ^^^^
  2 |   function a() {
    |
 
-✗ test/parser/suite/js/semantic/b371d4dbebc5a8d3.js
+✓ test/parser/suite/js/semantic/b371d4dbebc5a8d3.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | class yi\u0065ld {}
+   |       ^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b379022b276518f7.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments"), arguments) {}
    |                                       ^^^^^^^^^
@@ -19197,7 +19221,7 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/b3fe185a3fd950fe.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !function* arguments(){}
    |                          ^^^^^^^^^
@@ -19228,7 +19252,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 
 ✗ test/parser/suite/js/semantic/b44d69c497ba8742.js
 ✓ test/parser/suite/js/semantic/b4639f2d0e68597c.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; var eval = 1; }
    |                                 ^^^^
@@ -19291,7 +19315,7 @@ error: Identifier 'c' has already been declared
 
 ✗ test/parser/suite/js/semantic/b4e310a6d021ac99.js
 ✓ test/parser/suite/js/semantic/b4ef8abd716232d4.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   f(p = eval("var arguments = 'param'")) {
  3 |     var arguments;
@@ -19355,7 +19379,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 
 ✗ test/parser/suite/js/semantic/b5ef09af772a51b6.js
 ✓ test/parser/suite/js/semantic/b618d0ca375d3f86.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async *f(p = eval("var arguments = 'param'")) {
  4 |     var arguments;
@@ -19375,7 +19399,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/b674947be42ad087.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; ({ set b(eval) { } }); }
    |                                      ^^^^
@@ -19404,7 +19428,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/b6ea50e578353132.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval, eval;
    |     ^^^^
@@ -19436,7 +19460,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/b7387ab01cdf5975.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* (arguments, p = eval("var arguments = 'param'")) {};
@@ -19595,7 +19619,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/b85e42325f54af51.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -19620,7 +19644,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b87898c2db13449a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, eval = 42, b;
    |        ^^^^
@@ -19628,7 +19652,7 @@ error: 'eval' cannot be used as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/b88ab70205263170.module.js
 ✓ test/parser/suite/js/semantic/b89d22cd7965f5ae.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function f(p = eval("var arguments = 'param'")) {
  3 |   let arguments;
@@ -19645,7 +19669,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/b8bf39a3e60568ab.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (eval, a) => 1
    |  ^^^^
@@ -19667,7 +19691,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/b906093a894ea3f9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var af = (arguments) => 1;
    |           ^^^^^^^^^
@@ -19710,7 +19734,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/b93402bac7424e93.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function arguments() {});
    |           ^^^^^^^^^
@@ -19859,7 +19883,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/bb41f0778f00f131.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let eval = 1, arguments = 2
    |     ^^^^
@@ -19903,7 +19927,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/bbeec25d16a55b8c.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; !function* (eval){}
    |                           ^^^^
@@ -19941,7 +19965,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/bc5e7ea4b2f0deb6.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* f(p = eval("var arguments"), arguments) {};
@@ -20127,7 +20151,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/bdb14e0ea492ffa3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function* f(p = eval("var arguments")) {
  3 |   var arguments;
@@ -20148,7 +20172,7 @@ error: Cannot use `export` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/bde1a5ea9aebf9d2.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function arguments() { }
    |          ^^^^^^^^^
@@ -20170,7 +20194,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/be3409ff81c974a0.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a = (function arguments() {});
    |                   ^^^^^^^^^
@@ -20178,7 +20202,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/be57f8938fbf1376.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | export { x as eval };
  3 | import { eval } from './early-import-eval.js';
@@ -20248,7 +20272,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/bf550124280e0c91.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function f(p = eval("var arguments = 'param'"), arguments) {};
@@ -20356,7 +20380,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/c036a1cf9eaf9f3d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | function f(x = args = arguments) {
  3 |   let arguments;
@@ -20394,7 +20418,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/c07861816f706cd9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments = 'param'")) {
  2 |   let arguments;
@@ -20429,7 +20453,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/c0a6efe18ef48cee.js
 ✓ test/parser/suite/js/semantic/c0a90233e3d478ff.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments = 'param'"), arguments) {};
    |                                                         ^^^^^^^^^
@@ -20489,7 +20513,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/c13dd80e0b77b235.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function f(p = eval("var arguments = 'param'")) {
  3 |   var arguments;
@@ -20650,7 +20674,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/c263808129f3b0a5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | const f = (arguments, p = eval("var arguments = 'param'"), q = () => arguments) => {};
@@ -20725,7 +20749,7 @@ error: Identifier 'A' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/c3695cf147756533.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments = 'param'")) {
  2 |   let arguments;
@@ -20734,7 +20758,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/c372090bfd86398d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | THE_ANSWER = "Answer to Life, the Universe, and Everything";
  2 | var arguments = THE_ANSWER;
@@ -20814,7 +20838,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/c417dc80e0a8d933.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let eval, arguments;
    |     ^^^^
@@ -20870,7 +20894,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/c49f706b77636b16.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | var g = function* (x = args = arguments) {
  3 |   let arguments;
@@ -21107,7 +21131,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/c6bbf9397619fbc0.js
-error: 'let' cannot be used as a binding name in strict mode
+error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
  1 | class let {}
    |       ^^^
@@ -21141,7 +21165,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/c7308b398d6aab2e.module.js
 ✓ test/parser/suite/js/semantic/c743922212940aff.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* (p = eval("var arguments")) {
  3 |   function arguments() {}
@@ -21172,7 +21196,7 @@ error: Expected ';' after for-loop init, but found ')'
    |
 
 ✓ test/parser/suite/js/semantic/c76e17a417f486e6.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; (eval)=>1
    |                ^^^^
@@ -21214,7 +21238,7 @@ error: Cannot use `export *` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/c7d87ec71f99232a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments = 'param'")) {
  2 |   function arguments() {}
@@ -21232,7 +21256,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/c7f442602538d403.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments = 'param'")) {
  2 |   var arguments;
@@ -21241,7 +21265,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/c80033cd9dca9d4d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function* f(p = eval("var arguments")) {
  3 |   function arguments() {}
@@ -21373,7 +21397,7 @@ error: Cannot use `export *` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/c8eb750992e0a6f7.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function f(arguments, p = eval("var arguments")) {}
@@ -21423,7 +21447,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/c9276d58d3d3ccab.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; var arguments = 1; }
    |                                 ^^^^^^^^^
@@ -21437,7 +21461,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/c9332d52a38ec308.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
 10 |   }
 11 |   var eval = f;
@@ -21551,7 +21575,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/ca593c69e0394655.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* f(p = eval("var arguments")) {
  3 |   let arguments;
@@ -21662,7 +21686,7 @@ error: Identifier 'b' has already been declared
 
 ✗ test/parser/suite/js/semantic/cb502892c0be275f.js
 ✓ test/parser/suite/js/semantic/cb5304d7abc733a3.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval = 42, a;
    |     ^^^^
@@ -21852,7 +21876,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/cceeb8a91dca0d83.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; const {a: eval} = 1;
    |                         ^^^^
@@ -21882,7 +21906,7 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
    |
 
 ✓ test/parser/suite/js/semantic/cd5b4e84c2668409.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async *f(p = eval("var arguments")) {
  4 |     function arguments() {}
@@ -22202,7 +22226,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/d04e69bc307eada0.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; function* arguments(){}
    |                         ^^^^^^^^^
@@ -22220,7 +22244,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/d05b7bed797d7a0c.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | eval => (1);
    | ^^^^
@@ -22327,7 +22351,7 @@ error: 'protected' is reserved in strict mode and cannot be used as an identifie
    |
 
 ✓ test/parser/suite/js/semantic/d13bc7b3ba9144d3.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function a() {'use strict'; try { } catch (eval) { } }
    |                                            ^^^^
@@ -22481,7 +22505,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/d2350ad0d14b2122.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | const f = (arguments, p = eval("var arguments = 'param'")) => {};
@@ -22644,7 +22668,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/d309a5051094ef57.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -22788,7 +22812,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/d4577f873123f8bd.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function (p = eval("var arguments")) {
  3 |   let arguments;
@@ -22894,7 +22918,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/d556b2b9bcdcb105.js
 ✓ test/parser/suite/js/semantic/d56a71ee38f4929e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function f(p = eval("var arguments")) {
  2 |   let arguments;
@@ -22941,7 +22965,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/d6138138ee6a3014.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   return typeof arguments;
  4 |   var arguments = THE_ANSWER;
@@ -22950,7 +22974,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/d61a5bab4b0e2467.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class a { set b(eval){} };
    |                 ^^^^
@@ -23117,7 +23141,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/d77496b84d7f7119.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (arguments, p = eval("var arguments = 'param'")) {};
    |                   ^^^^^^^^^
@@ -23135,7 +23159,7 @@ error: Identifier 'bar' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/d7787ab3581279c4.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let evalValue = {};
  3 | let foo = function (eval) {
@@ -23155,7 +23179,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/d79a08ea5cc1e2f6.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const eval = 1, arguments = 2
    |       ^^^^
@@ -23217,7 +23241,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/d82c683b5cc29e36.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async *f(arguments, p = eval("var arguments")) {}
@@ -23329,7 +23353,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/d92dac7c2cef3c1b.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | try { } catch (eval) { }
    |                ^^^^
@@ -23378,7 +23402,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/d9cea8bb367da4c9.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function arguments() {}
    |          ^^^^^^^^^
@@ -23523,7 +23547,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/dab265c64fb515ef.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   f(arguments, p = eval("var arguments = 'param'")) {}
@@ -23532,7 +23556,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/dac6b631f7f91a9a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function f(p = eval("var arguments")) {
  3 |   let arguments;
@@ -23664,7 +23688,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/db714a577f9d4de5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async f(p = eval("var arguments = 'param'")) {
  4 |     function arguments() {}
@@ -23684,7 +23708,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/db80c9968870adc0.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function (p = eval("var arguments = 'param'")) {
  3 |   function arguments() {}
@@ -23721,7 +23745,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/dc0790f0db5a3c6a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments")) {
  2 |   let arguments;
@@ -23850,7 +23874,7 @@ error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/dd6194d166532e4c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments")) {
  2 |   let arguments;
@@ -23930,7 +23954,7 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✓ test/parser/suite/js/semantic/de0d505334e5cc6b.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | let f = async function* f(arguments, p = eval("var arguments = 'param'")) {};
@@ -24100,7 +24124,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/df5916fa5c0c159e.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; (eval = 1) => 2
    |                ^^^^
@@ -24154,7 +24178,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/df90f22f94d1d105.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async *f(p = eval("var arguments")) {
  4 |     var arguments;
@@ -24183,7 +24207,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/dfbf60f75be0c10d.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | try {} catch (arguments) {}
    |               ^^^^^^^^^
@@ -24191,7 +24215,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/dfcbcbfa351b25df.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let o = {
  2 |   f(p = eval("var arguments = 'param'"), arguments) {}
@@ -24200,7 +24224,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/dfd314ef8a0e19f2.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class Foo {
  2 |   async foo (arguments) { }
@@ -24272,7 +24296,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/e05d2d93d53efa9d.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval = (1), arguments = (2);
    |     ^^^^
@@ -24400,7 +24424,7 @@ error: `import.meta` is only valid in module code
    |
 
 ✓ test/parser/suite/js/semantic/e1a4d825780e79db.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   *f(p = eval("var arguments = 'param'")) {
  3 |     var arguments;
@@ -24445,7 +24469,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/e23e9b82302816a8.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 | const f = (p = eval("var arguments = 'param'"), q = () => arguments) => {
  4 |   var arguments = "local";
@@ -24521,7 +24545,7 @@ error: Cannot use import statement outside a module
 ✗ test/parser/suite/js/semantic/e27c89124bbb7a5e.js
 ✗ test/parser/suite/js/semantic/e299aa99dc3d30e8.js
 ✓ test/parser/suite/js/semantic/e2b5a1061ccc310a.js
-error: 'yield' cannot be used as a binding name in strict mode
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | var C = class yield {};
    |               ^^^^^
@@ -24630,7 +24654,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e3a3d53c76feeb77.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var argument, eval;
    |               ^^^^
@@ -24697,7 +24721,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/e3ed1ee4c3477040.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | export { x };
  3 | import { x as arguments } from './early-import-as-arguments.js';
@@ -24746,7 +24770,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e4731a8b19d5288e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(p = eval("var arguments = 'param'"), arguments) {}
    |                                                  ^^^^^^^^^
@@ -24766,7 +24790,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/e49e02b7e52c736a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  3 |   async f(p = eval("var arguments")) {
  4 |     var arguments;
@@ -24786,7 +24810,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/e4b6fc36e06a383b.js
-error: 'yield' cannot be used as a binding name in strict mode
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | class yield {}
    |       ^^^^^
@@ -24900,7 +24924,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/e6315737f25b2e1c.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | "use strict"; (eval) => 1
    |                ^^^^
@@ -24994,7 +25018,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/e7247b087a76fcd2.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   f(p = eval("var arguments = 'param'")) {
  3 |     function arguments() {}
@@ -25010,7 +25034,7 @@ error: 'private' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/e72d76c6aa379432.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async f(p = eval("var arguments"), arguments) {}
@@ -25030,7 +25054,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/e739cd474c782536.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var a, arguments, b;
    |        ^^^^^^^^^
@@ -25146,7 +25170,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/e8e205b4540aca2e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function* f(p = eval("var arguments")) {
  3 |   let arguments;
@@ -25252,7 +25276,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 
 ✗ test/parser/suite/js/semantic/e9f5de41b7e4483d.js
 ✓ test/parser/suite/js/semantic/ea149cbbd8d8ca28.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function* f(arguments, p = eval("var arguments = 'param'")) {}
@@ -25298,7 +25322,7 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/ea490763001625b3.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let o = {
  3 |   async *f(p = eval("var arguments"), arguments) {}
@@ -25319,7 +25343,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/ea4edad8a64cce8c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function f(p = eval("var arguments"), arguments) {}
@@ -25335,7 +25359,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/ea62a59ca17610fa.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   *f(p = eval("var arguments")) {
  3 |     let arguments;
@@ -25382,7 +25406,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/eab25f27c1894886.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* f(p = eval("var arguments")) {
  2 |   function arguments() {}
@@ -25407,7 +25431,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/eaca6dead0bef311.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function testcase() {
  2 |   var arguments = undefined;
@@ -25431,14 +25455,14 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/eb2bb87f93941346.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function (p = eval("var arguments = 'param'"), arguments) {};
    |                                                        ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/eb2c8e4d23b9e257.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   f(p = eval("var arguments")) {
  3 |     function arguments() {}
@@ -25819,7 +25843,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/ee876e8f385e778f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | function f(x = args = arguments) {
  3 |   function arguments() {}
@@ -25896,7 +25920,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/ef573b2f5cc6a13a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function f(p = eval("var arguments")) {
  3 |   var arguments;
@@ -25956,7 +25980,7 @@ error: Expected ';' after for-loop init, but found 'in'
    |
 
 ✓ test/parser/suite/js/semantic/f05229cf9180cd9f.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | async function* f(p = eval("var arguments = 'param'")) {
  3 |   var arguments;
@@ -25982,7 +26006,7 @@ error: Cannot use import statement outside a module
 
 ✗ test/parser/suite/js/semantic/f063969b23239390.module.js
 ✓ test/parser/suite/js/semantic/f06998060dc66fa4.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var argument, eval;
    |               ^^^^
@@ -26059,7 +26083,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/f0c567cfa3ebac2d.js
 ✓ test/parser/suite/js/semantic/f0c88018559ddad7.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   *f(p = eval("var arguments")) {
  3 |     var arguments;
@@ -26069,7 +26093,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/f0d2c3e6bdc9d6fb.js
 ✓ test/parser/suite/js/semantic/f0d6587f0ea9f66e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (arguments, p = eval("var arguments")) {};
    |                    ^^^^^^^^^
@@ -26166,7 +26190,7 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✓ test/parser/suite/js/semantic/f1de9fc3ec4637cc.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | class arguments {}
    |       ^^^^^^^^^
@@ -26237,7 +26261,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/f26ceced65463be1.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | ({
  2 |   async foo (arguments) { }
@@ -26246,7 +26270,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/f2732ee560ba8030.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (async function* arguments() { });
    |                  ^^^^^^^^^
@@ -26369,7 +26393,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/f31c87c7dad52a1c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function* f(arguments, p = eval("var arguments")) {}
    |             ^^^^^^^^^
@@ -26464,7 +26488,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/f3f5de3f726d6928.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | let f = function* (p = eval("var arguments")) {
  2 |   let arguments;
@@ -26497,7 +26521,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/f4683acac02955e8.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (eval = 1) => (2);
    |  ^^^^
@@ -26655,7 +26679,7 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✓ test/parser/suite/js/semantic/f63c11830810c826.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* f(p = eval("var arguments = 'param'")) {
  3 |   var arguments;
@@ -26702,7 +26726,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/f6a24608abc26d2a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const eval = (1), arguments = (2);
    |       ^^^^
@@ -26751,7 +26775,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✓ test/parser/suite/js/semantic/f73911f9e5e07713.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | export { x as arguments };
  3 | import { arguments } from './early-import-arguments.js';
@@ -26766,7 +26790,7 @@ error: Use of undefined label `a`
    |
 
 ✓ test/parser/suite/js/semantic/f754b07779438e9a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 |   f(p = eval("var arguments")) {
  3 |     let arguments;
@@ -26918,7 +26942,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/f8050fe423222a3d.js
+✓ test/parser/suite/js/semantic/f8050fe423222a3d.js
+error: 'static' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | var C = class st\u0061tic {};
+   |               ^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f80fe5c15c02c8c3.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -26928,7 +26958,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/f82dbfe5cb75aba5.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 1;
    |     ^^^^^^^^^
@@ -26949,14 +26979,14 @@ error: Identifier 'a' has already been declared
 ✗ test/parser/suite/js/semantic/f84e7be142d13da4.js
 ✗ test/parser/suite/js/semantic/f850f00481b1ca6c.js
 ✓ test/parser/suite/js/semantic/f85d41589ae1fda7.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments, arguments = 42;
    |     ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/f87bf832bee2fa8e.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | var f = function (x = args = arguments) {
  3 |   function arguments() {}
@@ -27130,7 +27160,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/fa5b398eeef697a6.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | ({set a(eval){}})
    |         ^^^^
@@ -27197,7 +27227,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/fada2c7bbfabe14a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (function arguments() { });
    |           ^^^^^^^^^
@@ -27227,7 +27257,7 @@ error: Cannot use `export default` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/faef15e1ce9fd48c.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var arguments = 42, a;
    |     ^^^^^^^^^
@@ -27245,7 +27275,7 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/faf4bec9206ec9ee.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var eval, arguments;
    |     ^^^^
@@ -27262,7 +27292,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 
 ✗ test/parser/suite/js/semantic/fb130c395c6aafe7.js
 ✓ test/parser/suite/js/semantic/fb170ea4cc5daf1a.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | const oldArguments = globalThis.arguments;
  2 | async function f(p = eval("var arguments = 'param'"), arguments) {}
@@ -27271,7 +27301,7 @@ error: 'arguments' cannot be used as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/fb1e964141b50568.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function _13_1_3_fun(arguments) { }
    |                      ^^^^^^^^^
@@ -27394,7 +27424,13 @@ error: Yield expression is not allowed in formal parameters
    |                             ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/fc800211774f454c.js
+✓ test/parser/suite/js/semantic/fc800211774f454c.js
+error: 'static' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | class st\u0061tic {}
+   |       ^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/fc9cad7477872ddf.js
 ✓ test/parser/suite/js/semantic/fca5e471bb70bdf2.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -27448,7 +27484,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/fd60b09bd8096790.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let evalValue = {};
  3 | function foo(eval) {
@@ -27493,7 +27529,7 @@ error: Cannot use `export *` declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/fd9664a45c5f3f3a.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | var argument, eval;
    |               ^^^^
@@ -27512,7 +27548,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/fdbbddf369b207e1.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  2 | let f = async function* f(p = eval("var arguments = 'param'")) {
  3 |   function arguments() {}
@@ -27556,7 +27592,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/fe33079db7d58d74.js
 ✓ test/parser/suite/js/semantic/fe68564c21bdb519.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | 'use strict'; (arguments)=>1
    |                ^^^^^^^^^
@@ -27720,7 +27756,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/ffb664ff52fdc992.module.js
-error: 'eval' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | (eval, a = 1) => (2);
    |  ^^^^
@@ -27747,7 +27783,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/ffbb0d64655ab183.module.js
-error: 'arguments' cannot be used as a binding name in strict mode
+error: 'eval' or 'arguments' cannot be used as a binding name in strict mode
    |
  1 | function arguments() { };
    |          ^^^^^^^^^
