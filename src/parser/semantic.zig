@@ -1,6 +1,3 @@
-// this is wip, even though redeclaration checks and some of the most important semantic errors are done,
-// there are still more semantic errors to cover (but lower priority for now)
-
 const std = @import("std");
 const traverser = @import("traverser/root.zig");
 const ast = @import("ast.zig");
@@ -39,17 +36,14 @@ const SemanticVisit = struct {
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
 
+        // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
-            if (std.mem.eql(u8, name, "eval") or
-                std.mem.eql(u8, name, "arguments")) {
-                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'eval' or 'arguments' cannot be used as a binding name in strict mode", .{}), .{});
-            }
-        }
-
-        if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
+            if (isStrictModeReservedWord(name))
+                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
+        } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
             std.mem.eql(u8, name, "let"))
         {
-            try self.report(ctx.tree.getSpan(node_index), "`let` cannot be declared as a variable name inside of a `let` declaration", .{});
+            try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a 'let' declaration", .{});
         }
 
         // redeclaration checks
@@ -61,8 +55,8 @@ const SemanticVisit = struct {
         if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
 
-            // Section 14.2.1, 14.12.1, 16.1.4: LexicallyDeclaredNames must
-            // not contain duplicates, and must not overlap with VarDeclaredNames.
+            // https://tc39.es/ecma262/#sec-block-static-semantics-early-errors
+            // https://tc39.es/ecma262/#sec-switch-statement-static-semantics-early-errors
             if (existing.kind.isBlockScoped(target_scope_kind) or
                 current_kind.isBlockScoped(target_scope_kind))
             {
@@ -70,8 +64,7 @@ const SemanticVisit = struct {
                 return .proceed;
             }
 
-            // duplicate parameter names are only allowed for functions with
-            // simple parameter lists that are not in strict mode code.
+            // https://tc39.es/ecma262/#sec-parameter-lists-static-semantics-early-errors
             if (existing.kind == .parameter) {
                 if (findFormalParameters(ctx)) |formal_parameters| {
                     if (
@@ -105,9 +98,9 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    /// Section 15.2.1, 15.5.1, 15.6.1, 15.8.1:
-    /// It is a Syntax Error if FunctionBodyContainsUseStrict is true and
-    /// IsSimpleParameterList of FormalParameters is false.
+    /// https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
+    /// "It is a Syntax Error if FunctionBodyContainsUseStrict is true and
+    ///  IsSimpleParameterList of FormalParameters is false."
     pub fn enter_directive(self: *Self, directive: ast.Directive, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (std.mem.eql(u8, ctx.tree.getString(directive.value), "use strict")) {
             var iter = ctx.path.ancestors();
@@ -132,21 +125,19 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    /// Section B.3.3: In strict mode code, functions can only be declared at
-    /// top level or inside a block.
+    /// In strict mode, function declarations are only allowed at the top level of
+    /// a script, module, function body, or block. Bare function declarations as the
+    /// body of if/else/for/while are only permitted in sloppy mode (Annex B.3.3).
     pub fn enter_function(self: *Self, func: ast.Function, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (func.type == .function_declaration and ctx.scope.isStrict()) {
             if (ctx.path.parent()) |parent| {
                 switch (ctx.tree.getData(parent)) {
-                    // valid: top-level, block body, switch case, labeled statement
                     .program, .function_body, .class_body, .static_block,
                     .block_statement, .switch_case, .labeled_statement,
                     .export_named_declaration, .export_default_declaration,
                     => {},
-                    // invalid: bare consequent/alternate of if, loop body, etc.
                     else => {
                         try self.report(ctx.tree.getSpan(node_index), "In strict mode code, functions can only be declared at top level or inside a block", .{});
-
                         return .skip;
                     },
                 }
@@ -156,105 +147,28 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_yield_expression(self: *Self, _: ast.YieldExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (isInFormalParameters(ctx)) {
+        if (isInFormalParameters(ctx))
             try self.report(ctx.tree.getSpan(node_index), "Yield expression is not allowed in formal parameters", .{});
-        }
-
-        return .proceed;
-    }
-
-    /// Section 13.3.12.1: import.meta is only valid in module code.
-    pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module and
-            ctx.tree.getData(prop.meta) == .identifier_name and
-            std.mem.eql(u8, ctx.tree.getString(ctx.tree.getData(prop.meta).identifier_name.name), "import"))
-        {
-            try self.report(ctx.tree.getSpan(node_index), "`import.meta` is only valid in module code", .{});
-        }
-        return .proceed;
-    }
-
-    pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module) {
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{});
-        }
-
-        return .proceed;
-    }
-
-    pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module) {
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use `export` declaration outside a module", .{});
-        }
-
-        return .proceed;
-    }
-
-    pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module) {
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use `export default` declaration outside a module", .{});
-        }
-
-        return .proceed;
-    }
-
-    pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module) {
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use `export *` declaration outside a module", .{});
-        }
-
         return .proceed;
     }
 
     pub fn enter_await_expression(self: *Self, _: ast.AwaitExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (isInFormalParameters(ctx)) {
+        if (isInFormalParameters(ctx))
             try self.report(ctx.tree.getSpan(node_index), "Await expression is not allowed in formal parameters", .{});
-        }
-
         return .proceed;
     }
 
-    /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
-    pub fn enter_call_expression(self: *Self, expr: ast.CallExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.getData(expr.callee) == .super) {
-            switch (superCallValidity(ctx)) {
-                .valid => {},
-                // ClassElement : MethodDefinition
-                //   It is a Syntax Error if PropName of MethodDefinition is not "constructor"
-                //   and HasDirectSuper of MethodDefinition is true.
-                // FieldDefinition : ClassElementName Initializer?
-                //   It is a Syntax Error if Initializer is present and Initializer Contains SuperCall is true.
-                // ClassStaticBlockBody : ClassStaticBlockStatementList
-                //   It is a Syntax Error if ClassStaticBlockStatementList Contains SuperCall is true.
-                .not_in_constructor => try self.report(ctx.tree.getSpan(node_index), "'super()' is only valid in a constructor of a derived class", .{
-                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
-                }),
-                // ClassTail : ClassHeritage? { ClassBody }
-                //   It is a Syntax Error if ClassHeritage is not present and the following
-                //   algorithm returns true:
-                //     1. Let constructor be ConstructorMethod of ClassBody.
-                //     2. If constructor is empty, return false.
-                //     3. Return HasDirectSuper of constructor.
-                .no_extends => try self.report(ctx.tree.getSpan(node_index), "'super()' is only valid in a constructor of a derived class", .{
-                    .help = "Add an 'extends' clause to the class or remove the 'super()' call",
-                }),
-            }
-        }
+    /// https://tc39.es/ecma262/#sec-update-expressions-static-semantics-early-errors
+    pub fn enter_update_expression(self: *Self, expr: ast.UpdateExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.scope.isStrict() and isEvalOrArguments(ctx.tree, expr.argument))
+            try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
         return .proceed;
     }
 
-    /// Section 15.2.1, 15.5.1, 15.6.1, 15.8.1:
-    ///   It is a Syntax Error if FormalParameters/FunctionBody Contains SuperProperty is true.
-    /// Section 16.1.2.1 / 16.2.1.1:
-    ///   It is a Syntax Error if StatementList/ModuleItemList Contains super.
-    pub fn enter_member_expression(self: *Self, expr: ast.MemberExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.getData(expr.object) == .super) {
-            if (!isSuperPropertyValid(ctx)) {
-                try self.report(ctx.tree.getSpan(node_index), "'super' property access is only valid inside a method or class body", .{
-                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
-                });
-            }
-        }
+    /// https://tc39.es/ecma262/#sec-assignment-operators-static-semantics-early-errors
+    pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.scope.isStrict() and isEvalOrArguments(ctx.tree, expr.left))
+            try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
         return .proceed;
     }
 
@@ -262,7 +176,7 @@ const SemanticVisit = struct {
         if (expr.operator == .delete) {
             const target = unwrapParens(ctx.tree, expr.argument);
             switch (ctx.tree.getData(target)) {
-                // Section 13.5.1.1: delete of unqualified identifier in strict mode.
+                // https://tc39.es/ecma262/#sec-delete-operator-static-semantics-early-errors
                 .identifier_reference => if (ctx.scope.isStrict()) {
                     try self.report(ctx.tree.getSpan(node_index), "Deleting a variable in strict mode is not allowed", .{});
                 },
@@ -275,110 +189,133 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    /// Section 14.7.5.1: for-of loop variable may not have an initializer.
+    /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    pub fn enter_call_expression(self: *Self, expr: ast.CallExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.getData(expr.callee) == .super) {
+            switch (superCallValidity(ctx)) {
+                .valid => {},
+                .not_in_constructor => try self.report(ctx.tree.getSpan(node_index), "'super()' is only valid in a constructor of a derived class", .{
+                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
+                }),
+                .no_extends => try self.report(ctx.tree.getSpan(node_index), "'super()' is only valid in a constructor of a derived class", .{
+                    .help = "Add an 'extends' clause to the class or remove the 'super()' call",
+                }),
+            }
+        }
+        return .proceed;
+    }
+
+    pub fn enter_member_expression(self: *Self, expr: ast.MemberExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.getData(expr.object) == .super) {
+            if (!isSuperPropertyValid(ctx))
+                try self.report(ctx.tree.getSpan(node_index), "'super' property access is only valid inside a method or class body", .{
+                    .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
+                });
+        }
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-left-hand-side-expressions-static-semantics-early-errors
+    pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module and
+            ctx.tree.getData(prop.meta) == .identifier_name and
+            std.mem.eql(u8, ctx.tree.getString(ctx.tree.getData(prop.meta).identifier_name.name), "import"))
+        {
+            try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
+        }
+        return .proceed;
+    }
+
+    pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module)
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{});
+        return .proceed;
+    }
+
+    pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module)
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{});
+        return .proceed;
+    }
+
+    pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module)
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{});
+        return .proceed;
+    }
+
+    pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.tree.source_type != .module)
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{});
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-with-statement-static-semantics-early-errors
+    pub fn enter_with_statement(self: *Self, _: ast.WithStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.scope.isStrict())
+            try self.report(ctx.tree.getSpan(node_index), "'with' statements are not allowed in strict mode", .{});
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_of_statement(self: *Self, stmt: ast.ForOfStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkHasForInOfInitializer(ctx, stmt.left);
+        try self.checkForInOfInitializer(ctx, stmt.left);
         return .proceed;
     }
 
-    /// Section 14.7.5.1: for-in loop variable may not have an initializer.
-    /// Annex B.3.5 allows `for (var x = expr in ...)` in sloppy mode with a simple binding.
+    /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_in_statement(self: *Self, stmt: ast.ForInStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkHasForInOfInitializer(ctx, stmt.left);
+        try self.checkForInOfInitializer(ctx, stmt.left);
         return .proceed;
     }
 
-    fn checkHasForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
-        const left_data = ctx.tree.getData(left);
-
-        if (left_data != .variable_declaration) return;
-
-        const decl = left_data.variable_declaration;
-
-        for (ctx.tree.getExtra(decl.declarators)) |child| {
-            const declarator = ctx.tree.getData(child).variable_declarator;
-
-            if (declarator.init == .null) continue;
-
-            try self.report(ctx.tree.getSpan(child), "for-in/of loop variable declaration may not have an initializer", .{});
-
-            return;
-        }
-    }
-
-    /// Section 13.15.1: assignment to eval/arguments is not allowed in strict mode.
-    pub fn enter_update_expression(self: *Self, expr: ast.UpdateExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict()) {
-            if (isEvalOrArguments(ctx.tree, expr.argument))
-                try self.reportStrictAssign(ctx.tree, node_index);
-        }
-        return .proceed;
-    }
-
-    /// Section 13.15.1: assignment to eval/arguments is not allowed in strict mode.
-    pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict()) {
-            if (isEvalOrArguments(ctx.tree, expr.left))
-                try self.reportStrictAssign(ctx.tree, node_index);
-        }
-        return .proceed;
-    }
-
-    fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-        if (tree.getData(node) == .identifier_reference) {
-            const name = tree.getString(tree.getData(node).identifier_reference.name);
-            return std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
-        }
-        return false;
-    }
-
-    fn reportStrictAssign(self: *Self, tree: *const ast.Tree, node_index: ast.NodeIndex) AnalysisError!void {
-        try self.report(tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
-    }
-
-    /// Section 14.9.2: It is a Syntax Error if this BreakStatement is not nested,
-    /// directly or indirectly (but not crossing function or static initialization
-    /// block boundaries), within an IterationStatement or a SwitchStatement.
     pub fn enter_break_statement(self: *Self, stmt: ast.BreakStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (stmt.label != .null) {
             const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
             switch (findLabel(ctx, label_name)) {
                 .found => {},
-                .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label `{s}`", .{label_name}), .{}),
-                .crossed_boundary => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Cannot break to label `{s}` across function boundaries", .{label_name}), .{}),
+                .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label '{s}'", .{label_name}), .{}),
+                .crossed_boundary => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Cannot break to label '{s}' across function boundaries", .{label_name}), .{}),
             }
         } else {
-            if (!isInsideBreakable(ctx)) {
+            if (!isInsideBreakable(ctx))
                 try self.report(ctx.tree.getSpan(node_index), "Illegal break statement", .{
-                    .help = "A `break` statement can only be used within an enclosing iteration or switch statement",
+                    .help = "A 'break' statement can only be used within an enclosing iteration or switch statement",
                 });
-            }
         }
         return .proceed;
     }
 
-    /// Section 14.8.2: It is a Syntax Error if this ContinueStatement is not nested,
-    /// directly or indirectly (but not crossing function or static initialization
-    /// block boundaries), within an IterationStatement.
     pub fn enter_continue_statement(self: *Self, stmt: ast.ContinueStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (stmt.label != .null) {
             const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
             switch (findLabelForContinue(ctx, label_name)) {
                 .found => {},
-                .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label `{s}`", .{label_name}), .{}),
-                .crossed_boundary => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Cannot continue to label `{s}` across function boundaries", .{label_name}), .{}),
-                .not_iteration => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Label `{s}` does not denote an iteration statement", .{label_name}), .{
-                    .help = "A `continue` statement can only jump to a label of an enclosing `for`, `while`, `do-while`, `for-in`, or `for-of` statement",
+                .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label '{s}'", .{label_name}), .{}),
+                .crossed_boundary => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Cannot continue to label '{s}' across function boundaries", .{label_name}), .{}),
+                .not_iteration => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Label '{s}' does not denote an iteration statement", .{label_name}), .{
+                    .help = "A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement",
                 }),
             }
         } else {
-            if (!isInsideIteration(ctx)) {
+            if (!isInsideIteration(ctx))
                 try self.report(ctx.tree.getSpan(node_index), "Illegal continue statement", .{
-                    .help = "A `continue` statement can only be used within an enclosing iteration statement",
+                    .help = "A 'continue' statement can only be used within an enclosing iteration statement",
                 });
-            }
         }
         return .proceed;
+    }
+
+    fn checkForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
+        if (ctx.tree.getData(left) != .variable_declaration) return;
+        const decl = ctx.tree.getData(left).variable_declaration;
+        for (ctx.tree.getExtra(decl.declarators)) |child| {
+            const declarator = ctx.tree.getData(child).variable_declarator;
+            if (declarator.init != .null) {
+                try self.report(ctx.tree.getSpan(child), "for-in/of loop variable declaration may not have an initializer", .{});
+                return;
+            }
+        }
     }
 
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
@@ -391,28 +328,36 @@ const SemanticVisit = struct {
         }
     }
 
+    fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
+        return tree.getData(node) == .identifier_reference and blk: {
+            const name = tree.getString(tree.getData(node).identifier_reference.name);
+            break :blk std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
+        };
+    }
+
+    fn isStrictModeReservedWord(name: []const u8) bool {
+        return std.mem.eql(u8, name, "eval") or
+            std.mem.eql(u8, name, "arguments") or
+            std.mem.eql(u8, name, "implements") or
+            std.mem.eql(u8, name, "interface") or
+            std.mem.eql(u8, name, "let") or
+            std.mem.eql(u8, name, "package") or
+            std.mem.eql(u8, name, "private") or
+            std.mem.eql(u8, name, "protected") or
+            std.mem.eql(u8, name, "public") or
+            std.mem.eql(u8, name, "static") or
+            std.mem.eql(u8, name, "yield");
+    }
+
     const SuperCallValidity = enum { valid, not_in_constructor, no_extends };
 
-    /// determines if a `super()` call is in a valid position.
-    ///
-    /// `super()` is only permitted directly inside a constructor of a derived
-    /// class (one with an `extends` clause).
-    ///
-    /// arrow functions are transparent for `super`, Section 8.5.1 defines that
-    /// `Contains` passes through arrow functions for `SuperCall`.
-    /// Regular functions are opaque boundaries, they always return `false`
-    /// for `Contains`.
+    /// super() is only permitted inside a constructor of a derived class.
+    /// Arrow functions are transparent (Section 8.5.1), regular functions are opaque.
     fn superCallValidity(ctx: *SemanticCtx) SuperCallValidity {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             switch (ctx.tree.getData(i)) {
-                // Section 8.5.1: ArrowFunction does not close over `SuperCall`,
-                // `Contains` passes through to the enclosing scope.
                 .arrow_function_expression => {},
-
-                // Section 8.5.1: Regular functions are opaque to `Contains`.
-                // The only valid case is the function that is the *value* of
-                // a constructor MethodDefinition in a class with `extends`.
                 .function => {
                     if (iter.next()) |parent| {
                         if (ctx.tree.getData(parent) == .method_definition and
@@ -429,56 +374,32 @@ const SemanticVisit = struct {
                     }
                     return .not_in_constructor;
                 },
-
-                // Section 15.7.1: FieldDefinition, SuperCall in Initializer is a Syntax Error.
-                // Section 15.7.1: ClassStaticBlockBody, SuperCall in StatementList is a Syntax Error.
-                .property_definition, .static_block => return .not_in_constructor,
-
-                .program => return .not_in_constructor,
+                .property_definition, .static_block, .program => return .not_in_constructor,
                 else => {},
             }
         }
         return .not_in_constructor;
     }
 
-    /// determines if a `super.property` access is in a valid position.
-    ///
-    /// SuperProperty is more permissive than SuperCall. It is valid inside:
-    /// - any class method (constructor, regular, getter, setter, static)
-    /// - object literal methods/getters/setters
-    /// - class field initializers and static blocks
-    /// - arrow functions inheriting from the above
-    ///
-    /// it is not valid in standalone functions or top-level code.
+    /// super.property is valid in class methods, object methods, field
+    /// initializers, static blocks, and arrow functions inheriting from those.
     fn isSuperPropertyValid(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
             switch (ctx.tree.getData(i)) {
-                // Section 8.5.1: Arrow functions are transparent for SuperProperty.
                 .arrow_function_expression => {},
-
-                // Section 8.5.1: regular functions are opaque to `Contains`.
-                // valid only if this function is the value of a class method
-                // or object literal method/getter/setter.
                 .function => {
                     if (iter.next()) |parent| {
                         const data = ctx.tree.getData(parent);
-                        // class method (any kind, constructor, method, get, set)
                         if (data == .method_definition) return true;
-                        // object literal method/getter/setter
                         if (data == .object_property) {
                             const prop = data.object_property;
                             if (prop.method or prop.kind != .init) return true;
                         }
                     }
-
                     return false;
                 },
-
-                // SuperProperty is valid in field initializers and static blocks
-                // (unlike SuperCall which is banned here).
                 .property_definition, .static_block => return true,
-
                 .program => return false,
                 else => {},
             }
@@ -500,7 +421,6 @@ const SemanticVisit = struct {
         };
     }
 
-    /// check if we're inside a loop or switch (for unlabeled `break`).
     fn isInsideBreakable(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -511,7 +431,6 @@ const SemanticVisit = struct {
         return false;
     }
 
-    /// check if we're inside a loop (for unlabeled `continue`).
     fn isInsideIteration(ctx: *SemanticCtx) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -524,7 +443,6 @@ const SemanticVisit = struct {
 
     const LabelSearch = enum { found, not_found, crossed_boundary };
 
-    /// find a matching labeled statement for `break label;`.
     fn findLabel(ctx: *SemanticCtx, name: []const u8) LabelSearch {
         var crossed_boundary = false;
         var iter = ctx.path.ancestors();
@@ -542,8 +460,6 @@ const SemanticVisit = struct {
 
     const ContinueLabelSearch = enum { found, not_found, crossed_boundary, not_iteration };
 
-    /// find a matching labeled statement for `continue label;`.
-    /// the label must directly wrap an iteration statement (or another label).
     fn findLabelForContinue(ctx: *SemanticCtx, name: []const u8) ContinueLabelSearch {
         var crossed_boundary = false;
         var iter = ctx.path.ancestors();
@@ -600,7 +516,7 @@ const SemanticVisit = struct {
         labels: []const ast.Label = &.{},
     };
 
-    pub fn report(self: *Self, span: ast.Span, message: []const u8, opts: ReportOptions) Allocator.Error!void {
+    fn report(self: *Self, span: ast.Span, message: []const u8, opts: ReportOptions) Allocator.Error!void {
         try self.tree.appendDiagnostic(.{
             .severity = opts.severity,
             .message = message,
@@ -610,71 +526,15 @@ const SemanticVisit = struct {
         });
     }
 
-    pub fn label(_: *Self, span: ast.Span, message: []const u8) ast.Label {
+    fn label(_: *Self, span: ast.Span, message: []const u8) ast.Label {
         return .{ .span = span, .message = message };
     }
 
-    pub fn labels(self: *Self, items: []const ast.Label) Allocator.Error![]const ast.Label {
+    fn labels(self: *Self, items: []const ast.Label) Allocator.Error![]const ast.Label {
         return try self.allocator.dupe(ast.Label, items);
     }
 
-    pub fn fmt(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
+    fn fmt(self: *Self, comptime format: []const u8, args: anytype) Allocator.Error![]u8 {
         return try std.fmt.allocPrint(self.allocator, format, args);
     }
 };
-
-// TODO:
-//
-// Redeclaration checks.
-// It is a Syntax Error if FunctionBodyContainsUseStrict of FunctionBody is true and IsSimpleParameterList of FormalParameters is false.
-// It is a Syntax Error if any element of the BoundNames of FormalParameters also occurs in the LexicallyDeclaredNames of FunctionBody.
-// It is a Syntax Error if FunctionBody Contains SuperProperty is true.
-// It is a Syntax Error if FormalParameters Contains SuperProperty is true.
-// It is a Syntax Error if FormalParameters Contains SuperCall is true.
-// It is a Syntax Error if FormalParameters Contains YieldExpression is true.
-// It is a Syntax Error if FormalParameters Contains AwaitExpression is true.
-// It is a Syntax Error if FunctionBody Contains SuperCall is true.
-// 'evals' and 'arguments' in binding identifier and identifier reference.
-// Reserved checks: https://tc39.es/ecma262/#prod-ReservedWord
-// It is a Syntax Error if HasDirectSuper of MethodDefinition is true.
-// It is a Syntax Error if ConciseBodyContainsUseStrict of ConciseBody is true and IsSimpleParameterList of ArrowParameters is false.
-// It is a Syntax Error if any element of the BoundNames of ArrowParameters also occurs in the LexicallyDeclaredNames of ConciseBody.
-// (delete unary) It is a Syntax Error if IsStrict(the UnaryExpression) is true and the derived UnaryExpression is PrimaryExpression : IdentifierReference , MemberExpression : MemberExpression . PrivateIdentifier , CallExpression : CallExpression . PrivateIdentifier , OptionalChain : ?. PrivateIdentifier , or OptionalChain : OptionalChain . PrivateIdentifier .
-// (delete unary) It is a Syntax Error if the derived UnaryExpression is
-// PrimaryExpression : CoverParenthesizedExpressionAndArrowParameterList
-// and CoverParenthesizedExpressionAndArrowParameterList ultimately derives a phrase that, if used in place of UnaryExpression, would produce a Syntax Error according to these rules. This rule is recursively applied.
-// Note
-// (delete unary) The last rule means that expressions such as delete (((foo))) produce early errors because of recursive application of the first rule.
-// ImportMeta :
-//  import.meta
-//  It is a Syntax Error if the syntactic goal symbol is not Module.
-// It is a Syntax Error if this BreakStatement is not nested, directly or indirectly (but not crossing function or static initialization block boundaries), within an IterationStatement or a SwitchStatement.
-// It is a Syntax Error if this ContinueStatement is not nested, directly or indirectly (but not crossing function or static initialization block boundaries), within an IterationStatement.
-// It is a Syntax Error if any element of the BoundNames of ForDeclaration also occurs in the VarDeclaredNames of Statement.
-// It is a Syntax Error if the BoundNames of ForDeclaration contains any duplicate entries.
-// In strict mode code, functions can only be declared at top level or inside a block
-//
-// ImportDeclaration:
-// - It is a Syntax Error if the BoundNames of ImportDeclaration contains any duplicate entries.
-//
-// WithClause:
-// - It is a Syntax Error if WithClauseToAttributes of WithClause has two different entries a and b such that a.[[Key]] is b.[[Key]].
-//
-// ExportDeclaration:
-// - It is a Syntax Error if the ExportedNames of ModuleItemList contains any duplicate entries.
-// - For each IdentifierName n in the ReferencedBindings of NamedExports:
-//   It is a Syntax Error if the StringValue of n is a ReservedWord or the StringValue of n is one of
-//   "implements", "interface", "let", "package", "private", "protected", "public", or "static".
-//   Note: This is already checked in parser during export parsing for local exports without 'from'.
-//
-// module-level semantic checks:
-// - It is a Syntax Error if the LexicallyDeclaredNames of ModuleItemList contains any duplicate entries.
-// - It is a Syntax Error if any element of the LexicallyDeclaredNames of ModuleItemList also occurs in the VarDeclaredNames of ModuleItemList.
-// - It is a Syntax Error if the ExportedBindings of ModuleItemList does not also occur in the VarDeclaredNames of ModuleItemList,
-//   or the LexicallyDeclaredNames of ModuleItemList, or the ImportedLocalNames of ModuleItemList.
-// - It is a Syntax Error if ModuleItemList Contains super.
-// - It is a Syntax Error if ModuleItemList Contains NewTarget (except in functions).
-// 'let' is reserved in strict mode code.
-// export statements cannot be outside of a module.
-// 'default' case cannot appear more than once in a switch statement.
-// for-in/of loop variable declaration may not have an initializer
