@@ -99,6 +99,33 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// Section 15.2.1, 15.5.1, 15.6.1, 15.8.1:
+    /// It is a Syntax Error if FunctionBodyContainsUseStrict is true and
+    /// IsSimpleParameterList of FormalParameters is false.
+    pub fn enter_directive(self: *Self, directive: ast.Directive, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (std.mem.eql(u8, ctx.tree.getString(directive.value), "use strict")) {
+            var iter = ctx.path.ancestors();
+            while (iter.next()) |i| {
+                switch (ctx.tree.getData(i)) {
+                    .function => |func| {
+                        if (func.params != .null and
+                            !ecmascript.isSimpleParameterList(ctx.tree, ctx.tree.getData(func.params).formal_parameters))
+                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{});
+                        break;
+                    },
+                    .arrow_function_expression => |arrow| {
+                        if (!ecmascript.isSimpleParameterList(ctx.tree, ctx.tree.getData(arrow.params).formal_parameters))
+                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{});
+                        break;
+                    },
+                    .program => break,
+                    else => {},
+                }
+            }
+        }
+        return .proceed;
+    }
+
     pub fn enter_yield_expression(self: *Self, _: ast.YieldExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (isInFormalParameters(ctx)) {
             try self.report(ctx.tree.getSpan(node_index), "Yield expression is not allowed in formal parameters", .{});
