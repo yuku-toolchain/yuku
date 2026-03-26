@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3172/3560 (89.10%)
-Failed:       388
+Passed:       3208/3560 (90.11%)
+Failed:       352
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -59,7 +59,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/00b5935e92cb70cf.js
+✓ test/parser/suite/js/semantic/00b5935e92cb70cf.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | ({ a(eval) { "use strict"; } });
+   |      ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/00b86c72dd55da4c.js
 error: 'let' is not allowed as a variable name in a 'let' declaration
    |
@@ -143,6 +149,7 @@ error: Cannot use `await` as an identifier in an async or module context
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function f(a,...rest) {
+   |                     ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -152,6 +159,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function f(a = 0) {
+   |            ~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -475,7 +483,9 @@ error: Cannot use import statement outside a module
 ✓ test/parser/suite/js/semantic/04698cb7398928a0.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   *method([element]) {
+   |           ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -616,7 +626,13 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/050a006ae573e260.js
+✓ test/parser/suite/js/semantic/050a006ae573e260.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function eval() {'use strict'; }
+   |          ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/05141955bc17ae2d.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -835,6 +851,7 @@ error: Cannot use import statement outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function f([element]) {
+   |            ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -1009,7 +1026,9 @@ error: Cannot use import statement outside a module
 ✓ test/parser/suite/js/semantic/0913f12af24e0bb4.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   *method({property}) {
+   |           ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -1568,11 +1587,20 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/0e16b54d1cac419c.js
-✗ test/parser/suite/js/semantic/0e2bcc1c2e7f0196.js
+✓ test/parser/suite/js/semantic/0e2bcc1c2e7f0196.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | void {
+ 2 |   set x(arguments) {
+   |         ^^^^^^^^^
+ 3 |     "use strict";
+   |
+
 ✓ test/parser/suite/js/semantic/0e34a09959f78a89.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, async function*({property}) {
+   |                    ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -1981,7 +2009,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/115ba7f7e199eb20.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static async method(a,...rest) {
+   |                         ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -2273,7 +2303,17 @@ error: Cannot use 'export' declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/13e68fa93de97e1b.js
+✓ test/parser/suite/js/semantic/13e68fa93de97e1b.js
+error: Identifier 'param' has already been declared
+   |
+ 1 | function _13_1_28_fun(param, param, param) { 'use strict'; }
+   |                              ^^^^^
+   |                       ~~~~~ 'param' was first declared as a parameter here
+   |                              ~~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'param'
+
+
 ✓ test/parser/suite/js/semantic/141984ba1d762024.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -2714,7 +2754,9 @@ error: 'import' declaration may only appear at the top level
 ✓ test/parser/suite/js/semantic/179f3c1a69f82720.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   method({property}) {
+   |          ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -2831,7 +2873,9 @@ error: Cannot use 'export default' declaration outside a module
 ✓ test/parser/suite/js/semantic/189bbd9b03da721e.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   async method([element]) {
+   |                ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -3000,7 +3044,17 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |               ^^^
    |
 
-✗ test/parser/suite/js/semantic/19b1ced8eb4bd591.js
+✓ test/parser/suite/js/semantic/19b1ced8eb4bd591.js
+error: Identifier 'param' has already been declared
+   |
+ 1 | function _13_1_24_fun(param, param) { 'use strict'; }
+   |                              ^^^^^
+   |                       ~~~~~ 'param' was first declared as a parameter here
+   |                              ~~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'param'
+
+
 ✓ test/parser/suite/js/semantic/19b630afc200de70.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -3101,6 +3155,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a([yield]){ 'use strict'; }
    |                      ^^^^^^^^^^^^^
+   |            ~~~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/1a2d44734fa10d7a.module.js
@@ -3255,7 +3310,17 @@ error: In strict mode code, functions can only be declared at top level or insid
    |           ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/1b884992ac0a7bac.js
+✓ test/parser/suite/js/semantic/1b884992ac0a7bac.js
+error: Identifier 'param1' has already been declared
+   |
+ 1 | (function (param1, param2, param1) { 'use strict'; });
+   |                            ^^^^^^
+   |            ~~~~~~ 'param1' was first declared as a parameter here
+   |                            ~~~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'param1'
+
+
 ✓ test/parser/suite/js/semantic/1b8b03715a17881c.js
 error: Identifier 'a' has already been declared
    |
@@ -3293,6 +3358,7 @@ error: In strict mode code, functions can only be declared at top level or insid
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function f({property}) {
+   |            ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -3746,7 +3812,9 @@ error: Cannot use import statement outside a module
 ✓ test/parser/suite/js/semantic/202b12910a8b52fc.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   method({property}) {
+   |          ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -4065,7 +4133,9 @@ error: In strict mode code, functions can only be declared at top level or insid
 ✓ test/parser/suite/js/semantic/22599c4aa6811972.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static method({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -4156,7 +4226,9 @@ error: Cannot use import statement outside a module
 ✓ test/parser/suite/js/semantic/235fadba8e41db7e.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   method([element]) {
+   |          ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -4204,7 +4276,9 @@ error: Use of undefined label 'LABEL_ANOTHER_LOOP'
 ✓ test/parser/suite/js/semantic/2405f0730b838cfe.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static *method(a,...rest) {
+   |                    ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -4404,7 +4478,9 @@ error: 'eval' is not allowed as a binding name in strict mode
 ✓ test/parser/suite/js/semantic/261dcf9eebd52089.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   method([element]) {
+   |          ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -4468,7 +4544,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | var x;
    |
 
-✗ test/parser/suite/js/semantic/277ec371718b3aa0.js
+✓ test/parser/suite/js/semantic/277ec371718b3aa0.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | (function a(eval) { "use strict"; })
+   |             ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/27d390394c9f4d3a.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -4622,6 +4704,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, function*({property}) {
+   |              ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -4703,6 +4786,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function* f(a = 0) {
+   |             ~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -4933,7 +5017,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/2be51fd7463fe43c.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | ({
  2 |   async *method({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -4978,6 +5064,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, async function* g([element]) {
+   |                      ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -5098,7 +5185,9 @@ error: Identifier 'x' has already been declared
 ✓ test/parser/suite/js/semantic/2ce2d8fe2d91c4eb.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   async *method(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -5393,7 +5482,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  4 |     return 'declaration';
    |
 
-✗ test/parser/suite/js/semantic/2fcc5b7e8d0ff3c9.js
+✓ test/parser/suite/js/semantic/2fcc5b7e8d0ff3c9.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | !{ set a(eval){ 'use strict'; } };
+   |          ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/2fe86826c0f955d6.js
 error: Identifier 'f' has already been declared
    |
@@ -5420,7 +5515,9 @@ error: Identifier 'a' has already been declared
 ✓ test/parser/suite/js/semantic/30097bbd46a1eecc.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   *method([element]) {
+   |           ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -5716,7 +5813,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/33aec60ac4f4c6b9.js
+✓ test/parser/suite/js/semantic/33aec60ac4f4c6b9.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function a(eval) {'use strict';}
+   |            ^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/33d2a9a43fc71ede.js
 ✓ test/parser/suite/js/semantic/33d43e9f01bda5ce.js
 error: Expected ';' after for-loop init, but found ')'
@@ -5969,7 +6072,9 @@ error: Cannot use 'export' declaration outside a module
 ✓ test/parser/suite/js/semantic/359d802f85a264e0.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   async *method({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -6162,7 +6267,13 @@ error: 'import' declaration may only appear at the top level
    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/37872cd17325aa05.js
+✓ test/parser/suite/js/semantic/37872cd17325aa05.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | (function arguments() {'use strict';});
+   |           ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/378f184f8744ff14.js
 error: Identifier 'b' has already been declared
    |
@@ -6220,7 +6331,9 @@ error: In strict mode code, functions can only be declared at top level or insid
 ✓ test/parser/suite/js/semantic/37ead50e894affbb.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static method([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -6308,7 +6421,9 @@ error: Use of undefined label 'b'
 ✓ test/parser/suite/js/semantic/38a78d5d820d9b85.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   async *method([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -6319,6 +6434,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function*(x = 1) {"use strict"});
    |                          ^^^^^^^^^^^^
+   |                  ~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/38ce6e374aa4379c.module.js
@@ -6403,6 +6519,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, (a,...rest) => {
+   |       ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -6583,7 +6700,9 @@ error: Identifier 'smoosh' has already been declared
 ✓ test/parser/suite/js/semantic/3ba284be05ae1405.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   method({property}) {
+   |          ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -6726,6 +6845,7 @@ error: Cannot use import statement outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | var f = function(a = 0) {
+   |                  ~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -6736,6 +6856,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (([]) => {'use strict';})
    |           ^^^^^^^^^^^^^
+   |   ~~ non-simple parameter
  2 | 
    |
 
@@ -6768,6 +6889,7 @@ error: 'arguments' is not allowed as a binding name in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async (a,...rest) => {
+   |           ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -6791,7 +6913,13 @@ error: In strict mode code, functions can only be declared at top level or insid
    |                          ^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/3db5225c6a017594.js
+✓ test/parser/suite/js/semantic/3db5225c6a017594.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | !function (eval){ 'use strict'; }
+   |            ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/3dc2deaafc74c4ad.js
 error: Identifier 'a' has already been declared
    |
@@ -6861,7 +6989,9 @@ error: Yield expression is not allowed in formal parameters
 ✓ test/parser/suite/js/semantic/3e656e6b11f301b0.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   async *method(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -6975,7 +7105,14 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
    |                                  ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/3fccb1ddcd0b1a21.js
+✓ test/parser/suite/js/semantic/3fccb1ddcd0b1a21.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | eval => {"use strict"};
+   | ^^^^
+ 2 | 
+   |
+
 ✗ test/parser/suite/js/semantic/3fd976020ee226ac.js
 ✓ test/parser/suite/js/semantic/3fdb5b4d53eb6812.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -7078,7 +7215,9 @@ error: for-in/of loop variable declaration may not have an initializer
 ✓ test/parser/suite/js/semantic/407febd928d89f2e.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static *method(a,...rest) {
+   |                    ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -7128,6 +7267,7 @@ error: Private fields cannot be deleted
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function* f({property}) {
+   |                   ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -7418,6 +7558,7 @@ error: Cannot use 'export' declaration outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, ({property}) => {
+   |     ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -7663,6 +7804,7 @@ error: for-in/of loop variable declaration may not have an initializer
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function* f(a,...rest) {
+   |               ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -7764,7 +7906,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/465d6bf786b081c0.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   async *method(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -8482,6 +8626,7 @@ error: Cannot use import statement outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function f(a,...rest) {
+   |                    ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -8568,6 +8713,7 @@ error: Cannot use 'export default' declaration outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | var f = (a = 0) => {
+   |          ~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -8656,7 +8802,17 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/4e6529771ad3343f.module.js
-✗ test/parser/suite/js/semantic/4e7e3a5864a26f14.js
+✓ test/parser/suite/js/semantic/4e7e3a5864a26f14.js
+error: Identifier 'param1' has already been declared
+   |
+ 1 | function _13_1_26_fun(param1, param2, param1) { 'use strict'; }
+   |                                       ^^^^^^
+   |                       ~~~~~~ 'param1' was first declared as a parameter here
+   |                                       ~~~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'param1'
+
+
 ✓ test/parser/suite/js/semantic/4e8d04efa24f751d.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -8706,6 +8862,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, async function*([element]) {
+   |                    ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -8872,7 +9029,9 @@ error: Identifier 'x' has already been declared
 ✓ test/parser/suite/js/semantic/50974c08bc2347ad.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static method(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -9132,6 +9291,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, function*([element]) {
+   |              ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -9364,7 +9524,13 @@ error: Cannot use 'export' declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/5529555236f65506.js
+✓ test/parser/suite/js/semantic/5529555236f65506.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | !{ a(eval){ 'use strict'; } };
+   |      ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/5563d865aa905eb0.js
 error: Private fields cannot be deleted
    |
@@ -9401,7 +9567,9 @@ error: Identifier 'f' has already been declared
 ✓ test/parser/suite/js/semantic/55a11ab9970de633.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   *method({property}) {
+   |           ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -9616,7 +9784,13 @@ error: 'with' statements are not allowed in strict mode
  3 |     b = ((c()), (1));
    |
 
-✗ test/parser/suite/js/semantic/574ea84fc61bdc31.js
+✓ test/parser/suite/js/semantic/574ea84fc61bdc31.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | function arguments() {'use strict'; }
+   |          ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/575e1eb1b5f9786b.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -9685,7 +9859,9 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/js/semantic/57d408fff22b3bfe.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static *method([element]) {
+   |                  ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -9724,6 +9900,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function foo(x = 1){"use strict"}
    |                           ^^^^^^^^^^^^
+   |                    ~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/58138942ebdf48d1.js
@@ -9777,7 +9954,9 @@ error: Private fields cannot be deleted
 ✓ test/parser/suite/js/semantic/58b4ec3ffc927794.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static async *method([element]) {
+   |                        ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -9797,7 +9976,9 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/js/semantic/58d834cad69de69d.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | var o = {
  2 |   set m(a = 0) {
+   |         ~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -9836,7 +10017,9 @@ error: 'arguments' is not allowed as a binding name in strict mode
 ✓ test/parser/suite/js/semantic/59191c24ad4a4b35.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | var C = class {
  2 |   static async method({property}) {
+   |                       ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -9935,7 +10118,9 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/js/semantic/59bb71fa8849a99a.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   async *method({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -10152,7 +10337,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✗ test/parser/suite/js/semantic/5b5305570146ad29.js
-✗ test/parser/suite/js/semantic/5b5801e3bf15059b.js
+✓ test/parser/suite/js/semantic/5b5801e3bf15059b.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | (function (eval) { 'use strict'; });
+   |            ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/5b658c0ec215a24b.js
 error: Cannot use import statement outside a module
    |
@@ -10582,6 +10773,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a({a:yield}){ 'use strict'; }
    |                        ^^^^^^^^^^^^^
+   |            ~~~~~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/5f6d5c284563fe6b.module.js
@@ -11022,7 +11214,9 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/js/semantic/63f808d2d25cfd03.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | var C = class {
  2 |   static async method([element]) {
+   |                       ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -11126,7 +11320,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/6473f07239ed08ef.js
+✓ test/parser/suite/js/semantic/6473f07239ed08ef.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | function a(b, b) { "use strict"; }
+   |               ^
+   |            ~ 'b' was first declared as a parameter here
+   |               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/64aecb3d0bb50ef8.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -11193,7 +11397,9 @@ error: Cannot use import statement outside a module
 ✓ test/parser/suite/js/semantic/651ea8d989575edc.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   *method(a,...rest) {
+   |             ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -11275,6 +11481,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, ([element]) => {
+   |     ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -11774,7 +11981,9 @@ error: Cannot use import statement outside a module
 ✓ test/parser/suite/js/semantic/6a4a39dfd3855681.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   async method({property}) {
+   |                ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -11929,6 +12138,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, function([element]) {
+   |             ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -12031,7 +12241,13 @@ error: Cannot continue to label 'b' across function boundaries
    |                             ^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6c4fe38464c16309.js
+✓ test/parser/suite/js/semantic/6c4fe38464c16309.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | (function arguments() {'use strict'; })()
+   |           ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6c6ef7d1240c34eb.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -12460,7 +12676,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/6ffd68dbeec863cd.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static *method({property}) {
+   |                  ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -12743,7 +12961,9 @@ error: In non-strict mode code, functions can only be declared at top level, ins
 ✓ test/parser/suite/js/semantic/72e377afc42e5c8f.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   async *method([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -12877,6 +13097,7 @@ error: for-in/of loop variable declaration may not have an initializer
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function f({property}) {
+   |                  ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -12943,7 +13164,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/74755fdb0d466888.js
+✓ test/parser/suite/js/semantic/74755fdb0d466888.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function eval() { 'use strict'; }
+   |          ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7484ac91150c8352.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -13034,7 +13261,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/7513516d9fe51c8c.js
+✓ test/parser/suite/js/semantic/7513516d9fe51c8c.js
+error: Identifier 'param' has already been declared
+   |
+ 1 | (function (param, param) { 'use strict'; });
+   |                   ^^^^^
+   |            ~~~~~ 'param' was first declared as a parameter here
+   |                   ~~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'param'
+
+
 ✓ test/parser/suite/js/semantic/75172741c27c7703.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -13340,6 +13577,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -13493,6 +13731,7 @@ error: Cannot use import statement outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | var f = function*(a = 0) {
+   |                   ~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -13652,7 +13891,9 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/js/semantic/7aefcbff77945d48.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   *method([element]) {
+   |           ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -14312,7 +14553,9 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/js/semantic/8102c7091f5a52a4.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static async *method(a,...rest) {
+   |                          ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -14824,7 +15067,9 @@ error: for-in/of loop variable declaration may not have an initializer
 ✓ test/parser/suite/js/semantic/85ce5704fd5f4dd1.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   method(a,...rest) {
+   |            ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -14857,7 +15102,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 ✗ test/parser/suite/js/semantic/860f50d4534bcb05.module.js
 ✗ test/parser/suite/js/semantic/86131c9fbad63a79.js
-✗ test/parser/suite/js/semantic/8643da76fe7e95c7.js
+✓ test/parser/suite/js/semantic/8643da76fe7e95c7.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | (function eval() {'use strict'; })()
+   |           ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/86822a987d4d8c5a.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -14966,7 +15217,9 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/js/semantic/879c075c866d56cf.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static method([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -15176,7 +15429,9 @@ error: Identifier 'a' has already been declared
 ✓ test/parser/suite/js/semantic/8aface3fff12e532.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static async method({property}) {
+   |                       ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -15293,6 +15548,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a([yield,...a]){ 'use strict'; }
    |                           ^^^^^^^^^^^^^
+   |            ~~~~~~~~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/8c2b8fcd698fa3ac.js
@@ -15443,6 +15699,7 @@ error: 'arguments' is not allowed as a binding name in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, async function*(a,...rest) {
+   |                      ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -16052,6 +16309,7 @@ error: 'let' is not allowed as a variable name in a 'let' declaration
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -16158,7 +16416,9 @@ error: Yield expression is not allowed in formal parameters
 ✓ test/parser/suite/js/semantic/94352c69fe0ccb19.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | ({
  2 |   async *method([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -16195,6 +16455,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async (x = 1) => {"use strict"}
    |                   ^^^^^^^^^^^^
+   |        ~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/94cb828d5dcfd136.module.js
@@ -16225,6 +16486,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | ({a([]){'use strict'}})
    |         ^^^^^^^^^^^^
+   |     ~~ non-simple parameter
  2 | 
    |
 
@@ -16423,7 +16685,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/96b94c5a8aaa0a9f.js
+✓ test/parser/suite/js/semantic/96b94c5a8aaa0a9f.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function _13_1_16_fun(eval) { 'use strict'; }
+   |                       ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/96c179726479fa02.js
 error: Identifier 'x' has already been declared
    |
@@ -16441,6 +16709,7 @@ error: Identifier 'x' has already been declared
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, function(a,...rest) {
+   |               ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -17521,7 +17790,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/9efca380f8fbc57b.js
+✓ test/parser/suite/js/semantic/9efca380f8fbc57b.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function a(eval){ 'use strict'; }
+   |            ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9f09d5f3bdc5b71a.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -18535,7 +18810,13 @@ error: 'let' is not allowed as a variable name in a 'let' declaration
    |
 
 ✗ test/parser/suite/js/semantic/a72f28144106cb30.js
-✗ test/parser/suite/js/semantic/a75bfa84ae7ce2dc.js
+✓ test/parser/suite/js/semantic/a75bfa84ae7ce2dc.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function a(eval) { "use strict"; }
+   |            ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a75d12dab83090ea.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -18625,7 +18906,9 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 ✓ test/parser/suite/js/semantic/a80c388114d769ae.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   method(a,...rest) {
+   |            ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -18738,7 +19021,9 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 ✓ test/parser/suite/js/semantic/a9313ea1550e7596.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   *method(a,...rest) {
+   |             ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -18791,6 +19076,7 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function f({property}) {
+   |                   ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -19093,7 +19379,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/aca09dcfb83e7b4f.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | ({
  2 |   async *method(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -19567,7 +19855,9 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/js/semantic/b1248901a1ead3ff.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   method(a,...rest) {
+   |            ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -19878,7 +20168,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |                             ^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/b44d69c497ba8742.js
+✓ test/parser/suite/js/semantic/b44d69c497ba8742.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | !{ *a(eval){ 'use strict'; } };
+   |       ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b4639f2d0e68597c.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -19892,6 +20188,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  1 | class Foo {
  2 |   async bar(x = 1) {"use strict"}
    |                     ^^^^^^^^^^^^
+   |             ~~~~~ non-simple parameter
  3 | }
    |
 
@@ -20000,6 +20297,7 @@ error: 'super' property access is only valid inside a method or class body
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async ({property}) => {
+   |         ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -20305,6 +20603,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (function ([]){'use strict';})
    |                ^^^^^^^^^^^^^
+   |            ~~ non-simple parameter
  2 | 
    |
 
@@ -20347,7 +20646,9 @@ error: Yield expression is not allowed in formal parameters
 ✓ test/parser/suite/js/semantic/b91cb9c8fd91f6db.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | var C = class {
  2 |   static async method(a,...rest) {
+   |                         ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -20482,7 +20783,9 @@ error: In strict mode code, functions can only be declared at top level or insid
 ✓ test/parser/suite/js/semantic/bab8d57ddf81ea04.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   method([element]) {
+   |          ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -20603,7 +20906,13 @@ error: Yield expression is not allowed in formal parameters
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/bbf81bc1923c1a5e.js
+✓ test/parser/suite/js/semantic/bbf81bc1923c1a5e.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | function arguments() { 'use strict'; }
+   |          ^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/bc04ce895077f312.js
 ✓ test/parser/suite/js/semantic/bc19d7d76093f94e.js
 error: 'implements' is reserved in strict mode and cannot be used as an identifier
@@ -20618,6 +20927,7 @@ error: 'implements' is reserved in strict mode and cannot be used as an identifi
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -20700,6 +21010,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a([]){'use strict';}
    |                ^^^^^^^^^^^^^
+   |            ~~ non-simple parameter
  2 | 
    |
 
@@ -20785,6 +21096,7 @@ error: 'with' statements are not allowed in strict mode
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async ([element]) => {
+   |         ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -20924,7 +21236,9 @@ error: Identifier 'smoosh' has already been declared
 ✓ test/parser/suite/js/semantic/bf178728b8acab50.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static async *method([element]) {
+   |                        ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -21166,6 +21480,7 @@ error: Cannot use import statement outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function* f([element]) {
+   |                   ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -21286,12 +21601,24 @@ error: 'import.meta' is only valid in module code
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function* f(a,...rest) {
+   |                     ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/c211e5a7799f20ad.js
+✓ test/parser/suite/js/semantic/c211e5a7799f20ad.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | function a(b, b) {'use strict';}
+   |               ^
+   |            ~ 'b' was first declared as a parameter here
+   |               ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/c21df0788d2e4fe0.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -21565,7 +21892,9 @@ error: 'arguments' is not allowed as a binding name in strict mode
 ✓ test/parser/suite/js/semantic/c4a945fa6a515312.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static *method({property}) {
+   |                  ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -22022,6 +22351,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function f([element]) {
+   |                   ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | });
@@ -22459,7 +22789,17 @@ error: Identifier 'param1' has already been declared
    = help: Consider removing or renaming this declaration of 'param1'
 
 
-✗ test/parser/suite/js/semantic/cc1b16280477d9a2.js
+✓ test/parser/suite/js/semantic/cc1b16280477d9a2.js
+error: Identifier 'param' has already been declared
+   |
+ 1 | (function (param, param, param) { 'use strict'; });
+   |                   ^^^^^
+   |            ~~~~~ 'param' was first declared as a parameter here
+   |                   ~~~~~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'param'
+
+
 ✓ test/parser/suite/js/semantic/cc23480bdd763207.js
 error: Identifier 'a' has already been declared
    |
@@ -22480,7 +22820,13 @@ error: Private fields cannot be deleted
  5 |   }
    |
 
-✗ test/parser/suite/js/semantic/cc3a712aaffdd07f.js
+✓ test/parser/suite/js/semantic/cc3a712aaffdd07f.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | function a(arguments) {'use strict';}
+   |            ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/cc49bd61aeda1cf7.js
 error: Private fields cannot be deleted
    |
@@ -22578,6 +22924,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a([], []) {'use strict';}
    |                     ^^^^^^^^^^^^^
+   |            ~~ non-simple parameter
  2 | 
    |
 
@@ -22716,6 +23063,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | (async function (x = 1) {"use strict"})
    |                          ^^^^^^^^^^^^
+   |                  ~~~~~ non-simple parameter
    |
 
 ✗ test/parser/suite/js/semantic/ce117260444bccb3.js
@@ -22842,6 +23190,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | ([let]) => {'use strict'}
    |             ^^^^^^^^^^^^
+   |  ~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/cf68dd8907f3daee.js
@@ -22938,7 +23287,9 @@ error: Identifier 'smoosh' has already been declared
 ✓ test/parser/suite/js/semantic/d036e73d4a43a463.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | var o = {
  2 |   m(a = 0) {
+   |     ~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -23011,7 +23362,9 @@ error: Identifier 'a' has already been declared
 ✓ test/parser/suite/js/semantic/d0b29926cc421cb4.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   async *method({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -23066,6 +23419,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  1 | ({
  2 |   foo(x = 1) {"use strict"}
    |               ^^^^^^^^^^^^
+   |       ~~~~~ non-simple parameter
  3 | });
    |
 
@@ -23129,7 +23483,13 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/d17c5f9623ec3a71.js
+✓ test/parser/suite/js/semantic/d17c5f9623ec3a71.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | function* a(eval){ 'use strict'; }
+   |             ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/d1aae24bd887b50b.js
 error: Identifier 'f' has already been declared
    |
@@ -23181,7 +23541,9 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
 ✓ test/parser/suite/js/semantic/d1f9e003af395521.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static async method([element]) {
+   |                       ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -23523,6 +23885,7 @@ error: Identifier 'b' has already been declared
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, async function* g({property}) {
+   |                      ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -23531,7 +23894,9 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 ✓ test/parser/suite/js/semantic/d437c3a419f6878e.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, {
  2 |   *method(a,...rest) {
+   |             ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -23748,7 +24113,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |                             ^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/d6828a45cebf554c.js
+✓ test/parser/suite/js/semantic/d6828a45cebf554c.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | (eval) => { "use strict"; 1 }
+   |  ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/d6aa6dc80c71444b.module.js
 error: Cannot use `await` as an identifier in an async or module context
    |
@@ -23948,6 +24319,7 @@ error: Cannot use 'export' declaration outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | async function f([element]) {
+   |                  ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -24059,7 +24431,9 @@ error: 'export default' declaration may only appear at the top level
 ✓ test/parser/suite/js/semantic/d8dbb7b4a07f063a.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   async *method([element]) {
+   |                 ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -24417,7 +24791,9 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/js/semantic/db5fc189706fed82.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static async *method(a,...rest) {
+   |                          ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -24481,7 +24857,13 @@ error: Cannot use 'export default' declaration outside a module
  2 | A.foo = '';
    |
 
-✗ test/parser/suite/js/semantic/dbf081f01e6780fc.js
+✓ test/parser/suite/js/semantic/dbf081f01e6780fc.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | (function eval() {'use strict';});
+   |           ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/dc05b5a70cde6a79.js
 error: Cannot use import statement outside a module
    |
@@ -24695,6 +25077,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a({yield}){ 'use strict'; }
    |                      ^^^^^^^^^^^^^
+   |            ~~~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/de0aaffe8b70483c.js
@@ -24787,7 +25170,17 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/de9d9a6cd61407f5.js
+✓ test/parser/suite/js/semantic/de9d9a6cd61407f5.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | (function a(b, b) { "use strict"; })
+   |                ^
+   |             ~ 'b' was first declared as a parameter here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/deb13a470cb01aab.js
 error: Identifier 'c' has already been declared
    |
@@ -24948,6 +25341,7 @@ error: Identifier 'f' has already been declared
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function* f({property}) {
+   |             ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -25237,7 +25631,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
  5 |   count++;
    |
 
-✗ test/parser/suite/js/semantic/e2430bb781d34c21.js
+✓ test/parser/suite/js/semantic/e2430bb781d34c21.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | !function* (eval){ 'use strict'; }
+   |             ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e2470430b235b9bb.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -25601,7 +26001,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/e51fc35950900063.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   *method({property}) {
+   |           ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -25759,6 +26161,7 @@ error: Cannot use import statement outside a module
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, function({property}) {
+   |             ~~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -26065,12 +26468,14 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function a({yield=1}){ 'use strict'; }
    |                        ^^^^^^^^^^^^^
+   |            ~~~~~~~~~ non-simple parameter
    |
 
 ✓ test/parser/suite/js/semantic/e9dc9118d8845337.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function* f([element]) {
+   |             ~~~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -26925,7 +27330,9 @@ error: Yield expression is not allowed in formal parameters
 ✓ test/parser/suite/js/semantic/f0af5f5432b57cd2.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static method(a,...rest) {
+   |                   ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -26994,7 +27401,9 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
 ✓ test/parser/suite/js/semantic/f10b90321b04cfb7.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static method({property}) {
+   |                 ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -27106,7 +27515,9 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/js/semantic/f23a71fdf984532f.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static *method([element]) {
+   |                  ~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -27176,6 +27587,7 @@ error: 'super()' is only valid in a constructor of a derived class
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, function*(a,...rest) {
+   |                ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -27369,7 +27781,9 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/js/semantic/f3e4d184c0d1063f.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | 0, class {
  2 |   static async *method({property}) {
+   |                        ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -27451,7 +27865,15 @@ error: Deleting a variable in strict mode is not allowed
  3 |   return arguments;
    |
 
-✗ test/parser/suite/js/semantic/f502d58c5461ae46.js
+✓ test/parser/suite/js/semantic/f502d58c5461ae46.js
+error: 'eval' is not allowed as a binding name in strict mode
+   |
+ 1 | void {
+ 2 |   set x(eval) {
+   |         ^^^^
+ 3 |     "use strict";
+   |
+
 ✓ test/parser/suite/js/semantic/f50ceee41fdb19e6.js
 error: 'let' is not allowed as a variable name in a 'let' declaration
    |
@@ -27508,7 +27930,9 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/js/semantic/f5cd538c1b5a056b.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   static async *method({property}) {
+   |                        ~~~~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -27561,6 +27985,7 @@ error: In strict mode code, functions can only be declared at top level or insid
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | function f(a,...rest) {
+   |              ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | }
@@ -27637,7 +28062,9 @@ error: 'eval' is not allowed as a binding name in strict mode
 ✓ test/parser/suite/js/semantic/f6a9242247ec79fb.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | class C {
  2 |   async method(a,...rest) {
+   |                  ~~~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }
@@ -27958,6 +28385,7 @@ error: Identifier 'smoosh' has already been declared
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | 0, async function* g(a,...rest) {
+   |                        ~~~~~~~ non-simple parameter
  2 |   "use strict";
    |   ^^^^^^^^^^^^^
  3 | };
@@ -28027,6 +28455,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
  1 | ({set a([]){'use strict'}})
    |             ^^^^^^^^^^^^
+   |         ~~ non-simple parameter
  2 | 
    |
 
@@ -28501,7 +28930,13 @@ error: 'with' statements are not allowed in strict mode
 23 |   var {[sourceKey]: varTarget = defaultValue} = source;
    |
 
-✗ test/parser/suite/js/semantic/fe33079db7d58d74.js
+✓ test/parser/suite/js/semantic/fe33079db7d58d74.js
+error: 'arguments' is not allowed as a binding name in strict mode
+   |
+ 1 | function _13_1_20_fun(arguments) { 'use strict'; }
+   |                       ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/fe68564c21bdb519.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -28612,7 +29047,9 @@ error: Identifier 'smoosh' has already been declared
 ✓ test/parser/suite/js/semantic/ff5434f64dd77ba1.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
+ 1 | var o = {
  2 |   *m(a = 0) {
+   |      ~~~~~ non-simple parameter
  3 |     "use strict";
    |     ^^^^^^^^^^^^^
  4 |   }

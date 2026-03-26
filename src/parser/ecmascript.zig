@@ -66,14 +66,20 @@ pub fn eqlStringValue(source: []const u8, expected: []const u8) bool {
 }
 
 /// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
-pub fn isSimpleParameterList(tree: *const ast.Tree, params: ast.FormalParameters) bool {
-    if (params.rest != .null) return false;
+pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameters) ?ast.NodeIndex {
+    if (params.rest != .null) return params.rest;
+
     for (tree.getExtra(params.items)) |param_idx| {
         const pattern = tree.getData(param_idx).formal_parameter.pattern;
         switch (tree.getData(pattern)) {
             .binding_identifier => {},
-            else => return false,
+            else => return pattern,
         }
     }
-    return true;
+
+    return null;
+}
+
+pub fn eqlUseStrict(text: []const u8) bool {
+    return std.mem.eql(u8, text, "use strict");
 }

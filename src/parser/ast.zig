@@ -1192,7 +1192,7 @@ pub const ArrowFunctionExpression = struct {
     async: bool,
     /// FormalParameters
     params: NodeIndex,
-    /// FunctionBody
+    /// FunctionBody if `expression` is false, otherwise an Expression
     body: NodeIndex,
     // TODO: add pure field too, `true` if the function is marked with a `/*#__NO_SIDE_EFFECTS__*/` comment
     // TODO: handle PIFE ("Possibly-Invoked Function Expression") cases, there are other needs which are needed this

@@ -4,6 +4,7 @@ const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
+const ecmascript = @import("../ecmascript.zig");
 
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
@@ -99,7 +100,7 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeInd
     const value_text = parser.source[value_start..value_end];
 
     // "use strict" directive enables strict mode for the current scope
-    if (std.mem.eql(u8, value_text, "use strict")) {
+    if (ecmascript.eqlUseStrict(value_text)) {
         _ = parser.enterStrictMode();
     }
 

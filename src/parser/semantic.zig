@@ -74,7 +74,7 @@ const SemanticVisit = struct {
                         formal_parameters.kind == .arrow_formal_parameters
                     ) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
-                    } else if (!ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
+                    } else if (ecmascript.findNonSimpleParameter(ctx.tree, formal_parameters)) |_| {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                     }
                 }
@@ -103,19 +103,29 @@ const SemanticVisit = struct {
     /// "It is a Syntax Error if FunctionBodyContainsUseStrict is true and
     ///  IsSimpleParameterList of FormalParameters is false."
     pub fn enter_directive(self: *Self, directive: ast.Directive, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (std.mem.eql(u8, ctx.tree.getString(directive.value), "use strict")) {
+        if (ecmascript.eqlUseStrict(ctx.tree.getString(directive.value))) {
             var iter = ctx.path.ancestors();
             while (iter.next()) |i| {
                 switch (ctx.tree.getData(i)) {
                     .function => |func| {
-                        if (func.params != .null and
-                            !ecmascript.isSimpleParameterList(ctx.tree, ctx.tree.getData(func.params).formal_parameters))
-                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{});
+                        if (func.params != .null)
+                            if (ecmascript.findNonSimpleParameter(ctx.tree, ctx.tree.getData(func.params).formal_parameters)) |param| {
+                                try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{
+                                    .labels = try self.labels(&.{
+                                        self.label(ctx.tree.getSpan(param), "non-simple parameter"),
+                                    }),
+                                });
+                            };
                         break;
                     },
                     .arrow_function_expression => |arrow| {
-                        if (!ecmascript.isSimpleParameterList(ctx.tree, ctx.tree.getData(arrow.params).formal_parameters))
-                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{});
+                        if (ecmascript.findNonSimpleParameter(ctx.tree, ctx.tree.getData(arrow.params).formal_parameters)) |param| {
+                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{
+                                .labels = try self.labels(&.{
+                                    self.label(ctx.tree.getSpan(param), "non-simple parameter"),
+                                }),
+                            });
+                        }
                         break;
                     },
                     .program => break,
@@ -123,6 +133,7 @@ const SemanticVisit = struct {
                 }
             }
         }
+
         return .proceed;
     }
 
