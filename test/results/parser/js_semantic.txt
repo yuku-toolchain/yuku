@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3026/3560 (85.00%)
-Failed:       534
+Passed:       3116/3560 (87.53%)
+Failed:       444
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -990,7 +990,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/08f957bc2a1f1a2b.module.js
+✓ test/parser/suite/js/semantic/08f957bc2a1f1a2b.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | switch(0) { case 1: export default null; default: }
+   |                     ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/08fb1b0d653eae52.js
 ✓ test/parser/suite/js/semantic/090b760a3c30fca6.js
 error: Cannot use import statement outside a module
@@ -1299,7 +1305,14 @@ error: Identifier 'c' has already been declared
    = help: Consider removing or renaming this declaration of 'c'
 
 
-✗ test/parser/suite/js/semantic/0bef4f7efb24a578.module.js
+✓ test/parser/suite/js/semantic/0bef4f7efb24a578.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (const x = 0; false;)
+ 2 |   import v from './decl-pos-import-for-const.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/0bf37874b7af9907.js
 error: Illegal continue statement
    |
@@ -1341,7 +1354,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/0c7bc3c6c3e5b4ff.module.js
+✓ test/parser/suite/js/semantic/0c7bc3c6c3e5b4ff.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ *m() { import v from './decl-pos-import-object-gen-method.js'; } });
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/0c81e22716fd4098.js
 error: Identifier 'b' has already been declared
    |
@@ -1591,7 +1610,13 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/0e95602a21ca1976.module.js
+✓ test/parser/suite/js/semantic/0e95602a21ca1976.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { *method() { export default null; } }
+   |                       ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/0e9f58604feae6ce.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -1976,7 +2001,15 @@ error: Cannot use 'export default' declaration outside a module
  3 | if (true) {
    |
 
-✗ test/parser/suite/js/semantic/1182d156de498d26.module.js
+✓ test/parser/suite/js/semantic/1182d156de498d26.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try {
+ 2 |   import v from './decl-pos-import-try-try.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | } catch (err) { }
+   |
+
 ✓ test/parser/suite/js/semantic/1195d22c9f10b256.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -2317,7 +2350,13 @@ error: Identifier 'a' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/14d1d9ec5f97bd4e.module.js
-✗ test/parser/suite/js/semantic/14d419f38fd83126.module.js
+✓ test/parser/suite/js/semantic/14d419f38fd83126.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { method() { import v from './decl-pos-import-class-decl-meth.js'; } }
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/14e1df2e07e33ac9.js
 error: Identifier 'param' has already been declared
    |
@@ -2663,7 +2702,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/17692c132140f264.module.js
+✓ test/parser/suite/js/semantic/17692c132140f264.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | while (false) import v from './decl-pos-import-while.js';
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/179f3c1a69f82720.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -2691,7 +2736,13 @@ error: 'with' statements are not allowed in strict mode
 11 |   var __FACTORY = function () {
    |
 
-✗ test/parser/suite/js/semantic/17e333ed35a3631e.module.js
+✓ test/parser/suite/js/semantic/17e333ed35a3631e.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | if (true) { } else import v from './decl-pos-import-if-else.js';
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/18042da1d318897c.js
 error: Identifier 'f' has already been declared
    |
@@ -2778,7 +2829,14 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/189c7430e656fd64.module.js
+✓ test/parser/suite/js/semantic/189c7430e656fd64.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (const x = 0; false;)
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/18ad9aeb1330f2f9.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -2843,7 +2901,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  3 | });
    |
 
-✗ test/parser/suite/js/semantic/18f2c7dfdf35f092.module.js
+✓ test/parser/suite/js/semantic/18f2c7dfdf35f092.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try { } catch (err) { } finally {
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/18f2fe0c9a735393.js
 error: Cannot use import statement outside a module
    |
@@ -3159,7 +3225,13 @@ error: Deleting a variable in strict mode is not allowed
  6 | if (__func() !== ALIVE) {}
    |
 
-✗ test/parser/suite/js/semantic/1b199cf915cc364f.module.js
+✓ test/parser/suite/js/semantic/1b199cf915cc364f.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (function*() { export default null; });
+   |                ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/1b542dd79e4444c7.js
 error: Cannot use import statement outside a module
    |
@@ -3246,7 +3318,14 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/1c12af9748fb8e55.module.js
+✓ test/parser/suite/js/semantic/1c12af9748fb8e55.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (const y of [])
+ 2 |   import v from './decl-pos-import-for-of-const.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/1c1e2a43fe5515b6.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -4261,7 +4340,13 @@ error: Cannot use 'export' declaration outside a module
  2 | ;
    |
 
-✗ test/parser/suite/js/semantic/25a4435e3be15b76.module.js
+✓ test/parser/suite/js/semantic/25a4435e3be15b76.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { static *method() { import v from './decl-pos-import-class-expr-meth-gen-static.js'; } });
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/25b1203f2a1fb830.js
 error: Illegal break statement
    |
@@ -4427,7 +4512,13 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/283aa1417f07078f.module.js
+✓ test/parser/suite/js/semantic/283aa1417f07078f.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { *method() { export default null; } });
+   |                      ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/2865434e96e8e912.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -4822,7 +4913,14 @@ error: Cannot use import statement outside a module
    |
 
 ✗ test/parser/suite/js/semantic/2bbf1e7f7752c546.js
-✗ test/parser/suite/js/semantic/2bc90e6c1b0444bf.module.js
+✓ test/parser/suite/js/semantic/2bc90e6c1b0444bf.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (let x = 0; false;)
+ 2 |   import v from './decl-pos-import-for-let.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/2bd8dd5b1242cf8a.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -4979,7 +5077,13 @@ error: 'private' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/2cc56ad1a0a9022d.module.js
+✓ test/parser/suite/js/semantic/2cc56ad1a0a9022d.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { method() { export default null; } }
+   |                      ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/2ccba24fc5b31703.js
 error: Identifier 'x' has already been declared
    |
@@ -5869,7 +5973,14 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/35bc07a789f0b0b8.module.js
+✓ test/parser/suite/js/semantic/35bc07a789f0b0b8.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (let y of [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/35d9a2bf90e49ecd.module.js
 error: Identifier 'a' has already been declared
    |
@@ -6010,7 +6121,13 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/3784e3681e144a2f.module.js
+✓ test/parser/suite/js/semantic/3784e3681e144a2f.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | test262: import v from './decl-pos-import-labeled.js';
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/37872cd17325aa05.js
 ✓ test/parser/suite/js/semantic/378f184f8744ff14.js
 error: Identifier 'b' has already been declared
@@ -6891,7 +7008,13 @@ error: 'eval' is not allowed as a binding name in strict mode
  2 | let iterCount = 0;
    |
 
-✗ test/parser/suite/js/semantic/403c9df9e83749dd.module.js
+✓ test/parser/suite/js/semantic/403c9df9e83749dd.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { static *method() { export default null; } }
+   |                              ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/40650911fa86b959.js
 ✓ test/parser/suite/js/semantic/406fd6ddf09108d7.js
 error: for-in/of loop variable declaration may not have an initializer
@@ -6958,7 +7081,14 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/40ededefd4cbcf68.module.js
+✓ test/parser/suite/js/semantic/40ededefd4cbcf68.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (var x = 0; false;)
+ 2 |   import v from './decl-pos-import-for-var.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/40f77c07268e7bd8.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -7313,7 +7443,15 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
  2 | x = 1;
    |
 
-✗ test/parser/suite/js/semantic/43c1ed702d725691.module.js
+✓ test/parser/suite/js/semantic/43c1ed702d725691.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try { } finally {
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/43c3c94d0a7a1e7b.js
 error: Cannot use import statement outside a module
    |
@@ -7512,7 +7650,14 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/461d2385bb8ee501.module.js
+✓ test/parser/suite/js/semantic/461d2385bb8ee501.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (const y in [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/463085e34274e090.js
 error: Identifier 'f' has already been declared
    |
@@ -7668,7 +7813,14 @@ error: for-in/of loop variable declaration may not have an initializer
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/4728730db638dc0e.module.js
+✓ test/parser/suite/js/semantic/4728730db638dc0e.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (y in [])
+ 2 |   import v from './decl-pos-import-for-in-lhs.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/472b7c8481658231.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -7862,7 +8014,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 |   }
    |
 
-✗ test/parser/suite/js/semantic/4976517826d83371.module.js
+✓ test/parser/suite/js/semantic/4976517826d83371.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try {
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+ 3 | } catch (err) { }
+   |
+
 ✗ test/parser/suite/js/semantic/497de7e7f315df90.js
 ✓ test/parser/suite/js/semantic/4987d113818c2987.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -8068,7 +8228,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  6 |       throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/4bb556a39d27bd44.module.js
+✓ test/parser/suite/js/semantic/4bb556a39d27bd44.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { static method() { export default null; } }
+   |                             ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/4bcf4503e86630a7.js
 error: Identifier 'a' has already been declared
    |
@@ -8161,7 +8327,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/4c383249ce4e32b5.module.js
+✓ test/parser/suite/js/semantic/4c383249ce4e32b5.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try { } catch (err) { } finally {
+ 2 |   import v from './decl-pos-import-try-catch-finally.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/4c420315d52305c6.module.js
 error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
@@ -8431,7 +8605,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/4e9192cbc932b260.module.js
+✓ test/parser/suite/js/semantic/4e9192cbc932b260.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ get m() { import v from './decl-pos-import-object-getter.js'; } });
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/4ea211ac97a75ed6.js
 error: Identifier 'f' has already been declared
    |
@@ -8991,7 +9171,13 @@ error: Private fields cannot be deleted
  6 |   }
    |
 
-✗ test/parser/suite/js/semantic/5387f95894818530.module.js
+✓ test/parser/suite/js/semantic/5387f95894818530.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | switch(0) { default: export default null; }
+   |                      ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/5389936ac45d1fa5.module.js
 error: An export name cannot include a unicode lone surrogate
    |
@@ -9033,7 +9219,15 @@ error: Cannot use import statement outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/540a7b8bc0e1ec25.module.js
+✓ test/parser/suite/js/semantic/540a7b8bc0e1ec25.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try { } catch (err) {
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/540fe548c19b2197.js
 ✓ test/parser/suite/js/semantic/54112d8a372844c4.module.js
 error: 'with' statements are not allowed in strict mode
@@ -9966,7 +10160,13 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/5bea28b3ae22f0d4.module.js
+✓ test/parser/suite/js/semantic/5bea28b3ae22f0d4.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | function* g() { import v from './decl-pos-import-generator-decl.js'; }
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/5bfae6a3f1f905e0.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -10297,7 +10497,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |                        ^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/5f6d5c284563fe6b.module.js
+✓ test/parser/suite/js/semantic/5f6d5c284563fe6b.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (function() { import v from './decl-pos-import-function-expr.js'; });
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/5fbb2be3511cb11d.js
 error: Identifier 'f' has already been declared
    |
@@ -10472,7 +10678,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  7 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/619d910de536d112.module.js
+✓ test/parser/suite/js/semantic/619d910de536d112.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | function f() { export default null; }
+   |                ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/61bbf22e63a1b213.js
 ✓ test/parser/suite/js/semantic/61eb9604551f377b.module.js
 error: Deleting a variable in strict mode is not allowed
@@ -10590,7 +10802,13 @@ error: Private fields cannot be deleted
  5 | ;
    |
 
-✗ test/parser/suite/js/semantic/62f82523836eec44.module.js
+✓ test/parser/suite/js/semantic/62f82523836eec44.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { static method() { export default null; } });
+   |                            ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/62fcf018224e27b7.js
 error: Private fields cannot be deleted
    |
@@ -11323,7 +11541,14 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/686fdffaf470aa0b.module.js
+✓ test/parser/suite/js/semantic/686fdffaf470aa0b.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (x = 0; false;)
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6887910eabb6aa71.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -11720,7 +11945,13 @@ error: Cannot continue to label 'b' across function boundaries
 ✗ test/parser/suite/js/semantic/6c4fe38464c16309.js
 ✗ test/parser/suite/js/semantic/6c6ef7d1240c34eb.js
 ✗ test/parser/suite/js/semantic/6c71a06280f35c98.js
-✗ test/parser/suite/js/semantic/6c84bd0a6253eb77.module.js
+✓ test/parser/suite/js/semantic/6c84bd0a6253eb77.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | { void 0; import v from './decl-pos-import-block-stmt-list.js'; }
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6c8648cfa6c8d03d.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -11752,7 +11983,14 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6ca3d0735b39db05.module.js
+✓ test/parser/suite/js/semantic/6ca3d0735b39db05.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (y of [])
+ 2 |   import v from './decl-pos-import-for-of-lhs.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6caa96cc8eb5aa5c.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -11949,7 +12187,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |               ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6e944516966c1352.module.js
+✓ test/parser/suite/js/semantic/6e944516966c1352.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | () => { export default null; };
+   |         ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6e95a8d810827157.js
 error: Identifier 'b' has already been declared
    |
@@ -12018,7 +12262,13 @@ error: Identifier 'b' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/6f27cc9ea1cc3a55.js
-✗ test/parser/suite/js/semantic/6f281cd6866a66c2.module.js
+✓ test/parser/suite/js/semantic/6f281cd6866a66c2.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | while (false) export default null;
+   |               ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6f304a9f8503662a.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -13247,7 +13497,14 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
    |     ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/7a9081eac74ac816.module.js
+✓ test/parser/suite/js/semantic/7a9081eac74ac816.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (const y in [])
+ 2 |   import v from './decl-pos-import-for-in-const.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7a916ef0ccd4ea9c.js
 error: Identifier 'b' has already been declared
    |
@@ -13326,7 +13583,14 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/7b548a7c8ae2394a.module.js
+✓ test/parser/suite/js/semantic/7b548a7c8ae2394a.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (var y of [])
+ 2 |   import v from './decl-pos-import-for-of-var.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7b60688fbf8723d0.js
 error: Identifier 'a' has already been declared
    |
@@ -13338,7 +13602,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/7b86de9a133208a4.module.js
+✓ test/parser/suite/js/semantic/7b86de9a133208a4.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { method() { export default null; } });
+   |                     ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7b875b983e3a9ec8.js
 error: Illegal continue statement
    |
@@ -13675,7 +13945,14 @@ error: Identifier 'fn4' has already been declared
    = help: Consider removing or renaming this declaration of 'fn4'
 
 
-✗ test/parser/suite/js/semantic/7f0bcb9dc2bd9584.module.js
+✓ test/parser/suite/js/semantic/7f0bcb9dc2bd9584.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (let y in [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7f13554234f6c26f.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -13731,7 +14008,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/7fb518ff1b5c9bdc.module.js
+✓ test/parser/suite/js/semantic/7fb518ff1b5c9bdc.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | function f() { import v from './decl-pos-import-function-decl.js'; }
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/7fc6f3a6590d207d.module.js
 ✓ test/parser/suite/js/semantic/7fc88a2bf83b08db.module.js
 error: 'with' statements are not allowed in strict mode
@@ -13992,7 +14275,13 @@ error: 'with' statements are not allowed in strict mode
 10 |     ++x;
    |
 
-✗ test/parser/suite/js/semantic/81e6f79b043dd9ae.module.js
+✓ test/parser/suite/js/semantic/81e6f79b043dd9ae.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | function* g() { export default null; }
+   |                 ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/82056bfca456dffb.js
 error: Private fields cannot be deleted
    |
@@ -15025,7 +15314,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  5 |   }
    |
 
-✗ test/parser/suite/js/semantic/8dddc0bc4f41a09e.module.js
+✓ test/parser/suite/js/semantic/8dddc0bc4f41a09e.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | if (true) { } else export default null;
+   |                    ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/8de47a8b53495792.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -15336,7 +15631,13 @@ error: Private fields cannot be deleted
  6 |   }
    |
 
-✗ test/parser/suite/js/semantic/913b8989a5aa53bc.module.js
+✓ test/parser/suite/js/semantic/913b8989a5aa53bc.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { static method() { import v from './decl-pos-import-class-decl-meth-static.js'; } }
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9162e559ff53891c.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -15577,7 +15878,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  5 |   }
    |
 
-✗ test/parser/suite/js/semantic/93999b65b611349c.module.js
+✓ test/parser/suite/js/semantic/93999b65b611349c.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | switch(0) { case 1: import v from './decl-pos-import-switch-case.js'; }
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/939bc78e89815e9e.js
 error: 'let' is not allowed as a variable name in a 'let' declaration
    |
@@ -15603,7 +15910,14 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
  6 |   });
    |
 
-✗ test/parser/suite/js/semantic/93b14ee425c215e4.module.js
+✓ test/parser/suite/js/semantic/93b14ee425c215e4.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (let x = 0; false;)
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/93b1547f64fd0370.js
 error: Identifier 'b' has already been declared
    |
@@ -15615,7 +15929,13 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/93c08b5a2132a027.module.js
+✓ test/parser/suite/js/semantic/93c08b5a2132a027.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ set m(x) { export default null; } });
+   |               ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/93c32bb0a4bad388.js
 error: Cannot use import statement outside a module
    |
@@ -16266,8 +16586,20 @@ error: 'arguments' is not allowed as a binding name in strict mode
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/98a1c82a8c55b247.module.js
-✗ test/parser/suite/js/semantic/98a39a69fde7eadc.module.js
+✓ test/parser/suite/js/semantic/98a1c82a8c55b247.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (function() { export default null; });
+   |               ^^^^^^^^^^^^^^^^^^^^
+   |
+
+✓ test/parser/suite/js/semantic/98a39a69fde7eadc.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | do export default null; while (false)
+   |    ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/98aedb63a54a18f3.module.js
 ✓ test/parser/suite/js/semantic/98c0bbe67a08dc65.js
 error: Identifier 'f' has already been declared
@@ -16296,7 +16628,14 @@ error: In strict mode code, functions can only be declared at top level or insid
  4 |     break;
    |
 
-✗ test/parser/suite/js/semantic/98e868bac7ece180.module.js
+✓ test/parser/suite/js/semantic/98e868bac7ece180.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (var y in [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9900cd8c698586f0.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -16495,7 +16834,14 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/9adb143304483420.js
-✗ test/parser/suite/js/semantic/9adb3dd33613ce28.module.js
+✓ test/parser/suite/js/semantic/9adb3dd33613ce28.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (var y in [])
+ 2 |   import v from './decl-pos-import-for-in-var.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9ae1e528e164f56f.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -16692,7 +17038,13 @@ error: 'with' statements are not allowed in strict mode
  7 |     callee = 1;
    |
 
-✗ test/parser/suite/js/semantic/9c83feb7843928a5.module.js
+✓ test/parser/suite/js/semantic/9c83feb7843928a5.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { *method() { import v from './decl-pos-import-class-expr-meth-gen.js'; } });
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9c87621cc579b09b.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -16772,7 +17124,13 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/9d6798746b0097ed.module.js
+✓ test/parser/suite/js/semantic/9d6798746b0097ed.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | { export default null; }
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9d6e4f235a972287.js
 error: Cannot use import statement outside a module
    |
@@ -17220,7 +17578,13 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/a1830201ced91496.module.js
+✓ test/parser/suite/js/semantic/a1830201ced91496.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | if (false) import v from './decl-pos-import-if-if.js';
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a1854f579ddd4e34.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -17521,7 +17885,14 @@ error: Identifier 'param' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/a3b3f80a43adbccd.js
-✗ test/parser/suite/js/semantic/a3b8ad6f9de31b93.module.js
+✓ test/parser/suite/js/semantic/a3b8ad6f9de31b93.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (y in [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a3c09261f812cb80.js
 error: Cannot use import statement outside a module
    |
@@ -17658,7 +18029,13 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/a4bfa8e3b523c466.module.js
+✓ test/parser/suite/js/semantic/a4bfa8e3b523c466.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | {export default 3;}
+   |  ^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a4d62a651f69d815.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -17969,7 +18346,13 @@ error: 'let' is not allowed as a variable name in a 'let' declaration
 
 ✗ test/parser/suite/js/semantic/a72f28144106cb30.js
 ✗ test/parser/suite/js/semantic/a75bfa84ae7ce2dc.js
-✗ test/parser/suite/js/semantic/a75d12dab83090ea.module.js
+✓ test/parser/suite/js/semantic/a75d12dab83090ea.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { static *method() { import v from './decl-pos-import-class-decl-method-gen-static.js'; } }
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a7668444361cfcdc.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -18310,7 +18693,14 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/aa842439c978230a.module.js
-✗ test/parser/suite/js/semantic/aa86b9f1b92a3cd5.module.js
+✓ test/parser/suite/js/semantic/aa86b9f1b92a3cd5.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (let y in [])
+ 2 |   import v from './decl-pos-import-for-in-let.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/aa8d039c861963ce.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -18330,7 +18720,14 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/aac16468f19e9f2b.module.js
+✓ test/parser/suite/js/semantic/aac16468f19e9f2b.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (var y of [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/aaf7c856c16d58fc.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -18526,7 +18923,13 @@ error: In strict mode code, functions can only be declared at top level or insid
 12 | }
    |
 
-✗ test/parser/suite/js/semantic/ace3f917980b466e.module.js
+✓ test/parser/suite/js/semantic/ace3f917980b466e.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ set m(x) { import v from './decl-pos-import-object-setter.js'; } });
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/ace73565ed14229a.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -18823,7 +19226,13 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/affdc0fbc92c6bd5.module.js
+✓ test/parser/suite/js/semantic/affdc0fbc92c6bd5.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ m() { import v from './decl-pos-import-object-method.js'; } });
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b01e3a73a92863c5.js
 error: Identifier 'b' has already been declared
    |
@@ -19650,7 +20059,13 @@ error: 'eval' is not allowed as a binding name in strict mode
    |        ^^^^
    |
 
-✗ test/parser/suite/js/semantic/b88ab70205263170.module.js
+✓ test/parser/suite/js/semantic/b88ab70205263170.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | {export {a};}
+   |  ^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b89d22cd7965f5ae.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -19757,7 +20172,13 @@ error: Cannot use 'export' declaration outside a module
 10 | import * as ns from './instn-star-id-name.js';
    |
 
-✗ test/parser/suite/js/semantic/b94d9f073345895b.module.js
+✓ test/parser/suite/js/semantic/b94d9f073345895b.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | { import v from './decl-pos-import-block-stmt.js'; }
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b97ed3bd04ca9170.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -20766,7 +21187,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
  3 | function __func() {
    |
 
-✗ test/parser/suite/js/semantic/c37fec0060a33c09.module.js
+✓ test/parser/suite/js/semantic/c37fec0060a33c09.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (function*() { import v from './decl-pos-import-generator-expr.js'; });
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/c388f44fecc314f8.js
 error: Identifier 'a' has already been declared
    |
@@ -21120,7 +21547,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |               ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/c6984380e52bbb83.module.js
+✓ test/parser/suite/js/semantic/c6984380e52bbb83.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { method() { import v from './decl-pos-import-class-expr-meth.js'; } });
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/c6ba5c14cb652729.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -21220,7 +21653,14 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/c7ad2478fd72bffe.js
-✗ test/parser/suite/js/semantic/c7b97adeea59f69f.module.js
+✓ test/parser/suite/js/semantic/c7b97adeea59f69f.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (y of [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/c7c957b827965c2f.js
 error: Cannot use import statement outside a module
    |
@@ -21493,7 +21933,14 @@ error: Cannot use import statement outside a module
  2 | export const x = 23;
    |
 
-✗ test/parser/suite/js/semantic/c974d98cc944161e.module.js
+✓ test/parser/suite/js/semantic/c974d98cc944161e.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (let y of [])
+ 2 |   import v from './decl-pos-import-for-of-let.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/c97ecb2070d41479.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -21733,7 +22180,13 @@ error: Cannot use 'export' declaration outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/cbfdfce4d239cba2.module.js
+✓ test/parser/suite/js/semantic/cbfdfce4d239cba2.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | { void 0; export default null; }
+   |           ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/cc0122b6d261427b.js
 ✓ test/parser/suite/js/semantic/cc035bc5115fcdf2.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -21845,7 +22298,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  6 |         throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/ccb2cae64f4d092d.module.js
+✓ test/parser/suite/js/semantic/ccb2cae64f4d092d.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | switch(0) { case 1: import v from './decl-pos-import-switch-case-dflt.js'; default: }
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/ccbaf288b94bc1f0.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -21996,7 +22455,15 @@ error: Identifier 'a' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/cdceb01cec39f8d0.js
-✗ test/parser/suite/js/semantic/cddc74f578049dc6.module.js
+✓ test/parser/suite/js/semantic/cddc74f578049dc6.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try { } catch (err) {
+ 2 |   import v from './decl-pos-import-try-catch.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/cdeea2e6ec5c1502.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -22110,7 +22577,13 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/cf4ec8205001e331.js
-✗ test/parser/suite/js/semantic/cf561bd002d2c9b2.module.js
+✓ test/parser/suite/js/semantic/cf561bd002d2c9b2.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | test262: export default null;
+   |          ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/cf6241d836f7f9b1.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -22907,7 +23380,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/d54b2db4548f1d82.module.js
+✓ test/parser/suite/js/semantic/d54b2db4548f1d82.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | {import a from 'b';}
+   |  ^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/d5537aa6b4e42a9e.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -23310,7 +23789,14 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/d8cfb53e21bebb46.module.js
+✓ test/parser/suite/js/semantic/d8cfb53e21bebb46.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (const y of [])
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/d8dbb7b4a07f063a.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -23813,7 +24299,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 11 | f($MAX_ITERATIONS);
    |
 
-✗ test/parser/suite/js/semantic/dca2e8a6a1548d68.module.js
+✓ test/parser/suite/js/semantic/dca2e8a6a1548d68.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | do import v from './decl-pos-import-do-while.js'; while (false)
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/dca362f0b68cd952.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -23969,7 +24461,13 @@ error: Cannot use 'export' declaration outside a module
  2 | ;
    |
 
-✗ test/parser/suite/js/semantic/de50ad8e48fd05b1.module.js
+✓ test/parser/suite/js/semantic/de50ad8e48fd05b1.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | switch(0) { default: import v from './decl-pos-import-switch-dftl.js'; }
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/de5c26508433581b.js
 error: Private fields cannot be deleted
    |
@@ -24381,7 +24879,14 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |        ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/e155fb6504f4fa45.module.js
+✓ test/parser/suite/js/semantic/e155fb6504f4fa45.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (var x = 0; false;)
+ 2 |   export default null;
+   |   ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e1723ec9715e8e5d.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -24863,7 +25368,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/e57e7fc569fbaea2.js
-✗ test/parser/suite/js/semantic/e587491e2360f3a9.module.js
+✓ test/parser/suite/js/semantic/e587491e2360f3a9.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | switch(0) { case 1: export default null; }
+   |                     ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e5982d290bb18c79.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -24961,7 +25472,13 @@ error: 'with' statements are not allowed in strict mode
 16 |   result = f();
    |
 
-✗ test/parser/suite/js/semantic/e68557f866822f56.module.js
+✓ test/parser/suite/js/semantic/e68557f866822f56.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | if (false) export default null;
+   |            ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e698e6a8acf1aad3.js
 error: Cannot use import statement outside a module
    |
@@ -24991,7 +25508,13 @@ error: 'with' statements are not allowed in strict mode
 13 |       throw value;
    |
 
-✗ test/parser/suite/js/semantic/e6d9bbe4cc08e523.module.js
+✓ test/parser/suite/js/semantic/e6d9bbe4cc08e523.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { static *method() { export default null; } });
+   |                             ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e6df184bda496945.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -25103,7 +25626,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/e7c2c2dcc227201c.js
-✗ test/parser/suite/js/semantic/e7ea53950780188f.module.js
+✓ test/parser/suite/js/semantic/e7ea53950780188f.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ *m() { export default null; } });
+   |           ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e7ee5d96dcf92d45.js
 error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
@@ -25796,7 +26325,13 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/ee01d971b6d831a9.js
-✗ test/parser/suite/js/semantic/ee04425b783c3ab1.module.js
+✓ test/parser/suite/js/semantic/ee04425b783c3ab1.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | () => { import v from './decl-pos-import-arrow-function.js'; };
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/ee1e2f85d112da09.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -25971,7 +26506,15 @@ error: Illegal continue statement
 
 
 ✗ test/parser/suite/js/semantic/eff33d0149da9e64.js
-✗ test/parser/suite/js/semantic/f00b8ef5cd7c3984.module.js
+✓ test/parser/suite/js/semantic/f00b8ef5cd7c3984.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | try { } finally {
+ 2 |   import v from './decl-pos-import-try-finally.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/f03dc0712b57ee1f.js
 error: Expected ';' after for-loop init, but found 'in'
    |
@@ -26004,7 +26547,13 @@ error: Cannot use import statement outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/f063969b23239390.module.js
+✓ test/parser/suite/js/semantic/f063969b23239390.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | while (1) export default 3
+   |           ^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f06998060dc66fa4.module.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -26044,7 +26593,13 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/f08bcd630bd127fd.module.js
+✓ test/parser/suite/js/semantic/f08bcd630bd127fd.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ get m() { export default null; } });
+   |              ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f09a082a6f796773.js
 error: Identifier 'b' has already been declared
    |
@@ -26325,7 +26880,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/js/semantic/f2ab25e48a86f455.js
-✗ test/parser/suite/js/semantic/f2b544c6a0e3b89f.module.js
+✓ test/parser/suite/js/semantic/f2b544c6a0e3b89f.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | (class { static method() { import v from './decl-pos-import-class-expr-meth-static.js'; } });
+   |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f2bf539142c1d80b.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -26345,7 +26906,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  9 |   varBinding = f;
    |
 
-✗ test/parser/suite/js/semantic/f2c2617a3865915e.module.js
+✓ test/parser/suite/js/semantic/f2c2617a3865915e.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | ({ m() { export default null; } });
+   |          ^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f2c4f4b63206c35a.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -26528,7 +27095,14 @@ error: 'eval' is not allowed as a binding name in strict mode
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/f481b688a4108f41.module.js
+✓ test/parser/suite/js/semantic/f481b688a4108f41.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | for (x = 0; false;)
+ 2 |   import v from './decl-pos-import-for-lhs.js';
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f4a61fcdefebb9d4.module.js
 error: 'private' is reserved in strict mode and cannot be used as an identifier
    |
@@ -26716,7 +27290,13 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/f66c9076aa9d1715.module.js
+✓ test/parser/suite/js/semantic/f66c9076aa9d1715.module.js
+error: 'import' and 'export' may only appear at the top level
+   |
+ 1 | class C { *method() { import v from './decl-pos-import-class-decl-method-gen.js'; } }
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f686b08eceab5409.js
 error: Cannot use import statement outside a module
    |

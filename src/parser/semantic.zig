@@ -228,25 +228,33 @@ const SemanticVisit = struct {
 
     pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
     pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
     pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
@@ -405,6 +413,13 @@ const SemanticVisit = struct {
             }
         }
         return false;
+    }
+
+    fn isAtModuleTopLevel(ctx: *SemanticCtx) bool {
+        if (ctx.path.parent()) |parent| {
+            return ctx.tree.getData(parent) == .program;
+        }
+        return true;
     }
 
     fn isIterationStatement(data: ast.NodeData) bool {
