@@ -38,7 +38,8 @@ const SemanticVisit = struct {
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
-            if (isStrictModeReservedWord(name))
+            if (std.mem.eql(u8, name, "eval") or
+                std.mem.eql(u8, name, "arguments"))
                 try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
         } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
             std.mem.eql(u8, name, "let"))
@@ -358,20 +359,6 @@ const SemanticVisit = struct {
             const name = tree.getString(tree.getData(node).identifier_reference.name);
             break :blk std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
         };
-    }
-
-    fn isStrictModeReservedWord(name: []const u8) bool {
-        return std.mem.eql(u8, name, "eval") or
-            std.mem.eql(u8, name, "arguments") or
-            std.mem.eql(u8, name, "implements") or
-            std.mem.eql(u8, name, "interface") or
-            std.mem.eql(u8, name, "let") or
-            std.mem.eql(u8, name, "package") or
-            std.mem.eql(u8, name, "private") or
-            std.mem.eql(u8, name, "protected") or
-            std.mem.eql(u8, name, "public") or
-            std.mem.eql(u8, name, "static") or
-            std.mem.eql(u8, name, "yield");
     }
 
     const SuperCallValidity = enum { valid, not_in_constructor, no_extends };

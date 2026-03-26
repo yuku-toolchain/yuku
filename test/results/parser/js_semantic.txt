@@ -4,14 +4,12 @@ Passed:       3174/3560 (89.16%)
 Failed:       386
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | assert.sameValue(f, 123);
  3 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/000cb09bd89a5218.module.js
 error: 'with' statements are not allowed in strict mode
@@ -42,15 +40,13 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/00abfba0155ceee5.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 12 |       let f;
 13 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 14 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/00acbf0c12170b0c.module.js
 error: Identifier 'a' has already been declared
@@ -444,15 +440,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/043430309f052005.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  7 |   }
  8 | if (false) ; else function f() { return 'second declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  9 | updated = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/0448fa12dcf82187.js
 error: 'static' is reserved in strict mode and cannot be used as an identifier
@@ -603,15 +597,13 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/04f59445e011780d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |       let f;
  5 |       if (true) function f() {} else function _f() {}
    |                 ^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/04fe67fd1455e2a3.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -823,15 +815,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/070f530a20bd113d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | }) {
  4 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/0722914cfa337d18.js
 error: Cannot use import statement outside a module
@@ -903,26 +893,22 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/07af1785599e7265.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var initialBV, currentBV;
  2 | if (false) ; else function f() { initialBV = f; f = 123; currentBV = f; return 'decl'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  3 | f();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/07c7a5cc64b9ee72.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 |   changed = f;
  6 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  7 | }());
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/07e8f46956f19683.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -945,15 +931,13 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/0814e14564fadaee.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  9 | for (let f in { key: 0 }) {
 10 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 11 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/08677349704af264.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -1100,7 +1084,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/09e2a8b8fbab45c1.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {
    |           ^^^^^^^^^^^^^^
@@ -1110,8 +1094,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^
  4 | var f = 123;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/09e84f25af85b836.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -1208,13 +1190,11 @@ error: 'eval' is not allowed as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/0aa3fecaca9d33d0.js
 ✓ test/parser/suite/js/semantic/0aba380d13ff463c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) {} else function g() {}
    |                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/0ad072c449856317.js
 error: Private fields cannot be deleted
@@ -1228,13 +1208,11 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/0adf49f99fd9179b.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(const a = 1;;) c: function b(){}
    |                       ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/0ae7f7a5e6daf6bf.js
 error: Identifier 'b' has already been declared
@@ -1581,15 +1559,13 @@ error: Expected ';' after for-loop init, but found ')'
    |
 
 ✓ test/parser/suite/js/semantic/0e0a57aa84c202af.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   }) {
  5 |     if (true) function f() {}
    |               ^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/0e16b54d1cac419c.js
 ✗ test/parser/suite/js/semantic/0e2bcc1c2e7f0196.js
@@ -1604,15 +1580,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 
 ✗ test/parser/suite/js/semantic/0e38fa798d4be73b.module.js
 ✓ test/parser/suite/js/semantic/0e3c23ede6b73057.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  5 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/0e431f0ebb564049.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -1650,14 +1624,12 @@ error: 'export default' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/0e9f58604feae6ce.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) ; else function a() {}
    |               ^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/0ebd9fbff8295647.js
 ✓ test/parser/suite/js/semantic/0f106449d4ad390b.js
@@ -1794,15 +1766,13 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/0fba0fad299eef39.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 |   changed = f;
  6 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  7 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/0fd42539249e1631.module.js
 error: 'with' statements are not allowed in strict mode
@@ -1876,15 +1846,13 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/104f65084ea27035.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | try {} catch (a) {
  2 |   if (1) function a() {}
    |          ^^^^^^^^^^^^^^^
  3 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/105536dc5a3ca491.js
 error: Identifier 'f' has already been declared
@@ -2075,13 +2043,11 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/11dd73d1434b0cfa.js
 ✓ test/parser/suite/js/semantic/120c78cff8ff65dc.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | 'use strict'; if (1); else function a(){}
    |                            ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/121c908d8b401076.module.js
 error: 'protected' is reserved in strict mode and cannot be used as an identifier
@@ -2216,7 +2182,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/1301b2356f3cec8d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  7 |   }
  8 |   if (true) function f() {
@@ -2227,8 +2193,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
 11 |   updated = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/132ae8c3087745b4.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -2558,13 +2522,11 @@ error: Illegal break statement
 
 
 ✓ test/parser/suite/js/semantic/162449ca646c97a4.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (x of []) label1: label2: function f() {}
    |                               ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/162cfa290302d177.module.js
 error: Identifier 'a' has already been declared
@@ -2821,13 +2783,11 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/182fc4b5c662feb5.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (var x of []) label1: label2: function f() {}
    |                                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/1836c26308397e99.module.js
 error: 'with' statements are not allowed in strict mode
@@ -2849,13 +2809,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/184b9d21f63806cd.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function g() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/185cc309566f0a77.js
 error: Expected ';' after for-loop init, but found ')'
@@ -2979,14 +2937,12 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/190ecf9facce2c5a.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) function a() {}
    |        ^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/191c32a5056e2e5d.js
 error: Cannot use 'export' declaration outside a module
@@ -3031,15 +2987,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/19798b0b15af8564.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   for (let f; ; ) {
  3 |     if (false) function _f() {} else function f() {}
    |                ^^^^^^^^^^^^^^^^
  4 |     break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/1982ba04c60b6926.js
 error: 'interface' is reserved in strict mode and cannot be used as an identifier
@@ -3068,14 +3022,12 @@ error: Identifier 'param' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/19b630afc200de70.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) ; else function f() { return 'declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | assert.sameValue(typeof f, 'function');
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/19bbda7ad1cd02b6.module.js
 error: 'with' statements are not allowed in strict mode
@@ -3208,15 +3160,13 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/1a537a4430c9e8d3.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   } catch ({f}) {
  5 |     if (true) function f() {}
    |               ^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/1a6294a1838dd96c.js
 error: Use of undefined label 'IN_DO_FUNC'
@@ -3318,14 +3268,12 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/1b792ad1578e2076.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | }
  4 | if (true) function f() {} else function _f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/1b884992ac0a7bac.js
 error: Identifier 'param1' has already been declared
@@ -3359,7 +3307,7 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/1bb457ab82ed723a.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   } catch (f) {
  5 |     if (true) function f() {
@@ -3370,8 +3318,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^^^
  8 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/1bcaab66e31dbfed.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -3399,13 +3345,11 @@ error: 'import' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/1c1e2a43fe5515b6.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) function a(){} else function b(){}
    |        ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/1c3a51b5700a7b86.js
 ✓ test/parser/suite/js/semantic/1c722070d6acf1f3.js
@@ -3505,15 +3449,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/1d069f498ff06d15.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  6 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/1d38a63682de9abf.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -3807,15 +3749,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/200f2f8994ebd536.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  6 | }());
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2028cb8d9847b1cb.js
 error: Cannot use import statement outside a module
@@ -4144,15 +4084,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 ✗ test/parser/suite/js/semantic/22363c3a7f1a4ddc.module.js
 ✓ test/parser/suite/js/semantic/2245340b6974ee3a.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  5 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/22599c4aa6811972.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -4172,25 +4110,21 @@ error: Use of undefined label 'a'
 
 ✗ test/parser/suite/js/semantic/227c9b7aff6a3a91.js
 ✓ test/parser/suite/js/semantic/228981ef4b26d02a.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (a) function b() {}
    |        ^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/22927552f24f1ae2.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  6 |   }
  7 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  8 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/22dfaf2ae6b91e21.js
 ✓ test/parser/suite/js/semantic/22e0c7f12c99dffe.module.js
@@ -4266,13 +4200,11 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/238676441bfec0d0.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (var x of []) function f() {}
    |                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/23ba28fb460f3055.js
 error: Cannot use import statement outside a module
@@ -4358,15 +4290,13 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/249015daba18854d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  6 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2495d83d9e4c8fb0.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -4384,15 +4314,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/24df811d7cdbe816.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  5 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2503b322cf15a668.js
 error: Cannot use import statement outside a module
@@ -4478,17 +4406,15 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/25d44d7699c5f3e6.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) function a() {} else function b() {}
    |        ^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/25d72b19430b44ea.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {
    |           ^^^^^^^^^^^^^^
@@ -4497,8 +4423,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
  3 | }
    | ^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2617f2010a4ab9d8.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -4967,13 +4891,11 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2b3665fe3e0bc267.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(let a;;) c: function b(){}
    |                 ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2b393e093a0e2fb3.js
 error: Cannot use 'export' declaration outside a module
@@ -5252,13 +5174,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2d3ee31fcc1e967f.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | while (false) function g() {}
    |               ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2d4d01ceb1e2f54f.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -5334,15 +5254,13 @@ error: 'protected' is reserved in strict mode and cannot be used as an identifie
    |
 
 ✓ test/parser/suite/js/semantic/2e5569d9d786908c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | for (let f of [0]) {
  2 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  3 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2e5f61ed706a30f4.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -5464,15 +5382,13 @@ error: Identifier '__decl' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/2f8f2a79e9e9bdcf.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   } catch (f) {
  5 |     if (false) function _f() {} else function f() {
    |                ^^^^^^^^^^^^^^^^
  6 |       return 123;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/2f9ac6d6c228dbf6.js
 error: for-in/of loop variable declaration may not have an initializer
@@ -5499,15 +5415,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/2fbd1ae01dcb6bd4.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  4 |     return 'declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/2fcc5b7e8d0ff3c9.js
 ✓ test/parser/suite/js/semantic/2fe86826c0f955d6.js
@@ -5565,13 +5479,11 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/302b9f99ef555d26.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(let a in b) d: function c(){}
    |                    ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/3066ce4dba1ae5ec.js
 error: Cannot use import statement outside a module
@@ -5598,13 +5510,11 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
    |
 
 ✓ test/parser/suite/js/semantic/3156ebc4a81cb7ac.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | while (false) function f() {}
    |               ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/3159012bf7488f52.js
 error: Use of undefined label 'IN_DO_FUNC'
@@ -5817,15 +5727,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/338cd972c06a9c4c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   }) {
  5 |     if (false) function _f() {} else function f() {}
    |                ^^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/3394d1c5fc8f066c.js
 error: Identifier 'f' has already been declared
@@ -5885,7 +5793,7 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/342225803f649e65.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var initialBV, currentBV;
  2 | if (true) function f() {
@@ -5902,8 +5810,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^
  8 | f();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/343111c54547b952.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -5945,13 +5851,11 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/349c826f55163c71.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if(1) c: b: function a(){}
    |             ^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/34aa7f65abf79bc9.js
 error: 'static' is reserved in strict mode and cannot be used as an identifier
@@ -6321,7 +6225,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/37e3e1dc4589d743.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -6332,8 +6236,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/37ead50e894affbb.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -6357,15 +6259,13 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/37f48e32d1f20543.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   for (let f of [0]) {
  3 |     if (true) function f() {}
    |               ^^^^^^^^^^^^^^^
  4 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/3805715a35f5da60.module.js
 error: 'with' statements are not allowed in strict mode
@@ -6656,13 +6556,11 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/3b3ddb5f93385ab4.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (var x; false; ) label1: label2: function f() {}
    |                                      ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/3b4b529f673481a8.module.js
 error: 'with' statements are not allowed in strict mode
@@ -6873,13 +6771,11 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/3d61f0e5eb4a56fb.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (var x in {}) label1: label2: function f() {}
    |                                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/3d916e1909d232f1.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -6909,13 +6805,11 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/3dabeca76119d501.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | try {} catch (a) { if(1) function a(){} }
    |                          ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/3db5225c6a017594.js
 ✓ test/parser/suite/js/semantic/3dc2deaafc74c4ad.js
@@ -7188,13 +7082,11 @@ error: 'export default' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/40650911fa86b959.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (let x; false; ) label1: label2: function f() {}
    |                                      ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/406fd6ddf09108d7.js
 error: for-in/of loop variable declaration may not have an initializer
@@ -7374,7 +7266,7 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/41c916ae094ef475.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -7391,8 +7283,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  9 |   varBinding = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/41f3d03965bbcd2d.module.js
 error: Identifier 'smoosh' has already been declared
@@ -7478,15 +7368,13 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/42982ed7062ae931.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | } catch (f) {
  4 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  5 |     return 123;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/429dabe9cd6f58ef.js
 error: Cannot use import statement outside a module
@@ -7733,13 +7621,11 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/450c63fb0859da5b.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | do function g() {} while (false)
    |    ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/451c55b49c38ec13.module.js
 error: 'with' statements are not allowed in strict mode
@@ -7862,15 +7748,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/4631526839e914de.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | for (let f of [0]) {
  2 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  3 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/4640ccd665354c45.js
 error: Cannot use import statement outside a module
@@ -7969,15 +7853,13 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/470c8f81e016729d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   } catch ({f}) {
  5 |     if (false) function _f() {} else function f() {}
    |                ^^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/471117c73bdcff7f.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -8135,13 +8017,11 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/485b6b09f8dc91ef.js
 ✓ test/parser/suite/js/semantic/485def7d22717667.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (;false;) function g() {}
    |               ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/486c54fc366356e6.js
 error: Identifier 'f' has already been declared
@@ -8180,15 +8060,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/48feaa33c91851f2.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 10 | for (let f; ; ) {
 11 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 12 | break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/492a249140633033.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -8218,15 +8096,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/497107ae80bf66da.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |       let f;
  5 |       if (false) function _f() {} else function f() {}
    |                  ^^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/4976517826d83371.module.js
 error: 'export default' declaration may only appear at the top level
@@ -8316,15 +8192,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/4a8523e8eabb6721.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   for (let f of [0]) {
  3 |     if (false) function _f() {} else function f() {}
    |                ^^^^^^^^^^^^^^^^
  4 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/4a8f16e67942fe7a.js
 error: Identifier 'a' has already been declared
@@ -8404,13 +8278,11 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/4b5ec6b958c03387.module.js
 ✓ test/parser/suite/js/semantic/4b62020bf1f6f84d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {  }
    |           ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/4b62a194753dbb58.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -8688,15 +8560,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/4d618292e35a97ca.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   let f = 123;
  3 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  4 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/4d6a3feec80b94ff.js
 ✓ test/parser/suite/js/semantic/4d6aacd8457175ef.module.js
@@ -8773,15 +8643,13 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/4e236c425e46e56c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | }) {
  4 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/4e284f764289dd22.module.js
 error: 'with' statements are not allowed in strict mode
@@ -8800,14 +8668,12 @@ error: for-in/of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/4e45b5542eb2f15e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) function _f() {} else function f() {
    |            ^^^^^^^^^^^^^^^^
  2 |   return 'inner declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/4e6529771ad3343f.module.js
 ✓ test/parser/suite/js/semantic/4e7e3a5864a26f14.js
@@ -9200,15 +9066,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/5235ac648780ae85.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  9 | for (let f; ; ) {
 10 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 11 | break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/5239dd0fc0effb71.module.js
 error: 'with' statements are not allowed in strict mode
@@ -9304,24 +9168,20 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/52aeec7b8da212a2.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) function a(){}
    |        ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/52d99ee32da949cd.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |     let f;
  4 |     if (false) function _f() {} else function f() {}
    |                ^^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/5325c297d972e33c.js
 ✓ test/parser/suite/js/semantic/53281284c14431c2.module.js
@@ -9578,7 +9438,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/55aae13283ed222c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | } catch (f) {
  4 |   if (true) function f() {
@@ -9589,8 +9449,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  7 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/55bd752a58efdd5a.module.js
 ✓ test/parser/suite/js/semantic/55c15fe174790fb2.module.js
@@ -9709,14 +9567,12 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/568c940c764b007a.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  7 | });
  8 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/56935fcc12e499e9.js
 error: 'super' property access is only valid inside a method or class body
@@ -9753,15 +9609,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/56fe830a76698587.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 10 | for (let f in { key: 0 }) {
 11 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 12 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/57007e27393072db.js
 error: Private fields cannot be deleted
@@ -9833,15 +9687,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/57bb5d82a0945ea0.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/57bccbd2d7849186.js
 error: Expected ';' after for-loop init, but found ')'
@@ -10083,13 +9935,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/59ae0289778b80cd.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) function a(){} else;
    |        ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/59bb7151ac9735ea.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -10112,15 +9962,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/59be1734ffa8df31.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 10 | let f = 123;
 11 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 12 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/59c2dac860a0ceb7.js
 error: Deleting a variable in strict mode is not allowed
@@ -10192,13 +10040,11 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/5a31e193bfb5215a.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if(1) b: function a(){}
    |          ^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/5a35184ec9612cc8.module.js
 error: 'with' statements are not allowed in strict mode
@@ -10281,13 +10127,11 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/5ae90ac74c637d08.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/5aee8ec8445ed16e.js
 ✗ test/parser/suite/js/semantic/5b0f82ab482ac359.module.js
@@ -10581,13 +10425,11 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/5d5fcacbdbc2fe97.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | 'use strict'; if (1) function a(){} else;
    |                      ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/5d70672ca7ccc3ec.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -10801,7 +10643,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/603b1c1762041200.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  7 |   }
  8 |   if (true) function f() {
@@ -10812,19 +10654,15 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
 11 |   updated = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6041dca09af941f8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | for (let f of [0]) {
  2 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  3 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/604fbaf6313cef61.js
 error: 'protected' is reserved in strict mode and cannot be used as an identifier
@@ -10970,13 +10808,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/620f28cc1e81d899.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | do label1: label2: function f() {} while (false)
    |                    ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/6216e62e334a255c.js
 ✗ test/parser/suite/js/semantic/6231fa8c107affff.js
@@ -11213,15 +11049,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/63fe04829ab5007e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  6 |   }
  7 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  8 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/640347b3086107cd.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -11439,15 +11273,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/65a85193ac986427.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   }) {
  5 |     if (true) function f() {} else function _f() {}
    |               ^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/65aa2a9691fcfde5.module.js
 error: 'with' statements are not allowed in strict mode
@@ -11468,7 +11300,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/65b5d7677cec4ffd.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (true) function f() {
@@ -11479,8 +11311,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  7 |   function f() {
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/65cf8f2d72acdc16.js
 ✓ test/parser/suite/js/semantic/65d486f32ca9a77c.module.js
@@ -11736,15 +11566,13 @@ error: for-in/of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/67c88ec8e8f9b73e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  5 |     return 'inner declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/67d2ff6b1360f5ed.js
 error: Identifier 'f' has already been declared
@@ -11972,15 +11800,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✓ test/parser/suite/js/semantic/6a506989bbd99127.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  6 | after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6a534046dca82ffd.js
 error: Private fields cannot be deleted
@@ -12176,16 +12002,14 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 
 ✗ test/parser/suite/js/semantic/6c0ad6f4bb7c57fa.module.js
 ✓ test/parser/suite/js/semantic/6c12d4e90ca2e67f.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (const x of []) label1: label2: function f() {}
    |                                     ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6c1a69bbea5150e2.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | } catch (f) {
  4 |   if (true) function f() {
@@ -12196,8 +12020,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  7 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6c2991c00b209b28.js
 error: Private fields cannot be deleted
@@ -12302,13 +12124,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/6cd36f7e68bdfb7a.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(;;) function a(){}
    |         ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6cdbd39378a74bf7.js
 error: Identifier 'a' has already been declared
@@ -12343,25 +12163,21 @@ error: 'interface' is reserved in strict mode and cannot be used as an identifie
 
 ✗ test/parser/suite/js/semantic/6d0d962512802b3a.js
 ✓ test/parser/suite/js/semantic/6d1a6c0a4db5e4fb.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  6 | } catch (f) {
  7 | if (false) ; else function f() { return 123; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  8 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6d356a03138b4906.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var f = 123;
  2 | if (false) function _f() {} else function f() {}
    |            ^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6d5048ea28bc84c0.js
 error: Cannot use import statement outside a module
@@ -12476,15 +12292,13 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/6e2d8caa19395c75.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |       let f;
  5 |       if (true) function f() {}
    |                 ^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/6e8b5a703807310b.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -12527,13 +12341,11 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/6ebbca5dac20803e.module.js
-error: Labeled function declarations are not allowed in strict mode
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | label: function g() {}
    |        ^^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✗ test/parser/suite/js/semantic/6ebcc9e1fe8f520c.js
 ✓ test/parser/suite/js/semantic/6ec9214b85e75f51.module.js
@@ -12917,13 +12729,11 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/726aaf0164355893.js
-error: Labeled function declarations are not allowed in strict mode
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | 'use strict'; b: function a(){}
    |                  ^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/726c23b535565ee9.js
 error: 'private' is reserved in strict mode and cannot be used as an identifier
@@ -12943,13 +12753,11 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/7276d2d5d55eaa4e.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(let a of b) d: function c(){}
    |                    ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/72e377afc42e5c8f.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -13110,15 +12918,13 @@ error: 'let' is not allowed as a variable name in a 'let' declaration
    |
 
 ✓ test/parser/suite/js/semantic/7423cd20ea9c3884.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 | if (false) ; else function f() { return 'inner declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  5 | function f() {
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7434ce6436a84dd4.js
 error: Private fields cannot be deleted
@@ -13313,13 +13119,11 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/75c4090fc29d3059.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/75c5c1f986a5430b.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -13338,7 +13142,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/75d280f54574e3bd.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -13349,8 +13153,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/75d3e8751d65dec9.js
 ✓ test/parser/suite/js/semantic/75dc2fb44c9e1650.module.js
@@ -13484,14 +13286,12 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/77335b1ce0de2fb8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var f = 123;
  2 | if (true) function f() {} else function _f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7740b59e17607657.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -13679,15 +13479,13 @@ error: for-in/of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/78e469d051bc6aa8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   for (let f of [0]) {
  3 |     if (true) function f() {} else function _f() {}
    |               ^^^^^^^^^^^^^^^
  4 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/790a34467d7d9d58.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -13808,7 +13606,7 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/7a4f598d128f84bb.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -13819,28 +13617,22 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/7a6f20d74aed16d8.js
 ✗ test/parser/suite/js/semantic/7a7f48f2ae9de97d.js
 ✓ test/parser/suite/js/semantic/7a801844b740c150.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (x in {}) label1: label2: function f() {}
    |                               ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7a844593d8accdb2.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {} else function _f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7a89ed0e7f413e1d.module.js
 error: 'interface' is reserved in strict mode and cannot be used as an identifier
@@ -13916,15 +13708,13 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/7b23e12275700e79.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  5 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7b44c7d16afc4574.js
 error: Identifier 'f' has already been declared
@@ -13996,15 +13786,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/7bf1ada1a1dffbb0.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  5 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7bfa9635f12e73de.module.js
 error: Identifier 'smoosh' has already been declared
@@ -14028,14 +13816,12 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/7c0b7c6d459ffadd.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | let f = 123;
  2 | if (false) function _f() {} else function f() {}
    |            ^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7c1668b07c1697db.js
 error: Cannot use import statement outside a module
@@ -14046,13 +13832,11 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/7c1ed05c850d5900.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | do b: function a(){} while (1)
    |       ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7c34c81ddd1d8f22.module.js
 error: 'static' is reserved in strict mode and cannot be used as an identifier
@@ -14105,13 +13889,11 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/7cfb0a2bb6c05a88.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (const x in {}) label1: label2: function f() {}
    |                                     ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7d029e0be60dc821.js
 error: Cannot use import statement outside a module
@@ -14154,7 +13936,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/7d60e57d8fe8a1a6.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -14165,8 +13947,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7d843a2e0a0a26bc.js
 error: Cannot use import statement outside a module
@@ -14213,13 +13993,11 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/7df9b9bc309e08de.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | do b: function a(){} while (1);
    |       ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7e135ca2d7228e2f.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -14347,25 +14125,21 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/7f19898a44ea28a0.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | }
  4 | if (true) function f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7f2b03e00c77d327.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 |   changed = f;
  6 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  7 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/7f7279d74126a2dd.js
 error: Identifier 'f' has already been declared
@@ -14803,15 +14577,13 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/836bb396b6c0844c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | } catch ({f}) {
  4 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/8381210618dc43b7.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -14973,15 +14745,13 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/84a059b3ea4a1d1c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/84a6ea824cac8e3b.js
 error: Illegal break statement
@@ -15385,15 +15155,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/8ab537be98a97a08.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/8ad59c9d4ec31d74.js
 error: Cannot use import statement outside a module
@@ -15724,13 +15492,11 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/8df0fadd6ddb47b4.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (let x in {}) label1: label2: function f() {}
    |                                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/8e369dc6967d9718.js
 error: Identifier 'a' has already been declared
@@ -16068,14 +15834,12 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/919f5c124b8d52f6.module.js
-error: Labeled function declarations are not allowed in strict mode
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | a: function a() {}
    |    ^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/91af315899636cff.js
 error: Identifier 'a' has already been declared
@@ -16186,7 +15950,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/9239d4d6c418e6a4.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {
    |           ^^^^^^^^^^^^^^
@@ -16195,8 +15959,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
  3 | } else function _f() {}
    | ^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/92683d6bbe81630f.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -16283,15 +16045,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/939844abaa34aac0.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |     let f = 123;
  4 |     if (true) function f() {}
    |               ^^^^^^^^^^^^^^^
  5 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/93999b65b611349c.module.js
 error: 'import' declaration may only appear at the top level
@@ -16389,15 +16149,13 @@ error: Unexpected token '=' in binding pattern
 
 
 ✓ test/parser/suite/js/semantic/93ddd4a16af973bc.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | }) {
  4 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/93f7dc27bfbe8cf3.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -16443,15 +16201,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/9488fd949479819f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  4 |     initialBV = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/94ae5ba7c1fd8e85.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -16532,13 +16288,11 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/9568a2322038429b.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | do function f() {} while (false)
    |    ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/95768a750c75b822.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -16661,15 +16415,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/9686cca0011cf36e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  5 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/96909e1dce85ca53.js
 error: Cannot use 'export default' declaration outside a module
@@ -16817,15 +16569,13 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/97617e38752eb81f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 | }
  6 | if (false) ; else function f() { return 'second declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  7 | assert.sameValue(typeof f, 'function');
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/976afd9ae5f5d71a.js
 error: Cannot use 'export' declaration outside a module
@@ -16943,24 +16693,20 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/981610b9a484d5c1.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 | }
  6 | if (false) function _f() {} else function f() {
    |            ^^^^^^^^^^^^^^^^
  7 |   return 'second declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/981cb65680c8c362.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(;;) d: c: b: function a(){}
    |                  ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/982ee1ff0385dd2b.js
 error: Yield expression is not allowed in formal parameters
@@ -17061,15 +16807,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/98d09e851b07134e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   for (let f; ; ) {
  3 |     if (true) function f() {} else function _f() {}
    |               ^^^^^^^^^^^^^^^
  4 |     break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/98e868bac7ece180.module.js
 error: 'export default' declaration may only appear at the top level
@@ -17080,15 +16824,13 @@ error: 'export default' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/9900cd8c698586f0.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | assert.sameValue(f(), 'outer declaration');
  2 | if (false) ; else function f() { return 'inner declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  3 | function f() {
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/990ce4919d5f73e0.js
 error: Cannot use import statement outside a module
@@ -17129,15 +16871,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/996f39b50a1d2c8f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | for (let f; ; ) {
  2 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  3 |   break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/9990a6d1d39f313d.js
 error: Use of undefined label 'a'
@@ -17436,13 +17176,11 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/9c1deb9acb89d799.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {  } else function _f() {}
    |           ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/9c1e8600383383d2.js
 ✓ test/parser/suite/js/semantic/9c294430edf77b49.js
@@ -17549,13 +17287,11 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/9cf79ed7b0532da1.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | while(1) b: function a(){}
    |             ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/9d18ec4015521500.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -18099,7 +17835,7 @@ error: 'private' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/a21ce3ea381af111.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {
    |           ^^^^^^^^^^^^^^
@@ -18109,8 +17845,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^
  4 | var f = 123;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a21d8b83da3b41b3.js
 error: Cannot use import statement outside a module
@@ -18141,13 +17875,11 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/a27a9e29d57c578f.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(var a of b) d: function c(){}
    |                    ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a2912f3851c14287.js
 error: Cannot use import statement outside a module
@@ -18324,15 +18056,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/a390a7291eea83b8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  4 |     return 'inner declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a39272532edef4c6.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -18425,15 +18155,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/a3e3787dd1c0a0bc.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function() {
  3 | if (false) ; else function f() { return 'inner declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  4 | after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a3e9cdb74c31dedf.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -18508,22 +18236,18 @@ error: 'export default' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/a4d62a651f69d815.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (a) function b(){}
    |        ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a4d809499ee1bf8b.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a4dcc7041a6f6532.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -18879,7 +18603,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/a7dfa692e50c55c4.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -18890,8 +18614,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a7e83c52347ea1f9.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -18970,15 +18692,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a85d00daea8a7fe1.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 |   changed = f;
  6 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  7 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/a864a5344c54f42b.module.js
 error: 'implements' is reserved in strict mode and cannot be used as an identifier
@@ -19128,15 +18848,13 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/aa571fcc865afd80.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | for (let f; ; ) {
  2 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  3 |   break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/aa5922a9b5d4b5e5.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -19387,26 +19105,22 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✓ test/parser/suite/js/semantic/acbe6095b813c1e3.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function() {
  3 | if (false) ; else function f() { initialBV = f; f = 123; currentBV = f; return 'decl'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  4 | varBinding = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/acd07bf73150ad42.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 10 | for (let f of [0]) {
 11 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 12 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/ace3f917980b466e.module.js
 error: 'import' declaration may only appear at the top level
@@ -19503,13 +19217,11 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/ae09041512c13515.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (var x in {}) function f() {}
    |                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/ae0ea990d8678f17.js
 error: Use of undefined label 'nonexist'
@@ -19616,14 +19328,12 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/af41db0806f5841f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var f = 123;
  2 | if (true) function f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/af60e70aee6bb7f2.js
 error: Cannot use 'export default' declaration outside a module
@@ -19642,15 +19352,13 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/af62399548261189.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  6 |   }
  7 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  8 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/af95eb5c487cf274.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -19779,24 +19487,20 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b081584d076a029d.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(;;) b: function a(){}
    |            ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/b09cec786aab2a01.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   let f = 123;
  3 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  4 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/b0a80dd767a7dd9c.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -19953,14 +19657,12 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/b1e1f590f0ebf4e8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) function _f() {} else function f() {
    |            ^^^^^^^^^^^^^^^^
  2 |   return 'function declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/b1fc7710d5fc4366.module.js
 ✓ test/parser/suite/js/semantic/b205355de22689d1.module.js
@@ -20067,13 +19769,11 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b343915da6b328a4.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (const x = 0; false; ) label1: label2: function f() {}
    |                                            ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/b370ab67af88abc6.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -20332,13 +20032,11 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b688b7f0231f59d0.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(a of b) d: function c(){}
    |                ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/b69f4ace0335de9d.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -20544,15 +20242,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/b853fde4ba0bc1f7.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |     let f;
  4 |     if (true) function f() {}
    |               ^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/b85e42325f54af51.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -20667,15 +20363,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/b923519b6680576b.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |     let f = 123;
  4 |     if (false) function _f() {} else function f() {}
    |                ^^^^^^^^^^^^^^^^
  5 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/b93402bac7424e93.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -20776,13 +20470,11 @@ error: Identifier 'x' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/ba21e63736d8fd46.module.js
-error: Labeled function declarations are not allowed in strict mode
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | a: function a(){}
    |    ^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✗ test/parser/suite/js/semantic/ba2bfa1952f3e537.module.js
 ✓ test/parser/suite/js/semantic/bab8d57ddf81ea04.js
@@ -20892,14 +20584,12 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/bbf0c8d037eb1450.module.js
-error: Labeled function declarations are not allowed in strict mode
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | label: function g() {}
    |        ^^^^^^^^^^^^^^^
  2 | label1: label2: function f() {}
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✗ test/parser/suite/js/semantic/bbf1857db4b29bba.js
 ✓ test/parser/suite/js/semantic/bbf57bbb5f6110d2.js
@@ -20968,14 +20658,12 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/bcc03f909039ca4f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) ; else function f() { return 'function declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | assert.sameValue(typeof f, 'function');
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/bcc140be30a8bf96.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -21289,7 +20977,7 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/bf9b13289b7ee793.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {
    |           ^^^^^^^^^^^^^^
@@ -21299,8 +20987,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^
  4 | function f() {
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/bfaef6b1eba2d0f9.module.js
 error: 'with' statements are not allowed in strict mode
@@ -21343,14 +21029,12 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/c030fa00c5cdb573.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) ; else function f() { return 'inner declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | assert.sameValue(typeof f, 'function');
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c036a1cf9eaf9f3d.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -21377,22 +21061,18 @@ error: 'package' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/c06df922631aeabc.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1); else function a(){}
    |              ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c06fd9680b078c2c.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | 'use strict'; if (1) function a(){}
    |                      ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c07861816f706cd9.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -21788,13 +21468,11 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/c3b10bba71f61e84.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {} else ;
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c3c09212ce97cc51.js
 error: Cannot use 'export' declaration outside a module
@@ -21838,13 +21516,11 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/c42e7c8a0cd8cc4c.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | while (false) label1: label2: function f() {}
    |                               ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c4341e4f37cbc713.module.js
 error: 'with' statements are not allowed in strict mode
@@ -21866,15 +21542,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/c4736dfb6c20f876.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   } catch ({f}) {
  5 |     if (true) function f() {} else function _f() {}
    |               ^^^^^^^^^^^^^^^
  6 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c491e3fbf668175b.js
 error: Identifier 'x' has already been declared
@@ -22005,13 +21679,11 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/c54830397bdd2597.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(const a in b) d: function c(){}
    |                      ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c56e2a87f3b5690c.js
 error: Cannot use import statement outside a module
@@ -22221,23 +21893,19 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/c78c6ec1f3b21e50.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 | }
  5 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c7ad2478fd72bffe.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(a in b) function c(){}
    |             ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c7b97adeea59f69f.module.js
 error: 'export default' declaration may only appear at the top level
@@ -22309,15 +21977,13 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/c82dc80e9a4c8f7c.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  7 |   } catch (f) {
  8 | if (false) ; else function f() { return 123; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  9 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c82fcf7c29e24b40.module.js
 error: Identifier 'a' has already been declared
@@ -22342,7 +22008,7 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/c83ecdc3099090cf.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {
    |           ^^^^^^^^^^^^^^
@@ -22352,8 +22018,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^
  4 | function f() {
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/c8565124aee75c69.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -22692,13 +22356,11 @@ error: Identifier 'smoosh' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/cae16925ba9984c1.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) function _f() {} else function f() {}
    |            ^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/cb2696015fa138af.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -22887,13 +22549,11 @@ error: Identifier 'a' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/cc9a28440986ab0a.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for ( ; false; ) function f() {}
    |                  ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/cca57874c36d25e7.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -23088,7 +22748,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/ce37c69e8e4b4eef.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 | }
  6 | if (true) function f() {
@@ -23098,8 +22758,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
  8 | }
    | ^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/ce47504351d0488f.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -23135,15 +22793,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/ce9dc54f0d1c198b.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function() {
  3 | if (false) ; else function f() { return 'function declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  4 | after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/cf09b247aab59934.js
 error: Identifier 'b' has already been declared
@@ -23174,7 +22830,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/cf3bc6f32410c8e8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 |   if (true) function f() {
@@ -23185,17 +22841,13 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  7 |   function f() {
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/cf4ec8205001e331.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(var a;;) c: function b(){}
    |                 ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/cf561bd002d2c9b2.module.js
 error: 'export default' declaration may only appear at the top level
@@ -23410,15 +23062,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/d109e3e6ac319694.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  5 | after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d117c56684d209fc.module.js
 error: 'with' statements are not allowed in strict mode
@@ -23682,15 +23332,13 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/d28b21d9bca58e6d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |     let f;
  4 |     if (true) function f() {} else function _f() {}
    |               ^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d296d50d3d403f82.js
 error: Cannot use import statement outside a module
@@ -23774,14 +23422,12 @@ error: 'arguments' is not allowed as a binding name in strict mode
 
 ✗ test/parser/suite/js/semantic/d32d2f1285789b8e.js
 ✓ test/parser/suite/js/semantic/d32d9a1ac78ac7d2.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | let f = 123;
  2 | if (true) function f() {} else function _f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d33299b545e367a3.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -23968,7 +23614,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/d530d7980ab126c5.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var initialBV, currentBV;
  2 | if (true) function f() {
@@ -23985,19 +23631,15 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^
  8 | f();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d546153c6eebb0b5.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  4 |     return 'function declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d54af1c70aeb1d58.js
 error: Identifier 'f' has already been declared
@@ -24110,15 +23752,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/d659a08164010224.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | } catch ({f}) {
  4 |   if (true) function f() {} else function _f() {}
    |             ^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d6750f33acde1f15.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -24218,15 +23858,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/d74362ce271b92d7.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | var initialBV, currentBV;
  2 | if (false) function _f() {} else function f() {
    |            ^^^^^^^^^^^^^^^^
  3 |   initialBV = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d74cf547da723dcb.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -24381,13 +24019,11 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/d868cb3eba295d1c.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(var a in b) d: function c(){}
    |                    ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d87dbd0872ea7ad8.js
 error: Cannot use import statement outside a module
@@ -24521,15 +24157,13 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/d992362d94b561a6.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 11 | } catch ({ f }) {
 12 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 13 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/d9cea8bb367da4c9.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -24595,15 +24229,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/da29bcb711b066a8.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function() {
  3 | if (false) ; else function f() { return 'declaration'; }
    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  4 | after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/da2cf3664ef818a8.js
 error: for-in/of loop variable declaration may not have an initializer
@@ -24784,15 +24416,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/db39c498402d4a24.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 11 |   let f = 123;
 12 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 13 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/db4428d21c2c8451.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -25070,15 +24700,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/ddf6d4099dc9cb32.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  7 |   }
  8 |   if (false) function _f() {} else function f() {
    |              ^^^^^^^^^^^^^^^^
  9 |     return 'second declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/de01685d5e823545.js
 ✓ test/parser/suite/js/semantic/de07a50e8f528926.js
@@ -25201,15 +24829,13 @@ error: Identifier 'c' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/debc6d4cdb1450ab.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | for (let f; ; ) {
  2 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  3 |   break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/dec98c54829909b6.js
 ✓ test/parser/suite/js/semantic/ded1395d7eb8b642.js
@@ -25410,15 +25036,13 @@ error: Identifier 'f' has already been declared
 
 
 ✓ test/parser/suite/js/semantic/dffeefbee0abfacc.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  6 |   }
  7 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  8 | }());
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e01265e2211e48b3.js
 error: Expected ';' after for-loop init, but found ')'
@@ -25439,15 +25063,13 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/e05c0b0dabc1fe04.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  9 | for (let f of [0]) {
 10 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 11 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e05d2d93d53efa9d.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -25458,13 +25080,11 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/e081a55d497ecba3.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if (false) label1: label2: function test262() {}
    |                            ^^^^^^^^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/e08738e7c6a32e95.module.js
 error: 'with' statements are not allowed in strict mode
@@ -25507,14 +25127,12 @@ error: Unexpected token '+' in binding pattern
 
 ✗ test/parser/suite/js/semantic/e0c3d30b6fe96812.js
 ✓ test/parser/suite/js/semantic/e0e9023017b7506f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) function _f() {} else function f() {
    |            ^^^^^^^^^^^^^^^^
  2 |   return 'declaration';
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e0f21d0199845466.js
 error: Identifier 'x' has already been declared
@@ -25631,15 +25249,13 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e1e4870ce64e2e79.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | } catch ({f}) {
  4 |   if (false) function _f() {} else function f() {}
    |              ^^^^^^^^^^^^^^^^
  5 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e23e9b82302816a8.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -25717,13 +25333,11 @@ error: Cannot use import statement outside a module
 
 ✗ test/parser/suite/js/semantic/e27c89124bbb7a5e.js
 ✓ test/parser/suite/js/semantic/e299aa99dc3d30e8.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(const a of b) d: function c(){}
    |                      ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e2b5a1061ccc310a.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -25818,15 +25432,13 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e3758e806193341f.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 12 |   } catch ({ f }) {
 13 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 14 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e37ed9563e85fdf8.js
 error: Cannot use 'export default' declaration outside a module
@@ -25928,13 +25540,11 @@ error: for-in/of loop variable declaration may not have an initializer
    |
 
 ✓ test/parser/suite/js/semantic/e421d953546800f5.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if(1) ; else b: function a(){}
    |                 ^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/e423bb14a76e541f.module.js
 error: Cannot use `await` as an identifier in an async or module context
@@ -26074,15 +25684,13 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e5988c89f46d96c1.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   init = f;
  5 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  6 | })();
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e599df95fbd65d52.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -26105,15 +25713,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/e5d8a612f4d32e1d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | assert.sameValue(f, 123, 'binding is not initialized to `undefined`');
  3 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  4 | assert.sameValue(f, 123, 'value is not updated following evaluation');
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e62bf3160aa14f7d.module.js
 error: 'with' statements are not allowed in strict mode
@@ -26206,24 +25812,20 @@ error: 'export default' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/e6df184bda496945.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (false) ; else function f() {}
    |                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e6e6f051bd71b542.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   let f = 123;
  3 |   if (true) function f() {}
    |             ^^^^^^^^^^^^^^^
  4 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e6ff1fe716af69f3.module.js
 error: 'with' statements are not allowed in strict mode
@@ -26337,13 +25939,11 @@ error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/e808e347646c2670.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(a of b) function c(){}
    |             ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e8227537c0c95106.js
 error: Cannot use import statement outside a module
@@ -26426,15 +26026,13 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e925131dec457165.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |   init = f;
  4 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
  5 | after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/e929ff0c0dcb70c0.js
 error: Identifier 'a' has already been declared
@@ -26619,15 +26217,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/eaaec1024308a10e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 |     let f = 123;
  4 |     if (true) function f() {} else function _f() {}
    |               ^^^^^^^^^^^^^^^
  5 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/eaafa57666c86fe5.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -26706,14 +26302,12 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/eb30eab9ff32d51b.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  3 | }
  4 | if (false) function _f() {} else function f() {}
    |            ^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/eb381c0d9bfaf2ef.js
 error: Cannot use 'export' declaration outside a module
@@ -26723,7 +26317,7 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/eb60cf929d81e775.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  5 | }
  6 | if (true) function f() {
@@ -26733,8 +26327,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
  8 | } else function _f() {}
    | ^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/eb6c8c63a5de5ce4.module.js
 error: 'with' statements are not allowed in strict mode
@@ -26806,13 +26398,11 @@ error: Cannot use 'export' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/ec27cba8a834a50e.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if (false) label1: label2: function test262() {} else ;
    |                            ^^^^^^^^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/ec42b1fbf530436e.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -26851,13 +26441,11 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/ec6321b4e88ce551.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if (true) ; else label1: label2: function test262() {}
    |                                  ^^^^^^^^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✗ test/parser/suite/js/semantic/ec8d1dfb30b18099.js
 ✓ test/parser/suite/js/semantic/ec93b40c2e19fac2.js
@@ -27080,13 +26668,11 @@ error: Private fields cannot be deleted
    |
 
 ✓ test/parser/suite/js/semantic/ee3bf6b50e45aa94.js
-error: Labeled function declarations are not allowed as the body of an if statement
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | if(1) b: function a(){} else ;
    |          ^^^^^^^^^^^^^^
    |
-   = help: Remove the label or wrap the function in a block
-
 
 ✓ test/parser/suite/js/semantic/ee4375b43d56c1cc.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
@@ -27226,23 +26812,19 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/efcb54b62e8f0e06.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | while (1) function foo(){}
    |           ^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/efd3de358662f915.js
 ✓ test/parser/suite/js/semantic/efe0e7dcea3c9e78.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for(a in b) d: function c(){}
    |                ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/efe64d8a71200d18.js
 error: Illegal continue statement
@@ -27397,13 +26979,11 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/f0d2c3e6bdc9d6fb.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for ( ; false; ) label1: label2: function f() {}
    |                                  ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f0d6587f0ea9f66e.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -27646,7 +27226,7 @@ error: 'import' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/f2bf539142c1d80b.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -27663,8 +27243,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  9 |   varBinding = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f2c2617a3865915e.module.js
 error: 'export default' declaration may only appear at the top level
@@ -27682,13 +27260,11 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/f2db53245b89c72f.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | while(true) function a(){}
    |             ^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f2e41488e95243a8.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -27707,13 +27283,11 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/f3033424f662e914.js
-error: Function declarations are not allowed as the body of a loop
+error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
  1 | for (let x of []) label1: label2: function f() {}
    |                                   ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f30a8c056dc1661d.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -27793,7 +27367,7 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✓ test/parser/suite/js/semantic/f37c4e37fa620f8e.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  4 |   } catch (f) {
  5 |     if (true) function f() {
@@ -27804,8 +27378,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^^^
  8 |   }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✗ test/parser/suite/js/semantic/f3943346692438ba.js
 ✗ test/parser/suite/js/semantic/f3c9e78cb021ccd2.js
@@ -27934,13 +27506,11 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/f54b9f28d12d0a1d.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {  } else ;
    |           ^^^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f58bc5cd471d43fd.js
 error: Identifier 'f' has already been declared
@@ -28010,13 +27580,11 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/f6225d251a497ddf.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (true) function f() {} else function _f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f62c388ab35028a8.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -28124,7 +27692,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/f7171546e886bdfa.js
 ✓ test/parser/suite/js/semantic/f71fb0732aeed5c1.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 | (function () {
  3 |   if (true) function f() {
@@ -28135,8 +27703,6 @@ error: In strict mode, function declarations are not allowed as the body of an i
    | ^^^
  6 |   after = f;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f73911f9e5e07713.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -28397,14 +27963,12 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/f8b974da4fad2692.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | if (1) function a() {} else ;
    |        ^^^^^^^^^^^^^^^
  2 | 
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/f8cc2c48224925b5.module.js
 error: Identifier 'smoosh' has already been declared
@@ -28759,14 +28323,12 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/fc1e794eb3cd8fd7.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  1 | let f = 123;
  2 | if (true) function f() {}
    |           ^^^^^^^^^^^^^^^
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/fc65cf19b7277ab3.module.js
 error: 'with' statements are not allowed in strict mode
@@ -28836,15 +28398,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/fd1b47bef833749a.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
 11 |     let f;
 12 | if (false) ; else function f() {  }
    |                   ^^^^^^^^^^^^^^^^^
 13 | }
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/fd2a357afbb8f807.module.js
 error: 'with' statements are not allowed in strict mode
@@ -29096,15 +28656,13 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/ff8501e7fd2fbea6.module.js
-error: In strict mode, function declarations are not allowed as the body of an if statement
+error: In strict mode code, functions can only be declared at top level or inside a block
    |
  2 |   for (let f; ; ) {
  3 |     if (true) function f() {}
    |               ^^^^^^^^^^^^^^^
  4 |     break;
    |
-   = help: Wrap the function declaration in a block
-
 
 ✓ test/parser/suite/js/semantic/ff90b65e58f94d66.js
 error: Identifier 'f' has already been declared
