@@ -125,23 +125,40 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    /// In strict mode, function declarations are only allowed at the top level of
-    /// a script, module, function body, or block. Bare function declarations as the
-    /// body of if/else/for/while are only permitted in sloppy mode (Annex B.3.3).
+    // https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors (14.13.1)
+    //   LabelledItem : FunctionDeclaration - syntax error unless non-strict + web host (B.3.1).
+    // https://tc39.es/ecma262/#sec-if-statement-static-semantics-early-errors (14.6.1)
+    //   IsLabelledFunction check prevents labelled functions in if/iteration/with bodies.
+    // https://tc39.es/ecma262/#sec-functiondeclarations-in-ifstatement-statement-clauses (B.3.3)
+    //   Bare FunctionDeclaration in if/else is allowed in non-strict code only.
     pub fn enter_function(self: *Self, func: ast.Function, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (func.type == .function_declaration and ctx.scope.isStrict()) {
-            if (ctx.path.parent()) |parent| {
-                switch (ctx.tree.getData(parent)) {
-                    .program, .function_body, .class_body, .static_block,
-                    .block_statement, .switch_case, .labeled_statement,
-                    .export_named_declaration, .export_default_declaration,
-                    => {},
-                    else => {
-                        try self.report(ctx.tree.getSpan(node_index), "In strict mode code, functions can only be declared at top level or inside a block", .{});
-                        return .skip;
-                    },
-                }
-            }
+        if (func.type != .function_declaration) return .proceed;
+
+        const is_strict = ctx.scope.isStrict();
+        var through_labels = false;
+        var iter = ctx.path.ancestors();
+        _ = iter.next(); // skip the function node itself
+
+        const parent = while (iter.next()) |idx| {
+            const d = ctx.tree.getData(idx);
+            if (d != .labeled_statement) break d;
+            through_labels = true;
+        } else return .proceed;
+
+        const is_valid = switch (parent) {
+            .program, .function_body, .class_body, .static_block,
+            .block_statement, .switch_case,
+            .export_named_declaration, .export_default_declaration,
+            => !is_strict or !through_labels,
+            .if_statement => !is_strict and !through_labels,
+            else => false,
+        };
+
+        if (!is_valid) {
+            try self.report(ctx.tree.getSpan(node_index), if (is_strict)
+                "In strict mode code, functions can only be declared at top level or inside a block"
+            else
+                "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement", .{});
         }
         return .proceed;
     }
