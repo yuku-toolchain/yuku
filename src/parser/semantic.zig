@@ -74,7 +74,7 @@ const SemanticVisit = struct {
                         formal_parameters.kind == .arrow_formal_parameters
                     ) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
-                    } else if (ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
+                    } else if (!ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                     }
                 }

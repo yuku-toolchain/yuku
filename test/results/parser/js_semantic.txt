@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3174/3560 (89.16%)
-Failed:       386
+Passed:       3172/3560 (89.10%)
+Failed:       388
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -2273,17 +2273,7 @@ error: Cannot use 'export' declaration outside a module
  2 | 
    |
 
-✓ test/parser/suite/js/semantic/13e68fa93de97e1b.js
-error: Identifier 'param' has already been declared
-   |
- 1 | function _13_1_28_fun(param, param, param) { 'use strict'; }
-   |                              ^^^^^
-   |                       ~~~~~ 'param' was first declared as a parameter here
-   |                              ~~~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'param'
-
-
+✗ test/parser/suite/js/semantic/13e68fa93de97e1b.js
 ✓ test/parser/suite/js/semantic/141984ba1d762024.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -3010,17 +3000,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |               ^^^
    |
 
-✓ test/parser/suite/js/semantic/19b1ced8eb4bd591.js
-error: Identifier 'param' has already been declared
-   |
- 1 | function _13_1_24_fun(param, param) { 'use strict'; }
-   |                              ^^^^^
-   |                       ~~~~~ 'param' was first declared as a parameter here
-   |                              ~~~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'param'
-
-
+✗ test/parser/suite/js/semantic/19b1ced8eb4bd591.js
 ✓ test/parser/suite/js/semantic/19b630afc200de70.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -3275,17 +3255,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |           ^^^^^^^^^^^^^^^
    |
 
-✓ test/parser/suite/js/semantic/1b884992ac0a7bac.js
-error: Identifier 'param1' has already been declared
-   |
- 1 | (function (param1, param2, param1) { 'use strict'; });
-   |                            ^^^^^^
-   |            ~~~~~~ 'param1' was first declared as a parameter here
-   |                            ~~~~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'param1'
-
-
+✗ test/parser/suite/js/semantic/1b884992ac0a7bac.js
 ✓ test/parser/suite/js/semantic/1b8b03715a17881c.js
 error: Identifier 'a' has already been declared
    |
@@ -6108,7 +6078,17 @@ error: 'arguments' is not allowed as a binding name in strict mode
  3 |   (function () {})();
    |
 
-✗ test/parser/suite/js/semantic/36d9cc06fef55d8c.js
+✓ test/parser/suite/js/semantic/36d9cc06fef55d8c.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | (function({a: b}, {c: b}){})
+   |                       ^
+   |               ~ 'b' was first declared as a parameter here
+   |                       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/36f44f817844a6dd.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -8676,17 +8656,7 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/4e6529771ad3343f.module.js
-✓ test/parser/suite/js/semantic/4e7e3a5864a26f14.js
-error: Identifier 'param1' has already been declared
-   |
- 1 | function _13_1_26_fun(param1, param2, param1) { 'use strict'; }
-   |                                       ^^^^^^
-   |                       ~~~~~~ 'param1' was first declared as a parameter here
-   |                                       ~~~~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'param1'
-
-
+✗ test/parser/suite/js/semantic/4e7e3a5864a26f14.js
 ✓ test/parser/suite/js/semantic/4e8d04efa24f751d.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -9626,7 +9596,17 @@ error: Private fields cannot be deleted
  4 | ;
    |
 
-✗ test/parser/suite/js/semantic/57326657ecdecd7f.js
+✓ test/parser/suite/js/semantic/57326657ecdecd7f.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | (function([a, a]){})
+   |               ^
+   |            ~ 'a' was first declared as a parameter here
+   |               ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/5744ff363a607202.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -10218,7 +10198,18 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
-✗ test/parser/suite/js/semantic/5bc268cbc384501b.js
+✓ test/parser/suite/js/semantic/5bc268cbc384501b.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | function f(x = 0, x) {
+   |                   ^
+   |            ~ 'x' was first declared as a parameter here
+   |                   ~ cannot be redeclared here
+ 2 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/5bdd010b8f18f7f1.js
 error: Identifier 'f' has already been declared
    |
@@ -11135,17 +11126,7 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✓ test/parser/suite/js/semantic/6473f07239ed08ef.js
-error: Identifier 'b' has already been declared
-   |
- 1 | function a(b, b) { "use strict"; }
-   |               ^
-   |            ~ 'b' was first declared as a parameter here
-   |               ~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'b'
-
-
+✗ test/parser/suite/js/semantic/6473f07239ed08ef.js
 ✓ test/parser/suite/js/semantic/64aecb3d0bb50ef8.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -13053,17 +13034,7 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✓ test/parser/suite/js/semantic/7513516d9fe51c8c.js
-error: Identifier 'param' has already been declared
-   |
- 1 | (function (param, param) { 'use strict'; });
-   |                   ^^^^^
-   |            ~~~~~ 'param' was first declared as a parameter here
-   |                   ~~~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'param'
-
-
+✗ test/parser/suite/js/semantic/7513516d9fe51c8c.js
 ✓ test/parser/suite/js/semantic/75172741c27c7703.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -14981,7 +14952,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/87946387ad39dde7.js
+✓ test/parser/suite/js/semantic/87946387ad39dde7.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | function a(b, { b }){}
+   |                 ^
+   |            ~ 'b' was first declared as a parameter here
+   |                 ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/879c075c866d56cf.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -17020,7 +17001,17 @@ error: 'arguments' is not allowed as a binding name in strict mode
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/9adb143304483420.js
+✓ test/parser/suite/js/semantic/9adb143304483420.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | (function({a: b, c: b}){})
+   |                     ^
+   |               ~ 'b' was first declared as a parameter here
+   |                     ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/9adb3dd33613ce28.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -18710,7 +18701,18 @@ error: 'implements' is reserved in strict mode and cannot be used as an identifi
 
 ✗ test/parser/suite/js/semantic/a8739e3cf494b422.js
 ✗ test/parser/suite/js/semantic/a87c5d5237b34393.module.js
-✗ test/parser/suite/js/semantic/a8b8c7c75bdd0ede.js
+✓ test/parser/suite/js/semantic/a8b8c7c75bdd0ede.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | 0, function(x = 0, x) {
+   |                    ^
+   |             ~ 'x' was first declared as a parameter here
+   |                    ~ cannot be redeclared here
+ 2 | };
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/a91753edce7fc175.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -21289,18 +21291,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | }
    |
 
-✓ test/parser/suite/js/semantic/c211e5a7799f20ad.js
-error: Identifier 'b' has already been declared
-   |
- 1 | function a(b, b) {'use strict';}
-   |               ^
-   |            ~ 'b' was first declared as a parameter here
-   |               ~ cannot be redeclared here
- 2 | 
-   |
-   = help: Consider removing or renaming this declaration of 'b'
-
-
+✗ test/parser/suite/js/semantic/c211e5a7799f20ad.js
 ✓ test/parser/suite/js/semantic/c21df0788d2e4fe0.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -22468,17 +22459,7 @@ error: Identifier 'param1' has already been declared
    = help: Consider removing or renaming this declaration of 'param1'
 
 
-✓ test/parser/suite/js/semantic/cc1b16280477d9a2.js
-error: Identifier 'param' has already been declared
-   |
- 1 | (function (param, param, param) { 'use strict'; });
-   |                   ^^^^^
-   |            ~~~~~ 'param' was first declared as a parameter here
-   |                   ~~~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'param'
-
-
+✗ test/parser/suite/js/semantic/cc1b16280477d9a2.js
 ✓ test/parser/suite/js/semantic/cc23480bdd763207.js
 error: Identifier 'a' has already been declared
    |
@@ -24806,17 +24787,7 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✓ test/parser/suite/js/semantic/de9d9a6cd61407f5.js
-error: Identifier 'b' has already been declared
-   |
- 1 | (function a(b, b) { "use strict"; })
-   |                ^
-   |             ~ 'b' was first declared as a parameter here
-   |                ~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'b'
-
-
+✗ test/parser/suite/js/semantic/de9d9a6cd61407f5.js
 ✓ test/parser/suite/js/semantic/deb13a470cb01aab.js
 error: Identifier 'c' has already been declared
    |
@@ -28246,7 +28217,17 @@ error: Yield expression is not allowed in formal parameters
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/fb40f86db65f8e6a.js
+✓ test/parser/suite/js/semantic/fb40f86db65f8e6a.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | function a(b, [b]){}
+   |                ^
+   |            ~ 'b' was first declared as a parameter here
+   |                ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/fb813bf3c030131e.js
 error: 'super()' is only valid in a constructor of a derived class
    |
