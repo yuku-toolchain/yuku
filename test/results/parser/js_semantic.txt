@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3414/3648 (93.59%)
-Failed:       234
+Passed:       3428/3648 (93.97%)
+Failed:       220
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -7285,7 +7285,15 @@ error: 'arguments' is not allowed as a binding name in strict mode
  3 | f().then($DONE, error => {}).then($DONE, $DONE);
    |
 
-✗ test/parser/suite/js/semantic/3644a964c2a8522c.js
+✓ test/parser/suite/js/semantic/3644a964c2a8522c.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ get __proto(){}, "__proto__": null, __proto__: null, })
+   |                                        ^^^^^^^^^^^^^^^
+   |                     ~~~~~~~~~~~~~~~~~ first defined here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/365ccd9447c3eeb3.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -9590,7 +9598,18 @@ error: 'with' statements are not allowed in strict mode
 12 |   if (scope.x !== 2) {}
    |
 
-✗ test/parser/suite/js/semantic/485b6b09f8dc91ef.js
+✓ test/parser/suite/js/semantic/485b6b09f8dc91ef.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({
+ 2 |   __proto__: null,
+   |   ~~~~~~~~~~~~~~~ first defined here
+ 3 |   other: null,
+ 4 |   '__proto__': null
+   |   ^^^^^^^^^^^^^^^^^
+ 5 | });
+   |
+
 ✓ test/parser/suite/js/semantic/485def7d22717667.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -11706,7 +11725,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/587f8eba459c585c.js
+✓ test/parser/suite/js/semantic/587f8eba459c585c.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ __proto__: null, "__proto__": null })
+   |                     ^^^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~ first defined here
+ 2 | 
+   |
+
 ✗ test/parser/suite/js/semantic/58a85b78922b677c.js
 ✓ test/parser/suite/js/semantic/58a96eef37f81250.js
 error: Private fields cannot be deleted
@@ -16956,7 +16983,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/811e434afe688eb4.js
+✓ test/parser/suite/js/semantic/811e434afe688eb4.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ set __proto__(a){}, "__proto__": null, __proto__: null, })
+   |                                           ^^^^^^^^^^^^^^^
+   |                        ~~~~~~~~~~~~~~~~~ first defined here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/8120fa6a89e6dd1b.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -18406,7 +18441,14 @@ error: 'static' is reserved in strict mode and cannot be used as a binding name
  4 | }
    |
 
-✗ test/parser/suite/js/semantic/8f2d88f14f125b42.js
+✓ test/parser/suite/js/semantic/8f2d88f14f125b42.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ __proto__: 1, __proto__: 2 })
+   |                  ^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~ first defined here
+   |
+
 ✗ test/parser/suite/js/semantic/8f5e572b154c5d39.module.js
 ✓ test/parser/suite/js/semantic/8f72321a88ad015f.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -19261,7 +19303,14 @@ error: 'with' statements are not allowed in strict mode
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/95bf27d640eada27.js
+✓ test/parser/suite/js/semantic/95bf27d640eada27.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | !{ __proto__: null, __proto__: null };
+   |                     ^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~ first defined here
+   |
+
 ✓ test/parser/suite/js/semantic/95c4810b20741e13.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -20425,7 +20474,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/9d893d3b185cdca0.js
+✓ test/parser/suite/js/semantic/9d893d3b185cdca0.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ "__proto__": null, __proto__: null })
+   |                       ^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~~~ first defined here
+ 2 | 
+   |
+
 ✗ test/parser/suite/js/semantic/9d8bc7d41a06ba76.js
 ✓ test/parser/suite/js/semantic/9d915b5055233615.module.js
 error: 'with' statements are not allowed in strict mode
@@ -22287,7 +22344,14 @@ error: 'with' statements are not allowed in strict mode
 64 |   f();
    |
 
-✗ test/parser/suite/js/semantic/ab77450c1913d3e3.js
+✓ test/parser/suite/js/semantic/ab77450c1913d3e3.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | a = { __proto__: 1, __proto__: 2 }
+   |                     ^^^^^^^^^^^^
+   |       ~~~~~~~~~~~~ first defined here
+   |
+
 ✗ test/parser/suite/js/semantic/ab7b2a28354f1f54.js
 ✓ test/parser/suite/js/semantic/ab966c8708b47ed1.js
 error: Identifier 'a' has already been declared
@@ -26472,7 +26536,15 @@ error: 'export default' declaration may only appear at the top level
    |           ^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/cc0122b6d261427b.js
+✓ test/parser/suite/js/semantic/cc0122b6d261427b.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ "__proto__": null, '__proto__': null })
+   |                       ^^^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~~~ first defined here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/cc035bc5115fcdf2.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -27907,7 +27979,14 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/d4cca3fe80995f12.js
+✓ test/parser/suite/js/semantic/d4cca3fe80995f12.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | !{ __proto__: null, __proto__: null, };
+   |                     ^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~ first defined here
+   |
+
 ✓ test/parser/suite/js/semantic/d50105a16f4f4fca.js
 error: Cannot use import statement outside a module
    |
@@ -30027,7 +30106,14 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
-✗ test/parser/suite/js/semantic/e25b19185b3988dc.js
+✓ test/parser/suite/js/semantic/e25b19185b3988dc.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ '__proto__': 1, __proto__: 2 })
+   |                    ^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~ first defined here
+   |
+
 ✓ test/parser/suite/js/semantic/e262ea7682c36f92.js
 error: Identifier 'a' has already been declared
    |
@@ -31647,7 +31733,14 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/ee01d971b6d831a9.js
+✓ test/parser/suite/js/semantic/ee01d971b6d831a9.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | !{ __proto__: null, "__proto__": null };
+   |                     ^^^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~ first defined here
+   |
+
 ✓ test/parser/suite/js/semantic/ee04425b783c3ab1.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -31747,7 +31840,15 @@ error: Expected ';' after for-loop init, but found 'in'
    |                   ^^
    |
 
-✗ test/parser/suite/js/semantic/eeb5ffaafa815bb2.js
+✓ test/parser/suite/js/semantic/eeb5ffaafa815bb2.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | ({ __proto__: null, __proto__: null })
+   |                     ^^^^^^^^^^^^^^^
+   |    ~~~~~~~~~~~~~~~ first defined here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/eeb8319ac228cb74.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -32446,7 +32547,14 @@ error: In strict mode code, functions can only be declared at top level or insid
  8 |   }
    |
 
-✗ test/parser/suite/js/semantic/f3943346692438ba.js
+✓ test/parser/suite/js/semantic/f3943346692438ba.js
+error: Duplicate '__proto__' property in object literal
+   |
+ 1 | 'use strict'; ({ __proto__: 1, __proto__: 2 })
+   |                                ^^^^^^^^^^^^
+   |                  ~~~~~~~~~~~~ first defined here
+   |
+
 ✓ test/parser/suite/js/semantic/f3c9e78cb021ccd2.js
 error: Duplicate label 'b'
    |

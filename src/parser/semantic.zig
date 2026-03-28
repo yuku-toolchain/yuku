@@ -293,6 +293,29 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-__proto__-property-names-in-object-initializers
+    pub fn enter_object_expression(self: *Self, obj: ast.ObjectExpression, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        var first_proto: ?ast.NodeIndex = null;
+        for (ctx.tree.getExtra(obj.properties)) |child| {
+            if (ctx.tree.getData(child) != .object_property) continue;
+            const prop = ctx.tree.getData(child).object_property;
+            if (prop.computed or prop.method or prop.shorthand or prop.kind != .init) continue;
+            const pn = ecmascript.propName(ctx.tree, prop.key) orelse continue;
+            if (!pn.eql("__proto__")) continue;
+
+            if (first_proto) |first| {
+                try self.report(ctx.tree.getSpan(child), "Duplicate '__proto__' property in object literal", .{
+                    .labels = try self.labels(&.{
+                        self.label(ctx.tree.getSpan(first), "first defined here"),
+                    }),
+                });
+            } else {
+                first_proto = child;
+            }
+        }
+        return .proceed;
+    }
+
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
     pub fn enter_call_expression(self: *Self, expr: ast.CallExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.getData(expr.callee) == .super) {

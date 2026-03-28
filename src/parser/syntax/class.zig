@@ -259,7 +259,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (!is_static and !computed) {
-        if (ecmascript.propName(parser, key)) |prop| {
+        if (ecmascript.propName(&parser.tree, key)) |prop| {
             if (prop.eql("constructor")) {
                 // constructor cannot have get/set modifiers
                 if (kind == .get or kind == .set) {
@@ -586,7 +586,7 @@ inline fn isClassElementKeyStart(tag: TokenTag) bool {
 /// ClassElement : static FieldDefinition ;
 ///     It is a Syntax Error if the PropName of FieldDefinition is either "prototype" or "constructor".
 fn validateStaticPrototypeOrConstructor(parser: *Parser, key: ast.NodeIndex, method: bool) Error!void {
-    const prop = ecmascript.propName(parser, key) orelse return;
+    const prop = ecmascript.propName(&parser.tree, key) orelse return;
 
     if (prop.eql("prototype")) {
         try parser.report(
@@ -606,7 +606,7 @@ fn validateStaticPrototypeOrConstructor(parser: *Parser, key: ast.NodeIndex, met
 /// ClassElement : FieldDefinition ;
 ///     It is a Syntax Error if the PropName of FieldDefinition is "constructor".
 fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
-    const prop = ecmascript.propName(parser, key) orelse return;
+    const prop = ecmascript.propName(&parser.tree, key) orelse return;
 
     if (!prop.eql("constructor")) return;
 

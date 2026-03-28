@@ -17,19 +17,19 @@ pub const PropName = struct {
 };
 
 /// https://tc39.es/ecma262/#sec-static-semantics-propname
-pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
-    switch (parser.tree.getData(key)) {
+pub fn propName(tree: *const ast.Tree, key: ast.NodeIndex) ?PropName {
+    switch (tree.getData(key)) {
         .identifier_name => |id| return .{
-            .name = parser.tree.getString(id.name),
-            .span = parser.tree.getSpan(key),
+            .name = tree.getString(id.name),
+            .span = tree.getSpan(key),
             .is_string_literal = false,
         },
         .string_literal => |str| {
-            const name = str.value(&parser.tree);
+            const name = str.value(tree);
             if (name.len == 0) return null;
             return .{
                 .name = name,
-                .span = parser.tree.getSpan(key),
+                .span = tree.getSpan(key),
                 .is_string_literal = true,
             };
         },
