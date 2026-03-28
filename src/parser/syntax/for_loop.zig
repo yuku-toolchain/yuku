@@ -179,6 +179,13 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     }
 
     if (parser.current_token.tag == .of) {
+        // for ( [lookahead ∉ { async of }] LeftHandSideExpression of AssignmentExpression )
+        if (!is_for_await and isAsyncIdentifier(parser, expr)) {
+            try parser.report(parser.b.getSpan(expr), "'for (async of ...)' is not allowed, it is ambiguous with 'for await'", .{
+                .help = "Use a different variable name or add parentheses: 'for ((async) of ...)'",
+            });
+        }
+
         try grammar.expressionToPattern(parser, expr, .assignable);
 
         return parseForOfStatementRest(parser, start, expr, is_for_await);
@@ -291,6 +298,16 @@ fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: 
             .kind = kind,
         },
     }, .{ .start = decl_start, .end = decl_end });
+}
+
+fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
+    const data = parser.b.getData(expr);
+
+    if (data != .identifier_reference) return false;
+
+    const id = data.identifier_reference;
+
+    return std.mem.eql(u8, id.name, "async");
 }
 
 /// in a regular for-loop, destructuring patterns and const declarations require an initializer.
