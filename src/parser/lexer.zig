@@ -789,31 +789,39 @@ pub const Lexer = struct {
             has_escape = try self.scanIdentifierBody(is_jsx_tag);
         }
 
-        const raw = self.source[start..self.cursor];
+        const lexeme = self.source[start..self.cursor];
 
-        if (is_jsx_tag)
-            return self.createToken(.jsx_identifier, start, self.cursor);
+        const tag: TokenTag =
+            if (is_jsx_tag) .jsx_identifier
+            else if (is_private) .private_identifier
+            else if (has_escape) self.getEscapedKeywordType(lexeme)
+            else self.getKeywordType(lexeme);
 
-        if (is_private) {
-            const lexeme = if (has_escape) blk: {
-                var buf: [256]u8 = undefined;
-                break :blk try self.allocator.dupe(u8, util.Utf.decodeEscapes(raw[1..], &buf));
-            } else self.source[start + 1 .. self.cursor];
+        return self.createToken(tag, start, self.cursor);
+    }
 
-            return self.createTokenWithLexeme(.private_identifier, start, self.cursor, lexeme);
+    /// determines keyword type for an identifier that contains unicode escapes.
+    fn getEscapedKeywordType(self: *Lexer, lexeme: []const u8) TokenTag {
+        @branchHint(.cold);
+        var buf: [11]u8 = undefined; // max keyword length
+        var out: usize = 0;
+        var i: usize = 0;
+        while (i < lexeme.len) {
+            if (out == buf.len) return .identifier;
+            if (lexeme[i] == '\\' and i + 1 < lexeme.len and lexeme[i + 1] == 'u') {
+                const parsed = util.Utf.parseUnicodeEscape(lexeme, i + 2) orelse return .identifier;
+                if (parsed.value >= 0x80) return .identifier;
+                buf[out] = @intCast(parsed.value);
+                out += 1;
+                i = parsed.end;
+            } else {
+                if (!std.ascii.isAscii(lexeme[i])) return .identifier;
+                buf[out] = lexeme[i];
+                out += 1;
+                i += 1;
+            }
         }
-
-        if (has_escape) {
-            var buf: [256]u8 = undefined;
-            const decoded = util.Utf.decodeEscapes(raw, &buf);
-
-            return self.createTokenWithLexeme(
-                self.getKeywordType(decoded), start, self.cursor,
-                try self.allocator.dupe(u8, decoded),
-            );
-        }
-
-        return self.createToken(self.getKeywordType(raw), start, self.cursor);
+        return self.getKeywordType(buf[0..out]);
     }
 
     fn getKeywordType(_: *Lexer, lexeme: []const u8) TokenTag {
@@ -1325,15 +1333,10 @@ pub const Lexer = struct {
     }
 
     pub inline fn createToken(self: *Lexer, tag: TokenTag, start: u32, end: u32) Token {
-        return self.createTokenWithLexeme(tag, start, end, self.source[start..end]);
-    }
-
-    inline fn createTokenWithLexeme(self: *Lexer, tag: TokenTag, start: u32, end: u32, lexeme: []const u8) Token {
         return .{
             .tag = tag,
             .span = .{ .start = start, .end = end },
             .flags = self.consumeTokenFlags(),
-            .lexeme = lexeme,
         };
     }
 };

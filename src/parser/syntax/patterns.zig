@@ -35,7 +35,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(
-        .{ .binding_identifier = .{ .name = current.lexeme } },
+        .{ .binding_identifier = .{ .name = try parser.identifierName(current) } },
         current.span,
     );
 }

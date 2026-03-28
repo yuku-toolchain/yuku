@@ -3,6 +3,7 @@ const Token = @import("token.zig").Token;
 const TokenTag = @import("token.zig").TokenTag;
 const lexer = @import("lexer.zig");
 const ast = @import("ast.zig");
+const util = @import("util");
 
 const statements = @import("syntax/statements.zig");
 
@@ -177,6 +178,28 @@ pub const Parser = struct {
         return self.source_type == .module;
     }
 
+    /// Returns the resolved name for any identifier-like token.
+    /// For escaped identifiers, decodes unicode escapes and allocates in the arena.
+    /// For private identifiers, strips the leading '#'.
+    pub fn identifierName(self: *Parser, token: Token) Error![]const u8 {
+        if (token.isEscaped()) {
+            var buf: [256]u8 = undefined;
+            const raw = self.source[token.span.start..token.span.end];
+            const decoded = if (token.tag == .private_identifier)
+                util.Utf.decodeEscapes(raw[1..], &buf)
+            else
+                util.Utf.decodeEscapes(raw, &buf);
+            return try self.b.addString(decoded);
+        }
+        const start = token.span.start + @as(u32, @intFromBool(token.tag == .private_identifier));
+        return self.source[start..token.span.end];
+    }
+
+    pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
+        if (token.tag == .eof) return "end of file";
+        return token.tag.toString() orelse token.text(self.source);
+    }
+
     // utils
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
@@ -327,10 +350,6 @@ pub const Parser = struct {
         return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    pub inline fn describeToken(_: *Parser, token: Token) []const u8 {
-        if (token.tag == .eof) return "end of file";
-        return token.tag.toString() orelse token.lexeme;
-    }
 
     pub const ReportOptions = struct {
         severity: ast.Severity = .@"error",

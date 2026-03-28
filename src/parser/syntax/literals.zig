@@ -11,7 +11,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.b.createNode(.{
         .string_literal = .{
-            .raw = token.lexeme,
+            .raw = token.text(parser.source),
         },
     }, token.span);
 }
@@ -38,14 +38,14 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.b.createNode(.{
             .bigint_literal = .{
-                .raw = token.lexeme,
+                .raw = token.text(parser.source),
             },
         }, token.span);
     }
 
     return try parser.b.createNode(.{
         .numeric_literal = .{
-            .raw = token.lexeme,
+            .raw = token.text(parser.source),
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
@@ -184,7 +184,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(.{
-        .identifier_reference = .{ .name = token.lexeme },
+        .identifier_reference = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
@@ -193,7 +193,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     return try parser.b.createNode(.{
-        .private_identifier = .{ .name = token.lexeme },
+        .private_identifier = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
@@ -202,7 +202,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(.{
-        .identifier_name = .{ .name = token.lexeme },
+        .identifier_name = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
@@ -213,7 +213,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     return try parser.b.createNode(.{
-        .label_identifier = .{ .name = current.lexeme },
+        .label_identifier = .{ .name = try parser.identifierName(current) },
     }, current.span);
 }
 

@@ -332,7 +332,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var name = try parser.b.createNode(.{
         .jsx_identifier = .{
-            .name = parser.current_token.lexeme,
+            .name = try parser.identifierName(parser.current_token),
         },
     }, parser.current_token.span);
 
@@ -353,7 +353,7 @@ fn parseJsxAttributeName(parser: *Parser) Error!?ast.NodeIndex {
 
         const local = try parser.b.createNode(.{
             .jsx_identifier = .{
-                .name = parser.current_token.lexeme,
+                .name = try parser.identifierName(parser.current_token),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;
@@ -484,7 +484,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var name = try parser.b.createNode(.{
         .jsx_identifier = .{
-            .name = parser.current_token.lexeme,
+            .name = try parser.identifierName(parser.current_token),
         },
     }, parser.current_token.span);
 
@@ -507,7 +507,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
         is_member = true;
         const property = try parser.b.createNode(.{
             .jsx_identifier = .{
-                .name = parser.current_token.lexeme,
+                .name = try parser.identifierName(parser.current_token),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;
@@ -534,7 +534,7 @@ fn parseJsxElementName(parser: *Parser) Error!?ast.NodeIndex {
 
         const local = try parser.b.createNode(.{
             .jsx_identifier = .{
-                .name = parser.current_token.lexeme,
+                .name = try parser.identifierName(parser.current_token),
             },
         }, parser.current_token.span);
         const end = parser.current_token.span.end;

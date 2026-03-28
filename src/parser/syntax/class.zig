@@ -167,7 +167,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.b.createNode(
-                .{ .identifier_name = .{ .name = static_token.lexeme } },
+                .{ .identifier_name = .{ .name = try parser.identifierName(static_token) } },
                 static_token.span,
             );
         } else {
@@ -190,7 +190,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             key = try parser.b.createNode(
-                .{ .identifier_name = .{ .name = async_token.lexeme } },
+                .{ .identifier_name = .{ .name = try parser.identifierName(async_token) } },
                 async_token.span,
             );
         }
@@ -228,7 +228,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 }
             } else {
                 key = try parser.b.createNode(
-                    .{ .identifier_name = .{ .name = modifier_token.lexeme } },
+                    .{ .identifier_name = .{ .name = try parser.identifierName(modifier_token) } },
                     modifier_token.span,
                 );
             }
@@ -353,7 +353,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         const key = try parser.b.createNode(
-            .{ .identifier_name = .{ .name = token.lexeme } },
+            .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
             token.span,
         );
         return .{ .key = key, .computed = false };
