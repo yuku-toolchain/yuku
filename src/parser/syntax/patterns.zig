@@ -34,7 +34,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.b.createNode(
+    return try parser.tree.createNode(
         .{ .binding_identifier = .{ .name = try parser.identifierName(current) } },
         current.span,
     );
@@ -51,7 +51,7 @@ fn parseObjectPattern(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
-    const start = parser.b.getSpan(left).start;
+    const start = parser.tree.getSpan(left).start;
 
     if (parser.current_token.tag != .assign) return left;
 
@@ -59,9 +59,9 @@ pub fn parseAssignmentPattern(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
 
     const right = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-    return try parser.b.createNode(
+    return try parser.tree.createNode(
         .{ .assignment_pattern = .{ .left = left, .right = right } },
-        .{ .start = start, .end = parser.b.getSpan(right).end },
+        .{ .start = start, .end = parser.tree.getSpan(right).end },
     );
 }
 
@@ -70,16 +70,16 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume ...
 
     const argument = try parseBindingPattern(parser) orelse return null;
-    const end = parser.b.getSpan(argument).end;
+    const end = parser.tree.getSpan(argument).end;
 
-    return try parser.b.createNode(
+    return try parser.tree.createNode(
         .{ .binding_rest_element = .{ .argument = argument } },
         .{ .start = start, .end = end },
     );
 }
 
 pub fn isDestructuringPattern(parser: *Parser, index: ast.NodeIndex) bool {
-    return switch (parser.b.getData(index)) {
+    return switch (parser.tree.getData(index)) {
         .array_pattern, .object_pattern => true,
         .assignment_pattern => |pattern| isDestructuringPattern(parser, pattern.left),
         else => false,

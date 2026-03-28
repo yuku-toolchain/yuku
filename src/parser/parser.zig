@@ -45,7 +45,7 @@ const ParserState = struct {
 pub const Error = error{OutOfMemory};
 
 pub const Parser = struct {
-    b: ast.Tree,
+    tree: ast.Tree,
     source: []const u8,
     source_type: ast.SourceType,
     lang: ast.Lang,
@@ -70,7 +70,7 @@ pub const Parser = struct {
         b.source_type = options.source_type;
         b.lang = options.lang;
         return .{
-            .b = b,
+            .tree = b,
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
@@ -80,12 +80,12 @@ pub const Parser = struct {
     }
 
     pub inline fn allocator(self: *Parser) std.mem.Allocator {
-        return self.b.allocator();
+        return self.tree.allocator();
     }
 
     pub fn parse(self: *Parser) Error!ast.Tree {
         try self.parseInner();
-        return self.b;
+        return self.tree;
     }
 
     fn parseInner(self: *Parser) Error!void {
@@ -104,7 +104,7 @@ pub const Parser = struct {
             self.current_token = Token.eof(0);
         };
 
-        errdefer self.b.arena.deinit();
+        errdefer self.tree.arena.deinit();
 
         try self.ensureCapacity();
 
@@ -112,28 +112,28 @@ pub const Parser = struct {
 
         const end = self.current_token.span.end;
 
-        self.b.program = try self.b.createNode(
+        self.tree.program = try self.tree.createNode(
             .{
                 .program = .{
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = self.b.sourceSlice(h.start, h.start + h.len),
+                        .value = self.tree.sourceSlice(h.start, h.start + h.len),
                     } else null,
                 },
             },
             .{ .start = 0, .end = end },
         );
 
-        self.b.diagnostics = self.diagnostics;
+        self.tree.diagnostics = self.diagnostics;
 
         for (self.lexer.comments.items) |*comment| {
             // strip delimiters: '//' or '/*' from start, '*/' from block end
             const content_start = comment.start + 2;
             const content_end = if (comment.type == .block) comment.end - 2 else comment.end;
-            comment.value = self.b.sourceSlice(content_start, content_end);
+            comment.value = self.tree.sourceSlice(content_start, content_end);
         }
-        self.b.comments = try self.lexer.comments.toOwnedSlice(alloc);
+        self.tree.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
 
     const BodyKind = enum {
@@ -184,13 +184,13 @@ pub const Parser = struct {
         const is_private = token.tag == .private_identifier;
         const start = token.span.start + @as(u32, @intFromBool(is_private));
         if (token.isEscaped()) return self.decodeEscapedIdentifier(start, token.span.end);
-        return self.b.sourceSlice(start, token.span.end);
+        return self.tree.sourceSlice(start, token.span.end);
     }
 
     fn decodeEscapedIdentifier(self: *Parser, start: u32, end: u32) Error!ast.String {
         @branchHint(.cold);
         var buf: [256]u8 = undefined;
-        return try self.b.addString(util.Utf.decodeEscapes(self.source[start..end], &buf));
+        return try self.tree.addString(util.Utf.decodeEscapes(self.source[start..end], &buf));
     }
 
     pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
@@ -205,15 +205,15 @@ pub const Parser = struct {
     }
 
     pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
-        const start: u32 = @intCast(self.b.extra.items.len);
+        const start: u32 = @intCast(self.tree.extra.items.len);
         const slice = scratch.items.items[checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
-            if (self.b.extra.items.len + slice.len <= self.b.extra.capacity) {
-                self.b.extra.appendSliceAssumeCapacity(slice);
+            if (self.tree.extra.items.len + slice.len <= self.tree.extra.capacity) {
+                self.tree.extra.appendSliceAssumeCapacity(slice);
             } else {
-                try self.b.extra.appendSlice(self.allocator(), slice);
+                try self.tree.extra.appendSlice(self.allocator(), slice);
             }
         }
 
@@ -425,7 +425,7 @@ pub const Parser = struct {
     }
 
     fn ensureCapacity(self: *Parser) Error!void {
-        if (self.b.nodes.capacity > 0) return;
+        if (self.tree.nodes.capacity > 0) return;
 
         const alloc = self.allocator();
         const source_len = self.source.len;
@@ -442,15 +442,15 @@ pub const Parser = struct {
         else
             estimated_nodes / 3;
 
-        try self.b.nodes.ensureTotalCapacity(alloc, estimated_nodes);
-        try self.b.extra.ensureTotalCapacity(alloc, estimated_extra);
+        try self.tree.nodes.ensureTotalCapacity(alloc, estimated_nodes);
+        try self.tree.extra.ensureTotalCapacity(alloc, estimated_extra);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
-        try self.b.strings.ensureCapacity(alloc, 256, 16);
+        try self.tree.strings.ensureCapacity(alloc, 256, 16);
     }
 };
 
