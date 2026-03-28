@@ -1,6 +1,6 @@
 suite/js/fail
 =============
-Passed:       3689/3689 (100.00%)
+Passed:       3601/3601 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -71,15 +71,6 @@ error: Unexpected token ';' in binding pattern
  2 | 
    |
    = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
-✓ test/parser/suite/js/fail/00610c2c62722588.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 06;
-   | ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/008779e85587d629.js
@@ -859,16 +850,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✓ test/parser/suite/js/fail/05e5bfbeead904d2.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 2 | a = 0x1;
- 3 | a = 01;
-   |     ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/05f037cfd91b9561.js
 error: Expected ',' or ']' in array, but found ''''
    |
@@ -1534,15 +1515,6 @@ error: Unexpected token '='
    |       ^
    |
    = help: Expected an expression
-
-
-✓ test/parser/suite/js/fail/0b281915a3227177.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\012World"
-   | ^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/0b5237648a433a63.js
@@ -2332,15 +2304,6 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✓ test/parser/suite/js/fail/11690bb9c684fbf9.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\7"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/11744eec8dfb26f6.js
 error: A rest element cannot have an initializer
    |
@@ -2411,15 +2374,6 @@ error: Rest element must be the last element
  3 | callCount = callCount + 1;
    |
    = help: No elements can follow the rest element in a destructuring pattern.
-
-
-✓ test/parser/suite/js/fail/11d61dbd7c1fbd1b.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | function hello() { 'use strict'; 021; }
-   |                                  ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/11db90549ed49ac3.js
@@ -2774,15 +2728,6 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✓ test/parser/suite/js/fail/147fa078a7436e0e.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { "octal directive\1"; "octal directive\2"; "use strict"; }
-   |                    ^^^^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/1481854b4b35d18c.module.js
 error: Invalid operand for increment/decrement operator
    |
@@ -2801,15 +2746,6 @@ error: Rest element must be the last element
  4 | callCount = callCount + 1;
    |
    = help: No elements can follow the rest element in a destructuring pattern.
-
-
-✓ test/parser/suite/js/fail/1485cfe7f0645bc3.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | '\1';
-   | ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/14a73755be0229e6.js
@@ -2914,15 +2850,6 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✓ test/parser/suite/js/fail/150ec20755899055.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "\1"
-   | ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/151b1e4bfcbdb2e6.js
 error: A rest element cannot have an initializer
    |
@@ -2963,16 +2890,6 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✓ test/parser/suite/js/fail/155c674049394719.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\1World";
-   | ^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/157921f5c3513b4d.js
 error: Rest element must be the last element
    |
@@ -2999,15 +2916,6 @@ error: Keywords cannot contain escape characters
    | ^^^^^^^^^
    |
    = help: Remove the escape characters
-
-
-✓ test/parser/suite/js/fail/15a6123f6b825c38.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { "octal directive\1"; "use strict"; }
-   |                    ^^^^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/15a716ed9f97f048.js
@@ -3066,15 +2974,6 @@ error: Invalid element in assignment pattern
    | ^^^^^^^^^^
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
-
-
-✓ test/parser/suite/js/fail/15dab15528c33a20.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\1"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/15dde87632fe97de.js
@@ -3269,15 +3168,6 @@ error: 'class' is a reserved word and cannot be used as an identifier
  1 | var class = 123;
    |     ^^^^^
    |
-
-✓ test/parser/suite/js/fail/175c1c09015415e1.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\41')
-   |                ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
 
 ✓ test/parser/suite/js/fail/178260b77ed75e3c.js
 error: Unexpected token '...'
@@ -3552,15 +3442,6 @@ error: Expected ')' to close parameter list, but found '='
  2 | });
    |
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
-✓ test/parser/suite/js/fail/19699bcdea35eb46.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\4')
-   |                ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/1970157183680789.js
@@ -4146,15 +4027,6 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✓ test/parser/suite/js/fail/1d31fbe72b398bd2.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 000;
-   | ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/1d79b73d000b6a11.js
 error: Line terminator not allowed in regular expression literal
    |
@@ -4414,15 +4286,6 @@ error: 'do' is a reserved word and cannot be used as an identifier
    |           ^^^^^^^
    |
 
-✓ test/parser/suite/js/fail/1fe04beba592c225.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\2"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/1ffd110ef766ef70.js
 error: Constructor can't have get/set modifier
    |
@@ -4497,15 +4360,6 @@ error: 'default' is a reserved word and cannot be used as an identifier
    |     ^^^^^^^^^^^^
    |
 
-✓ test/parser/suite/js/fail/20644d335e3cd008.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\312World"
-   | ^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/2071fafa8e2f56e7.js
 error: The only valid meta properties for 'import' are 'import.meta', 'import.source()', or 'import.defer()'
    |
@@ -4566,15 +4420,6 @@ error: Rest parameter must be the last parameter
  3 | }
    |
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
-
-
-✓ test/parser/suite/js/fail/20cfc8584938fc9d.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | '\08';
-   | ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/20f12b7208ee736d.js
@@ -5552,15 +5397,6 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/27ca96102da82628.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\712World"
-   | ^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/27cf58d770398bf4.js
 error: Unexpected token '*'
    |
@@ -5820,15 +5656,6 @@ error: Classes may not have a static property named 'prototype'
  3 | }
    |
    = help: Remove 'static' or rename the property.
-
-
-✓ test/parser/suite/js/fail/295b0ed4d7872983.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\00')
-   |                ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/297e7d0f1546a91f.js
@@ -6429,15 +6256,6 @@ error: Cannot use 'yield' as an identifier in a generator context
  3 | });
    |
 
-✓ test/parser/suite/js/fail/2d46c7c14cfb0330.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { 'use strict'; "\1"; }
-   |                                  ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/2d4925f6d5ce68d0.js
 error: Expected ')' after function arguments, but found 'null'
    |
@@ -6582,15 +6400,6 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
-
-
-✓ test/parser/suite/js/fail/2e371094f1b1ac51.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\1111')
-   |  ^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/2e42ee7277737356.js
@@ -6917,15 +6726,6 @@ error: Expected '{' to start block statement, but found '='
    |     ^
    |
    = help: Block statements must be enclosed in braces: { ... }
-
-
-✓ test/parser/suite/js/fail/3078b4fed5626e2a.module.js
-error: Decimals with leading zeros are not allowed in strict mode
-   |
- 1 | 'use strict'; 08
-   |               ^^
-   |
-   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
 
 
 ✓ test/parser/suite/js/fail/3094d42aca3b7885.js
@@ -7266,15 +7066,6 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    |  ^^^^^^
    |
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
-
-
-✓ test/parser/suite/js/fail/323783be9a53a31e.module.js
-error: Decimals with leading zeros are not allowed in strict mode
-   |
- 1 | 08
-   | ^^
-   |
-   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
 
 
 ✓ test/parser/suite/js/fail/323dfa856ebcfc04.js
@@ -7971,15 +7762,6 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
-✓ test/parser/suite/js/fail/37e9fb0470e7ec3d.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\000')
-   |                ^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/3800e7819ed60a8c.js
 error: 'function' is a reserved word and cannot be used as an identifier
    |
@@ -8014,15 +7796,6 @@ error: Rest parameter must be the last parameter
  3 | }
    |
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
-
-
-✓ test/parser/suite/js/fail/384c53d494e42be9.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\5"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/386cf314bb05acda.js
@@ -8174,15 +7947,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  2 | export var {x = await this} = {};
    |
    = help: Try inserting a semicolon here
-
-
-✓ test/parser/suite/js/fail/3990bb94b19b1071.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\1')
-   |  ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/39a0bd52fcde419f.js
@@ -8465,15 +8229,6 @@ error: Shorthand property must be an identifier
    = help: String and numeric keys require explicit ': value' syntax.
 
 
-✓ test/parser/suite/js/fail/3bc2b27a7430f818.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 |  "\1"; 'use strict';
-   |  ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/3bc32f5a77e8468e.js
 error: Invalid element in assignment pattern
    |
@@ -8572,15 +8327,6 @@ error: Unexpected token ')'
  3 | });
    |
    = help: Expected an expression
-
-
-✓ test/parser/suite/js/fail/3ca9557709f25042.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 00;
-   | ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/3cab82b238c67ec3.js
@@ -8824,15 +8570,6 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✓ test/parser/suite/js/fail/3e48826018d23c85.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\5a')
-   |  ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/3e6146fd7daff493.js
 error: Unexpected token 'end of file'
    |
@@ -8955,15 +8692,6 @@ error: 'using' declarations must be initialized
  3 | }
    |
    = help: Disposable resources require an initial value that implements the dispose protocol.
-
-
-✓ test/parser/suite/js/fail/3fb07536eb5aea8d.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\412World"
-   | ^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/3fbc800d2712f111.js
@@ -9772,15 +9500,6 @@ error: Expected declaration after 'export', but found '/'
    |        ^
    |
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
-✓ test/parser/suite/js/fail/45dd9586f26a3cf4.module.js
-error: Decimals with leading zeros are not allowed in strict mode
-   |
- 1 | 018
-   | ^^^
-   |
-   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
 
 
 ✓ test/parser/suite/js/fail/46002170b2d14628.js
@@ -10779,15 +10498,6 @@ error: Unexpected token '#m' as property key
    = help: Property keys must be identifiers, strings, numbers, or computed expressions [expr].
 
 
-✓ test/parser/suite/js/fail/4ce3c0a393c624d5.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 'use strict'; 0123
-   |               ^^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/4cf7f439313a8fd7.js
 error: Rest element must be the last element
    |
@@ -11046,15 +10756,6 @@ error: 'const' declarations must be initialized
    |              ^
    |
    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
-✓ test/parser/suite/js/fail/4f60d8fbb4be1120.module.js
-error: Decimals with leading zeros are not allowed in strict mode
-   |
- 1 | 09.0
-   | ^^^^
-   |
-   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
 
 
 ✓ test/parser/suite/js/fail/4f6d3aaae5c7ad56.js
@@ -12385,16 +12086,6 @@ error: 'null' is a reserved word and cannot be used as an identifier
    |     ^^^^
    |
 
-✓ test/parser/suite/js/fail/595d01d18fe66547.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\0122World";
-   | ^^^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/595dc71ac7a747db.js
 error: Unexpected token ')'
    |
@@ -12750,15 +12441,6 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✓ test/parser/suite/js/fail/5c63ac420337d014.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { 'use strict'; "\000"; }
-   |                                  ^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/5c68a4815a62ec45.js
 error: 'const' declarations in for loop initializer must be initialized
    |
@@ -12919,16 +12601,6 @@ error: Empty parentheses are only valid as arrow function parameters
  1 | export default function* () {}();
    |                               ^^
    |
-
-✓ test/parser/suite/js/fail/5deb31c97caf2d9a.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\712World";
-   | ^^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
 
 ✓ test/parser/suite/js/fail/5deef5265aceb9f3.js
 error: Rest element must be the last element
@@ -13484,15 +13156,6 @@ error: Keywords cannot contain escape characters
    |      ^^^^^^^^^^
    |
    = help: Remove the escape characters
-
-
-✓ test/parser/suite/js/fail/618f5bdbe9497960.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\11')
-   |                ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/619e2944490d93ca.js
@@ -14066,15 +13729,6 @@ error: Invalid hexadecimal escape sequence
    |     ^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
-
-
-✓ test/parser/suite/js/fail/66e667cc2b718770.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | function hello() { 'use strict'; ({ 021: 42 }); }
-   |                                     ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/66efd4d60285d887.js
@@ -14700,15 +14354,6 @@ error: Invalid Unicode escape sequence
    |                ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
-
-
-✓ test/parser/suite/js/fail/6ac4f95d48362a35.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\001')
-   |                ^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/6ace42463566173f.js
@@ -15621,15 +15266,6 @@ error: Unexpected token ':'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/71e066a0fa01825b.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\11')
-   |  ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/71e8d0dedf5ab25c.js
 error: Cannot use 'yield' as an identifier in a generator context
    |
@@ -16008,15 +15644,6 @@ error: Expected 'from' after import clause, but found ','
    |              ^
    |
    = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
-✓ test/parser/suite/js/fail/748656edbfb2d0bb.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\8')
-   |  ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/74be61e344f92145.js
@@ -16696,15 +16323,6 @@ error: Expected '(' after 'while', but found 'false'
    |                 ^^^^^
    |
 
-✓ test/parser/suite/js/fail/7955f9d22c3bd75c.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 07;
-   | ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/79592a4804326355.js
 error: Invalid element in assignment pattern
    |
@@ -16796,16 +16414,6 @@ error: 'for' is a reserved word and cannot be used as an identifier
  1 | var f\u{6f}r = 123;
    |     ^^^^^^^^
    |
-
-✓ test/parser/suite/js/fail/79f882da06f88c9f.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "\8";
-   | ^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
 
 ✓ test/parser/suite/js/fail/7a06ef6945d32595.js
 error: Rest element must be the last element
@@ -17004,15 +16612,6 @@ error: Expected namespace import (* as name) or named imports ({...}) after ',',
    |           ^^^^^
    |
 
-✓ test/parser/suite/js/fail/7b514406528ff126.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\02World"
-   | ^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/7b70beed5a327548.js
 error: Expected '(' for method definition, but found '}'
    |
@@ -17020,15 +16619,6 @@ error: Expected '(' for method definition, but found '}'
    |       ^
    |
    = help: Method definitions require a parameter list. Use 'method() {}' syntax.
-
-
-✓ test/parser/suite/js/fail/7b71d1454ed9f300.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | '\8';
-   | ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/7b879591cff65b9c.js
@@ -17151,15 +16741,6 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✓ test/parser/suite/js/fail/7c6d13458e08e1f4.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 01.a
-   | ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/7c7e70e90f6fa6f8.js
 error: Rest element must be the last element
    |
@@ -17180,15 +16761,6 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
-
-
-✓ test/parser/suite/js/fail/7c8d10fbd146cce7.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | var y = 010;
-   |         ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/7c8dee7f11bd8cd8.js
@@ -17703,15 +17275,6 @@ error: Unexpected '=>'
    = help: '=>' is only valid after a single identifier or a parenthesized parameter list
 
 
-✓ test/parser/suite/js/fail/7fb432d5f23d8614.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\4"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/7fc173197c3cc75d.js
 error: Unexpected token '!'
    |
@@ -17814,15 +17377,6 @@ error: 'do' is a reserved word and cannot be used as an identifier
  1 | var \u{64}\u{6f} = 123;
    |     ^^^^^^^^^^^^
    |
-
-✓ test/parser/suite/js/fail/80bfa9f27278bbba.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | "use strict";function foo(){"use strict";}function bar(){var v = 015}
-   |                                                                  ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
 
 ✓ test/parser/suite/js/fail/80c042f7d672ea4d.js
 error: Expected '(' after import, but found '.'
@@ -18508,15 +18062,6 @@ error: Unexpected token ']'
    | ^
    |
    = help: Expected an expression
-
-
-✓ test/parser/suite/js/fail/85d05185e2593ae7.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | `${'\07'}`;
-   |    ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/85d685576de178ce.js
@@ -19205,15 +18750,6 @@ error: 'import' is a reserved word and cannot be used as an identifier
  3 | } while (false);
    |
 
-✓ test/parser/suite/js/fail/8ae21edec4557fef.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\6"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/8aef60f553d2a8db.module.js
 error: Empty parentheses are only valid as arrow function parameters
    |
@@ -19416,16 +18952,6 @@ error: 'return' statement is only valid inside a function
    | ^^^^^^
    |
    = help: Remove the 'return' statement or wrap the code in a function.
-
-
-✓ test/parser/suite/js/fail/8beab8b3263ace6e.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\412World";
-   | ^^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/8bee0f1a78af0138.js
@@ -19651,15 +19177,6 @@ error: 'using' declarations must be initialized
    = help: Disposable resources require an initial value that implements the dispose protocol.
 
 
-✓ test/parser/suite/js/fail/8dc484a35dd0dc16.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\123')
-   |                ^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/8dc7370bc6dec92b.js
 error: Unexpected token ';'
    |
@@ -19725,15 +19242,6 @@ error: Line terminator not allowed in regular expression literal
  2 | /
    |
    = help: Try removing the line break here or escaping it within the regex pattern
-
-
-✓ test/parser/suite/js/fail/8e3f0660b32fbfd2.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\7a')
-   |  ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/8e4318b9f9796a4d.js
@@ -20366,16 +19874,6 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
-✓ test/parser/suite/js/fail/92b6af54adef3624.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "\9";
-   | ^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/92b8d7e1051d26d6.js
 error: 'break' is a reserved word and cannot be used as an identifier
    |
@@ -20461,15 +19959,6 @@ error: Binary literal must contain at least one binary digit
    |     ^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
-
-
-✓ test/parser/suite/js/fail/938db8c9f82c8cb5.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 01
-   | ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/939b16a89d0e8704.js
@@ -20855,15 +20344,6 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✓ test/parser/suite/js/fail/95ab0d795c04ff38.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\111')
-   |  ^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/95ac10ae1bcf62ad.js
 error: Invalid element in assignment pattern
    |
@@ -21059,15 +20539,6 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✓ test/parser/suite/js/fail/974222e3683f284a.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { "use strict"; function inner() { "octal directive\1"; } }
-   |                                                     ^^^^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/9743849baab3b763.js
 error: Unterminated string literal
    |
@@ -21179,15 +20650,6 @@ error: Expected 'from' after import clause, but found 'x'
    |              ^
    |
    = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
-✓ test/parser/suite/js/fail/9863075abb412b2a.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 01;
-   | ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/986cd9dcd89df47b.js
@@ -21452,15 +20914,6 @@ error: Invalid character at start of identifier
  3 | };
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
-
-
-✓ test/parser/suite/js/fail/9a48d1ca4b6fe617.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | '\9';
-   | ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/9a6a653922e10fa8.js
@@ -22221,15 +21674,6 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
-
-
-✓ test/parser/suite/js/fail/a028a9ab5777d337.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\01')
-   |                ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/a02fdefc85b71fee.js
@@ -23822,15 +23266,6 @@ error: 'return' is a reserved word and cannot be used as an identifier
    |     ^^^^^^^^^^^
    |
 
-✓ test/parser/suite/js/fail/ab35979364766bf0.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 'use strict'; 07
-   |               ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/ab7d92c6977a051a.js
 error: Invalid character at start of identifier
    |
@@ -24212,15 +23647,6 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
-✓ test/parser/suite/js/fail/ade301f0d871c610.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\122World"
-   | ^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/adf78d82510b683f.js
 error: The only valid meta properties for 'import' are 'import.meta', 'import.source()', or 'import.defer()'
    |
@@ -24391,15 +23817,6 @@ error: 'enum' is a reserved word and cannot be used as an imported binding
    |          ^^^^
    |
 
-✓ test/parser/suite/js/fail/af3a9b653481f43a.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 'use strict'; 00
-   |               ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/af654b42a4dc314b.js
 error: A rest element cannot have an initializer
    |
@@ -24463,15 +23880,6 @@ error: Invalid element in assignment pattern
 11 | });
    |
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
-
-
-✓ test/parser/suite/js/fail/b016c3c3e52fbe23.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 005;
-   | ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/fail/b02b296bd115b9b9.js
@@ -24668,16 +24076,6 @@ error: The left-hand side of '**' cannot be an unparenthesized unary expression
    | ^^
    |
    = help: Add parentheses to make precedence explicit, for example `(-x) ** y` or `-(x ** y)`.
-
-
-✓ test/parser/suite/js/fail/b23a6a1d2fb3d8b1.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\122World";
-   | ^^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/b23c154206fb45fa.module.js
@@ -25081,15 +24479,6 @@ error: Binary literal must contain at least one binary digit
    |     ^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
-
-
-✓ test/parser/suite/js/fail/b5cf21a87ec272d1.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\01')
-   |  ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/b604734685039629.js
@@ -26156,16 +25545,6 @@ error: The only valid meta properties for 'import' are 'import.meta', 'import.so
    = help: Did you mean 'import.meta', 'import.source("...")' or 'import.defer("...")'?
 
 
-✓ test/parser/suite/js/fail/bda3217a2f8b9076.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\02World";
-   | ^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/bdb0f8dd27e0e164.js
 error: Unterminated string literal
    |
@@ -26351,15 +25730,6 @@ error: Private names are only allowed in property accesses (`obj.#field`) or in 
  5 |   }
    |
 
-✓ test/parser/suite/js/fail/bf6aaaab7c143ca1.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 012
-   | ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/bf6ea0bf906e19eb.js
 error: Expected an identifier, but found '='
    |
@@ -26412,15 +25782,6 @@ error: Unexpected token ';'
    |          ^
    |
    = help: Expected an expression
-
-
-✓ test/parser/suite/js/fail/bfadeead1ddbd122.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { 'use strict'; "\00"; }
-   |                                  ^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/bfcebb06b644499c.js
@@ -27849,24 +27210,6 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/ca2716d236c027cd.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function hello() { 'use strict'; ({ "\1": 42 }); }
-   |                                     ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
-✓ test/parser/suite/js/fail/ca27a03a9d04acd2.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | "use strict"; (a) => 00
-   |                      ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/ca3dd7ea0b4626dd.js
 error: Empty parentheses are only valid as arrow function parameters
    |
@@ -27967,15 +27310,6 @@ error: A rest element cannot have an initializer
  4 | callCount = callCount + 1;
    |
    = help: Remove the '= ...' from the rest element.
-
-
-✓ test/parser/suite/js/fail/cb095c303f88cd0b.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\2111')
-   |  ^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/cb18c5544c782e83.js
@@ -28136,15 +27470,6 @@ error: Unterminated string literal
 39 |   ["persian", 1395, 1, "M01", "ap", 1395, "leap year 1395"],
    |
    = help: Try adding a closing quote here to complete the string
-
-
-✓ test/parser/suite/js/fail/ccc7766ca0ce51db.module.js
-error: Decimals with leading zeros are not allowed in strict mode
-   |
- 1 | 08;
-   | ^^
-   |
-   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
 
 
 ✓ test/parser/suite/js/fail/ccd93c350b135319.js
@@ -28333,15 +27658,6 @@ error: 'catch' is a reserved word and cannot be used as an identifier
    |     ^^^^^^^^^^
    |
 
-✓ test/parser/suite/js/fail/ce4f3db361f43c33.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "\7"
-   | ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/ce540f82b3aa2072.js
 error: Unexpected token ')'
    |
@@ -28476,16 +27792,6 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/cf23f139545994a8.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\012World";
-   | ^^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/cf23f5d7f2364a44.js
 error: Empty parentheses are only valid as arrow function parameters
    |
@@ -28617,15 +27923,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |      ^
    |
    = help: Try inserting a semicolon here
-
-
-✓ test/parser/suite/js/fail/d04aecd166354406.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | 'use strict'; ('\1')
-   |                ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/d04f2f2de4280aaf.js
@@ -28839,15 +28136,6 @@ error: Unexpected token ','
    = help: Expected an expression
 
 
-✓ test/parser/suite/js/fail/d1f6e78a984a262c.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\9"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/d204ccde08def26b.js
 error: 'for' is a reserved word and cannot be used as an identifier
    |
@@ -28947,15 +28235,6 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✓ test/parser/suite/js/fail/d2af344779cc1f26.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | (a) => 00
-   |        ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/d2cad73f30c2df0f.js
 error: 'const' is a reserved word and cannot be used as an identifier
    |
@@ -29003,15 +28282,6 @@ error: Unexpected token ')'
  3 | }
    |
    = help: Expected an expression
-
-
-✓ test/parser/suite/js/fail/d38771967621cb8e.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | ('\5111')
-   |  ^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/d3a72669a301908f.js
@@ -29115,15 +28385,6 @@ error: Cannot use `await` as an identifier in an async or module context
    |         ^^^^^
  4 |   }
    |
-
-✓ test/parser/suite/js/fail/d483926898410cae.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\0122World"
-   | ^^^^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
 
 ✓ test/parser/suite/js/fail/d49383c1511c7ceb.js
 error: Rest element must be the last element
@@ -29817,17 +29078,6 @@ error: Generators can only be declared at the top level or inside a block
  1 | for (var x in {}) function* g() {}
    |                   ^^^^^^^^^^^^^
    |
-
-✓ test/parser/suite/js/fail/d9ab1decec9b3ab6.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | (function() {
- 2 |   "asterisk: \052";
-   |   ^^^^^^^^^^^^^^^^
- 3 |   "use strict";
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
 
 ✓ test/parser/suite/js/fail/d9ae9c7dfd0f47d2.module.js
 error: An export name cannot include a unicode lone surrogate
@@ -30996,15 +30246,6 @@ error: Expected ';' after class field, but found '=='
  3 | }
    |
    = help: Add a semicolon after the field declaration.
-
-
-✓ test/parser/suite/js/fail/e199b02913f6025f.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\8"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/e1d29c111f667dc3.js
@@ -32592,15 +31833,6 @@ error: Cannot use `await` as an identifier in an async or module context
  2 | var fromParam, fromBody;
    |
 
-✓ test/parser/suite/js/fail/ee13fc04a9e4d4b1.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 010;
-   | ^^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
-
 ✓ test/parser/suite/js/fail/ee43240dd25f3c94.js
 error: Rest element must be the last element
    |
@@ -33038,15 +32270,6 @@ error: Empty parentheses are only valid as arrow function parameters
    | ^^
  2 | => 42
    |
-
-✓ test/parser/suite/js/fail/f0c65ad0965d445a.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | function invalid() { "\3"; "use strict"; }
-   |                      ^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
 
 ✓ test/parser/suite/js/fail/f0e47254d16fb114.js
 error: Invalid element in assignment pattern
@@ -33672,16 +32895,6 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✓ test/parser/suite/js/fail/f5d9db0aeea7c831.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\312World";
-   | ^^^^^^^^^^^^^^^^
- 2 | 
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
-
-
 ✓ test/parser/suite/js/fail/f5fd33bc9b3f8759.js
 error: The only valid meta properties for 'import' are 'import.meta', 'import.source()', or 'import.defer()'
    |
@@ -33796,15 +33009,6 @@ error: 'while' is a reserved word and cannot be used as an identifier
  1 | var while = 123;
    |     ^^^^^
    |
-
-✓ test/parser/suite/js/fail/f6924dd818b18733.module.js
-error: Octal literals are not allowed in strict mode
-   |
- 1 | 'use strict'; 01
-   |               ^^
-   |
-   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
-
 
 ✓ test/parser/suite/js/fail/f6b5c3a77e09eb15.js
 error: Generators can only be declared at the top level or inside a block
@@ -34320,15 +33524,6 @@ error: Expected '{' to start function body, but found '}'
    |                                            ^
    |
    = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✓ test/parser/suite/js/fail/fa736f4b0cf19c0c.module.js
-error: Octal escape sequences are not allowed in strict mode
-   |
- 1 | "Hello\1World"
-   | ^^^^^^^^^^^^^^
-   |
-   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/fail/fa749cf3a252f600.js

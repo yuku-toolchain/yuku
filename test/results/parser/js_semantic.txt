@@ -1,6 +1,6 @@
 suite/js/semantic
 =================
-Passed:       3225/3560 (90.59%)
+Passed:       3313/3648 (90.82%)
 Failed:       335
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
@@ -44,6 +44,15 @@ error: Identifier 'b' has already been declared
    |          ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'b'
+
+
+✓ test/parser/suite/js/semantic/00610c2c62722588.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 06;
+   | ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/semantic/00abfba0155ceee5.module.js
@@ -855,6 +864,16 @@ error: 'yield' is reserved in strict mode and cannot be used as a label
    |               ^^^^^
    |
 
+✓ test/parser/suite/js/semantic/05e5bfbeead904d2.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 2 | a = 0x1;
+ 3 | a = 01;
+   |     ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/05e77c7af92f984b.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -1437,6 +1456,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a label
  1 | yield: 1;
    | ^^^^^
    |
+
+✓ test/parser/suite/js/semantic/0b281915a3227177.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\012World"
+   | ^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/0b3b1260d478fa98.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -2240,6 +2268,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
+✓ test/parser/suite/js/semantic/11690bb9c684fbf9.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\7"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/1179d3b7dbc0c804.module.js
 error: Identifier 'a' has already been declared
    |
@@ -2296,6 +2333,15 @@ error: 'with' statements are not allowed in strict mode
 11 | }
    | ^
    |
+
+✓ test/parser/suite/js/semantic/11d61dbd7c1fbd1b.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | function hello() { 'use strict'; 021; }
+   |                                  ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✗ test/parser/suite/js/semantic/11dd73d1434b0cfa.js
 ✓ test/parser/suite/js/semantic/120c78cff8ff65dc.js
@@ -2596,6 +2642,24 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |                             ^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/147fa078a7436e0e.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { "octal directive\1"; "octal directive\2"; "use strict"; }
+   |                    ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
+✓ test/parser/suite/js/semantic/1485cfe7f0645bc3.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | '\1';
+   | ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/149af49baff5d371.js
 error: Identifier 'a' has already been declared
    |
@@ -2688,6 +2752,15 @@ error: Identifier 'f' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/15082306e8336dde.js
+✓ test/parser/suite/js/semantic/150ec20755899055.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "\1"
+   | ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/15113cab1ebf4b25.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -2719,6 +2792,16 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep-then_FIXTURE.js";
    |
 
+✓ test/parser/suite/js/semantic/155c674049394719.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\1World";
+   | ^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/156ba8b64a8720df.js
 error: Identifier 'b' has already been declared
    |
@@ -2746,6 +2829,15 @@ error: Cannot use 'export default' declaration outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/15a6123f6b825c38.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { "octal directive\1"; "use strict"; }
+   |                    ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/15d55b5f26377f75.js
 error: Identifier 'f' has already been declared
    |
@@ -2755,6 +2847,15 @@ error: Identifier 'f' has already been declared
    |                          ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'f'
+
+
+✓ test/parser/suite/js/semantic/15dab15528c33a20.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\1"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/15e6b8396aa63c7a.js
@@ -2943,6 +3044,15 @@ error: 'super()' is only valid in a constructor of a derived class
  4 |   }
    |
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/js/semantic/175c1c09015415e1.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\41')
+   |                ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/176016aa643c1401.module.js
@@ -3286,6 +3396,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  1 | var yield = function yield(){};
    |     ^^^^^
    |
+
+✓ test/parser/suite/js/semantic/19699bcdea35eb46.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\4')
+   |                ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/19744197ebcffdea.module.js
 error: 'with' statements are not allowed in strict mode
@@ -3781,6 +3900,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 | })();
    |
 
+✓ test/parser/suite/js/semantic/1d31fbe72b398bd2.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 000;
+   | ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/1d38a63682de9abf.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -4061,6 +4189,15 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
+✓ test/parser/suite/js/semantic/1fe04beba592c225.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\2"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/1fe3c63e9a4c7090.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -4152,6 +4289,15 @@ error: Identifier 'b' has already been declared
    |          ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'b'
+
+
+✓ test/parser/suite/js/semantic/20644d335e3cd008.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\312World"
+   | ^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/2068e71a9cc16cef.js
@@ -4250,6 +4396,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |                 ^^^^^
  7 |             throw new Test262Error();
    |
+
+✓ test/parser/suite/js/semantic/20cfc8584938fc9d.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | '\08';
+   | ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/20e251bc9814e0b2.js
 error: Cannot use import statement outside a module
@@ -4989,6 +5144,15 @@ error: 'eval' is not allowed as a binding name in strict mode
    |             ^^^^
    |
 
+✓ test/parser/suite/js/semantic/27ca96102da82628.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\712World"
+   | ^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/27d390394c9f4d3a.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -5156,6 +5320,15 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | import "./dep-1-tla_FIXTURE.js";
    |
+
+✓ test/parser/suite/js/semantic/295b0ed4d7872983.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\00')
+   |                ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/296ddea2964a8ce3.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -5857,6 +6030,15 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |               ^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/2d46c7c14cfb0330.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { 'use strict'; "\1"; }
+   |                                  ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/2d4d01ceb1e2f54f.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -5940,6 +6122,15 @@ error: 'protected' is reserved in strict mode and cannot be used as an identifie
  1 | var x = { prot\u0065cted } = { protected: 42 };
    |           ^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/2e371094f1b1ac51.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\1111')
+   |  ^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/2e5569d9d786908c.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -6203,6 +6394,15 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep_FIXTURE.js";
    |
 
+✓ test/parser/suite/js/semantic/3078b4fed5626e2a.module.js
+error: Decimals with leading zeros are not allowed in strict mode
+   |
+ 1 | 'use strict'; 08
+   |               ^^
+   |
+   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
+
+
 ✓ test/parser/suite/js/semantic/30a9127eb508df11.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -6321,6 +6521,15 @@ error: 'import.meta' is only valid in module code
  1 | import.meta;
    | ^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/323783be9a53a31e.module.js
+error: Decimals with leading zeros are not allowed in strict mode
+   |
+ 1 | 08
+   | ^^
+   |
+   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
+
 
 ✓ test/parser/suite/js/semantic/324d47cad7c154d9.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -7032,6 +7241,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 |   after = f;
    |
 
+✓ test/parser/suite/js/semantic/37e9fb0470e7ec3d.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\000')
+   |                ^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/37ead50e894affbb.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -7142,6 +7360,15 @@ error: Identifier 'f' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/38403a55a81cbab5.module.js
+✓ test/parser/suite/js/semantic/384c53d494e42be9.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\5"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✗ test/parser/suite/js/semantic/3852c71b83d0f4d6.js
 ✓ test/parser/suite/js/semantic/38594572e7bb32f4.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -7271,6 +7498,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |   ^^^^^^^^^^^^^
  3 | };
    |
+
+✓ test/parser/suite/js/semantic/3990bb94b19b1071.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\1')
+   |  ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/39c4c6a909d89ef6.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -7541,6 +7777,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |        ^^^^^
    |
 
+✓ test/parser/suite/js/semantic/3bc2b27a7430f818.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 |  "\1"; 'use strict';
+   |  ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/3bf3dcc0f3088512.js
 error: Identifier 'bar' has already been declared
    |
@@ -7585,6 +7830,15 @@ error: Illegal continue statement
    |                          ^^^^^^^^^
    |
    = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
+✓ test/parser/suite/js/semantic/3ca9557709f25042.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 00;
+   | ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
 ✓ test/parser/suite/js/semantic/3cab3d459a797e70.js
@@ -7788,6 +8042,15 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
+✓ test/parser/suite/js/semantic/3e48826018d23c85.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\5a')
+   |  ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/3e49632915bfc3c6.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -7921,6 +8184,15 @@ error: 'interface' is reserved in strict mode and cannot be used as a binding na
  1 | function a() { "use strict"; var interface; }
    |                                  ^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/3fb07536eb5aea8d.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\412World"
+   | ^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/3fccb1ddcd0b1a21.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -8660,6 +8932,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |   ^^^^^^^^^^^^^
  3 | }
    |
+
+✓ test/parser/suite/js/semantic/45dd9586f26a3cf4.module.js
+error: Decimals with leading zeros are not allowed in strict mode
+   |
+ 1 | 018
+   | ^^^
+   |
+   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
+
 
 ✓ test/parser/suite/js/semantic/45dff6ba46730394.js
 error: Identifier 'f' has already been declared
@@ -9603,6 +9884,15 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
+✓ test/parser/suite/js/semantic/4ce3c0a393c624d5.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 'use strict'; 0123
+   |               ^^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/4d05c7118ac93631.js
 error: Cannot use import statement outside a module
    |
@@ -9922,6 +10212,15 @@ error: Cannot use import statement outside a module
  1 | import value from './json-value-null_FIXTURE.json' with { type: 'json' };
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/4f60d8fbb4be1120.module.js
+error: Decimals with leading zeros are not allowed in strict mode
+   |
+ 1 | 09.0
+   | ^^^^
+   |
+   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
+
 
 ✓ test/parser/suite/js/semantic/4f731d62a74ab666.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -11197,6 +11496,16 @@ error: 'let' is reserved in strict mode and cannot be used as a binding name
  3 |   iterCount += 1;
    |
 
+✓ test/parser/suite/js/semantic/595d01d18fe66547.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\0122World";
+   | ^^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/597169724912daf2.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11693,6 +12002,15 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✗ test/parser/suite/js/semantic/5c592bcb3302fe35.js
+✓ test/parser/suite/js/semantic/5c63ac420337d014.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { 'use strict'; "\000"; }
+   |                                  ^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/5c6a921e50e22500.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11900,6 +12218,16 @@ error: 'with' statements are not allowed in strict mode
    | ^
 16 | if (p1 !== 1) {}
    |
+
+✓ test/parser/suite/js/semantic/5deb31c97caf2d9a.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\712World";
+   | ^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/5e1cbe1737b1bbc6.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -12239,6 +12567,15 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^
  2 | 
    |
+
+✓ test/parser/suite/js/semantic/618f5bdbe9497960.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\11')
+   |                ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/6196b3f969486455.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
@@ -12987,6 +13324,15 @@ error: Cannot use 'export *' declaration outside a module
    |
 
 ✗ test/parser/suite/js/semantic/66dbfdbaebf9d88a.js
+✓ test/parser/suite/js/semantic/66e667cc2b718770.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | function hello() { 'use strict'; ({ 021: 42 }); }
+   |                                     ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/66ea15f7de78add7.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -13389,6 +13735,15 @@ error: Cannot use 'export default' declaration outside a module
    | ^
  4 | import('./eval-export-dflt-expr-gen-anon.js').then(imported => {}).then($DONE, $DONE).catch($DONE);
    |
+
+✓ test/parser/suite/js/semantic/6ac4f95d48362a35.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\001')
+   |                ^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/6aca927dfa1df5f9.js
 error: Yield expression is not allowed in formal parameters
@@ -14307,6 +14662,15 @@ error: 'with' statements are not allowed in strict mode
 12 |   if (scope.x !== 1) {}
    |
 
+✓ test/parser/suite/js/semantic/71e066a0fa01825b.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\11')
+   |  ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/71eb341567a7b8ec.js
 error: Cannot use import statement outside a module
    |
@@ -14606,6 +14970,15 @@ error: 'super' property access is only valid inside a method or class body
    |                                         ^^^^^^^
    |
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/js/semantic/748656edbfb2d0bb.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\8')
+   |  ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/74a013e981b9b7ec.js
@@ -15220,6 +15593,15 @@ error: 'arguments' is not allowed as a binding name in strict mode
  3 | };
    |
 
+✓ test/parser/suite/js/semantic/7955f9d22c3bd75c.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 07;
+   | ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/7958864040a4f3c1.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -15287,6 +15669,16 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  1 | for ([...[x[yield]]] in [[]]) ;
    |             ^^^^^
    |
+
+✓ test/parser/suite/js/semantic/79f882da06f88c9f.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "\8";
+   | ^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/7a23528a09c570b9.js
 error: Cannot use import statement outside a module
@@ -15447,6 +15839,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
+✓ test/parser/suite/js/semantic/7b514406528ff126.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\02World"
+   | ^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/7b548a7c8ae2394a.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -15464,6 +15865,15 @@ error: Identifier 'a' has already been declared
    |            ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/suite/js/semantic/7b71d1454ed9f300.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | '\8';
+   | ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/7b86de9a133208a4.module.js
@@ -15572,6 +15982,24 @@ error: 'arguments' is not allowed as a binding name in strict mode
  2 | const f = (p = eval("var arguments = 'param'"), q = () => arguments, arguments) => {};
    |                                                                      ^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/7c6d13458e08e1f4.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 01.a
+   | ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
+✓ test/parser/suite/js/semantic/7c8d10fbd146cce7.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | var y = 010;
+   |         ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✓ test/parser/suite/js/semantic/7ca5d521e3724537.js
 error: 'let' is not allowed as a variable name in a 'let' declaration
@@ -15902,6 +16330,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
+✓ test/parser/suite/js/semantic/7fb432d5f23d8614.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\4"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/7fb518ff1b5c9bdc.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -16100,6 +16537,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  1 | 0, { yield } = {};
    |      ^^^^^
    |
+
+✓ test/parser/suite/js/semantic/80bfa9f27278bbba.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | "use strict";function foo(){"use strict";}function bar(){var v = 015}
+   |                                                                  ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✗ test/parser/suite/js/semantic/80c2d2d1d35c8dcc.js
 ✓ test/parser/suite/js/semantic/80da22a7d2a15fc5.js
@@ -16705,6 +17151,15 @@ error: 'let' is reserved in strict mode and cannot be used as a binding name
  2 | 
    |
 
+✓ test/parser/suite/js/semantic/85d05185e2593ae7.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | `${'\07'}`;
+   |    ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/85d2d93264f2672d.js
 error: Cannot use import statement outside a module
    |
@@ -17030,6 +17485,15 @@ error: Cannot use import statement outside a module
  2 | import {production} from './instn-star-props-dflt-skip-star-as-prod_FIXTURE.js';
    |
 
+✓ test/parser/suite/js/semantic/8ae21edec4557fef.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\6"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/8ae9febf67f7fc0c.js
 error: Cannot use import statement outside a module
    |
@@ -17169,6 +17633,16 @@ error: Identifier 'a' has already been declared
    |                      ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/suite/js/semantic/8beab8b3263ace6e.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\412World";
+   | ^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/8c0dcbcb0ba9a5c6.js
@@ -17322,6 +17796,15 @@ error: 'arguments' is not allowed as a binding name in strict mode
  3 | }
    |
 
+✓ test/parser/suite/js/semantic/8dc484a35dd0dc16.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\123')
+   |                ^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/8dd7a22054117821.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -17380,6 +17863,15 @@ error: for-in/of loop variable declaration may not have an initializer
  1 | for (let {x} = 1 of []) {}
    |          ^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/8e3f0660b32fbfd2.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\7a')
+   |  ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/8e5d4b335173ff99.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -17906,6 +18398,16 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/92b6af54adef3624.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "\9";
+   | ^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/92b9b318dd38758c.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -17967,6 +18469,15 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
  1 | arguments ||= 20;
    | ^^^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/938db8c9f82c8cb5.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 01
+   | ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✓ test/parser/suite/js/semantic/939844abaa34aac0.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -18307,6 +18818,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
+✓ test/parser/suite/js/semantic/95ab0d795c04ff38.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\111')
+   |  ^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/95b74c586d4b3a86.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -18536,6 +19056,15 @@ error: Identifier 'a' has already been declared
    |                           ~ cannot be redeclared here
    |
    = help: Consider removing or renaming this declaration of 'a'
+
+
+✓ test/parser/suite/js/semantic/974222e3683f284a.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { "use strict"; function inner() { "octal directive\1"; } }
+   |                                                     ^^^^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/974e7cc08a79ffcf.module.js
@@ -18789,6 +19318,15 @@ error: Cannot use 'export default' declaration outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/9863075abb412b2a.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 01;
+   | ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/9870ec1edae91c07.js
 error: Identifier 'f' has already been declared
    |
@@ -19011,6 +19549,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |          ^^^^^
  2 | 
    |
+
+✓ test/parser/suite/js/semantic/9a48d1ca4b6fe617.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | '\9';
+   | ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/9a523823c2b7d2ed.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
@@ -19692,6 +20239,15 @@ error: 'with' statements are not allowed in strict mode
    | ^^^^^
 16 |   };
    |
+
+✓ test/parser/suite/js/semantic/a028a9ab5777d337.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\01')
+   |                ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/a041ad456272813f.module.js
 error: 'with' statements are not allowed in strict mode
@@ -21186,6 +21742,15 @@ error: 'with' statements are not allowed in strict mode
 16 |     })();
    |
 
+✓ test/parser/suite/js/semantic/ab35979364766bf0.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 'use strict'; 07
+   |               ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/ab4e4edab28ea95b.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -21516,6 +22081,15 @@ error: Cannot use import statement outside a module
    |
 
 ✗ test/parser/suite/js/semantic/adc0783854d665d3.js
+✓ test/parser/suite/js/semantic/ade301f0d871c610.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\122World"
+   | ^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/ade5ef35ca93ebb2.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -21678,6 +22252,15 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/af3a9b653481f43a.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 'use strict'; 00
+   |               ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/af41db0806f5841f.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -21792,6 +22375,15 @@ error: 'import' declaration may only appear at the top level
  1 | ({ m() { import v from './decl-pos-import-object-method.js'; } });
    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/b016c3c3e52fbe23.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 005;
+   | ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✓ test/parser/suite/js/semantic/b01e3a73a92863c5.js
 error: Identifier 'b' has already been declared
@@ -22035,6 +22627,16 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |                          ^^^^^
  2 | 
    |
+
+✓ test/parser/suite/js/semantic/b23a6a1d2fb3d8b1.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\122World";
+   | ^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/b24170a7f8ad2657.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -22434,6 +23036,15 @@ error: Yield expression is not allowed in formal parameters
  1 | function* a(){ ({ *b(c = yield* d){} }); }
    |                          ^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/b5cf21a87ec272d1.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\01')
+   |  ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/b5d9e23a4ac78f38.js
 error: 'super' property access is only valid inside a method or class body
@@ -23361,6 +23972,16 @@ error: 'with' statements are not allowed in strict mode
    | ^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/bda3217a2f8b9076.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\02World";
+   | ^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/bda811e17fbb6812.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -23533,6 +24154,15 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
+✓ test/parser/suite/js/semantic/bf6aaaab7c143ca1.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 012
+   | ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/bf74d30d9f947604.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -23572,6 +24202,15 @@ error: In strict mode code, functions can only be declared at top level or insid
    | ^
  4 | function f() {
    |
+
+✓ test/parser/suite/js/semantic/bfadeead1ddbd122.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { 'use strict'; "\00"; }
+   |                                  ^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/bfaef6b1eba2d0f9.module.js
 error: 'with' statements are not allowed in strict mode
@@ -25054,6 +25693,24 @@ error: Identifier 'c' has already been declared
    = help: Consider removing or renaming this declaration of 'c'
 
 
+✓ test/parser/suite/js/semantic/ca2716d236c027cd.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function hello() { 'use strict'; ({ "\1": 42 }); }
+   |                                     ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
+✓ test/parser/suite/js/semantic/ca27a03a9d04acd2.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | "use strict"; (a) => 00
+   |                      ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/ca2bad71562caa29.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -25171,6 +25828,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  1 | if (false) function _f() {} else function f() {}
    |            ^^^^^^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/cb095c303f88cd0b.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\2111')
+   |  ^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/cb2696015fa138af.js
 error: 'super()' is only valid in a constructor of a derived class
@@ -25396,6 +26062,15 @@ error: Deleting a variable in strict mode is not allowed
  4 | if (typeof obj !== 'object') {}
    |
 
+✓ test/parser/suite/js/semantic/ccc7766ca0ce51db.module.js
+error: Decimals with leading zeros are not allowed in strict mode
+   |
+ 1 | 08;
+   | ^^
+   |
+   = help: Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation
+
+
 ✓ test/parser/suite/js/semantic/ccdcf1dd0c105755.js
 error: Identifier 'f' has already been declared
    |
@@ -25592,6 +26267,15 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/ce4f3db361f43c33.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "\7"
+   | ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/ce5f3bc27d5ccaac.module.js
 error: Cannot use 'yield' as an identifier in a generator context
    |
@@ -25696,6 +26380,16 @@ error: 'with' statements are not allowed in strict mode
    | ^
 64 | if (!(result === undefined)) {}
    |
+
+✓ test/parser/suite/js/semantic/cf23f139545994a8.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\012World";
+   | ^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/cf3bc6f32410c8e8.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -25844,6 +26538,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |     ^^^^^^^^^^^^^
  4 |   }
    |
+
+✓ test/parser/suite/js/semantic/d04aecd166354406.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | 'use strict'; ('\1')
+   |                ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/d04b86fdb653529a.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -26103,6 +26806,15 @@ error: 'public' is reserved in strict mode and cannot be used as a binding name
  4 | }
    |
 
+✓ test/parser/suite/js/semantic/d1f6e78a984a262c.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\9"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/d1f9e003af395521.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -26333,6 +27045,15 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/d2af344779cc1f26.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | (a) => 00
+   |        ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/d2dd202a92359bea.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -26445,6 +27166,15 @@ error: Private fields cannot be deleted
    | ^^
  6 |   }
    |
+
+✓ test/parser/suite/js/semantic/d38771967621cb8e.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | ('\5111')
+   |  ^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/d397e2fd2f91f122.js
 error: Cannot use import statement outside a module
@@ -26574,6 +27304,15 @@ error: 'with' statements are not allowed in strict mode
    | ^
 62 | f();
    |
+
+✓ test/parser/suite/js/semantic/d483926898410cae.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\0122World"
+   | ^^^^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/d487300b8deff2ff.js
 error: Cannot use import statement outside a module
@@ -27247,6 +27986,17 @@ error: In strict mode code, functions can only be declared at top level or insid
    |                   ^^^^^^^^^^^^^^^^^
 13 | }
    |
+
+✓ test/parser/suite/js/semantic/d9ab1decec9b3ab6.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | (function() {
+ 2 |   "asterisk: \052";
+   |   ^^^^^^^^^^^^^^^^
+ 3 |   "use strict";
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/d9cea8bb367da4c9.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -28530,6 +29280,15 @@ error: 'import.meta' is only valid in module code
  1 | import.meta;
    | ^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/semantic/e199b02913f6025f.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\8"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
 
 ✓ test/parser/suite/js/semantic/e1a4d825780e79db.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
@@ -30207,6 +30966,15 @@ error: 'import' declaration may only appear at the top level
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
+✓ test/parser/suite/js/semantic/ee13fc04a9e4d4b1.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 010;
+   | ^^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
+
 ✓ test/parser/suite/js/semantic/ee1e2f85d112da09.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -30544,6 +31312,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
 
 ✗ test/parser/suite/js/semantic/f0c567cfa3ebac2d.js
+✓ test/parser/suite/js/semantic/f0c65ad0965d445a.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | function invalid() { "\3"; "use strict"; }
+   |                      ^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/f0c88018559ddad7.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -31148,6 +31925,16 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
+✓ test/parser/suite/js/semantic/f5d9db0aeea7c831.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\312World";
+   | ^^^^^^^^^^^^^^^^
+ 2 | 
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
+
+
 ✓ test/parser/suite/js/semantic/f5f09e3807f56d5b.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -31264,6 +32051,15 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | export var x = 23;
    |
+
+✓ test/parser/suite/js/semantic/f6924dd818b18733.module.js
+error: Octal literals are not allowed in strict mode
+   |
+ 1 | 'use strict'; 01
+   |               ^^
+   |
+   = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
+
 
 ✓ test/parser/suite/js/semantic/f6a24608abc26d2a.module.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -31803,6 +32599,15 @@ error: 'super()' is only valid in a constructor of a derived class
    |                 ^^^^^^^
    |
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
+✓ test/parser/suite/js/semantic/fa736f4b0cf19c0c.module.js
+error: Octal escape sequences are not allowed in strict mode
+   |
+ 1 | "Hello\1World"
+   | ^^^^^^^^^^^^^^
+   |
+   = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
 ✓ test/parser/suite/js/semantic/fa8312b5770d4814.module.js

@@ -29,18 +29,20 @@ interface TestConfig {
 	exclude?: string[];
 	skipOnCI?: boolean;
 	checkAstOnError?: boolean;
+	semanticErrors?: boolean;
 }
 
 const configs: TestConfig[] = [
-	{ path: "suite/js/pass", type: "snapshot", languages: ["js"] },
+	{ path: "suite/js/pass", type: "snapshot", languages: ["js"], semanticErrors: true },
 	{ path: "suite/js/fail", type: "should_fail", languages: ["js"] },
 	{
 		path: "suite/js/semantic",
 		type: "should_fail",
 		languages: ["js"],
+		semanticErrors: true,
 		skipOnCI: true,
 	},
-	{ path: "suite/jsx/pass", type: "snapshot", languages: ["jsx"] },
+	{ path: "suite/jsx/pass", type: "snapshot", languages: ["jsx"], semanticErrors: true },
 	{ path: "suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
 	{
 		path: "misc/jsx",
@@ -143,7 +145,7 @@ const runTest = async (
 		const parsed = parseSync(content, {
 			sourceType,
 			lang,
-			semanticErrors: true,
+			semanticErrors: config.semanticErrors ?? false,
 		});
 
     const hasErrors = parsed.diagnostics && parsed.diagnostics.length > 0;
