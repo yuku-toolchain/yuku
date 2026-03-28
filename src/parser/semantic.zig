@@ -105,7 +105,13 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "an identifier");
+        const name = ctx.tree.getString(id.name);
+        try self.checkStrictReserved(name, node_index, ctx, "an identifier");
+
+        // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+        if (eql(u8, name, "arguments") and !isArgumentsAvailable(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'arguments' is not allowed in class field initializers or static blocks", .{});
+
         return .proceed;
     }
 
@@ -606,6 +612,21 @@ const SemanticVisit = struct {
             if (isFunctionBoundary(data)) crossed_boundary = true;
         }
         return .not_found;
+    }
+
+    /// `arguments` is available inside regular functions but not in class field
+    /// initializers or static blocks (arrow functions are transparent).
+    fn isArgumentsAvailable(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .function => return true,
+                .property_definition, .static_block => return false,
+                .arrow_function_expression, .program => {},
+                else => {},
+            }
+        }
+        return true;
     }
 
     fn isInFormalParameters(ctx: *SemanticCtx) bool {

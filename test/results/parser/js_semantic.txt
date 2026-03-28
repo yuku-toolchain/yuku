@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3321/3648 (91.04%)
-Failed:       327
+Passed:       3376/3648 (92.54%)
+Failed:       272
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -90,7 +90,15 @@ error: 'let' is not allowed as a variable name in a 'let' declaration
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/00c619f81bd33c7a.js
+✓ test/parser/suite/js/semantic/00c619f81bd33c7a.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   static x = () => arguments;
+   |                    ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/01011171de849917.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -307,7 +315,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/02ab45e6d656dda7.js
+✓ test/parser/suite/js/semantic/02ab45e6d656dda7.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   static 'x' = () => arguments;
+   |                      ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/02acc01ccbb4f082.js
 error: Identifier 'x' has already been declared
    |
@@ -419,7 +435,15 @@ error: Cannot use 'export *' declaration outside a module
  2 | export * from "./import-and-export-propagates-binding_import-and-export_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/031b407424836fd8.js
+✓ test/parser/suite/js/semantic/031b407424836fd8.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 |   x = () => {
+ 3 |     var t = () => arguments;
+   |                   ^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/03438b147fbb87b3.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -658,7 +682,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/04dedbafa2ea71d4.js
+✓ test/parser/suite/js/semantic/04dedbafa2ea71d4.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   static 'x' = () => arguments;
+   |                      ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/04e050cdb866dd89.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -1168,7 +1200,15 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/08a2b55a9e99202c.js
+✓ test/parser/suite/js/semantic/08a2b55a9e99202c.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   static x = () => arguments;
+   |                    ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/08b527a4146318e1.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -1392,7 +1432,15 @@ error: 'eval' is not allowed as a binding name in strict mode
  2 | var result;
    |
 
-✗ test/parser/suite/js/semantic/0aa3fecaca9d33d0.js
+✓ test/parser/suite/js/semantic/0aa3fecaca9d33d0.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   'x' = () => arguments;
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/0aba380d13ff463c.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -2088,7 +2136,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/10423b85f645efba.js
+✓ test/parser/suite/js/semantic/10423b85f645efba.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 |   static {
+ 3 |     (class { [argument\u0073]() {} });
+   |               ^^^^^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/10456e874bc6b984.module.js
 error: Identifier 'a' has already been declared
    |
@@ -2143,7 +2199,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/1084180dc2df7136.js
+✓ test/parser/suite/js/semantic/1084180dc2df7136.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | class C {
+ 3 |   [x] = () => arguments;
+   |               ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/1094a56a2e3e095a.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -2189,7 +2253,15 @@ error: 'with' statements are not allowed in strict mode
 15 |     })();
    |
 
-✗ test/parser/suite/js/semantic/10d70d9a9af9f72a.js
+✓ test/parser/suite/js/semantic/10d70d9a9af9f72a.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   static #x = arguments;
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/10d8477d9928d6fd.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -2998,7 +3070,15 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/172a265eaa00ed94.js
+✓ test/parser/suite/js/semantic/172a265eaa00ed94.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   #x = typeof arguments;
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/17302b9b0cab0c69.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -3198,7 +3278,15 @@ error: 'with' statements are not allowed in strict mode
    | ^
    |
 
-✗ test/parser/suite/js/semantic/183b68734d57ceb2.js
+✓ test/parser/suite/js/semantic/183b68734d57ceb2.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | var C = class {
+ 3 |   static [x] = () => arguments;
+   |                      ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/184a24a0df1bd518.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -3771,7 +3859,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/1bd1e15758f0bbdf.js
+✓ test/parser/suite/js/semantic/1bd1e15758f0bbdf.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 |   #x = () => {
+ 3 |     var t = () => arguments;
+   |                   ^^^^^^^^^
+ 4 |     t();
+   |
+
 ✓ test/parser/suite/js/semantic/1bd9810e90ed9466.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -3931,7 +4027,15 @@ error: 'eval' is not allowed as a binding name in strict mode
    |  ^^^^
    |
 
-✗ test/parser/suite/js/semantic/1d47bf1a88c01528.js
+✓ test/parser/suite/js/semantic/1d47bf1a88c01528.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = arguments;
+   |       ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/1d560e10c4deba45.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -4393,7 +4497,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/20c24abf03791e95.js
+✓ test/parser/suite/js/semantic/20c24abf03791e95.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   #x = true ? {} : arguments;
+   |                    ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/20cad068fe8f22b3.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -4765,7 +4877,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  8 | })();
    |
 
-✗ test/parser/suite/js/semantic/22dfaf2ae6b91e21.js
+✓ test/parser/suite/js/semantic/22dfaf2ae6b91e21.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   #x = () => true ? {} : arguments;
+   |                          ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/22e0c7f12c99dffe.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -5730,7 +5850,15 @@ error: Cannot use import statement outside a module
  2 | import x from './import-attribute-1_FIXTURE.js' with { if: '' };
    |
 
-✗ test/parser/suite/js/semantic/2bbf1e7f7752c546.js
+✓ test/parser/suite/js/semantic/2bbf1e7f7752c546.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   static 'x' = arguments;
+   |                ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/2bc90e6c1b0444bf.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -6346,7 +6474,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/2ff12d67f245ef39.js
+✓ test/parser/suite/js/semantic/2ff12d67f245ef39.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = () => typeof arguments;
+   |                    ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/2ff71b4c3603175f.js
 error: Identifier 'a' has already been declared
    |
@@ -6552,7 +6688,15 @@ error: 'arguments' is not allowed as a binding name in strict mode
  4 | };
    |
 
-✗ test/parser/suite/js/semantic/32a1d56107a7654d.js
+✓ test/parser/suite/js/semantic/32a1d56107a7654d.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = false ? {} : arguments;
+   |                    ^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/32a3e279226eefa0.module.js
 ✓ test/parser/suite/js/semantic/32a9af0615bf7618.module.js
 error: 'with' statements are not allowed in strict mode
@@ -7210,7 +7354,15 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/37a48c3137d7bd7d.js
+✓ test/parser/suite/js/semantic/37a48c3137d7bd7d.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   'x' = arguments;
+   |         ^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/37a7850f313127a8.js
 ✓ test/parser/suite/js/semantic/37bc8534570fd5c4.module.js
 error: Identifier 'f' has already been declared
@@ -7834,7 +7986,15 @@ error: Cannot use import statement outside a module
    |
 
 ✗ test/parser/suite/js/semantic/3ca06422d3c3abe6.js
-✗ test/parser/suite/js/semantic/3ca7871e40f42a67.js
+✓ test/parser/suite/js/semantic/3ca7871e40f42a67.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   #x = () => false ? {} : arguments;
+   |                           ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/3ca9089477fd16c1.js
 error: Illegal continue statement
    |
@@ -8786,7 +8946,15 @@ error: 'eval' is not allowed as a binding name in strict mode
    |                                              ^^^^
    |
 
-✗ test/parser/suite/js/semantic/442d4ae733d519d0.js
+✓ test/parser/suite/js/semantic/442d4ae733d519d0.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | class C {
+ 3 |   [x] = arguments;
+   |         ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/4435f19f2a2a24bd.js
 error: 'let' is reserved in strict mode and cannot be used as a binding name
    |
@@ -9094,7 +9262,15 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |          ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/46b1d624bc7a8bbe.js
+✓ test/parser/suite/js/semantic/46b1d624bc7a8bbe.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = typeof arguments;
+   |              ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/46bd9ab178c0dc87.module.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -10082,7 +10258,15 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/4e112f1225e229c4.js
+✓ test/parser/suite/js/semantic/4e112f1225e229c4.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   static #x = () => arguments;
+   |                     ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/4e12bb4b1d278bab.module.js
 error: Identifier 'a' has already been declared
    |
@@ -10525,7 +10709,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/51c38328d60aa690.js
+✓ test/parser/suite/js/semantic/51c38328d60aa690.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   #x = typeof arguments;
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/51e5a52e36642bf2.module.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -11853,7 +12045,15 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/5b6d8e0eaffb7483.js
+✓ test/parser/suite/js/semantic/5b6d8e0eaffb7483.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = () => typeof arguments;
+   |                    ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/5b861a6bffaeb92d.js
 error: Cannot use import statement outside a module
    |
@@ -12455,7 +12655,15 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6069a4f3fbe23850.js
+✓ test/parser/suite/js/semantic/6069a4f3fbe23850.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 |   x = () => {
+ 3 |     var t = () => arguments;
+   |                   ^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/60a7234c10eb72cb.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -12655,7 +12863,15 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |                    ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6216e62e334a255c.js
+✓ test/parser/suite/js/semantic/6216e62e334a255c.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 |   #x = () => {
+ 3 |     var t = () => arguments;
+   |                   ^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/6231fa8c107affff.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -14080,7 +14296,15 @@ error: 'interface' is reserved in strict mode and cannot be used as a binding na
    |            ^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6d0d962512802b3a.js
+✓ test/parser/suite/js/semantic/6d0d962512802b3a.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = {} == arguments;
+   |             ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/6d1a6c0a4db5e4fb.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -16628,7 +16852,15 @@ error: 'import.meta' is only valid in module code
  2 | if (!Object.prototype.hasOwnProperty.call(import.meta, 'toString') && !Object.prototype.hasOwnProperty.call(import.meta, 'valueOf') && !Object.prototype.hasOwnProperty.call(import.meta, Symbol.toPrimitive)) {
    |
 
-✗ test/parser/suite/js/semantic/815ed6253b78b4da.js
+✓ test/parser/suite/js/semantic/815ed6253b78b4da.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | class C {
+ 3 |   static [x] = arguments;
+   |                ^^^^^^^^^
+ 4 | }
+   |
+
 ✗ test/parser/suite/js/semantic/8174015519199e36.js
 ✓ test/parser/suite/js/semantic/817604f9014b9e19.js
 error: Cannot use import statement outside a module
@@ -17142,7 +17374,15 @@ error: for-in/of loop variable declaration may not have an initializer
    |         ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/858df5994cb8a77c.js
+✓ test/parser/suite/js/semantic/858df5994cb8a77c.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   static x = arguments;
+   |              ^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/85c4d114427facfb.module.js
 ✓ test/parser/suite/js/semantic/85ce5704fd5f4dd1.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -19741,7 +19981,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/9b8d5da90c30fe63.js
+✓ test/parser/suite/js/semantic/9b8d5da90c30fe63.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   #x = () => arguments;
+   |              ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/9b920ccacabc4e19.js
 error: Identifier 'f' has already been declared
    |
@@ -19761,7 +20009,15 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep-then_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/9ba842b571b1df57.js
+✓ test/parser/suite/js/semantic/9ba842b571b1df57.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = () => arguments;
+   |             ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/9bf6156f8f65e3dc.js
 error: Identifier 'f' has already been declared
    |
@@ -21496,7 +21752,15 @@ error: 'implements' is reserved in strict mode and cannot be used as a binding n
  2 | var implements = 2;
    |
 
-✗ test/parser/suite/js/semantic/a8739e3cf494b422.js
+✓ test/parser/suite/js/semantic/a8739e3cf494b422.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = () => true ? {} : arguments;
+   |                         ^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/a87c5d5237b34393.module.js
 ✓ test/parser/suite/js/semantic/a8b8c7c75bdd0ede.js
 error: Identifier 'x' has already been declared
@@ -23083,7 +23347,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | });
    |
 
-✗ test/parser/suite/js/semantic/b5ef09af772a51b6.js
+✓ test/parser/suite/js/semantic/b5ef09af772a51b6.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   static #x = arguments;
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/b618d0ca375d3f86.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -23586,7 +23858,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/bac80aee32999637.js
+✓ test/parser/suite/js/semantic/bac80aee32999637.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = () => false ? {} : arguments;
+   |                          ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/bad2150b6c74a6d3.module.js
 error: Identifier 'f' has already been declared
    |
@@ -25684,7 +25964,15 @@ error: 'with' statements are not allowed in strict mode
 63 |   }
    |
 
-✗ test/parser/suite/js/semantic/c9ce6b0cbdbb4c1c.js
+✓ test/parser/suite/js/semantic/c9ce6b0cbdbb4c1c.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   static 'x' = arguments;
+   |                ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/c9dfe7eb7bab223e.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -25893,7 +26181,15 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/cb502892c0be275f.js
+✓ test/parser/suite/js/semantic/cb502892c0be275f.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   #x = arguments;
+   |        ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/cb5304d7abc733a3.module.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -27368,7 +27664,15 @@ error: Private fields cannot be deleted
  5 | async *#m() {}
    |
 
-✗ test/parser/suite/js/semantic/d4cb1d02119e7d66.js
+✓ test/parser/suite/js/semantic/d4cb1d02119e7d66.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   static #x = () => arguments;
+   |                     ^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/d4cca3fe80995f12.js
 ✓ test/parser/suite/js/semantic/d50105a16f4f4fca.js
 error: Cannot use import statement outside a module
@@ -27432,7 +27736,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  2 | var x;
    |
 
-✗ test/parser/suite/js/semantic/d556b2b9bcdcb105.js
+✓ test/parser/suite/js/semantic/d556b2b9bcdcb105.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | class C {
+ 3 |   static [x] = () => arguments;
+   |                      ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/d56a71ee38f4929e.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -27954,7 +28266,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/d92625abe1f20a12.js
+✓ test/parser/suite/js/semantic/d92625abe1f20a12.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   #x = () => arguments;
+   |              ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/d92beccacbf5218c.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -28650,7 +28970,15 @@ error: Duplicate label 'label'
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/dcfa1e349a767208.js
+✓ test/parser/suite/js/semantic/dcfa1e349a767208.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   'x' = arguments;
+   |         ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/dd401fa99c1b551c.module.js
 error: 'package' is reserved in strict mode and cannot be used as a binding name
    |
@@ -28724,7 +29052,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  9 |     return 'second declaration';
    |
 
-✗ test/parser/suite/js/semantic/de01685d5e823545.js
+✓ test/parser/suite/js/semantic/de01685d5e823545.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | var C = class {
+ 3 |   [x] = () => arguments;
+   |               ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/de07a50e8f528926.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -28891,7 +29227,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  3 |   break;
    |
 
-✗ test/parser/suite/js/semantic/dec98c54829909b6.js
+✓ test/parser/suite/js/semantic/dec98c54829909b6.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   #x = () => typeof arguments;
+   |                     ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ded1395d7eb8b642.js
 error: Expected ';' after for-loop init, but found ')'
    |
@@ -28918,7 +29262,15 @@ error: Cannot use import statement outside a module
  2 | export {c as b} from './instn-star-iee-cycle-2_FIXTURE.js';
    |
 
-✗ test/parser/suite/js/semantic/defa14facef67818.js
+✓ test/parser/suite/js/semantic/defa14facef67818.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = typeof arguments;
+   |              ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/df0e330038727b82.js
 error: Private fields cannot be deleted
    |
@@ -29461,7 +29813,15 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./imports-tla_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/e27c89124bbb7a5e.js
+✓ test/parser/suite/js/semantic/e27c89124bbb7a5e.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = arguments;
+   |       ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/e299aa99dc3d30e8.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -29791,7 +30151,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |       ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/e4ee03ae34486148.js
+✓ test/parser/suite/js/semantic/e4ee03ae34486148.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   #x = () => typeof arguments;
+   |                     ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/e4fd5200ed5fdbe2.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -29842,7 +30210,15 @@ error: 'with' statements are not allowed in strict mode
    | ^
    |
 
-✗ test/parser/suite/js/semantic/e57e7fc569fbaea2.js
+✓ test/parser/suite/js/semantic/e57e7fc569fbaea2.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | var C = class {
+ 3 |   static [x] = arguments;
+   |                ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/e587491e2360f3a9.module.js
 error: 'export default' declaration may only appear at the top level
    |
@@ -30014,7 +30390,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |
 
 ✗ test/parser/suite/js/semantic/e6bf6eec9bccde06.module.js
-✗ test/parser/suite/js/semantic/e6c3fdbce65b4a81.js
+✓ test/parser/suite/js/semantic/e6c3fdbce65b4a81.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   x = {} == arguments;
+   |             ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/e6d1bfc162ca8c82.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -30298,7 +30682,15 @@ error: 'let' is not allowed as a variable name in a 'let' declaration
    |         ^^^
    |
 
-✗ test/parser/suite/js/semantic/e9507a792bf8dbfa.js
+✓ test/parser/suite/js/semantic/e9507a792bf8dbfa.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = true ? {} : arguments;
+   |                   ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/e9567f5fd990d5cd.js
 error: Identifier 'f' has already been declared
    |
@@ -31024,7 +31416,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  6 |     return yield;
    |
 
-✗ test/parser/suite/js/semantic/ee24956ca3d9b68a.js
+✓ test/parser/suite/js/semantic/ee24956ca3d9b68a.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   'x' = () => arguments;
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ee32e5567302b0eb.js
 error: Private fields cannot be deleted
    |
@@ -32158,7 +32558,15 @@ error: 'with' statements are not allowed in strict mode
 24 | } catch (e) {
    |
 
-✗ test/parser/suite/js/semantic/f7171546e886bdfa.js
+✓ test/parser/suite/js/semantic/f7171546e886bdfa.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   #x = arguments;
+   |        ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/f71fb0732aeed5c1.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -32335,7 +32743,15 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
-✗ test/parser/suite/js/semantic/f7f47a4c9d671488.js
+✓ test/parser/suite/js/semantic/f7f47a4c9d671488.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | var C = class {
+ 2 |   x = () => arguments;
+   |             ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/f7f8a42c5790914d.js
 error: Cannot use import statement outside a module
    |
@@ -32628,7 +33044,15 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/fa0df40011a31bc2.js
+✓ test/parser/suite/js/semantic/fa0df40011a31bc2.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   static x = arguments;
+   |              ^^^^^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/fa56fc427be3e801.module.js
 ✓ test/parser/suite/js/semantic/fa59ac4c41d26c14.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -32684,7 +33108,15 @@ error: Identifier '__string' has already been declared
    = help: Consider removing or renaming this declaration of '__string'
 
 
-✗ test/parser/suite/js/semantic/faa7104c6ed5b684.js
+✓ test/parser/suite/js/semantic/faa7104c6ed5b684.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 2 | var C = class {
+ 3 |   [x] = arguments;
+   |         ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/fab930fbac0342a2.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -33307,7 +33739,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/ffa7ae21755bdc4a.js
+✓ test/parser/suite/js/semantic/ffa7ae21755bdc4a.js
+error: 'arguments' is not allowed in class field initializers or static blocks
+   |
+ 1 | class C {
+ 2 |   #x = false ? {} : arguments;
+   |                     ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ffb3aa211505dc28.module.js
 error: 'with' statements are not allowed in strict mode
    |
