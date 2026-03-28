@@ -27,7 +27,12 @@ pub fn analyze(tree: *ast.Tree) AnalysisError!semantic.Result {
         .allocator = tree.allocator(),
     };
 
-    return try semantic.traverse(SemanticVisit, tree, &visitor);
+    const result = try semantic.traverse(SemanticVisit, tree, &visitor);
+
+    // post traversal
+    try visitor.checkUnresolvedExports(result);
+
+    return result;
 }
 
 const SemanticVisit = struct {
@@ -35,6 +40,14 @@ const SemanticVisit = struct {
 
     tree: *ast.Tree,
     allocator: Allocator,
+
+    exported_names: std.StringHashMapUnmanaged(ast.NodeIndex) = .{},
+    export_specifiers: std.ArrayListUnmanaged(ExportSpecifierInfo) = .{},
+
+    const ExportSpecifierInfo = struct {
+        local_name: []const u8,
+        node: ast.NodeIndex,
+    };
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
@@ -99,6 +112,10 @@ const SemanticVisit = struct {
                 }
             }
         }
+
+        // track exported binding names (export const x, export function f, etc.)
+        if (ctx.symbols.is_export and !ctx.symbols.is_default_export)
+            try self.recordExportedName(name, node_index, ctx);
 
         return .proceed;
     }
@@ -333,14 +350,40 @@ const SemanticVisit = struct {
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
+
+        try self.recordExportedName("default", node_index, ctx);
         return .proceed;
     }
 
-    pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_export_all_declaration(self: *Self, decl: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
+
+        // export * as name from '...'
+        if (decl.exported != .null)
+            try self.recordExportedName(getModuleExportName(ctx.tree, decl.exported), node_index, ctx);
+
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-exports-static-semantics-early-errors
+    pub fn enter_export_specifier(self: *Self, spec: ast.ExportSpecifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        const exported_name = getModuleExportName(ctx.tree, spec.exported);
+        try self.recordExportedName(exported_name, node_index, ctx);
+
+        // collect for unresolved check (only for local exports, not re-exports)
+        if (ctx.path.parent()) |parent| {
+            if (ctx.tree.getData(parent) == .export_named_declaration and
+                ctx.tree.getData(parent).export_named_declaration.source == .null)
+            {
+                try self.export_specifiers.append(self.allocator, .{
+                    .local_name = getModuleExportName(ctx.tree, spec.local),
+                    .node = node_index,
+                });
+            }
+        }
         return .proceed;
     }
 
@@ -643,6 +686,42 @@ const SemanticVisit = struct {
             }
         }
         return null;
+    }
+
+    /// extracts the name from a ModuleExportName (IdentifierName, IdentifierReference, or StringLiteral).
+    fn getModuleExportName(tree: *const ast.Tree, node: ast.NodeIndex) []const u8 {
+        return switch (tree.getData(node)) {
+            .identifier_name => |id| tree.getString(id.name),
+            .identifier_reference => |id| tree.getString(id.name),
+            .string_literal => |lit| lit.value(tree),
+            else => "",
+        };
+    }
+
+    /// records an exported name and reports a duplicate if one already exists.
+    fn recordExportedName(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+        if (ctx.tree.source_type != .module) return;
+        const gop = try self.exported_names.getOrPut(self.allocator, name);
+        if (gop.found_existing) {
+            try self.report(ctx.tree.getSpan(node_index), try self.fmt("Duplicate export of '{s}'", .{name}), .{
+                .labels = try self.labels(&.{
+                    self.label(ctx.tree.getSpan(gop.value_ptr.*), "first exported here"),
+                    self.label(ctx.tree.getSpan(node_index), "exported again here"),
+                }),
+            });
+        } else {
+            gop.value_ptr.* = node_index;
+        }
+    }
+
+    /// Post-traversal: checks that all local export specifiers refer to declared bindings.
+    fn checkUnresolvedExports(self: *Self, result: semantic.Result) AnalysisError!void {
+        if (self.tree.source_type != .module) return;
+        for (self.export_specifiers.items) |spec| {
+            if (result.symbol_table.findInScopeOrHoisted(.module, spec.local_name) == null) {
+                try self.report(self.tree.getSpan(spec.node), try self.fmt("Export '{s}' is not defined", .{spec.local_name}), .{});
+            }
+        }
     }
 
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {

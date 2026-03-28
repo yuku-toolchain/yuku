@@ -882,6 +882,15 @@ pub const WithStatement = struct {
 pub const StringLiteral = struct {
     /// Raw string text including quotes.
     raw: String = .empty,
+
+    /// Returns the string content without surrounding quotes
+    pub fn value(self: StringLiteral, tree: *const Tree) []const u8 {
+        return stripQuotes(tree.getString(self.raw));
+    }
+
+    pub fn stripQuotes(raw: []const u8) []const u8 {
+        return if (raw.len >= 2) raw[1 .. raw.len - 1] else raw;
+    }
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals

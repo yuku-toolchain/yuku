@@ -25,10 +25,10 @@ pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
             .is_string_literal = false,
         },
         .string_literal => |str| {
-            const raw = parser.b.getString(str.raw);
-            if (raw.len < 2) return null;
+            const name = str.value(&parser.b);
+            if (name.len == 0) return null;
             return .{
-                .name = raw[1 .. raw.len - 1],
+                .name = name,
                 .span = parser.b.getSpan(key),
                 .is_string_literal = true,
             };

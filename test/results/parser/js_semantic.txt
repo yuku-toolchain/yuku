@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3376/3648 (92.54%)
-Failed:       272
+Passed:       3414/3648 (93.59%)
+Failed:       234
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -2469,7 +2469,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |           ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/126221967461dba0.module.js
+✓ test/parser/suite/js/semantic/126221967461dba0.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | export {a}; export const a = 1;
+   |                          ^
+   |         ~ first exported here
+   |                          ~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/127f21fecbb86e0d.js
 error: Private fields cannot be deleted
    |
@@ -2645,7 +2653,16 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |           ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/13d24ad99ac46c21.module.js
+✓ test/parser/suite/js/semantic/13d24ad99ac46c21.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | var a; export default class {} export { a as default };
+   |                                         ^^^^^^^^^^^^
+   |        ~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+   |                                         ~~~~~~~~~~~~ exported again here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/13e13833e3ac7a59.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -2754,7 +2771,15 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/14d1d9ec5f97bd4e.module.js
+✓ test/parser/suite/js/semantic/14d1d9ec5f97bd4e.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | export let a; let b; export {b as a};
+   |                              ^^^^^^
+   |            ~ first exported here
+   |                              ~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/14d419f38fd83126.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -4532,7 +4557,17 @@ error: Cannot use import statement outside a module
  2 | import * as self2 from './instn-star-equality.js';
    |
 
-✗ test/parser/suite/js/semantic/20e2a99748fb5ad5.module.js
+✓ test/parser/suite/js/semantic/20e2a99748fb5ad5.module.js
+error: Duplicate export of 'x'
+   |
+ 1 | var x;
+ 2 | export { x };
+   |          ~ first exported here
+ 3 | export { x };
+   |          ^
+   |          ~ exported again here
+   |
+
 ✗ test/parser/suite/js/semantic/2100738e3a002ce4.js
 ✓ test/parser/suite/js/semantic/210fb79a19872227.js
 error: 'eval' is not allowed as a binding name in strict mode
@@ -5253,7 +5288,13 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep-then_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/272a7c1b82c9c8b8.module.js
+✓ test/parser/suite/js/semantic/272a7c1b82c9c8b8.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export { a, b as c }
+   |          ^
+   |
+
 ✓ test/parser/suite/js/semantic/277a9ece19806bca.js
 error: Duplicate label '__proto__'
    |
@@ -5444,7 +5485,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/293d515dfacc7ea6.module.js
+✓ test/parser/suite/js/semantic/293d515dfacc7ea6.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a};
+   |         ^
+   |
+
 ✓ test/parser/suite/js/semantic/2941afc857979cc7.js
 error: Cannot use import statement outside a module
    |
@@ -6225,7 +6272,15 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/2dd665419e3df66e.module.js
+✓ test/parser/suite/js/semantic/2dd665419e3df66e.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | let a, b; export {a, b as a};
+   |                      ^^^^^^
+   |                   ~ first exported here
+   |                      ~~~~~~ exported again here
+   |
+
 ✗ test/parser/suite/js/semantic/2dd671500974e7c0.js
 ✓ test/parser/suite/js/semantic/2e19f66a4b32a1e3.module.js
 error: 'with' statements are not allowed in strict mode
@@ -6697,7 +6752,15 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/32a3e279226eefa0.module.js
+✓ test/parser/suite/js/semantic/32a3e279226eefa0.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | export {a}; export function a(){};
+   |                             ^
+   |         ~ first exported here
+   |                             ~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/32a9af0615bf7618.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7634,7 +7697,13 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/3932eae5b90d0686.module.js
+✓ test/parser/suite/js/semantic/3932eae5b90d0686.module.js
+error: Export 'Number' is not defined
+   |
+ 1 | export { Number };
+   |          ^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/3942925b59346605.js
 error: 'static' is reserved in strict mode and cannot be used as a binding name
    |
@@ -7720,7 +7789,15 @@ error: 'with' statements are not allowed in strict mode
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/3a29281d7d6fba5a.module.js
+✓ test/parser/suite/js/semantic/3a29281d7d6fba5a.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | export default 1; export default function a(){};
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~ first exported here
+   |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/3a399ffe064a4fdc.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -7976,7 +8053,14 @@ error: Yield expression is not allowed in formal parameters
    |                     ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/3c97613274574690.module.js
+✓ test/parser/suite/js/semantic/3c97613274574690.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a, b};
+   |         ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/3c976d095efe5b9e.js
 error: Cannot use import statement outside a module
    |
@@ -9377,7 +9461,17 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/4746fe933ae550dc.module.js
+✓ test/parser/suite/js/semantic/4746fe933ae550dc.module.js
+error: Duplicate export of 'z'
+   |
+ 1 | var x;
+ 2 | export { x as z };
+   |          ~~~~~~ first exported here
+ 3 | export * as z from './early-dup-export-as-star-as.js';
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/477aa5644a9d1a7e.module.js
 error: 'implements' is reserved in strict mode and cannot be used as a binding name
    |
@@ -10315,7 +10409,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  2 |   return 'inner declaration';
    |
 
-✗ test/parser/suite/js/semantic/4e6529771ad3343f.module.js
+✓ test/parser/suite/js/semantic/4e6529771ad3343f.module.js
+error: Export 'b' is not defined
+   |
+ 1 | let a; export {b as a};
+   |                ^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/4e7e3a5864a26f14.js
 error: Identifier 'param1' has already been declared
    |
@@ -10642,7 +10742,14 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/51133e692c5afe53.js
-✗ test/parser/suite/js/semantic/5127ca1fe7c943ba.module.js
+✓ test/parser/suite/js/semantic/5127ca1fe7c943ba.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a, b,};
+   |         ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/512c5d4edd3a7a33.js
 error: Identifier 'x' has already been declared
    |
@@ -10975,7 +11082,15 @@ error: Use of undefined label 'nonexist'
  5 |         __str+=""+index+index_n;
    |
 
-✗ test/parser/suite/js/semantic/53699b3b15d7ce42.module.js
+✓ test/parser/suite/js/semantic/53699b3b15d7ce42.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | export {a}; export class a{};
+   |                          ^
+   |         ~ first exported here
+   |                          ~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/536e64c611e572f9.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11992,7 +12107,13 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/5aee8ec8445ed16e.js
-✗ test/parser/suite/js/semantic/5b0f82ab482ac359.module.js
+✓ test/parser/suite/js/semantic/5b0f82ab482ac359.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a as b}; var b;
+   |         ^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/5b255dda6662d8ad.js
 error: 'let' is not allowed as a variable name in a 'let' declaration
    |
@@ -12763,7 +12884,17 @@ error: 'eval' is not allowed as a binding name in strict mode
  2 | var result;
    |
 
-✗ test/parser/suite/js/semantic/61465bfb21efb91c.module.js
+✓ test/parser/suite/js/semantic/61465bfb21efb91c.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | var x;
+ 2 | export default x;
+   | ~~~~~~~~~~~~~~~~~ first exported here
+ 3 | export * as default from './early-dup-export-start-as-dflt.js';
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/614c87ca66a3f4aa.module.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -13323,7 +13454,15 @@ error: 'let' is reserved in strict mode and cannot be used as a binding name
    |
 
 ✗ test/parser/suite/js/semantic/65452eb8baae5939.js
-✗ test/parser/suite/js/semantic/656ae090a367940a.module.js
+✓ test/parser/suite/js/semantic/656ae090a367940a.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | let a; export {a, a as a};
+   |                   ^^^^^^
+   |                ~ first exported here
+   |                   ~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/6592c9e18d21e698.js
 error: 'eval' is not allowed as a binding name in strict mode
    |
@@ -16582,7 +16721,13 @@ error: 'import' declaration may only appear at the top level
    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/7fc6f3a6590d207d.module.js
+✓ test/parser/suite/js/semantic/7fc6f3a6590d207d.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a as b}; let b;
+   |         ^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7fc88a2bf83b08db.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -17283,7 +17428,15 @@ error: Illegal break statement
    = help: A 'break' statement can only be used within an enclosing iteration or switch statement
 
 
-✗ test/parser/suite/js/semantic/84bf7b09d729a621.module.js
+✓ test/parser/suite/js/semantic/84bf7b09d729a621.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | export default 1; export default class a {};
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~ first exported here
+   |                   ~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/84d6dcd55ead1a00.js
 error: 'implements' is reserved in strict mode and cannot be used as an identifier
    |
@@ -17691,7 +17844,17 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/8a464e1e75ebf500.module.js
+✓ test/parser/suite/js/semantic/8a464e1e75ebf500.module.js
+error: Duplicate export of 'z'
+   |
+ 1 | var x, y;
+ 2 | export { x as z };
+   |          ~~~~~~ first exported here
+ 3 | export { y as z };
+   |          ^^^^^^
+   |          ~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/8a4ad81e83d40ad7.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -18284,7 +18447,13 @@ error: Private fields cannot be deleted
  5 | async #m() {}
    |
 
-✗ test/parser/suite/js/semantic/8ffe04111c1a982d.module.js
+✓ test/parser/suite/js/semantic/8ffe04111c1a982d.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a as b};
+   |         ^^^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/9002f697e6fe5571.js
 ✓ test/parser/suite/js/semantic/90071de872ef5686.js
 error: Identifier 'b' has already been declared
@@ -19154,7 +19323,14 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/96533ed6c7244382.module.js
+✓ test/parser/suite/js/semantic/96533ed6c7244382.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a};
+   |         ^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/9678a11fb3216f87.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -20029,7 +20205,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/9bf72dffe31851c4.module.js
+✓ test/parser/suite/js/semantic/9bf72dffe31851c4.module.js
+error: Export 'unresolvable' is not defined
+   |
+ 1 | export { unresolvable };
+   |          ^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9c1371d3aa3aeec7.js
 error: Identifier 'x' has already been declared
    |
@@ -20850,7 +21032,14 @@ error: Cannot use import statement outside a module
  2 | value.test262property = 'test262 value';
    |
 
-✗ test/parser/suite/js/semantic/a236c74609b92c02.module.js
+✓ test/parser/suite/js/semantic/a236c74609b92c02.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a as default};
+   |         ^^^^^^^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/a268ed49b3ceb85b.js
 error: Cannot use import statement outside a module
    |
@@ -21761,7 +21950,15 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/a87c5d5237b34393.module.js
+✓ test/parser/suite/js/semantic/a87c5d5237b34393.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | export let a; export {a};
+   |                       ^
+   |            ~ first exported here
+   |                       ~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/a8b8c7c75bdd0ede.js
 error: Identifier 'x' has already been declared
    |
@@ -22785,7 +22982,16 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/b118f7ba23d3f8dd.module.js
+✓ test/parser/suite/js/semantic/b118f7ba23d3f8dd.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | var a, b; export default a; export { b as default };
+   |                                      ^^^^^^^^^^^^
+   |           ~~~~~~~~~~~~~~~~~ first exported here
+   |                                      ~~~~~~~~~~~~ exported again here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/b123c3e576b7b380.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -22901,7 +23107,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  2 |   return 'function declaration';
    |
 
-✗ test/parser/suite/js/semantic/b1fc7710d5fc4366.module.js
+✓ test/parser/suite/js/semantic/b1fc7710d5fc4366.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | let a; export {a, a};
+   |                   ^
+   |                ~ first exported here
+   |                   ~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/b205355de22689d1.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -23835,7 +24049,14 @@ error: In strict mode code, functions can only be declared at top level or insid
    |    ^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/ba2bfa1952f3e537.module.js
+✓ test/parser/suite/js/semantic/ba2bfa1952f3e537.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a as default, b};
+   |         ^^^^^^^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/bab8d57ddf81ea04.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -25035,7 +25256,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/c33da51b85893244.module.js
+✓ test/parser/suite/js/semantic/c33da51b85893244.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export { a, b }
+   |          ^
+   |
+
 ✓ test/parser/suite/js/semantic/c3677319d4b89bc7.js
 error: Identifier 'A' has already been declared
    |
@@ -26922,7 +27149,14 @@ error: Cannot use 'export default' declaration outside a module
  2 | AG.foo = '';
    |
 
-✗ test/parser/suite/js/semantic/d070112b8eb9781e.module.js
+✓ test/parser/suite/js/semantic/d070112b8eb9781e.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export {a as b};
+   |         ^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/d08e667cbd73912f.js
 error: Identifier 'a' has already been declared
    |
@@ -30378,7 +30612,13 @@ error: Cannot use import statement outside a module
  2 | export var local1 = null;
    |
 
-✗ test/parser/suite/js/semantic/e6a9e14c6a08a7f7.module.js
+✓ test/parser/suite/js/semantic/e6a9e14c6a08a7f7.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export { a as default }
+   |          ^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e6afbf91ee1901ea.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -30389,7 +30629,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/e6bf6eec9bccde06.module.js
+✓ test/parser/suite/js/semantic/e6bf6eec9bccde06.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | export default 1; export default 2;
+   |                   ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~ first exported here
+   |                   ~~~~~~~~~~~~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/e6c3fdbce65b4a81.js
 error: 'arguments' is not allowed in class field initializers or static blocks
    |
@@ -30520,7 +30768,16 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/e777215433af6809.module.js
+✓ test/parser/suite/js/semantic/e777215433af6809.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | var a; export default function() {} export { a as default };
+   |                                              ^^^^^^^^^^^^
+   |        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+   |                                              ~~~~~~~~~~~~ exported again here
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/e7bf7b11054d4926.js
 error: Identifier 'f' has already been declared
    |
@@ -32645,7 +32902,17 @@ error: 'with' statements are not allowed in strict mode
 15 | }
    |
 
-✗ test/parser/suite/js/semantic/f76cbe3bf9ba7ba9.module.js
+✓ test/parser/suite/js/semantic/f76cbe3bf9ba7ba9.module.js
+error: Duplicate export of 'default'
+   |
+ 1 | var x, y;
+ 2 | export default x;
+   | ~~~~~~~~~~~~~~~~~ first exported here
+ 3 | export { y as default };
+   |          ^^^^^^^^^^^^
+   |          ~~~~~~~~~~~~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/f7731db1b63ae405.module.js
 error: Use of undefined label 'undef'
    |
@@ -32760,7 +33027,15 @@ error: Cannot use import statement outside a module
  2 | export default function fName() {
    |
 
-✗ test/parser/suite/js/semantic/f7f9bb74dc8d96ac.module.js
+✓ test/parser/suite/js/semantic/f7f9bb74dc8d96ac.module.js
+error: Duplicate export of 'a'
+   |
+ 1 | export var a; export var a;
+   |                          ^
+   |            ~ first exported here
+   |                          ~ exported again here
+   |
+
 ✓ test/parser/suite/js/semantic/f8022f6d127e5825.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -33023,7 +33298,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/f9e0efceb5690fdd.module.js
+✓ test/parser/suite/js/semantic/f9e0efceb5690fdd.module.js
+error: Export 'a' is not defined
+   |
+ 1 | export { a }
+   |          ^
+   |
+
 ✓ test/parser/suite/js/semantic/f9f02016225431ab.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -33053,7 +33334,13 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/fa56fc427be3e801.module.js
+✓ test/parser/suite/js/semantic/fa56fc427be3e801.module.js
+error: Export 'b' is not defined
+   |
+ 1 | var a; export {b as a};
+   |                ^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/fa59ac4c41d26c14.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |

@@ -360,12 +360,13 @@ pub const Serializer = struct {
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
         const raw = self.tree.getString(data.raw);
+        const val = ast.StringLiteral.stripQuotes(raw);
         try self.begin("Literal", span);
         try self.field("value");
         if (self.in_jsx_attribute)
-            try self.writeString(raw[1 .. raw.len - 1])
+            try self.writeString(val)
         else
-            try self.writeDecodedString(raw[1 .. raw.len - 1]);
+            try self.writeDecodedString(val);
         try self.fieldString("raw", raw);
         try self.endObject();
     }

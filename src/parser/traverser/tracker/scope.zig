@@ -4,7 +4,7 @@ const ast = @import("../../ast.zig");
 const Allocator = std.mem.Allocator;
 
 /// ID for a scope. `.root` is the top-level scope, `.none` means no scope.
-pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
+pub const ScopeId = enum(u32) { root = 0, module = 1, none = std.math.maxInt(u32), _ };
 
 /// A single lexical scope in the JavaScript scope tree.
 pub const Scope = struct {
@@ -152,12 +152,12 @@ pub const ScopeTracker = struct {
             self.scopes.appendAssumeCapacity(.{
                 .node = self.tree.program,
                 .parent = .root,
-                .hoist_target = @enumFromInt(1),
+                .hoist_target = .module,
                 .kind = .module,
                 .flags = .{ .strict = true },
             });
 
-            self.scope_stack.push(@enumFromInt(1));
+            self.scope_stack.push(.module);
         }
     }
 
