@@ -394,6 +394,23 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors
+    pub fn enter_labeled_statement(self: *Self, stmt: ast.LabeledStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        _ = node_index;
+        const name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
+        var iter = ctx.path.ancestors();
+        _ = iter.next(); // skip current node
+        while (iter.next()) |i| {
+            const data = ctx.tree.getData(i);
+            if (data == .labeled_statement) {
+                if (eql(u8, ctx.tree.getString(ctx.tree.getData(data.labeled_statement.label).label_identifier.name), name))
+                    try self.report(ctx.tree.getSpan(stmt.label), try self.fmt("Duplicate label '{s}'", .{name}), .{});
+            }
+            if (isFunctionBoundary(data)) break;
+        }
+        return .proceed;
+    }
+
     fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
         if (!ctx.scope.isStrict()) return;
         if (matchStrictReserved(name)) |word|

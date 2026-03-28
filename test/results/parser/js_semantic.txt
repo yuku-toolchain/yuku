@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3313/3648 (90.82%)
-Failed:       335
+Passed:       3321/3648 (91.04%)
+Failed:       327
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -3833,7 +3833,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/1cab3eedbdd8ecca.js
+✓ test/parser/suite/js/semantic/1cab3eedbdd8ecca.js
+error: Duplicate label 'b'
+   |
+ 1 | function a(){ b: { b: ; } }
+   |                    ^
+   |
+
 ✓ test/parser/suite/js/semantic/1cb15c6ead031a45.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -5128,7 +5134,13 @@ error: Cannot use import statement outside a module
    |
 
 ✗ test/parser/suite/js/semantic/272a7c1b82c9c8b8.module.js
-✗ test/parser/suite/js/semantic/277a9ece19806bca.js
+✓ test/parser/suite/js/semantic/277a9ece19806bca.js
+error: Duplicate label '__proto__'
+   |
+ 1 | __proto__: __proto__: 1;
+   |            ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/277c83eda9f7d475.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
@@ -17451,7 +17463,13 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/8a6549558d83d0ee.js
+✓ test/parser/suite/js/semantic/8a6549558d83d0ee.js
+error: Duplicate label 'a'
+   |
+ 1 | a: a: ;
+   |    ^
+   |
+
 ✓ test/parser/suite/js/semantic/8a674055428121ad.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -24939,7 +24957,15 @@ error: Cannot use 'export' declaration outside a module
  2 | ;
    |
 
-✗ test/parser/suite/js/semantic/c4cb993de06c2d98.js
+✓ test/parser/suite/js/semantic/c4cb993de06c2d98.js
+error: Duplicate label 'x'
+   |
+ 2 |   static {
+ 3 |     x: x: 0;
+   |        ^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/c4ccf2776690d4f5.module.js
 error: 'let' is reserved in strict mode and cannot be used as a binding name
    |
@@ -28397,7 +28423,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
  4 | };
    |
 
-✗ test/parser/suite/js/semantic/db85c599bd0e1e91.js
+✓ test/parser/suite/js/semantic/db85c599bd0e1e91.js
+error: Duplicate label 'b'
+   |
+ 1 | function a(){ b: if(1) b: ; }
+   |                        ^
+   |
+
 ✓ test/parser/suite/js/semantic/dbdab36f976e9905.js
 error: Identifier 'a' has already been declared
    |
@@ -28609,7 +28641,15 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/dcf00e89cba214b4.module.js
+✓ test/parser/suite/js/semantic/dcf00e89cba214b4.module.js
+error: Duplicate label 'label'
+   |
+ 1 | label: {
+ 2 |   label: 0;
+   |   ^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/js/semantic/dcfa1e349a767208.js
 ✓ test/parser/suite/js/semantic/dd401fa99c1b551c.module.js
 error: 'package' is reserved in strict mode and cannot be used as a binding name
@@ -31750,7 +31790,13 @@ error: In strict mode code, functions can only be declared at top level or insid
    |
 
 ✗ test/parser/suite/js/semantic/f3943346692438ba.js
-✗ test/parser/suite/js/semantic/f3c9e78cb021ccd2.js
+✓ test/parser/suite/js/semantic/f3c9e78cb021ccd2.js
+error: Duplicate label 'b'
+   |
+ 1 | function a(){ b: b: ; }
+   |                  ^
+   |
+
 ✓ test/parser/suite/js/semantic/f3cbdea17f7d6a90.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -32271,7 +32317,13 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/f7df8b7ca4fd194d.js
+✓ test/parser/suite/js/semantic/f7df8b7ca4fd194d.js
+error: Duplicate label 'a'
+   |
+ 1 | a: while (true) { a: while (true) { } }
+   |                   ^
+   |
+
 ✓ test/parser/suite/js/semantic/f7e84e66ec02d570.js
 error: Illegal continue statement
    |
