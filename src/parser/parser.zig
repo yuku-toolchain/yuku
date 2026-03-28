@@ -118,7 +118,7 @@ pub const Parser = struct {
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = self.source[h.start..h.start + h.len],
+                        .value = self.b.sourceSlice(h.start, h.start + h.len),
                     } else null,
                 },
             },
@@ -131,7 +131,7 @@ pub const Parser = struct {
             // strip delimiters: '//' or '/*' from start, '*/' from block end
             const content_start = comment.start + 2;
             const content_end = if (comment.type == .block) comment.end - 2 else comment.end;
-            comment.value = self.source[content_start..content_end];
+            comment.value = self.b.sourceSlice(content_start, content_end);
         }
         self.b.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
@@ -181,7 +181,7 @@ pub const Parser = struct {
     /// Returns the resolved name for any identifier-like token.
     /// For escaped identifiers, decodes unicode escapes and allocates in the arena.
     /// For private identifiers, strips the leading '#'.
-    pub fn identifierName(self: *Parser, token: Token) Error![]const u8 {
+    pub fn identifierName(self: *Parser, token: Token) Error!ast.StringId {
         if (token.isEscaped()) {
             var buf: [256]u8 = undefined;
             const raw = self.source[token.span.start..token.span.end];
@@ -192,7 +192,7 @@ pub const Parser = struct {
             return try self.b.addString(decoded);
         }
         const start = token.span.start + @as(u32, @intFromBool(token.tag == .private_identifier));
-        return self.source[start..token.span.end];
+        return self.b.sourceSlice(start, token.span.end);
     }
 
     pub inline fn describeToken(self: *Parser, token: Token) []const u8 {

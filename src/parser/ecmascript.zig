@@ -20,14 +20,15 @@ pub const PropName = struct {
 pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
     switch (parser.b.getData(key)) {
         .identifier_name => |id| return .{
-            .name = id.name,
+            .name = parser.b.getString(id.name),
             .span = parser.b.getSpan(key),
             .is_string_literal = false,
         },
         .string_literal => |str| {
-            if (str.raw.len < 2) return null;
+            const raw = parser.b.getString(str.raw);
+            if (raw.len < 2) return null;
             return .{
-                .name = str.raw[1 .. str.raw.len - 1],
+                .name = raw[1 .. raw.len - 1],
                 .span = parser.b.getSpan(key),
                 .is_string_literal = true,
             };

@@ -36,7 +36,7 @@ const SemanticVisit = struct {
     allocator: Allocator,
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        const name = id.name;
+        const name = ctx.tree.getString(id.name);
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
@@ -104,20 +104,20 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkStrictReserved(id.name, node_index, ctx, "an identifier");
+        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "an identifier");
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkStrictReserved(id.name, node_index, ctx, "a label");
+        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "a label");
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
     pub fn enter_string_literal(self: *Self, lit: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.scope.isStrict()) return .proceed;
-        if (hasLegacyOctalEscape(lit.raw))
+        if (hasLegacyOctalEscape(ctx.tree.getString(lit.raw)))
             try self.report(ctx.tree.getSpan(node_index), "Octal escape sequences are not allowed in strict mode", .{
                 .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
             });
@@ -128,9 +128,11 @@ const SemanticVisit = struct {
     pub fn enter_numeric_literal(self: *Self, lit: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.scope.isStrict()) return .proceed;
 
-        if (!isLegacyNumericLiteral(lit.raw)) return .proceed;
+        const raw = ctx.tree.getString(lit.raw);
 
-        const is_octal = for (lit.raw) |c| {
+        if (!isLegacyNumericLiteral(raw)) return .proceed;
+
+        const is_octal = for (raw) |c| {
             if (c == '8' or c == '9') break false;
         } else true;
 
@@ -150,7 +152,7 @@ const SemanticVisit = struct {
     /// "It is a Syntax Error if FunctionBodyContainsUseStrict is true and
     ///  IsSimpleParameterList of FormalParameters is false."
     pub fn enter_directive(self: *Self, directive: ast.Directive, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (eql(u8, directive.value, "use strict")) {
+        if (eql(u8, ctx.tree.getString(directive.value), "use strict")) {
             var iter = ctx.path.ancestors();
             while (iter.next()) |i| {
                 switch (ctx.tree.getData(i)) {
@@ -295,7 +297,7 @@ const SemanticVisit = struct {
     pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module) {
             const meta = ctx.tree.getData(prop.meta);
-            if (meta == .identifier_name and eql(u8, meta.identifier_name.name, "import"))
+            if (meta == .identifier_name and eql(u8, ctx.tree.getString(meta.identifier_name.name), "import"))
                 try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
         }
         return .proceed;
@@ -354,7 +356,7 @@ const SemanticVisit = struct {
 
     pub fn enter_break_statement(self: *Self, stmt: ast.BreakStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (stmt.label != .null) {
-            const label_name = ctx.tree.getData(stmt.label).label_identifier.name;
+            const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
             switch (findLabel(ctx, label_name)) {
                 .found => {},
                 .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label '{s}'", .{label_name}), .{}),
@@ -371,7 +373,7 @@ const SemanticVisit = struct {
 
     pub fn enter_continue_statement(self: *Self, stmt: ast.ContinueStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (stmt.label != .null) {
-            const label_name = ctx.tree.getData(stmt.label).label_identifier.name;
+            const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
             switch (findLabelForContinue(ctx, label_name)) {
                 .found => {},
                 .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label '{s}'", .{label_name}), .{}),
@@ -422,7 +424,7 @@ const SemanticVisit = struct {
 
     fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
         if (tree.getData(node) != .identifier_reference) return false;
-        const name = tree.getData(node).identifier_reference.name;
+        const name = tree.getString(tree.getData(node).identifier_reference.name);
         return eql(u8, name, "eval") or eql(u8, name, "arguments");
     }
 
@@ -567,7 +569,7 @@ const SemanticVisit = struct {
         while (iter.next()) |i| {
             const data = ctx.tree.getData(i);
             if (data == .labeled_statement) {
-                const lbl_name = ctx.tree.getData(data.labeled_statement.label).label_identifier.name;
+                const lbl_name = ctx.tree.getString(ctx.tree.getData(data.labeled_statement.label).label_identifier.name);
                 if (eql(u8, lbl_name, name))
                     return if (crossed_boundary) .crossed_boundary else .found;
             }
@@ -585,7 +587,7 @@ const SemanticVisit = struct {
             const data = ctx.tree.getData(i);
             if (data == .labeled_statement) {
                 const ls = data.labeled_statement;
-                const lbl_name = ctx.tree.getData(ls.label).label_identifier.name;
+                const lbl_name = ctx.tree.getString(ctx.tree.getData(ls.label).label_identifier.name);
                 if (eql(u8, lbl_name, name)) {
                     if (crossed_boundary) return .crossed_boundary;
                     const body = ctx.tree.getData(ls.body);
@@ -615,7 +617,7 @@ const SemanticVisit = struct {
     }
 
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
-        const name = id.name;
+        const name = ctx.tree.getString(id.name);
         const current_span = ctx.tree.getSpan(node_index);
         const existing_span = ctx.tree.getSpan(existing.node);
 

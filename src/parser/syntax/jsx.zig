@@ -221,7 +221,7 @@ fn parseJsxChildren(parser: *Parser, gt_end: u32) Error!?ast.IndexRange {
         if (text_token.len() > 0) {
             const text_node = try parser.b.createNode(.{
                 .jsx_text = .{
-                    .raw = parser.source[text_token.span.start..text_token.span.end],
+                    .raw = parser.b.sourceSlice(text_token.span.start, text_token.span.end),
                 },
             }, text_token.span);
 

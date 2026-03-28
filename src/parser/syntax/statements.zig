@@ -99,7 +99,7 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeInd
     return try parser.b.createNode(.{
         .directive = .{
             .expression = expression,
-            .value = parser.source[value_start..value_end],
+            .value = parser.b.sourceSlice(value_start, value_end),
         },
     }, .{
         .start = string_literal_span.start,

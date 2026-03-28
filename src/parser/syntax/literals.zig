@@ -11,7 +11,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.b.createNode(.{
         .string_literal = .{
-            .raw = token.text(parser.source),
+            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }
@@ -38,14 +38,14 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.b.createNode(.{
             .bigint_literal = .{
-                .raw = token.text(parser.source),
+                .raw = parser.b.sourceSlice(token.span.start, token.span.end),
             },
         }, token.span);
     }
 
     return try parser.b.createNode(.{
         .numeric_literal = .{
-            .raw = token.text(parser.source),
+            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
@@ -61,10 +61,15 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithRescannedToken(parser.lexer.createToken(.regex_literal, regex.span.start, regex.span.end)) orelse return null;
 
+    const pattern_start = regex.span.start + 1;
+    const pattern_end = pattern_start + @as(u32, @intCast(regex.pattern.len));
+    const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
+    const flags_end = regex.span.end;
+
     return try parser.b.createNode(.{
         .regexp_literal = .{
-            .pattern = parser.source[regex.span.start + 1..regex.span.start + 1 + @as(u32, @intCast(regex.pattern.len))],
-            .flags = parser.source[regex.span.end - @as(u32, @intCast(regex.flags.len))..regex.span.end],
+            .pattern = parser.b.sourceSlice(pattern_start, pattern_end),
+            .flags = parser.b.sourceSlice(flags_start, flags_end),
         },
     }, regex.span);
 }
@@ -156,7 +161,7 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
 
     return parser.b.createNode(.{
         .template_element = .{
-            .raw = parser.source[span.start..span.end],
+            .raw = parser.b.sourceSlice(span.start, span.end),
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },

@@ -98,7 +98,7 @@ pub const Lang = enum {
 pub const Comment = struct {
     type: Type,
     /// Comment content (without delimiters).
-    value: []const u8 = "",
+    value: StringId = .empty,
     start: u32,
     end: u32,
 
@@ -115,6 +115,39 @@ pub const Comment = struct {
     };
 };
 
+pub const StringId = struct {
+    start: u32 = 0,
+    len: u32 = 0,
+
+    pub const empty: StringId = .{};
+};
+
+/// String storage for the AST. Source-range StringIds reference the original
+/// source text directly. Additional strings (escaped identifiers, transforms)
+/// are appended to the extra buffer via `addString()`.
+pub const StringPool = struct {
+    source: []const u8 = "",
+    extra: std.ArrayList(u8) = .empty,
+
+    pub fn get(self: *const StringPool, id: StringId) []const u8 {
+        if (id.len == 0) return "";
+        const src_len: u32 = @intCast(self.source.len);
+        if (id.start < src_len) return self.source[id.start..][0..id.len];
+        return self.extra.items[id.start - src_len ..][0..id.len];
+    }
+
+    pub inline fn sourceSlice(_: *const StringPool, start: u32, end: u32) StringId {
+        return .{ .start = start, .len = end - start };
+    }
+
+    pub fn addString(self: *StringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
+        if (str.len == 0) return .empty;
+        const src_len: u32 = @intCast(self.source.len);
+        const extra_start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
+        try self.extra.appendSlice(alloc, str);
+        return .{ .start = extra_start, .len = @intCast(str.len) };
+    }
+};
 
 /// The AST. Backed by growable arrays and an arena allocator.
 ///
@@ -138,6 +171,8 @@ pub const Tree = struct {
     /// The original source text passed to the parser.
     /// Empty for trees built programmatically with `initEmpty()`.
     source: []const u8 = "",
+    /// String pool for AST node string fields.
+    strings: StringPool = .{},
     /// Source type (script or module).
     source_type: SourceType = .module,
     /// Language variant (js, ts, jsx, tsx, dts).
@@ -148,6 +183,7 @@ pub const Tree = struct {
         return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
             .source = source,
+            .strings = .{ .source = source },
         };
     }
 
@@ -233,10 +269,16 @@ pub const Tree = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Allocates a copy of `str` in the tree's arena.
-    /// Use for programmatic AST building and transforms.
-    pub fn addString(self: *Tree, str: []const u8) error{OutOfMemory}![]const u8 {
-        return self.arena.allocator().dupe(u8, str);
+    pub inline fn sourceSlice(self: *const Tree, start: u32, end: u32) StringId {
+        return self.strings.sourceSlice(start, end);
+    }
+
+    pub fn addString(self: *Tree, str: []const u8) error{OutOfMemory}!StringId {
+        return self.strings.addString(self.arena.allocator(), str);
+    }
+
+    pub inline fn getString(self: *const Tree, id: StringId) []const u8 {
+        return self.strings.get(id);
     }
 };
 
@@ -859,12 +901,12 @@ pub const WithStatement = struct {
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
     /// Raw string text including quotes.
-    raw: []const u8,
+    raw: StringId = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
-    raw: []const u8,
+    raw: StringId = .empty,
     kind: Kind,
 
     pub const Kind = enum {
@@ -887,7 +929,7 @@ pub const NumericLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
-    raw: []const u8,
+    raw: StringId = .empty,
 };
 
 pub const BooleanLiteral = struct {
@@ -896,8 +938,8 @@ pub const BooleanLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-regular-expression-literals
 pub const RegExpLiteral = struct {
-    pattern: []const u8,
-    flags: []const u8,
+    pattern: StringId = .empty,
+    flags: StringId = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-template-literals
@@ -910,7 +952,7 @@ pub const TemplateLiteral = struct {
 
 /// quasi
 pub const TemplateElement = struct {
-    raw: []const u8,
+    raw: StringId = .empty,
     tail: bool,
     /// True when this quasi's cooked template value is undefined per
     /// ECMAScript TV semantics.
@@ -920,29 +962,29 @@ pub const TemplateElement = struct {
 /// used in expressions
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const IdentifierReference = struct {
-    name: []const u8,
+    name: StringId = .empty,
 };
 
 /// `#name`.
 /// `name` refers to the identifier name without the `#` prefix.
 pub const PrivateIdentifier = struct {
-    name: []const u8,
+    name: StringId = .empty,
 };
 
 /// used in declarations
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const BindingIdentifier = struct {
-    name: []const u8,
+    name: StringId = .empty,
 };
 
 /// property keys, meta properties
 pub const IdentifierName = struct {
-    name: []const u8,
+    name: StringId = .empty,
 };
 
 /// https://tc39.es/ecma262/#prod-LabelIdentifier
 pub const LabelIdentifier = struct {
-    name: []const u8,
+    name: StringId = .empty,
 };
 
 /// `pattern = init`
@@ -1028,7 +1070,7 @@ pub const Program = struct {
 };
 
 pub const Hashbang = struct {
-    value: []const u8,
+    value: StringId = .empty,
 };
 
 /// `"use strict";`
@@ -1036,7 +1078,7 @@ pub const Directive = struct {
     /// StringLiteral
     expression: NodeIndex,
     /// Directive value without quotes.
-    value: []const u8,
+    value: StringId = .empty,
 };
 
 pub const FunctionType = enum {
@@ -1378,7 +1420,7 @@ pub const JSXClosingFragment = struct {};
 /// used in jsx tag names and attributes
 /// https://facebook.github.io/jsx/#prod-JSXIdentifier
 pub const JSXIdentifier = struct {
-    name: []const u8,
+    name: StringId = .empty,
 };
 
 /// `<namespace:name />`
@@ -1427,7 +1469,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// text content inside JSX elements
 pub const JSXText = struct {
-    raw: []const u8,
+    raw: StringId = .empty,
 };
 
 /// `{...children}`

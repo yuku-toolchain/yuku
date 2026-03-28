@@ -1,7 +1,7 @@
 suite/js/fail
 =============
-Passed:       3689/3689 (100.00%)
-Failed:       0
+Passed:       3688/3689 (99.97%)
+Failed:       1
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
 error: Expected ',' or ')' in parenthesized expression, but found ';'
@@ -6487,16 +6487,7 @@ error: Unterminated string literal
    = help: Try adding a closing quote here to complete the string
 
 
-✓ test/parser/suite/js/fail/2d7166bdfb4956c9.js
-error: 'for (async of ...)' is not allowed, it is ambiguous with 'for await'
-   |
- 1 | var async;
- 2 | for (async of [1]) ;
-   |      ^^^^^
-   |
-   = help: Use a different variable name or add parentheses: 'for ((async) of ...)'
-
-
+✗ test/parser/suite/js/fail/2d7166bdfb4956c9.js
 ✓ test/parser/suite/js/fail/2d79e1f8deac924e.module.js
 error: Keywords cannot contain escape characters
    |

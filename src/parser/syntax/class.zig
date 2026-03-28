@@ -248,7 +248,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         const data = parser.b.getData(key);
 
         if (data == .private_identifier) {
-            if (std.mem.eql(u8, data.private_identifier.name, "constructor")) {
+            if (std.mem.eql(u8, parser.b.getString(data.private_identifier.name), "constructor")) {
                 try parser.report(
                     parser.b.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
