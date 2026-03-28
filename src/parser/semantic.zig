@@ -1,4 +1,5 @@
 const std = @import("std");
+const util = @import("util");
 const traverser = @import("traverser/root.zig");
 const ast = @import("ast.zig");
 const ecmascript = @import("ecmascript.zig");
@@ -42,7 +43,7 @@ const SemanticVisit = struct {
         if (ctx.scope.isStrict()) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding name");
 
-            if (eql(u8, name, "eval") or eql(u8, name, "arguments"))
+            if (isEvalOrArguments(name))
                 try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
         } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
             eql(u8, name, "let"))
@@ -117,10 +118,12 @@ const SemanticVisit = struct {
     /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
     pub fn enter_string_literal(self: *Self, lit: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.scope.isStrict()) return .proceed;
-        if (hasLegacyOctalEscape(ctx.tree.getString(lit.raw)))
+
+        if (util.Utf.hasOctalEscape(ctx.tree.getString(lit.raw)))
             try self.report(ctx.tree.getSpan(node_index), "Octal escape sequences are not allowed in strict mode", .{
                 .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
             });
+
         return .proceed;
     }
 
@@ -238,14 +241,14 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-update-expressions-static-semantics-early-errors
     pub fn enter_update_expression(self: *Self, expr: ast.UpdateExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArguments(ctx.tree, expr.argument))
+        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.argument))
             try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-assignment-operators-static-semantics-early-errors
     pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArguments(ctx.tree, expr.left))
+        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.left))
             try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
         return .proceed;
     }
@@ -397,17 +400,21 @@ const SemanticVisit = struct {
             try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is reserved in strict mode and cannot be used as " ++ as_what, .{word}), .{});
     }
 
+    /// https://tc39.es/ecma262/#sec-keywords-and-reserved-words
     fn matchStrictReserved(name: []const u8) ?[]const u8 {
-        const words = [_][]const u8{ "let", "yield", "static", "public", "private", "package", "protected", "interface", "implements" };
         return switch (name.len) {
-            3 => if (eql(u8, name, "let")) words[0] else null,
-            5 => if (eql(u8, name, "yield")) words[1] else null,
-            6 => if (eql(u8, name, "static")) words[2] else if (eql(u8, name, "public")) words[3] else null,
-            7 => if (eql(u8, name, "private")) words[4] else if (eql(u8, name, "package")) words[5] else null,
-            9 => if (eql(u8, name, "protected")) words[6] else if (eql(u8, name, "interface")) words[7] else null,
-            10 => if (eql(u8, name, "implements")) words[8] else null,
+            3 => check(name, "let"),
+            5 => check(name, "yield"),
+            6 => check(name, "static") orelse check(name, "public"),
+            7 => check(name, "private") orelse check(name, "package"),
+            9 => check(name, "protected") orelse check(name, "interface"),
+            10 => check(name, "implements"),
             else => null,
         };
+    }
+
+    fn check(name: []const u8, keyword: []const u8) ?[]const u8 {
+        return if (eql(u8, name, keyword)) keyword else null;
     }
 
     fn checkForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
@@ -422,10 +429,13 @@ const SemanticVisit = struct {
         }
     }
 
-    fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-        if (tree.getData(node) != .identifier_reference) return false;
-        const name = tree.getString(tree.getData(node).identifier_reference.name);
+    fn isEvalOrArguments(name: []const u8) bool {
         return eql(u8, name, "eval") or eql(u8, name, "arguments");
+    }
+
+    fn isEvalOrArgumentsRef(tree: *const ast.Tree, node: ast.NodeIndex) bool {
+        return tree.getData(node) == .identifier_reference and
+            isEvalOrArguments(tree.getString(tree.getData(node).identifier_reference.name));
     }
 
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
@@ -436,25 +446,6 @@ const SemanticVisit = struct {
                 else => return current,
             }
         }
-    }
-
-    /// checks whether a string literal contains a legacy octal escape
-    /// (\0n, \1-\7) or non-octal decimal escape (\8, \9).
-    fn hasLegacyOctalEscape(raw: []const u8) bool {
-        if (raw.len < 3) return false;
-        var i: usize = 1; // skip opening quote
-        const end = raw.len - 1; // skip closing quote
-        while (i < end) : (i += 1) {
-            if (raw[i] != '\\') continue;
-            i += 1;
-            if (i >= end) break;
-            switch (raw[i]) {
-                '1'...'9' => return true,
-                '0' => if (i + 1 < end and raw[i + 1] >= '0' and raw[i + 1] <= '9') return true,
-                else => {},
-            }
-        }
-        return false;
     }
 
     /// leading zero followed by digits, legacy octal (077) or leading-zero decimal (089).

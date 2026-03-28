@@ -155,6 +155,23 @@ pub fn decodeEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
     return buf[0..out];
 }
 
+/// checks whether a string contains a legacy octal escape
+/// (\0n, \1-\7) or non-octal decimal escape (\8, \9).
+pub fn hasOctalEscape(str: []const u8) bool {
+    var i: usize = 0;
+    while (i < str.len) : (i += 1) {
+        if (str[i] != '\\') continue;
+        i += 1;
+        if (i >= str.len) break;
+        switch (str[i]) {
+            '1'...'9' => return true,
+            '0' => if (i + 1 < str.len and str[i + 1] >= '0' and str[i + 1] <= '9') return true,
+            else => {},
+        }
+    }
+    return false;
+}
+
 inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
 }
