@@ -11,6 +11,8 @@ const Symbol = semantic.Symbol;
 const Action = traverser.Action;
 const SemanticCtx = semantic.Ctx;
 
+const eql = std.mem.eql;
+
 pub const AnalysisError = Allocator.Error;
 
 /// Runs semantic analysis on a tree.
@@ -34,15 +36,16 @@ const SemanticVisit = struct {
     allocator: Allocator,
 
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        const name = ctx.tree.getString(id.name);
+        const name = id.name;
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
-            if (std.mem.eql(u8, name, "eval") or
-                std.mem.eql(u8, name, "arguments"))
+            try self.checkStrictReserved(name, node_index, ctx, "a binding name");
+
+            if (eql(u8, name, "eval") or eql(u8, name, "arguments"))
                 try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
         } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
-            std.mem.eql(u8, name, "let"))
+            eql(u8, name, "let"))
         {
             try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a 'let' declaration", .{});
         }
@@ -99,11 +102,55 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
+    pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkStrictReserved(id.name, node_index, ctx, "an identifier");
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
+    pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkStrictReserved(id.name, node_index, ctx, "a label");
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
+    pub fn enter_string_literal(self: *Self, lit: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.scope.isStrict()) return .proceed;
+        if (hasLegacyOctalEscape(lit.raw))
+            try self.report(ctx.tree.getSpan(node_index), "Octal escape sequences are not allowed in strict mode", .{
+                .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
+            });
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
+    pub fn enter_numeric_literal(self: *Self, lit: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.scope.isStrict()) return .proceed;
+
+        if (!isLegacyNumericLiteral(lit.raw)) return .proceed;
+
+        const is_octal = for (lit.raw) |c| {
+            if (c == '8' or c == '9') break false;
+        } else true;
+
+        try self.report(ctx.tree.getSpan(node_index), if (is_octal)
+            "Octal literals are not allowed in strict mode"
+        else
+            "Decimals with leading zeros are not allowed in strict mode", .{
+            .help = if (is_octal)
+                "Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent"
+            else
+                "Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation",
+        });
+        return .proceed;
+    }
+
     /// https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
     /// "It is a Syntax Error if FunctionBodyContainsUseStrict is true and
     ///  IsSimpleParameterList of FormalParameters is false."
     pub fn enter_directive(self: *Self, directive: ast.Directive, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ecmascript.eqlUseStrict(ctx.tree.getString(directive.value))) {
+        if (eql(u8, directive.value, "use strict")) {
             var iter = ctx.path.ancestors();
             while (iter.next()) |i| {
                 switch (ctx.tree.getData(i)) {
@@ -246,11 +293,10 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-left-hand-side-expressions-static-semantics-early-errors
     pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module and
-            ctx.tree.getData(prop.meta) == .identifier_name and
-            std.mem.eql(u8, ctx.tree.getString(ctx.tree.getData(prop.meta).identifier_name.name), "import"))
-        {
-            try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
+        if (ctx.tree.source_type != .module) {
+            const meta = ctx.tree.getData(prop.meta);
+            if (meta == .identifier_name and eql(u8, meta.identifier_name.name, "import"))
+                try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
         }
         return .proceed;
     }
@@ -308,7 +354,7 @@ const SemanticVisit = struct {
 
     pub fn enter_break_statement(self: *Self, stmt: ast.BreakStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (stmt.label != .null) {
-            const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
+            const label_name = ctx.tree.getData(stmt.label).label_identifier.name;
             switch (findLabel(ctx, label_name)) {
                 .found => {},
                 .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label '{s}'", .{label_name}), .{}),
@@ -325,7 +371,7 @@ const SemanticVisit = struct {
 
     pub fn enter_continue_statement(self: *Self, stmt: ast.ContinueStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (stmt.label != .null) {
-            const label_name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
+            const label_name = ctx.tree.getData(stmt.label).label_identifier.name;
             switch (findLabelForContinue(ctx, label_name)) {
                 .found => {},
                 .not_found => try self.report(ctx.tree.getSpan(node_index), try self.fmt("Use of undefined label '{s}'", .{label_name}), .{}),
@@ -343,6 +389,25 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
+        if (!ctx.scope.isStrict()) return;
+        if (matchStrictReserved(name)) |word|
+            try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is reserved in strict mode and cannot be used as " ++ as_what, .{word}), .{});
+    }
+
+    fn matchStrictReserved(name: []const u8) ?[]const u8 {
+        const words = [_][]const u8{ "let", "yield", "static", "public", "private", "package", "protected", "interface", "implements" };
+        return switch (name.len) {
+            3 => if (eql(u8, name, "let")) words[0] else null,
+            5 => if (eql(u8, name, "yield")) words[1] else null,
+            6 => if (eql(u8, name, "static")) words[2] else if (eql(u8, name, "public")) words[3] else null,
+            7 => if (eql(u8, name, "private")) words[4] else if (eql(u8, name, "package")) words[5] else null,
+            9 => if (eql(u8, name, "protected")) words[6] else if (eql(u8, name, "interface")) words[7] else null,
+            10 => if (eql(u8, name, "implements")) words[8] else null,
+            else => null,
+        };
+    }
+
     fn checkForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
         if (ctx.tree.getData(left) != .variable_declaration) return;
         const decl = ctx.tree.getData(left).variable_declaration;
@@ -355,6 +420,12 @@ const SemanticVisit = struct {
         }
     }
 
+    fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
+        if (tree.getData(node) != .identifier_reference) return false;
+        const name = tree.getData(node).identifier_reference.name;
+        return eql(u8, name, "eval") or eql(u8, name, "arguments");
+    }
+
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
         var current = node;
         while (true) {
@@ -365,11 +436,28 @@ const SemanticVisit = struct {
         }
     }
 
-    fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-        return tree.getData(node) == .identifier_reference and blk: {
-            const name = tree.getString(tree.getData(node).identifier_reference.name);
-            break :blk std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
-        };
+    /// checks whether a string literal contains a legacy octal escape
+    /// (\0n, \1-\7) or non-octal decimal escape (\8, \9).
+    fn hasLegacyOctalEscape(raw: []const u8) bool {
+        if (raw.len < 3) return false;
+        var i: usize = 1; // skip opening quote
+        const end = raw.len - 1; // skip closing quote
+        while (i < end) : (i += 1) {
+            if (raw[i] != '\\') continue;
+            i += 1;
+            if (i >= end) break;
+            switch (raw[i]) {
+                '1'...'9' => return true,
+                '0' => if (i + 1 < end and raw[i + 1] >= '0' and raw[i + 1] <= '9') return true,
+                else => {},
+            }
+        }
+        return false;
+    }
+
+    /// leading zero followed by digits, legacy octal (077) or leading-zero decimal (089).
+    fn isLegacyNumericLiteral(raw: []const u8) bool {
+        return raw.len >= 2 and raw[0] == '0' and raw[1] >= '0' and raw[1] <= '9';
     }
 
     const SuperCallValidity = enum { valid, not_in_constructor, no_extends };
@@ -479,8 +567,8 @@ const SemanticVisit = struct {
         while (iter.next()) |i| {
             const data = ctx.tree.getData(i);
             if (data == .labeled_statement) {
-                const lbl_name = ctx.tree.getString(ctx.tree.getData(data.labeled_statement.label).label_identifier.name);
-                if (std.mem.eql(u8, lbl_name, name))
+                const lbl_name = ctx.tree.getData(data.labeled_statement.label).label_identifier.name;
+                if (eql(u8, lbl_name, name))
                     return if (crossed_boundary) .crossed_boundary else .found;
             }
             if (isFunctionBoundary(data)) crossed_boundary = true;
@@ -497,8 +585,8 @@ const SemanticVisit = struct {
             const data = ctx.tree.getData(i);
             if (data == .labeled_statement) {
                 const ls = data.labeled_statement;
-                const lbl_name = ctx.tree.getString(ctx.tree.getData(ls.label).label_identifier.name);
-                if (std.mem.eql(u8, lbl_name, name)) {
+                const lbl_name = ctx.tree.getData(ls.label).label_identifier.name;
+                if (eql(u8, lbl_name, name)) {
                     if (crossed_boundary) return .crossed_boundary;
                     const body = ctx.tree.getData(ls.body);
                     if (isIterationStatement(body) or body == .labeled_statement) return .found;
@@ -527,7 +615,7 @@ const SemanticVisit = struct {
     }
 
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {
-        const name = ctx.tree.getString(id.name);
+        const name = id.name;
         const current_span = ctx.tree.getSpan(node_index);
         const existing_span = ctx.tree.getSpan(existing.node);
 

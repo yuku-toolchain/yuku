@@ -343,7 +343,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
 
             declaration = try parser.b.createNode(.{
                 .identifier_reference = .{
-                    .name = parser.b.sourceSlice(async_start, async_end),
+                    .name = "async",
                 },
             }, .{ .start = async_start, .end = async_end });
         }
@@ -444,7 +444,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             const local_tag: TokenTag = @enumFromInt(@intFromEnum(local_tags[i]));
 
             if (local_tag.isReserved()) {
-                const local_name = parser.b.getString(local_data.identifier_name.name);
+                const local_name = local_data.identifier_name.name;
 
                 try parser.report(
                     local_span,

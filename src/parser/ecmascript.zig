@@ -6,33 +6,32 @@ const utf = @import("util").Utf;
 pub const PropName = struct {
     name: []const u8,
     span: ast.Span,
+    is_string_literal: bool,
 
-    /// compare the StringValue of this PropName against an expected ASCII name.
+    /// compares the StringValue against an expected name.
+    /// uses escape-resolving comparison for string literal keys.
     pub fn eql(self: PropName, expected: []const u8) bool {
-        return eqlStringValue(self.name, expected);
+        if (self.is_string_literal) return eqlStringValue(self.name, expected);
+        return std.mem.eql(u8, self.name, expected);
     }
 };
 
 /// https://tc39.es/ecma262/#sec-static-semantics-propname
 pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
-    const key_data = parser.b.getData(key);
-    switch (key_data) {
-        .identifier_name => |id| {
-            return .{
-                .name = parser.b.getString(id.name),
-                .span = parser.b.getSpan(key),
-            };
+    switch (parser.b.getData(key)) {
+        .identifier_name => |id| return .{
+            .name = id.name,
+            .span = parser.b.getSpan(key),
+            .is_string_literal = false,
         },
         .string_literal => |str| {
-            const raw = parser.b.getString(str.raw);
-            if (raw.len < 2) return null;
+            if (str.raw.len < 2) return null;
             return .{
-                .name = raw[1 .. raw.len - 1],
+                .name = str.raw[1 .. str.raw.len - 1],
                 .span = parser.b.getSpan(key),
+                .is_string_literal = true,
             };
         },
-        // currently only handles identifier_name and string_literal,
-        // which is sufficient for the checks in class.zig, extend when needed.
         else => return null,
     }
 }
@@ -78,8 +77,4 @@ pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameter
     }
 
     return null;
-}
-
-pub fn eqlUseStrict(text: []const u8) bool {
-    return std.mem.eql(u8, text, "use strict");
 }

@@ -11,7 +11,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.b.createNode(.{
         .string_literal = .{
-            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
+            .raw = token.lexeme,
         },
     }, token.span);
 }
@@ -38,14 +38,14 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.b.createNode(.{
             .bigint_literal = .{
-                .raw = parser.b.sourceSlice(token.span.start, token.span.end),
+                .raw = token.lexeme,
             },
         }, token.span);
     }
 
     return try parser.b.createNode(.{
         .numeric_literal = .{
-            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
+            .raw = token.lexeme,
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
@@ -63,8 +63,8 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.b.createNode(.{
         .regexp_literal = .{
-            .pattern = parser.b.sourceSlice(regex.span.start + 1, regex.span.start + 1 + @as(u32, @intCast(regex.pattern.len))),
-            .flags = parser.b.sourceSlice(regex.span.end - @as(u32, @intCast(regex.flags.len)), regex.span.end),
+            .pattern = parser.source[regex.span.start + 1..regex.span.start + 1 + @as(u32, @intCast(regex.pattern.len))],
+            .flags = parser.source[regex.span.end - @as(u32, @intCast(regex.flags.len))..regex.span.end],
         },
     }, regex.span);
 }
@@ -156,7 +156,7 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
 
     return parser.b.createNode(.{
         .template_element = .{
-            .raw = parser.b.sourceSlice(span.start, span.end),
+            .raw = parser.source[span.start..span.end],
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },
@@ -181,37 +181,28 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
 
     const token = parser.current_token;
-
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(.{
-        .identifier_reference = .{
-            .name = parser.b.sourceSlice(token.span.start, token.span.end),
-        },
+        .identifier_reference = .{ .name = token.lexeme },
     }, token.span);
 }
 
 pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-
     try parser.advance() orelse return null;
 
     return try parser.b.createNode(.{
-        .private_identifier = .{
-            .name = parser.b.sourceSlice(token.span.start + 1, token.span.end),
-        },
+        .private_identifier = .{ .name = token.lexeme },
     }, token.span);
 }
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(.{
-        .identifier_name = .{
-            .name = parser.b.sourceSlice(token.span.start, token.span.end),
-        },
+        .identifier_name = .{ .name = token.lexeme },
     }, token.span);
 }
 
@@ -222,9 +213,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     return try parser.b.createNode(.{
-        .label_identifier = .{
-            .name = parser.b.sourceSlice(current.span.start, current.span.end),
-        },
+        .label_identifier = .{ .name = current.lexeme },
     }, current.span);
 }
 
@@ -243,16 +232,6 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         try parser.report(
             token.span,
             try parser.fmt("'{s}' is a reserved word and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
-            .{},
-        );
-
-        return false;
-    }
-
-    if (token.tag.isStrictModeReserved() and parser.isStrictMode()) {
-        try parser.report(
-            token.span,
-            try parser.fmt("'{s}' is reserved in strict mode and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
             .{},
         );
 

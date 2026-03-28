@@ -31,8 +31,8 @@ pub const Serializer = struct {
         var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.nodes.len * 64 + 4096);
         errdefer buffer.deinit(allocator);
 
-        const pos_map: ?[]u32 = if (tree.strings.source.len > 0)
-            try buildUtf16PosMap(allocator, tree.strings.source)
+        const pos_map: ?[]u32 = if (tree.source.len > 0)
+            try buildUtf16PosMap(allocator, tree.source)
         else
             null;
 
@@ -140,7 +140,7 @@ pub const Serializer = struct {
         try self.fieldString("sourceType", if (data.source_type == .module) "module" else "script");
         try self.field("hashbang");
         if (data.hashbang) |h| {
-            try self.writeString(self.tree.getString(h.value));
+            try self.writeString(h.value);
         } else {
             try self.writeNull();
         }
@@ -154,7 +154,7 @@ pub const Serializer = struct {
     fn writeDirective(self: *Self, data: ast.Directive, span: ast.Span) !void {
         try self.begin("ExpressionStatement", span);
         try self.fieldNode("expression", data.expression);
-        try self.fieldString("directive", self.tree.getString(data.value));
+        try self.fieldString("directive", data.value);
         try self.endObject();
     }
 
@@ -332,12 +332,12 @@ pub const Serializer = struct {
 
     fn writeJSXIdentifier(self: *Self, data: ast.JSXIdentifier, span: ast.Span) !void {
         try self.begin("JSXIdentifier", span);
-        try self.fieldString("name", self.tree.getString(data.name));
+        try self.fieldString("name", data.name);
         try self.endObject();
     }
 
     fn writeJSXText(self: *Self, data: ast.JSXText, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = data.raw;
         try self.begin("JSXText", span);
         try self.fieldString("value", raw);
         try self.fieldString("raw", raw);
@@ -347,19 +347,19 @@ pub const Serializer = struct {
     fn writeIdentifier(self: *Self, data: anytype, span: ast.Span) !void {
         try self.begin("Identifier", span);
         try self.field("name");
-        try self.writeDecodedString(self.tree.getString(data.name));
+        try self.writeDecodedString(data.name);
         try self.endObject();
     }
 
     fn writePrivateIdentifier(self: *Self, data: ast.PrivateIdentifier, span: ast.Span) !void {
         try self.begin("PrivateIdentifier", span);
         try self.field("name");
-        try self.writeDecodedString(self.tree.getString(data.name));
+        try self.writeDecodedString(data.name);
         try self.endObject();
     }
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = data.raw;
         try self.begin("Literal", span);
         try self.field("value");
         if (self.in_jsx_attribute)
@@ -371,7 +371,7 @@ pub const Serializer = struct {
     }
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = data.raw;
         var buf: [64]u8 = undefined;
         const num_str: ?[]const u8 = parseJSNumeric(&buf, raw) catch null;
 
@@ -391,7 +391,7 @@ pub const Serializer = struct {
     }
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = data.raw;
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, "(BigInt) ");
         try self.scratch.appendSlice(self.allocator, raw);
@@ -422,8 +422,8 @@ pub const Serializer = struct {
     }
 
     fn writeRegExpLiteral(self: *Self, data: ast.RegExpLiteral, span: ast.Span) !void {
-        const pattern = self.tree.getString(data.pattern);
-        const flags = self.tree.getString(data.flags);
+        const pattern = data.pattern;
+        const flags = data.flags;
 
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, flags);
@@ -443,7 +443,7 @@ pub const Serializer = struct {
     }
 
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = data.raw;
 
         // normalize line endings: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
         self.scratch.clearRetainingCapacity();
@@ -535,7 +535,7 @@ pub const Serializer = struct {
             }
             try self.beginObject();
             try self.fieldString("type", comment.type.toString());
-            try self.fieldString("value", self.tree.getString(comment.value));
+            try self.fieldString("value", comment.value);
             try self.fieldPos("start", comment.start);
             try self.fieldPos("end", comment.end);
             try self.endObject();

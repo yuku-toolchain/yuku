@@ -113,7 +113,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
         } else {
             // it's a key named "async"
             key = try parser.b.createNode(
-                .{ .identifier_name = .{ .name = parser.b.sourceSlice(async_token.span.start, async_token.span.end) } },
+                .{ .identifier_name = .{ .name = async_token.lexeme } },
                 async_token.span,
             );
         }
@@ -138,7 +138,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
                 kind = if (cur_tag == .get) .get else .set;
             } else {
                 key = try parser.b.createNode(
-                    .{ .identifier_name = .{ .name = parser.b.sourceSlice(get_set_token.span.start, get_set_token.span.end) } },
+                    .{ .identifier_name = .{ .name = get_set_token.lexeme } },
                     get_set_token.span,
                 );
             }

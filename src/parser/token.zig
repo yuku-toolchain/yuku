@@ -415,23 +415,19 @@ pub inline fn flagMask(comptime flag: TokenFlag) u8 {
 pub const Token = struct {
     span: Span,
     tag: TokenTag,
-
     flags: u8 = 0,
 
+    /// The token's text content. For identifiers, this is the escape-resolved
+    /// name (and `#` stripped for private identifiers). For all other tokens,
+    /// this is the raw source text for the token's span.
+    lexeme: []const u8 = "",
+
     pub inline fn eof(pos: u32) Token {
-        return Token{
-            .span = .{ .start = pos, .end = pos },
-            .tag = .eof,
-            .flags = 0,
-        };
+        return .{ .span = .{ .start = pos, .end = pos }, .tag = .eof };
     }
 
     pub inline fn len(self: Token) u32 {
         return self.span.end - self.span.start;
-    }
-
-    pub inline fn text(self: Token, source: []const u8) []const u8 {
-        return source[self.span.start..self.span.end];
     }
 
     pub inline fn has(self: Token, comptime flag: TokenFlag) bool {
@@ -484,5 +480,5 @@ pub const Precedence = struct {
 };
 
 comptime {
-    std.debug.assert((@sizeOf(Token) <= 16));
+    std.debug.assert((@sizeOf(Token) <= 32));
 }

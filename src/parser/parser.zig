@@ -34,8 +34,6 @@ const ParserContext = struct {
 };
 
 const ParserState = struct {
-    /// Whether the parser is currently in strict mode.
-    strict_mode: bool = false,
     /// Tracks if the cover (array or object) we are parsing has a trailing comma
     /// value is the start index of the cover
     cover_has_trailing_comma: ?u32 = null,
@@ -94,8 +92,6 @@ pub const Parser = struct {
 
         self.lexer = try lexer.Lexer.init(self.source, alloc, self.source_type);
 
-        if (self.isModule()) _ = self.enterStrictMode();
-
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
         self.context.yield_is_keyword = false;
@@ -121,7 +117,7 @@ pub const Parser = struct {
                     .source_type = if (self.source_type == .module) .module else .script,
                     .body = body,
                     .hashbang = if (self.lexer.hashbang) |h| .{
-                        .value = self.b.sourceSlice(h.start, h.start + h.len),
+                        .value = self.source[h.start..h.start + h.len],
                     } else null,
                 },
             },
@@ -131,13 +127,10 @@ pub const Parser = struct {
         self.b.diagnostics = self.diagnostics;
 
         for (self.lexer.comments.items) |*comment| {
-            comment.value = self.b.sourceSlice(switch (comment.type) {
-                .line => comment.start + 2,
-                .block => comment.start + 2,
-            }, switch (comment.type) {
-                .line => comment.end,
-                .block => comment.end - 2,
-            });
+            // strip delimiters: '//' or '/*' from start, '*/' from block end
+            const content_start = comment.start + 2;
+            const content_end = if (comment.type == .block) comment.end - 2 else comment.end;
+            comment.value = self.source[content_start..content_end];
         }
         self.b.comments = try self.lexer.comments.toOwnedSlice(alloc);
     }
@@ -149,10 +142,6 @@ pub const Parser = struct {
     };
 
     pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
-        // save and restore strict mode, directives like "use strict" only apply within this scope
-        const prev_strict = self.isStrictMode();
-        defer self.restoreStrictMode(prev_strict);
-
         self.context.in_directive_prologue = kind == .program or kind == .function;
 
         defer self.context.in_directive_prologue = false;
@@ -188,22 +177,6 @@ pub const Parser = struct {
         return self.source_type == .module;
     }
 
-    pub inline fn isStrictMode(self: *Parser) bool {
-        return self.state.strict_mode;
-    }
-
-    pub inline fn enterStrictMode(self: *Parser) bool {
-        const prev = self.state.strict_mode;
-        self.state.strict_mode = true;
-        self.lexer.state.strict_mode = true;
-        return prev;
-    }
-
-    pub inline fn restoreStrictMode(self: *Parser, prev: bool) void {
-        self.state.strict_mode = prev;
-        self.lexer.state.strict_mode = prev;
-    }
-
     // utils
 
     pub inline fn setLexerMode(self: *Parser, mode: lexer.LexerMode) void {
@@ -229,10 +202,6 @@ pub const Parser = struct {
 
     pub inline fn getSpanText(self: *const Parser, span: ast.Span) []const u8 {
         return self.source[span.start..span.end];
-    }
-
-    pub inline fn getTokenText(self: *const Parser, token: Token) []const u8 {
-        return token.text(self.source);
     }
 
     inline fn nextToken(self: *Parser) Error!?Token {
@@ -358,9 +327,9 @@ pub const Parser = struct {
         return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    pub inline fn describeToken(self: *Parser, token: Token) []const u8 {
+    pub inline fn describeToken(_: *Parser, token: Token) []const u8 {
         if (token.tag == .eof) return "end of file";
-        return token.tag.toString() orelse token.text(self.source);
+        return token.tag.toString() orelse token.lexeme;
     }
 
     pub const ReportOptions = struct {

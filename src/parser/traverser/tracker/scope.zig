@@ -1,6 +1,5 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
-const ecmascript = @import("../../ecmascript.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -182,7 +181,7 @@ pub const ScopeTracker = struct {
     pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         switch (data) {
             .directive => |d| {
-                if (ecmascript.eqlUseStrict(self.tree.getString(d.value))) {
+                if (std.mem.eql(u8, d.value, "use strict")) {
                     self.currentScopeMut().flags.strict = true;
                 }
             },
@@ -260,7 +259,7 @@ pub const ScopeTracker = struct {
 
             if (d != .directive) break;
 
-            if (ecmascript.eqlUseStrict(self.tree.getString(d.directive.value))) {
+            if (std.mem.eql(u8, d.directive.value, "use strict")) {
                 return true;
             }
         }
