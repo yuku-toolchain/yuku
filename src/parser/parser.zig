@@ -452,6 +452,7 @@ pub const Parser = struct {
         try self.scratch_a.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_b.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
+        try self.b.strings.ensureCapacity(alloc, 256, 16);
     }
 };
 

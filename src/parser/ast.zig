@@ -239,6 +239,12 @@ pub const Tree = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
+    /// Pre-allocates string pool capacity. Call before bulk `addString()` calls
+    /// to avoid repeated reallocations during programmatic AST building.
+    pub fn ensureStringCapacity(self: *Tree, bytes: u32, entries: u32) error{OutOfMemory}!void {
+        return self.strings.ensureCapacity(self.arena.allocator(), bytes, entries);
+    }
+
     /// Returns a `String` referencing a range in the original source text.
     pub inline fn sourceSlice(self: *const Tree, start: u32, end: u32) String {
         return self.strings.sourceSlice(start, end);

@@ -31,6 +31,14 @@ pub const ASTStringPool = struct {
         return .{ .start = start, .end = end };
     }
 
+    pub fn ensureCapacity(self: *ASTStringPool, alloc: std.mem.Allocator, bytes: u32, entries: u32) error{OutOfMemory}!void {
+        try self.extra.ensureTotalCapacity(alloc, bytes);
+        try self.dedup.ensureTotalCapacityContext(alloc, entries, MapCtx{
+            .extra = self.extra.items,
+            .src_len = @intCast(self.source.len),
+        });
+    }
+
     /// Interns a string into the extra buffer with deduplication.
     /// Used for programmatic AST building.
     pub fn addString(self: *ASTStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!String {
