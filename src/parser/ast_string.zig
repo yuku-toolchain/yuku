@@ -9,14 +9,14 @@ pub const String = struct {
 };
 
 /// String storage for the AST. Source-range strings reference the original
-/// source text directly. Additional strings are interned into the extra buffer via `addString()`,
-/// which deduplicates, identical strings share the same `String`.
+/// source text directly. Additional strings are interned into the extra buffer
+/// via `addString()`, which deduplicates: identical strings share the same `String`.
 pub const ASTStringPool = struct {
     source: []const u8 = "",
     extra: std.ArrayList(u8) = .empty,
-    intern_map: InternMap = .empty,
+    dedup: DedupMap = .empty,
 
-    const InternMap = std.HashMapUnmanaged(String, void, InternCtx, 80);
+    const DedupMap = std.HashMapUnmanaged(String, void, MapCtx, 80);
 
     /// Returns the string content for a `String`.
     pub fn get(self: *const ASTStringPool, id: String) []const u8 {
@@ -36,41 +36,50 @@ pub const ASTStringPool = struct {
     pub fn addString(self: *ASTStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!String {
         if (str.len == 0) return .empty;
 
+        const extra = self.extra.items;
         const src_len: u32 = @intCast(self.source.len);
-        const gop = try self.intern_map.getOrPutContextAdapted(
+        const gop = try self.dedup.getOrPutContextAdapted(
             alloc, str,
-            SliceCtx{ .extra = self.extra.items, .src_len = src_len },
-            InternCtx{ .extra = self.extra.items, .src_len = src_len },
+            AdaptedCtx{ .extra = extra, .src_len = src_len },
+            MapCtx{ .extra = extra, .src_len = src_len },
         );
         if (gop.found_existing) return gop.key_ptr.*;
 
-        const start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
+        const start: u32 = src_len + @as(u32, @intCast(extra.len));
         try self.extra.appendSlice(alloc, str);
-        const end: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
-        const id = String{ .start = start, .end = end };
+        const id = String{ .start = start, .end = src_len + @as(u32, @intCast(self.extra.items.len)) };
         gop.key_ptr.* = id;
         return id;
     }
 
-    const InternCtx = struct {
+    // resolves a String handle to bytes in the extra buffer.
+    inline fn resolve(extra: []const u8, src_len: u32, id: String) []const u8 {
+        return extra[id.start - src_len .. id.end - src_len];
+    }
+
+    // map context for rehashing stored String keys.
+    const MapCtx = struct {
         extra: []const u8,
-        src_len: u32 = 0,
-        pub fn hash(self: @This(), id: String) u64 {
-            return std.hash.Wyhash.hash(0, self.extra[id.start - self.src_len .. id.end - self.src_len]);
+        src_len: u32,
+
+        pub fn hash(ctx: @This(), id: String) u64 {
+            return std.hash.Wyhash.hash(0, resolve(ctx.extra, ctx.src_len, id));
         }
-        pub fn eql(self: @This(), a: String, b: String) bool {
-            return std.mem.eql(u8, self.extra[a.start - self.src_len .. a.end - self.src_len], self.extra[b.start - self.src_len .. b.end - self.src_len]);
+        pub fn eql(ctx: @This(), a: String, b: String) bool {
+            return std.mem.eql(u8, resolve(ctx.extra, ctx.src_len, a), resolve(ctx.extra, ctx.src_len, b));
         }
     };
 
-    const SliceCtx = struct {
+    // adapted context for looking up by `[]const u8`.
+    const AdaptedCtx = struct {
         extra: []const u8,
-        src_len: u32 = 0,
+        src_len: u32,
+
         pub fn hash(_: @This(), text: []const u8) u64 {
             return std.hash.Wyhash.hash(0, text);
         }
-        pub fn eql(self: @This(), text: []const u8, id: String) bool {
-            return std.mem.eql(u8, text, self.extra[id.start - self.src_len .. id.end - self.src_len]);
+        pub fn eql(ctx: @This(), text: []const u8, id: String) bool {
+            return std.mem.eql(u8, text, resolve(ctx.extra, ctx.src_len, id));
         }
     };
 };
