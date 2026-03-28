@@ -146,7 +146,15 @@ const runTest = async (
 			semanticErrors: true,
 		});
 
-		const hasErrors = parsed.diagnostics && parsed.diagnostics.length > 0;
+    const hasErrors = parsed.diagnostics && parsed.diagnostics.length > 0;
+
+    if (hasErrors) {
+      result.diagnosticEntries.push({
+				file,
+				source: content,
+				diagnostics: parsed.diagnostics,
+			});
+    }
 
 		if (type === "should_pass") {
 			if (hasErrors) {
@@ -162,11 +170,6 @@ const runTest = async (
 				result.failures.push(file);
 				return false;
 			}
-			result.diagnosticEntries.push({
-				file,
-				source: content,
-				diagnostics: parsed.diagnostics,
-			});
 			result.passed++;
 			return true;
 		}

@@ -307,7 +307,8 @@ fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
 
     const id = data.identifier_reference;
 
-    return std.mem.eql(u8, parser.b.getString(id.name), "async");
+    // compare raw source text, escaped `\u0061sync` should not match
+    return std.mem.eql(u8, parser.source[id.name.start..id.name.end], "async");
 }
 
 /// in a regular for-loop, destructuring patterns and const declarations require an initializer.

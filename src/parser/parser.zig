@@ -181,7 +181,7 @@ pub const Parser = struct {
     /// Returns the resolved name for any identifier-like token.
     /// For escaped identifiers, decodes unicode escapes and allocates in the arena.
     /// For private identifiers, strips the leading '#'.
-    pub fn identifierName(self: *Parser, token: Token) Error!ast.StringId {
+    pub fn identifierName(self: *Parser, token: Token) Error!ast.String {
         if (token.isEscaped()) {
             var buf: [256]u8 = undefined;
             const raw = self.source[token.span.start..token.span.end];

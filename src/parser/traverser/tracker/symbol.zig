@@ -1,7 +1,7 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
 const sc = @import("scope.zig");
-const StringId = ast.StringId;
+const String = ast.String;
 
 const Allocator = std.mem.Allocator;
 
@@ -17,7 +17,7 @@ pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 /// A declared binding (variable, function, class, import, or parameter).
 pub const Symbol = struct {
     /// Name of the symbol.
-    name: StringId,
+    name: String,
     kind: Kind,
     flags: Flags,
     /// The scope this symbol is declared in.
@@ -81,7 +81,7 @@ pub const Symbol = struct {
 /// An identifier reference (a use of a name, not a declaration).
 pub const Reference = struct {
     /// Name of the reference.
-    name: StringId,
+    name: String,
     /// The scope this reference appears in (used for resolution).
     scope: sc.ScopeId,
     /// The AST node for this reference.
@@ -98,17 +98,12 @@ pub const SymbolTable = struct {
     scope_maps: []const ScopeMap,
     /// Hoisted vars passing through intermediate block scopes (Section 14.2.1).
     hoisting_variables: []const ScopeMap,
-    /// Original source text for resolving source-range StringIds.
-    source: []const u8 = "",
-    /// Extra string buffer for resolving non-source StringIds.
-    extra: []const u8 = "",
+    /// String pool for resolving `String` handles to text.
+    strings: *const ast.ASTStringPool,
 
-    /// Resolves a StringId to a string slice.
-    pub fn getString(self: SymbolTable, id: StringId) []const u8 {
-        if (id.len == 0) return "";
-        const src_len: u32 = @intCast(self.source.len);
-        if (id.start < src_len) return self.source[id.start..][0..id.len];
-        return self.extra[id.start - src_len ..][0..id.len];
+    /// Returns the string content for a `String`.
+    pub inline fn getString(self: SymbolTable, id: String) []const u8 {
+        return self.strings.get(id);
     }
 
     /// Returns the symbol for the given ID.
@@ -370,7 +365,7 @@ pub const SymbolTracker = struct {
 
     /// Creates a new symbol in the given scope using the current binding context.
     /// Returns the ID of the newly created symbol.
-    pub fn declare(self: *SymbolTracker, name: StringId, target_scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!SymbolId {
+    pub fn declare(self: *SymbolTracker, name: String, target_scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!SymbolId {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
 
         try self.symbols.append(self.allocator, .{
@@ -392,7 +387,7 @@ pub const SymbolTracker = struct {
 
     /// Records a new identifier reference in the given scope.
     /// Returns the ID of the newly created reference.
-    pub fn addReference(self: *SymbolTracker, name: StringId, scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!ReferenceId {
+    pub fn addReference(self: *SymbolTracker, name: String, scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!ReferenceId {
         const id: ReferenceId = @enumFromInt(@as(u32, @intCast(self.references.items.len)));
         try self.references.append(self.allocator, .{
             .name = name,
@@ -459,8 +454,7 @@ pub const SymbolTracker = struct {
             .references = self.references.items,
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
-            .source = self.tree.source,
-            .extra = self.tree.strings.extra.items,
+            .strings = &self.tree.strings,
         };
     }
 };
