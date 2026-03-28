@@ -180,14 +180,17 @@ pub const Parser = struct {
 
     /// Returns the resolved name for any identifier-like token.
     /// Strips '#' for private identifiers, decodes unicode escapes if present.
-    pub fn identifierName(self: *Parser, token: Token) Error!ast.String {
+    pub inline fn identifierName(self: *Parser, token: Token) Error!ast.String {
         const is_private = token.tag == .private_identifier;
         const start = token.span.start + @as(u32, @intFromBool(is_private));
+        if (token.isEscaped()) return self.decodeEscapedIdentifier(start, token.span.end);
+        return self.b.sourceSlice(start, token.span.end);
+    }
 
-        if (!token.isEscaped()) return self.b.sourceSlice(start, token.span.end);
-
+    fn decodeEscapedIdentifier(self: *Parser, start: u32, end: u32) Error!ast.String {
+        @branchHint(.cold);
         var buf: [256]u8 = undefined;
-        return try self.b.addString(util.Utf.decodeEscapes(self.source[start..token.span.end], &buf));
+        return try self.b.addString(util.Utf.decodeEscapes(self.source[start..end], &buf));
     }
 
     pub inline fn describeToken(self: *Parser, token: Token) []const u8 {

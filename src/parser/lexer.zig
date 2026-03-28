@@ -39,12 +39,6 @@ pub const LexicalError = error{
     JsxIdentifierCannotStartWithBackslash,
 };
 
-// TODO:
-// [ ] some simd optimizations
-//      [ ] comments start and end
-//      [ ] whitespace skipping
-//      [ ] scanning jsx text
-
 pub const LexerMode = enum {
     /// normal javascript mode
     normal,
