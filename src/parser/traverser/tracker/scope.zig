@@ -186,34 +186,88 @@ pub const ScopeTracker = struct {
                 }
             },
             .function => |func| {
-                const flags = self.inheritedFlags();
+                const flags: Scope.Flags =
+                    if (self.hasRetroActiveUseStrict(func.body))
+                        .{ .strict = true }
+                    else self.inheritStrictFlag();
+
                 // named function expressions get an extra scope for their name.
                 // we push it before the function scope so it sits between
                 // outer and body. see Scope.Kind.expression_name for details.
                 if (isNamedFunctionExpression(func))
                     try self.pushScope(.expression_name, index, flags);
+
                 try self.pushScope(.function, index, flags);
             },
-            .arrow_function_expression => try self.pushScope(.function, index, self.inheritedFlags()),
+            .arrow_function_expression => |expr| {
+                const flags: Scope.Flags =
+                    if (self.hasRetroActiveUseStrict(expr.body))
+                        .{ .strict = true }
+                    else self.inheritStrictFlag();
+
+                try self.pushScope(.function, index, flags);
+            },
             .block_statement,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause,
             // switch creates one block scope for all case clauses
             .switch_statement,
-            => try self.pushScope(.block, index, self.inheritedFlags()),
+            => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .class => |cls| {
                 // Section 15.7.14: class bodies are always strict mode.
                 const flags = Scope.Flags{ .strict = true };
+
                 if (isNamedClassExpression(cls))
                     try self.pushScope(.expression_name, index, flags);
                 try self.pushScope(.class, index, flags);
             },
-            .static_block => try self.pushScope(.static_block, index, self.inheritedFlags()),
+            .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
             else => {},
         }
     }
 
-    inline fn inheritedFlags(self: *const ScopeTracker) Scope.Flags {
+    // Section 11.2.2 ...
+    // checks whether a function body begins with a "use strict" directive
+    // by peeking into it before we actually traverse the body.
+    //
+    // we need this because "use strict" applies to the entire function,
+    // including its parameters. but in a tree walk, we create the function
+    // scope when we enter the function node, which is before we visit
+    // any statements in the body. so the strict flag has to be set on
+    // the scope at creation time, not later when we encounter the directive.
+    //
+    // example of why this matters:
+    //
+    //   function foo(a, a) {   // duplicate param, only illegal in strict mode
+    //     "use strict";        // makes the whole function strict, retroactively
+    //   }
+    //
+    // by the time we'd normally see the directive during traversal, we've
+    // already processed the parameters under a non-strict scope. looking
+    // ahead here avoids that.
+    fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
+        if (body_index == .null) return false;
+
+        const body = self.tree.getData(body_index);
+
+        if (body != .function_body) return false;
+
+        const function_body = body.function_body;
+
+        for (self.tree.getExtra(function_body.body)) |s| {
+            const d = self.tree.getData(s);
+
+            if (d != .directive) break;
+
+            if (std.mem.eql(u8, self.tree.getString(d.directive.value), "use strict")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    inline fn inheritStrictFlag(self: *const ScopeTracker) Scope.Flags {
         return .{ .strict = self.currentScope().flags.strict };
     }
 

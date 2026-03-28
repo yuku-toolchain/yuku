@@ -1,7 +1,10 @@
 const std = @import("std");
-const util = @import("util");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
+
+const ast_string = @import("ast_string.zig");
+pub const String = ast_string.String;
+pub const ASTStringPool = ast_string.ASTStringPool;
 
 pub const Span = TokenSpan;
 
@@ -99,7 +102,7 @@ pub const Lang = enum {
 pub const Comment = struct {
     type: Type,
     /// Comment content (without delimiters).
-    value: StringId = StringId.empty,
+    value: String = .empty,
     start: u32,
     end: u32,
 
@@ -114,77 +117,6 @@ pub const Comment = struct {
             };
         }
     };
-};
-
-pub const StringId = struct {
-    start: u32 = 0,
-    end: u32 = 0,
-
-    pub const empty: StringId = .{};
-
-    pub inline fn eql(self: StringId, other: StringId) bool {
-        return self.start == other.start and self.end == other.end;
-    }
-
-    /// Resolves this ID against a source + extra buffer pair.
-    inline fn resolve(id: StringId, source: []const u8, extra: []const u8) []const u8 {
-        if (id.start == id.end) return "";
-        const src_len: u32 = @intCast(source.len);
-        if (id.start >= src_len) {
-            return extra[id.start - src_len .. id.end - src_len];
-        }
-        return source[id.start..id.end];
-    }
-};
-
-/// Immutable string storage.
-///
-/// Provides zero-copy access to the original source text and any strings
-/// created during transforms or programmatic building.
-pub const StringPool = struct {
-    /// The original source text passed to the parser.
-    /// Empty for trees built programmatically with `Tree.initEmpty()`.
-    source: []const u8 = "",
-    /// Strings added after parsing (via `Tree.addString()`).
-    extra: []const u8 = "",
-
-    /// Returns the string content for the given `StringId`.
-    pub inline fn get(self: StringPool, id: StringId) []const u8 {
-        return id.resolve(self.source, self.extra);
-    }
-};
-
-/// Growable string storage used by `Tree` during parsing and transforms.
-///
-/// Wraps the original source buffer (zero-copy) and a growable buffer for
-/// new strings.
-pub const MutableStringPool = struct {
-    /// The original source text. Empty when building from scratch.
-    source: []const u8 = "",
-    /// Growable buffer for strings created via `add()`.
-    extra: std.ArrayList(u8) = .empty,
-
-    pub inline fn get(self: *const MutableStringPool, id: StringId) []const u8 {
-        return id.resolve(self.source, self.extra.items);
-    }
-
-    pub inline fn sourceSlice(_: *const MutableStringPool, start: u32, end: u32) StringId {
-        return .{ .start = start, .end = end };
-    }
-
-    pub fn add(self: *MutableStringPool, alloc: std.mem.Allocator, str: []const u8) error{OutOfMemory}!StringId {
-        const src_len: u32 = @intCast(self.source.len);
-        const start: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
-        try self.extra.appendSlice(alloc, str);
-        const end: u32 = src_len + @as(u32, @intCast(self.extra.items.len));
-        return .{ .start = start, .end = end };
-    }
-
-    /// Converts into an immutable `StringPool`. The `MutableStringPool`
-    /// should not be used after calling this.
-    pub fn freeze(self: *const MutableStringPool) StringPool {
-        return .{ .source = self.source, .extra = self.extra.items };
-    }
 };
 
 /// The AST. Backed by growable arrays and an arena allocator.
@@ -206,9 +138,11 @@ pub const Tree = struct {
     comments: []const Comment = &.{},
     /// Arena allocator owning all the memory.
     arena: std.heap.ArenaAllocator,
-    /// All strings referenced by AST nodes.
-    /// Use `getString()` to read and `addString()` to create new strings.
-    strings: MutableStringPool,
+    /// The original source text passed to the parser.
+    /// Empty for trees built programmatically with `initEmpty()`.
+    source: []const u8 = "",
+    /// String pool for AST node string fields.
+    strings: ASTStringPool = .{},
     /// Source type (script or module).
     source_type: SourceType = .module,
     /// Language variant (js, ts, jsx, tsx, dts).
@@ -218,16 +152,16 @@ pub const Tree = struct {
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8) Tree {
         return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
+            .source = source,
             .strings = .{ .source = source },
         };
     }
 
-    /// Creates an empty tree for building ASTs programmatically
-    /// (no source text). Use `addString()` to create all strings.
+    /// Creates an empty tree for building ASTs programmatically (no source text).
+    /// String fields can use string literals or `addString()` for dynamic strings.
     pub fn initEmpty(child_allocator: std.mem.Allocator) Tree {
         return .{
             .arena = std.heap.ArenaAllocator.init(child_allocator),
-            .strings = .{},
         };
     }
 
@@ -305,20 +239,25 @@ pub const Tree = struct {
         return .{ .start = start, .len = @intCast(children.len) };
     }
 
-    /// Creates a `StringId` referencing a range in the original source.
-    /// Used internally by the parser; transform users should use `addString()`.
-    pub inline fn sourceSlice(self: *Tree, start: u32, end: u32) StringId {
+    /// Pre-allocates string pool capacity. Call before bulk `addString()` calls
+    /// to avoid repeated reallocations during programmatic AST building.
+    pub fn ensureStringCapacity(self: *Tree, bytes: u32, entries: u32) error{OutOfMemory}!void {
+        return self.strings.ensureCapacity(self.arena.allocator(), bytes, entries);
+    }
+
+    /// Returns a `String` referencing a range in the original source text.
+    pub inline fn sourceSlice(self: *const Tree, start: u32, end: u32) String {
         return self.strings.sourceSlice(start, end);
     }
 
-    /// Copies `str` into the string pool and returns its `StringId`.
-    /// Use this in transforms and when building ASTs programmatically.
-    pub fn addString(self: *Tree, str: []const u8) error{OutOfMemory}!StringId {
-        return self.strings.add(self.arena.allocator(), str);
+    /// Copies `str` into the string pool and returns its `String`.
+    /// Use for escaped identifiers, transforms, and programmatic AST building.
+    pub fn addString(self: *Tree, str: []const u8) error{OutOfMemory}!String {
+        return self.strings.addString(self.arena.allocator(), str);
     }
 
-    /// Returns the string content for a `StringId`.
-    pub inline fn getString(self: *const Tree, id: StringId) []const u8 {
+    /// Returns the string content for a `String`.
+    pub inline fn getString(self: *const Tree, id: String) []const u8 {
         return self.strings.get(id);
     }
 };
@@ -942,12 +881,12 @@ pub const WithStatement = struct {
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
     /// Raw string text including quotes.
-    raw: StringId,
+    raw: String = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
-    raw: StringId,
+    raw: String = .empty,
     kind: Kind,
 
     pub const Kind = enum {
@@ -970,7 +909,7 @@ pub const NumericLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
-    raw: StringId,
+    raw: String = .empty,
 };
 
 pub const BooleanLiteral = struct {
@@ -979,8 +918,8 @@ pub const BooleanLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-regular-expression-literals
 pub const RegExpLiteral = struct {
-    pattern: StringId,
-    flags: StringId,
+    pattern: String = .empty,
+    flags: String = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-template-literals
@@ -993,7 +932,7 @@ pub const TemplateLiteral = struct {
 
 /// quasi
 pub const TemplateElement = struct {
-    raw: StringId,
+    raw: String = .empty,
     tail: bool,
     /// True when this quasi's cooked template value is undefined per
     /// ECMAScript TV semantics.
@@ -1003,29 +942,29 @@ pub const TemplateElement = struct {
 /// used in expressions
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const IdentifierReference = struct {
-    name: StringId,
+    name: String = .empty,
 };
 
 /// `#name`.
 /// `name` refers to the identifier name without the `#` prefix.
 pub const PrivateIdentifier = struct {
-    name: StringId,
+    name: String = .empty,
 };
 
 /// used in declarations
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const BindingIdentifier = struct {
-    name: StringId,
+    name: String = .empty,
 };
 
 /// property keys, meta properties
 pub const IdentifierName = struct {
-    name: StringId,
+    name: String = .empty,
 };
 
 /// https://tc39.es/ecma262/#prod-LabelIdentifier
 pub const LabelIdentifier = struct {
-    name: StringId,
+    name: String = .empty,
 };
 
 /// `pattern = init`
@@ -1111,7 +1050,7 @@ pub const Program = struct {
 };
 
 pub const Hashbang = struct {
-    value: StringId,
+    value: String = .empty,
 };
 
 /// `"use strict";`
@@ -1119,7 +1058,7 @@ pub const Directive = struct {
     /// StringLiteral
     expression: NodeIndex,
     /// Directive value without quotes.
-    value: StringId,
+    value: String = .empty,
 };
 
 pub const FunctionType = enum {
@@ -1192,7 +1131,7 @@ pub const ArrowFunctionExpression = struct {
     async: bool,
     /// FormalParameters
     params: NodeIndex,
-    /// FunctionBody
+    /// FunctionBody if `expression` is false, otherwise an Expression
     body: NodeIndex,
     // TODO: add pure field too, `true` if the function is marked with a `/*#__NO_SIDE_EFFECTS__*/` comment
     // TODO: handle PIFE ("Possibly-Invoked Function Expression") cases, there are other needs which are needed this
@@ -1461,7 +1400,7 @@ pub const JSXClosingFragment = struct {};
 /// used in jsx tag names and attributes
 /// https://facebook.github.io/jsx/#prod-JSXIdentifier
 pub const JSXIdentifier = struct {
-    name: StringId,
+    name: String = .empty,
 };
 
 /// `<namespace:name />`
@@ -1510,7 +1449,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// text content inside JSX elements
 pub const JSXText = struct {
-    raw: StringId,
+    raw: String = .empty,
 };
 
 /// `{...children}`

@@ -1,4 +1,5 @@
 const std = @import("std");
+const util = @import("util");
 const traverser = @import("traverser/root.zig");
 const ast = @import("ast.zig");
 const ecmascript = @import("ecmascript.zig");
@@ -10,6 +11,8 @@ const Symbol = semantic.Symbol;
 
 const Action = traverser.Action;
 const SemanticCtx = semantic.Ctx;
+
+const eql = std.mem.eql;
 
 pub const AnalysisError = Allocator.Error;
 
@@ -38,10 +41,12 @@ const SemanticVisit = struct {
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
-            if (isStrictModeReservedWord(name))
+            try self.checkStrictReserved(name, node_index, ctx, "a binding name");
+
+            if (isEvalOrArguments(name))
                 try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
         } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
-            std.mem.eql(u8, name, "let"))
+            eql(u8, name, "let"))
         {
             try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a 'let' declaration", .{});
         }
@@ -73,7 +78,7 @@ const SemanticVisit = struct {
                         formal_parameters.kind == .arrow_formal_parameters
                     ) {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
-                    } else if (ecmascript.isSimpleParameterList(ctx.tree, formal_parameters)) {
+                    } else if (ecmascript.findNonSimpleParameter(ctx.tree, formal_parameters)) |_| {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                     }
                 }
@@ -98,23 +103,81 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
+    pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "an identifier");
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
+    pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "a label");
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
+    pub fn enter_string_literal(self: *Self, lit: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.scope.isStrict()) return .proceed;
+
+        if (util.Utf.hasOctalEscape(ctx.tree.getString(lit.raw)))
+            try self.report(ctx.tree.getSpan(node_index), "Octal escape sequences are not allowed in strict mode", .{
+                .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
+            });
+
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
+    pub fn enter_numeric_literal(self: *Self, lit: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.scope.isStrict()) return .proceed;
+
+        const raw = ctx.tree.getString(lit.raw);
+
+        if (!isLegacyNumericLiteral(raw)) return .proceed;
+
+        const is_octal = for (raw) |c| {
+            if (c == '8' or c == '9') break false;
+        } else true;
+
+        try self.report(ctx.tree.getSpan(node_index), if (is_octal)
+            "Octal literals are not allowed in strict mode"
+        else
+            "Decimals with leading zeros are not allowed in strict mode", .{
+            .help = if (is_octal)
+                "Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent"
+            else
+                "Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation",
+        });
+        return .proceed;
+    }
+
     /// https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
     /// "It is a Syntax Error if FunctionBodyContainsUseStrict is true and
     ///  IsSimpleParameterList of FormalParameters is false."
     pub fn enter_directive(self: *Self, directive: ast.Directive, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (std.mem.eql(u8, ctx.tree.getString(directive.value), "use strict")) {
+        if (eql(u8, ctx.tree.getString(directive.value), "use strict")) {
             var iter = ctx.path.ancestors();
             while (iter.next()) |i| {
                 switch (ctx.tree.getData(i)) {
                     .function => |func| {
-                        if (func.params != .null and
-                            !ecmascript.isSimpleParameterList(ctx.tree, ctx.tree.getData(func.params).formal_parameters))
-                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{});
+                        if (func.params != .null)
+                            if (ecmascript.findNonSimpleParameter(ctx.tree, ctx.tree.getData(func.params).formal_parameters)) |param| {
+                                try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{
+                                    .labels = try self.labels(&.{
+                                        self.label(ctx.tree.getSpan(param), "non-simple parameter"),
+                                    }),
+                                });
+                            };
                         break;
                     },
                     .arrow_function_expression => |arrow| {
-                        if (!ecmascript.isSimpleParameterList(ctx.tree, ctx.tree.getData(arrow.params).formal_parameters))
-                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{});
+                        if (ecmascript.findNonSimpleParameter(ctx.tree, ctx.tree.getData(arrow.params).formal_parameters)) |param| {
+                            try self.report(ctx.tree.getSpan(node_index), "Illegal 'use strict' directive in function with non-simple parameter list", .{
+                                .labels = try self.labels(&.{
+                                    self.label(ctx.tree.getSpan(param), "non-simple parameter"),
+                                }),
+                            });
+                        }
                         break;
                     },
                     .program => break,
@@ -122,26 +185,44 @@ const SemanticVisit = struct {
                 }
             }
         }
+
         return .proceed;
     }
 
-    /// In strict mode, function declarations are only allowed at the top level of
-    /// a script, module, function body, or block. Bare function declarations as the
-    /// body of if/else/for/while are only permitted in sloppy mode (Annex B.3.3).
+    // https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors (14.13.1)
+    //   LabelledItem : FunctionDeclaration - syntax error unless non-strict + web host (B.3.1).
+    // https://tc39.es/ecma262/#sec-if-statement-static-semantics-early-errors (14.6.1)
+    //   IsLabelledFunction check prevents labelled functions in if/iteration/with bodies.
+    // https://tc39.es/ecma262/#sec-functiondeclarations-in-ifstatement-statement-clauses (B.3.3)
+    //   Bare FunctionDeclaration in if/else is allowed in non-strict code only.
     pub fn enter_function(self: *Self, func: ast.Function, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (func.type == .function_declaration and ctx.scope.isStrict()) {
-            if (ctx.path.parent()) |parent| {
-                switch (ctx.tree.getData(parent)) {
-                    .program, .function_body, .class_body, .static_block,
-                    .block_statement, .switch_case, .labeled_statement,
-                    .export_named_declaration, .export_default_declaration,
-                    => {},
-                    else => {
-                        try self.report(ctx.tree.getSpan(node_index), "In strict mode code, functions can only be declared at top level or inside a block", .{});
-                        return .skip;
-                    },
-                }
-            }
+        if (func.type != .function_declaration) return .proceed;
+
+        const is_strict = ctx.scope.isStrict();
+        var through_labels = false;
+        var iter = ctx.path.ancestors();
+        _ = iter.next(); // skip the function node itself
+
+        const parent = while (iter.next()) |idx| {
+            const d = ctx.tree.getData(idx);
+            if (d != .labeled_statement) break d;
+            through_labels = true;
+        } else return .proceed;
+
+        const is_valid = switch (parent) {
+            .program, .function_body, .class_body, .static_block,
+            .block_statement, .switch_case,
+            .export_named_declaration, .export_default_declaration,
+            => !is_strict or !through_labels,
+            .if_statement => !is_strict and !through_labels,
+            else => false,
+        };
+
+        if (!is_valid) {
+            try self.report(ctx.tree.getSpan(node_index), if (is_strict)
+                "In strict mode code, functions can only be declared at top level or inside a block"
+            else
+                "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement", .{});
         }
         return .proceed;
     }
@@ -160,14 +241,14 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-update-expressions-static-semantics-early-errors
     pub fn enter_update_expression(self: *Self, expr: ast.UpdateExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArguments(ctx.tree, expr.argument))
+        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.argument))
             try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-assignment-operators-static-semantics-early-errors
     pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArguments(ctx.tree, expr.left))
+        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.left))
             try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
         return .proceed;
     }
@@ -217,36 +298,43 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-left-hand-side-expressions-static-semantics-early-errors
     pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module and
-            ctx.tree.getData(prop.meta) == .identifier_name and
-            std.mem.eql(u8, ctx.tree.getString(ctx.tree.getData(prop.meta).identifier_name.name), "import"))
-        {
-            try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
+        if (ctx.tree.source_type != .module) {
+            const meta = ctx.tree.getData(prop.meta);
+            if (meta == .identifier_name and eql(u8, ctx.tree.getString(meta.identifier_name.name), "import"))
+                try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
         }
         return .proceed;
     }
 
     pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
     pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
     pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.tree.source_type != .module)
-            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{});
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
+        else if (!isAtModuleTopLevel(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
         return .proceed;
     }
 
@@ -306,6 +394,29 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
+        if (!ctx.scope.isStrict()) return;
+        if (matchStrictReserved(name)) |word|
+            try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is reserved in strict mode and cannot be used as " ++ as_what, .{word}), .{});
+    }
+
+    /// https://tc39.es/ecma262/#sec-keywords-and-reserved-words
+    fn matchStrictReserved(name: []const u8) ?[]const u8 {
+        return switch (name.len) {
+            3 => check(name, "let"),
+            5 => check(name, "yield"),
+            6 => check(name, "static") orelse check(name, "public"),
+            7 => check(name, "private") orelse check(name, "package"),
+            9 => check(name, "protected") orelse check(name, "interface"),
+            10 => check(name, "implements"),
+            else => null,
+        };
+    }
+
+    fn check(name: []const u8, keyword: []const u8) ?[]const u8 {
+        return if (eql(u8, name, keyword)) keyword else null;
+    }
+
     fn checkForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
         if (ctx.tree.getData(left) != .variable_declaration) return;
         const decl = ctx.tree.getData(left).variable_declaration;
@@ -318,6 +429,15 @@ const SemanticVisit = struct {
         }
     }
 
+    fn isEvalOrArguments(name: []const u8) bool {
+        return eql(u8, name, "eval") or eql(u8, name, "arguments");
+    }
+
+    fn isEvalOrArgumentsRef(tree: *const ast.Tree, node: ast.NodeIndex) bool {
+        return tree.getData(node) == .identifier_reference and
+            isEvalOrArguments(tree.getString(tree.getData(node).identifier_reference.name));
+    }
+
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
         var current = node;
         while (true) {
@@ -328,25 +448,9 @@ const SemanticVisit = struct {
         }
     }
 
-    fn isEvalOrArguments(tree: *const ast.Tree, node: ast.NodeIndex) bool {
-        return tree.getData(node) == .identifier_reference and blk: {
-            const name = tree.getString(tree.getData(node).identifier_reference.name);
-            break :blk std.mem.eql(u8, name, "eval") or std.mem.eql(u8, name, "arguments");
-        };
-    }
-
-    fn isStrictModeReservedWord(name: []const u8) bool {
-        return std.mem.eql(u8, name, "eval") or
-            std.mem.eql(u8, name, "arguments") or
-            std.mem.eql(u8, name, "implements") or
-            std.mem.eql(u8, name, "interface") or
-            std.mem.eql(u8, name, "let") or
-            std.mem.eql(u8, name, "package") or
-            std.mem.eql(u8, name, "private") or
-            std.mem.eql(u8, name, "protected") or
-            std.mem.eql(u8, name, "public") or
-            std.mem.eql(u8, name, "static") or
-            std.mem.eql(u8, name, "yield");
+    /// leading zero followed by digits, legacy octal (077) or leading-zero decimal (089).
+    fn isLegacyNumericLiteral(raw: []const u8) bool {
+        return raw.len >= 2 and raw[0] == '0' and raw[1] >= '0' and raw[1] <= '9';
     }
 
     const SuperCallValidity = enum { valid, not_in_constructor, no_extends };
@@ -407,6 +511,13 @@ const SemanticVisit = struct {
         return false;
     }
 
+    fn isAtModuleTopLevel(ctx: *SemanticCtx) bool {
+        if (ctx.path.parent()) |parent| {
+            return ctx.tree.getData(parent) == .program;
+        }
+        return true;
+    }
+
     fn isIterationStatement(data: ast.NodeData) bool {
         return switch (data) {
             .for_statement, .for_in_statement, .for_of_statement, .while_statement, .do_while_statement => true,
@@ -450,7 +561,7 @@ const SemanticVisit = struct {
             const data = ctx.tree.getData(i);
             if (data == .labeled_statement) {
                 const lbl_name = ctx.tree.getString(ctx.tree.getData(data.labeled_statement.label).label_identifier.name);
-                if (std.mem.eql(u8, lbl_name, name))
+                if (eql(u8, lbl_name, name))
                     return if (crossed_boundary) .crossed_boundary else .found;
             }
             if (isFunctionBoundary(data)) crossed_boundary = true;
@@ -468,7 +579,7 @@ const SemanticVisit = struct {
             if (data == .labeled_statement) {
                 const ls = data.labeled_statement;
                 const lbl_name = ctx.tree.getString(ctx.tree.getData(ls.label).label_identifier.name);
-                if (std.mem.eql(u8, lbl_name, name)) {
+                if (eql(u8, lbl_name, name)) {
                     if (crossed_boundary) return .crossed_boundary;
                     const body = ctx.tree.getData(ls.body);
                     if (isIterationStatement(body) or body == .labeled_statement) return .found;

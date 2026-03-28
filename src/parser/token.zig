@@ -415,15 +415,10 @@ pub inline fn flagMask(comptime flag: TokenFlag) u8 {
 pub const Token = struct {
     span: Span,
     tag: TokenTag,
-
     flags: u8 = 0,
 
     pub inline fn eof(pos: u32) Token {
-        return Token{
-            .span = .{ .start = pos, .end = pos },
-            .tag = .eof,
-            .flags = 0,
-        };
+        return .{ .span = .{ .start = pos, .end = pos }, .tag = .eof };
     }
 
     pub inline fn len(self: Token) u32 {

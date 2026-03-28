@@ -4,7 +4,6 @@ const TokenTag = @import("../token.zig").TokenTag;
 const Precedence = @import("../token.zig").Precedence;
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
-
 const expressions = @import("expressions.zig");
 const variables = @import("variables.zig");
 const literals = @import("literals.zig");
@@ -96,12 +95,6 @@ fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeInd
     // strip quotes: the span covers the full string literal including quotes
     const value_start = string_literal_span.start + 1;
     const value_end = string_literal_span.end - 1;
-    const value_text = parser.source[value_start..value_end];
-
-    // "use strict" directive enables strict mode for the current scope
-    if (std.mem.eql(u8, value_text, "use strict")) {
-        _ = parser.enterStrictMode();
-    }
 
     return try parser.b.createNode(.{
         .directive = .{
@@ -417,11 +410,6 @@ fn parseDoWhileStatement(parser: *Parser) Error!?ast.NodeIndex {
 /// https://tc39.es/ecma262/#sec-with-statement
 fn parseWithStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-
-    if (parser.isStrictMode()) {
-        try parser.report(parser.current_token.span, "'with' statements are not allowed in strict mode", .{});
-    }
-
     try parser.advance() orelse return null; // consume 'with'
 
     if (!try parser.expect(.left_paren, "Expected '(' after 'with'", null)) return null;

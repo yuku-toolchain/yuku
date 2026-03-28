@@ -36,10 +36,6 @@ pub fn parseClassDecorated(
 
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 
-    // classes are always strict
-    const prev_strict = parser.enterStrictMode();
-    defer parser.restoreStrictMode(prev_strict);
-
     // export default class produces a declaration with optional name
     // regular class expression allows optional name but produces expression
     const class_type: ast.ClassType = if (opts.is_expression and !opts.is_default_export) .class_expression else .class_declaration;
@@ -171,7 +167,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
             key = try parser.b.createNode(
-                .{ .identifier_name = .{ .name = parser.b.sourceSlice(static_token.span.start, static_token.span.end) } },
+                .{ .identifier_name = .{ .name = try parser.identifierName(static_token) } },
                 static_token.span,
             );
         } else {
@@ -194,7 +190,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             is_async = true;
         } else {
             key = try parser.b.createNode(
-                .{ .identifier_name = .{ .name = parser.b.sourceSlice(async_token.span.start, async_token.span.end) } },
+                .{ .identifier_name = .{ .name = try parser.identifierName(async_token) } },
                 async_token.span,
             );
         }
@@ -232,7 +228,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                 }
             } else {
                 key = try parser.b.createNode(
-                    .{ .identifier_name = .{ .name = parser.b.sourceSlice(modifier_token.span.start, modifier_token.span.end) } },
+                    .{ .identifier_name = .{ .name = try parser.identifierName(modifier_token) } },
                     modifier_token.span,
                 );
             }
@@ -252,11 +248,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         const data = parser.b.getData(key);
 
         if (data == .private_identifier) {
-            const pi = data.private_identifier;
-
-            const name = parser.b.getString(pi.name);
-
-            if (ecmascript.eqlStringValue(name, "constructor")) {
+            if (std.mem.eql(u8, parser.b.getString(data.private_identifier.name), "constructor")) {
                 try parser.report(
                     parser.b.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
@@ -361,7 +353,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         const key = try parser.b.createNode(
-            .{ .identifier_name = .{ .name = parser.b.sourceSlice(token.span.start, token.span.end) } },
+            .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
             token.span,
         );
         return .{ .key = key, .computed = false };

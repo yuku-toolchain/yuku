@@ -447,7 +447,7 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: ast.NodeIndex) Error!?ast
     }
 
     // import.meta
-    if (parser.current_token.tag != .identifier or !std.mem.eql(u8, parser.getTokenText(parser.current_token), "meta")) {
+    if (parser.current_token.tag != .identifier or !std.mem.eql(u8, parser.current_token.text(parser.source), "meta")) {
         try parser.report(
             parser.current_token.span,
             "The only valid meta properties for 'import' are 'import.meta', 'import.source()', or 'import.defer()'",
@@ -468,7 +468,7 @@ fn parseImportMetaOrPhaseImport(parser: *Parser, name: ast.NodeIndex) Error!?ast
 fn parseNewTarget(parser: *Parser, name: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '.'
 
-    if (!std.mem.eql(u8, parser.getTokenText(parser.current_token), "target")) {
+    if (!std.mem.eql(u8, parser.current_token.text(parser.source), "target")) {
         try parser.report(
             parser.current_token.span,
             "The only valid meta property for 'new' is 'new.target'",

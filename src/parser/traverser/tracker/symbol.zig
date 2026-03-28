@@ -1,6 +1,7 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
 const sc = @import("scope.zig");
+const String = ast.String;
 
 const Allocator = std.mem.Allocator;
 
@@ -16,7 +17,7 @@ pub const ReferenceId = enum(u32) { none = std.math.maxInt(u32), _ };
 /// A declared binding (variable, function, class, import, or parameter).
 pub const Symbol = struct {
     /// Name of the symbol.
-    name: ast.StringId,
+    name: String,
     kind: Kind,
     flags: Flags,
     /// The scope this symbol is declared in.
@@ -79,8 +80,8 @@ pub const Symbol = struct {
 
 /// An identifier reference (a use of a name, not a declaration).
 pub const Reference = struct {
-    /// Interned name of the reference.
-    name: ast.StringId,
+    /// Name of the reference.
+    name: String,
     /// The scope this reference appears in (used for resolution).
     scope: sc.ScopeId,
     /// The AST node for this reference.
@@ -97,8 +98,13 @@ pub const SymbolTable = struct {
     scope_maps: []const ScopeMap,
     /// Hoisted vars passing through intermediate block scopes (Section 14.2.1).
     hoisting_variables: []const ScopeMap,
-    /// String pool for resolving symbol and reference names.
-    strings: ast.StringPool,
+    /// String pool for resolving `String` handles to text.
+    strings: *const ast.ASTStringPool,
+
+    /// Returns the string content for a `String`.
+    pub inline fn getString(self: SymbolTable, id: String) []const u8 {
+        return self.strings.get(id);
+    }
 
     /// Returns the symbol for the given ID.
     pub inline fn getSymbol(self: SymbolTable, id: SymbolId) Symbol {
@@ -112,12 +118,12 @@ pub const SymbolTable = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: SymbolTable, sym: Symbol) []const u8 {
-        return self.strings.get(sym.name);
+        return self.getString(sym.name);
     }
 
     /// Returns the source name of a reference as a string slice.
     pub inline fn getRefName(self: SymbolTable, ref: Reference) []const u8 {
-        return self.strings.get(ref.name);
+        return self.getString(ref.name);
     }
 
     /// Returns an iterator over all symbol IDs declared in the given scope.
@@ -125,7 +131,7 @@ pub const SymbolTable = struct {
         return self.scope_maps[@intFromEnum(scope)].valueIterator();
     }
 
-    /// Searches for a symbol with `name` in a single scope. Returns `null` if not found.
+    /// Searches for a symbol by name in a single scope.
     pub fn findInScope(self: SymbolTable, scope: sc.ScopeId, name: []const u8) ?SymbolId {
         return self.scope_maps[@intFromEnum(scope)].get(name);
     }
@@ -150,7 +156,7 @@ pub const SymbolTable = struct {
     pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) void {
         for (@constCast(self.references)) |*ref| {
             if (ref.resolved == .none) {
-                ref.resolved = self.resolve(ref.scope, self.getRefName(ref.*), scope_tree) orelse .none;
+                ref.resolved = self.resolve(ref.scope, self.getString(ref.name), scope_tree) orelse .none;
             }
         }
     }
@@ -304,15 +310,14 @@ pub const SymbolTracker = struct {
                 const target = self.resolveTargetScope(scope);
                 const sym_id = try self.declare(id.name, target, index);
 
-                // Register hoisted vars in each intermediate block scope's
+                // register hoisted vars in each intermediate block scope's
                 // hoisting_variables so that findInScopeOrHoisted can detect
                 // conflicts with later lexical declarations.
                 if (self.binding_kind == .hoisted) {
-                    const name_str = self.tree.getString(id.name);
                     var iter = scope.ancestors(scope.currentScopeId());
                     while (iter.next()) |s| {
                         if (s == target) break;
-                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, name_str);
+                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, self.tree.getString(id.name));
                         if (!gop.found_existing) {
                             gop.value_ptr.* = sym_id;
                         }
@@ -360,9 +365,8 @@ pub const SymbolTracker = struct {
 
     /// Creates a new symbol in the given scope using the current binding context.
     /// Returns the ID of the newly created symbol.
-    pub fn declare(self: *SymbolTracker, name: ast.StringId, target_scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!SymbolId {
+    pub fn declare(self: *SymbolTracker, name: String, target_scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!SymbolId {
         const id: SymbolId = @enumFromInt(@as(u32, @intCast(self.symbols.items.len)));
-        const scope_idx = @intFromEnum(target_scope);
 
         try self.symbols.append(self.allocator, .{
             .name = name,
@@ -376,14 +380,14 @@ pub const SymbolTracker = struct {
             .node = node,
         });
 
-        try self.scope_maps.items[scope_idx].put(self.allocator, self.tree.getString(name), id);
+        try self.scope_maps.items[@intFromEnum(target_scope)].put(self.allocator, self.tree.getString(name), id);
 
         return id;
     }
 
     /// Records a new identifier reference in the given scope.
     /// Returns the ID of the newly created reference.
-    pub fn addReference(self: *SymbolTracker, name: ast.StringId, scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!ReferenceId {
+    pub fn addReference(self: *SymbolTracker, name: String, scope: sc.ScopeId, node: ast.NodeIndex) Allocator.Error!ReferenceId {
         const id: ReferenceId = @enumFromInt(@as(u32, @intCast(self.references.items.len)));
         try self.references.append(self.allocator, .{
             .name = name,
@@ -450,7 +454,7 @@ pub const SymbolTracker = struct {
             .references = self.references.items,
             .scope_maps = self.scope_maps.items,
             .hoisting_variables = self.hoisting_variables.items,
-            .strings = self.tree.strings.freeze(),
+            .strings = &self.tree.strings,
         };
     }
 };

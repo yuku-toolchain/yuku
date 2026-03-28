@@ -61,10 +61,15 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithRescannedToken(parser.lexer.createToken(.regex_literal, regex.span.start, regex.span.end)) orelse return null;
 
+    const pattern_start = regex.span.start + 1;
+    const pattern_end = pattern_start + @as(u32, @intCast(regex.pattern.len));
+    const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
+    const flags_end = regex.span.end;
+
     return try parser.b.createNode(.{
         .regexp_literal = .{
-            .pattern = parser.b.sourceSlice(regex.span.start + 1, regex.span.start + 1 + @as(u32, @intCast(regex.pattern.len))),
-            .flags = parser.b.sourceSlice(regex.span.end - @as(u32, @intCast(regex.flags.len)), regex.span.end),
+            .pattern = parser.b.sourceSlice(pattern_start, pattern_end),
+            .flags = parser.b.sourceSlice(flags_start, flags_end),
         },
     }, regex.span);
 }
@@ -181,37 +186,28 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
 
     const token = parser.current_token;
-
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(.{
-        .identifier_reference = .{
-            .name = parser.b.sourceSlice(token.span.start, token.span.end),
-        },
+        .identifier_reference = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
 pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-
     try parser.advance() orelse return null;
 
     return try parser.b.createNode(.{
-        .private_identifier = .{
-            .name = parser.b.sourceSlice(token.span.start + 1, token.span.end),
-        },
+        .private_identifier = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
 pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.b.createNode(.{
-        .identifier_name = .{
-            .name = parser.b.sourceSlice(token.span.start, token.span.end),
-        },
+        .identifier_name = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
@@ -222,9 +218,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     return try parser.b.createNode(.{
-        .label_identifier = .{
-            .name = parser.b.sourceSlice(current.span.start, current.span.end),
-        },
+        .label_identifier = .{ .name = try parser.identifierName(current) },
     }, current.span);
 }
 
@@ -243,16 +237,6 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         try parser.report(
             token.span,
             try parser.fmt("'{s}' is a reserved word and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
-            .{},
-        );
-
-        return false;
-    }
-
-    if (token.tag.isStrictModeReserved() and parser.isStrictMode()) {
-        try parser.report(
-            token.span,
-            try parser.fmt("'{s}' is reserved in strict mode and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
             .{},
         );
 

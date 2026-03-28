@@ -301,13 +301,11 @@ fn createSingleDeclaration(parser: *Parser, kind: ast.VariableKind, declarator: 
 }
 
 fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
-    const data = parser.b.getData(expr);
+    if (parser.b.getData(expr) != .identifier_reference) return false;
 
-    if (data != .identifier_reference) return false;
-
-    const id = data.identifier_reference;
-
-    return std.mem.eql(u8, parser.b.getString(id.name), "async");
+    // compare raw source text, escaped `\u0061sync` should not match
+    const span = parser.b.getSpan(expr);
+    return std.mem.eql(u8, parser.source[span.start..span.end], "async");
 }
 
 /// in a regular for-loop, destructuring patterns and const declarations require an initializer.

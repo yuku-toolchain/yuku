@@ -128,6 +128,50 @@ pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21,
     return .{ .value = r.value, .end = r.end };
 }
 
+/// resolves \uHHHH / \u{HHHH} escapes in an identifier to their UTF-8 form.
+/// returns `raw` unchanged on decode failure or buffer overflow.
+pub fn decodeEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
+    var out: usize = 0;
+    var i: usize = 0;
+    while (i < raw.len) {
+        if (raw[i] == '\\' and i + 1 < raw.len and raw[i + 1] == 'u') {
+            const parsed = parseUnicodeEscape(raw, i + 2) orelse return raw;
+            if (parsed.value < 0x80) {
+                if (out >= buf.len) return raw;
+                buf[out] = @intCast(parsed.value);
+                out += 1;
+            } else {
+                const n = std.unicode.utf8Encode(@intCast(parsed.value), buf[out..]) catch return raw;
+                out += n;
+            }
+            i = parsed.end;
+        } else {
+            if (out >= buf.len) return raw;
+            buf[out] = raw[i];
+            out += 1;
+            i += 1;
+        }
+    }
+    return buf[0..out];
+}
+
+/// checks whether a string contains a legacy octal escape
+/// (\0n, \1-\7) or non-octal decimal escape (\8, \9).
+pub fn hasOctalEscape(str: []const u8) bool {
+    var i: usize = 0;
+    while (i < str.len) : (i += 1) {
+        if (str[i] != '\\') continue;
+        i += 1;
+        if (i >= str.len) break;
+        switch (str[i]) {
+            '1'...'9' => return true,
+            '0' => if (i + 1 < str.len and str[i + 1] >= '0' and str[i + 1] <= '9') return true,
+            else => {},
+        }
+    }
+    return false;
+}
+
 inline fn hexVal(c: u8) ?u8 {
     return if (c >= '0' and c <= '9') c - '0' else if (c >= 'a' and c <= 'f') c - 'a' + 10 else if (c >= 'A' and c <= 'F') c - 'A' + 10 else null;
 }

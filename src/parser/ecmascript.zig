@@ -6,22 +6,23 @@ const utf = @import("util").Utf;
 pub const PropName = struct {
     name: []const u8,
     span: ast.Span,
+    is_string_literal: bool,
 
-    /// compare the StringValue of this PropName against an expected ASCII name.
+    /// compares the StringValue against an expected name.
+    /// uses escape-resolving comparison for string literal keys.
     pub fn eql(self: PropName, expected: []const u8) bool {
-        return eqlStringValue(self.name, expected);
+        if (self.is_string_literal) return eqlStringValue(self.name, expected);
+        return std.mem.eql(u8, self.name, expected);
     }
 };
 
 /// https://tc39.es/ecma262/#sec-static-semantics-propname
 pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
-    const key_data = parser.b.getData(key);
-    switch (key_data) {
-        .identifier_name => |id| {
-            return .{
-                .name = parser.b.getString(id.name),
-                .span = parser.b.getSpan(key),
-            };
+    switch (parser.b.getData(key)) {
+        .identifier_name => |id| return .{
+            .name = parser.b.getString(id.name),
+            .span = parser.b.getSpan(key),
+            .is_string_literal = false,
         },
         .string_literal => |str| {
             const raw = parser.b.getString(str.raw);
@@ -29,10 +30,9 @@ pub fn propName(parser: *const Parser, key: ast.NodeIndex) ?PropName {
             return .{
                 .name = raw[1 .. raw.len - 1],
                 .span = parser.b.getSpan(key),
+                .is_string_literal = true,
             };
         },
-        // currently only handles identifier_name and string_literal,
-        // which is sufficient for the checks in class.zig, extend when needed.
         else => return null,
     }
 }
@@ -66,14 +66,16 @@ pub fn eqlStringValue(source: []const u8, expected: []const u8) bool {
 }
 
 /// https://tc39.es/ecma262/#sec-static-semantics-issimpleparameterlist
-pub fn isSimpleParameterList(tree: *const ast.Tree, params: ast.FormalParameters) bool {
-    if (params.rest != .null) return false;
+pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameters) ?ast.NodeIndex {
+    if (params.rest != .null) return params.rest;
+
     for (tree.getExtra(params.items)) |param_idx| {
         const pattern = tree.getData(param_idx).formal_parameter.pattern;
         switch (tree.getData(pattern)) {
             .binding_identifier => {},
-            else => return false,
+            else => return pattern,
         }
     }
-    return true;
+
+    return null;
 }
