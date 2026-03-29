@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3436/3648 (94.19%)
-Failed:       212
+Passed:       3447/3648 (94.49%)
+Failed:       201
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -83,7 +83,7 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/00b86c72dd55da4c.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for (let let of a);
    |          ^^^
@@ -464,7 +464,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/035deac78364fadd.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for (let let in a);
    |          ^^^
@@ -3803,7 +3803,13 @@ error: 'eval' is not allowed as a binding name in strict mode
    |                                       ^^^^
    |
 
-✗ test/parser/suite/js/semantic/1af76113be04ca67.js
+✓ test/parser/suite/js/semantic/1af76113be04ca67.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for (using let of []) {}
+   |            ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/1afc79ee14b2a9e6.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -5077,7 +5083,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/244100b202daa83e.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let a, let = 1;
    |        ^^^
@@ -5300,7 +5306,13 @@ error: 'eval' is not allowed as a binding name in strict mode
    |       ^^^^
    |
 
-✗ test/parser/suite/js/semantic/26e1ec31b605f14e.js
+✓ test/parser/suite/js/semantic/26e1ec31b605f14e.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for (const let in {}) {}
+   |            ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/26f6cd429c076df3.js
 error: Cannot use import statement outside a module
    |
@@ -7389,7 +7401,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/js/semantic/372597f0f5a0900b.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for(let let;;);
    |         ^^^
@@ -10288,7 +10300,7 @@ error: 'with' statements are not allowed in strict mode
 
 ✗ test/parser/suite/js/semantic/4d3ec880eac4d64e.js
 ✓ test/parser/suite/js/semantic/4d46572591cbd5f7.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let let;
    |     ^^^
@@ -12171,7 +12183,7 @@ error: Export 'a' is not defined
    |
 
 ✓ test/parser/suite/js/semantic/5b255dda6662d8ad.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let a, let;
    |        ^^^
@@ -14131,7 +14143,7 @@ error: 'static' is reserved in strict mode and cannot be used as a binding name
    |
 
 ✓ test/parser/suite/js/semantic/6aa21a018737fa47.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for (let let in {}) { }
    |          ^^^
@@ -15335,7 +15347,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/74060eb332483ead.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let a, b, c, let = 1;
    |              ^^^
@@ -15594,7 +15606,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 |   after = f;
    |
 
-✗ test/parser/suite/js/semantic/75d3e8751d65dec9.js
+✓ test/parser/suite/js/semantic/75d3e8751d65dec9.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for(const let = 1;;);
+   |           ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/75dc2fb44c9e1650.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -16433,7 +16451,7 @@ error: Octal literals are not allowed in strict mode
 
 
 ✓ test/parser/suite/js/semantic/7ca5d521e3724537.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let let;
    |     ^^^
@@ -16632,7 +16650,14 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  6 |         throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/7e7699ee6069f799.js
+✓ test/parser/suite/js/semantic/7e7699ee6069f799.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | const
+ 2 | let = "irrelevant initializer";
+   | ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7ea0f80766201023.module.js
 error: Identifier 'a' has already been declared
    |
@@ -17093,7 +17118,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/819eb20493851d57.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let a, b, c, let;
    |              ^^^
@@ -17700,7 +17725,7 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
    |
 
 ✓ test/parser/suite/js/semantic/86e65d3975210ff8.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for (let let of []) {}
    |          ^^^
@@ -17863,7 +17888,13 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/89b98cc85d16548e.js
+✓ test/parser/suite/js/semantic/89b98cc85d16548e.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for (const let of []) {}
+   |            ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/89c3df57e8b8dc70.js
 error: Cannot use import statement outside a module
    |
@@ -19002,7 +19033,7 @@ error: 'import' declaration may only appear at the top level
    |
 
 ✓ test/parser/suite/js/semantic/939bc78e89815e9e.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for(let let of 1);
    |         ^^^
@@ -19695,7 +19726,14 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |                ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/978c2537efe98437.js
+✓ test/parser/suite/js/semantic/978c2537efe98437.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for (const let of a);
+   |            ^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/978d861516846a89.module.js
 error: Unexpected token '=' in binding pattern
    |
@@ -19952,7 +19990,13 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/99195a9828091096.js
+✓ test/parser/suite/js/semantic/99195a9828091096.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for(const let of 1);
+   |           ^^^
+   |
+
 ✗ test/parser/suite/js/semantic/9926198623c407aa.js
 ✓ test/parser/suite/js/semantic/992c857bf4cc5f85.module.js
 error: 'with' statements are not allowed in strict mode
@@ -20520,7 +20564,13 @@ error: Duplicate '__proto__' property in object literal
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/9d8bc7d41a06ba76.js
+✓ test/parser/suite/js/semantic/9d8bc7d41a06ba76.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for(const let in 1);
+   |           ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/9d915b5055233615.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -20917,7 +20967,7 @@ error: Cannot use import statement outside a module
    |
 
 ✓ test/parser/suite/js/semantic/a0c1039fe0e17f79.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for(let a, let;;);
    |            ^^^
@@ -21855,7 +21905,7 @@ error: 'with' statements are not allowed in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/a71f31c6ba7d6fd7.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let
  2 | let = "irrelevant initializer";
@@ -25603,7 +25653,7 @@ error: 'in' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/semantic/c4e5bbf66d84bd96.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | let
  2 | let;
@@ -31072,7 +31122,7 @@ error: Cannot use 'export default' declaration outside a module
    |
 
 ✓ test/parser/suite/js/semantic/e94af0a4ed3c838c.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for(let let in 1);
    |         ^^^
@@ -31573,7 +31623,15 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |                                  ^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/ec8d1dfb30b18099.js
+✓ test/parser/suite/js/semantic/ec8d1dfb30b18099.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | async function f() {
+ 2 |   for (await using let of []) {}
+   |                    ^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ec93b40c2e19fac2.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -32017,7 +32075,14 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |           ^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/efd3de358662f915.js
+✓ test/parser/suite/js/semantic/efd3de358662f915.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for (const let in a);
+   |            ^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/efe0e7dcea3c9e78.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -32733,7 +32798,7 @@ error: 'eval' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/f50ceee41fdb19e6.js
-error: 'let' is not allowed as a variable name in a 'let' declaration
+error: 'let' is not allowed as a variable name in a lexical declaration
    |
  1 | for (let let in {}) {}
    |          ^^^
@@ -33258,7 +33323,13 @@ error: Identifier 'a' has already been declared
 
 
 ✗ test/parser/suite/js/semantic/f84e7be142d13da4.js
-✗ test/parser/suite/js/semantic/f850f00481b1ca6c.js
+✓ test/parser/suite/js/semantic/f850f00481b1ca6c.js
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | for(const a = 1, let = 2;;);
+   |                  ^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f85d41589ae1fda7.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |

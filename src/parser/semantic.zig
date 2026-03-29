@@ -58,10 +58,8 @@ const SemanticVisit = struct {
 
             if (isEvalOrArguments(name))
                 try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
-        } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
-            eql(u8, name, "let"))
-        {
-            try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a 'let' declaration", .{});
+        } else if (ctx.symbols.currentBindingKind() == .lexical and eql(u8, name, "let")) {
+            try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a lexical declaration", .{});
         }
 
         try self.checkModuleReserved(name, node_index, ctx, "a binding name");
