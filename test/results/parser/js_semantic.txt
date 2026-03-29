@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3484/3637 (95.79%)
-Failed:       153
+Passed:       3486/3637 (95.85%)
+Failed:       151
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -33541,7 +33541,25 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/f84e7be142d13da4.js
+✓ test/parser/suite/js/semantic/f84e7be142d13da4.js
+error: A switch statement can only have one default clause
+   |
+ 5 |       result += 2;
+ 6 |     default:
+   |     ~~~~~~~~
+ 7 |       result += 32;
+   | ~~~~~~~~~~~~~~~~~~~
+ 8 |       break;
+   | ~~~~~~~~~~~~ first default defined here
+ 9 |     default:
+   |     ^^^^^^^^
+10 |       result += 32;
+   | ^^^^^^^^^^^^^^^^^^^
+11 |       break;
+   | ^^^^^^^^^^^^
+12 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/f850f00481b1ca6c.js
 error: 'let' is not allowed as a variable name in a lexical declaration
    |
@@ -33996,7 +34014,14 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/fb130c395c6aafe7.js
+✓ test/parser/suite/js/semantic/fb130c395c6aafe7.js
+error: A switch statement can only have one default clause
+   |
+ 1 | switch (c) { default: default: }
+   |                       ^^^^^^^^
+   |              ~~~~~~~~ first default defined here
+   |
+
 ✓ test/parser/suite/js/semantic/fb170ea4cc5daf1a.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |

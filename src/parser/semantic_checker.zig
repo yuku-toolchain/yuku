@@ -496,6 +496,26 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-switch-statement-static-semantics-early-errors
+    pub fn enter_switch_statement(self: *Self, stmt: ast.SwitchStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        var first_default: ?ast.NodeIndex = null;
+        for (ctx.tree.getExtra(stmt.cases)) |child| {
+            const case = ctx.tree.getData(child).switch_case;
+            if (case.@"test" != .null) continue;
+
+            if (first_default) |first| {
+                try self.report(ctx.tree.getSpan(child), "A switch statement can only have one default clause", .{
+                    .labels = try self.labels(&.{
+                        self.label(ctx.tree.getSpan(first), "first default defined here"),
+                    }),
+                });
+            } else {
+                first_default = child;
+            }
+        }
+        return .proceed;
+    }
+
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
     pub fn enter_class_body(self: *Self, body: ast.ClassBody, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         var first_constructor: ?ast.NodeIndex = null;
