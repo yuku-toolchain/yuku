@@ -27,7 +27,12 @@ pub fn analyze(tree: *ast.Tree) AnalysisError!semantic.Result {
         .allocator = tree.allocator(),
     };
 
-    return try semantic.traverse(SemanticVisit, tree, &visitor);
+    const result = try semantic.traverse(SemanticVisit, tree, &visitor);
+
+    // post traversal
+    try visitor.checkUnresolvedExports(result);
+
+    return result;
 }
 
 const SemanticVisit = struct {
@@ -36,20 +41,28 @@ const SemanticVisit = struct {
     tree: *ast.Tree,
     allocator: Allocator,
 
+    exported_names: std.StringHashMapUnmanaged(ast.NodeIndex) = .{},
+    export_specifiers: std.ArrayListUnmanaged(ExportSpecifierInfo) = .{},
+
+    const ExportSpecifierInfo = struct {
+        local_name: []const u8,
+        node: ast.NodeIndex,
+    };
+
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
-            try self.checkStrictReserved(name, node_index, ctx, "a binding name");
+            try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
 
             if (isEvalOrArguments(name))
-                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
-        } else if (ctx.symbols.currentBindingKind() == .lexical and !ctx.symbols.binding_is_const and
-            eql(u8, name, "let"))
-        {
-            try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a 'let' declaration", .{});
+                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding identifier in strict mode", .{name}), .{});
+        } else if (ctx.symbols.currentBindingKind() == .lexical and eql(u8, name, "let")) {
+            try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a lexical declaration", .{});
         }
+
+        try self.checkModuleReserved(name, node_index, ctx, "a binding identifier");
 
         // redeclaration checks
 
@@ -60,8 +73,7 @@ const SemanticVisit = struct {
         if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
 
-            // https://tc39.es/ecma262/#sec-block-static-semantics-early-errors
-            // https://tc39.es/ecma262/#sec-switch-statement-static-semantics-early-errors
+            // Section 14.2.1, 14.12.1: block/switch lexical redeclaration.
             if (existing.kind.isBlockScoped(target_scope_kind) or
                 current_kind.isBlockScoped(target_scope_kind))
             {
@@ -81,6 +93,10 @@ const SemanticVisit = struct {
                     } else if (ecmascript.findNonSimpleParameter(ctx.tree, formal_parameters)) |_| {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                     }
+                } else if (current_kind == .parameter) {
+                    // Section 14.15.1: "It is a Syntax Error if the BoundNames
+                    // of CatchParameter contains any duplicate elements."
+                    try self.reportRedeclaration(id, node_index, existing, ctx);
                 }
             }
         }
@@ -100,18 +116,31 @@ const SemanticVisit = struct {
             }
         }
 
+        // track exported binding names (export const x, export function f, etc.)
+        if (ctx.symbols.is_export and !ctx.symbols.is_default_export)
+            try self.recordExportedName(name, node_index, ctx);
+
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "an identifier");
+        const name = ctx.tree.getString(id.name);
+        try self.checkStrictReserved(name, node_index, ctx, "an identifier");
+        try self.checkModuleReserved(name, node_index, ctx, "an identifier");
+
+        // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+        if (eql(u8, name, "arguments") and !isArgumentsAvailable(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'arguments' is not allowed in class field initializers or static blocks", .{});
+
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "a label");
+        const name = ctx.tree.getString(id.name);
+        try self.checkStrictReserved(name, node_index, ctx, "a label");
+        try self.checkModuleReserved(name, node_index, ctx, "a label");
         return .proceed;
     }
 
@@ -247,9 +276,9 @@ const SemanticVisit = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-assignment-operators-static-semantics-early-errors
-    pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.left))
-            try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
+    pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.scope.isStrict())
+            try self.checkAssignTargetEvalArguments(expr.left, ctx);
         return .proceed;
     }
 
@@ -265,6 +294,29 @@ const SemanticVisit = struct {
                     try self.report(ctx.tree.getSpan(node_index), "Private fields cannot be deleted", .{});
                 },
                 else => {},
+            }
+        }
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-__proto__-property-names-in-object-initializers
+    pub fn enter_object_expression(self: *Self, obj: ast.ObjectExpression, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        var first_proto: ?ast.NodeIndex = null;
+        for (ctx.tree.getExtra(obj.properties)) |child| {
+            if (ctx.tree.getData(child) != .object_property) continue;
+            const prop = ctx.tree.getData(child).object_property;
+            if (prop.computed or prop.method or prop.shorthand or prop.kind != .init) continue;
+            const pn = ecmascript.propName(ctx.tree, prop.key) orelse continue;
+            if (!pn.eql("__proto__")) continue;
+
+            if (first_proto) |first| {
+                try self.report(ctx.tree.getSpan(child), "Duplicate '__proto__' property in object literal", .{
+                    .labels = try self.labels(&.{
+                        self.label(ctx.tree.getSpan(first), "first defined here"),
+                    }),
+                });
+            } else {
+                first_proto = child;
             }
         }
         return .proceed;
@@ -298,16 +350,22 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-left-hand-side-expressions-static-semantics-early-errors
     pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module) {
-            const meta = ctx.tree.getData(prop.meta);
-            if (meta == .identifier_name and eql(u8, ctx.tree.getString(meta.identifier_name.name), "import"))
-                try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
-        }
+        const meta = ctx.tree.getData(prop.meta);
+        if (meta != .identifier_name) return .proceed;
+        const name = ctx.tree.getString(meta.identifier_name.name);
+
+        if (eql(u8, name, "import") and !ctx.tree.isModule())
+            try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
+
+        // https://tc39.es/ecma262/#sec-static-semantics-early-errors
+        if (eql(u8, name, "new") and !isNewTargetAvailable(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'new.target' is only valid inside functions, class field initializers, or static blocks", .{});
+
         return .proceed;
     }
 
     pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
@@ -315,7 +373,7 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
@@ -323,18 +381,44 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
+
+        try self.recordExportedName("default", node_index, ctx);
         return .proceed;
     }
 
-    pub fn enter_export_all_declaration(self: *Self, _: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+    pub fn enter_export_all_declaration(self: *Self, decl: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
+
+        // export * as name from '...'
+        if (decl.exported != .null)
+            try self.recordExportedName(getModuleExportName(ctx.tree, decl.exported), node_index, ctx);
+
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-exports-static-semantics-early-errors
+    pub fn enter_export_specifier(self: *Self, spec: ast.ExportSpecifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        const exported_name = getModuleExportName(ctx.tree, spec.exported);
+        try self.recordExportedName(exported_name, node_index, ctx);
+
+        // collect for unresolved check (only for local exports, not re-exports)
+        if (ctx.path.parent()) |parent| {
+            if (ctx.tree.getData(parent) == .export_named_declaration and
+                ctx.tree.getData(parent).export_named_declaration.source == .null)
+            {
+                try self.export_specifiers.append(self.allocator, .{
+                    .local_name = getModuleExportName(ctx.tree, spec.local),
+                    .node = node_index,
+                });
+            }
+        }
         return .proceed;
     }
 
@@ -348,12 +432,16 @@ const SemanticVisit = struct {
     /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_of_statement(self: *Self, stmt: ast.ForOfStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         try self.checkForInOfInitializer(ctx, stmt.left);
+        if (ctx.scope.isStrict())
+            try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_in_statement(self: *Self, stmt: ast.ForInStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         try self.checkForInOfInitializer(ctx, stmt.left);
+        if (ctx.scope.isStrict())
+            try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
     }
 
@@ -394,10 +482,78 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-labelled-statements-static-semantics-early-errors
+    pub fn enter_labeled_statement(self: *Self, stmt: ast.LabeledStatement, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        _ = node_index;
+        const name = ctx.tree.getString(ctx.tree.getData(stmt.label).label_identifier.name);
+        var iter = ctx.path.ancestors();
+        _ = iter.next(); // skip current node
+        while (iter.next()) |i| {
+            const data = ctx.tree.getData(i);
+            if (data == .labeled_statement) {
+                if (eql(u8, ctx.tree.getString(ctx.tree.getData(data.labeled_statement.label).label_identifier.name), name))
+                    try self.report(ctx.tree.getSpan(stmt.label), try self.fmt("Duplicate label '{s}'", .{name}), .{});
+            }
+            if (isFunctionBoundary(data)) break;
+        }
+        return .proceed;
+    }
+
+    /// Section 14.12: the CaseBlock grammar permits at most one DefaultClause.
+    pub fn enter_switch_statement(self: *Self, stmt: ast.SwitchStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        var first_default: ?ast.NodeIndex = null;
+        for (ctx.tree.getExtra(stmt.cases)) |child| {
+            const case = ctx.tree.getData(child).switch_case;
+            if (case.@"test" != .null) continue;
+
+            if (first_default) |first| {
+                try self.report(ctx.tree.getSpan(child), "A switch statement can only have one default clause", .{
+                    .labels = try self.labels(&.{
+                        self.label(ctx.tree.getSpan(first), "first default defined here"),
+                    }),
+                });
+            } else {
+                first_default = child;
+            }
+        }
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    pub fn enter_class_body(self: *Self, body: ast.ClassBody, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        var first_constructor: ?ast.NodeIndex = null;
+        for (ctx.tree.getExtra(body.body)) |child| {
+            const child_data = ctx.tree.getData(child);
+
+            if (child_data != .method_definition) continue;
+
+            const method_definition = child_data.method_definition;
+
+            if (method_definition.kind != .constructor) continue;
+
+            if (first_constructor) |first| {
+                try self.report(ctx.tree.getSpan(method_definition.key), "A class can only have one constructor", .{
+                    .labels = try self.labels(&.{
+                        self.label(ctx.tree.getSpan(first), "first constructor defined here"),
+                    }),
+                });
+            } else {
+                first_constructor = method_definition.key;
+            }
+        }
+        return .proceed;
+    }
+
     fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
         if (!ctx.scope.isStrict()) return;
         if (matchStrictReserved(name)) |word|
             try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is reserved in strict mode and cannot be used as " ++ as_what, .{word}), .{});
+    }
+
+    fn checkModuleReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
+        if (!ctx.tree.isModule()) return;
+        if (eql(u8, name, "await"))
+            try self.report(ctx.tree.getSpan(node_index), "'await' is reserved in module code and cannot be used as " ++ as_what, .{});
     }
 
     /// https://tc39.es/ecma262/#sec-keywords-and-reserved-words
@@ -436,6 +592,33 @@ const SemanticVisit = struct {
     fn isEvalOrArgumentsRef(tree: *const ast.Tree, node: ast.NodeIndex) bool {
         return tree.getData(node) == .identifier_reference and
             isEvalOrArguments(tree.getString(tree.getData(node).identifier_reference.name));
+    }
+
+    /// walks a destructuring assignment target to find eval/arguments references.
+    fn checkAssignTargetEvalArguments(self: *Self, node: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+        if (node == .null) return;
+        switch (ctx.tree.getData(node)) {
+            .identifier_reference => |id| {
+                if (isEvalOrArguments(ctx.tree.getString(id.name)))
+                    try self.report(ctx.tree.getSpan(node), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
+            },
+            .array_pattern => |arr| {
+                for (ctx.tree.getExtra(arr.elements)) |elem| {
+                    try self.checkAssignTargetEvalArguments(elem, ctx);
+                }
+                try self.checkAssignTargetEvalArguments(arr.rest, ctx);
+            },
+            .object_pattern => |obj| {
+                for (ctx.tree.getExtra(obj.properties)) |prop| {
+                    if (ctx.tree.getData(prop) == .binding_property)
+                        try self.checkAssignTargetEvalArguments(ctx.tree.getData(prop).binding_property.value, ctx);
+                }
+                try self.checkAssignTargetEvalArguments(obj.rest, ctx);
+            },
+            .assignment_pattern => |ap| try self.checkAssignTargetEvalArguments(ap.left, ctx),
+            .binding_rest_element => |r| try self.checkAssignTargetEvalArguments(r.argument, ctx),
+            else => {},
+        }
     }
 
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {
@@ -552,6 +735,18 @@ const SemanticVisit = struct {
         return false;
     }
 
+    fn isNewTargetAvailable(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .function, .static_block, .property_definition => return true,
+                .arrow_function_expression => {},
+                else => {},
+            }
+        }
+        return false;
+    }
+
     const LabelSearch = enum { found, not_found, crossed_boundary };
 
     fn findLabel(ctx: *SemanticCtx, name: []const u8) LabelSearch {
@@ -591,6 +786,21 @@ const SemanticVisit = struct {
         return .not_found;
     }
 
+    /// `arguments` is available inside regular functions but not in class field
+    /// initializers or static blocks (arrow functions are transparent).
+    fn isArgumentsAvailable(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .function => return true,
+                .property_definition, .static_block => return false,
+                .arrow_function_expression, .program => {},
+                else => {},
+            }
+        }
+        return true;
+    }
+
     fn isInFormalParameters(ctx: *SemanticCtx) bool {
         return findFormalParameters(ctx) != null;
     }
@@ -605,6 +815,42 @@ const SemanticVisit = struct {
             }
         }
         return null;
+    }
+
+    /// extracts the name from a ModuleExportName (IdentifierName, IdentifierReference, or StringLiteral).
+    fn getModuleExportName(tree: *const ast.Tree, node: ast.NodeIndex) []const u8 {
+        return switch (tree.getData(node)) {
+            .identifier_name => |id| tree.getString(id.name),
+            .identifier_reference => |id| tree.getString(id.name),
+            .string_literal => |lit| lit.value(tree),
+            else => "",
+        };
+    }
+
+    /// records an exported name and reports a duplicate if one already exists.
+    fn recordExportedName(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+        if (!ctx.tree.isModule()) return;
+        const gop = try self.exported_names.getOrPut(self.allocator, name);
+        if (gop.found_existing) {
+            try self.report(ctx.tree.getSpan(node_index), try self.fmt("Duplicate export of '{s}'", .{name}), .{
+                .labels = try self.labels(&.{
+                    self.label(ctx.tree.getSpan(gop.value_ptr.*), "first exported here"),
+                    self.label(ctx.tree.getSpan(node_index), "exported again here"),
+                }),
+            });
+        } else {
+            gop.value_ptr.* = node_index;
+        }
+    }
+
+    /// Post-traversal: checks that all local export specifiers refer to declared bindings.
+    fn checkUnresolvedExports(self: *Self, result: semantic.Result) AnalysisError!void {
+        if (!self.tree.isModule()) return;
+        for (self.export_specifiers.items) |spec| {
+            if (result.symbol_table.findInScopeOrHoisted(.module, spec.local_name) == null) {
+                try self.report(self.tree.getSpan(spec.node), try self.fmt("Export '{s}' is not defined", .{spec.local_name}), .{});
+            }
+        }
     }
 
     fn reportRedeclaration(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, existing: Symbol, ctx: *SemanticCtx) Allocator.Error!void {

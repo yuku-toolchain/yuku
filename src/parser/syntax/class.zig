@@ -40,11 +40,20 @@ pub fn parseClassDecorated(
     // regular class expression allows optional name but produces expression
     const class_type: ast.ClassType = if (opts.is_expression and !opts.is_default_export) .class_expression else .class_declaration;
 
+    if (class_type == .class_declaration and parser.context.in_single_statement_context) {
+        @branchHint(.unlikely);
+        try parser.report(
+            .{ .start = start, .end = parser.current_token.span.end },
+            "Class declarations are not allowed in single-statement contexts",
+            .{ .help = "Wrap the class declaration in a block: { class C {} }" },
+        );
+    }
+
     // optional class name
     var id: ast.NodeIndex = .null;
 
     if (parser.current_token.tag.isIdentifierLike() and parser.current_token.tag != .extends) {
-        id = try patterns.parseBindingIdentifier(parser) orelse .null;
+        id = try literals.parseBindingIdentifier(parser) orelse .null;
     }
 
     // name is required for regular class declarations, but optional for:
@@ -69,9 +78,9 @@ pub fn parseClassDecorated(
 
     // class body
     const body = try parseClassBody(parser) orelse return null;
-    const body_end = parser.b.getSpan(body).end;
+    const body_end = parser.tree.getSpan(body).end;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .class = .{
             .type = class_type,
             .decorators = decorators,
@@ -117,7 +126,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the class, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .class_body = .{ .body = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint) },
     }, .{ .start = start, .end = end });
 }
@@ -149,9 +158,9 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // static { } - static block
         if (parser.current_token.tag == .left_brace) {
             if (decorators.len != 0) {
-                const first = parser.b.getExtra(decorators)[0];
+                const first = parser.tree.getExtra(decorators)[0];
                 try parser.report(
-                    parser.b.getSpan(first),
+                    parser.tree.getSpan(first),
                     "Decorators cannot be applied to static blocks",
                     .{ .help = "Remove the decorator or apply it to a method or field instead." },
                 );
@@ -166,7 +175,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         // if next token is '(' or nothing that could be a class element key, 'static' is the key
         // e.g., `static() {}` is a method named "static", not a static method
         if (parser.current_token.tag == .left_paren or !isClassElementKeyStart(parser.current_token.tag)) {
-            key = try parser.b.createNode(
+            key = try parser.tree.createNode(
                 .{ .identifier_name = .{ .name = try parser.identifierName(static_token) } },
                 static_token.span,
             );
@@ -189,7 +198,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
             is_async = true;
         } else {
-            key = try parser.b.createNode(
+            key = try parser.tree.createNode(
                 .{ .identifier_name = .{ .name = try parser.identifierName(async_token) } },
                 async_token.span,
             );
@@ -227,7 +236,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
                     is_accessor = true;
                 }
             } else {
-                key = try parser.b.createNode(
+                key = try parser.tree.createNode(
                     .{ .identifier_name = .{ .name = try parser.identifierName(modifier_token) } },
                     modifier_token.span,
                 );
@@ -245,12 +254,12 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // ClassElementName : PrivateIdentifier
     //    It is a Syntax Error if the StringValue of PrivateIdentifier is "#constructor".
     if (!computed) {
-        const data = parser.b.getData(key);
+        const data = parser.tree.getData(key);
 
         if (data == .private_identifier) {
-            if (std.mem.eql(u8, parser.b.getString(data.private_identifier.name), "constructor")) {
+            if (std.mem.eql(u8, parser.tree.getString(data.private_identifier.name), "constructor")) {
                 try parser.report(
-                    parser.b.getSpan(key),
+                    parser.tree.getSpan(key),
                     "Classes can't have a private field named '#constructor'",
                     .{ .help = "Use a different name for this private member." },
                 );
@@ -259,7 +268,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     if (!is_static and !computed) {
-        if (ecmascript.propName(parser, key)) |prop| {
+        if (ecmascript.propName(&parser.tree, key)) |prop| {
             if (prop.eql("constructor")) {
                 // constructor cannot have get/set modifiers
                 if (kind == .get or kind == .set) {
@@ -352,7 +361,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
 
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
-        const key = try parser.b.createNode(
+        const key = try parser.tree.createNode(
             .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
             token.span,
         );
@@ -387,14 +396,14 @@ fn parseMethodDefinition(
     if (kind == .constructor) {
         if (is_async) {
             try parser.report(
-                parser.b.getSpan(key),
+                parser.tree.getSpan(key),
                 "Constructor cannot be async",
                 .{ .help = "Remove the 'async' modifier from the constructor." },
             );
         }
         if (is_generator) {
             try parser.report(
-                parser.b.getSpan(key),
+                parser.tree.getSpan(key),
                 "Constructor cannot be a generator",
                 .{ .help = "Remove the '*' from the constructor." },
             );
@@ -402,13 +411,13 @@ fn parseMethodDefinition(
     } else if (is_generator) {
         if (kind == .get) {
             try parser.report(
-                parser.b.getSpan(key),
+                parser.tree.getSpan(key),
                 "Getter cannot be a generator",
                 .{ .help = "Remove the '*' from the getter definition." },
             );
         } else if (kind == .set) {
             try parser.report(
-                parser.b.getSpan(key),
+                parser.tree.getSpan(key),
                 "Setter cannot be a generator",
                 .{ .help = "Remove the '*' from the setter definition." },
             );
@@ -432,12 +441,12 @@ fn parseMethodDefinition(
 
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
 
-    const params_data = parser.b.getData(params).formal_parameters;
+    const params_data = parser.tree.getData(params).formal_parameters;
 
     if (kind == .get) {
         if (params_data.items.len != 0 or params_data.rest != .null) {
             try parser.report(
-                parser.b.getSpan(params),
+                parser.tree.getSpan(params),
                 "Getter must have no parameters",
                 .{ .help = "Remove all parameters from the getter." },
             );
@@ -447,7 +456,7 @@ fn parseMethodDefinition(
     if (kind == .set) {
         if (params_data.items.len != 1 or params_data.rest != .null) {
             try parser.report(
-                parser.b.getSpan(params),
+                parser.tree.getSpan(params),
                 "Setter must have exactly one parameter",
                 .{ .help = "Setters accept exactly one argument." },
             );
@@ -458,9 +467,9 @@ fn parseMethodDefinition(
 
     // body
     const body = try functions.parseFunctionBody(parser) orelse return null;
-    const body_end = parser.b.getSpan(body).end;
+    const body_end = parser.tree.getSpan(body).end;
 
-    const func = try parser.b.createNode(
+    const func = try parser.tree.createNode(
         .{ .function = .{
             .type = .function_expression,
             .id = .null,
@@ -472,7 +481,7 @@ fn parseMethodDefinition(
         .{ .start = func_start, .end = body_end },
     );
 
-    return try parser.b.createNode(
+    return try parser.tree.createNode(
         .{ .method_definition = .{
             .decorators = decorators,
             .key = key,
@@ -504,12 +513,12 @@ fn parsePropertyDefinition(
     }
 
     var value: ast.NodeIndex = .null;
-    var end = parser.b.getSpan(key).end;
+    var end = parser.tree.getSpan(key).end;
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null; // consume '='
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        end = parser.b.getSpan(value).end;
+        end = parser.tree.getSpan(value).end;
     }
 
     const tag = parser.current_token.tag;
@@ -525,7 +534,7 @@ fn parsePropertyDefinition(
         return null;
     }
 
-    return try parser.b.createNode(
+    return try parser.tree.createNode(
         .{ .property_definition = .{
             .decorators = decorators,
             .key = key,
@@ -563,7 +572,7 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 
     if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
 
-    return try parser.b.createNode(
+    return try parser.tree.createNode(
         .{ .static_block = .{ .body = body } },
         .{ .start = start, .end = end },
     );
@@ -586,7 +595,7 @@ inline fn isClassElementKeyStart(tag: TokenTag) bool {
 /// ClassElement : static FieldDefinition ;
 ///     It is a Syntax Error if the PropName of FieldDefinition is either "prototype" or "constructor".
 fn validateStaticPrototypeOrConstructor(parser: *Parser, key: ast.NodeIndex, method: bool) Error!void {
-    const prop = ecmascript.propName(parser, key) orelse return;
+    const prop = ecmascript.propName(&parser.tree, key) orelse return;
 
     if (prop.eql("prototype")) {
         try parser.report(
@@ -606,7 +615,7 @@ fn validateStaticPrototypeOrConstructor(parser: *Parser, key: ast.NodeIndex, met
 /// ClassElement : FieldDefinition ;
 ///     It is a Syntax Error if the PropName of FieldDefinition is "constructor".
 fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
-    const prop = ecmascript.propName(parser, key) orelse return;
+    const prop = ecmascript.propName(&parser.tree, key) orelse return;
 
     if (!prop.eql("constructor")) return;
 

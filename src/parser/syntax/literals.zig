@@ -9,9 +9,9 @@ const expressions = @import("expressions.zig");
 pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .string_literal = .{
-            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
+            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }
@@ -19,7 +19,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .boolean_literal = .{ .value = token.tag == .true },
     }, token.span);
 }
@@ -27,7 +27,7 @@ pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.b.createNode(.{ .null_literal = .{} }, token.span);
+    return try parser.tree.createNode(.{ .null_literal = .{} }, token.span);
 }
 
 pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -36,16 +36,16 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     // bigint literal is a separate node
     if (token.tag == .bigint_literal) {
-        return try parser.b.createNode(.{
+        return try parser.tree.createNode(.{
             .bigint_literal = .{
-                .raw = parser.b.sourceSlice(token.span.start, token.span.end),
+                .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
             },
         }, token.span);
     }
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .numeric_literal = .{
-            .raw = parser.b.sourceSlice(token.span.start, token.span.end),
+            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
         },
     }, token.span);
@@ -66,10 +66,10 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
     const flags_end = regex.span.end;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .regexp_literal = .{
-            .pattern = parser.b.sourceSlice(pattern_start, pattern_end),
-            .flags = parser.b.sourceSlice(flags_start, flags_end),
+            .pattern = parser.tree.sourceSlice(pattern_start, pattern_end),
+            .flags = parser.tree.sourceSlice(flags_start, flags_end),
         },
     }, regex.span);
 }
@@ -81,9 +81,9 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
 
     try parser.advance() orelse return null;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .template_literal = .{
-            .quasis = try parser.b.createExtra(&[_]ast.NodeIndex{element}),
+            .quasis = try parser.tree.createExtra(&[_]ast.NodeIndex{element}),
             .expressions = ast.IndexRange.empty,
         },
     }, token.span);
@@ -142,7 +142,7 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
         if (is_tail) break;
     }
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .template_literal = .{
             .quasis = try parser.createExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
             .expressions = try parser.createExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
@@ -159,9 +159,9 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
         try parser.report(span, "Bad escape sequence in untagged template literal", .{});
     }
 
-    return parser.b.createNode(.{
+    return parser.tree.createNode(.{
         .template_element = .{
-            .raw = parser.b.sourceSlice(span.start, span.end),
+            .raw = parser.tree.sourceSlice(span.start, span.end),
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },
@@ -183,21 +183,34 @@ inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span 
 }
 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
+    try validateIdentifier(parser, "an identifier", parser.current_token);
 
     const token = parser.current_token;
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .identifier_reference = .{ .name = try parser.identifierName(token) },
     }, token.span);
+}
+
+pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
+    try validateIdentifier(parser, "a binding identifier", parser.current_token);
+
+    const current = parser.current_token;
+
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .binding_identifier = .{ .name = try parser.identifierName(current) } },
+        current.span,
+    );
 }
 
 pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .private_identifier = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
@@ -206,62 +219,52 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .identifier_name = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
 
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "a label", parser.current_token)) return null;
+    try validateIdentifier(parser, "a label", parser.current_token);
 
     const current = parser.current_token;
     try parser.advance() orelse return null;
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .label_identifier = .{ .name = try parser.identifierName(current) },
     }, current.span);
 }
 
-pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!bool {
+pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!void {
     if (!token.tag.isIdentifierLike()) {
         try parser.reportExpected(
             token.span,
             "Expected an identifier",
             .{ .help = "Identifiers must start with a letter, underscore (_), or dollar sign ($)" },
         );
-
-        return false;
     }
 
     if (token.tag.isUnconditionallyReserved()) {
         try parser.report(
             token.span,
-            try parser.fmt("'{s}' is a reserved word and cannot be used as {s}", .{ parser.describeToken(token), as_what }),
+            try parser.fmt("'{s}' is reserved and cannot be used as " ++ as_what, .{parser.describeToken(token)}),
             .{},
         );
-
-        return false;
     }
 
     if (token.tag == .yield and parser.context.yield_is_keyword) {
         try parser.report(
             token.span,
-            try parser.fmt("Cannot use 'yield' as {s} in a generator context", .{as_what}),
+            "'yield' is reserved in a generator context and cannot be used as " ++ as_what,
             .{},
         );
-
-        return false;
     }
 
     if (token.tag == .await and parser.context.await_is_keyword) {
         try parser.report(
             token.span,
-            try parser.fmt("Cannot use `await` as {s} in an async or module context", .{as_what}),
+            "'await' is reserved in an async or module context and cannot be used as " ++ as_what,
             .{},
         );
-
-        return false;
     }
-
-    return true;
 }

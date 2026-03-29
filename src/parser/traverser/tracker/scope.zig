@@ -4,7 +4,7 @@ const ast = @import("../../ast.zig");
 const Allocator = std.mem.Allocator;
 
 /// ID for a scope. `.root` is the top-level scope, `.none` means no scope.
-pub const ScopeId = enum(u32) { root = 0, none = std.math.maxInt(u32), _ };
+pub const ScopeId = enum(u32) { root = 0, module = 1, none = std.math.maxInt(u32), _ };
 
 /// A single lexical scope in the JavaScript scope tree.
 pub const Scope = struct {
@@ -152,12 +152,12 @@ pub const ScopeTracker = struct {
             self.scopes.appendAssumeCapacity(.{
                 .node = self.tree.program,
                 .parent = .root,
-                .hoist_target = @enumFromInt(1),
+                .hoist_target = .module,
                 .kind = .module,
                 .flags = .{ .strict = true },
             });
 
-            self.scope_stack.push(@enumFromInt(1));
+            self.scope_stack.push(.module);
         }
     }
 
@@ -207,18 +207,28 @@ pub const ScopeTracker = struct {
 
                 try self.pushScope(.function, index, flags);
             },
-            .block_statement,
+            .block_statement => {
+                // Section 14.15.2 CatchClauseEvaluation creates a single
+                // environment (catchEnv) for both the parameter bindings
+                // and the Block body. The body block reuses the catch scope
+                // so that findInScopeOrHoisted naturally detects conflicts
+                // required by Section 14.15.1 early errors.
+                const current = self.tree.getData(self.currentScope().node);
+                if (current != .catch_clause or current.catch_clause.body != index)
+                    try self.pushScope(.block, index, self.inheritStrictFlag());
+            },
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause,
-            // switch creates one block scope for all case clauses
+            // Section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .class => |cls| {
-                // Section 15.7.14: class bodies are always strict mode.
+                // Section 15.7.14: classes are always strict mode.
                 const flags = Scope.Flags{ .strict = true };
 
                 if (isNamedClassExpression(cls))
                     try self.pushScope(.expression_name, index, flags);
+
                 try self.pushScope(.class, index, flags);
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),
@@ -281,11 +291,15 @@ pub const ScopeTracker = struct {
                     self.scope_stack.pop();
             },
             .arrow_function_expression,
-            .block_statement,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
             .static_block,
             => self.scope_stack.pop(),
+            .block_statement => {
+                // catch body blocks share the catch scope (Section 14.15.2)
+                if (self.tree.getData(self.currentScope().node) != .catch_clause)
+                    self.scope_stack.pop();
+            },
             .class => |cls| {
                 self.scope_stack.pop();
                 if (isNamedClassExpression(cls))

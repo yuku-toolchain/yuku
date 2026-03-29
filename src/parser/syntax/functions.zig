@@ -2,6 +2,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 
+const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 
 const ParseFunctionOpts = struct {
@@ -37,16 +38,13 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         try parser.advance() orelse return null;
     }
 
-    const saved_await_is_keyword = parser.context.await_is_keyword;
-    const saved_yield_is_keyword = parser.context.yield_is_keyword;
-
-    defer {
-        parser.context.await_is_keyword = saved_await_is_keyword;
-        parser.context.yield_is_keyword = saved_yield_is_keyword;
-    }
-
     const outer_yield_is_keyword = parser.context.yield_is_keyword;
     const outer_await_is_keyword = parser.context.await_is_keyword;
+
+    defer {
+        parser.context.yield_is_keyword = outer_yield_is_keyword;
+        parser.context.await_is_keyword = outer_await_is_keyword;
+    }
 
     // names use different yield-keyword rules for declarations vs expressions.
     // inside a generator body:
@@ -69,7 +67,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     };
 
     const id = if (parser.current_token.tag.isIdentifierLike())
-        try patterns.parseBindingIdentifier(parser) orelse .null
+        try literals.parseBindingIdentifier(parser) orelse .null
     else
         .null;
 
@@ -122,7 +120,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         body = try parseFunctionBody(parser) orelse .null;
     }
 
-    const end = if (body != .null) parser.b.getSpan(body).end else params_end;
+    const end = if (body != .null) parser.tree.getSpan(body).end else params_end;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
@@ -140,7 +138,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         }
     }
 
-    return try parser.b.createNode(.{
+    return try parser.tree.createNode(.{
         .function = .{
             .type = function_type,
             .id = id,
@@ -182,7 +180,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.b.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.tree.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Error!?ast.NodeIndex {
@@ -200,12 +198,12 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         if (parser.current_token.tag == .spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
             if (rest != .null) {
-                end = parser.b.getSpan(rest).end;
+                end = parser.tree.getSpan(rest).end;
             }
 
             if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
-                    .{ .start = parser.b.getSpan(rest).start, .end = parser.current_token.span.end },
+                    .{ .start = parser.tree.getSpan(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
                     .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
                 );
@@ -215,7 +213,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         } else {
             const param = try parseFormalParamater(parser) orelse break;
 
-            end = parser.b.getSpan(param).end;
+            end = parser.tree.getSpan(param).end;
 
             try parser.scratch_a.append(parser.allocator(), param);
         }
@@ -225,7 +223,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
         } else break;
     }
 
-    return try parser.b.createNode(.{ .formal_parameters = .{
+    return try parser.tree.createNode(.{ .formal_parameters = .{
         .items = try parser.createExtraFromScratch(&parser.scratch_a, params_checkpoint),
         .rest = rest,
         .kind = kind,
@@ -239,5 +237,5 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
-    return try parser.b.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.b.getSpan(pattern));
+    return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
 }

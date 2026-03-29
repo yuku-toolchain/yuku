@@ -19,7 +19,6 @@ pub const Serializer = struct {
     options: EstreeJsonOptions,
     needs_comma_bits: [8]u64 = .{0} ** 8,
     scratch: std.ArrayList(u8) = .empty,
-    isTs: bool,
     pos_map: ?[]u32,
     in_jsx_attribute: bool = false,
 
@@ -44,10 +43,6 @@ pub const Serializer = struct {
             .allocator = allocator,
             .options = options,
             .scratch = try .initCapacity(allocator, 512),
-            .isTs = switch (tree.lang) {
-                .ts, .tsx, .dts => true,
-                else => false,
-            },
             .pos_map = pos_map,
         };
 
@@ -170,7 +165,7 @@ pub const Serializer = struct {
         try self.fieldNode("id", data.id);
         try self.fieldBool("generator", data.generator);
         try self.fieldBool("async", data.async);
-        if (self.isTs) try self.fieldBool("declare", data.type == .ts_declare_function);
+        if (self.tree.isTs()) try self.fieldBool("declare", data.type == .ts_declare_function);
         try self.field("params");
         try self.writeFunctionParams(data.params);
         try self.fieldNode("body", data.body);
@@ -360,12 +355,13 @@ pub const Serializer = struct {
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
         const raw = self.tree.getString(data.raw);
+        const val = ast.StringLiteral.stripQuotes(raw);
         try self.begin("Literal", span);
         try self.field("value");
         if (self.in_jsx_attribute)
-            try self.writeString(raw[1 .. raw.len - 1])
+            try self.writeString(val)
         else
-            try self.writeDecodedString(raw[1 .. raw.len - 1]);
+            try self.writeDecodedString(val);
         try self.fieldString("raw", raw);
         try self.endObject();
     }
