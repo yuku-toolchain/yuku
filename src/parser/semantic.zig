@@ -64,6 +64,8 @@ const SemanticVisit = struct {
             try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a 'let' declaration", .{});
         }
 
+        try self.checkModuleReserved(name, node_index, ctx, "a binding name");
+
         // redeclaration checks
 
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
@@ -124,6 +126,7 @@ const SemanticVisit = struct {
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
         try self.checkStrictReserved(name, node_index, ctx, "an identifier");
+        try self.checkModuleReserved(name, node_index, ctx, "an identifier");
 
         // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
         if (eql(u8, name, "arguments") and !isArgumentsAvailable(ctx))
@@ -134,7 +137,9 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
     pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "a label");
+        const name = ctx.tree.getString(id.name);
+        try self.checkStrictReserved(name, node_index, ctx, "a label");
+        try self.checkModuleReserved(name, node_index, ctx, "a label");
         return .proceed;
     }
 
@@ -487,6 +492,12 @@ const SemanticVisit = struct {
         if (!ctx.scope.isStrict()) return;
         if (matchStrictReserved(name)) |word|
             try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is reserved in strict mode and cannot be used as " ++ as_what, .{word}), .{});
+    }
+
+    fn checkModuleReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
+        if (ctx.tree.source_type != .module) return;
+        if (eql(u8, name, "await"))
+            try self.report(ctx.tree.getSpan(node_index), "'await' is reserved in module code and cannot be used as " ++ as_what, .{});
     }
 
     /// https://tc39.es/ecma262/#sec-keywords-and-reserved-words

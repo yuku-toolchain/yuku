@@ -44,7 +44,7 @@ pub fn parseClassDecorated(
     var id: ast.NodeIndex = .null;
 
     if (parser.current_token.tag.isIdentifierLike() and parser.current_token.tag != .extends) {
-        id = try patterns.parseBindingIdentifier(parser) orelse .null;
+        id = try literals.parseBindingIdentifier(parser) orelse .null;
     }
 
     // name is required for regular class declarations, but optional for:

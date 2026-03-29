@@ -10,7 +10,7 @@ const expressions = @import("expressions.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isIdentifierLike()) {
-        return parseBindingIdentifier(parser);
+        return literals.parseBindingIdentifier(parser);
     }
 
     return switch (parser.current_token.tag) {
@@ -25,19 +25,6 @@ pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         },
     };
-}
-
-pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try literals.validateIdentifier(parser, "an identifier", parser.current_token)) return null;
-
-    const current = parser.current_token;
-
-    try parser.advanceWithoutEscapeCheck() orelse return null;
-
-    return try parser.tree.createNode(
-        .{ .binding_identifier = .{ .name = try parser.identifierName(current) } },
-        current.span,
-    );
 }
 
 fn parseArrayPattern(parser: *Parser) Error!?ast.NodeIndex {

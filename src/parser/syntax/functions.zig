@@ -2,6 +2,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 
+const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 
 const ParseFunctionOpts = struct {
@@ -37,16 +38,13 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         try parser.advance() orelse return null;
     }
 
-    const saved_await_is_keyword = parser.context.await_is_keyword;
-    const saved_yield_is_keyword = parser.context.yield_is_keyword;
-
-    defer {
-        parser.context.await_is_keyword = saved_await_is_keyword;
-        parser.context.yield_is_keyword = saved_yield_is_keyword;
-    }
-
     const outer_yield_is_keyword = parser.context.yield_is_keyword;
     const outer_await_is_keyword = parser.context.await_is_keyword;
+
+    defer {
+        parser.context.yield_is_keyword = outer_yield_is_keyword;
+        parser.context.await_is_keyword = outer_await_is_keyword;
+    }
 
     // names use different yield-keyword rules for declarations vs expressions.
     // inside a generator body:
@@ -69,7 +67,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     };
 
     const id = if (parser.current_token.tag.isIdentifierLike())
-        try patterns.parseBindingIdentifier(parser) orelse .null
+        try literals.parseBindingIdentifier(parser) orelse .null
     else
         .null;
 

@@ -246,7 +246,7 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
 
 /// ImportedBinding: BindingIdentifier[~Yield, +Await]
 fn parseImportedBinding(parser: *Parser) Error!?ast.NodeIndex {
-    return patterns.parseBindingIdentifier(parser);
+    return literals.parseBindingIdentifier(parser);
 }
 
 pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
