@@ -273,9 +273,9 @@ const SemanticVisit = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-assignment-operators-static-semantics-early-errors
-    pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.scope.isStrict() and isEvalOrArgumentsRef(ctx.tree, expr.left))
-            try self.report(ctx.tree.getSpan(node_index), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
+    pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (ctx.scope.isStrict())
+            try self.checkAssignTargetEvalArguments(expr.left, ctx);
         return .proceed;
     }
 
@@ -429,12 +429,16 @@ const SemanticVisit = struct {
     /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_of_statement(self: *Self, stmt: ast.ForOfStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         try self.checkForInOfInitializer(ctx, stmt.left);
+        if (ctx.scope.isStrict())
+            try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
     }
 
     /// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements-static-semantics-early-errors
     pub fn enter_for_in_statement(self: *Self, stmt: ast.ForInStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         try self.checkForInOfInitializer(ctx, stmt.left);
+        if (ctx.scope.isStrict())
+            try self.checkAssignTargetEvalArguments(stmt.left, ctx);
         return .proceed;
     }
 
@@ -565,6 +569,33 @@ const SemanticVisit = struct {
     fn isEvalOrArgumentsRef(tree: *const ast.Tree, node: ast.NodeIndex) bool {
         return tree.getData(node) == .identifier_reference and
             isEvalOrArguments(tree.getString(tree.getData(node).identifier_reference.name));
+    }
+
+    /// walks a destructuring assignment target to find eval/arguments references.
+    fn checkAssignTargetEvalArguments(self: *Self, node: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
+        if (node == .null) return;
+        switch (ctx.tree.getData(node)) {
+            .identifier_reference => |id| {
+                if (isEvalOrArguments(ctx.tree.getString(id.name)))
+                    try self.report(ctx.tree.getSpan(node), "Cannot assign to 'eval' or 'arguments' in strict mode", .{});
+            },
+            .array_pattern => |arr| {
+                for (ctx.tree.getExtra(arr.elements)) |elem| {
+                    try self.checkAssignTargetEvalArguments(elem, ctx);
+                }
+                try self.checkAssignTargetEvalArguments(arr.rest, ctx);
+            },
+            .object_pattern => |obj| {
+                for (ctx.tree.getExtra(obj.properties)) |prop| {
+                    if (ctx.tree.getData(prop) == .binding_property)
+                        try self.checkAssignTargetEvalArguments(ctx.tree.getData(prop).binding_property.value, ctx);
+                }
+                try self.checkAssignTargetEvalArguments(obj.rest, ctx);
+            },
+            .assignment_pattern => |ap| try self.checkAssignTargetEvalArguments(ap.left, ctx),
+            .binding_rest_element => |r| try self.checkAssignTargetEvalArguments(r.argument, ctx),
+            else => {},
+        }
     }
 
     fn unwrapParens(tree: *const ast.Tree, node: ast.NodeIndex) ast.NodeIndex {

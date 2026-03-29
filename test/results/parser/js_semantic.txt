@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3458/3637 (95.08%)
-Failed:       179
+Passed:       3484/3637 (95.79%)
+Failed:       153
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -1290,7 +1290,7 @@ error: Identifier 'b' has already been declared
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments >>>= 20;
-   | ^^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/097db55279b272e7.module.js
@@ -1949,7 +1949,7 @@ error: 'super()' is only valid in a constructor of a derived class
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | 'use strict'; arguments *= 1
-   |               ^^^^^^^^^^^^^^
+   |               ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/0f1ab712e9e4ffe4.module.js
@@ -2302,7 +2302,13 @@ error: Cannot use 'export' declaration outside a module
  3 | export {x as az};
    |
 
-✗ test/parser/suite/js/semantic/10fda5cd119b39a5.module.js
+✓ test/parser/suite/js/semantic/10fda5cd119b39a5.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | [...eval] = a
+   |     ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/1101a12a779973d3.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -2605,7 +2611,7 @@ error: In strict mode code, functions can only be declared at top level or insid
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval &= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/13305aa767840771.js
@@ -2750,7 +2756,7 @@ error: Private fields cannot be deleted
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | function a() {'use strict'; eval = 1; }
-   |                             ^^^^^^^^
+   |                             ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/147fa078a7436e0e.module.js
@@ -2845,7 +2851,7 @@ error: Illegal break statement
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval += 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/14fb29a78ba873ba.js
@@ -3925,7 +3931,7 @@ error: 'arguments' is not allowed in class field initializers or static blocks
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments *= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/1c12af9748fb8e55.module.js
@@ -4615,7 +4621,13 @@ error: Cannot use 'export' declaration outside a module
    | ^
    |
 
-✗ test/parser/suite/js/semantic/21263a7bfdf97ea6.module.js
+✓ test/parser/suite/js/semantic/21263a7bfdf97ea6.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 0, { eval } = {};
+   |      ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/212c9bd036be7fe3.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -4893,7 +4905,14 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/22363c3a7f1a4ddc.module.js
+✓ test/parser/suite/js/semantic/22363c3a7f1a4ddc.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | [...eval] = a;
+   |     ^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/2245340b6974ee3a.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -5217,7 +5236,7 @@ error: Illegal break statement
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | function _13_0_4_5_fun() { eval = 42; };
-   |                            ^^^^^^^^^
+   |                            ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/25cd50f7457463d2.module.js
@@ -5853,7 +5872,7 @@ error: for-in/of loop variable declaration may not have an initializer
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval *= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/2b1b82b80f67f925.module.js
@@ -6320,7 +6339,13 @@ error: Duplicate export of 'a'
    |                      ~~~~~~ exported again here
    |
 
-✗ test/parser/suite/js/semantic/2dd671500974e7c0.js
+✓ test/parser/suite/js/semantic/2dd671500974e7c0.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({a: arguments = 1} = 2)
+   |                    ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/2e19f66a4b32a1e3.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -6688,7 +6713,7 @@ error: Expected ';' after for-loop init, but found ')'
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments /= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/3177bb5adc52b372.module.js
@@ -7633,7 +7658,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/38403a55a81cbab5.module.js
+✓ test/parser/suite/js/semantic/38403a55a81cbab5.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | for ({ eval = 0 } in [{}]) ;
+   |        ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/384c53d494e42be9.module.js
 error: Octal escape sequences are not allowed in strict mode
    |
@@ -8040,7 +8071,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/3bb84c9e285a8fd5.module.js
+✓ test/parser/suite/js/semantic/3bb84c9e285a8fd5.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 0, [arguments] = [];
+   |     ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/3bb9f99b524eb475.js
 error: Cannot use import statement outside a module
    |
@@ -8356,7 +8393,7 @@ error: Octal escape sequences are not allowed in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval >>= 20;
-   | ^^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/3e4d9cd4f8cc13a1.js
@@ -8410,7 +8447,7 @@ error: Cannot use 'export' declaration outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments ??= 20;
-   | ^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/3edd761e268da407.js
@@ -8503,7 +8540,13 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/3fd976020ee226ac.js
+✓ test/parser/suite/js/semantic/3fd976020ee226ac.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; [,,,eval,] = 1
+   |                   ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/3fdb5b4d53eb6812.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -8621,7 +8664,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval ^= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/40bb234e45f8701e.module.js
@@ -8937,7 +8980,7 @@ error: Illegal break statement
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | (eval) = 1;
-   | ^^^^^^^^^^
+   |  ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/42c6e4aae800f514.module.js
@@ -9682,7 +9725,13 @@ error: Deleting a variable in strict mode is not allowed
    |
 
 ✗ test/parser/suite/js/semantic/488cf7b4fa2ceebc.js
-✗ test/parser/suite/js/semantic/48d92f5a2fd3aa1b.module.js
+✓ test/parser/suite/js/semantic/48d92f5a2fd3aa1b.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | for ({ eval } of [{}]) ;
+   |        ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/48f39ccbea69907a.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -10168,7 +10217,7 @@ error: 'package' is reserved in strict mode and cannot be used as an identifier
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments = (1);
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
  2 | 
    |
 
@@ -10176,7 +10225,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments >>= 20;
-   | ^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/4c89bb0c3f47d28a.js
@@ -10865,7 +10914,7 @@ error: Identifier 'f' has already been declared
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments += 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/51ae5df278f3d4bf.js
@@ -10977,7 +11026,13 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/524c5114bbf59c98.js
+✓ test/parser/suite/js/semantic/524c5114bbf59c98.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({a: eval = 1} = 2)
+   |                    ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/524e1f939e852952.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11039,7 +11094,7 @@ error: Yield expression is not allowed in formal parameters
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | 'use strict'; arguments = 1
-   |               ^^^^^^^^^^^^^
+   |               ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/52a54fb48a0b1cf6.js
@@ -11387,7 +11442,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  7 | }
    |
 
-✗ test/parser/suite/js/semantic/55bd752a58efdd5a.module.js
+✓ test/parser/suite/js/semantic/55bd752a58efdd5a.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | for ([arguments] of [[]]) ;
+   |       ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/55c15fe174790fb2.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11454,7 +11515,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | class a extends (eval = null) { };
-   |                  ^^^^^^^^^^^
+   |                  ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/560c364700fdb6b2.module.js
@@ -11703,7 +11764,7 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | (arguments) = 1;
-   | ^^^^^^^^^^^^^^^
+   |  ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/57e12c6555b60706.js
@@ -12546,7 +12607,7 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval -= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/5d5b1ee363b729c5.module.js
@@ -12714,7 +12775,7 @@ error: Cannot use 'export' declaration outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval &&= 20;
-   | ^^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/5ecbbdc097bee212.module.js
@@ -14219,7 +14280,7 @@ error: Cannot use import statement outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments = 1;
-   | ^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/6b0e8bbdc3dca1c5.module.js
@@ -14395,7 +14456,13 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |           ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6c71a06280f35c98.js
+✓ test/parser/suite/js/semantic/6c71a06280f35c98.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({a: arguments} = 1)
+   |                    ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/6c84bd0a6253eb77.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -14407,7 +14474,7 @@ error: 'import' declaration may only appear at the top level
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval >>>= 20;
-   | ^^^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/6c8cefeeac8d076e.module.js
@@ -14690,7 +14757,7 @@ error: 'implements' is reserved in strict mode and cannot be used as a binding i
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval |= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/6ebbca5dac20803e.module.js
@@ -15091,7 +15158,7 @@ error: Identifier 'b' has already been declared
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments %= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/71a6c2caa7ad2d73.module.js
@@ -15439,7 +15506,7 @@ error: Octal escape sequences are not allowed in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | !class extends (eval = null) { };
-   |                 ^^^^^^^^^^^
+   |                 ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/74a213a59c2fcc5e.js
@@ -16234,7 +16301,7 @@ error: Identifier 'b' has already been declared
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval = 1
-   | ^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/7ae00ce3e61fcd7e.js
@@ -16365,7 +16432,7 @@ error: Cannot break to label 'LABEL1' across function boundaries
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | (arguments) = 20;
-   | ^^^^^^^^^^^^^^^^
+   |  ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/7be9be4918d25634.module.js
@@ -16691,7 +16758,7 @@ error: Yield expression is not allowed in formal parameters
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval /= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/7ed50a0afbdcbddb.js
@@ -16875,7 +16942,7 @@ error: A class can only have one constructor
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments &= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/8018a5297a750867.js
@@ -17113,7 +17180,13 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  4 | }
    |
 
-✗ test/parser/suite/js/semantic/8174015519199e36.js
+✓ test/parser/suite/js/semantic/8174015519199e36.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({eval = 1} = 2);
+   |                 ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/817604f9014b9e19.js
 error: Cannot use import statement outside a module
    |
@@ -17649,7 +17722,13 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/85c4d114427facfb.module.js
+✓ test/parser/suite/js/semantic/85c4d114427facfb.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | for ({ eval } in [{}]) ;
+   |        ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/85ce5704fd5f4dd1.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -17695,7 +17774,13 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/860f50d4534bcb05.module.js
+✓ test/parser/suite/js/semantic/860f50d4534bcb05.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | for ({ eval = 0 } of [{}]) ;
+   |        ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/86131c9fbad63a79.js
 error: A class can only have one constructor
    |
@@ -17979,8 +18064,6 @@ error: Duplicate export of 'z'
    |          ^^^^^^
    |          ~~~~~~ exported again here
    |
-   = help: Consider removing or renaming this declaration of 'smoosh'
-
 
 ✓ test/parser/suite/js/semantic/8a4ad81e83d40ad7.js
 error: 'super' property access is only valid inside a method or class body
@@ -18263,7 +18346,13 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  7 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/8d2870226258eaea.js
+✓ test/parser/suite/js/semantic/8d2870226258eaea.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({eval = a} = b)
+   |                 ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/8d2ffebc7214c34f.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -18963,7 +19052,7 @@ error: 'with' statements are not allowed in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval ||= 20;
-   | ^^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/92b6af54adef3624.module.js
@@ -19035,7 +19124,7 @@ error: Private fields cannot be deleted
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments ||= 20;
-   | ^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/938db8c9f82c8cb5.module.js
@@ -19742,7 +19831,7 @@ error: Cannot use import statement outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval %= 20;
-   | ^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/978419451af40ff9.module.js
@@ -19766,8 +19855,6 @@ error: 'let' is not allowed as a variable name in a lexical declaration
    |            ^^^
  2 | 
    |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
 
 ✓ test/parser/suite/js/semantic/978d861516846a89.module.js
 error: Unexpected token '=' in binding pattern
@@ -20304,7 +20391,7 @@ error: 'with' statements are not allowed in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval = (1);
-   | ^^^^^^^^^^
+   | ^^^^
  2 | 
    |
 
@@ -20491,7 +20578,7 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments = 1;
-   | ^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/9cc210fd96d9bd31.js
@@ -20630,7 +20717,7 @@ error: Cannot use import statement outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval <<= 20;
-   | ^^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/9db2f500fb73d4b3.module.js
@@ -22236,7 +22323,13 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
  5 |   }
    |
 
-✗ test/parser/suite/js/semantic/a9b31c0197bf943e.module.js
+✓ test/parser/suite/js/semantic/a9b31c0197bf943e.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 0, { eval = 0 } = {};
+   |      ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a9e3c89936cc6ccc.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -23182,7 +23275,7 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments &&= 20;
-   | ^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/b118f7ba23d3f8dd.module.js
@@ -23234,7 +23327,13 @@ error: Deleting a variable in strict mode is not allowed
 56 |   var p4 = 'x4';
    |
 
-✗ test/parser/suite/js/semantic/b13a72ca35327c5e.js
+✓ test/parser/suite/js/semantic/b13a72ca35327c5e.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; [eval] = 1
+   |                ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b145e85fb625dd6b.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -23454,7 +23553,13 @@ error: 'with' statements are not allowed in strict mode
 64 | } catch (e) {
    |
 
-✗ test/parser/suite/js/semantic/b2dd410b65103d37.js
+✓ test/parser/suite/js/semantic/b2dd410b65103d37.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({a: eval} = 1)
+   |                    ^^^^
+   |
+
 ✗ test/parser/suite/js/semantic/b2fb4b63425f36df.js
 ✓ test/parser/suite/js/semantic/b3124422e01036a8.js
 error: Identifier 'f' has already been declared
@@ -24401,7 +24506,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |          ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/bc04ce895077f312.js
+✓ test/parser/suite/js/semantic/bc04ce895077f312.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({arguments} = 1);
+   |                 ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/bc19d7d76093f94e.js
 error: 'implements' is reserved in strict mode and cannot be used as an identifier
    |
@@ -24650,7 +24761,7 @@ error: 'with' statements are not allowed in strict mode
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | (eval) = 20;
-   | ^^^^^^^^^^^
+   |  ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/bd77da7af301abaa.module.js
@@ -25196,7 +25307,15 @@ error: Private fields cannot be deleted
  5 | ;
    |
 
-✗ test/parser/suite/js/semantic/c15bfc330deccf19.module.js
+✓ test/parser/suite/js/semantic/c15bfc330deccf19.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | async function fn() {
+ 2 |   for await ([arguments] of [[]]) {}
+   |               ^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/c16d7f2993152b6b.js
 error: Cannot use import statement outside a module
    |
@@ -25607,7 +25726,13 @@ error: 'with' statements are not allowed in strict mode
 15 |     count++;
    |
 
-✗ test/parser/suite/js/semantic/c43fab38afd5044c.js
+✓ test/parser/suite/js/semantic/c43fab38afd5044c.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; [...eval] = a
+   |                   ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/c448fa9e55a1d349.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -26704,7 +26829,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | function f_10_5_1_gs(){
  2 |     arguments = 7;
-   |     ^^^^^^^^^^^^^
+   |     ^^^^^^^^^
  3 | }
    |
 
@@ -27039,7 +27164,7 @@ error: In strict mode code, functions can only be declared at top level or insid
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments |= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/ce4f3db361f43c33.module.js
@@ -27427,7 +27552,7 @@ error: Cannot use 'export default' declaration outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments <<= 20;
-   | ^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/d109e3e6ac319694.module.js
@@ -27824,7 +27949,7 @@ error: Deleting a variable in strict mode is not allowed
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments ^= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/d2af344779cc1f26.module.js
@@ -29170,7 +29295,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  3 |     function _13_0_11_inner() {
  4 |         eval = 42;
-   |         ^^^^^^^^^
+   |         ^^^^
  5 |     }
    |
 
@@ -29377,7 +29502,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  9 | }
 10 | eval = f;
-   | ^^^^^^^^
+   | ^^^^
 11 | f($MAX_ITERATIONS);
    |
 
@@ -29491,7 +29616,7 @@ error: Identifier 'f' has already been declared
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | eval ??= 20;
-   | ^^^^^^^^^^^
+   | ^^^^
    |
 
 ✓ test/parser/suite/js/semantic/dda81a4fb246ee0a.module.js
@@ -29832,7 +29957,13 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |                ^^^^
    |
 
-✗ test/parser/suite/js/semantic/df5d2ef379b00ca6.js
+✓ test/parser/suite/js/semantic/df5d2ef379b00ca6.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({arguments = 1} = 2);
+   |                 ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/df5fee9e52377ab9.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -30667,7 +30798,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/e526e23690c3333d.js
+✓ test/parser/suite/js/semantic/e526e23690c3333d.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; [arguments] = 1
+   |                ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/e52eeff298d6f76d.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -30750,7 +30887,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  2 |     function _13_0_9_inner() {
  3 |         eval = 42;
-   |         ^^^^^^^^^
+   |         ^^^^
  4 |     }
    |
 
@@ -31083,7 +31220,7 @@ error: Cannot use import statement outside a module
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | function a() {'use strict'; arguments = 1; }
-   |                             ^^^^^^^^^^^^^
+   |                             ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/e86f370754ab7c62.js
@@ -31585,7 +31722,13 @@ error: 'implements' is reserved in strict mode and cannot be used as a binding i
    |            ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/eb89f32f0396e5dd.module.js
+✓ test/parser/suite/js/semantic/eb89f32f0396e5dd.module.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | for ([arguments] in [[]]) ;
+   |       ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/eb9b0c5920ae5b05.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -31826,7 +31969,7 @@ error: Identifier 'smoosh' has already been declared
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments = 1
-   | ^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/ed51630c2e3c5fd7.js
@@ -32395,7 +32538,13 @@ error: Cannot use 'export' declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/f145f628d834b3fd.js
+✓ test/parser/suite/js/semantic/f145f628d834b3fd.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; ({eval} = 1);
+   |                 ^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f1582f76ed6d05fd.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -32657,7 +32806,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  3 |         "use strict";
  4 |         eval = 42;
-   |         ^^^^^^^^^
+   |         ^^^^
  5 |     }
    |
 
@@ -32768,7 +32917,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
  1 | arguments -= 20;
-   | ^^^^^^^^^^^^^^^
+   | ^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/f3e4d184c0d1063f.js
@@ -33416,7 +33565,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  4 | };
    |
 
-✗ test/parser/suite/js/semantic/f87eda3e920311ce.js
+✓ test/parser/suite/js/semantic/f87eda3e920311ce.js
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 1 | 'use strict'; [,,,arguments,] = 1
+   |                   ^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/f89017fd3f793d0d.js
 error: Identifier 'b' has already been declared
    |
