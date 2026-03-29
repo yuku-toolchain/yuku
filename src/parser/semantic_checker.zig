@@ -177,6 +177,54 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
+    pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "an identifier");
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
+    pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        try self.checkStrictReserved(ctx.tree.getString(id.name), node_index, ctx, "a label");
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
+    pub fn enter_string_literal(self: *Self, lit: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.scope.isStrict()) return .proceed;
+
+        if (util.Utf.hasOctalEscape(ctx.tree.getString(lit.raw)))
+            try self.report(ctx.tree.getSpan(node_index), "Octal escape sequences are not allowed in strict mode", .{
+                .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
+            });
+
+        return .proceed;
+    }
+
+    /// https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
+    pub fn enter_numeric_literal(self: *Self, lit: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (!ctx.scope.isStrict()) return .proceed;
+
+        const raw = ctx.tree.getString(lit.raw);
+
+        if (!isLegacyNumericLiteral(raw)) return .proceed;
+
+        const is_octal = for (raw) |c| {
+            if (c == '8' or c == '9') break false;
+        } else true;
+
+        try self.report(ctx.tree.getSpan(node_index), if (is_octal)
+            "Octal literals are not allowed in strict mode"
+        else
+            "Decimals with leading zeros are not allowed in strict mode", .{
+            .help = if (is_octal)
+                "Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent"
+            else
+                "Remove the leading zero, or use 0o for octal, 0x for hex, or 0b for binary notation",
+        });
+        return .proceed;
+    }
+
     /// https://tc39.es/ecma262/#sec-function-definitions-static-semantics-early-errors
     /// "It is a Syntax Error if FunctionBodyContainsUseStrict is true and
     ///  IsSimpleParameterList of FormalParameters is false."

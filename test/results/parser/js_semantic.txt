@@ -17979,6 +17979,8 @@ error: Duplicate export of 'z'
    |          ^^^^^^
    |          ~~~~~~ exported again here
    |
+   = help: Consider removing or renaming this declaration of 'smoosh'
+
 
 ✓ test/parser/suite/js/semantic/8a4ad81e83d40ad7.js
 error: 'super' property access is only valid inside a method or class body
@@ -19764,6 +19766,8 @@ error: 'let' is not allowed as a variable name in a lexical declaration
    |            ^^^
  2 | 
    |
+   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
+
 
 ✓ test/parser/suite/js/semantic/978d861516846a89.module.js
 error: Unexpected token '=' in binding pattern
