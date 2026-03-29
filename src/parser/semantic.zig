@@ -486,6 +486,7 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+
     fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
         if (!ctx.scope.isStrict()) return;
         if (matchStrictReserved(name)) |word|

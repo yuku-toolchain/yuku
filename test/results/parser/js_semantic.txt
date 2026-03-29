@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3447/3648 (94.49%)
-Failed:       201
+Passed:       3447/3637 (94.78%)
+Failed:       190
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -4180,7 +4180,6 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/1e5ab7e0695abf73.js
 ✓ test/parser/suite/js/semantic/1e61843633dcb483.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7706,7 +7705,6 @@ error: Private fields cannot be deleted
  5 | f() {
    |
 
-✗ test/parser/suite/js/semantic/38f1f00eb2446576.js
 ✓ test/parser/suite/js/semantic/3911f54ff0d63937.js
 error: Cannot use import statement outside a module
    |
@@ -8110,7 +8108,6 @@ error: Cannot use import statement outside a module
  2 | import x from './import-attribute-1_FIXTURE.js' with { test262_1: '', test262_2: '', test262_3: '', test262_4: '' };
    |
 
-✗ test/parser/suite/js/semantic/3ca06422d3c3abe6.js
 ✓ test/parser/suite/js/semantic/3ca7871e40f42a67.js
 error: 'arguments' is not allowed in class field initializers or static blocks
    |
@@ -10341,7 +10338,6 @@ error: In strict mode code, functions can only be declared at top level or insid
  4 | }
    |
 
-✗ test/parser/suite/js/semantic/4d6a3feec80b94ff.js
 ✓ test/parser/suite/js/semantic/4d6aacd8457175ef.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -17823,7 +17819,6 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/88ca67e807c4a9ad.js
 ✓ test/parser/suite/js/semantic/891b6d981311dc6c.module.js
 error: 'public' is reserved in strict mode and cannot be used as a binding name
    |
@@ -18095,7 +18090,6 @@ error: 'public' is reserved in strict mode and cannot be used as a binding name
  4 | }
    |
 
-✗ test/parser/suite/js/semantic/8b5f754935f163af.js
 ✓ test/parser/suite/js/semantic/8b64d03e2c6486fb.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -19583,11 +19577,13 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |
 
 ✓ test/parser/suite/js/semantic/971cf622ebaef28e.module.js
-error: 'with' statements are not allowed in strict mode
+error: Class declarations are not allowed in single-statement contexts
    |
  1 | with(true) class a {}
-   | ^^^^^^^^^^^^^^^^^^^^^
+   |            ^^^^^^^
    |
+   = help: Wrap the class declaration in a block: { class C {} }
+
 
 ✓ test/parser/suite/js/semantic/9734f5db856242f7.module.js
 error: Deleting a variable in strict mode is not allowed
@@ -20046,7 +20042,6 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/99bca423edca44f1.js
 ✓ test/parser/suite/js/semantic/99be916cf7988880.js
 error: Cannot use import statement outside a module
    |
@@ -20608,7 +20603,6 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding name
  9 |       return {
    |
 
-✗ test/parser/suite/js/semantic/9dba2dd0505a4f58.js
 ✓ test/parser/suite/js/semantic/9ddc22375c711f5d.module.js
 error: 'arguments' is not allowed as a binding name in strict mode
    |
@@ -22965,7 +22959,6 @@ error: Cannot use import statement outside a module
  2 | let logs = [];
    |
 
-✗ test/parser/suite/js/semantic/afcc1da97aa33569.js
 ✓ test/parser/suite/js/semantic/afcf8bace3839da2.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -24709,7 +24702,6 @@ error: 'arguments' is not allowed as a binding name in strict mode
    |          ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/bde66a9587eeb0d5.js
 ✓ test/parser/suite/js/semantic/be0942e95677bf31.js
 error: Cannot use import statement outside a module
    |
@@ -30985,7 +30977,6 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |              ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/e7c2c2dcc227201c.js
 ✓ test/parser/suite/js/semantic/e7ea53950780188f.module.js
 error: 'export default' declaration may only appear at the top level
    |

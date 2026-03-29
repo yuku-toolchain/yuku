@@ -40,6 +40,15 @@ pub fn parseClassDecorated(
     // regular class expression allows optional name but produces expression
     const class_type: ast.ClassType = if (opts.is_expression and !opts.is_default_export) .class_expression else .class_declaration;
 
+    if (class_type == .class_declaration and parser.context.in_single_statement_context) {
+        @branchHint(.unlikely);
+        try parser.report(
+            .{ .start = start, .end = parser.current_token.span.end },
+            "Class declarations are not allowed in single-statement contexts",
+            .{ .help = "Wrap the class declaration in a block: { class C {} }" },
+        );
+    }
+
     // optional class name
     var id: ast.NodeIndex = .null;
 

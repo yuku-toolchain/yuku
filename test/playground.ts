@@ -8,8 +8,8 @@ console.log();
 const source = await Bun.file("test/index.js").text();
 
 const result = await parse(source, {
-	sourceType: "script",
-	semanticErrors: true,
+	sourceType: "module",
+	// semanticErrors: true,
 });
 
 console.log(result.program);

@@ -214,11 +214,12 @@ pub const ScopeTracker = struct {
             .switch_statement,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .class => |cls| {
-                // Section 15.7.14: class bodies are always strict mode.
+                // Section 15.7.14: classes are always strict mode.
                 const flags = Scope.Flags{ .strict = true };
 
                 if (isNamedClassExpression(cls))
                     try self.pushScope(.expression_name, index, flags);
+
                 try self.pushScope(.class, index, flags);
             },
             .static_block => try self.pushScope(.static_block, index, self.inheritStrictFlag()),

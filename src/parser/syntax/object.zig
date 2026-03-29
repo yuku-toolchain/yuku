@@ -252,9 +252,7 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
     // shorthand property: { a }
 
     if (key_identifier_token) |key_token| {
-        if (!try literals.validateIdentifier(parser, "an identifier", key_token)) {
-            return null;
-        }
+        try literals.validateIdentifier(parser, "an identifier", key_token);
     }
 
     const key_data = parser.tree.getData(key);

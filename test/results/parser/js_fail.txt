@@ -1,6 +1,6 @@
 suite/js/fail
 =============
-Passed:       3601/3601 (100.00%)
+Passed:       3612/3612 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -4135,6 +4135,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
+✓ test/parser/suite/js/fail/1e5ab7e0695abf73.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | do class C {} while (false)
+   |    ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
+
 ✓ test/parser/suite/js/fail/1ea6843ede5aa5c5.js
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -7858,6 +7867,15 @@ error: Rest parameter must be the last parameter
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
 
 
+✓ test/parser/suite/js/fail/38f1f00eb2446576.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | if (true) class C {}
+   |           ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
+
 ✓ test/parser/suite/js/fail/391792f339a787cd.js
 error: Identifier cannot immediately follow a numeric literal
    |
@@ -8327,6 +8345,15 @@ error: Unexpected token ')'
  3 | });
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/3ca06422d3c3abe6.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | if (true) class C {} else class D {}
+   |           ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
 
 
 ✓ test/parser/suite/js/fail/3cab82b238c67ec3.js
@@ -10551,6 +10578,15 @@ error: Expected '}' to close block statement, but found 'end of file'
    |  ^
    |
    = help: Add a closing brace '}' to complete the block statement, or check for unbalanced braces inside.
+
+
+✓ test/parser/suite/js/fail/4d6a3feec80b94ff.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | if (false) ; else class C {}
+   |                   ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
 
 
 ✓ test/parser/suite/js/fail/4d83ab72615f61d6.js
@@ -18463,6 +18499,15 @@ error: Classes may not have a static property named 'prototype'
    = help: Remove 'static' or rename the property.
 
 
+✓ test/parser/suite/js/fail/88ca67e807c4a9ad.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | for (var x of []) class C {}
+   |                   ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
+
 ✓ test/parser/suite/js/fail/88cd48b2f628636d.js
 error: Invalid element in assignment pattern
    |
@@ -18848,6 +18893,15 @@ error: Unexpected token '='
    |      ^
    |
    = help: Expected an expression
+
+
+✓ test/parser/suite/js/fail/8b5f754935f163af.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | if (true) class C {} else ;
+   |           ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
 
 
 ✓ test/parser/suite/js/fail/8b659d2805837e98.js
@@ -20821,6 +20875,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/99bca423edca44f1.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | label: class C {}
+   |        ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
+
 ✓ test/parser/suite/js/fail/99d7c14c87f10cdf.js
 error: Logical expressions and nullish coalescing cannot be mixed
    |
@@ -21314,6 +21377,15 @@ error: 'return' is reserved and cannot be used as an identifier
  1 | var x = { r\u0065turn } = { return: 42 };
    |           ^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/9dba2dd0505a4f58.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | for ( ; false; ) class C {}
+   |                  ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
 
 ✓ test/parser/suite/js/fail/9ddcd17e4d17e486.js
 error: Rest element must be the last element
@@ -23862,6 +23934,15 @@ error: Identifier cannot immediately follow a numeric literal
    = help: Try adding whitespace here between the number and identifier
 
 
+✓ test/parser/suite/js/fail/afcc1da97aa33569.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | while (false) class C {}
+   |               ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
+
 ✓ test/parser/suite/js/fail/aff34bb2937646c7.js
 error: Invalid element in assignment pattern
    |
@@ -25584,6 +25665,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  3 | }};
    |
    = help: Try inserting a semicolon here
+
+
+✓ test/parser/suite/js/fail/bde66a9587eeb0d5.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | with ({}) class C {}
+   |           ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
 
 
 ✓ test/parser/suite/js/fail/be47687d764c7c9a.js
@@ -31010,6 +31100,15 @@ error: 'import' is reserved and cannot be used as an identifier
  1 | var x = ({ \u0069mport }) => {};
    |            ^^^^^^^^^^^
    |
+
+✓ test/parser/suite/js/fail/e7c2c2dcc227201c.js
+error: Class declarations are not allowed in single-statement contexts
+   |
+ 1 | for (var x in {}) class C {}
+   |                   ^^^^^^^
+   |
+   = help: Wrap the class declaration in a block: { class C {} }
+
 
 ✓ test/parser/suite/js/fail/e7c76f593fda1d4d.js
 error: Rest element must be the last element

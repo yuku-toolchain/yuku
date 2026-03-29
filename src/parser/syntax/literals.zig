@@ -183,7 +183,7 @@ inline fn getTemplateElementSpan(token: @import("../token.zig").Token) ast.Span 
 }
 
 pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
+    try validateIdentifier(parser, "an identifier", parser.current_token);
 
     const token = parser.current_token;
     try parser.advanceWithoutEscapeCheck() orelse return null;
@@ -194,7 +194,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "an identifier", parser.current_token)) return null;
+    try validateIdentifier(parser, "an identifier", parser.current_token);
 
     const current = parser.current_token;
 
@@ -225,7 +225,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try validateIdentifier(parser, "a label", parser.current_token)) return null;
+    try validateIdentifier(parser, "a label", parser.current_token);
 
     const current = parser.current_token;
     try parser.advance() orelse return null;
@@ -235,15 +235,13 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     }, current.span);
 }
 
-pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!bool {
+pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, token: Token) Error!void {
     if (!token.tag.isIdentifierLike()) {
         try parser.reportExpected(
             token.span,
             "Expected an identifier",
             .{ .help = "Identifiers must start with a letter, underscore (_), or dollar sign ($)" },
         );
-
-        return false;
     }
 
     if (token.tag.isUnconditionallyReserved()) {
@@ -252,8 +250,6 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
             try parser.fmt("'{s}' is reserved and cannot be used as " ++ as_what, .{parser.describeToken(token)}),
             .{},
         );
-
-        return false;
     }
 
     if (token.tag == .yield and parser.context.yield_is_keyword) {
@@ -262,8 +258,6 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
             "'yield' is reserved in a generator context and cannot be used as " ++ as_what,
             .{},
         );
-
-        return false;
     }
 
     if (token.tag == .await and parser.context.await_is_keyword) {
@@ -272,9 +266,5 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
             "'await' is reserved in an async or module context and cannot be used as " ++ as_what,
             .{},
         );
-
-        return false;
     }
-
-    return true;
 }

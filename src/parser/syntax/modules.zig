@@ -220,9 +220,7 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         // since it is now a binding identifier, we need to validate like reserved words, etc.
-        if (!try literals.validateIdentifier(parser, "an imported binding", imported_token)) {
-            return null;
-        }
+        try literals.validateIdentifier(parser, "an imported binding", imported_token);
 
         const id_data = imported_data.identifier_name;
 
