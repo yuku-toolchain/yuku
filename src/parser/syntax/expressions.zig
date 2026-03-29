@@ -105,7 +105,7 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     // jsx element
-    if (tag == .less_than and parser.isJsx()) {
+    if (tag == .less_than and parser.tree.isJsx()) {
         return jsx.parseJsxExpression(parser);
     }
 

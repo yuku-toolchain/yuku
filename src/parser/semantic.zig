@@ -351,7 +351,7 @@ const SemanticVisit = struct {
         if (meta != .identifier_name) return .proceed;
         const name = ctx.tree.getString(meta.identifier_name.name);
 
-        if (eql(u8, name, "import") and ctx.tree.source_type != .module)
+        if (eql(u8, name, "import") and !ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
 
         // https://tc39.es/ecma262/#sec-static-semantics-early-errors
@@ -362,7 +362,7 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
@@ -370,7 +370,7 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
@@ -378,7 +378,7 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
@@ -388,7 +388,7 @@ const SemanticVisit = struct {
     }
 
     pub fn enter_export_all_declaration(self: *Self, decl: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module)
+        if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
         else if (!isAtModuleTopLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
@@ -524,7 +524,7 @@ const SemanticVisit = struct {
     }
 
     fn checkModuleReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
-        if (ctx.tree.source_type != .module) return;
+        if (!ctx.tree.isModule()) return;
         if (eql(u8, name, "await"))
             try self.report(ctx.tree.getSpan(node_index), "'await' is reserved in module code and cannot be used as " ++ as_what, .{});
     }
@@ -775,7 +775,7 @@ const SemanticVisit = struct {
 
     /// records an exported name and reports a duplicate if one already exists.
     fn recordExportedName(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!void {
-        if (ctx.tree.source_type != .module) return;
+        if (!ctx.tree.isModule()) return;
         const gop = try self.exported_names.getOrPut(self.allocator, name);
         if (gop.found_existing) {
             try self.report(ctx.tree.getSpan(node_index), try self.fmt("Duplicate export of '{s}'", .{name}), .{
@@ -791,7 +791,7 @@ const SemanticVisit = struct {
 
     /// Post-traversal: checks that all local export specifiers refer to declared bindings.
     fn checkUnresolvedExports(self: *Self, result: semantic.Result) AnalysisError!void {
-        if (self.tree.source_type != .module) return;
+        if (!self.tree.isModule()) return;
         for (self.export_specifiers.items) |spec| {
             if (result.symbol_table.findInScopeOrHoisted(.module, spec.local_name) == null) {
                 try self.report(self.tree.getSpan(spec.node), try self.fmt("Export '{s}' is not defined", .{spec.local_name}), .{});

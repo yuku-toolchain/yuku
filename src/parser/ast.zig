@@ -174,6 +174,18 @@ pub const Tree = struct {
         return self.arena.allocator();
     }
 
+    pub inline fn isTs(self: *const Tree) bool {
+        return self.lang == .ts or self.lang == .tsx or self.lang == .dts;
+    }
+
+    pub inline fn isJsx(self: *const Tree) bool {
+        return self.lang == .tsx or self.lang == .jsx;
+    }
+
+    pub inline fn isModule(self: *const Tree) bool {
+        return self.source_type == .module;
+    }
+
     /// Returns true if the tree contains any errors.
     pub inline fn hasErrors(self: *const Tree) bool {
         for (self.diagnostics.items) |d| {

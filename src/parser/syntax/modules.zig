@@ -252,12 +252,12 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'export'
 
     // export = expression
-    if (parser.isTs() and parser.current_token.tag == .assign) {
+    if (parser.tree.isTs() and parser.current_token.tag == .assign) {
         return parseTSExportAssignment(parser, start);
     }
 
     // export as namespace name
-    if (parser.isTs() and parser.current_token.tag == .as) {
+    if (parser.tree.isTs() and parser.current_token.tag == .as) {
         return parseTSNamespaceExportDeclaration(parser, start);
     }
 

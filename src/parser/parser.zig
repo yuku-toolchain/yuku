@@ -96,7 +96,7 @@ pub const Parser = struct {
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
         self.context.yield_is_keyword = false;
-        self.context.await_is_keyword = self.isModule();
+        self.context.await_is_keyword = self.tree.isModule();
         self.context.allow_return_statement = false;
 
         // let's begin
@@ -164,18 +164,6 @@ pub const Parser = struct {
     inline fn isAtBodyEnd(self: *Parser, terminator: ?TokenTag) bool {
         return self.current_token.tag == .eof or
             (terminator != null and self.current_token.tag == terminator.?);
-    }
-
-    pub inline fn isTs(self: *Parser) bool {
-        return self.lang == .ts or self.lang == .tsx or self.lang == .dts;
-    }
-
-    pub inline fn isJsx(self: *Parser) bool {
-        return self.lang == .tsx or self.lang == .jsx;
-    }
-
-    pub inline fn isModule(self: *Parser) bool {
-        return self.source_type == .module;
     }
 
     /// Returns the resolved name for any identifier-like token.
