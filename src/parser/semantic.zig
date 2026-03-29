@@ -347,11 +347,17 @@ const SemanticVisit = struct {
 
     /// https://tc39.es/ecma262/#sec-left-hand-side-expressions-static-semantics-early-errors
     pub fn enter_meta_property(self: *Self, prop: ast.MetaProperty, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
-        if (ctx.tree.source_type != .module) {
-            const meta = ctx.tree.getData(prop.meta);
-            if (meta == .identifier_name and eql(u8, ctx.tree.getString(meta.identifier_name.name), "import"))
-                try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
-        }
+        const meta = ctx.tree.getData(prop.meta);
+        if (meta != .identifier_name) return .proceed;
+        const name = ctx.tree.getString(meta.identifier_name.name);
+
+        if (eql(u8, name, "import") and ctx.tree.source_type != .module)
+            try self.report(ctx.tree.getSpan(node_index), "'import.meta' is only valid in module code", .{});
+
+        // https://tc39.es/ecma262/#sec-static-semantics-early-errors
+        if (eql(u8, name, "new") and !isNewTargetAvailable(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "'new.target' is only valid inside functions, class field initializers, or static blocks", .{});
+
         return .proceed;
     }
 
@@ -671,6 +677,18 @@ const SemanticVisit = struct {
             const data = ctx.tree.getData(i);
             if (isIterationStatement(data)) return true;
             if (isFunctionBoundary(data)) return false;
+        }
+        return false;
+    }
+
+    fn isNewTargetAvailable(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .function, .static_block, .property_definition => return true,
+                .arrow_function_expression => {},
+                else => {},
+            }
         }
         return false;
     }

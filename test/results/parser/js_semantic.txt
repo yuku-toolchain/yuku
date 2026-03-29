@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3454/3637 (94.97%)
-Failed:       183
+Passed:       3458/3637 (95.08%)
+Failed:       179
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -14700,7 +14700,15 @@ error: In strict mode code, functions can only be declared at top level or insid
    |        ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/6ebcc9e1fe8f520c.js
+✓ test/parser/suite/js/semantic/6ebcc9e1fe8f520c.js
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 1 | () => {
+ 2 |   new.target;
+   |   ^^^^^^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/6ec9214b85e75f51.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -17454,7 +17462,13 @@ error: Cannot use import statement outside a module
  2 | export let local1 = 23;
    |
 
-✗ test/parser/suite/js/semantic/842204e4a35fd91d.js
+✓ test/parser/suite/js/semantic/842204e4a35fd91d.js
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 1 | new.target;
+   | ^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/84401b9aa13d9638.js
 error: Identifier 'f' has already been declared
    |
@@ -27864,7 +27878,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  2 | var C = class {
    |
 
-✗ test/parser/suite/js/semantic/d32d2f1285789b8e.js
+✓ test/parser/suite/js/semantic/d32d2f1285789b8e.js
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 1 | new.target
+   | ^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/d32d9a1ac78ac7d2.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -33972,7 +33992,14 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
    |       ^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/fc9cad7477872ddf.js
+✓ test/parser/suite/js/semantic/fc9cad7477872ddf.js
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 1 | var a = new.target;
+   |         ^^^^^^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/fca5e471bb70bdf2.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
