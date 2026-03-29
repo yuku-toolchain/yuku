@@ -486,6 +486,30 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    pub fn enter_class_body(self: *Self, body: ast.ClassBody, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        var first_constructor: ?ast.NodeIndex = null;
+        for (ctx.tree.getExtra(body.body)) |child| {
+            const child_data = ctx.tree.getData(child);
+
+            if (child_data != .method_definition) continue;
+
+            const method_definition = child_data.method_definition;
+
+            if (method_definition.kind != .constructor) continue;
+
+            if (first_constructor) |first| {
+                try self.report(ctx.tree.getSpan(method_definition.key), "A class can only have one constructor", .{
+                    .labels = try self.labels(&.{
+                        self.label(ctx.tree.getSpan(first), "first constructor defined here"),
+                    }),
+                });
+            } else {
+                first_constructor = method_definition.key;
+            }
+        }
+        return .proceed;
+    }
 
     fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
         if (!ctx.scope.isStrict()) return;

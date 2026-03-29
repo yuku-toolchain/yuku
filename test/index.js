@@ -1,3 +1,1 @@
-function await() {
-
-}
+class C { constructor(){} "constructor"(){} }

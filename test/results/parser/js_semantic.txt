@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3447/3637 (94.78%)
-Failed:       190
+Passed:       3454/3637 (94.97%)
+Failed:       183
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -2193,7 +2193,14 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/105ffb01ec9f8aad.js
+✓ test/parser/suite/js/semantic/105ffb01ec9f8aad.js
+error: A class can only have one constructor
+   |
+ 1 | !class a { constructor(){} "constructor"(){} }
+   |                            ^^^^^^^^^^^^^
+   |            ~~~~~~~~~~~ first constructor defined here
+   |
+
 ✓ test/parser/suite/js/semantic/10786cdac00d0c02.js
 error: Cannot use import statement outside a module
    |
@@ -16848,7 +16855,14 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 |     a(arguments);
    |
 
-✗ test/parser/suite/js/semantic/7ff093da75220530.js
+✓ test/parser/suite/js/semantic/7ff093da75220530.js
+error: A class can only have one constructor
+   |
+ 1 | class a { constructor(){} constructor(){} }
+   |                           ^^^^^^^^^^^
+   |           ~~~~~~~~~~~ first constructor defined here
+   |
+
 ✓ test/parser/suite/js/semantic/8015c70c030a2132.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -17668,7 +17682,14 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✗ test/parser/suite/js/semantic/860f50d4534bcb05.module.js
-✗ test/parser/suite/js/semantic/86131c9fbad63a79.js
+✓ test/parser/suite/js/semantic/86131c9fbad63a79.js
+error: A class can only have one constructor
+   |
+ 1 | !class a { constructor(){} constructor(){} }
+   |                            ^^^^^^^^^^^
+   |            ~~~~~~~~~~~ first constructor defined here
+   |
+
 ✓ test/parser/suite/js/semantic/8643da76fe7e95c7.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -21408,7 +21429,17 @@ error: Identifier 'param' has already been declared
    = help: Consider removing or renaming this declaration of 'param'
 
 
-✗ test/parser/suite/js/semantic/a3b3f80a43adbccd.js
+✓ test/parser/suite/js/semantic/a3b3f80a43adbccd.js
+error: A class can only have one constructor
+   |
+ 1 | var C = class {
+ 2 |   constructor() {}
+   |   ~~~~~~~~~~~ first constructor defined here
+ 3 |   constructor() {}
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/a3b8ad6f9de31b93.module.js
 error: 'export default' declaration may only appear at the top level
    |
@@ -22433,7 +22464,17 @@ error: Duplicate '__proto__' property in object literal
    |       ~~~~~~~~~~~~ first defined here
    |
 
-✗ test/parser/suite/js/semantic/ab7b2a28354f1f54.js
+✓ test/parser/suite/js/semantic/ab7b2a28354f1f54.js
+error: A class can only have one constructor
+   |
+ 1 | class C {
+ 2 |   constructor() {}
+   |   ~~~~~~~~~~~ first constructor defined here
+ 3 |   constructor() {}
+   |   ^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ab966c8708b47ed1.js
 error: Identifier 'a' has already been declared
    |
@@ -28431,7 +28472,14 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/d76a6ab8347fca64.js
+✓ test/parser/suite/js/semantic/d76a6ab8347fca64.js
+error: A class can only have one constructor
+   |
+ 1 | class a {constructor(){} "constructor"(){}}
+   |                          ^^^^^^^^^^^^^
+   |          ~~~~~~~~~~~ first constructor defined here
+   |
+
 ✓ test/parser/suite/js/semantic/d76b575909930ced.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -31374,7 +31422,14 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
    |                    ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/eac5e9a554000a84.js
+✓ test/parser/suite/js/semantic/eac5e9a554000a84.js
+error: A class can only have one constructor
+   |
+ 1 | class a { constructor(){} "constructor"(){} }
+   |                           ^^^^^^^^^^^^^
+   |           ~~~~~~~~~~~ first constructor defined here
+   |
+
 ✓ test/parser/suite/js/semantic/eac8e168fb0382e0.js
 error: Cannot use import statement outside a module
    |
