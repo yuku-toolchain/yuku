@@ -207,10 +207,19 @@ pub const ScopeTracker = struct {
 
                 try self.pushScope(.function, index, flags);
             },
-            .block_statement,
+            .block_statement => {
+                // Section 14.15.2 CatchClauseEvaluation creates a single
+                // environment (catchEnv) for both the parameter bindings
+                // and the Block body. The body block reuses the catch scope
+                // so that findInScopeOrHoisted naturally detects conflicts
+                // required by Section 14.15.1 early errors.
+                const current = self.tree.getData(self.currentScope().node);
+                if (current != .catch_clause or current.catch_clause.body != index)
+                    try self.pushScope(.block, index, self.inheritStrictFlag());
+            },
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause,
-            // switch creates one block scope for all case clauses
+            // Section 14.12 switch creates one block scope for all case clauses
             .switch_statement,
             => try self.pushScope(.block, index, self.inheritStrictFlag()),
             .class => |cls| {
@@ -282,11 +291,15 @@ pub const ScopeTracker = struct {
                     self.scope_stack.pop();
             },
             .arrow_function_expression,
-            .block_statement,
             .for_statement, .for_in_statement, .for_of_statement,
             .catch_clause, .switch_statement,
             .static_block,
             => self.scope_stack.pop(),
+            .block_statement => {
+                // catch body blocks share the catch scope (Section 14.15.2)
+                if (self.tree.getData(self.currentScope().node) != .catch_clause)
+                    self.scope_stack.pop();
+            },
             .class => |cls| {
                 self.scope_stack.pop();
                 if (isNamedClassExpression(cls))

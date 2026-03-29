@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3492/3637 (96.01%)
-Failed:       145
+Passed:       3496/3637 (96.12%)
+Failed:       141
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -10969,7 +10969,17 @@ error: Cannot use import statement outside a module
  2 | import x from './import-attribute-1_FIXTURE.js' with { undefined: '' };
    |
 
-✗ test/parser/suite/js/semantic/51fe41481b052604.js
+✓ test/parser/suite/js/semantic/51fe41481b052604.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | try {} catch(a) { let a; }
+   |                       ^
+   |              ~ 'a' was first declared as a parameter here
+   |                       ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/52049772f70b70ef.js
 error: Identifier 'a' has already been declared
    |
@@ -18624,7 +18634,17 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/8ef66243bae65921.js
+✓ test/parser/suite/js/semantic/8ef66243bae65921.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | try { } catch (x) { let x; }
+   |                         ^
+   |                ~ 'x' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/8f02a6cbd44f7ff5.js
 error: Identifier 'f' has already been declared
    |
@@ -21909,7 +21929,17 @@ error: Private fields cannot be deleted
  5 |   async #m() {}
    |
 
-✗ test/parser/suite/js/semantic/a610a46980d6cc37.js
+✓ test/parser/suite/js/semantic/a610a46980d6cc37.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | try {} catch(a) { function a(){} }
+   |                            ^
+   |              ~ 'a' was first declared as a parameter here
+   |                            ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/a6229f3898ef3d54.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -32790,7 +32820,20 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    | ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/f2ab25e48a86f455.js
+✓ test/parser/suite/js/semantic/f2ab25e48a86f455.js
+error: Identifier 'e' has already been declared
+   |
+ 2 |     try {
+ 3 |     } catch (e) {
+   |              ~ 'e' was first declared as a parameter here
+ 4 |         function e(){}
+   |                  ^
+   |                  ~ cannot be redeclared here
+ 5 |     }
+   |
+   = help: Consider removing or renaming this declaration of 'e'
+
+
 ✓ test/parser/suite/js/semantic/f2b544c6a0e3b89f.module.js
 error: 'import' declaration may only appear at the top level
    |

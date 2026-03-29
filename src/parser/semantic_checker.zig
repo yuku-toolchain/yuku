@@ -73,8 +73,7 @@ const SemanticVisit = struct {
         if (ctx.symbols.findInScopeOrHoisted(target, name)) |sym| {
             const existing = ctx.symbols.getSymbol(sym);
 
-            // https://tc39.es/ecma262/#sec-block-static-semantics-early-errors
-            // https://tc39.es/ecma262/#sec-switch-statement-static-semantics-early-errors
+            // Section 14.2.1, 14.12.1: block/switch lexical redeclaration.
             if (existing.kind.isBlockScoped(target_scope_kind) or
                 current_kind.isBlockScoped(target_scope_kind))
             {
@@ -95,21 +94,9 @@ const SemanticVisit = struct {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                     }
                 } else if (current_kind == .parameter) {
-                    // https://tc39.es/ecma262/#sec-try-statement-static-semantics-early-errors
-                    // catch parameter: duplicates are always an error
+                    // Section 14.15.1: "It is a Syntax Error if the BoundNames
+                    // of CatchParameter contains any duplicate elements."
                     try self.reportRedeclaration(id, node_index, existing, ctx);
-                }
-            }
-        }
-
-        // https://tc39.es/ecma262/#sec-try-statement-static-semantics-early-errors
-        // catch parameter names must not conflict with lexical declarations in the body
-        if (current_kind.isBlockScoped(target_scope_kind)) {
-            const parent_id = ctx.scope.getScope(target).parent;
-            if (parent_id != .none and ctx.tree.getData(ctx.scope.getScope(parent_id).node) == .catch_clause) {
-                if (ctx.symbols.findInScope(parent_id, name)) |sym| {
-                    if (ctx.symbols.getSymbol(sym).kind == .parameter)
-                        try self.reportRedeclaration(id, node_index, ctx.symbols.getSymbol(sym), ctx);
                 }
             }
         }
@@ -512,7 +499,7 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    /// https://tc39.es/ecma262/#sec-switch-statement-static-semantics-early-errors
+    /// Section 14.12: the CaseBlock grammar permits at most one DefaultClause.
     pub fn enter_switch_statement(self: *Self, stmt: ast.SwitchStatement, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         var first_default: ?ast.NodeIndex = null;
         for (ctx.tree.getExtra(stmt.cases)) |child| {
