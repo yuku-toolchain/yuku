@@ -94,6 +94,22 @@ const SemanticVisit = struct {
                     } else if (ecmascript.findNonSimpleParameter(ctx.tree, formal_parameters)) |_| {
                         try self.reportRedeclaration(id, node_index, existing, ctx);
                     }
+                } else if (current_kind == .parameter) {
+                    // https://tc39.es/ecma262/#sec-try-statement-static-semantics-early-errors
+                    // catch parameter: duplicates are always an error
+                    try self.reportRedeclaration(id, node_index, existing, ctx);
+                }
+            }
+        }
+
+        // https://tc39.es/ecma262/#sec-try-statement-static-semantics-early-errors
+        // catch parameter names must not conflict with lexical declarations in the body
+        if (current_kind.isBlockScoped(target_scope_kind)) {
+            const parent_id = ctx.scope.getScope(target).parent;
+            if (parent_id != .none and ctx.tree.getData(ctx.scope.getScope(parent_id).node) == .catch_clause) {
+                if (ctx.symbols.findInScope(parent_id, name)) |sym| {
+                    if (ctx.symbols.getSymbol(sym).kind == .parameter)
+                        try self.reportRedeclaration(id, node_index, ctx.symbols.getSymbol(sym), ctx);
                 }
             }
         }

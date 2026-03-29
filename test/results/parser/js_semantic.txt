@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3486/3637 (95.85%)
-Failed:       151
+Passed:       3492/3637 (96.01%)
+Failed:       145
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -7919,7 +7919,17 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  2 | var x = {};
    |
 
-✗ test/parser/suite/js/semantic/3abbddaa6f253dec.js
+✓ test/parser/suite/js/semantic/3abbddaa6f253dec.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | try {} catch ({a, a}) {}
+   |                   ^
+   |                ~ 'a' was first declared as a parameter here
+   |                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/3ad58ee637040e22.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -14093,7 +14103,17 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |
 
 ✗ test/parser/suite/js/semantic/699b1c93038ef316.js
-✗ test/parser/suite/js/semantic/69a9f6b6e2fa6bf6.js
+✓ test/parser/suite/js/semantic/69a9f6b6e2fa6bf6.js
+error: Identifier 'b' has already been declared
+   |
+ 1 | try {} catch ({a: b, c: b}) {}
+   |                         ^
+   |                   ~ 'b' was first declared as a parameter here
+   |                         ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✓ test/parser/suite/js/semantic/69b683e33dbf6086.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -15624,7 +15644,18 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
    |                          ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/75943e9bc83b6d0e.js
+✓ test/parser/suite/js/semantic/75943e9bc83b6d0e.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | try {} catch ([a,a]) {}
+   |                  ^
+   |                ~ 'a' was first declared as a parameter here
+   |                  ~ cannot be redeclared here
+ 2 | 
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/75ac908a7aa01663.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -18951,7 +18982,17 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/91e14a85744e958d.js
+✓ test/parser/suite/js/semantic/91e14a85744e958d.js
+error: Identifier 'x' has already been declared
+   |
+ 1 | try { } catch ([x, x]) {}
+   |                    ^
+   |                 ~ 'x' was first declared as a parameter here
+   |                    ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✓ test/parser/suite/js/semantic/91e632d1f6f140ed.js
 error: Identifier 'b' has already been declared
    |
@@ -27120,7 +27161,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/cdceb01cec39f8d0.js
+✓ test/parser/suite/js/semantic/cdceb01cec39f8d0.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | try {} catch ({a = 1, b: a}) {}
+   |                          ^
+   |                ~ 'a' was first declared as a parameter here
+   |                          ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/cddc74f578049dc6.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -32652,7 +32703,17 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/f25183676693850d.js
+✓ test/parser/suite/js/semantic/f25183676693850d.js
+error: Identifier 'a' has already been declared
+   |
+ 1 | try {} catch ([a, a]) {}
+   |                   ^
+   |                ~ 'a' was first declared as a parameter here
+   |                   ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✓ test/parser/suite/js/semantic/f26b28f0873b616a.js
 error: Identifier 'f' has already been declared
    |
