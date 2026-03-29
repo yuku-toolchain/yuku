@@ -1,10 +1,10 @@
 const std = @import("std");
+const ast_string = @import("ast_string.zig");
 const TokenSpan = @import("token.zig").Span;
 const TokenTag = @import("token.zig").TokenTag;
 
-const ast_string = @import("ast_string.zig");
 pub const String = ast_string.String;
-pub const ASTStringPool = ast_string.ASTStringPool;
+pub const StringPool = ast_string.ASTStringPool;
 
 pub const Span = TokenSpan;
 
@@ -142,7 +142,7 @@ pub const Tree = struct {
     /// Empty for trees built programmatically with `initEmpty()`.
     source: []const u8 = "",
     /// String pool for AST node string fields.
-    strings: ASTStringPool = .{},
+    strings: StringPool = .{},
     /// Source type (script or module).
     source_type: SourceType = .module,
     /// Language variant (js, ts, jsx, tsx, dts).
