@@ -121,7 +121,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/0111948be654b2d1.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var gen = async function *g() {
  2 |   var await;
@@ -207,7 +207,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/0175aeaae0f0cb11.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  2 |   *method() {
  3 |     var yi\u0065ld;
@@ -310,7 +310,7 @@ error: Unexpected token ':'
 
 
 ✓ test/parser/suite/js/fail/01f988c40f030c8a.js
-error: 'void' is reserved and cannot be used as an identifier
+error: 'void' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{76}\u{6f}\u{69}\u{64} = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -404,7 +404,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/02a5ebb2378de234.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | import * as enum from 'foo'
    |             ^^^^
@@ -448,7 +448,7 @@ error: 'return' statement is only valid inside a function
 
 
 ✓ test/parser/suite/js/fail/0301d84f28f655aa.js
-error: 'import' is reserved and cannot be used as an identifier
+error: 'import' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0069\u006d\u0070\u006f\u0072\u0074 = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -473,7 +473,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/03417e244f61ad3f.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     class await {}
@@ -491,7 +491,7 @@ error: Expected '(' after import, but found '.'
    |
 
 ✓ test/parser/suite/js/fail/034bde9700ab4518.js
-error: 'new' is reserved and cannot be used as an identifier
+error: 'new' is reserved and cannot be used as a binding identifier
    |
  1 | var new A = 0;
    |     ^^^
@@ -514,14 +514,14 @@ error: 'try' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/0386dace9a9fc47e.js
-error: 'null' is reserved and cannot be used as an identifier
+error: 'null' is reserved and cannot be used as a binding identifier
    |
  1 | function null() { }
    |          ^^^^
    |
 
 ✓ test/parser/suite/js/fail/038b09018af824e7.js
-error: 'null' is reserved and cannot be used as an identifier
+error: 'null' is reserved and cannot be used as a binding identifier
    |
  1 | var null;
    |     ^^^^
@@ -705,7 +705,7 @@ error: Unexpected token '...'
 
 
 ✓ test/parser/suite/js/fail/04bc213db9cd1130.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g() { function yield() {} }
    |                          ^^^^^
@@ -733,7 +733,7 @@ error: Getter must have no parameters
 
 
 ✓ test/parser/suite/js/fail/052c621d3c8c9fc3.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  2 |     let
  3 |     yield 0;
@@ -809,7 +809,7 @@ error: Unexpected '=>'
 
 
 ✓ test/parser/suite/js/fail/05b1443976365323.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await;
    |     ^^^^^
@@ -917,7 +917,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/06567be162630492.js
-error: 'return' is reserved and cannot be used as an identifier
+error: 'return' is reserved and cannot be used as a binding identifier
    |
  1 | var return = 123;
    |     ^^^^^^
@@ -1018,7 +1018,7 @@ error: Function declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/07435600b55f5b9e.js
-error: 'import' is reserved and cannot be used as an identifier
+error: 'import' is reserved and cannot be used as a binding identifier
    |
  1 | var import = 1;
    |     ^^^^^^
@@ -1063,7 +1063,7 @@ error: Classes may not have a static property named 'prototype'
 
 
 ✓ test/parser/suite/js/fail/07af967376fa8c19.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -1091,7 +1091,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/07d4f2ff532c2606.js
-error: 'var' is reserved and cannot be used as an identifier
+error: 'var' is reserved and cannot be used as a binding identifier
    |
  1 | var va\u0072 = 123;
    |     ^^^^^^^^
@@ -1217,7 +1217,7 @@ error: Class declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/08acb1c48fb42c9a.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 1;
    |     ^^^^^
@@ -1305,7 +1305,7 @@ error: Unterminated regular expression literal
 
 
 ✓ test/parser/suite/js/fail/095c890d64a1fdc2.js
-error: 'try' is reserved and cannot be used as an identifier
+error: 'try' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0074\u0072\u0079 = 123;
    |     ^^^^^^^^^^^^^^^^^^
@@ -1323,7 +1323,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/097b8e7c43c5c118.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async method() {
  3 |     var \u0061wait;
@@ -1589,7 +1589,7 @@ error: Invalid element in binding pattern
 
 
 ✓ test/parser/suite/js/fail/0bfc57a1bfd35ed6.js
-error: 'this' is reserved and cannot be used as an identifier
+error: 'this' is reserved and cannot be used as a binding identifier
    |
  1 | var thi\u{73} = 123;
    |     ^^^^^^^^^
@@ -1738,7 +1738,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/0cae543b6f97a0ab.js
-error: 'throw' is reserved and cannot be used as an identifier
+error: 'throw' is reserved and cannot be used as a binding identifier
    |
  1 | var thro\u{77} = 123;
    |     ^^^^^^^^^^
@@ -1763,7 +1763,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/0cddf36b7bdebe3b.js
-error: 'false' is reserved and cannot be used as an identifier
+error: 'false' is reserved and cannot be used as a binding identifier
    |
  1 | var fals\u0065 = 123;
    |     ^^^^^^^^^^
@@ -1801,7 +1801,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/0d38f0018f1f00b1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { async *#gen() {
  2 |     var yi\u0065ld;
@@ -1810,7 +1810,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/0d3b0899890c5f8e.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | class a {b(enum){}}
    |            ^^^^
@@ -1846,7 +1846,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/0db60f9ba9b9f2d1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var obj = {
  2 |   *g(yield) {}
@@ -1865,14 +1865,14 @@ error: Unexpected token ';' in binding pattern
 
 
 ✓ test/parser/suite/js/fail/0dce0bbdc98e0204.js
-error: 'typeof' is reserved and cannot be used as an identifier
+error: 'typeof' is reserved and cannot be used as a binding identifier
    |
  1 | var typeo\u{66} = 123;
    |     ^^^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/fail/0df946b2d4bb9ceb.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { async *gen() {
  2 |     var yi\u0065ld;
@@ -2198,7 +2198,7 @@ error: 'const' declarations must be initialized
 
 
 ✓ test/parser/suite/js/fail/107a0de30a1530d2.js
-error: 'continue' is reserved and cannot be used as an identifier
+error: 'continue' is reserved and cannot be used as a binding identifier
    |
  1 | var continue = 123;
    |     ^^^^^^^^
@@ -2232,7 +2232,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/10b0ea59ebc0a6b7.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class await {}
    |       ^^^^^
@@ -2549,7 +2549,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/13244b2953aae790.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *gen() {
  2 |     var yi\u0065ld;
@@ -2577,7 +2577,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/1381c5054bbbd66c.js
-error: 'null' is reserved and cannot be used as an identifier
+error: 'null' is reserved and cannot be used as a binding identifier
    |
  1 | var \u006eull = 123;
    |     ^^^^^^^^^
@@ -2629,7 +2629,7 @@ error: Unexpected token '...'
 
 
 ✓ test/parser/suite/js/fail/13cb506bd1420793.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -2871,7 +2871,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/153d78484c29bdbe.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     let await;
@@ -3035,7 +3035,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/16447d69e6ae548d.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     function await() {}
@@ -3076,7 +3076,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/16947dc1d11e5e70.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | (function*yield(){})
    |           ^^^^^
@@ -3163,7 +3163,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/1758049ab12d06b7.js
-error: 'class' is reserved and cannot be used as an identifier
+error: 'class' is reserved and cannot be used as a binding identifier
    |
  1 | var class = 123;
    |     ^^^^^
@@ -3181,7 +3181,7 @@ error: Unexpected token '...'
 
 
 ✓ test/parser/suite/js/fail/17840ec4c4218702.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async method() {
  3 |     var \u0061wait;
@@ -3239,7 +3239,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/17c11ae80ae15781.js
-error: 'var' is reserved and cannot be used as an identifier
+error: 'var' is reserved and cannot be used as a binding identifier
    |
  1 | var var = 123;
    |     ^^^
@@ -3519,7 +3519,7 @@ error: 'case' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/1a32df2e8d4bea98.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g() { var yield; }
    |                     ^^^^^
@@ -3563,7 +3563,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/1a62d7bb44c06bd0.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | function t(if) { }
    |            ^^
@@ -3671,7 +3671,7 @@ error: Member expression is not allowed in binding pattern
 
 
 ✓ test/parser/suite/js/fail/1b482a178d8a3a54.js
-error: 'function' is reserved and cannot be used as an identifier
+error: 'function' is reserved and cannot be used as a binding identifier
    |
  1 | var func\u0074ion = 123;
    |     ^^^^^^^^^^^^^
@@ -3775,7 +3775,7 @@ error: Unexpected token '...'
 
 
 ✓ test/parser/suite/js/fail/1be95e8ec94b5a91.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { static async *#gen() {
  2 |     var yi\u0065ld;
@@ -3825,7 +3825,7 @@ error: Getter/setter cannot appear in destructuring pattern
 
 
 ✓ test/parser/suite/js/fail/1c28624e41f59708.js
-error: 'super' is reserved and cannot be used as an identifier
+error: 'super' is reserved and cannot be used as a binding identifier
    |
  1 | var super = 123;
    |     ^^^^^
@@ -3859,7 +3859,7 @@ error: Expected an identifier, but found '1'
 
 
 ✓ test/parser/suite/js/fail/1c5370c5e96900ac.js
-error: 'case' is reserved and cannot be used as an identifier
+error: 'case' is reserved and cannot be used as a binding identifier
    |
  1 | var case = 123;
    |     ^^^^
@@ -3937,7 +3937,7 @@ error: 'extends' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/1ca523d3be2abed9.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { static async *gen() {
  2 |     var \u0061wait;
@@ -3979,7 +3979,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/1d1138d905186de3.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function asyncFn() {
  2 |   var \u0061wait;
@@ -4217,7 +4217,7 @@ error: Unexpected '=>'
 
 
 ✓ test/parser/suite/js/fail/1f8f0e2ae173b51e.js
-error: 'switch' is reserved and cannot be used as an identifier
+error: 'switch' is reserved and cannot be used as a binding identifier
    |
  1 | var switch = 123;
    |     ^^^^^^
@@ -4275,7 +4275,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/1fc78fd0e00f4e92.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | function default() {}
    |          ^^^^^^^
@@ -4363,7 +4363,7 @@ error: 'typeof' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/204938c692afaaf9.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | var def\u{61}ult = 123;
    |     ^^^^^^^^^^^^
@@ -4463,7 +4463,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/20f9ffc1256c449a.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { static async *gen() {
  2 |     var yield;
@@ -4502,7 +4502,7 @@ error: Unexpected token '=>' in expression
 
 
 ✓ test/parser/suite/js/fail/212f328a8e7371d3.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  6 | function ZW_\u200D_J() {}
  7 | function await() {}
@@ -4548,14 +4548,14 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/2190ad2c70e98f7a.js
-error: 'return' is reserved and cannot be used as an identifier
+error: 'return' is reserved and cannot be used as a binding identifier
    |
  1 | var retur\u006e = 123;
    |     ^^^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/fail/219ce45c23f9e1cc.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | function if() { }
    |          ^^
@@ -4663,7 +4663,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/224143d2e62a0031.js
-error: 'extends' is reserved and cannot be used as an identifier
+error: 'extends' is reserved and cannot be used as a binding identifier
    |
  1 | var extend\u{73} = 123;
    |     ^^^^^^^^^^^^
@@ -4719,7 +4719,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/22cf78c20c734716.js
-error: 'this' is reserved and cannot be used as an identifier
+error: 'this' is reserved and cannot be used as a binding identifier
    |
  1 | var this = 123;
    |     ^^^^
@@ -4835,7 +4835,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/240350780ac77c74.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -5208,7 +5208,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/266f6494053e2d06.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = async function *g() {
  2 |   var yi\u0065ld;
@@ -5343,7 +5343,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/2774b3cce5a09798.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | (function *(x, ...yield){})
    |                   ^^^^^
@@ -5360,7 +5360,7 @@ error: Getter/setter cannot appear in destructuring pattern
 
 
 ✓ test/parser/suite/js/fail/278363808f4ef4aa.js
-error: 'void' is reserved and cannot be used as an identifier
+error: 'void' is reserved and cannot be used as a binding identifier
    |
  1 | var void = 123;
    |     ^^^^
@@ -5602,7 +5602,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/28c3d2998fbdb708.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | (async function*(yield) { });
    |                  ^^^^^
@@ -5778,7 +5778,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/2a0fadd74e13dc0c.js
-error: 'instanceof' is reserved and cannot be used as an identifier
+error: 'instanceof' is reserved and cannot be used as a binding identifier
    |
  1 | var instanceof = 123;
    |     ^^^^^^^^^^
@@ -5981,7 +5981,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/2b8d54f6fc1dcbd6.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g(){ var yield = 1; }
    |                   ^^^^^
@@ -6098,7 +6098,7 @@ error: Unterminated regular expression literal
 
 
 ✓ test/parser/suite/js/fail/2c2e0126e9438ede.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async #method() {
  3 |     var \u0061wait;
@@ -6165,7 +6165,7 @@ error: Unexpected token ';' in binding pattern
 
 
 ✓ test/parser/suite/js/fail/2cc8db3e8beae7fd.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { async *#gen() {
  2 |     var yield;
@@ -6241,7 +6241,7 @@ error: Expected ')' to close parameter list, but found '='
 
 
 ✓ test/parser/suite/js/fail/2d22ba8e1b2213b2.js
-error: 'extends' is reserved and cannot be used as an identifier
+error: 'extends' is reserved and cannot be used as a binding identifier
    |
  1 | var extends = 123;
    |     ^^^^^^^
@@ -6277,7 +6277,7 @@ error: Expected ')' after function arguments, but found 'null'
 
 
 ✓ test/parser/suite/js/fail/2d4b1b5dc4c8d456.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{69}\u{66} = 123;
    |     ^^^^^^^^^^^^
@@ -6366,7 +6366,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/2db705ea9b6b9e35.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -6490,7 +6490,7 @@ error: Unterminated template literal
 
 
 ✓ test/parser/suite/js/fail/2ea503fc0a307a42.js
-error: 'extends' is reserved and cannot be used as an identifier
+error: 'extends' is reserved and cannot be used as a binding identifier
    |
  1 | var extends = 1;
    |     ^^^^^^^
@@ -6672,7 +6672,7 @@ error: Expected ')' after function arguments, but found 'foo'
 
 
 ✓ test/parser/suite/js/fail/302a0dfffc3edf37.js
-error: 'class' is reserved and cannot be used as an identifier
+error: 'class' is reserved and cannot be used as a binding identifier
    |
  1 | import * as class from 'foo'
    |             ^^^^^
@@ -6787,7 +6787,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/30c64f944edc4987.js
-error: 'do' is reserved and cannot be used as an identifier
+error: 'do' is reserved and cannot be used as a binding identifier
    |
  1 | var do = 123;
    |     ^^
@@ -6928,7 +6928,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/3178dcc570888e15.js
-error: 'true' is reserved and cannot be used as an identifier
+error: 'true' is reserved and cannot be used as a binding identifier
    |
  1 | function true() { }
    |          ^^^^
@@ -7107,7 +7107,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/32529ec69f32cac1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | (function *(yield){})
    |             ^^^^^
@@ -7268,7 +7268,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/33fa43bcfd5722e0.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  6 | function ZW_\u200D_J() {}
  7 | function await() {}
@@ -7335,7 +7335,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/346683aeccece798.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | var default = 123;
    |     ^^^^^^^
@@ -7772,14 +7772,14 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/3800e7819ed60a8c.js
-error: 'function' is reserved and cannot be used as an identifier
+error: 'function' is reserved and cannot be used as a binding identifier
    |
  1 | var func\u{74}ion = 123;
    |     ^^^^^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/fail/3803dd3add30cdd0.js
-error: 'while' is reserved and cannot be used as an identifier
+error: 'while' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{77}\u{68}\u{69}\u{6c}\u{65} = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -7895,7 +7895,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/3919ae596583c02b.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *#gen() {
  2 |     var yield;
@@ -8049,7 +8049,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/3a31bdd7f1c65b81.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function *gen() {
  2 |   var await;
@@ -8058,7 +8058,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/3a341e441ecc301b.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | (async function* await() { });
    |                  ^^^^^
@@ -8109,7 +8109,7 @@ error: Using declaration cannot have destructuring patterns.
    |
 
 ✓ test/parser/suite/js/fail/3a85a905bf48bd54.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { *gen() {
  2 |     var yield;
@@ -8277,7 +8277,7 @@ error: Invalid operand for increment/decrement operator
 
 
 ✓ test/parser/suite/js/fail/3c33a88c70a9b46c.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { *#gen() {
  2 |     var yield;
@@ -8286,7 +8286,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/3c3fd79750f5922a.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { async *#gen() {
  2 |     var yi\u0065ld;
@@ -8364,7 +8364,7 @@ error: Generators can only be declared at the top level or inside a block
    |
 
 ✓ test/parser/suite/js/fail/3cf41648495d6553.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0069\u0066 = 123;
    |     ^^^^^^^^^^^^
@@ -8470,7 +8470,7 @@ error: Unexpected token '#x' as property key
 
 
 ✓ test/parser/suite/js/fail/3d8afbeddb6cf5e1.js
-error: 'try' is reserved and cannot be used as an identifier
+error: 'try' is reserved and cannot be used as a binding identifier
    |
  1 | var try = 123;
    |     ^^^
@@ -8753,7 +8753,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/3fc85e3905dd68c7.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await;
    |     ^^^^^
@@ -8761,7 +8761,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/3fce3bb07400ca59.js
-error: 'new' is reserved and cannot be used as an identifier
+error: 'new' is reserved and cannot be used as a binding identifier
    |
  1 | var new = 123;
    |     ^^^
@@ -8911,7 +8911,7 @@ error: Expected ';' after class field, but found '#y'
 
 
 ✓ test/parser/suite/js/fail/414f485082a04cbe.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | var const
    |     ^^^^^
@@ -8967,7 +8967,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/41bb6cfb5f18770c.js
-error: 'class' is reserved and cannot be used as an identifier
+error: 'class' is reserved and cannot be used as a binding identifier
    |
  1 | import { a as class } from 'foo'
    |               ^^^^^
@@ -9457,7 +9457,7 @@ error: Invalid operand for increment/decrement operator
 
 
 ✓ test/parser/suite/js/fail/4555951a26fb3ac6.js
-error: 'finally' is reserved and cannot be used as an identifier
+error: 'finally' is reserved and cannot be used as a binding identifier
    |
  1 | var fina\u{6c}ly = 123;
    |     ^^^^^^^^^^^^
@@ -9560,7 +9560,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/46519268e6e6b4d0.js
-error: 'new' is reserved and cannot be used as an identifier
+error: 'new' is reserved and cannot be used as a binding identifier
    |
  1 | var n\u{65}w = 123;
    |     ^^^^^^^^
@@ -9589,7 +9589,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/467030981c1de41c.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = function *g() {
  2 |   var yield;
@@ -9609,7 +9609,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/46c5545a056725cd.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | var enum = 1;
    |     ^^^^
@@ -9837,7 +9837,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/4882f5db31935a04.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g() { var yield; }
    |                    ^^^^^
@@ -9864,7 +9864,7 @@ error: Expected ']' after computed property key, but found '9'
    |
 
 ✓ test/parser/suite/js/fail/48ab2fb5ae69da55.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var asyncFn = async function () {
  2 |   var \u0061wait;
@@ -9932,7 +9932,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/490454b1b1e0f726.js
-error: 'void' is reserved and cannot be used as an identifier
+error: 'void' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0076\u006f\u0069\u0064 = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -9980,7 +9980,7 @@ error: Bad escape sequence in untagged template literal
    |
 
 ✓ test/parser/suite/js/fail/4960020bc039850c.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async #method() {
  3 |     var \u0061wait;
@@ -10035,7 +10035,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/49aed3377f457f08.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | const const;
    |       ^^^^^
@@ -10147,7 +10147,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/js/fail/4a887c2761eb95fb.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g(){ function yield(){}; }
    |                        ^^^^^
@@ -10163,7 +10163,7 @@ error: Binary literal must contain at least one binary digit
 
 
 ✓ test/parser/suite/js/fail/4aafa3fab42d1077.js
-error: 'try' is reserved and cannot be used as an identifier
+error: 'try' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{74}\u{72}\u{79} = 123;
    |     ^^^^^^^^^^^^^^^^^^
@@ -10250,7 +10250,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/4b9648952b5f68dc.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { async *gen() {
  2 |     var yield;
@@ -10270,7 +10270,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/4bbbe774740fba6c.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class {*gen() {
  2 |     var yield;
@@ -10415,7 +10415,7 @@ error: Expected ';' after class field, but found 'method'
 
 
 ✓ test/parser/suite/js/fail/4c6e40865aae1c79.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  6 | function ZW_\u200D_J() {}
  7 | function await() {}
@@ -10544,7 +10544,7 @@ error: Bad escape sequence in untagged template literal
    |
 
 ✓ test/parser/suite/js/fail/4cff416eb1733037.js
-error: 'typeof' is reserved and cannot be used as an identifier
+error: 'typeof' is reserved and cannot be used as a binding identifier
    |
  1 | var typeof = 123;
    |     ^^^^^^
@@ -10641,7 +10641,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/4e02f0f4441877ff.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class {*gen() {
  2 |     var yi\u0065ld;
@@ -10650,7 +10650,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/4e0a0ddb66f8cbf2.js
-error: 'super' is reserved and cannot be used as an identifier
+error: 'super' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0073uper = 123;
    |     ^^^^^^^^^^
@@ -10693,7 +10693,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/4e7f27a0cb9c387a.js
-error: 'super' is reserved and cannot be used as an identifier
+error: 'super' is reserved and cannot be used as a binding identifier
    |
  1 | var super = 1;
    |     ^^^^^
@@ -11107,7 +11107,7 @@ error: Expected ';' after for-loop init, but found ')'
    |
 
 ✓ test/parser/suite/js/fail/51bb7dc7f86e9316.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C {static *#gen() {
  2 |     var yi\u0065ld;
@@ -11116,7 +11116,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/51bcf7fa607ec3b4.js
-error: 'for' is reserved and cannot be used as an identifier
+error: 'for' is reserved and cannot be used as a binding identifier
    |
  1 | var f\u006fr = 123;
    |     ^^^^^^^^
@@ -11253,7 +11253,7 @@ error: Invalid operand for increment/decrement operator
 
 
 ✓ test/parser/suite/js/fail/5301846f80919b63.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g() { let yield; }
    |                     ^^^^^
@@ -11422,7 +11422,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/5467bdf15d35f05b.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async #method() {
  3 |     var await;
@@ -11442,7 +11442,7 @@ error: Rest parameter must be the last parameter
 
 
 ✓ test/parser/suite/js/fail/5469c975a9d993ba.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | var co\u{6e}st = 123;
    |     ^^^^^^^^^^
@@ -11644,7 +11644,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/55c7542c96af9057.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  6 | function ZW_\u200D_J() {}
  7 | function await() {}
@@ -11762,14 +11762,14 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/5684b2ff53af4f76.js
-error: 'true' is reserved and cannot be used as an identifier
+error: 'true' is reserved and cannot be used as a binding identifier
    |
  1 | function t(true) { }
    |            ^^^^
    |
 
 ✓ test/parser/suite/js/fail/568515b14c9fc8cb.js
-error: 'catch' is reserved and cannot be used as an identifier
+error: 'catch' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0063atch = 123;
    |     ^^^^^^^^^^
@@ -11816,7 +11816,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/56ce178a098616af.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function* g(yield) {}
    |             ^^^^^
@@ -11905,7 +11905,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/579010988b122cb4.js
-error: 'true' is reserved and cannot be used as an identifier
+error: 'true' is reserved and cannot be used as a binding identifier
    |
  1 | var true = 123;
    |     ^^^^
@@ -12017,7 +12017,7 @@ error: Invalid operand for increment/decrement operator
 
 
 ✓ test/parser/suite/js/fail/582e16d4b606b52b.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { async *gen() {
  2 |     var await;
@@ -12037,7 +12037,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/5855e0715bd298ae.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | import default from "foo"
    |        ^^^^^^^
@@ -12116,7 +12116,7 @@ error: Unexpected token ':'
 
 
 ✓ test/parser/suite/js/fail/5936c6b4c3e37f96.js
-error: 'null' is reserved and cannot be used as an identifier
+error: 'null' is reserved and cannot be used as a binding identifier
    |
  1 | var null = 123;
    |     ^^^^
@@ -12338,7 +12338,7 @@ error: Expected ')' after method parameters, but found '='
    |
 
 ✓ test/parser/suite/js/fail/5b63adc623c41cb1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C {static *#gen() {
  2 |     var yield;
@@ -12409,7 +12409,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/5ba1e2106b3feb4f.js
-error: 'null' is reserved and cannot be used as an identifier
+error: 'null' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{6e}ull = 123;
    |     ^^^^^^^^^
@@ -12539,7 +12539,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/5ccbaa5702d62c0d.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var g = function*(yield) {};
    |                   ^^^^^
@@ -12650,7 +12650,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/5e024842fed92f4f.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async method() {
  3 |     var await;
@@ -12686,7 +12686,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/5e466b68c319e1d9.js
-error: 'throw' is reserved and cannot be used as an identifier
+error: 'throw' is reserved and cannot be used as a binding identifier
    |
  1 | var throw = 123;
    |     ^^^^^
@@ -12722,7 +12722,7 @@ error: Exponent part is missing a number
 
 
 ✓ test/parser/suite/js/fail/5e6f67a0e748cc42.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g() { function *yield(){} }
    |                           ^^^^^
@@ -12752,7 +12752,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/5e910fe4454fec53.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async #method() {
  3 |     var \u0061wait;
@@ -12891,7 +12891,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/5f9c35a9bd9c32d0.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class await {}
    |       ^^^^^
@@ -12956,7 +12956,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/60117c94e5a86285.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var asyncFn = async function () {
  2 |   var await;
@@ -13000,7 +13000,7 @@ error: Expected '(' after import, but found ';'
    |
 
 ✓ test/parser/suite/js/fail/60507f10b6c0d8a1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { static async *gen() {
  2 |     var yi\u0065ld;
@@ -13009,7 +13009,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/605a8723b98493ee.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     try {} catch (await) {}
@@ -13058,7 +13058,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/6097ad2394486d46.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | const default
    |       ^^^^^^^
@@ -13222,7 +13222,7 @@ error: Expected an identifier, but found '='
 
 
 ✓ test/parser/suite/js/fail/61ea4f18be6a9640.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { async *#gen() {
  2 |     var await;
@@ -13400,7 +13400,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/63fe11fdff6d6ee1.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { async *gen() {
  2 |     var \u0061wait;
@@ -13476,7 +13476,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/64a7c92d28ba0b40.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async method() {
  3 |     var \u0061wait;
@@ -13503,7 +13503,7 @@ error: Invalid operand for increment/decrement operator
 
 
 ✓ test/parser/suite/js/fail/64f477b66cc65972.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = async function *() {
  2 |   var yield;
@@ -13512,7 +13512,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/651192e0e2975013.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async method() {
  3 |     var await;
@@ -13561,7 +13561,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/654000d7f4d0e050.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async method() {
  3 |     var \u0061wait;
@@ -13570,7 +13570,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/6541fbdb2a708867.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var gen = async function *() {
  2 |   var await;
@@ -13715,7 +13715,7 @@ error: Expected '(' after 'while', but found '='
    |
 
 ✓ test/parser/suite/js/fail/6697777e88b64fff.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | (async function*(await) { });
    |                  ^^^^^
@@ -13752,7 +13752,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/66d1fa0ce963d84e.js
-error: 'typeof' is reserved and cannot be used as an identifier
+error: 'typeof' is reserved and cannot be used as a binding identifier
    |
  1 | var typeo\u0066 = 123;
    |     ^^^^^^^^^^^
@@ -13978,7 +13978,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/682a49663855aa94.js
-error: 'class' is reserved and cannot be used as an identifier
+error: 'class' is reserved and cannot be used as a binding identifier
    |
  1 | var cla\u0073s = 123;
    |     ^^^^^^^^^^
@@ -14001,7 +14001,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/6865046d5d081448.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async method() {
  3 |     var await;
@@ -14053,7 +14053,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/68a0262776955441.js
-error: 'false' is reserved and cannot be used as an identifier
+error: 'false' is reserved and cannot be used as a binding identifier
    |
  1 | var fals\u{65} = 123;
    |     ^^^^^^^^^^
@@ -14319,7 +14319,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/6a6d42e3eeb449e2.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var g = function* yield() {};
    |                   ^^^^^
@@ -14355,7 +14355,7 @@ error: Lexical declaration cannot appear in a single-statement context
 
 
 ✓ test/parser/suite/js/fail/6a7e14f2ab9b7e7a.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { static async *#gen() {
  2 |     var yield;
@@ -14421,7 +14421,7 @@ error: Optional chaining is not allowed in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/6ae374bcb8184254.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *gen() {
  2 |     var yield;
@@ -14460,7 +14460,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/6b1cd86b591ac75b.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static *#gen() {
  2 |     var yield;
@@ -14500,7 +14500,7 @@ error: Expected ')' after method parameters, but found '='
    |
 
 ✓ test/parser/suite/js/fail/6b52ba22c4cedfab.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async () => {
  2 |   var await;
@@ -14539,7 +14539,7 @@ error: Destructuring declaration in for loop initializer must be initialized
 
 
 ✓ test/parser/suite/js/fail/6baf1581d0c103e8.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = async function *() {
  2 |   var yi\u0065ld;
@@ -14616,7 +14616,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/6c4110b08f4d8f63.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async () => {
  2 |   var \u0061wait;
@@ -14782,7 +14782,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/6d92463b896027ef.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async #method() {
  3 |     var await;
@@ -14829,7 +14829,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/6de18b885f424341.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { *gen() {
  2 |     var yi\u0065ld;
@@ -14858,14 +14858,14 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/6e2b7743e872769c.js
-error: 'this' is reserved and cannot be used as an identifier
+error: 'this' is reserved and cannot be used as a binding identifier
    |
  1 | var this = 10;
    |     ^^^^
    |
 
 ✓ test/parser/suite/js/fail/6e5521b7c379379b.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function asyncFn() {
  2 |   var await;
@@ -14874,7 +14874,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/6e571fcdb1628f51.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var gen = async function *g() {
  2 |   var \u0061wait;
@@ -14883,7 +14883,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/6e5c3fcca923b343.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  9 | var ZW_\u200D_J = decorator;
 10 | var await = decorator;
@@ -15018,7 +15018,7 @@ error: Hexadecimal literal must contain at least one hex digit
 
 
 ✓ test/parser/suite/js/fail/6f575cf70d91504e.js
-error: 'this' is reserved and cannot be used as an identifier
+error: 'this' is reserved and cannot be used as a binding identifier
    |
  1 | var thi\u0073 = 123;
    |     ^^^^^^^^^
@@ -15332,7 +15332,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/721efc4cbc95a6a0.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g() { try {} catch (yield) {} }
    |                               ^^^^^
@@ -15354,7 +15354,7 @@ error: Expected identifier or string literal, but found ','
    |
 
 ✓ test/parser/suite/js/fail/7223dff68c6c1fd3.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |     let
  3 |     await 0;
@@ -15434,7 +15434,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/72c45df26f44f4eb.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class {*#gen() {
  2 |     var yield;
@@ -15496,7 +15496,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/7373e92cafb649a6.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | async function *gen() {
  2 |   var yield;
@@ -15836,7 +15836,7 @@ error: Invalid character in identifier
 
 
 ✓ test/parser/suite/js/fail/7615ff9f43ea0dde.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | class default
    |       ^^^^^^^
@@ -15932,7 +15932,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/77016a21a59318d6.js
-error: 'class' is reserved and cannot be used as an identifier
+error: 'class' is reserved and cannot be used as a binding identifier
    |
  1 | var cla\u{73}s = 123;
    |     ^^^^^^^^^^
@@ -15957,7 +15957,7 @@ error: The only valid meta properties for 'import' are 'import.meta', 'import.so
 
 
 ✓ test/parser/suite/js/fail/7736077370aebe58.js
-error: 'new' is reserved and cannot be used as an identifier
+error: 'new' is reserved and cannot be used as a binding identifier
    |
  1 | var n\u0065w = 123;
    |     ^^^^^^^^
@@ -16002,7 +16002,7 @@ error: Unexpected token '='
 
 
 ✓ test/parser/suite/js/fail/775087989d7f9934.js
-error: 'catch' is reserved and cannot be used as an identifier
+error: 'catch' is reserved and cannot be used as a binding identifier
    |
  1 | var catch = 123;
    |     ^^^^^
@@ -16052,7 +16052,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/7793789f79ebd85c.js
-error: 'instanceof' is reserved and cannot be used as an identifier
+error: 'instanceof' is reserved and cannot be used as a binding identifier
    |
  1 | var insta\u{6e}ceof = 123;
    |     ^^^^^^^^^^^^^^^
@@ -16097,7 +16097,7 @@ error: 'import' keyword is not allowed here
 
 
 ✓ test/parser/suite/js/fail/77d1a614cbcff0be.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | var if = 123;
    |     ^^
@@ -16223,7 +16223,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/786eb075cdf7c100.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *#gen() {
  2 |     var await;
@@ -16445,7 +16445,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/79e2cc159adba51a.js
-error: 'for' is reserved and cannot be used as an identifier
+error: 'for' is reserved and cannot be used as a binding identifier
    |
  1 | var f\u{6f}r = 123;
    |     ^^^^^^^^
@@ -17085,7 +17085,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/7e18cd1fd756703c.js
-error: 'continue' is reserved and cannot be used as an identifier
+error: 'continue' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0063ontinue = 123;
    |     ^^^^^^^^^^^^^
@@ -17154,7 +17154,7 @@ error: Destructuring declaration must have an initializer
 
 
 ✓ test/parser/suite/js/fail/7e9467345bebec79.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | var co\u006est = 123;
    |     ^^^^^^^^^^
@@ -17188,7 +17188,7 @@ error: Expected ')' after import(), but found ''''
 
 
 ✓ test/parser/suite/js/fail/7ec5ed951c323853.js
-error: 'delete' is reserved and cannot be used as an identifier
+error: 'delete' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{64}elete = 123;
    |     ^^^^^^^^^^^
@@ -17408,7 +17408,7 @@ error: Expected ')' after function arguments, but found '1'
 
 
 ✓ test/parser/suite/js/fail/80958ee6905f992b.js
-error: 'do' is reserved and cannot be used as an identifier
+error: 'do' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{64}\u{6f} = 123;
    |     ^^^^^^^^^^^^
@@ -17482,7 +17482,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/8155ba6047e8b65e.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | var enum = 123;
    |     ^^^^
@@ -17554,7 +17554,7 @@ error: Expected '(' after 'if', but found '{'
    |
 
 ✓ test/parser/suite/js/fail/821b575c5b986002.js
-error: 'else' is reserved and cannot be used as an identifier
+error: 'else' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{65}lse = 123;
    |     ^^^^^^^^^
@@ -17616,7 +17616,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/8288f4da1396188d.js
-error: 'in' is reserved and cannot be used as an identifier
+error: 'in' is reserved and cannot be used as a binding identifier
    |
  1 | var in = 123;
    |     ^^
@@ -17659,7 +17659,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/82f1dfb94993cd82.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -17753,7 +17753,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/834b03ee2422cd06.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *#gen() {
  2 |     var \u0061wait;
@@ -17771,7 +17771,7 @@ error: Unexpected token '%'
 
 
 ✓ test/parser/suite/js/fail/835f8e79e2a0d7ad.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = function *g() {
  2 |   var yi\u0065ld;
@@ -17814,7 +17814,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/8388af4e5462360a.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var gen = async function *() {
  2 |   var \u0061wait;
@@ -17910,7 +17910,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/84bc7b2c4445da90.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { async *gen() {
  2 |     var await;
@@ -17928,7 +17928,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/84ea9c87402a37ff.js
-error: 'else' is reserved and cannot be used as an identifier
+error: 'else' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0065lse = 123;
    |     ^^^^^^^^^
@@ -18013,7 +18013,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/8540fd60b5e1ef9a.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async #method() {
  3 |     var \u0061wait;
@@ -18155,7 +18155,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/86197eea48b5cbd0.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { static async *#gen() {
  2 |     var await;
@@ -18164,7 +18164,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/862fa3d5f7a928be.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | var if = 0
    |     ^^
@@ -18452,7 +18452,7 @@ error: 'void' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/8874e08c5d14817e.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { async *#gen() {
  2 |     var yield;
@@ -18590,7 +18590,7 @@ error: Rest parameter must be the last parameter
 
 
 ✓ test/parser/suite/js/fail/893403934bc7d980.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | ({
  2 |   async foo (await) {  }
@@ -18628,7 +18628,7 @@ error: Using declaration cannot have destructuring patterns.
    |
 
 ✓ test/parser/suite/js/fail/899d8463f8351c7d.js
-error: 'break' is reserved and cannot be used as an identifier
+error: 'break' is reserved and cannot be used as a binding identifier
    |
  1 | var break = 123;;
    |     ^^^^^
@@ -18731,7 +18731,7 @@ error: 'await using' declarations must be initialized
 
 
 ✓ test/parser/suite/js/fail/8a81bcaec791b0a2.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = async function *g() {
  2 |   var yield;
@@ -18769,7 +18769,7 @@ error: Classes can't have a private field named '#constructor'
 
 
 ✓ test/parser/suite/js/fail/8aaa194a22779db3.js
-error: 'import' is reserved and cannot be used as an identifier
+error: 'import' is reserved and cannot be used as a binding identifier
    |
  1 | var import = 123;
    |     ^^^^^^
@@ -19149,7 +19149,7 @@ error: Invalid assignment operator in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/8d07a7a56db6a8ad.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -19196,7 +19196,7 @@ error: Unterminated multi-line comment
 
 
 ✓ test/parser/suite/js/fail/8d732f3933df4bd4.js
-error: 'this' is reserved and cannot be used as an identifier
+error: 'this' is reserved and cannot be used as a binding identifier
    |
  1 | var this
    |     ^^^^
@@ -19310,7 +19310,7 @@ error: Expected ';' after class field, but found '#y'
 
 
 ✓ test/parser/suite/js/fail/8e483bb57a220c68.js
-error: 'in' is reserved and cannot be used as an identifier
+error: 'in' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0069\u006e = 123;
    |     ^^^^^^^^^^^^
@@ -19414,7 +19414,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/8eb1a073cebb7e37.js
-error: 'continue' is reserved and cannot be used as an identifier
+error: 'continue' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{63}ontinue = 123;
    |     ^^^^^^^^^^^^^
@@ -19431,7 +19431,7 @@ error: Unexpected token '>'
 
 
 ✓ test/parser/suite/js/fail/8ef2f78962391ad1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  2 |   async *method() {
  3 |     var yield;
@@ -19447,7 +19447,7 @@ error: 'this' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/8ef5758f243a17c3.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static *gen() {
  2 |     var yi\u0065ld;
@@ -19603,7 +19603,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/8fdb7e6ddfb89e3a.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g(yield){}
    |             ^^^^^
@@ -19701,7 +19701,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/90a849af82409463.js
-error: 'delete' is reserved and cannot be used as an identifier
+error: 'delete' is reserved and cannot be used as a binding identifier
    |
  1 | var delete = 123;
    |     ^^^^^^
@@ -19929,7 +19929,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/92b8d7e1051d26d6.js
-error: 'break' is reserved and cannot be used as an identifier
+error: 'break' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0062\u0072\u0065\u0061\u006b = 123;;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -20045,7 +20045,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/93afd76919872a9f.js
-error: 'extends' is reserved and cannot be used as an identifier
+error: 'extends' is reserved and cannot be used as a binding identifier
    |
  1 | var extend\u0073 = 123;
    |     ^^^^^^^^^^^^
@@ -20109,7 +20109,7 @@ error: Rest parameter must be the last parameter
 
 
 ✓ test/parser/suite/js/fail/9430703645fae273.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class await {};
    |               ^^^^^
@@ -20201,7 +20201,7 @@ error: Lexical declaration cannot appear in a single-statement context
 
 
 ✓ test/parser/suite/js/fail/94646c6669853917.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await;
    |     ^^^^^
@@ -20246,7 +20246,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/94a4712411e3792f.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *gen() {
  2 |     var await;
@@ -20533,7 +20533,7 @@ error: Function declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/9684b284ba261f87.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C {static *gen() {
  2 |     var yield;
@@ -20735,7 +20735,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/9895b72e1ae440ad.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class {*#gen() {
  2 |     var yi\u0065ld;
@@ -20762,7 +20762,7 @@ error: Expected declaration after 'export', but found ';'
 
 
 ✓ test/parser/suite/js/fail/98f5714a70195f28.module.js
-error: 'function' is reserved and cannot be used as an identifier
+error: 'function' is reserved and cannot be used as a binding identifier
    |
  1 | import {a as function} from 'a';
    |              ^^^^^^^^
@@ -20842,7 +20842,7 @@ error: Expected 'from' after import clause, but found 'x'
 
 
 ✓ test/parser/suite/js/fail/9987b04b09b1ddc6.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | var const = 123;
    |     ^^^^^
@@ -21175,7 +21175,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/9c16e5f230a6b01e.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *gen() {
  2 |   var yi\u0065ld;
@@ -21277,7 +21277,7 @@ error: Rest element is not allowed in parenthesized expression
 
 
 ✓ test/parser/suite/js/fail/9ce27fbf70fb921a.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | const await = './module-code_FIXTURE.js';
    |       ^^^^^
@@ -21356,7 +21356,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/9d91ba245edf7e54.js
-error: 'export' is reserved and cannot be used as an identifier
+error: 'export' is reserved and cannot be used as a binding identifier
    |
  1 | var export = 123;
    |     ^^^^^^
@@ -21441,7 +21441,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/9e14db8dd630d9f0.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0065\u006e\u0075\u006d = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21600,7 +21600,7 @@ error: Expected identifier or string literal, but found ','
    |
 
 ✓ test/parser/suite/js/fail/9f15affa01060595.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g(yield = 0){}
    |            ^^^^^
@@ -21645,7 +21645,7 @@ error: Bad escape sequence in untagged template literal
    |
 
 ✓ test/parser/suite/js/fail/9f8bf490359bd4aa.js
-error: 'case' is reserved and cannot be used as an identifier
+error: 'case' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{63}ase = 123;
    |     ^^^^^^^^^
@@ -21864,7 +21864,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/a0e5a86f7bfbfdd0.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C {static *gen() {
  2 |     var yi\u0065ld;
@@ -21873,7 +21873,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/a0ec5955efa94494.js
-error: 'else' is reserved and cannot be used as an identifier
+error: 'else' is reserved and cannot be used as a binding identifier
    |
  1 | var else = 123;
    |     ^^^^
@@ -22024,7 +22024,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/a255c5d42e9d9ab3.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async #method() {
  3 |     var await;
@@ -22094,7 +22094,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/a3107d539c6e59c5.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async #method() {
  3 |     var await;
@@ -22121,7 +22121,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/a365e6f3fe021a3f.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     const await = 0;
@@ -22213,7 +22213,7 @@ error: Constructor can't have get/set modifier
 
 
 ✓ test/parser/suite/js/fail/a39be920807be551.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | var default
    |     ^^^^^^^
@@ -22261,7 +22261,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/a3f6d9c297b9fb23.js
-error: 'debugger' is reserved and cannot be used as an identifier
+error: 'debugger' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{64}ebugger = 123;
    |     ^^^^^^^^^^^^^
@@ -22374,7 +22374,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/a51230444e2ff49d.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { async *gen() {
  2 |     var \u0061wait;
@@ -22441,7 +22441,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/a569b153bc6412b6.js
-error: 'export' is reserved and cannot be used as an identifier
+error: 'export' is reserved and cannot be used as a binding identifier
    |
  1 | var expor\u0074 = 123;
    |     ^^^^^^^^^^^
@@ -22497,7 +22497,7 @@ error: 'extends' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/a5da0065b5350cc7.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     (class await {});
@@ -22515,7 +22515,7 @@ error: Rest element cannot have a trailing comma in array destructuring.
 
 
 ✓ test/parser/suite/js/fail/a61b6efc56f88b0a.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class Foo {
  2 |   async foo (await) {  }
@@ -22641,7 +22641,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/a7571e2f3c5d075c.js
-error: 'if' is reserved and cannot be used as an identifier
+error: 'if' is reserved and cannot be used as a binding identifier
    |
  1 | var if = 42
    |     ^^
@@ -23110,7 +23110,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/a9818bf25b403323.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | var def\u0061ult = 123;
    |     ^^^^^^^^^^^^
@@ -23175,14 +23175,14 @@ error: Expected '(' after 'while', but found 'false'
    |
 
 ✓ test/parser/suite/js/fail/aa232c1eb3da8805.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g() { try {} catch (yield) {} }
    |                              ^^^^^
    |
 
 ✓ test/parser/suite/js/fail/aa26166a517e29fa.js
-error: 'case' is reserved and cannot be used as an identifier
+error: 'case' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0063ase = 123;
    |     ^^^^^^^^^
@@ -23207,7 +23207,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/aa5e59b2d67fb00f.js
-error: 'default' is reserved and cannot be used as an identifier
+error: 'default' is reserved and cannot be used as a binding identifier
    |
  1 | let default
    |     ^^^^^^^
@@ -23298,7 +23298,7 @@ error: Expected 'from' after import clause, but found 'end of file'
 
 
 ✓ test/parser/suite/js/fail/aae88f7498bac172.js
-error: 'import' is reserved and cannot be used as an identifier
+error: 'import' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{69}\u{6d}\u{70}\u{6f}\u{72}\u{74} = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -23323,7 +23323,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/ab2d4a27f1228c90.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *#gen() {
  2 |     var yi\u0065ld;
@@ -23332,7 +23332,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/ab33c5746e05ef7f.js
-error: 'return' is reserved and cannot be used as an identifier
+error: 'return' is reserved and cannot be used as a binding identifier
    |
  1 | var retur\u{6e} = 123;
    |     ^^^^^^^^^^^
@@ -23738,7 +23738,7 @@ error: Bad escape sequence in untagged template literal
    |
 
 ✓ test/parser/suite/js/fail/adff1fa1bcaaabe0.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  9 | var ZW_\u200D_J = decorator;
 10 | var await = decorator;
@@ -23919,7 +23919,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/af9748e153cab08a.js
-error: 'delete' is reserved and cannot be used as an identifier
+error: 'delete' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0064elete = 123;
    |     ^^^^^^^^^^^
@@ -24068,7 +24068,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/b1596ee878750e7e.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | ({
  2 |   *method(yield) {}
@@ -24198,7 +24198,7 @@ error: Classes may not have a static field named 'constructor'
 
 
 ✓ test/parser/suite/js/fail/b2b39d3e792731ce.js
-error: 'true' is reserved and cannot be used as an identifier
+error: 'true' is reserved and cannot be used as a binding identifier
    |
  1 | var tr\u0075e = 123;
    |     ^^^^^^^^^
@@ -24232,7 +24232,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/b30409b12f6f7198.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var asyncFn = async function asyncFn() {
  2 |   var await;
@@ -24348,7 +24348,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/b3b14fb0e398703d.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g(yield){}
    |            ^^^^^
@@ -24362,7 +24362,7 @@ error: Expected ')' after for-loop update, but found ';'
    |
 
 ✓ test/parser/suite/js/fail/b3f7b15e0ad38185.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function foo (await) {  }
    |                     ^^^^^
@@ -24724,7 +24724,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/b7092e6e840afc5d.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = function *() {
  2 |   var yield;
@@ -24751,7 +24751,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/b724e6baaf7fd094.js
-error: 'false' is reserved and cannot be used as an identifier
+error: 'false' is reserved and cannot be used as a binding identifier
    |
  1 | function false() { }
    |          ^^^^^
@@ -24865,7 +24865,7 @@ error: Expected declaration after 'export', but found '"*"'
 
 
 ✓ test/parser/suite/js/fail/b7c09fd1b5974afb.js
-error: 'switch' is reserved and cannot be used as an identifier
+error: 'switch' is reserved and cannot be used as a binding identifier
    |
  1 | var switc\u0068 = 123;
    |     ^^^^^^^^^^^
@@ -24907,7 +24907,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/b83df94c05ab08d9.js
-error: 'true' is reserved and cannot be used as an identifier
+error: 'true' is reserved and cannot be used as a binding identifier
    |
  1 | var tr\u{75}e = 123;
    |     ^^^^^^^^^
@@ -25164,7 +25164,7 @@ error: Try statement requires catch or finally clause
    |
 
 ✓ test/parser/suite/js/fail/b98b855c9dda7093.js
-error: 'debugger' is reserved and cannot be used as an identifier
+error: 'debugger' is reserved and cannot be used as a binding identifier
    |
  1 | var debugger = 123;
    |     ^^^^^^^^
@@ -25190,7 +25190,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/b9e3f8d72aed133d.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { async *gen() {
  2 |     var yield;
@@ -25276,7 +25276,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/baddfc428e73b8b8.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | import { a as enum } from 'foo'
    |               ^^^^
@@ -25365,7 +25365,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/bbad696b843573ef.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | function await() {}
    |          ^^^^^
@@ -25444,7 +25444,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/bc5baf9aba4304ac.js
-error: 'finally' is reserved and cannot be used as an identifier
+error: 'finally' is reserved and cannot be used as a binding identifier
    |
  1 | var fina\u006cly = 123;
    |     ^^^^^^^^^^^^
@@ -25708,7 +25708,7 @@ error: 'await using' declarations must be initialized
 
 
 ✓ test/parser/suite/js/fail/be8a21d0e2da975f.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function await() { return 1 }
    |                ^^^^^
@@ -25916,7 +25916,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/c00099ecb8cf338f.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { async *gen() {
  2 |     var yi\u0065ld;
@@ -26036,7 +26036,7 @@ error: Unexpected token '...'
 
 
 ✓ test/parser/suite/js/fail/c119f716c670eec4.js
-error: 'break' is reserved and cannot be used as an identifier
+error: 'break' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{62}\u{72}\u{65}\u{61}\u{6b} = 123;;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -26052,7 +26052,7 @@ error: Invalid character in identifier
 
 
 ✓ test/parser/suite/js/fail/c1588fd9aa46eec4.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  2 |   async *method() {
  3 |     var yi\u0065ld;
@@ -26280,7 +26280,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/c2debc064c1ee41e.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | async function *gen() {
  2 |   var yi\u0065ld;
@@ -26479,7 +26479,7 @@ error: Unexpected token ']'
 
 
 ✓ test/parser/suite/js/fail/c496c72b607251dc.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function foo() {
  2 |   function await() {
@@ -26514,7 +26514,7 @@ error: Expected ')' to close parameter list, but found '='
 
 
 ✓ test/parser/suite/js/fail/c4abd3aaf0341c44.js
-error: 'with' is reserved and cannot be used as an identifier
+error: 'with' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0077ith = 123;
    |     ^^^^^^^^^
@@ -26563,7 +26563,7 @@ error: Classes can't have a private field named '#constructor'
 
 
 ✓ test/parser/suite/js/fail/c51becd137558ce9.js
-error: 'switch' is reserved and cannot be used as an identifier
+error: 'switch' is reserved and cannot be used as a binding identifier
    |
  1 | var switc\u{68} = 123;
    |     ^^^^^^^^^^^
@@ -26616,7 +26616,7 @@ error: Expected ';' after for-loop init, but found ')'
    |
 
 ✓ test/parser/suite/js/fail/c552d2e0c26c1921.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static async method() {
  3 |     var await;
@@ -26636,7 +26636,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/c5717c53f3443f4e.js
-error: 'with' is reserved and cannot be used as an identifier
+error: 'with' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{77}ith = 123;
    |     ^^^^^^^^^
@@ -26684,7 +26684,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/c5af6ad6ff9d213f.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g() { let yield; }
    |                    ^^^^^
@@ -27048,7 +27048,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/c87cafb77715b122.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  9 | var ZW_\u200D_J = decorator;
 10 | var await = decorator;
@@ -27067,7 +27067,7 @@ error: Unexpected token ']'
 
 
 ✓ test/parser/suite/js/fail/c88efa0a6343c5ff.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var gen = function *() {
  2 |   var yi\u0065ld;
@@ -27151,7 +27151,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/c90d1091a31b1e79.js
-error: 'in' is reserved and cannot be used as an identifier
+error: 'in' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{69}\u{6e} = 123;
    |     ^^^^^^^^^^^^
@@ -27412,7 +27412,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/cb205ae526431bb6.js
-error: 'enum' is reserved and cannot be used as an identifier
+error: 'enum' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{65}\u{6e}\u{75}\u{6d} = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -27742,7 +27742,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/ce4622e86cceeff8.js
-error: 'catch' is reserved and cannot be used as an identifier
+error: 'catch' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{63}atch = 123;
    |     ^^^^^^^^^^
@@ -27890,7 +27890,7 @@ error: Empty parentheses are only valid as arrow function parameters
    |
 
 ✓ test/parser/suite/js/fail/cf4ae79c94591871.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { async *#gen() {
  2 |     var \u0061wait;
@@ -27926,7 +27926,7 @@ error: The left-hand side of '**' cannot be an unparenthesized unary expression
 
 
 ✓ test/parser/suite/js/fail/cfb091a23297cb5b.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static *#gen() {
  2 |     var yi\u0065ld;
@@ -28036,7 +28036,7 @@ error: Unterminated multi-line comment
 
 
 ✓ test/parser/suite/js/fail/d087c23530163f2e.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | "use strict"; const const = 1;
    |                     ^^^^^
@@ -28199,7 +28199,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/d184090674ec7862.js
-error: 'null' is reserved and cannot be used as an identifier
+error: 'null' is reserved and cannot be used as a binding identifier
    |
  1 | function t(null) { }
    |            ^^^^
@@ -28227,7 +28227,7 @@ error: Unexpected token ','
 
 
 ✓ test/parser/suite/js/fail/d204ccde08def26b.js
-error: 'for' is reserved and cannot be used as an identifier
+error: 'for' is reserved and cannot be used as a binding identifier
    |
  1 | var for = 123;
    |     ^^^
@@ -28326,7 +28326,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/d2cad73f30c2df0f.js
-error: 'const' is reserved and cannot be used as an identifier
+error: 'const' is reserved and cannot be used as a binding identifier
    |
  1 | var const = 1;
    |     ^^^^^
@@ -28344,7 +28344,7 @@ error: 'import' keyword is not allowed here
 
 
 ✓ test/parser/suite/js/fail/d2f284675783478e.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { static async *gen() {
  2 |     var \u0061wait;
@@ -28468,7 +28468,7 @@ error: Unexpected token ']'
 
 
 ✓ test/parser/suite/js/fail/d4820da44dd62d04.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async method() {
  3 |     var await;
@@ -28683,7 +28683,7 @@ error: Getter/setter cannot appear in destructuring pattern
 
 
 ✓ test/parser/suite/js/fail/d5bc0fb6d6e472cb.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function*g(){ var yield; }
    |                   ^^^^^
@@ -28749,7 +28749,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/js/fail/d61bd605b79b4326.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var C = class { async *#gen() {
  2 |     var await;
@@ -28758,7 +28758,7 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/d61c94c0bec48e53.js
-error: 'super' is reserved and cannot be used as an identifier
+error: 'super' is reserved and cannot be used as a binding identifier
    |
  1 | var \u{73}uper = 123;
    |     ^^^^^^^^^^
@@ -28774,7 +28774,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/d65452ddaed68d73.js
-error: 'super' is reserved and cannot be used as an identifier
+error: 'super' is reserved and cannot be used as a binding identifier
    |
  1 | var super
    |     ^^^^^
@@ -29111,7 +29111,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/d915070d5101733c.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async method() {
  3 |     var \u0061wait;
@@ -29147,7 +29147,7 @@ error: Expected an identifier, but found 'end of file'
 
 
 ✓ test/parser/suite/js/fail/d94a1bd164d304a3.js
-error: 'debugger' is reserved and cannot be used as an identifier
+error: 'debugger' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0064ebugger = 123;
    |     ^^^^^^^^^^^^^
@@ -29199,7 +29199,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/d9e5f03b2a578492.js
-error: 'export' is reserved and cannot be used as an identifier
+error: 'export' is reserved and cannot be used as a binding identifier
    |
  1 | var expor\u{74} = 123;
    |     ^^^^^^^^^^^
@@ -29302,7 +29302,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/daf73aa23193fdc7.js
-error: 'class' is reserved and cannot be used as an identifier
+error: 'class' is reserved and cannot be used as a binding identifier
    |
  1 | var class = 1;
    |     ^^^^^
@@ -29368,7 +29368,7 @@ error: The only valid meta properties for 'import' are 'import.meta', 'import.so
 
 
 ✓ test/parser/suite/js/fail/dba923ca12f8f920.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 1;
    |     ^^^^^
@@ -29416,7 +29416,7 @@ error: Classes may not have a static property named 'prototype'
 
 
 ✓ test/parser/suite/js/fail/dc096cd3653a10fc.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  2 |   *method() {
  3 |     var yield;
@@ -29581,7 +29581,7 @@ error: Unexpected token ')'
 
 
 ✓ test/parser/suite/js/fail/dcdb711cdffa207c.js
-error: 'var' is reserved and cannot be used as an identifier
+error: 'var' is reserved and cannot be used as a binding identifier
    |
  1 | var va\u{72} = 123;
    |     ^^^^^^^^
@@ -29669,7 +29669,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/dda70ce48e928d47.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async *method() {
  3 |     var \u0061wait;
@@ -29716,7 +29716,7 @@ error: Unexpected token '=>' in expression
 
 
 ✓ test/parser/suite/js/fail/dde6da869ac85b12.js
-error: 'do' is reserved and cannot be used as an identifier
+error: 'do' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0064\u006f = 123;
    |     ^^^^^^^^^^^^
@@ -29936,7 +29936,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/df2419a265b37049.js
-error: 'finally' is reserved and cannot be used as an identifier
+error: 'finally' is reserved and cannot be used as a binding identifier
    |
  1 | var finally = 123;
    |     ^^^^^^^
@@ -30288,7 +30288,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/e12818bb293ab2f3.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   async *method() {
  3 |     var await;
@@ -30438,7 +30438,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/e29943d20644b0f9.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *gen() {
  2 |   var yield;
@@ -30650,7 +30650,7 @@ error: Expected '(' after import, but found ';'
    |
 
 ✓ test/parser/suite/js/fail/e47136d135b0325e.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | var C = class { static *gen() {
  2 |     var yield;
@@ -30899,7 +30899,7 @@ error: Rest element is not allowed in parenthesized expression
 
 
 ✓ test/parser/suite/js/fail/e614f4ffbf27fc85.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class C { *#gen() {
  2 |     var yi\u0065ld;
@@ -31037,7 +31037,7 @@ error: Expected ';' after for-loop condition, but found ')'
    |
 
 ✓ test/parser/suite/js/fail/e730a0afa1260c89.js
-error: 'debugger' is reserved and cannot be used as an identifier
+error: 'debugger' is reserved and cannot be used as a binding identifier
    |
  1 | var debugger = 1;
    |     ^^^^^^^^
@@ -31139,7 +31139,7 @@ error: Shorthand property must be an identifier
 
 
 ✓ test/parser/suite/js/fail/e7d55d897a90564b.js
-error: 'false' is reserved and cannot be used as an identifier
+error: 'false' is reserved and cannot be used as a binding identifier
    |
  1 | function t(false) { }
    |            ^^^^^
@@ -31423,7 +31423,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
    |
 
 ✓ test/parser/suite/js/fail/e9b6618fb75bfd7e.js
-error: 'with' is reserved and cannot be used as an identifier
+error: 'with' is reserved and cannot be used as a binding identifier
    |
  1 | var with = 123;
    |     ^^^^
@@ -31461,7 +31461,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/ea4d962dac83e2a1.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | function *g(a, b, c, ...yield){}
    |                         ^^^^^
@@ -31570,7 +31570,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/eb2bae428d164e3d.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | (async function* yield() { });
    |                  ^^^^^
@@ -31595,7 +31595,7 @@ error: Identifier cannot immediately follow a numeric literal
 
 
 ✓ test/parser/suite/js/fail/eb72ccc6d90a966c.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | let value;
  2 | function await() {
@@ -31748,7 +31748,7 @@ error: Numeric separator cannot appear at the end of a numeric literal
 
 
 ✓ test/parser/suite/js/fail/eca3254326c03740.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     using await = null;
@@ -31814,7 +31814,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/ed01ef32371514b9.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var asyncFn = async function asyncFn() {
  2 |   var \u0061wait;
@@ -31925,7 +31925,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/ee0bedd2148a909d.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
    |     ^^^^^
@@ -31953,7 +31953,7 @@ error: 'for await' is only valid in async functions or modules
    |
 
 ✓ test/parser/suite/js/fail/ee5a29b3dbd9ddd2.js
-error: 'while' is reserved and cannot be used as an identifier
+error: 'while' is reserved and cannot be used as a binding identifier
    |
  1 | var \u0077\u0068\u0069\u006c\u0065 = 123;
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -31969,7 +31969,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/ee72ec6323989152.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  2 |   static {
  3 |     var await;
@@ -31987,7 +31987,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/ee7c52736d6b97aa.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { static async *#gen() {
  2 |     var \u0061wait;
@@ -32482,7 +32482,7 @@ error: The only valid meta properties for 'import' are 'import.meta', 'import.so
 
 
 ✓ test/parser/suite/js/fail/f1a1f8988f01aaf8.js
-error: 'throw' is reserved and cannot be used as an identifier
+error: 'throw' is reserved and cannot be used as a binding identifier
    |
  1 | var thro\u0077 = 123;
    |     ^^^^^^^^^^
@@ -32652,7 +32652,7 @@ error: Unexpected token '(' as property key
 
 
 ✓ test/parser/suite/js/fail/f321da7f0dd772b5.js
-error: 'function' is reserved and cannot be used as an identifier
+error: 'function' is reserved and cannot be used as a binding identifier
    |
  1 | var function = 123;
    |     ^^^^^^^^
@@ -32668,7 +32668,7 @@ error: Rest element cannot have a trailing comma in array destructuring.
 
 
 ✓ test/parser/suite/js/fail/f38bde59e86aaf86.js
-error: 'export' is reserved and cannot be used as an identifier
+error: 'export' is reserved and cannot be used as a binding identifier
    |
  1 | var export = 1;
    |     ^^^^^^
@@ -33103,7 +33103,7 @@ error: Expected '(' after import, but found ';'
    |
 
 ✓ test/parser/suite/js/fail/f690012eea9a9f59.js
-error: 'while' is reserved and cannot be used as an identifier
+error: 'while' is reserved and cannot be used as a binding identifier
    |
  1 | var while = 123;
    |     ^^^^^
@@ -33174,7 +33174,7 @@ error: 'return' statement is only valid inside a function
 
 
 ✓ test/parser/suite/js/fail/f7267f0a4d07a669.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  6 | function ZW_\u200D_J() {}
  7 | function await() {}
@@ -33272,7 +33272,7 @@ error: 'in' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/f807cd01026ba0f7.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { async *#gen() {
  2 |     var \u0061wait;
@@ -33349,7 +33349,7 @@ error: Destructuring declaration must have an initializer
 
 
 ✓ test/parser/suite/js/fail/f89bb8263c820a0a.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | async function *gen() {
  2 |   var \u0061wait;
@@ -33526,7 +33526,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/f9b23289febaf1a1.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  1 | class C { static async *gen() {
  2 |     var await;
@@ -33932,7 +33932,7 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/fc9f07d77860afe9.js
-error: 'instanceof' is reserved and cannot be used as an identifier
+error: 'instanceof' is reserved and cannot be used as a binding identifier
    |
  1 | var insta\u006eceof = 123;
    |     ^^^^^^^^^^^^^^^
@@ -33961,7 +33961,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/fd01ed4f256779d4.js
-error: 'false' is reserved and cannot be used as an identifier
+error: 'false' is reserved and cannot be used as a binding identifier
    |
  1 | var false = 123;
    |     ^^^^^
@@ -34069,7 +34069,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/fd8dd989a17a82d6.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
    |
  1 | class A {
  2 |   *g(yield) {}
@@ -34409,7 +34409,7 @@ error: Invalid hexadecimal escape sequence
 
 
 ✓ test/parser/suite/js/fail/ffeeff12c13fc1bb.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
+error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
    |
  6 | function ZW_\u200D_J() {}
  7 | function await() {}

@@ -194,7 +194,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
-    try validateIdentifier(parser, "an identifier", parser.current_token);
+    try validateIdentifier(parser, "a binding identifier", parser.current_token);
 
     const current = parser.current_token;
 

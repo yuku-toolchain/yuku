@@ -54,15 +54,15 @@ const SemanticVisit = struct {
 
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
         if (ctx.scope.isStrict()) {
-            try self.checkStrictReserved(name, node_index, ctx, "a binding name");
+            try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
 
             if (isEvalOrArguments(name))
-                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding name in strict mode", .{name}), .{});
+                try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is not allowed as a binding identifier in strict mode", .{name}), .{});
         } else if (ctx.symbols.currentBindingKind() == .lexical and eql(u8, name, "let")) {
             try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a lexical declaration", .{});
         }
 
-        try self.checkModuleReserved(name, node_index, ctx, "a binding name");
+        try self.checkModuleReserved(name, node_index, ctx, "a binding identifier");
 
         // redeclaration checks
 
