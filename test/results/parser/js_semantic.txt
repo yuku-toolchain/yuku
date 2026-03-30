@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3625/3633 (99.78%)
-Failed:       8
+Passed:       3626/3633 (99.81%)
+Failed:       7
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -22372,7 +22372,15 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |          ^^^^
    |
 
-✗ test/parser/suite/js/semantic/a39c92ae9be165cc.js
+✓ test/parser/suite/js/semantic/a39c92ae9be165cc.js
+error: Cannot use await in class static initialization block
+   |
+ 3 |     static {
+ 4 |       await 0;
+   |       ^^^^^^^
+ 5 |     }
+   |
+
 ✓ test/parser/suite/js/semantic/a3aaa566fe12dcdd.module.js
 error: Identifier 'param' has already been declared
    |

@@ -265,6 +265,11 @@ const SemanticVisit = struct {
     pub fn enter_await_expression(self: *Self, _: ast.AwaitExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (isInFormalParameters(ctx))
             try self.report(ctx.tree.getSpan(node_index), "Await expression is not allowed in formal parameters", .{});
+
+        // ClassStaticBlockBody uses [~Await]
+        if (isInsideStaticBlock(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use await in class static initialization block", .{});
+
         return .proceed;
     }
 
@@ -915,6 +920,19 @@ const SemanticVisit = struct {
             if (isFunctionBoundary(data)) crossed_boundary = true;
         }
         return .not_found;
+    }
+
+    /// true when the nearest enclosing boundary is a static block
+    fn isInsideStaticBlock(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .static_block => return true,
+                .function, .arrow_function_expression => return false,
+                else => {},
+            }
+        }
+        return false;
     }
 
     /// `arguments` is available inside regular functions but not in class field
