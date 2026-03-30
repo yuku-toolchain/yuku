@@ -186,6 +186,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try validateIdentifier(parser, "an identifier", parser.current_token);
 
     const token = parser.current_token;
+
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.tree.createNode(.{

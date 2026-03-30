@@ -160,6 +160,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts)
     return switch (parser.current_token.tag) {
         .private_identifier => blk: {
             const node = try literals.parsePrivateIdentifier(parser) orelse break :blk null;
+
             if (parser.current_token.tag != .in) {
                 try parser.report(
                     parser.tree.getSpan(node),
@@ -167,6 +168,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts)
                     .{},
                 );
             }
+
             break :blk node;
         },
         .string_literal => literals.parseStringLiteral(parser),

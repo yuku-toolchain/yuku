@@ -197,6 +197,15 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
 pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume =>
 
+    const saved_await_is_keyword = parser.context.await_is_keyword;
+    const saved_yield_is_keyword = parser.context.yield_is_keyword;
+
+    parser.context.await_is_keyword = is_async;
+    parser.context.yield_is_keyword = false;
+
+    defer parser.context.await_is_keyword = saved_await_is_keyword;
+    defer parser.context.yield_is_keyword = saved_yield_is_keyword;
+
     // convert elements to formal parameters
     const params = try convertToFormalParameters(parser, cover) orelse return null;
 
@@ -219,11 +228,13 @@ pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: b
     try parser.advance() orelse return null; // consume =>
 
     const saved_await_is_keyword = parser.context.await_is_keyword;
+    const saved_yield_is_keyword = parser.context.yield_is_keyword;
 
     parser.context.await_is_keyword = is_async;
+    parser.context.yield_is_keyword = false;
 
     defer parser.context.await_is_keyword = saved_await_is_keyword;
-
+    defer parser.context.yield_is_keyword = saved_yield_is_keyword;
 
     // convert identifier_reference to binding_identifier
     try grammar.expressionToPattern(parser, id, .binding);
