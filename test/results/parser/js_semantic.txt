@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3612/3615 (99.92%)
-Failed:       3
+Passed:       3615/3615 (100.00%)
+Failed:       0
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -1904,7 +1904,17 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/0e38fa798d4be73b.module.js
+✓ test/parser/suite/js/semantic/0e38fa798d4be73b.module.js
+error: Duplicate import attribute key 'type'
+   |
+ 1 | export * from './import-attribute-3_FIXTURE.js' with {
+ 2 |   type: 'json',
+   |   ~~~~ first used here
+ 3 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/0e3c23ede6b73057.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -20725,7 +20735,17 @@ error: 'export default' declaration may only appear at the top level
    |    ^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/98aedb63a54a18f3.module.js
+✓ test/parser/suite/js/semantic/98aedb63a54a18f3.module.js
+error: Duplicate import attribute key 'type'
+   |
+ 1 | import x from './import-attribute-1_FIXTURE.js' with {
+ 2 |   type: 'json',
+   |   ~~~~ first used here
+ 3 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/98c0bbe67a08dc65.js
 error: Identifier 'f' has already been declared
    |
@@ -22587,7 +22607,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |   ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/a5c0e8f83b266442.module.js
+✓ test/parser/suite/js/semantic/a5c0e8f83b266442.module.js
+error: Duplicate import attribute key 'type'
+   |
+ 1 | import './import-attribute-2_FIXTURE.js' with {
+ 2 |   type: 'json',
+   |   ~~~~ first used here
+ 3 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/a5cf6a9b4944f207.module.js
 error: 'with' statements are not allowed in strict mode
    |

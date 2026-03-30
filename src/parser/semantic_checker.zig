@@ -398,19 +398,21 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_import_declaration(self: *Self, decl: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
         else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
+        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
-    pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_export_named_declaration(self: *Self, decl: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
         else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
+        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
@@ -434,6 +436,7 @@ const SemanticVisit = struct {
         if (decl.exported != .null)
             try self.recordExportedName(getModuleExportName(ctx.tree, decl.exported), node_index, ctx);
 
+        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
@@ -964,6 +967,25 @@ const SemanticVisit = struct {
             .string_literal => |lit| lit.value(tree),
             else => "",
         };
+    }
+
+    fn checkDuplicateWithClaudeAttributes(self: *Self, attributes: ast.IndexRange, ctx: *SemanticCtx) AnalysisError!void {
+        const items = ctx.tree.getExtra(attributes);
+        for (items, 0..) |attr_idx, i| {
+            const key = ecmascript.propName(ctx.tree, ctx.tree.getData(attr_idx).import_attribute.key) orelse continue;
+            for (items[0..i]) |prev_idx| {
+                const prev_key = ecmascript.propName(ctx.tree, ctx.tree.getData(prev_idx).import_attribute.key) orelse continue;
+                if (key.eql(prev_key.name) or prev_key.eql(key.name)) {
+                    const name = if (!prev_key.is_string_literal) prev_key.name else key.name;
+                    try self.report(key.span, try self.fmt("Duplicate import attribute key '{s}'", .{name}), .{
+                        .labels = try self.labels(&.{
+                            self.label(prev_key.span, "first used here"),
+                        }),
+                    });
+                    break;
+                }
+            }
+        }
     }
 
     /// records an exported name and reports a duplicate if one already exists.
