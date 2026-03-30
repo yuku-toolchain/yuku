@@ -1,7 +1,7 @@
 suite/js/fail
 =============
-Passed:       3531/3616 (97.65%)
-Failed:       85
+Passed:       3634/3634 (100.00%)
+Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
 error: Expected ',' or ')' in parenthesized expression, but found ';'
@@ -120,7 +120,15 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/0111948be654b2d1.js
+✓ test/parser/suite/js/fail/0111948be654b2d1.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var gen = async function *g() {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/011676f04e5378c5.js
 error: Identifier cannot immediately follow a numeric literal
    |
@@ -227,6 +235,15 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
+✓ test/parser/suite/js/fail/018315a394d03406.module.js
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
+   |
+ 3 |     (() => {
+ 4 |       var [await] = [];
+   |            ^^^^^
+ 5 |     });
+   |
+
 ✓ test/parser/suite/js/fail/018ce61df3932321.js
 error: Rest element must be the last element
    |
@@ -246,6 +263,15 @@ error: Invalid assignment target
    |
    = help: The left-hand side of a compound assignment must be a variable or property access
 
+
+✓ test/parser/suite/js/fail/019af8e4ab2129fe.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       let await;
+   |           ^^^^^
+ 5 |     });
+   |
 
 ✓ test/parser/suite/js/fail/019e1e8bb652e766.js
 error: Rest element must be the last element
@@ -464,7 +490,15 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
-✗ test/parser/suite/js/fail/03417e244f61ad3f.js
+✓ test/parser/suite/js/fail/03417e244f61ad3f.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     class await {}
+   |           ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/034b7b9d041cfb30.js
 error: Expected '(' after import, but found '.'
    |
@@ -792,15 +826,22 @@ error: Unexpected '=>'
    = help: '=>' is only valid after a single identifier or a parenthesized parameter list
 
 
-✓ test/parser/suite/js/fail/05b1443976365323.module.js
-error: Unexpected token ','
+✓ test/parser/suite/js/fail/0590c06547732a75.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
- 8 | foo();
- 9 | assert.sameValue(await, 1);
-   |                       ^
+ 2 |   static {
+ 3 |     (function await(await) {});
+   |               ^^^^^
+ 4 |   }
    |
-   = help: Expected an expression
 
+✓ test/parser/suite/js/fail/05b1443976365323.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await;
+   |     ^^^^^
+ 2 | async function foo() {
+   |
 
 ✓ test/parser/suite/js/fail/05b898d7ef3c0300.js
 error: Identifier cannot immediately follow a numeric literal
@@ -1048,7 +1089,14 @@ error: Classes may not have a static property named 'prototype'
    = help: Remove 'static' or rename the property.
 
 
-✗ test/parser/suite/js/fail/07af967376fa8c19.module.js
+✓ test/parser/suite/js/fail/07af967376fa8c19.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 0;
+   |     ^^^^^
+ 2 | var fromParam, fromBody;
+   |
+
 ✓ test/parser/suite/js/fail/07b5413fae2e157b.js
 error: A rest element cannot have an initializer
    |
@@ -1196,14 +1244,12 @@ error: Class declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/08acb1c48fb42c9a.module.js
-error: Unexpected token ','
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
  1 | var await = 1;
+   |     ^^^^^
  2 | assert.sameValue(await, 1);
-   |                       ^
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/08bafe059b17ac92.js
 error: Shorthand property cannot have a default value in object expression
@@ -1303,7 +1349,15 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✗ test/parser/suite/js/fail/097b8e7c43c5c118.js
+✓ test/parser/suite/js/fail/097b8e7c43c5c118.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/0992f87b8090c95c.js
 error: 'import' is reserved and cannot be used as an identifier
    |
@@ -1753,6 +1807,15 @@ error: Classes may not have a static property named 'prototype'
    = help: Remove 'static' or rename the property.
 
 
+✓ test/parser/suite/js/fail/0cf797ce7630ae3e.module.js
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
+   |
+ 3 |     (() => {
+ 4 |       var {await} = {};
+   |            ^^^^^
+ 5 |     });
+   |
+
 ✓ test/parser/suite/js/fail/0cfb1e6074a0f62d.js
 error: Invalid character in identifier
    |
@@ -1772,6 +1835,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
    = help: Try inserting a semicolon here
 
+
+✓ test/parser/suite/js/fail/0d275e87a6c32560.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | function foo(await) {
+   |              ^^^^^
+ 2 |   return await;
+   |
 
 ✓ test/parser/suite/js/fail/0d38f0018f1f00b1.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
@@ -2205,14 +2276,12 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/10b0ea59ebc0a6b7.module.js
-error: Unexpected token ','
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
  1 | class await {}
+   |       ^^^^^
  2 | assert.sameValue(new await instanceof await, true);
-   |                                            ^
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/10d19efefcb39808.js
 error: Invalid element in assignment pattern
@@ -2603,7 +2672,14 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/13cb506bd1420793.module.js
+✓ test/parser/suite/js/fail/13cb506bd1420793.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 0;
+   |     ^^^^^
+ 2 | var fromParam, fromBody;
+   |
+
 ✓ test/parser/suite/js/fail/13ce2dd24993176a.js
 error: Destructuring declaration in for loop initializer must be initialized
    |
@@ -2732,16 +2808,22 @@ error: Expected '(' after 'with', but found '='
    |      ^
    |
 
-✗ test/parser/suite/js/fail/14b1782fb40d952f.js
+✓ test/parser/suite/js/fail/14b1782fb40d952f.js
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
+   |
+ 2 |   static {
+ 3 |     ({ await });
+   |        ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/14b3a58ecc5cb333.module.js
-error: Expected ')' to close parameter list, but found '1'
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
    |
  1 | 0, function (x = await 1) {
-   |                        ^
+   |                  ^^^^^
  2 |   return x;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/14c152fecbae6eb0.js
 error: 'import' is reserved and cannot be used as an identifier
@@ -2830,7 +2912,15 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
-✗ test/parser/suite/js/fail/153d78484c29bdbe.js
+✓ test/parser/suite/js/fail/153d78484c29bdbe.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     let await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/153ec77988f0ec01.js
 error: Rest element must be the last element
    |
@@ -2986,7 +3076,15 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/16447d69e6ae548d.js
+✓ test/parser/suite/js/fail/16447d69e6ae548d.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     function await() {}
+   |              ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/1649bdd9221327d1.module.js
 error: 'var' is reserved and cannot be used as an identifier
    |
@@ -3113,6 +3211,15 @@ error: 'class' is reserved and cannot be used as a binding identifier
    |     ^^^^^
    |
 
+✓ test/parser/suite/js/fail/17652c91045e58a3.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       class await {}
+   |             ^^^^^
+ 5 |     });
+   |
+
 ✓ test/parser/suite/js/fail/178260b77ed75e3c.js
 error: Unexpected token '...'
    |
@@ -3124,7 +3231,15 @@ error: Unexpected token '...'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/17840ec4c4218702.js
+✓ test/parser/suite/js/fail/17840ec4c4218702.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/1784bed87742c535.js
 error: Invalid assignment target
    |
@@ -3872,7 +3987,15 @@ error: 'extends' is reserved and cannot be used as an identifier
    |           ^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/fail/1ca523d3be2abed9.js
+✓ test/parser/suite/js/fail/1ca523d3be2abed9.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { static async *gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/1cad2bf43c202add.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found ''''
    |
@@ -3883,6 +4006,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
    = help: Try inserting a semicolon here
 
+
+✓ test/parser/suite/js/fail/1cbe7c9eee74758d.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       using await = null;
+   |             ^^^^^
+ 5 |     });
+   |
 
 ✓ test/parser/suite/js/fail/1cc9ad8d2ee8c021.js
 error: Constructor cannot be async
@@ -3906,7 +4038,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✗ test/parser/suite/js/fail/1d1138d905186de3.js
+✓ test/parser/suite/js/fail/1d1138d905186de3.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async function asyncFn() {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/1d11d49f537798d1.js
 error: Tagged template expressions are not permitted in an optional chain
    |
@@ -4422,21 +4562,28 @@ error: Unexpected token '=>' in expression
 
 
 ✓ test/parser/suite/js/fail/212f328a8e7371d3.module.js
-error: Unexpected token ')'
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
-14 |   @(ZW_\u200D_J)
-15 |   @(await) method() {}
-   |          ^
-16 |   @($)
+ 6 | function ZW_\u200D_J() {}
+ 7 | function await() {}
+   |          ^^^^^
+ 8 | class C {
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/213465d210533eab.js
 error: Expected '(' after 'while', but found '1'
    |
  1 | do break; while 1;
    |                 ^
+   |
+
+✓ test/parser/suite/js/fail/214b41cbfb769793.module.js
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
+   |
+ 3 |     (() => ({
+ 4 |       await
+   |       ^^^^^
+ 5 |     }));
    |
 
 ✓ test/parser/suite/js/fail/215088648606b32b.js
@@ -4574,6 +4721,13 @@ error: Classes may not have a static property named 'prototype'
    |
    = help: Remove 'static' or rename the property.
 
+
+✓ test/parser/suite/js/fail/2226edabbd2261a7.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | function f() { var await }
+   |                    ^^^^^
+   |
 
 ✓ test/parser/suite/js/fail/2240108f282c31e1.js
 error: A rest element cannot have an initializer
@@ -4757,14 +4911,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/240350780ac77c74.module.js
-error: Unexpected token '='
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
  1 | var await = 0;
+   |     ^^^^^
  2 | await = 1;
-   |       ^
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/241470543ef9b10e.js
 error: Unterminated string literal
@@ -5840,13 +5992,11 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/2ae4f89bb3dc4754.module.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '0'
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
    |
  1 | function fn() { await 0; }
-   |                       ^
+   |                 ^^^^^
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/2b4520facdc72696.js
 error: Invalid operand for increment/decrement operator
@@ -6021,7 +6171,15 @@ error: Unterminated regular expression literal
    = help: Try adding a closing slash (/) here, optionally followed by flags (g, i, m, etc.)
 
 
-✗ test/parser/suite/js/fail/2c2e0126e9438ede.js
+✓ test/parser/suite/js/fail/2c2e0126e9438ede.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async #method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/2c3cbce523ad436e.js
 error: Rest element is not allowed in parenthesized expression
    |
@@ -6281,7 +6439,14 @@ error: Unterminated string literal
    = help: Try adding a closing quote here to complete the string
 
 
-✗ test/parser/suite/js/fail/2db705ea9b6b9e35.module.js
+✓ test/parser/suite/js/fail/2db705ea9b6b9e35.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 0;
+   |     ^^^^^
+ 2 | var fromParam, fromBody;
+   |
+
 ✓ test/parser/suite/js/fail/2dc77279d20bcf7c.js
 error: Getter/setter cannot appear in destructuring pattern
    |
@@ -7177,14 +7342,13 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/33fa43bcfd5722e0.module.js
-error: Unexpected token ')'
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
-13 | @(ZW_\u200D_J)
-14 | @(await) class {};
-   |        ^
+ 6 | function ZW_\u200D_J() {}
+ 7 | function await() {}
+   |          ^^^^^
+ 8 | var C = @($)
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/33fc0d8d972d6e3b.js
 error: 'catch' is reserved and cannot be used as an identifier
@@ -7967,8 +8131,22 @@ error: Unterminated string literal
    = help: Try adding a closing quote here to complete the string
 
 
-✗ test/parser/suite/js/fail/3a31bdd7f1c65b81.js
-✗ test/parser/suite/js/fail/3a341e441ecc301b.js
+✓ test/parser/suite/js/fail/3a31bdd7f1c65b81.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async function *gen() {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/js/fail/3a341e441ecc301b.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | (async function* await() { });
+   |                  ^^^^^
+   |
+
 ✓ test/parser/suite/js/fail/3a3e59edfed719b0.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -8658,14 +8836,12 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/3fc85e3905dd68c7.module.js
-error: Unexpected token ','
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
- 8 | foo();
- 9 | assert.sameValue(await, 1);
-   |                       ^
+ 1 | var await;
+   |     ^^^^^
+ 2 | async function foo() {
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/js/fail/3fce3bb07400ca59.js
 error: 'new' is reserved and cannot be used as a binding identifier
@@ -9446,6 +9622,15 @@ error: Expected ',' or '}' in object, but found '++'
    = help: Add a comma between properties or close the object with '}'.
 
 
+✓ test/parser/suite/js/fail/460c302db55861e5.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       const await = 0;
+   |             ^^^^^
+ 5 |     });
+   |
+
 ✓ test/parser/suite/js/fail/462e38302aa1d5eb.js
 error: Invalid character at start of identifier
    |
@@ -9770,7 +9955,15 @@ error: Expected ']' after computed property key, but found '9'
  4 |       return 9;
    |
 
-✗ test/parser/suite/js/fail/48ab2fb5ae69da55.js
+✓ test/parser/suite/js/fail/48ab2fb5ae69da55.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var asyncFn = async function () {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/48c7f50c23d3cbc0.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -9878,7 +10071,15 @@ error: Bad escape sequence in untagged template literal
    |  ^^
    |
 
-✗ test/parser/suite/js/fail/4960020bc039850c.js
+✓ test/parser/suite/js/fail/4960020bc039850c.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async #method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/49624f905645b7d0.js
 error: Unexpected token ';'
    |
@@ -10305,7 +10506,15 @@ error: Expected ';' after class field, but found 'method'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/js/fail/4c6e40865aae1c79.module.js
+✓ test/parser/suite/js/fail/4c6e40865aae1c79.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 6 | function ZW_\u200D_J() {}
+ 7 | function await() {}
+   |          ^^^^^
+ 8 | @$
+   |
+
 ✓ test/parser/suite/js/fail/4c7ea6a86bafaf0f.js
 error: Member expression is not allowed in binding pattern
    |
@@ -10522,6 +10731,15 @@ error: Rest element must be the last element
    |
    = help: No elements can follow the rest element in a destructuring pattern.
 
+
+✓ test/parser/suite/js/fail/4dfb68841c1765db.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     ({
+ 4 |       set accessor(await) {}
+   |                    ^^^^^
+ 5 |     });
+   |
 
 ✓ test/parser/suite/js/fail/4e02f0f4441877ff.js
 error: 'yield' is reserved in a generator context and cannot be used as a binding identifier
@@ -11304,7 +11522,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/js/fail/5467bdf15d35f05b.js
+✓ test/parser/suite/js/fail/5467bdf15d35f05b.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async #method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/5468095b697725fc.js
 error: Rest parameter must be the last parameter
    |
@@ -11518,7 +11744,15 @@ error: Invalid Unicode escape sequence
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
 
-✗ test/parser/suite/js/fail/55c7542c96af9057.module.js
+✓ test/parser/suite/js/fail/55c7542c96af9057.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 6 | function ZW_\u200D_J() {}
+ 7 | function await() {}
+   |          ^^^^^
+ 8 | var C = @$
+   |
+
 ✓ test/parser/suite/js/fail/55d15f8a1ef9790b.js
 error: Unterminated string literal
    |
@@ -11883,7 +12117,15 @@ error: Invalid operand for increment/decrement operator
    = help: The '++' and '--' operators require a variable or property reference, not a literal or complex expression.
 
 
-✗ test/parser/suite/js/fail/582e16d4b606b52b.js
+✓ test/parser/suite/js/fail/582e16d4b606b52b.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { async *gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/5851acabc8207128.js
 error: Rest element must be the last element
    |
@@ -12508,7 +12750,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✗ test/parser/suite/js/fail/5e024842fed92f4f.js
+✓ test/parser/suite/js/fail/5e024842fed92f4f.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/5e18256fbf3ba3cc.js
 error: Expected '(' to start parameter list, but found '.'
    |
@@ -12602,7 +12852,15 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
-✗ test/parser/suite/js/fail/5e910fe4454fec53.js
+✓ test/parser/suite/js/fail/5e910fe4454fec53.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async #method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/5e9eda212e54a8c8.js
 error: Rest element must be the last element
    |
@@ -12733,7 +12991,13 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/5f9c35a9bd9c32d0.module.js
+✓ test/parser/suite/js/fail/5f9c35a9bd9c32d0.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class await {}
+   |       ^^^^^
+   |
+
 ✓ test/parser/suite/js/fail/5fae862d7fe6531c.js
 error: Invalid element in binding pattern
    |
@@ -12792,7 +13056,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✗ test/parser/suite/js/fail/60117c94e5a86285.js
+✓ test/parser/suite/js/fail/60117c94e5a86285.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var asyncFn = async function () {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/60201c1a2d64a45f.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -12837,7 +13109,15 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  3 | }}
    |
 
-✗ test/parser/suite/js/fail/605a8723b98493ee.js
+✓ test/parser/suite/js/fail/605a8723b98493ee.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     try {} catch (await) {}
+   |                   ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/6069bca758f9503d.js
 error: Rest parameter must be the last parameter
    |
@@ -13042,7 +13322,15 @@ error: Expected an identifier, but found '='
    = help: Identifiers must start with a letter, underscore (_), or dollar sign ($)
 
 
-✗ test/parser/suite/js/fail/61ea4f18be6a9640.js
+✓ test/parser/suite/js/fail/61ea4f18be6a9640.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { async *#gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/61ea54497522b19d.js
 error: Expected ';' after for-loop init, but found ''''
    |
@@ -13212,7 +13500,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✗ test/parser/suite/js/fail/63fe11fdff6d6ee1.js
+✓ test/parser/suite/js/fail/63fe11fdff6d6ee1.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { async *gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/640c5f52e816ef95.js
 error: Unexpected token ')'
    |
@@ -13280,7 +13576,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✗ test/parser/suite/js/fail/64a7c92d28ba0b40.js
+✓ test/parser/suite/js/fail/64a7c92d28ba0b40.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/64e293507c64020b.js
 error: Constructor can't have get/set modifier
    |
@@ -13308,7 +13612,15 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
  3 | };
    |
 
-✗ test/parser/suite/js/fail/651192e0e2975013.js
+✓ test/parser/suite/js/fail/651192e0e2975013.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/65259656fc4c3105.js
 error: 'for await' is only valid in async functions or modules
    |
@@ -13349,8 +13661,24 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/654000d7f4d0e050.js
-✗ test/parser/suite/js/fail/6541fbdb2a708867.js
+✓ test/parser/suite/js/fail/654000d7f4d0e050.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
+✓ test/parser/suite/js/fail/6541fbdb2a708867.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var gen = async function *() {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/65452453df11fbb9.js
 error: 'import' is reserved and cannot be used as an identifier
    |
@@ -13487,7 +13815,13 @@ error: Expected '(' after 'while', but found '='
    |       ^
    |
 
-✗ test/parser/suite/js/fail/6697777e88b64fff.js
+✓ test/parser/suite/js/fail/6697777e88b64fff.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | (async function*(await) { });
+   |                  ^^^^^
+   |
+
 ✓ test/parser/suite/js/fail/66a74a184d9f6e37.js
 error: Invalid character at start of identifier
    |
@@ -13734,15 +14068,13 @@ error: 'import' keyword is not allowed here
 
 
 ✓ test/parser/suite/js/fail/6827fc7d43f29ec0.module.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '1'
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
    |
  1 | 0, function () {
  2 |   await 1;
-   |         ^
+   |   ^^^^^
  3 | };
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/682a49663855aa94.js
 error: 'class' is reserved and cannot be used as a binding identifier
@@ -13767,7 +14099,15 @@ error: Identifier cannot immediately follow a numeric literal
    = help: Try adding whitespace here between the number and identifier
 
 
-✗ test/parser/suite/js/fail/6865046d5d081448.js
+✓ test/parser/suite/js/fail/6865046d5d081448.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/686caa90d31cf9b0.js
 error: 'catch' is reserved and cannot be used as an identifier
    |
@@ -14258,7 +14598,15 @@ error: Expected ')' after method parameters, but found '='
  3 | }
    |
 
-✗ test/parser/suite/js/fail/6b52ba22c4cedfab.js
+✓ test/parser/suite/js/fail/6b52ba22c4cedfab.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async () => {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/6b7a71db328a6e73.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -14366,7 +14714,15 @@ error: Invalid Unicode escape sequence
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
 
-✗ test/parser/suite/js/fail/6c4110b08f4d8f63.js
+✓ test/parser/suite/js/fail/6c4110b08f4d8f63.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async () => {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/6c89f9fc7e0a3704.js
 error: Unexpected token '...'
    |
@@ -14524,7 +14880,15 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/6d92463b896027ef.js
+✓ test/parser/suite/js/fail/6d92463b896027ef.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async #method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/6da291bc67228db0.js
 error: Unterminated string literal
    |
@@ -14599,9 +14963,33 @@ error: 'this' is reserved and cannot be used as a binding identifier
    |     ^^^^
    |
 
-✗ test/parser/suite/js/fail/6e5521b7c379379b.js
-✗ test/parser/suite/js/fail/6e571fcdb1628f51.js
-✗ test/parser/suite/js/fail/6e5c3fcca923b343.module.js
+✓ test/parser/suite/js/fail/6e5521b7c379379b.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async function asyncFn() {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | }
+   |
+
+✓ test/parser/suite/js/fail/6e571fcdb1628f51.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var gen = async function *g() {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | };
+   |
+
+✓ test/parser/suite/js/fail/6e5c3fcca923b343.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 9 | var ZW_\u200D_J = decorator;
+10 | var await = decorator;
+   |     ^^^^^
+11 | class C {
+   |
+
 ✓ test/parser/suite/js/fail/6e736ba5cc38de01.js
 error: Unterminated string literal
    |
@@ -15065,15 +15453,13 @@ error: Expected identifier or string literal, but found ','
    |
 
 ✓ test/parser/suite/js/fail/7223dff68c6c1fd3.js
-error: Expected a semicolon or an implicit semicolon after a statement, but found '0'
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
  2 |     let
  3 |     await 0;
-   |           ^
+   |     ^^^^^
  4 | }
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/js/fail/7224c2378126cfc1.js
 error: Expected ')' after import(), but found ''''
@@ -15935,7 +16321,15 @@ error: 'import' is reserved and cannot be used as an identifier
    |           ^^^^^^
    |
 
-✗ test/parser/suite/js/fail/786eb075cdf7c100.js
+✓ test/parser/suite/js/fail/786eb075cdf7c100.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { static async *#gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/78785678f3545d26.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -17372,7 +17766,14 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/82f1dfb94993cd82.module.js
+✓ test/parser/suite/js/fail/82f1dfb94993cd82.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 0;
+   |     ^^^^^
+ 2 | var fromParam, fromBody;
+   |
+
 ✓ test/parser/suite/js/fail/8303480ae9a0a165.js
 error: Invalid assignment target
    |
@@ -17428,7 +17829,15 @@ error: Expected ')' after catch parameter, but found '='
  2 | 
    |
 
-✗ test/parser/suite/js/fail/8329789a4cd36926.js
+✓ test/parser/suite/js/fail/8329789a4cd36926.js
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
+   |
+ 2 |   static {
+ 3 |     var {await} = {};
+   |          ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/8330a072a78e26f2.js
 error: A rest element cannot have an initializer
    |
@@ -17451,7 +17860,15 @@ error: Rest element must be the last element
    = help: No elements can follow the rest element in a destructuring pattern.
 
 
-✗ test/parser/suite/js/fail/834b03ee2422cd06.js
+✓ test/parser/suite/js/fail/834b03ee2422cd06.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { static async *#gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/8355671c9cafd876.js
 error: Unexpected token '%'
    |
@@ -17504,7 +17921,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/8388af4e5462360a.js
+✓ test/parser/suite/js/fail/8388af4e5462360a.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var gen = async function *() {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/83cf437e1c3d4e0f.js
 error: A rest element cannot have an initializer
    |
@@ -17592,7 +18017,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/84bc7b2c4445da90.js
+✓ test/parser/suite/js/fail/84bc7b2c4445da90.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { async *gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/84d05e49bac83547.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -17687,7 +18120,15 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/8540fd60b5e1ef9a.js
+✓ test/parser/suite/js/fail/8540fd60b5e1ef9a.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async #method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/854ff4a8b5f8ff01.js
 error: Destructuring declaration must have an initializer
    |
@@ -17821,7 +18262,15 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/86197eea48b5cbd0.js
+✓ test/parser/suite/js/fail/86197eea48b5cbd0.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { static async *#gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/862fa3d5f7a928be.js
 error: 'if' is reserved and cannot be used as a binding identifier
    |
@@ -18248,7 +18697,15 @@ error: Rest parameter must be the last parameter
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
 
 
-✗ test/parser/suite/js/fail/893403934bc7d980.js
+✓ test/parser/suite/js/fail/893403934bc7d980.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | ({
+ 2 |   async foo (await) {  }
+   |              ^^^^^
+ 3 | })
+   |
+
 ✓ test/parser/suite/js/fail/893986e2bbf8b7c5.js
 error: Unexpected token '(' in binding pattern
    |
@@ -18799,7 +19256,14 @@ error: Invalid assignment operator in assignment pattern
    = help: Only '=' is allowed in destructuring defaults, not compound operators like '+='.
 
 
-✗ test/parser/suite/js/fail/8d07a7a56db6a8ad.module.js
+✓ test/parser/suite/js/fail/8d07a7a56db6a8ad.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 0;
+   |     ^^^^^
+ 2 | var fromParam, fromBody;
+   |
+
 ✓ test/parser/suite/js/fail/8d1c35efa98ce4b4.js
 error: Unterminated string literal
    |
@@ -18903,14 +19367,12 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/8df34f4088394dd7.module.js
-error: Expected ')' to close parameter list, but found '1'
+error: 'await' is reserved in an async/module context and cannot be used as an identifier
    |
  1 | function fn(x = await 1) {
-   |                       ^
+   |                 ^^^^^
  2 |   return x;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/8df3bfc87a78d7ab.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -19191,6 +19653,15 @@ error: Expected '(' after import, but found ')'
    |
  1 | (async () => await typeof import.source)
    |                                        ^
+   |
+
+✓ test/parser/suite/js/fail/8f5e572b154c5d39.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     (function* await(await) {});
+   |                ^^^^^
+ 4 |   }
    |
 
 ✓ test/parser/suite/js/fail/8f69d4bc3f69e85d.js
@@ -19752,7 +20223,13 @@ error: Rest parameter must be the last parameter
    = help: Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters.
 
 
-✗ test/parser/suite/js/fail/9430703645fae273.module.js
+✓ test/parser/suite/js/fail/9430703645fae273.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class await {};
+   |               ^^^^^
+   |
+
 ✓ test/parser/suite/js/fail/94325adbbbe58f6d.js
 error: Unexpected token ')'
    |
@@ -19838,7 +20315,13 @@ error: Lexical declaration cannot appear in a single-statement context
    = help: Wrap this declaration in a block statement
 
 
-✗ test/parser/suite/js/fail/94646c6669853917.module.js
+✓ test/parser/suite/js/fail/94646c6669853917.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await;
+   |     ^^^^^
+   |
+
 ✓ test/parser/suite/js/fail/946861cdb2144113.js
 error: Unexpected token ';'
    |
@@ -19877,7 +20360,15 @@ error: Unexpected token ';'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/94a4712411e3792f.js
+✓ test/parser/suite/js/fail/94a4712411e3792f.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { static async *gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/94b1e34614a469d2.module.js
 error: Invalid element in assignment pattern
    |
@@ -20900,7 +21391,14 @@ error: Rest element is not allowed in parenthesized expression
    = help: Spread in parentheses is only valid for arrow function parameters.
 
 
-✗ test/parser/suite/js/fail/9ce27fbf70fb921a.module.js
+✓ test/parser/suite/js/fail/9ce27fbf70fb921a.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | const await = './module-code_FIXTURE.js';
+   |       ^^^^^
+ 2 | const getpromise = () => import(await);
+   |
+
 ✓ test/parser/suite/js/fail/9d030e1cf08f5d77.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -21640,7 +22138,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/js/fail/a255c5d42e9d9ab3.js
+✓ test/parser/suite/js/fail/a255c5d42e9d9ab3.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async #method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/a25605b8de6e56b8.js
 error: Invalid character at start of identifier
    |
@@ -21702,7 +22208,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/a3107d539c6e59c5.js
+✓ test/parser/suite/js/fail/a3107d539c6e59c5.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async #method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/a31d1202f94df972.js
 error: Member expression is not allowed in binding pattern
    |
@@ -21721,7 +22235,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/a365e6f3fe021a3f.js
+✓ test/parser/suite/js/fail/a365e6f3fe021a3f.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     const await = 0;
+   |           ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/a366a925325db574.js
 error: Keywords cannot contain escape characters
    |
@@ -21966,7 +22488,15 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
  3 | }}
    |
 
-✗ test/parser/suite/js/fail/a51230444e2ff49d.js
+✓ test/parser/suite/js/fail/a51230444e2ff49d.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { async *gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/a517ee426b46fe0f.js
 error: Rest element must be the last element
    |
@@ -22081,7 +22611,15 @@ error: 'extends' is reserved and cannot be used as an identifier
    |            ^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/fail/a5da0065b5350cc7.js
+✓ test/parser/suite/js/fail/a5da0065b5350cc7.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     (class await {});
+   |            ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/a604841be2f6d12d.js
 error: Rest element cannot have a trailing comma in array destructuring.
    |
@@ -22091,7 +22629,15 @@ error: Rest element cannot have a trailing comma in array destructuring.
    = help: Remove the trailing comma after the rest element
 
 
-✗ test/parser/suite/js/fail/a61b6efc56f88b0a.js
+✓ test/parser/suite/js/fail/a61b6efc56f88b0a.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class Foo {
+ 2 |   async foo (await) {  }
+   |              ^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/a62af87e9984d9d4.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -23315,7 +23861,15 @@ error: Bad escape sequence in untagged template literal
    |  ^^^
    |
 
-✗ test/parser/suite/js/fail/adff1fa1bcaaabe0.module.js
+✓ test/parser/suite/js/fail/adff1fa1bcaaabe0.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 9 | var ZW_\u200D_J = decorator;
+10 | var await = decorator;
+   |     ^^^^^
+11 | @$()
+   |
+
 ✓ test/parser/suite/js/fail/adffa1660e4c3971.js
 error: Rest element must be the last element
    |
@@ -23801,7 +24355,15 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✗ test/parser/suite/js/fail/b30409b12f6f7198.js
+✓ test/parser/suite/js/fail/b30409b12f6f7198.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var asyncFn = async function asyncFn() {
+ 2 |   var await;
+   |       ^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/b306d9ff847c120d.js
 error: Unterminated regular expression literal
    |
@@ -23923,7 +24485,13 @@ error: Expected ')' after for-loop update, but found ';'
    |                                    ^
    |
 
-✗ test/parser/suite/js/fail/b3f7b15e0ad38185.js
+✓ test/parser/suite/js/fail/b3f7b15e0ad38185.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async function foo (await) {  }
+   |                     ^^^^^
+   |
+
 ✓ test/parser/suite/js/fail/b3fc8ced7ce28c35.js
 error: Invalid hexadecimal escape sequence
    |
@@ -24920,7 +25488,14 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/bbad696b843573ef.module.js
+✓ test/parser/suite/js/fail/bbad696b843573ef.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | function await() {}
+   |          ^^^^^
+ 2 | import('./2nd-param_FIXTURE.js').then(function (module) {}).then($DONE, $DONE);
+   |
+
 ✓ test/parser/suite/js/fail/bbafdda315be5dc4.js
 error: Unterminated string literal
    |
@@ -25257,11 +25832,11 @@ error: 'await using' declarations must be initialized
 
 
 ✓ test/parser/suite/js/fail/be8a21d0e2da975f.module.js
-error: 'instanceof' is reserved and cannot be used as an identifier
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
  1 | async function await() { return 1 }
+   |                ^^^^^
  2 | assert(await instanceof Function);
-   |              ^^^^^^^^^^
    |
 
 ✓ test/parser/suite/js/fail/be9b1c6deb4c3b4f.js
@@ -26027,7 +26602,15 @@ error: Unexpected token ']'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/c496c72b607251dc.js
+✓ test/parser/suite/js/fail/c496c72b607251dc.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async function foo() {
+ 2 |   function await() {
+   |            ^^^^^
+ 3 |   }
+   |
+
 ✓ test/parser/suite/js/fail/c4a240eb69bc3098.js
 error: Expected '(' after import, but found ';'
    |
@@ -26156,7 +26739,15 @@ error: Expected ';' after for-loop init, but found ')'
    |                 ^
    |
 
-✗ test/parser/suite/js/fail/c552d2e0c26c1921.js
+✓ test/parser/suite/js/fail/c552d2e0c26c1921.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static async method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/c56346c110a23311.js
 error: Invalid character at start of identifier
    |
@@ -26315,6 +26906,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/c62ea7974594a4c8.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     ({
+ 4 |       method(await) {}
+   |              ^^^^^
+ 5 |     });
+   |
+
 ✓ test/parser/suite/js/fail/c640048231d4315f.js
 error: Expected ';' after class field, but found '{'
    |
@@ -26400,6 +27000,15 @@ error: Unexpected token ']'
    |
    = help: Expected an expression
 
+
+✓ test/parser/suite/js/fail/c7308b398d6aab2e.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     ({
+ 4 |       *method(await) {}
+   |               ^^^^^
+ 5 |     });
+   |
 
 ✓ test/parser/suite/js/fail/c760233feacea0bf.js
 error: Unexpected token '...'
@@ -26580,7 +27189,15 @@ error: Invalid Unicode escape sequence
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
 
-✗ test/parser/suite/js/fail/c87cafb77715b122.module.js
+✓ test/parser/suite/js/fail/c87cafb77715b122.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 9 | var ZW_\u200D_J = decorator;
+10 | var await = decorator;
+   |     ^^^^^
+11 | var C = @$()
+   |
+
 ✓ test/parser/suite/js/fail/c88cd299a8be8886.js
 error: Unexpected token ']'
    |
@@ -27414,7 +28031,15 @@ error: Empty parentheses are only valid as arrow function parameters
    | ^^
    |
 
-✗ test/parser/suite/js/fail/cf4ae79c94591871.js
+✓ test/parser/suite/js/fail/cf4ae79c94591871.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { async *#gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/cf9f5cd2f59f8223.js
 error: Unexpected token ')'
    |
@@ -27860,7 +28485,15 @@ error: 'import' keyword is not allowed here
    = help: Use 'import.meta' for module metadata or 'import()' for dynamic imports.
 
 
-✗ test/parser/suite/js/fail/d2f284675783478e.js
+✓ test/parser/suite/js/fail/d2f284675783478e.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { static async *gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/d2f2e78fc1d82335.js
 error: Invalid element in assignment pattern
    |
@@ -27976,7 +28609,15 @@ error: Unexpected token ']'
    = help: Expected an expression
 
 
-✗ test/parser/suite/js/fail/d4820da44dd62d04.js
+✓ test/parser/suite/js/fail/d4820da44dd62d04.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/d49383c1511c7ceb.js
 error: Rest element must be the last element
    |
@@ -28249,7 +28890,15 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
-✗ test/parser/suite/js/fail/d61bd605b79b4326.js
+✓ test/parser/suite/js/fail/d61bd605b79b4326.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var C = class { async *#gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }};
+   |
+
 ✓ test/parser/suite/js/fail/d61c94c0bec48e53.js
 error: 'super' is reserved and cannot be used as a binding identifier
    |
@@ -28318,6 +28967,15 @@ error: Optional chaining is not allowed in assignment pattern
    |
    = help: Optional chaining ('?.') cannot be used as an assignment target in destructuring patterns.
 
+
+✓ test/parser/suite/js/fail/d6aa6dc80c71444b.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       function await() {}
+   |                ^^^^^
+ 5 |     });
+   |
 
 ✓ test/parser/suite/js/fail/d6b2e98f92b5a665.js
 error: Keywords cannot contain escape characters
@@ -28603,7 +29261,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/js/fail/d915070d5101733c.js
+✓ test/parser/suite/js/fail/d915070d5101733c.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/d92a4656527ab9b9.js
 error: Keywords cannot contain escape characters
    |
@@ -28852,7 +29518,14 @@ error: The only valid meta properties for 'import' are 'import.meta', 'import.so
    = help: Did you mean 'import.meta', 'import.source("...")' or 'import.defer("...")'?
 
 
-✗ test/parser/suite/js/fail/dba923ca12f8f920.module.js
+✓ test/parser/suite/js/fail/dba923ca12f8f920.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 1;
+   |     ^^^^^
+ 2 | (function () {
+   |
+
 ✓ test/parser/suite/js/fail/dbe14a0f80a1ca08.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
@@ -29146,7 +29819,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/dda70ce48e928d47.js
+✓ test/parser/suite/js/fail/dda70ce48e928d47.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async *method() {
+ 3 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/dda92815dfb145d4.js
 error: A rest element cannot have an initializer
    |
@@ -29757,7 +30438,15 @@ error: A rest element cannot have an initializer
    = help: Remove the '= ...' from the rest element.
 
 
-✗ test/parser/suite/js/fail/e12818bb293ab2f3.js
+✓ test/parser/suite/js/fail/e12818bb293ab2f3.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   async *method() {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/e1652a4257b54899.js
 error: Lexical declaration cannot appear in a single-statement context
    |
@@ -30071,6 +30760,15 @@ error: A rest element cannot have an initializer
    |
    = help: Remove the '= ...' from the rest element.
 
+
+✓ test/parser/suite/js/fail/e423bb14a76e541f.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       var await;
+   |           ^^^^^
+ 5 |     });
+   |
 
 ✓ test/parser/suite/js/fail/e431d576c204cd7b.js
 error: Invalid assignment target
@@ -31056,7 +31754,15 @@ error: Identifier cannot immediately follow a numeric literal
    = help: Try adding whitespace here between the number and identifier
 
 
-✗ test/parser/suite/js/fail/eb72ccc6d90a966c.module.js
+✓ test/parser/suite/js/fail/eb72ccc6d90a966c.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | let value;
+ 2 | function await() {
+   |          ^^^^^
+ 3 |   return value;
+   |
+
 ✓ test/parser/suite/js/fail/eb89e47332ddbc58.js
 error: Rest element must be the last element
    |
@@ -31201,7 +31907,15 @@ error: Numeric separator cannot appear at the end of a numeric literal
    = help: Try removing the trailing underscore here or adding more digits after it
 
 
-✗ test/parser/suite/js/fail/eca3254326c03740.js
+✓ test/parser/suite/js/fail/eca3254326c03740.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     using await = null;
+   |           ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/eca627a0ee643d83.js
 error: 'import' is reserved and cannot be used as an identifier
    |
@@ -31259,7 +31973,15 @@ error: Keywords cannot contain escape characters
    = help: Remove the escape characters
 
 
-✗ test/parser/suite/js/fail/ed01ef32371514b9.js
+✓ test/parser/suite/js/fail/ed01ef32371514b9.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var asyncFn = async function asyncFn() {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/fail/ed0332c84e50834c.js
 error: Expected ']' after computed property key, but found ','
    |
@@ -31353,6 +32075,14 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
+✓ test/parser/suite/js/fail/edfe082e9badb2f5.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | function* foo(await) {
+   |               ^^^^^
+ 2 |   yield await;
+   |
+
 ✓ test/parser/suite/js/fail/ee0add5b0d4ce46a.js
 error: Invalid element in assignment pattern
    |
@@ -31362,7 +32092,14 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
-✗ test/parser/suite/js/fail/ee0bedd2148a909d.module.js
+✓ test/parser/suite/js/fail/ee0bedd2148a909d.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | var await = 0;
+   |     ^^^^^
+ 2 | var fromParam, fromBody;
+   |
+
 ✓ test/parser/suite/js/fail/ee43240dd25f3c94.js
 error: Rest element must be the last element
    |
@@ -31399,7 +32136,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/ee72ec6323989152.js
+✓ test/parser/suite/js/fail/ee72ec6323989152.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 2 |   static {
+ 3 |     var await;
+   |         ^^^^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/fail/ee75617cbd97436a.js
 error: Invalid element in assignment pattern
    |
@@ -31409,7 +32154,15 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
-✗ test/parser/suite/js/fail/ee7c52736d6b97aa.js
+✓ test/parser/suite/js/fail/ee7c52736d6b97aa.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { static async *#gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/ee9a977120b0fa1a.js
 error: 'debugger' is reserved and cannot be used as an identifier
    |
@@ -32597,7 +33350,15 @@ error: 'return' statement is only valid inside a function
    = help: Remove the 'return' statement or wrap the code in a function.
 
 
-✗ test/parser/suite/js/fail/f7267f0a4d07a669.module.js
+✓ test/parser/suite/js/fail/f7267f0a4d07a669.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 6 | function ZW_\u200D_J() {}
+ 7 | function await() {}
+   |          ^^^^^
+ 8 | class C {
+   |
+
 ✓ test/parser/suite/js/fail/f738fabca1ca6634.js
 error: 'import' keyword is not allowed here
    |
@@ -32687,7 +33448,15 @@ error: 'in' is reserved and cannot be used as an identifier
    |           ^^^^^^^
    |
 
-✗ test/parser/suite/js/fail/f807cd01026ba0f7.js
+✓ test/parser/suite/js/fail/f807cd01026ba0f7.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { async *#gen() {
+ 2 |     var \u0061wait;
+   |         ^^^^^^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/f82b9d8238ada5f7.js
 error: Invalid element in assignment pattern
    |
@@ -32756,7 +33525,15 @@ error: Destructuring declaration must have an initializer
    = help: Add '= value' to provide the object or array to destructure from.
 
 
-✗ test/parser/suite/js/fail/f89bb8263c820a0a.js
+✓ test/parser/suite/js/fail/f89bb8263c820a0a.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | async function *gen() {
+ 2 |   var \u0061wait;
+   |       ^^^^^^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/fail/f89e73035ad5f1c6.js
 error: Expected '(' for getter/setter definition, but found ';'
    |
@@ -32925,7 +33702,15 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
    = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
 
 
-✗ test/parser/suite/js/fail/f9b23289febaf1a1.js
+✓ test/parser/suite/js/fail/f9b23289febaf1a1.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 1 | class C { static async *gen() {
+ 2 |     var await;
+   |         ^^^^^
+ 3 | }}
+   |
+
 ✓ test/parser/suite/js/fail/f9c13907560ec4d7.js
 error: A rest element cannot have an initializer
    |
@@ -33689,6 +34474,15 @@ error: Unexpected token ')'
    = help: Expected an expression
 
 
+✓ test/parser/suite/js/fail/fedd5d306462cde4.module.js
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
+   |
+ 3 |     (() => {
+ 4 |       try {} catch (await) {}
+   |                     ^^^^^
+ 5 |     });
+   |
+
 ✓ test/parser/suite/js/fail/feeea1225f0db389.js
 error: Invalid operand for increment/decrement operator
    |
@@ -33801,12 +34595,11 @@ error: Invalid hexadecimal escape sequence
 
 
 ✓ test/parser/suite/js/fail/ffeeff12c13fc1bb.module.js
-error: Unexpected token ')'
+error: 'await' is reserved in an async/module context and cannot be used as a binding identifier
    |
-13 | @(ZW_\u200D_J)
-14 | @(await) class C {}
-   |        ^
+ 6 | function ZW_\u200D_J() {}
+ 7 | function await() {}
+   |          ^^^^^
+ 8 | @($)
    |
-   = help: Expected an expression
-
 

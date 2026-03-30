@@ -1,6 +1,6 @@
 suite/js/semantic
 =================
-Passed:       3630/3633 (99.92%)
+Passed:       3612/3615 (99.92%)
 Failed:       3
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
@@ -151,24 +151,6 @@ error: Yield expression is not allowed in formal parameters
  2 |   static *g(x = yield) {}
    |                 ^^^^^
  3 | }
-   |
-
-✓ test/parser/suite/js/semantic/018315a394d03406.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       var [await] = [];
-   |            ^^^^^
- 5 |     });
-   |
-
-✓ test/parser/suite/js/semantic/019af8e4ab2129fe.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       let await;
-   |           ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/019d8570b1e5d0e5.js
@@ -859,15 +841,6 @@ error: 'with' statements are not allowed in strict mode
 63 | }
    | ^
 64 | if (!(p1 === 1)) {}
-   |
-
-✓ test/parser/suite/js/semantic/0590c06547732a75.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 2 |   static {
- 3 |     (function await(await) {});
-   |               ^^^^^
- 4 |   }
    |
 
 ✓ test/parser/suite/js/semantic/0599b4d508bc7dd5.js
@@ -1770,15 +1743,6 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |   ^^^^^
    |
 
-✓ test/parser/suite/js/semantic/0cf797ce7630ae3e.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       var {await} = {};
-   |            ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/0d07f4c826787a4a.js
 error: Identifier 'f' has already been declared
    |
@@ -1796,14 +1760,6 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  1 | function *a(){({get b(){yield}})}
    |                         ^^^^^
  2 | 
-   |
-
-✓ test/parser/suite/js/semantic/0d275e87a6c32560.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 1 | function foo(await) {
-   |              ^^^^^
- 2 |   return await;
    |
 
 ✓ test/parser/suite/js/semantic/0d29c444ecbe413f.js
@@ -3344,15 +3300,6 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |                                              ^^^^^^^^^
    |
 
-✓ test/parser/suite/js/semantic/17652c91045e58a3.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       class await {}
-   |             ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/176729df4ccd0a63.js
 error: Identifier 'f' has already been declared
    |
@@ -4157,15 +4104,6 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✓ test/parser/suite/js/semantic/1cbe7c9eee74758d.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       using await = null;
-   |             ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/1ce9ee8b4d45b06c.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -4833,15 +4771,6 @@ error: Private fields cannot be deleted
  4 | }
    |
 
-✓ test/parser/suite/js/semantic/214b41cbfb769793.module.js
-error: 'await' is reserved in module code and cannot be used as an identifier
-   |
- 3 |     (() => ({
- 4 |       await
-   |       ^^^^^
- 5 |     }));
-   |
-
 ✓ test/parser/suite/js/semantic/215bb25237c08f53.js
 error: Identifier 'f' has already been declared
    |
@@ -5057,13 +4986,6 @@ error: 'with' statements are not allowed in strict mode
 62 |     }
    | ^^^^^
 63 |   };
-   |
-
-✓ test/parser/suite/js/semantic/2226edabbd2261a7.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 1 | function f() { var await }
-   |                    ^^^^^
    |
 
 ✓ test/parser/suite/js/semantic/22287d4dfa9a5035.js
@@ -9649,15 +9571,6 @@ error: Cannot use import statement outside a module
  2 | Object.preventExtensions(ns);
    |
 
-✓ test/parser/suite/js/semantic/460c302db55861e5.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       const await = 0;
-   |             ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/46182c3419fa45f9.module.js
 error: Identifier 'smoosh' has already been declared
    |
@@ -10811,15 +10724,6 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  1 | var yield = 23;
    |     ^^^^^
  2 | var f, paramValue;
-   |
-
-✓ test/parser/suite/js/semantic/4dfb68841c1765db.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     ({
- 4 |       set accessor(await) {}
-   |                    ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/4dfe7c0219422eff.js
@@ -19379,15 +19283,6 @@ error: Duplicate '__proto__' property in object literal
    |    ~~~~~~~~~~~~ first defined here
    |
 
-✓ test/parser/suite/js/semantic/8f5e572b154c5d39.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 2 |   static {
- 3 |     (function* await(await) {});
-   |                ^^^^^
- 4 |   }
-   |
-
 ✓ test/parser/suite/js/semantic/8f72321a88ad015f.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -26961,15 +26856,6 @@ error: Cannot use import statement outside a module
  2 | 
    |
 
-✓ test/parser/suite/js/semantic/c62ea7974594a4c8.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     ({
- 4 |       method(await) {}
-   |              ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/c635335476821654.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -27064,15 +26950,6 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | yield = 1;
    | ^^^^^
-   |
-
-✓ test/parser/suite/js/semantic/c7308b398d6aab2e.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     ({
- 4 |       *method(await) {}
-   |               ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/c743922212940aff.module.js
@@ -29507,15 +29384,6 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |  ^^^^
    |
 
-✓ test/parser/suite/js/semantic/d6aa6dc80c71444b.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       function await() {}
-   |                ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/d6b44ece92172c2c.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -31782,15 +31650,6 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |                 ^^^^^^^^^^^^^^
    |
 
-✓ test/parser/suite/js/semantic/e423bb14a76e541f.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       var await;
-   |           ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/e4479b9b817c4813.js
 error: Cannot use import statement outside a module
    |
@@ -33138,14 +32997,6 @@ error: 'with' statements are not allowed in strict mode
  5 |     }
    | ^^^^^
  6 |   }
-   |
-
-✓ test/parser/suite/js/semantic/edfe082e9badb2f5.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 1 | function* foo(await) {
-   |               ^^^^^
- 2 |   yield await;
    |
 
 ✓ test/parser/suite/js/semantic/ee0034582e67e51e.js
@@ -35566,15 +35417,6 @@ error: Identifier 'f' has already been declared
    |
    = help: Consider removing or renaming this declaration of 'f'
 
-
-✓ test/parser/suite/js/semantic/fedd5d306462cde4.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       try {} catch (await) {}
-   |                     ^^^^^
- 5 |     });
-   |
 
 ✓ test/parser/suite/js/semantic/feeefcef9aa0d467.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier

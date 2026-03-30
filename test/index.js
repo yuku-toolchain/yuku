@@ -1,1 +1,1 @@
-export { await }
+var await;
