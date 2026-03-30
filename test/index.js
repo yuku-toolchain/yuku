@@ -1,1 +1,4 @@
-class C { constructor(){} "constructor"(){} }
+var C = class {
+  set #m(_) {}
+  get #m() {}
+};
