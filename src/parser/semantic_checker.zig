@@ -400,7 +400,7 @@ const SemanticVisit = struct {
     pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
         return .proceed;
     }
@@ -408,7 +408,7 @@ const SemanticVisit = struct {
     pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
         return .proceed;
     }
@@ -416,7 +416,7 @@ const SemanticVisit = struct {
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
 
         try self.recordExportedName("default", node_index, ctx);
@@ -426,7 +426,7 @@ const SemanticVisit = struct {
     pub fn enter_export_all_declaration(self: *Self, decl: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
 
         // export * as name from '...'
@@ -475,6 +475,18 @@ const SemanticVisit = struct {
         try self.checkForInOfInitializer(ctx, stmt.left);
         if (ctx.scope.isStrict())
             try self.checkAssignTargetEvalArguments(stmt.left, ctx);
+        return .proceed;
+    }
+
+    pub fn enter_variable_declaration(self: *Self, decl: ast.VariableDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if ((decl.kind == .using or decl.kind == .await_using) and
+            !ctx.tree.isModule() and isAtProgramLevel(ctx))
+        {
+            try self.report(ctx.tree.getSpan(node_index), try self.fmt(
+                "'{s}' is not allowed at the top level of a script",
+                .{decl.kind.toString()},
+            ), .{});
+        }
         return .proceed;
     }
 
@@ -813,7 +825,7 @@ const SemanticVisit = struct {
         return false;
     }
 
-    fn isAtModuleTopLevel(ctx: *SemanticCtx) bool {
+    fn isAtProgramLevel(ctx: *SemanticCtx) bool {
         if (ctx.path.parent()) |parent| {
             return ctx.tree.getData(parent) == .program;
         }

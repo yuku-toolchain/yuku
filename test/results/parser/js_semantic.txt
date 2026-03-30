@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3619/3633 (99.61%)
-Failed:       14
+Passed:       3625/3633 (99.78%)
+Failed:       8
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -7773,7 +7773,14 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/37a7850f313127a8.js
+✓ test/parser/suite/js/semantic/37a7850f313127a8.js
+error: 'await using' is not allowed at the top level of a script
+   |
+ 1 | await using z = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/37bc8534570fd5c4.module.js
 error: Identifier 'f' has already been declared
    |
@@ -8991,7 +8998,14 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/40c7050a4beb1e56.js
+✓ test/parser/suite/js/semantic/40c7050a4beb1e56.js
+error: 'using' is not allowed at the top level of a script
+   |
+ 1 | using z = null;
+   | ^^^^^^^^^^^^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/40c7f0f0afdf48d6.js
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -14632,7 +14646,13 @@ error: 'with' statements are not allowed in strict mode
 12 |   if (scope.x !== 1) {}
    |
 
-✗ test/parser/suite/js/semantic/69be00c464ab6301.js
+✓ test/parser/suite/js/semantic/69be00c464ab6301.js
+error: 'using' is not allowed at the top level of a script
+   |
+ 1 | using x = null;
+   | ^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/69c74d0785375c3c.js
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -16625,7 +16645,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/780f05b170cc4161.js
+✓ test/parser/suite/js/semantic/780f05b170cc4161.js
+error: 'using' is not allowed at the top level of a script
+   |
+ 1 | using x = null;
+   | ^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/782d096245de4836.module.js
 error: Identifier 'smoosh' has already been declared
    |
@@ -16883,7 +16909,13 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 |   after = f;
    |
 
-✗ test/parser/suite/js/semantic/7a6f20d74aed16d8.js
+✓ test/parser/suite/js/semantic/7a6f20d74aed16d8.js
+error: 'await using' is not allowed at the top level of a script
+   |
+ 1 | await using x = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7a7f48f2ae9de97d.js
 error: Private field '#foo' must be declared in an enclosing class
    |
@@ -25208,7 +25240,13 @@ error: Expected ';' after for-loop init, but found ')'
    |                                ^
    |
 
-✗ test/parser/suite/js/semantic/b9d09c7082787358.js
+✓ test/parser/suite/js/semantic/b9d09c7082787358.js
+error: 'await using' is not allowed at the top level of a script
+   |
+ 1 | await using x = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b9d8ba7f0ea8992d.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
