@@ -1,4 +1,1 @@
-var C = class {
-  set #m(_) {}
-  get #m() {}
-};
+import('') /= 1

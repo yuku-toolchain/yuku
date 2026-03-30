@@ -1,6 +1,6 @@
 suite/js/fail
 =============
-Passed:       3612/3612 (100.00%)
+Passed:       3616/3616 (100.00%)
 Failed:       0
 
 ✓ test/parser/suite/js/fail/0009a73f0859ac14.js
@@ -247,12 +247,12 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/0198f8022644912c.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 %= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/019e1e8bb652e766.js
@@ -1920,12 +1920,12 @@ error: Invalid regular expression flag
 
 
 ✓ test/parser/suite/js/fail/0e87112069ab5aaa.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 &&= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/0e8932e7943f7183.js
@@ -2249,12 +2249,12 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/10dd67fd88c5e69e.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') &= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/111345482d19333b.js
@@ -2346,12 +2346,12 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/11b4af8365c73c29.js
-error: Parenthesized expression in assignment pattern must be a simple assignment target
+error: Invalid assignment target
    |
  1 | (f()) &&= 1;
-   |  ^^^
+   | ^^^^^
    |
-   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/11b54c8b508879bf.js
@@ -2968,12 +2968,12 @@ error: Empty parentheses are only valid as arrow function parameters
    |
 
 ✓ test/parser/suite/js/fail/15d7e194af4f2920.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') <<= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/15dde87632fe97de.js
@@ -3067,12 +3067,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/168c1fb7756f7e65.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 *= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/16947dc1d11e5e70.js
@@ -3190,12 +3190,12 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/1784bed87742c535.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') >>= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/17904d9a6b6ec31b.js
@@ -5367,12 +5367,12 @@ error: 'void' is reserved and cannot be used as a binding identifier
    |
 
 ✓ test/parser/suite/js/fail/278bf168c9ef6f32.module.js
-error: Parenthesized expression in assignment pattern must be a simple assignment target
+error: Invalid assignment target
    |
  1 | (f()) += 1;
-   |  ^^^
+   | ^^^^^
    |
-   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/27a4056808de25e6.js
@@ -6805,12 +6805,12 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/30d4f260abfd774e.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') |= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/30d72b2b7f70b4d7.js
@@ -7221,12 +7221,12 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/33aa4cead29706c2.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') /= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/33bc068464342558.js
@@ -7827,13 +7827,22 @@ error: Invalid operand for increment/decrement operator
    = help: The '++' and '--' operators require a variable or property reference, not a literal or complex expression.
 
 
+✓ test/parser/suite/js/fail/38816d56f582672f.js
+error: Invalid assignment target
+   |
+ 1 | [v] += ary
+   | ^^^
+   |
+   = help: The left-hand side of a compound assignment must be a variable or property access
+
+
 ✓ test/parser/suite/js/fail/388a93112187f2c7.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | f() &&= 1;
    | ^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/389144e04c9eb5f9.js
@@ -8010,12 +8019,12 @@ error: Expected ';' after for-loop init, but found 'await'
    |
 
 ✓ test/parser/suite/js/fail/39cd1a4cc6026c7e.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 ^= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/39e91fee19020416.js
@@ -8382,12 +8391,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/3d060da3b4b99208.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 /= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/3d37fc7694687ddb.js
@@ -8513,12 +8522,12 @@ error: The only valid meta property for 'new' is 'new.target'
 
 
 ✓ test/parser/suite/js/fail/3dc3614115a73439.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 &= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/3dc36a9f46acff07.js
@@ -8569,12 +8578,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/3e3694bc782c3d34.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 ??= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/3e3c480fdd0d7a38.js
@@ -8626,12 +8635,12 @@ error: Function declaration requires a name
 
 
 ✓ test/parser/suite/js/fail/3ed28675548f7cfd.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 |= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/3ed9940fc98af8e4.js
@@ -13699,12 +13708,12 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/66506d41d44de7c5.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') %= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/6678386d5c9e94e3.js
@@ -13857,12 +13866,12 @@ error: The left-hand side of '**' cannot be an unparenthesized unary expression
 
 
 ✓ test/parser/suite/js/fail/676fc3a8db01c019.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 <<= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/6775a7f39c6b90fa.js
@@ -14901,12 +14910,12 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/6e74cf4cf873650f.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') += 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/6e750483c6fecb23.js
@@ -16133,12 +16142,12 @@ error: Classes can't have a private field named '#constructor'
 
 
 ✓ test/parser/suite/js/fail/77f1fee3198cd7cd.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') ^= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/77faae33cab40337.js
@@ -17423,6 +17432,15 @@ error: Expected '(' after import, but found '.'
  3 | });
    |
 
+✓ test/parser/suite/js/fail/80c2d2d1d35c8dcc.js
+error: Invalid assignment target
+   |
+ 1 | [a] *= 0;
+   | ^^^
+   |
+   = help: The left-hand side of a compound assignment must be a variable or property access
+
+
 ✓ test/parser/suite/js/fail/80d1e106056a576f.js
 error: Expected expression after 'yield*', but found '}'
    |
@@ -17667,12 +17685,12 @@ error: 'await' is reserved in an async or module context and cannot be used as a
    |
 
 ✓ test/parser/suite/js/fail/8303480ae9a0a165.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') -= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/830aa7e7a8dd0baf.js
@@ -19919,13 +19937,13 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/929b205b8a343da2.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | function test() {}
  2 | test() ||= 1;
    | ^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/92b8d7e1051d26d6.js
@@ -20502,12 +20520,12 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/963b502e3e4853c3.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 >>>= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/964adcb84f8cf014.js
@@ -21305,14 +21323,14 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/9d2beab1aae0d87c.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
 14 | assert.throws(ReferenceError, function() {
 15 |   f() += g();
    |   ^^^
 16 | });
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/9d46a1445b6e205e.js
@@ -21512,12 +21530,12 @@ error: 'do' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/9e8aab650cb31d63.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') **= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/9ea4ddc971f206c3.js
@@ -22534,6 +22552,15 @@ error: Lexical declaration cannot appear in a single-statement context
    = help: Wrap this declaration in a block statement
 
 
+✓ test/parser/suite/js/fail/a633b3217b5b8026.js
+error: Invalid assignment target
+   |
+ 1 | ({a} += 0);
+   |  ^^^
+   |
+   = help: The left-hand side of a compound assignment must be a variable or property access
+
+
 ✓ test/parser/suite/js/fail/a651ee9d0db08692.js
 error: Destructuring declaration in for loop initializer must be initialized
    |
@@ -22903,12 +22930,12 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/a8c2d2279612ada9.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 >>= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/a8d2ccdb3217f9cf.js
@@ -24328,12 +24355,12 @@ error: Rest parameter must be the last parameter
 
 
 ✓ test/parser/suite/js/fail/b3a42d0172b90451.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 -= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/b3a915e185012356.js
@@ -25570,13 +25597,13 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/bd04b1a22d64233e.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | function test() {}
  2 | test() ??= 1;
    | ^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/bd0a88a0f6b9250e.js
@@ -28053,12 +28080,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/d0a2fbbbe0b66354.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 += 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/d0d4647d1ca5d406.js
@@ -29217,12 +29244,12 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/da18eee6207e18c2.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 1 ||= 1;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/da31fdf1680dc2c9.js
@@ -30611,13 +30638,13 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/e431d576c204cd7b.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | function test() {}
  2 | test() &&= 1;
    | ^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/e443b1eb10fff3fc.js
@@ -31499,12 +31526,12 @@ error: Expected ']' after computed property key, but found '9'
    |
 
 ✓ test/parser/suite/js/fail/ea84c60f3b157d35.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | 0 /= 0;
    | ^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/ea8eb5dda831234f.js
@@ -32379,6 +32406,15 @@ error: Invalid element in assignment pattern
    = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
 
 
+✓ test/parser/suite/js/fail/f0f16b655e08b92c.js
+error: Invalid assignment target
+   |
+ 1 | [x] += 0
+   | ^^^
+   |
+   = help: The left-hand side of a compound assignment must be a variable or property access
+
+
 ✓ test/parser/suite/js/fail/f0f498d6ae70038f.js
 error: Member expression is not allowed in binding pattern
    |
@@ -32546,12 +32582,12 @@ error: Expected '(' after 'while', but found 'true'
    |
 
 ✓ test/parser/suite/js/fail/f2341d2bc371a52e.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') >>>= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/f26fd2b54c6fc58a.js
@@ -33987,12 +34023,12 @@ error: Rest parameter must be the last parameter
 
 
 ✓ test/parser/suite/js/fail/fd21569121840641.js
-error: Invalid element in assignment pattern
+error: Invalid assignment target
    |
  1 | import('') *= 1;
    | ^^^^^^^^^^
    |
-   = help: Expected an identifier, array pattern, object pattern, or assignment pattern.
+   = help: The left-hand side of a compound assignment must be a variable or property access
 
 
 ✓ test/parser/suite/js/fail/fd2314046a1250b0.js

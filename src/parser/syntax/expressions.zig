@@ -692,17 +692,16 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u8, left: ast.NodeInde
 
     const left_span = parser.tree.getSpan(left);
 
-    try grammar.expressionToPattern(parser, left, .assignable);
+    if (operator == .assign) {
+        try grammar.expressionToPattern(parser, left, .assignable);
+    } else if (!isSimpleAssignmentTarget(parser, left)) {
+        @branchHint(.unlikely);
 
-    // logical assignments (&&=, ||=, ??=) require simple targets
-    const is_logical = operator == .logical_and_assign or operator == .logical_or_assign or operator == .nullish_assign;
-    if (is_logical and !isSimpleAssignmentTarget(parser, left)) {
         try parser.report(
             left_span,
-            "Invalid left-hand side in logical assignment",
-            .{ .help = "Logical assignment operators (&&=, ||=, ??=) require a simple reference like a variable or property, not a destructuring pattern." },
+            "Invalid assignment target",
+            .{ .help = "The left-hand side of a compound assignment must be a variable or property access" },
         );
-        return null;
     }
 
     try parser.advance() orelse return null;

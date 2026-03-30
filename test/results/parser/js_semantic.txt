@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3619/3637 (99.51%)
-Failed:       18
+Passed:       3619/3633 (99.61%)
+Failed:       14
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -7967,7 +7967,6 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 |     a(arguments);
    |
 
-✗ test/parser/suite/js/semantic/38816d56f582672f.js
 ✓ test/parser/suite/js/semantic/388b224f676299f2.js
 error: Private field '#b' must be declared in an enclosing class
    |
@@ -17756,7 +17755,6 @@ error: Octal literals are not allowed in strict mode
    = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
-✗ test/parser/suite/js/semantic/80c2d2d1d35c8dcc.js
 ✓ test/parser/suite/js/semantic/80da22a7d2a15fc5.js
 error: Cannot use import statement outside a module
    |
@@ -22723,7 +22721,6 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |                          ^^^^
    |
 
-✗ test/parser/suite/js/semantic/a633b3217b5b8026.js
 ✓ test/parser/suite/js/semantic/a63fd2acc9fcd940.js
 error: Identifier 'x' has already been declared
    |
@@ -33538,7 +33535,6 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/f0f16b655e08b92c.js
 ✓ test/parser/suite/js/semantic/f0f25f9218814cae.js
 error: Cannot use import statement outside a module
    |
