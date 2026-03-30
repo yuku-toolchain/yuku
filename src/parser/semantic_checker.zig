@@ -62,8 +62,6 @@ const SemanticVisit = struct {
             try self.report(ctx.tree.getSpan(node_index), "'let' is not allowed as a variable name in a lexical declaration", .{});
         }
 
-        try self.checkModuleReserved(name, node_index, ctx, "a binding identifier");
-
         // redeclaration checks
 
         const target = ctx.symbols.resolveTargetScope(&ctx.scope);
@@ -127,7 +125,6 @@ const SemanticVisit = struct {
     pub fn enter_identifier_reference(self: *Self, id: ast.IdentifierReference, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
         try self.checkStrictReserved(name, node_index, ctx, "an identifier");
-        try self.checkModuleReserved(name, node_index, ctx, "an identifier");
 
         // https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
         if (eql(u8, name, "arguments") and !isArgumentsAvailable(ctx))
@@ -140,7 +137,6 @@ const SemanticVisit = struct {
     pub fn enter_label_identifier(self: *Self, id: ast.LabelIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
         try self.checkStrictReserved(name, node_index, ctx, "a label");
-        try self.checkModuleReserved(name, node_index, ctx, "a label");
         return .proceed;
     }
 
@@ -265,6 +261,11 @@ const SemanticVisit = struct {
     pub fn enter_await_expression(self: *Self, _: ast.AwaitExpression, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (isInFormalParameters(ctx))
             try self.report(ctx.tree.getSpan(node_index), "Await expression is not allowed in formal parameters", .{});
+
+        // ClassStaticBlockBody uses [~Await]
+        if (isInsideStaticBlock(ctx))
+            try self.report(ctx.tree.getSpan(node_index), "Cannot use await in class static initialization block", .{});
+
         return .proceed;
     }
 
@@ -279,6 +280,20 @@ const SemanticVisit = struct {
     pub fn enter_assignment_expression(self: *Self, expr: ast.AssignmentExpression, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (ctx.scope.isStrict())
             try self.checkAssignTargetEvalArguments(expr.left, ctx);
+        return .proceed;
+    }
+
+    /// 15.7.7 Static Semantics: AllPrivateIdentifiersValid
+    /// https://tc39.es/ecma262/#sec-static-semantics-allprivateidentifiersvalid
+    ///
+    /// class C { #a; f() { #b in {} } }
+    ///                     ^^ undeclared
+    pub fn enter_binary_expression(self: *Self, expr: ast.BinaryExpression, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if (expr.operator == .in and ctx.tree.getData(expr.left) == .private_identifier) {
+            const name = ctx.tree.getString(ctx.tree.getData(expr.left).private_identifier.name);
+            if (!isPrivateNameDeclared(ctx, name))
+                try self.report(ctx.tree.getSpan(expr.left), try self.fmt("Private field '#{s}' must be declared in an enclosing class", .{name}), .{});
+        }
         return .proceed;
     }
 
@@ -345,6 +360,25 @@ const SemanticVisit = struct {
                     .help = "Use an arrow function instead of a regular function to inherit the 'super' binding",
                 });
         }
+
+        // 13.3.7 SuperProperty only allows `super . IdentifierName`
+        // and `super [ Expression ]`, not `super . PrivateIdentifier`.
+        // https://tc39.es/ecma262/#sec-super-keyword
+        //
+        // 15.7.7 AllPrivateIdentifiersValid (for undeclared names):
+        //   MemberExpression : MemberExpression . PrivateIdentifier
+        //   "If names contains the StringValue of PrivateIdentifier, [recurse].
+        //    Return false."
+        // https://tc39.es/ecma262/#sec-static-semantics-allprivateidentifiersvalid
+        if (!expr.computed and ctx.tree.getData(expr.property) == .private_identifier) {
+            const name = ctx.tree.getString(ctx.tree.getData(expr.property).private_identifier.name);
+            if (ctx.tree.getData(expr.object) == .super) {
+                try self.report(ctx.tree.getSpan(node_index), "'super' keyword unexpected here", .{});
+            } else if (!isPrivateNameDeclared(ctx, name)) {
+                try self.report(ctx.tree.getSpan(expr.property), try self.fmt("Private field '#{s}' must be declared in an enclosing class", .{name}), .{});
+            }
+        }
+
         return .proceed;
     }
 
@@ -364,26 +398,28 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
-    pub fn enter_import_declaration(self: *Self, _: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_import_declaration(self: *Self, decl: ast.ImportDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use import statement outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'import' declaration may only appear at the top level", .{});
+        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
-    pub fn enter_export_named_declaration(self: *Self, _: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_export_named_declaration(self: *Self, decl: ast.ExportNamedDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export' declaration outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export' declaration may only appear at the top level", .{});
+        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
     pub fn enter_export_default_declaration(self: *Self, _: ast.ExportDefaultDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export default' declaration outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export default' declaration may only appear at the top level", .{});
 
         try self.recordExportedName("default", node_index, ctx);
@@ -393,13 +429,14 @@ const SemanticVisit = struct {
     pub fn enter_export_all_declaration(self: *Self, decl: ast.ExportAllDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.tree.isModule())
             try self.report(ctx.tree.getSpan(node_index), "Cannot use 'export *' declaration outside a module", .{})
-        else if (!isAtModuleTopLevel(ctx))
+        else if (!isAtProgramLevel(ctx))
             try self.report(ctx.tree.getSpan(node_index), "'export *' declaration may only appear at the top level", .{});
 
         // export * as name from '...'
         if (decl.exported != .null)
             try self.recordExportedName(getModuleExportName(ctx.tree, decl.exported), node_index, ctx);
 
+        try self.checkDuplicateWithClaudeAttributes(decl.attributes, ctx);
         return .proceed;
     }
 
@@ -442,6 +479,18 @@ const SemanticVisit = struct {
         try self.checkForInOfInitializer(ctx, stmt.left);
         if (ctx.scope.isStrict())
             try self.checkAssignTargetEvalArguments(stmt.left, ctx);
+        return .proceed;
+    }
+
+    pub fn enter_variable_declaration(self: *Self, decl: ast.VariableDeclaration, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        if ((decl.kind == .using or decl.kind == .await_using) and
+            !ctx.tree.isModule() and isAtProgramLevel(ctx))
+        {
+            try self.report(ctx.tree.getSpan(node_index), try self.fmt(
+                "'{s}' is not allowed at the top level of a script",
+                .{decl.kind.toString()},
+            ), .{});
+        }
         return .proceed;
     }
 
@@ -519,41 +568,121 @@ const SemanticVisit = struct {
         return .proceed;
     }
 
+    /// 15.7.1 Static Semantics: Early Errors
     /// https://tc39.es/ecma262/#sec-class-definitions-static-semantics-early-errors
+    ///
+    /// ClassBody : ClassElementList
+    ///   - "It is a Syntax Error if PrototypePropertyNameList of ClassElementList
+    ///      contains more than one occurrence of "constructor"."
+    ///   - "It is a Syntax Error if PrivateBoundIdentifiers of ClassElementList contains
+    ///      any duplicate entries, unless the name is used once for a getter and once for
+    ///      a setter and in no other entries, and the getter and setter are either both
+    ///      static or both non-static."
     pub fn enter_class_body(self: *Self, body: ast.ClassBody, _: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+        const children = ctx.tree.getExtra(body.body);
         var first_constructor: ?ast.NodeIndex = null;
-        for (ctx.tree.getExtra(body.body)) |child| {
+
+        for (children, 0..) |child, j| {
             const child_data = ctx.tree.getData(child);
 
-            if (child_data != .method_definition) continue;
+            if (child_data == .method_definition) {
+                const md = child_data.method_definition;
+                if (md.kind == .constructor) {
+                    if (first_constructor) |first| {
+                        try self.report(ctx.tree.getSpan(md.key), "A class can only have one constructor", .{
+                            .labels = try self.labels(&.{
+                                self.label(ctx.tree.getSpan(first), "first constructor defined here"),
+                            }),
+                        });
+                    } else {
+                        first_constructor = md.key;
+                    }
+                }
+            }
 
-            const method_definition = child_data.method_definition;
+            // check PrivateBoundIdentifiers for duplicates:
+            //   class C { #x; #x; }             (duplicate field)
+            //   class C { #m; #m() {} }         (field + method conflict)
+            //   class C { get #x(){} }
+            //           { static set #x(_){} }  (static/non-static mismatch)
+            const name_j = privateElementName(ctx.tree, child_data) orelse continue;
+            const kind_j = privateElementKind(child_data);
 
-            if (method_definition.kind != .constructor) continue;
+            for (children[0..j]) |prev| {
+                const prev_data = ctx.tree.getData(prev);
+                const name_i = privateElementName(ctx.tree, prev_data) orelse continue;
+                if (!eql(u8, name_i, name_j)) continue;
 
-            if (first_constructor) |first| {
-                try self.report(ctx.tree.getSpan(method_definition.key), "A class can only have one constructor", .{
+                const kind_i = privateElementKind(prev_data);
+                if (((kind_i == .getter and kind_j == .setter) or
+                    (kind_i == .setter and kind_j == .getter)) and
+                    privateElementIsStatic(prev_data) == privateElementIsStatic(child_data)) continue;
+
+                try self.report(ctx.tree.getSpan(child), try self.fmt("Duplicate private name '#{s}'", .{name_j}), .{
                     .labels = try self.labels(&.{
-                        self.label(ctx.tree.getSpan(first), "first constructor defined here"),
+                        self.label(ctx.tree.getSpan(prev), "first declared here"),
                     }),
                 });
-            } else {
-                first_constructor = method_definition.key;
+                break;
             }
         }
+
         return .proceed;
+    }
+
+    const PrivateElementKind = enum { field, method, getter, setter };
+
+    /// returns the StringValue of a class element's PrivateIdentifier key, if any.
+    fn privateElementName(tree: *const ast.Tree, data: ast.NodeData) ?[]const u8 {
+        const key = switch (data) {
+            .property_definition => |pd| pd.key,
+            .method_definition => |md| md.key,
+            else => return null,
+        };
+        if (tree.getData(key) == .private_identifier)
+            return tree.getString(tree.getData(key).private_identifier.name);
+        return null;
+    }
+
+    fn privateElementKind(data: ast.NodeData) PrivateElementKind {
+        return switch (data) {
+            .method_definition => |md| switch (md.kind) {
+                .get => .getter,
+                .set => .setter,
+                else => .method,
+            },
+            else => .field,
+        };
+    }
+
+    fn privateElementIsStatic(data: ast.NodeData) bool {
+        return switch (data) {
+            .property_definition => |pd| pd.static,
+            .method_definition => |md| md.static,
+            else => false,
+        };
+    }
+
+    /// 15.7.7 AllPrivateIdentifiersValid: walks ancestor ClassBody nodes,
+    /// collecting PrivateBoundIdentifiers at each level, mirrors the spec's
+    /// `newNames = list-concatenation of names and PrivateBoundIdentifiers of ClassBody`.
+    fn isPrivateNameDeclared(ctx: *SemanticCtx, name: []const u8) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            if (ctx.tree.getData(i) != .class_body) continue;
+            for (ctx.tree.getExtra(ctx.tree.getData(i).class_body.body)) |child| {
+                if (privateElementName(ctx.tree, ctx.tree.getData(child))) |pname| {
+                    if (eql(u8, pname, name)) return true;
+                }
+            }
+        }
+        return false;
     }
 
     fn checkStrictReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
         if (!ctx.scope.isStrict()) return;
         if (matchStrictReserved(name)) |word|
             try self.report(ctx.tree.getSpan(node_index), try self.fmt("'{s}' is reserved in strict mode and cannot be used as " ++ as_what, .{word}), .{});
-    }
-
-    fn checkModuleReserved(self: *Self, name: []const u8, node_index: ast.NodeIndex, ctx: *SemanticCtx, comptime as_what: []const u8) AnalysisError!void {
-        if (!ctx.tree.isModule()) return;
-        if (eql(u8, name, "await"))
-            try self.report(ctx.tree.getSpan(node_index), "'await' is reserved in module code and cannot be used as " ++ as_what, .{});
     }
 
     /// https://tc39.es/ecma262/#sec-keywords-and-reserved-words
@@ -694,7 +823,7 @@ const SemanticVisit = struct {
         return false;
     }
 
-    fn isAtModuleTopLevel(ctx: *SemanticCtx) bool {
+    fn isAtProgramLevel(ctx: *SemanticCtx) bool {
         if (ctx.path.parent()) |parent| {
             return ctx.tree.getData(parent) == .program;
         }
@@ -786,6 +915,19 @@ const SemanticVisit = struct {
         return .not_found;
     }
 
+    /// true when the nearest enclosing boundary is a static block
+    fn isInsideStaticBlock(ctx: *SemanticCtx) bool {
+        var iter = ctx.path.ancestors();
+        while (iter.next()) |i| {
+            switch (ctx.tree.getData(i)) {
+                .static_block => return true,
+                .function, .arrow_function_expression => return false,
+                else => {},
+            }
+        }
+        return false;
+    }
+
     /// `arguments` is available inside regular functions but not in class field
     /// initializers or static blocks (arrow functions are transparent).
     fn isArgumentsAvailable(ctx: *SemanticCtx) bool {
@@ -825,6 +967,25 @@ const SemanticVisit = struct {
             .string_literal => |lit| lit.value(tree),
             else => "",
         };
+    }
+
+    fn checkDuplicateWithClaudeAttributes(self: *Self, attributes: ast.IndexRange, ctx: *SemanticCtx) AnalysisError!void {
+        const items = ctx.tree.getExtra(attributes);
+        for (items, 0..) |attr_idx, i| {
+            const key = ecmascript.propName(ctx.tree, ctx.tree.getData(attr_idx).import_attribute.key) orelse continue;
+            for (items[0..i]) |prev_idx| {
+                const prev_key = ecmascript.propName(ctx.tree, ctx.tree.getData(prev_idx).import_attribute.key) orelse continue;
+                if (key.eql(prev_key.name) or prev_key.eql(key.name)) {
+                    const name = if (!prev_key.is_string_literal) prev_key.name else key.name;
+                    try self.report(key.span, try self.fmt("Duplicate import attribute key '{s}'", .{name}), .{
+                        .labels = try self.labels(&.{
+                            self.label(prev_key.span, "first used here"),
+                        }),
+                    });
+                    break;
+                }
+            }
+        }
     }
 
     /// records an exported name and reports a duplicate if one already exists.

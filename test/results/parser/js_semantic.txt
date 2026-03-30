@@ -1,7 +1,7 @@
 suite/js/semantic
 =================
-Passed:       3496/3637 (96.12%)
-Failed:       141
+Passed:       3615/3615 (100.00%)
+Failed:       0
 
 ✓ test/parser/suite/js/semantic/0005045bb5d4b45d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
@@ -151,26 +151,6 @@ error: Yield expression is not allowed in formal parameters
  2 |   static *g(x = yield) {}
    |                 ^^^^^
  3 | }
-   |
-
-✓ test/parser/suite/js/semantic/018315a394d03406.module.js
-error: Unexpected token ']'
-   |
- 3 |     (() => {
- 4 |       var [await] = [];
-   |                 ^
- 5 |     });
-   |
-   = help: Expected an expression
-
-
-✓ test/parser/suite/js/semantic/019af8e4ab2129fe.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       let await;
-   |           ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/019d8570b1e5d0e5.js
@@ -471,7 +451,15 @@ error: 'let' is not allowed as a variable name in a lexical declaration
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/037288fd640be294.js
+✓ test/parser/suite/js/semantic/037288fd640be294.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | var C = class extends Parent {
+ 5 |   f = something.#x
+   |                 ^^
+ 6 | };
+   |
+
 ✓ test/parser/suite/js/semantic/037afeec19165316.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -855,15 +843,6 @@ error: 'with' statements are not allowed in strict mode
 64 | if (!(p1 === 1)) {}
    |
 
-✓ test/parser/suite/js/semantic/0590c06547732a75.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 2 |   static {
- 3 |     (function await(await) {});
-   |               ^^^^^
- 4 |   }
-   |
-
 ✓ test/parser/suite/js/semantic/0599b4d508bc7dd5.js
 error: Identifier 'f' has already been declared
    |
@@ -1016,7 +995,13 @@ error: 'eval' is not allowed as a binding identifier in strict mode
  2 | let iterCount = 0;
    |
 
-✗ test/parser/suite/js/semantic/06d46c7d12c5fe4b.module.js
+✓ test/parser/suite/js/semantic/06d46c7d12c5fe4b.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | (() => {})().#x
+   |              ^^
+   |
+
 ✓ test/parser/suite/js/semantic/06e71442d5c84214.js
 error: Cannot use 'export' declaration outside a module
    |
@@ -1076,7 +1061,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/072c3d8d3639b208.js
+✓ test/parser/suite/js/semantic/072c3d8d3639b208.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = function() { this.#x }
+   |                         ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/0730033f75385bf0.js
 error: Use of undefined label 'LABEL_IN'
    |
@@ -1157,7 +1150,15 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/07fb448785c28afd.module.js
+✓ test/parser/suite/js/semantic/07fb448785c28afd.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   f() {
+ 3 |     this.#x;
+   |          ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/07ff86d78624eade.js
 error: Cannot use import statement outside a module
    |
@@ -1247,7 +1248,15 @@ error: 'export default' declaration may only appear at the top level
    |                     ^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/08fb1b0d653eae52.js
+✓ test/parser/suite/js/semantic/08fb1b0d653eae52.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   f() {
+ 3 |     this.#x;
+   |          ^^
+ 4 |     class D extends C {
+   |
+
 ✓ test/parser/suite/js/semantic/090b760a3c30fca6.js
 error: Cannot use import statement outside a module
    |
@@ -1285,7 +1294,15 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/096c1f35b7822ec6.js
+✓ test/parser/suite/js/semantic/096c1f35b7822ec6.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = function() { (() => {})().#x }
+   |                                 ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/097cd16b05142ec9.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -1505,7 +1522,13 @@ error: Label 'a' does not denote an iteration statement
    = help: A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement
 
 
-✗ test/parser/suite/js/semantic/0b1755d49f7c1aef.js
+✓ test/parser/suite/js/semantic/0b1755d49f7c1aef.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var fn = function() { (() => {})().#x };
+   |                                    ^^
+   |
+
 ✓ test/parser/suite/js/semantic/0b20df85a1ab32c9.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a label
    |
@@ -1720,15 +1743,6 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |   ^^^^^
    |
 
-✓ test/parser/suite/js/semantic/0cf797ce7630ae3e.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
-   |
- 3 |     (() => {
- 4 |       var {await} = {};
-   |            ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/0d07f4c826787a4a.js
 error: Identifier 'f' has already been declared
    |
@@ -1748,15 +1762,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✓ test/parser/suite/js/semantic/0d275e87a6c32560.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
+✓ test/parser/suite/js/semantic/0d29c444ecbe413f.js
+error: Private field '#x' must be declared in an enclosing class
    |
- 1 | function foo(await) {
-   |              ^^^^^
- 2 |   return await;
+ 5 |   m() {
+ 6 |     this.#x
+   |          ^^
+ 7 |   }
    |
 
-✗ test/parser/suite/js/semantic/0d29c444ecbe413f.js
 ✓ test/parser/suite/js/semantic/0d3d64aad31d6f88.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -1860,7 +1874,17 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 |   }
    |
 
-✗ test/parser/suite/js/semantic/0e16b54d1cac419c.js
+✓ test/parser/suite/js/semantic/0e16b54d1cac419c.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/0e2bcc1c2e7f0196.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -1880,7 +1904,17 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/0e38fa798d4be73b.module.js
+✓ test/parser/suite/js/semantic/0e38fa798d4be73b.module.js
+error: Duplicate import attribute key 'type'
+   |
+ 1 | export * from './import-attribute-3_FIXTURE.js' with {
+ 2 |   type: 'json',
+   |   ~~~~ first used here
+ 3 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/0e3c23ede6b73057.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -1897,7 +1931,15 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |                                         ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/0e6a3cea443bb750.js
+✓ test/parser/suite/js/semantic/0e6a3cea443bb750.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { this.#x }
+   |                          ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/0e74198f1a7ae211.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -1905,7 +1947,17 @@ error: Deleting a variable in strict mode is not allowed
    |               ^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/0e7da3c9bd3d694d.js
+✓ test/parser/suite/js/semantic/0e7da3c9bd3d694d.js
+error: Duplicate private name '#x'
+   |
+ 1 | var C = class {
+ 2 |   #x;
+   |   ~~~ first declared here
+ 3 |   #x;
+   |   ^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/0e853cc26610d31a.module.js
 error: Identifier 'x' has already been declared
    |
@@ -1933,7 +1985,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/0ebd9fbff8295647.js
+✓ test/parser/suite/js/semantic/0ebd9fbff8295647.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = (() => this)().#x
+   |                      ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/0f106449d4ad390b.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -1998,7 +2058,17 @@ error: Identifier '__func' has already been declared
    = help: Consider removing or renaming this declaration of '__func'
 
 
-✗ test/parser/suite/js/semantic/0f808e8f4d2980cf.js
+✓ test/parser/suite/js/semantic/0f808e8f4d2980cf.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   set #m(_) {}
+   |   ^^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/0f821cbec55e2083.js
 error: Private fields cannot be deleted
    |
@@ -2443,7 +2513,15 @@ error: Octal literals are not allowed in strict mode
    = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
-✗ test/parser/suite/js/semantic/11dd73d1434b0cfa.js
+✓ test/parser/suite/js/semantic/11dd73d1434b0cfa.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   m() { (() => {})().#x }
+   |                      ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/120c78cff8ff65dc.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -2458,7 +2536,13 @@ error: 'protected' is reserved in strict mode and cannot be used as a binding id
    |            ^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/121ea0b19492facd.module.js
+✓ test/parser/suite/js/semantic/121ea0b19492facd.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | (() => this)().#x
+   |                ^^
+   |
+
 ✓ test/parser/suite/js/semantic/122f2d7e0f39e7cd.js
 error: Cannot use import statement outside a module
    |
@@ -2876,7 +2960,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/15082306e8336dde.js
+✓ test/parser/suite/js/semantic/15082306e8336dde.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = function() { (() => this)().#x }
+   |                                   ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/150ec20755899055.module.js
 error: Octal escape sequences are not allowed in strict mode
    |
@@ -2938,7 +3030,14 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/1571d4b72cecffcd.module.js
+✓ test/parser/suite/js/semantic/1571d4b72cecffcd.module.js
+error: Private field '#f' must be declared in an enclosing class
+   |
+ 1 | var x = {};
+ 2 | x.#f = 'Test262';
+   |   ^^
+   |
+
 ✓ test/parser/suite/js/semantic/158193c5e3f4ef45.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -3057,7 +3156,14 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/1674f9aa3c3d3799.module.js
+✓ test/parser/suite/js/semantic/1674f9aa3c3d3799.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {}
+ 2 | new C().#x;
+   |         ^^
+   |
+
 ✓ test/parser/suite/js/semantic/1678390907ae01ce.js
 error: Private fields cannot be deleted
    |
@@ -3202,15 +3308,6 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |
  1 | let f = function (p = eval("var arguments"), arguments) {};
    |                                              ^^^^^^^^^
-   |
-
-✓ test/parser/suite/js/semantic/17652c91045e58a3.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       class await {}
-   |             ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/176729df4ccd0a63.js
@@ -3949,7 +4046,13 @@ error: In strict mode code, functions can only be declared at top level or insid
    |        ^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/1c3a51b5700a7b86.js
+✓ test/parser/suite/js/semantic/1c3a51b5700a7b86.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var fn = function() { something.#x };
+   |                                 ^^
+   |
+
 ✓ test/parser/suite/js/semantic/1c722070d6acf1f3.js
 error: Use of undefined label 'LABEL'
    |
@@ -4010,15 +4113,6 @@ error: 'super' property access is only valid inside a method or class body
    |
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
-
-✓ test/parser/suite/js/semantic/1cbe7c9eee74758d.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       using await = null;
-   |             ^^^^^
- 5 |     });
-   |
 
 ✓ test/parser/suite/js/semantic/1ce9ee8b4d45b06c.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
@@ -4104,7 +4198,17 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/1d7ae7a934264571.js
+✓ test/parser/suite/js/semantic/1d7ae7a934264571.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   set #m(_) {}
+   |   ~~~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/1d9c1db8a0d83f5e.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -4385,7 +4489,15 @@ error: 'with' statements are not allowed in strict mode
 12 | } catch (e) {}
    |
 
-✗ test/parser/suite/js/semantic/1fe53739bd50b9ca.js
+✓ test/parser/suite/js/semantic/1fe53739bd50b9ca.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { (() => {})().#x }
+   |                                  ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/200cb2602de7a5fc.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -4601,7 +4713,13 @@ error: Duplicate export of 'x'
    |          ~ exported again here
    |
 
-✗ test/parser/suite/js/semantic/2100738e3a002ce4.js
+✓ test/parser/suite/js/semantic/2100738e3a002ce4.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | { (() => this)().#x }
+   |                  ^^
+   |
+
 ✓ test/parser/suite/js/semantic/210fb79a19872227.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -4661,15 +4779,6 @@ error: Private fields cannot be deleted
  3 | x = delete this.#m;
    |     ^^^^^^^^^^^^^^
  4 | }
-   |
-
-✓ test/parser/suite/js/semantic/214b41cbfb769793.module.js
-error: 'await' is reserved in an async or module context and cannot be used as an identifier
-   |
- 3 |     (() => ({
- 4 |       await
-   |       ^^^^^
- 5 |     }));
    |
 
 ✓ test/parser/suite/js/semantic/215bb25237c08f53.js
@@ -4889,13 +4998,6 @@ error: 'with' statements are not allowed in strict mode
 63 |   };
    |
 
-✓ test/parser/suite/js/semantic/2226edabbd2261a7.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 1 | function f() { var await }
-   |                    ^^^^^
-   |
-
 ✓ test/parser/suite/js/semantic/22287d4dfa9a5035.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -5078,7 +5180,14 @@ error: Use of undefined label 'LABEL_ANOTHER_LOOP'
  8 |         LABEL_IN_2 : y++;
    |
 
-✗ test/parser/suite/js/semantic/23f59b4039a07298.js
+✓ test/parser/suite/js/semantic/23f59b4039a07298.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | class C extends class extends class { x = this.#foo; } {}
+   |                                                ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/2405f0730b838cfe.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -5414,8 +5523,23 @@ error: Cannot use 'export' declaration outside a module
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/281755b433cb24aa.js
-✗ test/parser/suite/js/semantic/28256abffdd999d3.js
+✓ test/parser/suite/js/semantic/281755b433cb24aa.js
+error: 'super' keyword unexpected here
+   |
+ 4 |     access() {
+ 5 |       return super.#m;
+   |              ^^^^^^^^
+ 6 |     }
+   |
+
+✓ test/parser/suite/js/semantic/28256abffdd999d3.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | class C extends class extends class extends class { x = this.#foo; } { #foo; x = this.#bar; } { #bar; x = this.#fuz; }
+   |                                                              ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/282e57531a2b9cd3.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -5453,7 +5577,15 @@ error: 'with' statements are not allowed in strict mode
    | ^
    |
 
-✗ test/parser/suite/js/semantic/28a290e703792c87.js
+✓ test/parser/suite/js/semantic/28a290e703792c87.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = this.#x
+   |            ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/28af2fd085b063db.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -5646,7 +5778,15 @@ error: Cannot use 'export default' declaration outside a module
  4 | import f from './eval-export-dflt-expr-fn-anon.js';
    |
 
-✗ test/parser/suite/js/semantic/29f5d615a08770fe.js
+✓ test/parser/suite/js/semantic/29f5d615a08770fe.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | class C extends Parent {
+ 5 |   f = something.#x
+   |                 ^^
+ 6 | }
+   |
+
 ✓ test/parser/suite/js/semantic/29f9185e3a4757df.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -6045,7 +6185,15 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/2c12f2a406c5b286.js
+✓ test/parser/suite/js/semantic/2c12f2a406c5b286.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = function() { (() => {})().#x }
+   |                                 ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/2c1b1e132fb4cecd.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -6504,7 +6652,15 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 | f().then($DONE, error => {}).then($DONE, $DONE);
    |
 
-✗ test/parser/suite/js/semantic/2f3fe9ced938f487.js
+✓ test/parser/suite/js/semantic/2f3fe9ced938f487.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     (() => {})().#x
+   |                  ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/2f635111e48f68e1.js
 error: for-in/of loop variable declaration may not have an initializer
    |
@@ -6838,7 +6994,14 @@ error: 'with' statements are not allowed in strict mode
  6 | }());
    |
 
-✗ test/parser/suite/js/semantic/32bd9918bbad7ff5.js
+✓ test/parser/suite/js/semantic/32bd9918bbad7ff5.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | var C = class extends class { x = this.#foo; }
+   |                                        ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/32c9c27d4097c7a4.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -6968,7 +7131,15 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |            ^^^^
    |
 
-✗ test/parser/suite/js/semantic/33d2a9a43fc71ede.js
+✓ test/parser/suite/js/semantic/33d2a9a43fc71ede.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     this.#x
+   |          ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/33d43e9f01bda5ce.js
 error: Expected ';' after for-loop init, but found ')'
    |
@@ -7086,7 +7257,15 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/34adb41e2f36dc18.js
+✓ test/parser/suite/js/semantic/34adb41e2f36dc18.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   m() { (() => {})().#x }
+   |                      ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/34bf35c6588c6592.js
 error: Illegal continue statement
    |
@@ -7323,7 +7502,13 @@ error: 'with' statements are not allowed in strict mode
 11 | if (scope.x !== 1) {}
    |
 
-✗ test/parser/suite/js/semantic/3601bbe3af8a4754.js
+✓ test/parser/suite/js/semantic/3601bbe3af8a4754.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var fn = function() { this.#x };
+   |                            ^^
+   |
+
 ✓ test/parser/suite/js/semantic/3610e596404818d6.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -7414,7 +7599,17 @@ error: 'private' is reserved in strict mode and cannot be used as an identifier
    |                ^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/3706a9d8eb3d2271.js
+✓ test/parser/suite/js/semantic/3706a9d8eb3d2271.js
+error: Duplicate private name '#f'
+   |
+ 1 | class C {
+ 2 |   get #f() {}
+   |   ~~~~~~~~~~~ first declared here
+ 3 |   static set #f(v) {}
+   |   ^^^^^^^^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/372097a44c33daf2.module.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -7447,7 +7642,17 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  8 |                 throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/374e0bafead55a33.js
+✓ test/parser/suite/js/semantic/374e0bafead55a33.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   set #m(_) {}
+   |   ~~~~~~~~~~~~ first declared here
+ 3 |   set #m(_) {}
+   |   ^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/3752eb3c22bb0bf2.module.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -7498,7 +7703,14 @@ error: 'arguments' is not allowed in class field initializers or static blocks
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/37a7850f313127a8.js
+✓ test/parser/suite/js/semantic/37a7850f313127a8.js
+error: 'await using' is not allowed at the top level of a script
+   |
+ 1 | await using z = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/37bc8534570fd5c4.module.js
 error: Identifier 'f' has already been declared
    |
@@ -7674,7 +7886,15 @@ error: Octal escape sequences are not allowed in strict mode
    = help: Use \xHH (hex) or \uHHHH (unicode) escape instead
 
 
-✗ test/parser/suite/js/semantic/3852c71b83d0f4d6.js
+✓ test/parser/suite/js/semantic/3852c71b83d0f4d6.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   m() { this.#x }
+   |              ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/38594572e7bb32f4.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -7684,8 +7904,15 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 |     a(arguments);
    |
 
-✗ test/parser/suite/js/semantic/38816d56f582672f.js
-✗ test/parser/suite/js/semantic/388b224f676299f2.js
+✓ test/parser/suite/js/semantic/388b224f676299f2.js
+error: Private field '#b' must be declared in an enclosing class
+   |
+ 3 | constructor() {
+ 4 |     #b in {};
+   |     ^^
+ 5 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/38936e125588bd1a.js
 error: Use of undefined label 'b'
    |
@@ -7903,7 +8130,15 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/3a81b79ccdbdac4b.js
+✓ test/parser/suite/js/semantic/3a81b79ccdbdac4b.js
+error: 'super' keyword unexpected here
+   |
+ 4 |     access() {
+ 5 |       return super.#m;
+   |              ^^^^^^^^
+ 6 |     }
+   |
+
 ✓ test/parser/suite/js/semantic/3a9e8d5d266ca8cc.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -8138,7 +8373,15 @@ error: 'protected' is reserved in strict mode and cannot be used as a binding id
    |     ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/3c531efcda5f8f9e.js
+✓ test/parser/suite/js/semantic/3c531efcda5f8f9e.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { (() => this)().#x }
+   |                                    ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/3c93c40648ef8eae.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -8685,7 +8928,14 @@ error: 'let' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/40c7050a4beb1e56.js
+✓ test/parser/suite/js/semantic/40c7050a4beb1e56.js
+error: 'using' is not allowed at the top level of a script
+   |
+ 1 | using z = null;
+   | ^^^^^^^^^^^^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/40c7f0f0afdf48d6.js
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -9026,7 +9276,15 @@ error: Yield expression is not allowed in formal parameters
    |                                ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/43060f1998c6b413.js
+✓ test/parser/suite/js/semantic/43060f1998c6b413.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | var C = class extends Parent {
+ 5 |   f = (() => {})().#x
+   |                    ^^
+ 6 | };
+   |
+
 ✓ test/parser/suite/js/semantic/43094b47c1041035.js
 error: Private fields cannot be deleted
    |
@@ -9321,15 +9579,6 @@ error: Cannot use import statement outside a module
  1 | import * as ns from './prevent-extensions.js';
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  2 | Object.preventExtensions(ns);
-   |
-
-✓ test/parser/suite/js/semantic/460c302db55861e5.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       const await = 0;
-   |             ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/46182c3419fa45f9.module.js
@@ -9734,7 +9983,15 @@ error: Deleting a variable in strict mode is not allowed
    |         ^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/488cf7b4fa2ceebc.js
+✓ test/parser/suite/js/semantic/488cf7b4fa2ceebc.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { this.#x }
+   |                          ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/48d92f5a2fd3aa1b.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -9803,7 +10060,17 @@ error: 'export default' declaration may only appear at the top level
  3 | } catch (err) { }
    |
 
-✗ test/parser/suite/js/semantic/497de7e7f315df90.js
+✓ test/parser/suite/js/semantic/497de7e7f315df90.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   set #m(_) {}
+   |   ~~~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/4987d113818c2987.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -10066,7 +10333,14 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |            ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/4b5ec6b958c03387.module.js
+✓ test/parser/suite/js/semantic/4b5ec6b958c03387.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 3 | }
+ 4 | new C().#x;
+   |         ^^
+   |
+
 ✓ test/parser/suite/js/semantic/4b62020bf1f6f84d.module.js
 error: In strict mode code, functions can only be declared at top level or inside a block
    |
@@ -10361,7 +10635,15 @@ error: 'with' statements are not allowed in strict mode
 63 |   };
    |
 
-✗ test/parser/suite/js/semantic/4d3ec880eac4d64e.js
+✓ test/parser/suite/js/semantic/4d3ec880eac4d64e.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = function() { something.#x }
+   |                              ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/4d46572591cbd5f7.js
 error: 'let' is not allowed as a variable name in a lexical declaration
    |
@@ -10418,7 +10700,15 @@ error: Cannot use 'export default' declaration outside a module
    | ^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/4d874e7795f77f83.js
+✓ test/parser/suite/js/semantic/4d874e7795f77f83.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { something.#x }
+   |                               ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/4d87ca670523ff51.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -10444,15 +10734,6 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  1 | var yield = 23;
    |     ^^^^^
  2 | var f, paramValue;
-   |
-
-✓ test/parser/suite/js/semantic/4dfb68841c1765db.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     ({
- 4 |       set accessor(await) {}
-   |                    ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/4dfe7c0219422eff.js
@@ -10584,7 +10865,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  7 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/4f189143bf02af35.js
+✓ test/parser/suite/js/semantic/4f189143bf02af35.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | var C = class extends Parent {
+ 5 |   f = this.#x
+   |            ^^
+ 6 | };
+   |
+
 ✓ test/parser/suite/js/semantic/4f23c059441f551c.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -10715,7 +11004,14 @@ error: 'with' statements are not allowed in strict mode
  4 | });
    |
 
-✗ test/parser/suite/js/semantic/50012a27e90506a0.module.js
+✓ test/parser/suite/js/semantic/50012a27e90506a0.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | obj = {};
+ 2 | obj.#x;
+   |     ^^
+   |
+
 ✓ test/parser/suite/js/semantic/501bdccd028804ff.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -10863,7 +11159,15 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |     ^^^^
    |
 
-✗ test/parser/suite/js/semantic/51133e692c5afe53.js
+✓ test/parser/suite/js/semantic/51133e692c5afe53.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |     }
+ 6 | this.#x;
+   |      ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/5127ca1fe7c943ba.module.js
 error: Export 'a' is not defined
    |
@@ -11143,7 +11447,17 @@ error: In strict mode code, functions can only be declared at top level or insid
  5 | }
    |
 
-✗ test/parser/suite/js/semantic/5325c297d972e33c.js
+✓ test/parser/suite/js/semantic/5325c297d972e33c.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m() {}
+   |   ~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/53281284c14431c2.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -11332,7 +11646,15 @@ error: 'with' statements are not allowed in strict mode
  6 | })());
    |
 
-✗ test/parser/suite/js/semantic/541ece9a851c0b98.js
+✓ test/parser/suite/js/semantic/541ece9a851c0b98.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = function() { (() => this)().#x }
+   |                                   ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/545d887d52223a3d.js
 error: Cannot use import statement outside a module
    |
@@ -11859,7 +12181,13 @@ error: Duplicate '__proto__' property in object literal
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/58a85b78922b677c.js
+✓ test/parser/suite/js/semantic/58a85b78922b677c.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | { (() => {})().#x }
+   |                ^^
+   |
+
 ✓ test/parser/suite/js/semantic/58a96eef37f81250.js
 error: Private fields cannot be deleted
    |
@@ -12258,7 +12586,17 @@ error: In strict mode code, functions can only be declared at top level or insid
    |           ^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/5aee8ec8445ed16e.js
+✓ test/parser/suite/js/semantic/5aee8ec8445ed16e.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   get #m() {}
+   |   ~~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/5b0f82ab482ac359.module.js
 error: Export 'a' is not defined
    |
@@ -12302,7 +12640,17 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/5b5305570146ad29.js
+✓ test/parser/suite/js/semantic/5b5305570146ad29.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   * #m() {}
+   |   ^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/5b5801e3bf15059b.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -12486,7 +12834,14 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/5c592bcb3302fe35.js
+✓ test/parser/suite/js/semantic/5c592bcb3302fe35.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | var C = class extends class extends class extends class { x = this.#foo; } { #foo; x = this.#bar; } { #bar; x = this.#fuz; }
+   |                                                                    ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/5c63ac420337d014.module.js
 error: Octal escape sequences are not allowed in strict mode
    |
@@ -12834,7 +13189,17 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  7 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/5f3757da39f1f23b.js
+✓ test/parser/suite/js/semantic/5f3757da39f1f23b.js
+error: Duplicate private name '#f'
+   |
+ 1 | class C {
+ 2 |   static set #f(v) {}
+   |   ~~~~~~~~~~~~~~~~~~~ first declared here
+ 3 |   get #f() {}
+   |   ^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/5f6c26cf3848f722.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -13103,7 +13468,15 @@ error: 'export default' declaration may only appear at the top level
    |                ^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/61bbf22e63a1b213.js
+✓ test/parser/suite/js/semantic/61bbf22e63a1b213.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = (() => {})().#x
+   |                    ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/61eb9604551f377b.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -13275,7 +13648,17 @@ error: 'with' statements are not allowed in strict mode
  4 | })());
    |
 
-✗ test/parser/suite/js/semantic/6364ca95b5961606.js
+✓ test/parser/suite/js/semantic/6364ca95b5961606.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   async #m() {}
+   |   ^^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/636a3869d47a48b9.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -13294,7 +13677,17 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/6390f4b3cc6551d8.js
+✓ test/parser/suite/js/semantic/6390f4b3cc6551d8.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   * #m() {}
+   |   ^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/63a7dc011c859959.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -13605,7 +13998,15 @@ error: 'let' is reserved in strict mode and cannot be used as a binding identifi
    |     ^^^
    |
 
-✗ test/parser/suite/js/semantic/65452eb8baae5939.js
+✓ test/parser/suite/js/semantic/65452eb8baae5939.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { (() => {})().#x }
+   |                                  ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/656ae090a367940a.module.js
 error: Duplicate export of 'a'
    |
@@ -13677,7 +14078,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  7 |   function f() {
    |
 
-✗ test/parser/suite/js/semantic/65cf8f2d72acdc16.js
+✓ test/parser/suite/js/semantic/65cf8f2d72acdc16.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     (() => {})().#x
+   |                  ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/65d486f32ca9a77c.module.js
 error: Identifier '__func' has already been declared
    |
@@ -13842,7 +14251,13 @@ error: Cannot use 'export *' declaration outside a module
    | ^
    |
 
-✗ test/parser/suite/js/semantic/66dbfdbaebf9d88a.js
+✓ test/parser/suite/js/semantic/66dbfdbaebf9d88a.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | this.#x
+   |      ^^
+   |
+
 ✓ test/parser/suite/js/semantic/66e667cc2b718770.module.js
 error: Octal literals are not allowed in strict mode
    |
@@ -14112,7 +14527,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |                             ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/699b1c93038ef316.js
+✓ test/parser/suite/js/semantic/699b1c93038ef316.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | function fn() { (() => this)().#x }
+   |                                ^^
+   |
+
 ✓ test/parser/suite/js/semantic/69a9f6b6e2fa6bf6.js
 error: Identifier 'b' has already been declared
    |
@@ -14137,7 +14558,13 @@ error: 'with' statements are not allowed in strict mode
 12 |   if (scope.x !== 1) {}
    |
 
-✗ test/parser/suite/js/semantic/69be00c464ab6301.js
+✓ test/parser/suite/js/semantic/69be00c464ab6301.js
+error: 'using' is not allowed at the top level of a script
+   |
+ 1 | using x = null;
+   | ^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/69c74d0785375c3c.js
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -14252,7 +14679,15 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
  4 | }
    |
 
-✗ test/parser/suite/js/semantic/6ab46768ae290507.js
+✓ test/parser/suite/js/semantic/6ab46768ae290507.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   m() { something.#x }
+   |                   ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/6ac19420a0fa62c1.js
 error: Cannot use 'export default' declaration outside a module
    |
@@ -14422,7 +14857,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/6c0ad6f4bb7c57fa.module.js
+✓ test/parser/suite/js/semantic/6c0ad6f4bb7c57fa.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | function f() {
+ 2 |   this.#x;
+   |        ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/6c12d4e90ca2e67f.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -14646,7 +15089,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/6d81d6992d004169.js
+✓ test/parser/suite/js/semantic/6d81d6992d004169.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | { this.#x }
+   |        ^^
+   |
+
 ✓ test/parser/suite/js/semantic/6d96413c7ef0f717.js
 error: Identifier 'a' has already been declared
    |
@@ -14845,7 +15294,15 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/6f27cc9ea1cc3a55.js
+✓ test/parser/suite/js/semantic/6f27cc9ea1cc3a55.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   m() { something.#x }
+   |                   ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/6f281cd6866a66c2.module.js
 error: 'export default' declaration may only appear at the top level
    |
@@ -14891,7 +15348,17 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  2 | class C {
    |
 
-✗ test/parser/suite/js/semantic/6f8f02474b429df6.js
+✓ test/parser/suite/js/semantic/6f8f02474b429df6.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   set #m(_) {}
+   |   ^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/6fa33c9f372768b5.js
 error: Identifier 'a' has already been declared
    |
@@ -14985,7 +15452,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/7007dce7342d5eca.js
+✓ test/parser/suite/js/semantic/7007dce7342d5eca.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = this.#x
+   |            ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/702e4ee53d26635a.js
 error: Cannot use import statement outside a module
    |
@@ -15183,7 +15658,15 @@ error: Identifier 'b' has already been declared
    = help: Consider removing or renaming this declaration of 'b'
 
 
-✗ test/parser/suite/js/semantic/719cf31ee88c28d5.js
+✓ test/parser/suite/js/semantic/719cf31ee88c28d5.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = something.#x
+   |                 ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/719d51eb829945d9.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -15245,7 +15728,17 @@ error: Cannot use import statement outside a module
  2 | export default 0;
    |
 
-✗ test/parser/suite/js/semantic/721fb4563d10b9aa.js
+✓ test/parser/suite/js/semantic/721fb4563d10b9aa.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   static #m;
+   |   ~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/724414dc804124c5.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -15934,7 +16427,17 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/775048edf4597f60.js
+✓ test/parser/suite/js/semantic/775048edf4597f60.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/77806dae3098dee0.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -16054,7 +16557,13 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/780f05b170cc4161.js
+✓ test/parser/suite/js/semantic/780f05b170cc4161.js
+error: 'using' is not allowed at the top level of a script
+   |
+ 1 | using x = null;
+   | ^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/782d096245de4836.module.js
 error: Identifier 'smoosh' has already been declared
    |
@@ -16203,7 +16712,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/799dc7bffbc55064.js
+✓ test/parser/suite/js/semantic/799dc7bffbc55064.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   f = function() { something.#x }
+   |                              ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/79a0f1983037ac04.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -16223,7 +16740,15 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/79b9189ada8b5aa9.js
+✓ test/parser/suite/js/semantic/79b9189ada8b5aa9.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = (() => {})().#x
+   |                    ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/79c4b346bfb73294.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -16296,8 +16821,21 @@ error: In strict mode code, functions can only be declared at top level or insid
  6 |   after = f;
    |
 
-✗ test/parser/suite/js/semantic/7a6f20d74aed16d8.js
-✗ test/parser/suite/js/semantic/7a7f48f2ae9de97d.js
+✓ test/parser/suite/js/semantic/7a6f20d74aed16d8.js
+error: 'await using' is not allowed at the top level of a script
+   |
+ 1 | await using x = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+   |
+
+✓ test/parser/suite/js/semantic/7a7f48f2ae9de97d.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | class C extends class { x = this.#foo; }
+   |                                  ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/7a801844b740c150.js
 error: In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement
    |
@@ -16618,7 +17156,17 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/7d0d618069226989.js
+✓ test/parser/suite/js/semantic/7d0d618069226989.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   async * #m() {}
+   |   ^^^^^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/7d10259151fac4ed.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -16743,7 +17291,13 @@ error: Cannot use import statement outside a module
  2 | export var local1 = 333;
    |
 
-✗ test/parser/suite/js/semantic/7e2c23c249a48806.js
+✓ test/parser/suite/js/semantic/7e2c23c249a48806.js
+error: Private field '#name' must be declared in an enclosing class
+   |
+ 1 | #name in {};
+   | ^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/7e34dc0aa11f53ae.js
 error: Use of undefined label 'b'
    |
@@ -17118,7 +17672,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/80614618009878a1.js
+✓ test/parser/suite/js/semantic/80614618009878a1.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   static #m;
+   |   ~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/80a58aff9f583b7e.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -17135,7 +17699,6 @@ error: Octal literals are not allowed in strict mode
    = help: Use the 0o prefix for octal literals (e.g., 0o77), or a decimal equivalent
 
 
-✗ test/parser/suite/js/semantic/80c2d2d1d35c8dcc.js
 ✓ test/parser/suite/js/semantic/80da22a7d2a15fc5.js
 error: Cannot use import statement outside a module
    |
@@ -17306,7 +17869,17 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
  6 |   });
    |
 
-✗ test/parser/suite/js/semantic/8207fabc2218cd26.js
+✓ test/parser/suite/js/semantic/8207fabc2218cd26.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m() {}
+   |   ~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/823c6711626cd72c.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -17344,7 +17917,15 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  4 | };
    |
 
-✗ test/parser/suite/js/semantic/826edd4bd228b4e0.js
+✓ test/parser/suite/js/semantic/826edd4bd228b4e0.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = function() { this.#x }
+   |                         ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/82c93f9933c9710a.js
 error: Identifier 'b' has already been declared
    |
@@ -17513,7 +18094,15 @@ error: 'super' property access is only valid inside a method or class body
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/83c639fddac00712.js
+✓ test/parser/suite/js/semantic/83c639fddac00712.js
+error: Private field '#f' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   [this.#f] = 'Test262'
+   |         ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/83d1c241572ab924.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -17624,7 +18213,15 @@ error: 'let' is reserved in strict mode and cannot be used as a binding identifi
    |      ^^^
    |
 
-✗ test/parser/suite/js/semantic/84662a4e8c9aeac1.js
+✓ test/parser/suite/js/semantic/84662a4e8c9aeac1.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | class C extends Parent {
+ 5 |   f = (() => this)().#x
+   |                      ^^
+ 6 | }
+   |
+
 ✓ test/parser/suite/js/semantic/8495aba101a6e23b.js
 error: Identifier 'a' has already been declared
    |
@@ -17908,7 +18505,17 @@ error: Identifier 'a' has already been declared
    = help: Consider removing or renaming this declaration of 'a'
 
 
-✗ test/parser/suite/js/semantic/8727c7702b31d4c1.js
+✓ test/parser/suite/js/semantic/8727c7702b31d4c1.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   async * #m() {}
+   |   ^^^^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/873d8f0a4c237e09.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -18363,7 +18970,13 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |           ^^^^
    |
 
-✗ test/parser/suite/js/semantic/8ca671fe9044019a.js
+✓ test/parser/suite/js/semantic/8ca671fe9044019a.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var fn = function() { (() => this)().#x };
+   |                                      ^^
+   |
+
 ✓ test/parser/suite/js/semantic/8caa4a3edcc3921a.js
 error: Expected ';' after for-loop init, but found 'in'
    |
@@ -18680,15 +19293,6 @@ error: Duplicate '__proto__' property in object literal
    |    ~~~~~~~~~~~~ first defined here
    |
 
-✓ test/parser/suite/js/semantic/8f5e572b154c5d39.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 2 |   static {
- 3 |     (function* await(await) {});
-   |                ^^^^^
- 4 |   }
-   |
-
 ✓ test/parser/suite/js/semantic/8f72321a88ad015f.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -18735,7 +19339,15 @@ error: Export 'a' is not defined
    |         ^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/9002f697e6fe5571.js
+✓ test/parser/suite/js/semantic/9002f697e6fe5571.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     (() => this)().#x
+   |                    ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/90071de872ef5686.js
 error: Identifier 'b' has already been declared
    |
@@ -19171,7 +19783,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  3 | };
    |
 
-✗ test/parser/suite/js/semantic/934c36d7f430d3cd.js
+✓ test/parser/suite/js/semantic/934c36d7f430d3cd.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | function fn() { something.#x }
+   |                           ^^
+   |
+
 ✓ test/parser/suite/js/semantic/934f71fb2e02f553.js
 error: Private fields cannot be deleted
    |
@@ -19369,7 +19987,17 @@ error: Yield expression is not allowed in formal parameters
    |                               ^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/942af9b799c51478.js
+✓ test/parser/suite/js/semantic/942af9b799c51478.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   get #m() {}
+   |   ^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/94352c69fe0ccb19.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -19469,7 +20097,13 @@ error: Identifier 'smoosh' has already been declared
    = help: Consider removing or renaming this declaration of 'smoosh'
 
 
-✗ test/parser/suite/js/semantic/9553abad6e93d941.js
+✓ test/parser/suite/js/semantic/9553abad6e93d941.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | function fn() { this.#x }
+   |                      ^^
+   |
+
 ✓ test/parser/suite/js/semantic/9554e0f318c3272b.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -20101,7 +20735,17 @@ error: 'export default' declaration may only appear at the top level
    |    ^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/98aedb63a54a18f3.module.js
+✓ test/parser/suite/js/semantic/98aedb63a54a18f3.module.js
+error: Duplicate import attribute key 'type'
+   |
+ 1 | import x from './import-attribute-1_FIXTURE.js' with {
+ 2 |   type: 'json',
+   |   ~~~~ first used here
+ 3 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/98c0bbe67a08dc65.js
 error: Identifier 'f' has already been declared
    |
@@ -20180,7 +20824,14 @@ error: 'let' is not allowed as a variable name in a lexical declaration
    |           ^^^
    |
 
-✗ test/parser/suite/js/semantic/9926198623c407aa.js
+✓ test/parser/suite/js/semantic/9926198623c407aa.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | var C = class extends class extends class { x = this.#foo; } {}
+   |                                                      ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/992c857bf4cc5f85.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -20244,7 +20895,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  2 | var x;
    |
 
-✗ test/parser/suite/js/semantic/99e1636e2611e749.js
+✓ test/parser/suite/js/semantic/99e1636e2611e749.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | var C = class extends Parent {
+ 5 |   f = (() => this)().#x
+   |                      ^^
+ 6 | };
+   |
+
 ✓ test/parser/suite/js/semantic/99e3332a3e82cbb5.js
 error: Cannot use import statement outside a module
    |
@@ -20276,7 +20935,15 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |                        ^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/9a2103e77ebf56dc.js
+✓ test/parser/suite/js/semantic/9a2103e77ebf56dc.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   m() { (() => this)().#x }
+   |                        ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/9a36b325bc0c8329.module.js
 error: Identifier 'a' has already been declared
    |
@@ -20401,7 +21068,17 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
    |                                  ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/9affea2885ce2a5d.js
+✓ test/parser/suite/js/semantic/9affea2885ce2a5d.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   get #m() {}
+   |   ~~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/9b063e6fb8b810a4.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -20553,7 +21230,17 @@ error: In strict mode code, functions can only be declared at top level or insid
    |           ^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/9c1e8600383383d2.js
+✓ test/parser/suite/js/semantic/9c1e8600383383d2.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   set #m(_) {}
+   |   ~~~~~~~~~~~~ first declared here
+ 3 |   set #m(_) {}
+   |   ^^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/9c294430edf77b49.js
 error: for-in/of loop variable declaration may not have an initializer
    |
@@ -20773,7 +21460,14 @@ error: Cannot use import statement outside a module
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-✗ test/parser/suite/js/semantic/9d962f2a727e2e33.js
+✓ test/parser/suite/js/semantic/9d962f2a727e2e33.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | var C = class extends function() { x = this.#foo; }
+   |                                             ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/9db0760c4c129e17.module.js
 error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
@@ -20977,7 +21671,15 @@ error: Cannot use import statement outside a module
  2 | import defer * as ns from "./dep_FIXTURE.js";
    |
 
-✗ test/parser/suite/js/semantic/9f2d32c81099e613.js
+✓ test/parser/suite/js/semantic/9f2d32c81099e613.js
+error: Private field '#f' must be declared in an enclosing class
+   |
+ 1 | var C = class {
+ 2 |   [this.#f] = 'Test262'
+   |         ^^
+ 3 | };
+   |
+
 ✓ test/parser/suite/js/semantic/9f3b5c1e30abc7d9.module.js
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -21232,7 +21934,14 @@ error: 'with' statements are not allowed in strict mode
    | ^
    |
 
-✗ test/parser/suite/js/semantic/a157424306915066.module.js
+✓ test/parser/suite/js/semantic/a157424306915066.module.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | function *a() { (b) => { yield + b }; }
+   |                          ^^^^^
+ 2 | 
+   |
+
 ✓ test/parser/suite/js/semantic/a1594a4d0c0ee99a.module.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -21583,7 +22292,15 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |          ^^^^
    |
 
-✗ test/parser/suite/js/semantic/a39c92ae9be165cc.js
+✓ test/parser/suite/js/semantic/a39c92ae9be165cc.js
+error: Cannot use await in class static initialization block
+   |
+ 3 |     static {
+ 4 |       await 0;
+   |       ^^^^^^^
+ 5 |     }
+   |
+
 ✓ test/parser/suite/js/semantic/a3aaa566fe12dcdd.module.js
 error: Identifier 'param' has already been declared
    |
@@ -21653,7 +22370,15 @@ error: Yield expression is not allowed in formal parameters
  4 |   });
    |
 
-✗ test/parser/suite/js/semantic/a3d41299d4510bda.module.js
+✓ test/parser/suite/js/semantic/a3d41299d4510bda.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   y = this.#x;
+   |            ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/a3d644588cb3f883.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -21882,7 +22607,17 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |   ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/a5c0e8f83b266442.module.js
+✓ test/parser/suite/js/semantic/a5c0e8f83b266442.module.js
+error: Duplicate import attribute key 'type'
+   |
+ 1 | import './import-attribute-2_FIXTURE.js' with {
+ 2 |   type: 'json',
+   |   ~~~~ first used here
+ 3 |   'typ\u0065': ''
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/a5cf6a9b4944f207.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -21956,7 +22691,6 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |                          ^^^^
    |
 
-✗ test/parser/suite/js/semantic/a633b3217b5b8026.js
 ✓ test/parser/suite/js/semantic/a63fd2acc9fcd940.js
 error: Identifier 'x' has already been declared
    |
@@ -22113,7 +22847,17 @@ error: 'let' is not allowed as a variable name in a lexical declaration
    | ^^^
    |
 
-✗ test/parser/suite/js/semantic/a72f28144106cb30.js
+✓ test/parser/suite/js/semantic/a72f28144106cb30.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   get #m() {}
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/a75bfa84ae7ce2dc.js
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -22349,7 +23093,13 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/a93f6b22796d4868.module.js
+✓ test/parser/suite/js/semantic/a93f6b22796d4868.module.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | function* a(){ () => yield; }
+   |                      ^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/a96737a4505b25cd.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -22384,7 +23134,13 @@ error: Private fields cannot be deleted
  5 |   *#m() {}
    |
 
-✗ test/parser/suite/js/semantic/a9a4c092df230735.module.js
+✓ test/parser/suite/js/semantic/a9a4c092df230735.module.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | something.#x
+   |           ^^
+   |
+
 ✓ test/parser/suite/js/semantic/a9aed84549ad30aa.js
 error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
@@ -22512,7 +23268,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
  2 | 
    |
 
-✗ test/parser/suite/js/semantic/aa842439c978230a.module.js
+✓ test/parser/suite/js/semantic/aa842439c978230a.module.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 2 |   b => {
+ 3 |     yield + b;
+   |     ^^^^^
+ 4 |   };
+   |
+
 ✓ test/parser/suite/js/semantic/aa86b9f1b92a3cd5.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -22528,7 +23292,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |             ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/aa8d872e9a74cfb8.js
+✓ test/parser/suite/js/semantic/aa8d872e9a74cfb8.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { (() => this)().#x }
+   |                                    ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/aa9c2c243f1686ab.js
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -22927,7 +23699,17 @@ error: Cannot use import statement outside a module
  2 | export class A {}
    |
 
-✗ test/parser/suite/js/semantic/adc0783854d665d3.js
+✓ test/parser/suite/js/semantic/adc0783854d665d3.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   get #m() {}
+   |   ~~~~~~~~~~~ first declared here
+ 3 |   get #m() {}
+   |   ^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/ade301f0d871c610.module.js
 error: Octal escape sequences are not allowed in strict mode
    |
@@ -23631,7 +24413,13 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |                    ^^^^
    |
 
-✗ test/parser/suite/js/semantic/b2fb4b63425f36df.js
+✓ test/parser/suite/js/semantic/b2fb4b63425f36df.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | function fn() { (() => {})().#x }
+   |                              ^^
+   |
+
 ✓ test/parser/suite/js/semantic/b3124422e01036a8.js
 error: Identifier 'f' has already been declared
    |
@@ -23866,7 +24654,15 @@ error: Identifier 'c' has already been declared
    = help: Consider removing or renaming this declaration of 'c'
 
 
-✗ test/parser/suite/js/semantic/b4e310a6d021ac99.js
+✓ test/parser/suite/js/semantic/b4e310a6d021ac99.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     something.#x
+   |               ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/b4ef8abd716232d4.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -23876,7 +24672,13 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  4 |   }
    |
 
-✗ test/parser/suite/js/semantic/b4fa46fcee35d296.js
+✓ test/parser/suite/js/semantic/b4fa46fcee35d296.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | { something.#x }
+   |             ^^
+   |
+
 ✓ test/parser/suite/js/semantic/b54a26f97b626bfb.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -24390,7 +25192,13 @@ error: Expected ';' after for-loop init, but found ')'
    |                                ^
    |
 
-✗ test/parser/suite/js/semantic/b9d09c7082787358.js
+✓ test/parser/suite/js/semantic/b9d09c7082787358.js
+error: 'await using' is not allowed at the top level of a script
+   |
+ 1 | await using x = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+   |
+
 ✓ test/parser/suite/js/semantic/b9d8ba7f0ea8992d.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -24408,7 +25216,17 @@ error: Cannot use import statement outside a module
  2 | import './eval-rqstd-once_FIXTURE.js';
    |
 
-✗ test/parser/suite/js/semantic/b9edec678473f8a0.js
+✓ test/parser/suite/js/semantic/b9edec678473f8a0.js
+error: Duplicate private name '#f'
+   |
+ 1 | class C {
+ 2 |   set #f(v) {}
+   |   ~~~~~~~~~~~~ first declared here
+ 3 |   static get #f() {}
+   |   ^^^^^^^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/b9f69bf5fbe2e01f.js
 error: Identifier 'x' has already been declared
    |
@@ -24520,7 +25338,15 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/bbb8ffa7313f4250.js
+✓ test/parser/suite/js/semantic/bbb8ffa7313f4250.js
+error: 'super' keyword unexpected here
+   |
+ 4 | method() {
+ 5 |     super.#x();
+   |     ^^^^^^^^
+ 6 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/bbc9fbf72ebcc234.js
 error: Expected ';' after for-loop init, but found ')'
    |
@@ -24560,7 +25386,15 @@ error: In strict mode code, functions can only be declared at top level or insid
  2 | label1: label2: function f() {}
    |
 
-✗ test/parser/suite/js/semantic/bbf1857db4b29bba.js
+✓ test/parser/suite/js/semantic/bbf1857db4b29bba.js
+error: 'super' keyword unexpected here
+   |
+ 4 | method() {
+ 5 |     super.#x();
+   |     ^^^^^^^^
+ 6 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/bbf57bbb5f6110d2.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -25241,7 +26075,17 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  7 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/c0a6efe18ef48cee.js
+✓ test/parser/suite/js/semantic/c0a6efe18ef48cee.js
+error: Duplicate private name '#f'
+   |
+ 1 | class C {
+ 2 |   static get #f() {}
+   |   ~~~~~~~~~~~~~~~~~~ first declared here
+ 3 |   set #f(v) {}
+   |   ^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/c0a90233e3d478ff.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -25623,7 +26467,15 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |             ^^^^^
    |
 
-✗ test/parser/suite/js/semantic/c30912e9a46930a8.js
+✓ test/parser/suite/js/semantic/c30912e9a46930a8.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   m() {
+ 3 |     function fn() { something.#x }
+   |                               ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/c320812fc6f27d05.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -26034,15 +26886,6 @@ error: Cannot use import statement outside a module
  2 | 
    |
 
-✓ test/parser/suite/js/semantic/c62ea7974594a4c8.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     ({
- 4 |       method(await) {}
-   |              ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/c635335476821654.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -26137,15 +26980,6 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | yield = 1;
    | ^^^^^
-   |
-
-✓ test/parser/suite/js/semantic/c7308b398d6aab2e.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 3 |     ({
- 4 |       *method(await) {}
-   |               ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/c743922212940aff.module.js
@@ -26463,7 +27297,15 @@ error: Identifier 'x' has already been declared
    = help: Consider removing or renaming this declaration of 'x'
 
 
-✗ test/parser/suite/js/semantic/c90f846ff8cf39cc.module.js
+✓ test/parser/suite/js/semantic/c90f846ff8cf39cc.module.js
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 1 | function* a() {
+ 2 |   () => yield;
+   |         ^^^^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/c9166eafd9455c91.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -26623,7 +27465,15 @@ error: 'with' statements are not allowed in strict mode
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/c9fdf2889edbe490.js
+✓ test/parser/suite/js/semantic/c9fdf2889edbe490.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | class C extends Parent {
+ 5 |   f = (() => {})().#x
+   |                    ^^
+ 6 | }
+   |
+
 ✓ test/parser/suite/js/semantic/c9ff09b4186ef45b.module.js
 error: Identifier 'smoosh' has already been declared
    |
@@ -27053,7 +27903,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/ccddf0b08d067fad.js
+✓ test/parser/suite/js/semantic/ccddf0b08d067fad.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   m() { this.#x }
+   |              ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ccecca0820018fef.js
 error: Illegal 'use strict' directive in function with non-simple parameter list
    |
@@ -27219,7 +28077,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
    |                  ~~~~~ non-simple parameter
    |
 
-✗ test/parser/suite/js/semantic/ce117260444bccb3.js
+✓ test/parser/suite/js/semantic/ce117260444bccb3.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 4 | class C extends Parent {
+ 5 |   f = this.#x
+   |            ^^
+ 6 | }
+   |
+
 ✓ test/parser/suite/js/semantic/ce22469062a9c4fe.module.js
 error: 'yield' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -27258,7 +28124,7 @@ error: Octal escape sequences are not allowed in strict mode
 
 
 ✓ test/parser/suite/js/semantic/ce5f3bc27d5ccaac.module.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | function *a() { (b) => b * yield; }
    |                            ^^^^^
@@ -27973,7 +28839,15 @@ error: 'with' statements are not allowed in strict mode
    | ^
    |
 
-✗ test/parser/suite/js/semantic/d256b432a1e40f87.js
+✓ test/parser/suite/js/semantic/d256b432a1e40f87.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   m() { (() => this)().#x }
+   |                        ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/d257f29f43456844.module.js
 error: Deleting a variable in strict mode is not allowed
    |
@@ -28251,7 +29125,17 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  4 | };
    |
 
-✗ test/parser/suite/js/semantic/d4702a07bc2faa34.js
+✓ test/parser/suite/js/semantic/d4702a07bc2faa34.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   get #m() {}
+   |   ~~~~~~~~~~~ first declared here
+ 3 |   get #m() {}
+   |   ^^^^^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/d4741d91de42a5f6.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -28528,15 +29412,6 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |
  1 | (eval) => { "use strict"; 1 }
    |  ^^^^
-   |
-
-✓ test/parser/suite/js/semantic/d6aa6dc80c71444b.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       function await() {}
-   |                ^^^^^
- 5 |     });
    |
 
 ✓ test/parser/suite/js/semantic/d6b44ece92172c2c.js
@@ -29238,7 +30113,15 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/da8b4e0da1b46b15.js
+✓ test/parser/suite/js/semantic/da8b4e0da1b46b15.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 2 |   constructor() {
+ 3 |     this.#x;
+   |          ^^
+ 4 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/da9203fbbc024397.js
 error: 'super' property access is only valid inside a method or class body
    |
@@ -29315,7 +30198,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/js/semantic/daeef72b7ea968a8.module.js
-error: 'yield' is reserved in a generator context and cannot be used as an identifier
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
  1 | function* a() {
  2 |   b => (b * yield);
@@ -29561,7 +30444,15 @@ error: 'with' statements are not allowed in strict mode
 67 | }
    |
 
-✗ test/parser/suite/js/semantic/dc5e968640b17e36.js
+✓ test/parser/suite/js/semantic/dc5e968640b17e36.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = something.#x
+   |                 ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/dc752a07b485e78c.js
 error: Cannot use import statement outside a module
    |
@@ -29968,7 +30859,17 @@ error: Private fields cannot be deleted
  5 | async #m() {}
    |
 
-✗ test/parser/suite/js/semantic/df3ba851a3157a9f.js
+✓ test/parser/suite/js/semantic/df3ba851a3157a9f.js
+error: Duplicate private name '#x'
+   |
+ 1 | class C {
+ 2 |   #x;
+   |   ~~~ first declared here
+ 3 |   #x;
+   |   ^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/df467a64051990d6.module.js
 error: Identifier 'x' has already been declared
    |
@@ -30779,15 +31680,6 @@ error: In non-strict mode code, functions can only be declared at top level, ins
    |                 ^^^^^^^^^^^^^^
    |
 
-✓ test/parser/suite/js/semantic/e423bb14a76e541f.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       var await;
-   |           ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/e4479b9b817c4813.js
 error: Cannot use import statement outside a module
    |
@@ -31459,7 +32351,15 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
  3 | }
    |
 
-✗ test/parser/suite/js/semantic/e9f5de41b7e4483d.js
+✓ test/parser/suite/js/semantic/e9f5de41b7e4483d.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |     }
+ 6 | this.#x;
+   |      ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/ea149cbbd8d8ca28.module.js
 error: 'arguments' is not allowed as a binding identifier in strict mode
    |
@@ -32129,14 +33029,6 @@ error: 'with' statements are not allowed in strict mode
  6 |   }
    |
 
-✓ test/parser/suite/js/semantic/edfe082e9badb2f5.module.js
-error: 'await' is reserved in module code and cannot be used as a binding identifier
-   |
- 1 | function* foo(await) {
-   |               ^^^^^
- 2 |   yield await;
-   |
-
 ✓ test/parser/suite/js/semantic/ee0034582e67e51e.js
 error: 'let' is reserved in strict mode and cannot be used as an identifier
    |
@@ -32270,7 +33162,14 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  7 |             throw new Test262Error();
    |
 
-✗ test/parser/suite/js/semantic/eee2c8a576b16484.js
+✓ test/parser/suite/js/semantic/eee2c8a576b16484.js
+error: Private field '#foo' must be declared in an enclosing class
+   |
+ 1 | class C extends function() { x = this.#foo; }
+   |                                       ^^^^
+ 2 | {
+   |
+
 ✓ test/parser/suite/js/semantic/eefeb595667cfa79.module.js
 error: 'with' statements are not allowed in strict mode
    |
@@ -32395,7 +33294,17 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
-✗ test/parser/suite/js/semantic/eff33d0149da9e64.js
+✓ test/parser/suite/js/semantic/eff33d0149da9e64.js
+error: Duplicate private name '#m'
+   |
+ 1 | class C {
+ 2 |   static #m() {}
+   |   ~~~~~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | }
+   |
+
 ✓ test/parser/suite/js/semantic/f00b8ef5cd7c3984.module.js
 error: 'import' declaration may only appear at the top level
    |
@@ -32528,7 +33437,15 @@ error: 'yield' is reserved in strict mode and cannot be used as a binding identi
  2 | var x;
    |
 
-✗ test/parser/suite/js/semantic/f0c567cfa3ebac2d.js
+✓ test/parser/suite/js/semantic/f0c567cfa3ebac2d.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     (() => this)().#x
+   |                    ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/f0c65ad0965d445a.module.js
 error: Octal escape sequences are not allowed in strict mode
    |
@@ -32572,7 +33489,6 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/js/semantic/f0f16b655e08b92c.js
 ✓ test/parser/suite/js/semantic/f0f25f9218814cae.js
 error: Cannot use import statement outside a module
    |
@@ -33502,7 +34418,17 @@ error: 'with' statements are not allowed in strict mode
 16 |     })();
    |
 
-✗ test/parser/suite/js/semantic/f7bdfc4d514b1da3.js
+✓ test/parser/suite/js/semantic/f7bdfc4d514b1da3.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   #m;
+   |   ~~~ first declared here
+ 3 |   async #m() {}
+   |   ^^^^^^^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/f7c0a2c1dc2907b9.js
 error: Yield expression is not allowed in formal parameters
    |
@@ -33732,7 +34658,15 @@ error: 'with' statements are not allowed in strict mode
 18 |   f();
    |
 
-✗ test/parser/suite/js/semantic/f8aaa2d7563da609.js
+✓ test/parser/suite/js/semantic/f8aaa2d7563da609.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 1 | class C {
+ 2 |   f = (() => this)().#x
+   |                      ^^
+ 3 | }
+   |
+
 ✓ test/parser/suite/js/semantic/f8ab46b0249b8bc3.js
 error: Cannot use import statement outside a module
    |
@@ -34315,7 +35249,17 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✗ test/parser/suite/js/semantic/fcf7d5f91dc73ec5.js
+✓ test/parser/suite/js/semantic/fcf7d5f91dc73ec5.js
+error: Duplicate private name '#m'
+   |
+ 1 | var C = class {
+ 2 |   static #m() {}
+   |   ~~~~~~~~~~~~~~ first declared here
+ 3 |   #m() {}
+   |   ^^^^^^^
+ 4 | };
+   |
+
 ✓ test/parser/suite/js/semantic/fd167642d02f2c66.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -34504,15 +35448,6 @@ error: Identifier 'f' has already been declared
    = help: Consider removing or renaming this declaration of 'f'
 
 
-✓ test/parser/suite/js/semantic/fedd5d306462cde4.module.js
-error: 'await' is reserved in an async or module context and cannot be used as a binding identifier
-   |
- 3 |     (() => {
- 4 |       try {} catch (await) {}
-   |                     ^^^^^
- 5 |     });
-   |
-
 ✓ test/parser/suite/js/semantic/feeefcef9aa0d467.module.js
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -34548,7 +35483,15 @@ error: Cannot use 'export default' declaration outside a module
  3 | if (true) {
    |
 
-✗ test/parser/suite/js/semantic/ff4aec7103718ad2.js
+✓ test/parser/suite/js/semantic/ff4aec7103718ad2.js
+error: Private field '#x' must be declared in an enclosing class
+   |
+ 5 |   m() {
+ 6 |     something.#x
+   |               ^^
+ 7 |   }
+   |
+
 ✓ test/parser/suite/js/semantic/ff4df2c52b48ad3d.js
 error: 'super()' is only valid in a constructor of a derived class
    |

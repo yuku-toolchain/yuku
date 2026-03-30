@@ -44,7 +44,7 @@ pub fn parseCover(parser: *Parser) Error!?ArrayCover {
             try parser.scratch_cover.append(parser.allocator(), spread);
             end = spread_end;
         } else {
-            // regular element - parse as cover element
+            // regular element, parse as cover element
             const element = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
             try parser.scratch_cover.append(parser.allocator(), element);
             end = parser.tree.getSpan(element).end;

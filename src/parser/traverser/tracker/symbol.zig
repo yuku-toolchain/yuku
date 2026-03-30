@@ -99,7 +99,7 @@ pub const SymbolTable = struct {
     /// Hoisted vars passing through intermediate block scopes (Section 14.2.1).
     hoisting_variables: []const ScopeMap,
     /// String pool for resolving `String` handles to text.
-    strings: *const ast.ASTStringPool,
+    strings: *const ast.StringPool,
 
     /// Returns the string content for a `String`.
     pub inline fn getString(self: SymbolTable, id: String) []const u8 {

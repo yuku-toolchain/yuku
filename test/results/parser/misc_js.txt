@@ -1,8 +1,8 @@
 misc/js
 =======
-Passed:       29/29 (100.00%)
+Passed:       33/33 (100.00%)
 Failed:       0
-AST mismatch: 0/29
+AST mismatch: 0/33
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -34,6 +34,18 @@ error: The left-hand side of '**' cannot be an unparenthesized await expression
    = help: Add parentheses to make precedence explicit, for example `(await x) ** y`.
 
 
+✓ test/parser/misc/js/await-expression-in-non-async-arrow-function.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'promise'
+   |
+ 1 | const execute = (promise) => {
+ 2 |   await promise;
+   |         ^^^^^^^
+ 3 | };
+   |
+   = help: Try inserting a semicolon here
+
+
+✓ test/parser/misc/js/await-id-in-non-async-arrow-function.js
 ✓ test/parser/misc/js/await-using-new-line.js
 ✓ test/parser/misc/js/await-using.js
 ✓ test/parser/misc/js/bigint-class-property-key.js
@@ -105,3 +117,14 @@ error: Expected declaration after 'export', but found 'using'
 
 
 ✓ test/parser/misc/js/using-var.js
+✓ test/parser/misc/js/yield-expression-in-arrow-function.js
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'cool'
+   |
+ 1 |  function *a() { (b) => { yield cool }; }
+   |                                 ^^^^
+ 2 | 
+   |
+   = help: Try inserting a semicolon here
+
+
+✓ test/parser/misc/js/yield-id-in-arrow-function.js

@@ -186,6 +186,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     try validateIdentifier(parser, "an identifier", parser.current_token);
 
     const token = parser.current_token;
+
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
     return try parser.tree.createNode(.{
@@ -260,10 +261,10 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         );
     }
 
-    if (token.tag == .await and parser.context.await_is_keyword) {
+    if (token.tag == .await and (parser.context.await_is_keyword or parser.tree.isModule())) {
         try parser.report(
             token.span,
-            "'await' is reserved in an async or module context and cannot be used as " ++ as_what,
+            "'await' is reserved in an async/module context and cannot be used as " ++ as_what,
             .{},
         );
     }

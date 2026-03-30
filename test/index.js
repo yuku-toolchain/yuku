@@ -1,1 +1,1 @@
-class C { constructor(){} "constructor"(){} }
+var await;
