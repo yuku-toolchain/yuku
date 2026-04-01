@@ -264,14 +264,14 @@ class_expression              // const x = class {}
 
 | Node | JS Syntax | Notes |
 |------|-----------|-------|
-| `string_literal` | `"hello"`, `'world'` | `raw` includes surrounding quotes; call `.value(tree)` for the content without them |
-| `numeric_literal` | `42`, `0xFF`, `0o7`, `0b1010` | `raw` is the source text; `kind` distinguishes decimal / hex / octal / binary |
-| `bigint_literal` | `42n` | `raw` is the full source text including the `n` suffix |
+| `string_literal` | `"hello"`, `'world'` | `raw` includes surrounding quotes; `value` is the decoded content without quotes (escape sequences resolved) |
+| `numeric_literal` | `42`, `0xFF`, `0o7`, `0b1010` | `raw` is the source text; `kind` distinguishes decimal / hex / octal / binary; `value` is the parsed `f64` |
+| `bigint_literal` | `42n` | `raw` is the full source text including the `n` suffix; `value` is the digits without it |
 | `boolean_literal` | `true`, `false` | `value: bool` |
 | `null_literal` | `null` | No fields |
 | `regexp_literal` | `/pattern/flags` | `pattern` and `flags` are separate `String` handles |
 | `template_literal` | `` `hello ${name}` `` | `quasis` (list of `template_element`) and `expressions` are interleaved; always `quasis.len == expressions.len + 1` |
-| `template_element` | the text parts between `${}` | `raw: String`; `tail: bool` marks the last segment; `is_cooked_undefined: bool` for invalid escapes |
+| `template_element` | the text parts between `${}` | `raw` is the source text; `cooked` is the escape-decoded content (empty when `is_cooked_undefined`); `tail: bool` marks the last segment |
 
 ---
 
