@@ -55,7 +55,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseNumericValue(raw: []const u8, kind: ast.NumericLiteral.Kind) f64 {
-    // strip numeric separators into a stack buffer
+    // strip numeric separators
     var buf: [128]u8 = undefined;
     var len: usize = 0;
     for (raw) |c| {
@@ -68,14 +68,27 @@ fn parseNumericValue(raw: []const u8, kind: ast.NumericLiteral.Kind) f64 {
     if (s.len == 0) return 0;
     return switch (kind) {
         .decimal => std.fmt.parseFloat(f64, s) catch 0,
-        .hex => @floatFromInt(std.fmt.parseInt(u64, s[2..], 16) catch 0),
+        .hex => parseIntOrFloat(s[2..], 16),
         .octal => blk: {
             // modern: 0o/0O prefix; legacy: bare 0 prefix
             const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
-            break :blk @floatFromInt(std.fmt.parseInt(u64, digits, 8) catch 0);
+            break :blk parseIntOrFloat(digits, 8);
         },
-        .binary => @floatFromInt(std.fmt.parseInt(u64, s[2..], 2) catch 0),
+        .binary => parseIntOrFloat(s[2..], 2),
     };
+}
+
+fn parseIntOrFloat(digits: []const u8, base: u8) f64 {
+    const v = std.fmt.parseInt(u64, digits, base) catch {
+        // overflow: accumulate into f64 for correct IEEE 754 approximation
+        var val: f64 = 0;
+        const fbase: f64 = @floatFromInt(base);
+        for (digits) |d| {
+            val = val * fbase + @as(f64, @floatFromInt(std.fmt.charToDigit(d, base) catch unreachable));
+        }
+        return val;
+    };
+    return @floatFromInt(v);
 }
 
 pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
