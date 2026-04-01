@@ -209,11 +209,11 @@ pub fn decodeStringEscapes(raw: []const u8, out: *std.ArrayList(u8), alloc: std.
                     var cp = r.value;
                     var end = r.end;
                     // combine surrogate pair if both halves are present
-                    if (std.unicode.utf16IsHighSurrogate(@intCast(cp)) and
+                    if (cp >= 0xD800 and cp <= 0xDBFF and
                         end + 1 < raw.len and raw[end] == '\\' and raw[end + 1] == 'u')
                     {
                         if (parseUnicodeEscape(raw, end + 2)) |r2| {
-                            if (std.unicode.utf16IsLowSurrogate(@intCast(r2.value))) {
+                            if (r2.value >= 0xDC00 and r2.value <= 0xDFFF) {
                                 // decode surrogate pair: U+10000 + (high - 0xD800) * 0x400 + (low - 0xDC00)
                                 cp = 0x10000 + (@as(u21, cp) - 0xD800) * 0x400 + (@as(u21, r2.value) - 0xDC00);
                                 end = r2.end;
@@ -463,4 +463,126 @@ test "hexVal" {
     try testing.expect(hexVal('g') == null);
     try testing.expect(hexVal('G') == null);
     try testing.expect(hexVal(' ') == null);
+}
+
+// decodeStringEscapes tests
+
+fn decode(input: []const u8) ![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    defer out.deinit(testing.allocator);
+    try decodeStringEscapes(input, &out, testing.allocator);
+    return try testing.allocator.dupe(u8, out.items);
+}
+
+fn expectDecode(input: []const u8, expected: []const u8) !void {
+    const result = try decode(input);
+    defer testing.allocator.free(result);
+    try testing.expectEqualSlices(u8, expected, result);
+}
+
+test "decodeStringEscapes - no escapes" {
+    try expectDecode("hello world", "hello world");
+}
+
+test "decodeStringEscapes - empty" {
+    try expectDecode("", "");
+}
+
+test "decodeStringEscapes - standard escapes" {
+    try expectDecode("a\\nb\\tc", "a\nb\tc");
+    try expectDecode("\\r\\n", "\r\n");
+    try expectDecode("\\b\\f\\v", &[_]u8{ 0x08, 0x0C, 0x0B });
+}
+
+test "decodeStringEscapes - backslash and quote escapes" {
+    try expectDecode("\\\\", "\\");
+    try expectDecode("\\'", "'");
+    try expectDecode("\\\"", "\"");
+}
+
+test "decodeStringEscapes - null escape \\0" {
+    try expectDecode("a\\0b", "a\x00b");
+}
+
+test "decodeStringEscapes - octal escapes" {
+    // \0 followed by digit is octal
+    try expectDecode("\\01", &[_]u8{0o1});
+    // \1-\7 are octal
+    try expectDecode("\\101", "A"); // 0o101 = 65 = 'A'
+    try expectDecode("\\7", &[_]u8{7});
+    // multi-digit octal
+    try expectDecode("\\377", &[_]u8{ 0xC3, 0xBF }); // 0o377 = 255 = U+00FF -> 2-byte UTF-8
+}
+
+test "decodeStringEscapes - hex escapes \\xHH" {
+    try expectDecode("\\x41", "A");
+    try expectDecode("\\x61\\x62\\x63", "abc");
+    try expectDecode("\\xff", &[_]u8{ 0xC3, 0xBF }); // U+00FF -> 2-byte UTF-8
+}
+
+test "decodeStringEscapes - unicode escapes \\uHHHH" {
+    try expectDecode("\\u0041", "A");
+    try expectDecode("\\u00E9", "\xC3\xA9"); // e with acute
+    try expectDecode("\\u4E16\\u754C", "\xE4\xB8\x96\xE7\x95\x8C"); // 世界
+}
+
+test "decodeStringEscapes - braced unicode escapes \\u{H}" {
+    try expectDecode("\\u{41}", "A");
+    try expectDecode("\\u{1F600}", "\xF0\x9F\x98\x80"); // grinning face emoji
+    try expectDecode("\\u{0}", &[_]u8{0});
+}
+
+test "decodeStringEscapes - surrogate pairs" {
+    // \uD83D\uDCA9 = U+1F4A9 (pile of poo)
+    try expectDecode("\\uD83D\\uDCA9", "\xF0\x9F\x92\xA9");
+}
+
+test "decodeStringEscapes - lone high surrogate" {
+    const result = try decode("\\uD800");
+    defer testing.allocator.free(result);
+    // WTF-8: ED A0 80
+    try testing.expectEqual(@as(usize, 3), result.len);
+    try testing.expectEqual(@as(u8, 0xED), result[0]);
+    try testing.expectEqual(@as(u8, 0xA0), result[1]);
+    try testing.expectEqual(@as(u8, 0x80), result[2]);
+}
+
+test "decodeStringEscapes - lone low surrogate" {
+    const result = try decode("\\uDC00");
+    defer testing.allocator.free(result);
+    // WTF-8: ED B0 80
+    try testing.expectEqual(@as(usize, 3), result.len);
+    try testing.expectEqual(@as(u8, 0xED), result[0]);
+    try testing.expectEqual(@as(u8, 0xB0), result[1]);
+    try testing.expectEqual(@as(u8, 0x80), result[2]);
+}
+
+test "decodeStringEscapes - line continuation \\<LF>" {
+    try expectDecode("hello\\\nworld", "helloworld");
+}
+
+test "decodeStringEscapes - line continuation \\<CR><LF>" {
+    try expectDecode("hello\\\r\nworld", "helloworld");
+}
+
+test "decodeStringEscapes - line continuation \\<CR>" {
+    try expectDecode("hello\\\rworld", "helloworld");
+}
+
+test "decodeStringEscapes - raw CR normalization" {
+    // standalone \r -> \n
+    try expectDecode("a\rb", "a\nb");
+    // \r\n -> \n
+    try expectDecode("a\r\nb", "a\nb");
+    // mixed
+    try expectDecode("\r\n\r", "\n\n");
+}
+
+test "decodeStringEscapes - mixed escapes" {
+    try expectDecode("hello\\nworld\\t\\u0021", "hello\nworld\t!");
+    try expectDecode("\\x48\\x65\\x6C\\x6C\\x6F", "Hello");
+}
+
+test "decodeStringEscapes - trailing backslash" {
+    try expectDecode("abc\\", "abc");
 }
