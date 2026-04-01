@@ -251,22 +251,6 @@ pub fn enter_binding_identifier(
 }
 ```
 
-### Where Bindings Land
-
-Different declarations land in different scopes:
-
-| Declaration | Symbol Kind | Target Scope |
-|------------|-------------|--------------|
-| `let`, `const`, `using` | `lexical` | Current scope |
-| `var` | `hoisted` | Nearest function/module/global (hoist target) |
-| Function declaration | `function` | Enclosing (parent) scope |
-| Function expression name | `function` | `expression_name` scope |
-| Class declaration | `class` | Enclosing (parent) scope |
-| Class expression name | `class` | `expression_name` scope |
-| Parameters | `parameter` | Current scope |
-| `import` bindings | `import` | Current scope |
-| `catch` parameter | `parameter` | Current scope |
-
 ### Symbol Flags
 
 Each symbol carries flags:
