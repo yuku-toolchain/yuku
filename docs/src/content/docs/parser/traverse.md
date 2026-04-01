@@ -393,7 +393,7 @@ Use `createNode` to append a new node and `createExtra` to allocate child lists:
 // Create a new node
 const new_node = try ctx.tree.createNode(
     .{ .numeric_literal = .{ .value = 42 } },
-    .{ .start = 0, .end = 0 },
+    .none,
 );
 
 // Create a child list for nodes with IndexRange fields
@@ -448,6 +448,8 @@ ctx.tree.replaceData(index, .{ .parenthesized_expression = .{ .expression = inne
 ```zig
 const ast = parser.ast;
 
+const Span = ast.Span;
+
 var out = ast.Tree.initEmpty(allocator);
 defer out.deinit();
 
@@ -455,13 +457,13 @@ defer out.deinit();
 const hello_str = try out.addString("hello");
 const hello = try out.createNode(
     .{ .string_literal = .{ .value = hello_str } },
-    .{ .start = 0, .end = 0 },
+    .none,
 );
 
 // Create an expression statement wrapping the literal
 const stmt = try out.createNode(
     .{ .expression_statement = .{ .expression = hello } },
-    .{ .start = 0, .end = 0 },
+    .none,
 );
 
 // Build the program body (list of statements)
@@ -470,7 +472,7 @@ const body = try out.createExtra(&.{stmt});
 // Create the root program node
 out.program = try out.createNode(
     .{ .program = .{ .source_type = .module, .body = body } },
-    .{ .start = 0, .end = 0 },
+    .none,
 );
 ```
 

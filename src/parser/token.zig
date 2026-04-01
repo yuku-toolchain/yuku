@@ -399,6 +399,8 @@ pub const TokenTag = enum(u32) {
 pub const Span = struct {
     start: u32,
     end: u32,
+
+    pub const none = .{ .start = 0, .end = 0 };
 };
 
 pub const TokenFlag = enum(u3) {
