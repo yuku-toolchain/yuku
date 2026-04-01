@@ -4,7 +4,7 @@ pub const CodePoint = struct { len: u3, value: u21 };
 
 pub const Utf8Error = error{InvalidUtf8};
 
-pub fn codePointAt(str: []const u8, i: u32) Utf8Error!CodePoint {
+pub fn codePointAt(str: []const u8, i: usize) Utf8Error!CodePoint {
     const len = std.unicode.utf8ByteSequenceLength(str[i]) catch return error.InvalidUtf8;
 
     const codepoint: u21 = switch (len) {
