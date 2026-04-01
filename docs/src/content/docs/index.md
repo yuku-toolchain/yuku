@@ -43,32 +43,6 @@ Yuku currently provides a 100% spec-compliant, reliable, and fast JavaScript/JSX
 
 More tooling is planned (a resolver, transpiler including `.d.ts` generation, minifier, and more), built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
 
-## Quick start
+## Get started
 
-Add Yuku as a dependency to your Zig project:
-
-```sh
-zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
-```
-
-Then in your `build.zig`:
-
-```zig
-const yuku = b.dependency("yuku", .{
-    .target = target,
-    .optimize = optimize,
-});
-
-exe.root_module.addImport("parser", yuku.module("parser"));
-```
-
-Parse some JavaScript:
-
-```zig
-const parser = @import("parser");
-
-var tree = try parser.parse(allocator, "const x = 5;", .{});
-defer tree.deinit();
-```
-
-See the [Parser documentation](/parser) for the full guide.
+See the [Parser documentation](/parser) to install Yuku and start parsing JavaScript in your Zig project.
