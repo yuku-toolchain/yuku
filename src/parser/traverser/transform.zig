@@ -2,8 +2,7 @@
 //!
 //! Walks a `Tree` and lets visitor hooks mutate the AST in place.
 //! The context exposes the mutable tree directly via `ctx.tree`, giving
-//! access to all read and write operations: `getData`, `getSpan`, `replaceData`,
-//! `replaceSpan`, `createNode`, and `createExtra`.
+//! access to all read and write operations: `getData`, `getSpan`, `replaceData`, `createNode`, and `createExtra`.
 //!
 //! ## Replacing a node
 //!
@@ -53,9 +52,6 @@
 //! ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
 //!     .expression = inner,
 //! } });
-//!
-//! // Expand the span to include the wrapping parentheses.
-//! ctx.tree.replaceSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
 //!
 //! // Skip so the walker does not descend into the new children,
 //! // which would re-trigger this hook on the moved inner node.

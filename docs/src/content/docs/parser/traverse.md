@@ -418,9 +418,6 @@ ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
     .expression = inner,
 } });
 
-// Expand span to cover wrapping syntax
-ctx.tree.replaceSpan(index, .{ .start = span.start - 1, .end = span.end + 1 });
-
 // Skip so the walker doesn't re-descend into the moved inner node
 return .skip;
 ```
