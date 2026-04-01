@@ -1,5 +1,5 @@
 ---
-title: AST Traversal
+title: Traverse
 description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yuku's traverser system.
 ---
 
@@ -101,7 +101,14 @@ pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *basi
     const grandparent = ctx.path.ancestor(2);  // 0 = current, 1 = parent, 2 = grandparent
     const depth = ctx.path.depth();            // nesting depth (0 at root)
 
-    // Navigate sideways or down — the full tree is always accessible
+    // Walk from current node up to root
+    var it = ctx.path.ancestors();
+    while (it.next()) |ancestor_index| {
+        const ancestor_data = ctx.tree.getData(ancestor_index);
+        // ...
+    }
+
+    // Navigate sideways or down (the full tree is always accessible)
     if (ctx.path.parent()) |p| {
         const parent_data = ctx.tree.getData(p);
         // inspect siblings via parent's children, or descend into any subtree
@@ -184,6 +191,7 @@ Strict mode is tracked automatically:
 - Module scopes are always strict
 - `"use strict"` directives set the flag on the current scope
 - Child scopes inherit strict mode from their parent
+- Functions with a `"use strict"` directive in their body are detected eagerly when the function scope is created, so the flag is correct when parameter hooks fire
 
 ### Using the ScopeTree
 
@@ -204,16 +212,15 @@ while (it.next()) |id| {
 
 ## Semantic Traverser
 
-The full-power mode. Tracks path, scopes, and symbols/references. This is what `semantic.analyze()` uses internally.
+The full-power mode. Tracks path, scopes, and symbols/references.
 
 ```zig
-const semantic = traverser.semantic;
+const sem = traverser.semantic;
 
 var visitor = MyVisitor{};
-const result = try semantic.traverse(MyVisitor, &tree, &visitor);
-
-// result.scope_tree   -- all scopes
-// result.symbol_table -- all symbols and references
+const result = try sem.traverse(MyVisitor, &tree, &visitor);
+// result.scope_tree   contains all scopes
+// result.symbol_table contains all symbols and references
 ```
 
 ### Two-Phase Binding
@@ -224,14 +231,16 @@ The semantic traverser uses a two-phase approach for symbol declaration:
 
 2. **Phase 2 (post_enter)**: After your enter hooks run but before children are walked, the tracker creates the actual symbol or reference for `binding_identifier` and `identifier_reference` nodes.
 
-This means your enter hooks see the scope state *before* the current node's bindings are declared. You can inspect what's about to happen:
+:::note
+Your enter hooks see the scope state *before* the current node's bindings are declared. This lets you inspect what is about to be declared before it happens.
+:::
 
 ```zig
 pub fn enter_binding_identifier(
     self: *V,
     id: ast.BindingIdentifier,
     index: ast.NodeIndex,
-    ctx: *semantic.Ctx,
+    ctx: *sem.Ctx,
 ) !traverser.Action {
     // What kind of binding is this?
     const kind = ctx.symbols.currentBindingKind();
@@ -264,8 +273,6 @@ symbol.flags.is_ambient   // TypeScript declare
 
 ### Iterating Symbols in a Scope
 
-You can iterate all symbols declared in a given scope:
-
 ```zig
 // During traversal (on the tracker):
 var it = ctx.symbols.scopeSymbols(scope_id);
@@ -288,7 +295,7 @@ while (it.next()) |sym_id_ptr| {
 Every `identifier_reference` node creates a `Reference` with `resolved = .none`. After traversal, resolve all references by walking up scope chains:
 
 ```zig
-const result = try semantic.traverse(MyVisitor, &tree, &visitor);
+const result = try sem.traverse(MyVisitor, &tree, &visitor);
 
 // Resolve all references
 var table = result.symbol_table;
@@ -307,11 +314,11 @@ if (table.resolve(scope_id, "myVar", result.scope_tree)) |sym_id| {
 }
 ```
 
-`resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup.
+`resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup. It also checks hoisted `var` declarations that pass through intermediate block scopes. Use `findInScopeOrHoisted()` for the same behavior when looking up names directly.
 
 ### Semantic Analysis
 
-`semantic.analyze()` is a pre-built visitor on top of the semantic traverser that performs semantic error checks (like redeclaration detection) and returns the scope tree and symbol table:
+`parser.semantic.analyze()` is a pre-built visitor on top of the semantic traverser that performs semantic error checks (like redeclaration detection) and returns the scope tree and symbol table:
 
 ```zig
 const result = try parser.semantic.analyze(&tree);
@@ -319,12 +326,18 @@ const result = try parser.semantic.analyze(&tree);
 // result.scope_tree and result.symbol_table are ready
 ```
 
+:::note
+`parser.semantic` is the semantic checker module. It is different from `parser.traverser.semantic`, which is the low-level traversal mode the checker is built on.
+:::
+
 If you only need the scope tree and symbol table without semantic error checking, use the semantic traverser directly with an empty visitor:
 
 ```zig
+const sem = traverser.semantic;
+
 const Empty = struct {};
 var visitor = Empty{};
-const result = try semantic.traverse(Empty, &tree, &visitor);
+const result = try sem.traverse(Empty, &tree, &visitor);
 ```
 
 Or combine scope/symbol tracking with your own analysis by writing a visitor with hooks.
@@ -404,7 +417,9 @@ return .skip;
 
 ### Self-Reference Safety
 
-Never point a node's child back to its own index. The walker re-reads after enter, so a self-referential node causes infinite recursion:
+:::caution
+Never point a node's child back to its own index. The walker re-reads node data after every enter hook, so a self-referential node causes infinite recursion.
+:::
 
 ```zig
 // WRONG: creates a cycle
@@ -454,6 +469,8 @@ out.program = try out.createNode(
 A powerful pattern is traversing one tree (with full context: scopes, symbols, path) while building a completely separate output tree. This is how transpilers work:
 
 ```zig
+const sem = traverser.semantic;
+
 const Transpiler = struct {
     out: *ast.Tree,
 
@@ -461,11 +478,10 @@ const Transpiler = struct {
         self: *Transpiler,
         func: ast.Function,
         index: ast.NodeIndex,
-        ctx: *semantic.Ctx,
+        ctx: *sem.Ctx,
     ) !traverser.Action {
         // Full context from the source tree:
         const is_strict = ctx.scope.isStrict();
-        const scope_id = ctx.scope.currentScopeId();
         const source_span = ctx.tree.getSpan(index);
 
         // Build nodes in the output tree:
@@ -480,7 +496,6 @@ const Transpiler = struct {
     }
 };
 
-// Usage:
 var source_tree = try parser.parse(allocator, source, .{});
 defer source_tree.deinit();
 
@@ -488,7 +503,7 @@ var out = ast.Tree.initEmpty(allocator);
 defer out.deinit();
 
 var transpiler = Transpiler{ .out = &out };
-const result = try semantic.traverse(Transpiler, &source_tree, &transpiler);
+const result = try sem.traverse(Transpiler, &source_tree, &transpiler);
 
 // out now contains a new AST built with full knowledge of the source tree's
 // scopes, symbols, and structure
