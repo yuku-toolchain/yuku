@@ -15,13 +15,7 @@ head:
 
 A high-performance JavaScript/TypeScript parser and toolchain written in Zig, bringing modern JavaScript tooling infrastructure to the Zig ecosystem.
 
-<br />
-
 </div>
-
-:::note
-**Early stage, under active development.** The JavaScript and JSX parser is complete with full spec compliance and thorough testing. TypeScript support is currently in progress.
-:::
 
 ## Why Yuku
 
@@ -35,9 +29,7 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 ![Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript.png)
 
-![Benchmark: Parsing TypeScript source to JavaScript with Semantic Analysis](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript_semantic.png)
-
-<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro | 6 cores · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
 
 </div>
 
@@ -45,15 +37,11 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 **Modern JavaScript.** Full support for modern and experimental features including decorators, source phase imports, deferred imports, `using`/`await using` declarations, and more.
 
-## What's included
+## Current Status
 
-| Component | Status |
-|-----------|--------|
-| [JavaScript/JSX Parser](/parser) | Complete |
-| [AST](/parser/ast) | Complete |
-| [Traverser](/parser/traverse) | Complete |
-| TypeScript Parsing | In Progress |
-| Module Resolver | Planned |
+Yuku currently provides a 100% spec-compliant, reliable, and fast JavaScript/JSX parser ready for use in Zig projects, along with a [Traverser](/parser/traverse). TypeScript parsing support is actively in development.
+
+More tooling is planned (a resolver, transpiler including `.d.ts` generation, minifier, and more), built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
 
 ## Quick start
 
