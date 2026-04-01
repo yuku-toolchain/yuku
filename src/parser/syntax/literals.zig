@@ -12,7 +12,6 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.tree.createNode(.{
         .string_literal = .{
-            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
             .value = try parser.stringValue(token),
         },
     }, token.span);
@@ -40,8 +39,6 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.tree.createNode(.{
             .bigint_literal = .{
-                .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
-                // value is the raw digits without the trailing 'n'
                 .value = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
             },
         }, token.span);
@@ -51,7 +48,6 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const raw = parser.source[token.span.start..token.span.end];
     return try parser.tree.createNode(.{
         .numeric_literal = .{
-            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
             .kind = kind,
             .value = parseNumericValue(raw, kind),
         },
@@ -196,7 +192,6 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
 
     return parser.tree.createNode(.{
         .template_element = .{
-            .raw = parser.tree.sourceSlice(span.start, span.end),
             .cooked = cooked,
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,

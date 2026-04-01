@@ -264,14 +264,14 @@ class_expression              // const x = class {}
 
 | Node | JS Syntax | Notes |
 |------|-----------|-------|
-| `string_literal` | `"hello"`, `'world'` | `raw` includes surrounding quotes; `value` is the decoded content without quotes (escape sequences resolved) |
-| `numeric_literal` | `42`, `0xFF`, `0o7`, `0b1010` | `raw` is the source text; `kind` distinguishes decimal / hex / octal / binary; `value` is the parsed `f64` |
-| `bigint_literal` | `42n` | `raw` is the full source text including the `n` suffix; `value` is the digits without it |
+| `string_literal` | `"hello"`, `'world'` | `value` is the decoded content without quotes (escape sequences resolved). Raw source text is available via the span. |
+| `numeric_literal` | `42`, `0xFF`, `0o7`, `0b1010` | `value` is the parsed `f64`; `kind` distinguishes decimal / hex / octal / binary |
+| `bigint_literal` | `42n` | `value` is the digits without the trailing `n` suffix |
 | `boolean_literal` | `true`, `false` | `value: bool` |
 | `null_literal` | `null` | No fields |
 | `regexp_literal` | `/pattern/flags` | `pattern` and `flags` are separate `String` handles |
 | `template_literal` | `` `hello ${name}` `` | `quasis` (list of `template_element`) and `expressions` are interleaved; always `quasis.len == expressions.len + 1` |
-| `template_element` | the text parts between `${}` | `raw` is the source text; `cooked` is the escape-decoded content (empty when `is_cooked_undefined`); `tail: bool` marks the last segment |
+| `template_element` | the text parts between `${}` | `cooked` is the escape-decoded content (empty when `is_cooked_undefined`); `tail: bool` marks the last segment. Raw source text is available via the span. |
 
 ---
 
@@ -396,7 +396,7 @@ JSX nodes are only present in `.jsx` and `.tsx` trees.
 | `jsx_spread_attribute` | `{...props}` | `argument` is the spread expression |
 | `jsx_expression_container` | `{expression}` | `expression` is a `jsx_empty_expression` node for `{}` |
 | `jsx_empty_expression` | `{}` | No fields |
-| `jsx_text` | Text content between tags | `raw: String` |
+| `jsx_text` | Text content between tags | `value: String` is the text content |
 | `jsx_spread_child` | `{...children}` | `expression` is the spread expression |
 
 ---

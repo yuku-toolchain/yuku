@@ -331,10 +331,10 @@ pub const Serializer = struct {
     }
 
     fn writeJSXText(self: *Self, data: ast.JSXText, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const text = self.tree.getString(data.value);
         try self.begin("JSXText", span);
-        try self.fieldString("value", raw);
-        try self.fieldString("raw", raw);
+        try self.fieldString("value", text);
+        try self.fieldString("raw", text);
         try self.endObject();
     }
 
@@ -351,17 +351,14 @@ pub const Serializer = struct {
     }
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
-        const val = self.tree.getString(data.value);
         try self.begin("Literal", span);
         try self.field("value");
-        try self.writeString(val);
-        try self.fieldString("raw", raw);
+        try self.writeString(self.tree.getString(data.value));
+        try self.fieldString("raw", self.tree.source[span.start..span.end]);
         try self.endObject();
     }
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
         try self.begin("Literal", span);
         if (std.math.isInf(data.value) or std.math.isNan(data.value)) {
             try self.fieldNull("value");
@@ -370,12 +367,12 @@ pub const Serializer = struct {
             var buf: [64]u8 = undefined;
             try self.write(std.fmt.bufPrint(&buf, "{e}", .{data.value}) catch "0");
         }
-        try self.fieldString("raw", raw);
+        try self.fieldString("raw", self.tree.source[span.start..span.end]);
         try self.endObject();
     }
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = self.tree.source[span.start..span.end];
         const digits = self.tree.getString(data.value);
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, "(BigInt) ");
@@ -428,7 +425,7 @@ pub const Serializer = struct {
     }
 
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
-        const raw = self.tree.getString(data.raw);
+        const raw = self.tree.source[span.start..span.end];
 
         // normalize line endings in raw: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
         self.scratch.clearRetainingCapacity();

@@ -892,15 +892,12 @@ pub const WithStatement = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
-    /// Raw string text including quotes.
-    raw: String = .empty,
     /// Decoded string content, escape sequences resolved, surrounding quotes stripped.
     value: String = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
-    raw: String = .empty,
     kind: Kind,
     /// Parsed numeric value as an IEEE 754 double.
     value: f64 = 0,
@@ -925,7 +922,6 @@ pub const NumericLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
-    raw: String = .empty,
     /// Raw digits without the trailing `n` suffix (e.g. `"42"` for `42n`, `"0xff"` for `0xffn`).
     value: String = .empty,
 };
@@ -950,7 +946,6 @@ pub const TemplateLiteral = struct {
 
 /// quasi
 pub const TemplateElement = struct {
-    raw: String = .empty,
     /// Escape-decoded content. Empty when `is_cooked_undefined` is true.
     cooked: String = .empty,
     tail: bool,
@@ -1469,7 +1464,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// text content inside JSX elements
 pub const JSXText = struct {
-    raw: String = .empty,
+    value: String = .empty,
 };
 
 /// `{...children}`

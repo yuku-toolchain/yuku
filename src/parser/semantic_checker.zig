@@ -141,11 +141,12 @@ const SemanticVisit = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-string-literals-static-semantics-early-errors
-    pub fn enter_string_literal(self: *Self, lit: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_string_literal(self: *Self, _: ast.StringLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.scope.isStrict()) return .proceed;
 
-        if (util.Utf.hasOctalEscape(ctx.tree.getString(lit.raw)))
-            try self.report(ctx.tree.getSpan(node_index), "Octal escape sequences are not allowed in strict mode", .{
+        const span = ctx.tree.getSpan(node_index);
+        if (util.Utf.hasOctalEscape(ctx.tree.source[span.start..span.end]))
+            try self.report(span, "Octal escape sequences are not allowed in strict mode", .{
                 .help = "Use \\xHH (hex) or \\uHHHH (unicode) escape instead",
             });
 
@@ -153,10 +154,11 @@ const SemanticVisit = struct {
     }
 
     /// https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
-    pub fn enter_numeric_literal(self: *Self, lit: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
+    pub fn enter_numeric_literal(self: *Self, _: ast.NumericLiteral, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         if (!ctx.scope.isStrict()) return .proceed;
 
-        const raw = ctx.tree.getString(lit.raw);
+        const span = ctx.tree.getSpan(node_index);
+        const raw = ctx.tree.source[span.start..span.end];
 
         if (!isLegacyNumericLiteral(raw)) return .proceed;
 
