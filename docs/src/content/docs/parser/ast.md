@@ -109,8 +109,6 @@ A `String` is a lightweight handle to string content . It points into one of two
 const name = tree.getString(node.name); // always returns []const u8
 ```
 
-`String.empty` (zero value `{ 0, 0 }`) represents an empty string. This design means reading any identifier during traversal is just a bounds check . No allocation, no hash lookup.
-
 ### Span
 
 ```zig
