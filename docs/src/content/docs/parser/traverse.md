@@ -76,6 +76,42 @@ ctx.scope         // scope tracker (current scope, flags, strict mode, ancestors
 ctx.symbols       // symbol tracker (declarations, references, binding context)
 ```
 
+### Reading Node Data in Hooks
+
+Each hook receives its node's payload already unpacked as the second argument, so no switching is needed:
+
+```zig
+pub fn enter_binary_expression(
+    self: *V,
+    expr: ast.BinaryExpression, // payload, unpacked from NodeData
+    index: ast.NodeIndex,
+    ctx: *Ctx,
+) traverser.Action {
+    // expr.left, expr.right, expr.operator are ready to use directly
+    return .proceed;
+}
+```
+
+When you need to inspect a child node eagerly without waiting for the traverser to visit it, switch on `ctx.tree.getData`:
+
+```zig
+pub fn enter_call_expression(self: *V, call: ast.CallExpression, index: ast.NodeIndex, ctx: *Ctx) traverser.Action {
+    switch (ctx.tree.getData(call.callee)) {
+        .member_expression => |mem| {
+            // callee is obj.method
+        },
+        .identifier_reference => |id| {
+            const name = ctx.tree.getString(id.name);
+            // callee is a plain identifier
+        },
+        else => {},
+    }
+    return .proceed;
+}
+```
+
+See the [AST reference](/parser/ast) for all node types and their fields.
+
 ## Basic Traverser
 
 The simplest mode. Tracks only the path from root to the current node.
@@ -315,32 +351,6 @@ if (table.resolve(scope_id, "myVar", result.scope_tree)) |sym_id| {
 ```
 
 `resolve()` walks up from the given scope through all ancestor scopes until it finds a matching symbol, just like JavaScript's scope chain lookup. It also checks hoisted `var` declarations that pass through intermediate block scopes. Use `findInScopeOrHoisted()` for the same behavior when looking up names directly.
-
-### Semantic Analysis
-
-`parser.semantic.analyze()` is a pre-built visitor on top of the semantic traverser that performs semantic error checks (like redeclaration detection) and returns the scope tree and symbol table:
-
-```zig
-const result = try parser.semantic.analyze(&tree);
-// Diagnostics are appended to tree.diagnostics
-// result.scope_tree and result.symbol_table are ready
-```
-
-:::note
-`parser.semantic` is the semantic checker module. It is different from `parser.traverser.semantic`, which is the low-level traversal mode the checker is built on.
-:::
-
-If you only need the scope tree and symbol table without semantic error checking, use the semantic traverser directly with an empty visitor:
-
-```zig
-const sem = traverser.semantic;
-
-const Empty = struct {};
-var visitor = Empty{};
-const result = try sem.traverse(Empty, &tree, &visitor);
-```
-
-Or combine scope/symbol tracking with your own analysis by writing a visitor with hooks.
 
 ## Transform Traverser
 
