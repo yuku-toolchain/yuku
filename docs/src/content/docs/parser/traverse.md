@@ -328,25 +328,41 @@ while (it.next()) |sym_id_ptr| {
 
 ### References and Resolution
 
-Every `identifier_reference` node creates a `Reference` with `resolved = .none`. After traversal, resolve all references by walking up scope chains:
+Every `identifier_reference` node creates a `Reference`. After traversal, call `resolveAll` to resolve all references and build a reverse index (symbol to references):
 
 ```zig
 const result = try sem.traverse(MyVisitor, &tree, &visitor);
 
-// Resolve all references
 var table = result.symbol_table;
-table.resolveAll(result.scope_tree);
+try table.resolveAll(tree.allocator(), result.scope_tree);
 
-// Now check a specific reference
-const ref = table.getReference(some_ref_id);
-if (ref.resolved != .none) {
-    const sym = table.getSymbol(ref.resolved);
-    // ref refers to sym
+// Forward: what does this reference point to?
+const resolved = table.referenceSymbol(some_ref_id);
+if (resolved != .none) {
+    const sym = table.getSymbol(resolved);
+    // some_ref_id refers to sym
 }
 
-// Or resolve manually
-if (table.resolve(scope_id, "myVar", result.scope_tree)) |sym_id| {
-    const sym = table.getSymbol(sym_id);
+// Reverse: who references this symbol?
+for (table.symbolReferences(sym_id)) |ref_id| {
+    const ref = table.getReference(ref_id);
+    // ref points to sym_id
+}
+
+// Quick check: is this symbol used at all?
+if (!table.isReferenced(sym_id)) {
+    // unused variable
+}
+
+// Unresolved references (globals, undeclared names)
+for (table.unresolvedReferences()) |ref_id| {
+    const ref = table.getReference(ref_id);
+    // ref.name could not be found in any scope
+}
+
+// Or resolve a single name manually
+if (table.resolve(scope_id, "myVar", result.scope_tree)) |found| {
+    const sym = table.getSymbol(found);
 }
 ```
 
