@@ -60,7 +60,8 @@ fn parseNumericValue(raw: []const u8, kind: ast.NumericLiteral.Kind) f64 {
     var len: usize = 0;
     for (raw) |c| {
         if (c != '_') {
-            if (len < buf.len) { buf[len] = c; len += 1; }
+            if (len >= buf.len) return 0;
+            buf[len] = c; len += 1;
         }
     }
     const s = buf[0..len];
