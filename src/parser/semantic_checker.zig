@@ -964,7 +964,7 @@ const SemanticVisit = struct {
         return switch (tree.getData(node)) {
             .identifier_name => |id| tree.getString(id.name),
             .identifier_reference => |id| tree.getString(id.name),
-            .string_literal => |lit| lit.value(tree),
+            .string_literal => |lit| tree.getString(lit.value),
             else => "",
         };
     }

@@ -4,7 +4,6 @@
 
 const std = @import("std");
 const ast = @import("ast.zig");
-const util = @import("util");
 
 pub const EstreeJsonOptions = struct {
     pretty: bool = true,
@@ -341,46 +340,35 @@ pub const Serializer = struct {
 
     fn writeIdentifier(self: *Self, data: anytype, span: ast.Span) !void {
         try self.begin("Identifier", span);
-        try self.field("name");
-        try self.writeDecodedString(self.tree.getString(data.name));
+        try self.fieldString("name", self.tree.getString(data.name));
         try self.endObject();
     }
 
     fn writePrivateIdentifier(self: *Self, data: ast.PrivateIdentifier, span: ast.Span) !void {
         try self.begin("PrivateIdentifier", span);
-        try self.field("name");
-        try self.writeDecodedString(self.tree.getString(data.name));
+        try self.fieldString("name", self.tree.getString(data.name));
         try self.endObject();
     }
 
     fn writeStringLiteral(self: *Self, data: ast.StringLiteral, span: ast.Span) !void {
         const raw = self.tree.getString(data.raw);
-        const val = ast.StringLiteral.stripQuotes(raw);
+        const val = self.tree.getString(data.value);
         try self.begin("Literal", span);
         try self.field("value");
-        if (self.in_jsx_attribute)
-            try self.writeString(val)
-        else
-            try self.writeDecodedString(val);
+        try self.writeString(val);
         try self.fieldString("raw", raw);
         try self.endObject();
     }
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
         const raw = self.tree.getString(data.raw);
-        var buf: [64]u8 = undefined;
-        const num_str: ?[]const u8 = parseJSNumeric(&buf, raw) catch null;
-
         try self.begin("Literal", span);
-        if (num_str) |s| {
-            if (std.mem.eql(u8, s, "inf") or std.mem.eql(u8, s, "-inf")) {
-                try self.fieldNull("value");
-            } else {
-                try self.field("value");
-                try self.write(s);
-            }
-        } else {
+        if (std.math.isInf(data.value) or std.math.isNan(data.value)) {
             try self.fieldNull("value");
+        } else {
+            try self.field("value");
+            var buf: [64]u8 = undefined;
+            try self.write(std.fmt.bufPrint(&buf, "{e}", .{data.value}) catch "0");
         }
         try self.fieldString("raw", raw);
         try self.endObject();
@@ -388,6 +376,7 @@ pub const Serializer = struct {
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
         const raw = self.tree.getString(data.raw);
+        const digits = self.tree.getString(data.value);
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, "(BigInt) ");
         try self.scratch.appendSlice(self.allocator, raw);
@@ -396,7 +385,7 @@ pub const Serializer = struct {
         try self.fieldString("raw", raw);
         try self.field("bigint");
         self.scratch.clearRetainingCapacity();
-        for (raw[0 .. raw.len - 1]) |c| {
+        for (digits) |c| {
             if (c != '_') try self.scratch.append(self.allocator, c);
         }
         try self.writeString(self.scratch.items);
@@ -441,7 +430,7 @@ pub const Serializer = struct {
     fn writeTemplateElement(self: *Self, data: ast.TemplateElement, span: ast.Span) !void {
         const raw = self.tree.getString(data.raw);
 
-        // normalize line endings: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
+        // normalize line endings in raw: CRLF (\r\n) and standalone CR (\r) -> LF (\n) per spec
         self.scratch.clearRetainingCapacity();
         var i: usize = 0;
         while (i < raw.len) {
@@ -463,7 +452,7 @@ pub const Serializer = struct {
         if (data.is_cooked_undefined)
             try self.writeNull()
         else
-            try self.writeDecodedString(self.scratch.items);
+            try self.writeString(self.tree.getString(data.cooked));
         try self.endObject();
         try self.fieldBool("tail", data.tail);
         try self.endObject();
@@ -729,11 +718,24 @@ pub const Serializer = struct {
 
     fn writeJsonEscaped(self: *Self, s: []const u8) !void {
         var start: usize = 0;
-        for (s, 0..) |c, i| {
+        var i: usize = 0;
+        while (i < s.len) {
+            const c = s[i];
             if (c == '"' or c == '\\' or c < 0x20) {
                 if (i > start) try self.write(s[start..i]);
                 try self.writeJsonEscapedChar(c);
-                start = i + 1;
+                i += 1;
+                start = i;
+            } else if (c == 0xED and i + 2 < s.len and s[i + 1] >= 0xA0 and s[i + 2] >= 0x80) {
+                // WTF-8 encoded surrogate (U+D800..U+DFFF): emit as \udXXX
+                if (i > start) try self.write(s[start..i]);
+                const cp: u16 = (@as(u16, c & 0x0F) << 12) | (@as(u16, s[i + 1] & 0x3F) << 6) | (s[i + 2] & 0x3F);
+                var buf: [6]u8 = undefined;
+                try self.write(std.fmt.bufPrint(&buf, "\\u{x:0>4}", .{cp}) catch unreachable);
+                i += 3;
+                start = i;
+            } else {
+                i += 1;
             }
         }
         if (start < s.len) try self.write(s[start..]);
@@ -762,103 +764,6 @@ pub const Serializer = struct {
         return self.tree.getExtra(range);
     }
 
-    /// writes a JS string value as JSON, handling escape sequences.
-    /// JSON-compatible escapes (\n, \r, \t, \b, \f, \\, \", \/, \uXXXX) pass through directly
-    /// since JSON.parse will interpret them. JS-only escapes (\v, \xXX, \0, octals, \u{...})
-    /// are decoded here since JSON.parse doesn't understand them.
-    fn writeDecodedString(self: *Self, input: []const u8) !void {
-        try self.writeByte('"');
-
-        var i: usize = 0;
-        while (i < input.len) {
-            const c = input[i];
-
-            if (c != '\\') {
-                try self.writeJsonEscapedChar(c);
-                i += 1;
-                continue;
-            }
-            if (i + 1 >= input.len) {
-                try self.write("\\\\");
-                break;
-            }
-
-            const next = input[i + 1];
-
-            if (util.Utf.unicodeSeparatorLen(input, i + 1) > 0) {
-                i += 4;
-                continue;
-            }
-
-            switch (next) {
-                'n', 'r', 't', 'b', 'f', '"', '\\' => {
-                    try self.writeByte('\\');
-                    try self.writeByte(next);
-                    i += 2;
-                },
-                '/' => {
-                    try self.writeByte('/');
-                    i += 2;
-                },
-                'u' => {
-                    if (i + 2 < input.len and input[i + 2] == '{') {
-                        if (util.Utf.parseUnicodeEscape(input, i + 2)) |r| {
-                            try self.writeCodePointAsJson(r.value);
-                            i = r.end;
-                            continue;
-                        }
-                        try self.writeByte('u');
-                        i += 2;
-                    } else if (i + 5 < input.len and util.Utf.parseHex4(input, i + 2) != null) {
-                        try self.write("\\u");
-                        try self.write(input[i + 2 .. i + 6]);
-                        i += 6;
-                    } else {
-                        try self.writeByte('u');
-                        i += 2;
-                    }
-                },
-                'v' => {
-                    try self.write("\\u000b");
-                    i += 2;
-                },
-                '0' => {
-                    if (i + 2 < input.len and util.Utf.isOctalDigit(input[i + 2])) {
-                        const r = util.Utf.parseOctal(input, i + 1);
-                        try self.writeCodePointAsJson(r.value);
-                        i = r.end;
-                    } else {
-                        try self.write("\\u0000");
-                        i += 2;
-                    }
-                },
-                '1'...'7' => {
-                    const r = util.Utf.parseOctal(input, i + 1);
-                    try self.writeCodePointAsJson(r.value);
-                    i = r.end;
-                },
-                'x' => {
-                    if (util.Utf.parseHex2(input, i + 2)) |r| {
-                        try self.writeCodePointAsJson(r.value);
-                        i = r.end;
-                    } else {
-                        try self.writeByte('x');
-                        i += 2;
-                    }
-                },
-                '\r' => {
-                    i += if (i + 2 < input.len and input[i + 2] == '\n') @as(usize, 3) else 2;
-                },
-                '\n' => i += 2,
-                else => {
-                    try self.writeJsonEscapedChar(next);
-                    i += 2;
-                },
-            }
-        }
-
-        try self.writeByte('"');
-    }
 
     fn writeJsonEscapedChar(self: *Self, c: u8) !void {
         switch (c) {
@@ -877,21 +782,6 @@ pub const Serializer = struct {
                     try self.writeByte(c);
                 }
             },
-        }
-    }
-
-    /// writes a Unicode code point as JSON. ASCII chars are escaped if needed,
-    /// non-ASCII are UTF-8 encoded.
-    fn writeCodePointAsJson(self: *Self, cp: u21) !void {
-        if (cp < 0x80) {
-            try self.writeJsonEscapedChar(@intCast(cp));
-        } else {
-            var buf: [4]u8 = undefined;
-            const len = std.unicode.utf8Encode(cp, &buf) catch {
-                try self.write("\u{FFFD}");
-                return;
-            };
-            try self.write(buf[0..len]);
         }
     }
 
@@ -963,47 +853,6 @@ fn buildUtf16PosMap(allocator: std.mem.Allocator, source: []const u8) ![]u32 {
     return map;
 }
 
-fn parseJSNumeric(outbuf: []u8, str: []const u8) ![]const u8 {
-    var buf: [128]u8 = undefined;
-    var len: usize = 0;
-    for (str) |c| {
-        if (c != '_') {
-            if (len >= buf.len) return error.Overflow;
-            buf[len] = c;
-            len += 1;
-        }
-    }
-    const s = buf[0..len];
-    if (s.len == 0) return error.InvalidCharacter;
-
-    var val: f64 = undefined;
-    if (s.len >= 2 and s[0] == '0') {
-        switch (s[1]) {
-            'x', 'X' => val = @floatFromInt(try std.fmt.parseInt(i64, s[2..], 16)),
-            'b', 'B' => val = @floatFromInt(try std.fmt.parseInt(i64, s[2..], 2)),
-            'o', 'O' => val = @floatFromInt(try std.fmt.parseInt(i64, s[2..], 8)),
-            '0'...'7' => {
-                var is_octal = true;
-                for (s[1..]) |c| {
-                    if (c < '0' or c > '7') {
-                        is_octal = false;
-                        break;
-                    }
-                }
-                if (is_octal) {
-                    val = @floatFromInt(try std.fmt.parseInt(i64, s[1..], 8));
-                } else {
-                    val = try std.fmt.parseFloat(f64, s);
-                }
-            },
-            else => val = try std.fmt.parseFloat(f64, s),
-        }
-    } else {
-        val = std.fmt.parseFloat(f64, s) catch @floatFromInt(try std.fmt.parseInt(i64, s, 10));
-    }
-
-    return std.fmt.bufPrint(outbuf, "{e}", .{val});
-}
 
 pub fn toJSON(tree: *const ast.Tree, allocator: std.mem.Allocator, options: EstreeJsonOptions) ![]u8 {
     return Serializer.serialize(tree, allocator, options);

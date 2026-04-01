@@ -166,8 +166,8 @@ pub const Parser = struct {
             (terminator != null and self.current_token.tag == terminator.?);
     }
 
-    /// Returns the resolved name for any identifier-like token.
-    /// Strips '#' for private identifiers, decodes unicode escapes if present.
+    /// returns the resolved name for any identifier-like token.
+    /// strips '#' for private identifiers, decodes unicode escapes if present.
     pub inline fn identifierName(self: *Parser, token: Token) Error!ast.String {
         const is_private = token.tag == .private_identifier;
         const start = token.span.start + @as(u32, @intFromBool(is_private));
@@ -175,10 +175,35 @@ pub const Parser = struct {
         return self.tree.sourceSlice(start, token.span.end);
     }
 
+    /// returns the decoded string value without surrounding quotes.
+    pub inline fn stringValue(self: *Parser, token: Token) Error!ast.String {
+        if (!token.isEscaped()) {
+            return self.tree.sourceSlice(token.span.start + 1, token.span.end - 1);
+        }
+        return self.decodeEscapedString(token.span.start + 1, token.span.end - 1);
+    }
+
+    /// returns the decoded content of a template quasi span.
+    pub inline fn templateElementValue(self: *Parser, token: Token, span: ast.Span) Error!ast.String {
+        if (!token.isEscaped()) {
+            return self.tree.sourceSlice(span.start, span.end);
+        }
+        return self.decodeEscapedString(span.start, span.end);
+    }
+
     fn decodeEscapedIdentifier(self: *Parser, start: u32, end: u32) Error!ast.String {
         @branchHint(.cold);
         var buf: [256]u8 = undefined;
-        return try self.tree.addString(util.Utf.decodeEscapes(self.source[start..end], &buf));
+        return try self.tree.addString(util.Utf.decodeIdentifierEscapes(self.source[start..end], &buf));
+    }
+
+    fn decodeEscapedString(self: *Parser, start: u32, end: u32) Error!ast.String {
+        @branchHint(.cold);
+        const alloc = self.allocator();
+        var buf: std.ArrayList(u8) = .empty;
+        defer buf.deinit(alloc);
+        try util.Utf.decodeStringEscapes(self.source[start..end], &buf, alloc);
+        return try self.tree.addString(buf.items);
     }
 
     pub inline fn describeToken(self: *Parser, token: Token) []const u8 {

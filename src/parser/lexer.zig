@@ -312,6 +312,8 @@ pub const Lexer = struct {
                 self.cursor += 2;
                 return self.createToken(.template_middle, start, self.cursor);
             }
+            // raw CR requires cooked value normalization
+            if (c == '\r') self.setTokenFlag(.escaped);
             self.cursor += 1;
         }
         return error.NonTerminatedTemplateLiteral;
@@ -492,6 +494,9 @@ pub const Lexer = struct {
                 return self.createToken(.template_head, start, self.cursor);
             }
 
+            // raw CR requires cooked value normalization
+            if (c == '\r') self.setTokenFlag(.escaped);
+
             self.cursor += 1;
         }
 
@@ -527,6 +532,7 @@ pub const Lexer = struct {
 
     fn consumeEscapeImpl(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         self.cursor += 1; // skip backslash
+        self.setTokenFlag(.escaped);
 
         if (self.cursor >= self.source.len) {
             return error.UnterminatedString;

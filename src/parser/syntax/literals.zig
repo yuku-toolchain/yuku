@@ -1,3 +1,4 @@
+const std = @import("std");
 const ast = @import("../ast.zig");
 const lexer = @import("../lexer.zig");
 const Token = @import("../token.zig").Token;
@@ -12,6 +13,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(.{
         .string_literal = .{
             .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
+            .value = try parser.stringValue(token),
         },
     }, token.span);
 }
@@ -39,16 +41,44 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
         return try parser.tree.createNode(.{
             .bigint_literal = .{
                 .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
+                // value is the raw digits without the trailing 'n'
+                .value = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
             },
         }, token.span);
     }
 
+    const kind = ast.NumericLiteral.Kind.fromToken(token.tag);
+    const raw = parser.source[token.span.start..token.span.end];
     return try parser.tree.createNode(.{
         .numeric_literal = .{
             .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
-            .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
+            .kind = kind,
+            .value = parseNumericValue(raw, kind),
         },
     }, token.span);
+}
+
+fn parseNumericValue(raw: []const u8, kind: ast.NumericLiteral.Kind) f64 {
+    // strip numeric separators into a stack buffer
+    var buf: [128]u8 = undefined;
+    var len: usize = 0;
+    for (raw) |c| {
+        if (c != '_') {
+            if (len < buf.len) { buf[len] = c; len += 1; }
+        }
+    }
+    const s = buf[0..len];
+    if (s.len == 0) return 0;
+    return switch (kind) {
+        .decimal => std.fmt.parseFloat(f64, s) catch 0,
+        .hex => @floatFromInt(std.fmt.parseInt(u64, s[2..], 16) catch 0),
+        .octal => blk: {
+            // modern: 0o/0O prefix; legacy: bare 0 prefix
+            const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
+            break :blk @floatFromInt(std.fmt.parseInt(u64, digits, 8) catch 0);
+        },
+        .binary => @floatFromInt(std.fmt.parseInt(u64, s[2..], 2) catch 0),
+    };
 }
 
 pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -159,9 +189,15 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
         try parser.report(span, "Bad escape sequence in untagged template literal", .{});
     }
 
+    const cooked: ast.String = if (is_cooked_undefined)
+        .empty
+    else
+        try parser.templateElementValue(token, span);
+
     return parser.tree.createNode(.{
         .template_element = .{
             .raw = parser.tree.sourceSlice(span.start, span.end),
+            .cooked = cooked,
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },

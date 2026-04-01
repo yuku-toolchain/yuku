@@ -129,8 +129,7 @@ pub fn parseUnicodeEscape(input: []const u8, start: usize) ?struct { value: u21,
 }
 
 /// resolves \uHHHH / \u{HHHH} escapes in an identifier to their UTF-8 form.
-/// returns `raw` unchanged on decode failure or buffer overflow.
-pub fn decodeEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
+pub fn decodeIdentifierEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
     var out: usize = 0;
     var i: usize = 0;
     while (i < raw.len) {
@@ -153,6 +152,110 @@ pub fn decodeEscapes(raw: []const u8, buf: *[256]u8) []const u8 {
         }
     }
     return buf[0..out];
+}
+
+/// decodes all JavaScript string escape sequences from `raw` into `out`.
+pub fn decodeStringEscapes(raw: []const u8, out: *std.ArrayList(u8), alloc: std.mem.Allocator) error{OutOfMemory}!void {
+    var i: usize = 0;
+    while (i < raw.len) {
+        // normalize raw CR line endings per ECMAScript TV semantics:
+        // \r\n -> \n, standalone \r -> \n
+        if (raw[i] == '\r') {
+            try out.append(alloc, '\n');
+            i += 1;
+            if (i < raw.len and raw[i] == '\n') i += 1;
+            continue;
+        }
+        if (raw[i] != '\\') {
+            try out.append(alloc, raw[i]);
+            i += 1;
+            continue;
+        }
+        i += 1; // skip backslash
+        if (i >= raw.len) break;
+        switch (raw[i]) {
+            'n' => { try out.append(alloc, '\n'); i += 1; },
+            'r' => { try out.append(alloc, '\r'); i += 1; },
+            't' => { try out.append(alloc, '\t'); i += 1; },
+            'b' => { try out.append(alloc, 0x08); i += 1; },
+            'f' => { try out.append(alloc, 0x0C); i += 1; },
+            'v' => { try out.append(alloc, 0x0B); i += 1; },
+            '0' => {
+                if (i + 1 < raw.len and std.ascii.isDigit(raw[i + 1])) {
+                    const r = parseOctal(raw, i);
+                    try appendCodePoint(out, alloc, r.value);
+                    i = r.end;
+                } else {
+                    try out.append(alloc, 0);
+                    i += 1;
+                }
+            },
+            '1'...'7' => {
+                const r = parseOctal(raw, i);
+                try appendCodePoint(out, alloc, r.value);
+                i = r.end;
+            },
+            'x' => {
+                if (parseHex2(raw, i + 1)) |r| {
+                    try appendCodePoint(out, alloc, r.value);
+                    i = r.end;
+                } else {
+                    try out.append(alloc, 'x');
+                    i += 1;
+                }
+            },
+            'u' => {
+                if (parseUnicodeEscape(raw, i + 1)) |r| {
+                    var cp = r.value;
+                    var end = r.end;
+                    // combine surrogate pair if both halves are present
+                    if (std.unicode.utf16IsHighSurrogate(@intCast(cp)) and
+                        end + 1 < raw.len and raw[end] == '\\' and raw[end + 1] == 'u')
+                    {
+                        if (parseUnicodeEscape(raw, end + 2)) |r2| {
+                            if (std.unicode.utf16IsLowSurrogate(@intCast(r2.value))) {
+                                // decode surrogate pair: U+10000 + (high - 0xD800) * 0x400 + (low - 0xDC00)
+                                cp = 0x10000 + (@as(u21, cp) - 0xD800) * 0x400 + (@as(u21, r2.value) - 0xDC00);
+                                end = r2.end;
+                            }
+                        }
+                    }
+                    try appendCodePoint(out, alloc, cp);
+                    i = end;
+                } else {
+                    try out.append(alloc, 'u');
+                    i += 1;
+                }
+            },
+            '\n' => i += 1, // line continuation \<LF>
+            '\r' => {
+                i += 1;
+                if (i < raw.len and raw[i] == '\n') i += 1; // line continuation \<CR><LF>
+            },
+            else => {
+                const us_len = unicodeSeparatorLen(raw, i);
+                if (us_len > 0) {
+                    i += us_len; // line continuation \<LS> or \<PS>
+                } else {
+                    try out.append(alloc, raw[i]); // unknown escape: pass through as-is
+                    i += 1;
+                }
+            },
+        }
+    }
+}
+
+/// writes a Unicode code point as UTF-8. lone surrogates use WTF-8 encoding.
+fn appendCodePoint(out: *std.ArrayList(u8), alloc: std.mem.Allocator, cp: u21) error{OutOfMemory}!void {
+    if (cp >= 0xD800 and cp <= 0xDFFF) {
+        try out.append(alloc, 0xE0 | @as(u8, @intCast(cp >> 12)));
+        try out.append(alloc, 0x80 | @as(u8, @intCast((cp >> 6) & 0x3F)));
+        try out.append(alloc, 0x80 | @as(u8, @intCast(cp & 0x3F)));
+    } else {
+        var buf: [4]u8 = undefined;
+        const n = std.unicode.utf8Encode(cp, &buf) catch unreachable;
+        try out.appendSlice(alloc, buf[0..n]);
+    }
 }
 
 /// checks whether a string contains a legacy octal escape

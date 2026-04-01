@@ -894,21 +894,16 @@ pub const WithStatement = struct {
 pub const StringLiteral = struct {
     /// Raw string text including quotes.
     raw: String = .empty,
-
-    /// Returns the string content without surrounding quotes
-    pub fn value(self: StringLiteral, tree: *const Tree) []const u8 {
-        return stripQuotes(tree.getString(self.raw));
-    }
-
-    pub fn stripQuotes(raw: []const u8) []const u8 {
-        return if (raw.len >= 2) raw[1 .. raw.len - 1] else raw;
-    }
+    /// Decoded string content, escape sequences resolved, surrounding quotes stripped.
+    value: String = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
     raw: String = .empty,
     kind: Kind,
+    /// Parsed numeric value as an IEEE 754 double.
+    value: f64 = 0,
 
     pub const Kind = enum {
         decimal,
@@ -931,6 +926,8 @@ pub const NumericLiteral = struct {
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
     raw: String = .empty,
+    /// Raw digits without the trailing `n` suffix (e.g. `"42"` for `42n`, `"0xff"` for `0xffn`).
+    value: String = .empty,
 };
 
 pub const BooleanLiteral = struct {
@@ -954,9 +951,11 @@ pub const TemplateLiteral = struct {
 /// quasi
 pub const TemplateElement = struct {
     raw: String = .empty,
+    /// Escape-decoded content. Empty when `is_cooked_undefined` is true.
+    cooked: String = .empty,
     tail: bool,
     /// True when this quasi's cooked template value is undefined per
-    /// ECMAScript TV semantics.
+    /// ECMAScript TV semantics (invalid escape in tagged template).
     is_cooked_undefined: bool = false,
 };
 
