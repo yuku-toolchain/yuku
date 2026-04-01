@@ -3,7 +3,7 @@ title: Parser
 description: A fast, spec-compliant JavaScript and TypeScript parser written in Zig.
 ---
 
-Yuku's parser turns JavaScript and TypeScript source code into an Abstract Syntax Tree (AST). It is 100% ECMAScript spec compliant, passes all 45,000+ [Test262](https://github.com/tc39/test262) tests, and supports modern features including decorators, source phase imports, deferred imports, and `using`/`await using` declarations.
+Yuku's parser turns JavaScript and TypeScript source code into an Abstract Syntax Tree (AST).
 
 ## Installation
 
