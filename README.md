@@ -1,27 +1,49 @@
 <!-- markdownlint-disable first-line-h1 -->
-
-<!-- markdownlint-start-capture -->
 <!-- markdownlint-disable-file no-inline-html -->
 <div align="center">
 
   <!-- markdownlint-disable-next-line no-alt-text -->
-  <img src="/docs/public/logo.svg" alt="Logo" width="300" />
-  
-  <br>
-  <br>
+  <img src="/docs/public/logo.svg" alt="Logo" width="280" />
+
+  <br><br>
 
   [![NPM Version](https://img.shields.io/npm/v/yuku?logo=npm&logoColor=212121&label=version&labelColor=ffc44e&color=212121)](https://npmjs.com/package/yuku)
   [![sponsor](https://img.shields.io/badge/sponsor-EA4AAA?logo=githubsponsors&labelColor=FAFAFA)](https://github.com/sponsors/arshad-yaseen)
 
-Yuku is a high-performance JavaScript and TypeScript parser and toolchain written in Zig. Spec-compliant, zero dependencies, fast by design.
+  A JavaScript/TypeScript parser and toolchain written in Zig.<br>
+  Spec-compliant. Zero dependencies. Fast by design.
 
 </div>
 
-## 📖 Documentation
+<br>
 
-Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
+![Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript.png)
 
-## 🤝 Contributing
+<div align="center"><sub>Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) · Apple M4 Pro · <a href="https://github.com/yuku-toolchain/parser-benchmark">source</a></sub></div>
+
+<br>
+
+```zig
+const std = @import("std");
+const parser = @import("parser");
+
+const traverser = parser.traverser.scoped;
+
+pub fn main() !void {
+    var tree = try parser.parse(std.heap.page_allocator, source, .{ .lang = .tsx });
+    defer tree.deinit();
+
+    // walk the AST
+    var visitor = MyVisitor{};
+    try traverser.traverse(MyVisitor, &tree, &visitor);
+}
+```
+
+## Documentation
+
+Full docs, guides, and API reference at **[yuku.fyi](https://yuku.fyi)**.
+
+## Contributing
 
 Yuku is pure Zig with no external dependencies.
 
@@ -31,15 +53,11 @@ cd yuku
 zig build
 ```
 
-### Testing
-
-Run the full test suite (45,000+ files from Test262 and others) with AST matching:
+Run the full test suite (45,000+ Test262 files with AST matching):
 
 ```bash
 bun run test
 ```
-
-The first run will download the test suite (wait for it to finish). After the run completes, check `test/results` for results.
 
 ## Roadmap
 
@@ -47,5 +65,5 @@ The first run will download the test suite (wait for it to finish). After the ru
 - [x] WASM
 - [x] JSX Support
 - [x] Visitor/Traverser
-- [ ] TypeScript Support (In Progress)
+- [ ] TypeScript Support _(in progress)_
 - [ ] Module Resolver
