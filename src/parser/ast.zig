@@ -962,7 +962,7 @@ pub const NumericLiteral = struct {
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
     /// Raw digits without the trailing `n` suffix (e.g. `"42"` for `42n`, `"0xff"` for `0xffn`).
-    value: String = .empty,
+    raw: String = .empty,
 };
 
 pub const BooleanLiteral = struct {

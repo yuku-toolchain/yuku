@@ -38,7 +38,7 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.tree.createNode(.{
             .bigint_literal = .{
-                .value = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
+                .raw = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
             },
         }, token.span);
     }

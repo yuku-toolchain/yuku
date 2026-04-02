@@ -374,7 +374,7 @@ pub const Serializer = struct {
 
     fn writeBigIntLiteral(self: *Self, data: ast.BigIntLiteral, span: ast.Span) !void {
         const raw = self.tree.source[span.start..span.end];
-        const digits = self.tree.getString(data.value);
+        const digits = self.tree.getString(data.raw);
         self.scratch.clearRetainingCapacity();
         try self.scratch.appendSlice(self.allocator, "(BigInt) ");
         try self.scratch.appendSlice(self.allocator, raw);
