@@ -285,14 +285,14 @@ const TargetScope = enum {
 pub const SymbolTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
-    symbols: std.ArrayList(Symbol) = .{},
-    references: std.ArrayList(Reference) = .{},
+    symbols: std.ArrayList(Symbol) = .empty,
+    references: std.ArrayList(Reference) = .empty,
     /// Per-scope hash maps for name lookup.
-    scope_maps: std.ArrayList(ScopeMap) = .{},
+    scope_maps: std.ArrayList(ScopeMap) = .empty,
     /// Hoisted vars passing through intermediate block scopes.
     /// A `var` inside a block hoists to the function scope, but the name
     /// is still "taken" in each block it passes through (Section 14.2.1).
-    hoisting_variables: std.ArrayList(ScopeMap) = .{},
+    hoisting_variables: std.ArrayList(ScopeMap) = .empty,
 
     // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,

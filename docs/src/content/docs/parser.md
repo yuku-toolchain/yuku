@@ -182,7 +182,7 @@ const result = try sem.traverse(@TypeOf(visitor), &tree, &visitor);
 The AST can be serialized to [ESTree](https://github.com/estree/estree)-compatible JSON. JavaScript/JSX output matches [Acorn](https://www.npmjs.com/package/acorn). TypeScript output conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree).
 
 ```zig
-const json = try parser.estree.Serializer.serialize(&tree, allocator, .{});
+const json = try parser.estree.toJSON(&tree, allocator, .{});
 defer allocator.free(json);
 
 std.debug.print("{s}\n", .{json});

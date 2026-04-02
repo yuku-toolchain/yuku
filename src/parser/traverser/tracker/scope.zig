@@ -123,7 +123,7 @@ const ScopeStack = struct {
 pub const ScopeTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
-    scopes: std.ArrayList(Scope) = .{},
+    scopes: std.ArrayList(Scope) = .empty,
     scope_stack: ScopeStack = .{},
 
     pub fn init(tree: *ast.Tree) Allocator.Error!ScopeTracker {

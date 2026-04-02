@@ -491,7 +491,7 @@ out.program = try out.createNode(
 
 ### Building a New AST While Traversing Another
 
-A powerful pattern is traversing one tree (with full context: scopes, symbols, path) while building a completely separate output tree. This is how transpilers work:
+A powerful pattern is traversing one tree (with full context: scopes, symbols, path) while building a completely separate output tree:
 
 ```zig
 const sem = traverser.semantic;

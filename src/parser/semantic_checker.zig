@@ -42,7 +42,7 @@ const SemanticVisit = struct {
     allocator: Allocator,
 
     exported_names: std.StringHashMapUnmanaged(ast.NodeIndex) = .{},
-    export_specifiers: std.ArrayListUnmanaged(ExportSpecifierInfo) = .{},
+    export_specifiers: std.ArrayList(ExportSpecifierInfo) = .empty,
 
     const ExportSpecifierInfo = struct {
         local_name: []const u8,
