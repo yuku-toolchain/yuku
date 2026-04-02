@@ -66,6 +66,12 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
 fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
+    // regular identifiers
+    if (tag == .identifier) {
+        @branchHint(.likely);
+        return literals.parseIdentifier(parser);
+    }
+
     if (tag == .increment or tag == .decrement) {
         return parseUpdateExpression(parser, true, .null);
     }
@@ -184,6 +190,7 @@ pub inline fn parsePrimaryExpression(parser: *Parser, opts: ParseExpressionOpts)
         .function => functions.parseFunction(parser, .{ .is_expression = true }, null),
         .class => class.parseClass(parser, .{ .is_expression = true }, null),
         else => {
+            // contextual keywords used as identifiers (let, as, from, get, set, etc.)
             if (parser.current_token.tag.isIdentifierLike()) {
                 return literals.parseIdentifier(parser);
             }

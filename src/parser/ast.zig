@@ -899,8 +899,47 @@ pub const StringLiteral = struct {
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
     kind: Kind,
-    /// Parsed numeric value as an IEEE 754 double.
-    value: f64 = 0,
+    raw: String = .empty,
+
+    /// Computes the IEEE 754 double value.
+    pub fn value(self: NumericLiteral, tree: *const Tree) f64 {
+        const raw = tree.getString(self.raw);
+        if (raw.len == 0) return 0;
+        // strip numeric separators
+        var buf: [128]u8 = undefined;
+        var len: usize = 0;
+        for (raw) |c| {
+            if (c != '_') {
+                if (len >= buf.len) return 0;
+                buf[len] = c;
+                len += 1;
+            }
+        }
+        const s = buf[0..len];
+        if (s.len == 0) return 0;
+        return switch (self.kind) {
+            .decimal => std.fmt.parseFloat(f64, s) catch 0,
+            .hex => parseIntOrFloat(s[2..], 16),
+            .octal => blk: {
+                // modern: 0o/0O prefix; legacy: bare 0 prefix
+                const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
+                break :blk parseIntOrFloat(digits, 8);
+            },
+            .binary => parseIntOrFloat(s[2..], 2),
+        };
+    }
+
+    fn parseIntOrFloat(digits: []const u8, base: u8) f64 {
+        const v = std.fmt.parseInt(u64, digits, base) catch {
+            var val: f64 = 0;
+            const fbase: f64 = @floatFromInt(base);
+            for (digits) |d| {
+                val = val * fbase + @as(f64, @floatFromInt(std.fmt.charToDigit(d, base) catch unreachable));
+            }
+            return val;
+        };
+        return @floatFromInt(v);
+    }
 
     pub const Kind = enum {
         decimal,

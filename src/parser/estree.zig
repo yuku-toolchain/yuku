@@ -359,13 +359,14 @@ pub const Serializer = struct {
     }
 
     fn writeNumericLiteral(self: *Self, data: ast.NumericLiteral, span: ast.Span) !void {
+        const val = data.value(self.tree);
         try self.begin("Literal", span);
-        if (std.math.isInf(data.value) or std.math.isNan(data.value)) {
+        if (std.math.isInf(val) or std.math.isNan(val)) {
             try self.fieldNull("value");
         } else {
             try self.field("value");
             var buf: [64]u8 = undefined;
-            try self.write(std.fmt.bufPrint(&buf, "{e}", .{data.value}) catch "0");
+            try self.write(std.fmt.bufPrint(&buf, "{e}", .{val}) catch "0");
         }
         try self.fieldString("raw", self.tree.source[span.start..span.end]);
         try self.endObject();
