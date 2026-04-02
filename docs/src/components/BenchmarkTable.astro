@@ -1,0 +1,136 @@
+---
+const BENCHMARK_URL =
+  "https://raw.githubusercontent.com/yuku-toolchain/ecmascript-native-parser-benchmark/refs/heads/main/result/typescript.json";
+
+interface Result {
+  command: string;
+  mean: number;
+  memory_usage_byte: number[];
+}
+
+function parserName(command: string): string {
+  const base = command.replace("./bin/", "").split("_")[0];
+  return base.charAt(0).toUpperCase() + base.slice(1);
+}
+
+function isSemantic(command: string): boolean {
+  return command.includes("semantic");
+}
+
+function ms(seconds: number): string {
+  return (seconds * 1000).toFixed(1);
+}
+
+function mb(bytes: number): string {
+  return (bytes / 1024 / 1024).toFixed(0);
+}
+
+type Row = { name: string; ms: string; memory: string; highlight: boolean };
+
+let parseRows: Row[] = [];
+let semanticRows: Row[] = [];
+
+try {
+  const res = await fetch(BENCHMARK_URL);
+  const data: { results: Result[] } = await res.json();
+
+  parseRows = data.results
+    .filter((r) => !isSemantic(r.command))
+    .sort((a, b) => a.mean - b.mean)
+    .map((r) => ({
+      name: parserName(r.command),
+      ms: ms(r.mean),
+      memory: mb(r.memory_usage_byte[0]),
+      highlight: r.command.includes("yuku"),
+    }));
+
+  semanticRows = data.results
+    .filter((r) => isSemantic(r.command))
+    .sort((a, b) => a.mean - b.mean)
+    .map((r) => ({
+      name: parserName(r.command),
+      ms: ms(r.mean),
+      memory: mb(r.memory_usage_byte[0]),
+      highlight: r.command.includes("yuku"),
+    }));
+} catch {
+  // fail silently — image benchmark is still shown
+}
+---
+
+{
+  parseRows.length > 0 && (
+    <div class="benchmark-wrap">
+      <table class="benchmark-table">
+        <caption>
+          Parsing 7.8 MB TypeScript compiler source · macOS ARM (Apple M4 Pro)
+        </caption>
+        <thead>
+          <tr>
+            <th>Parser</th>
+            <th>Mean time</th>
+            <th>Memory</th>
+          </tr>
+        </thead>
+        <tbody>
+          {parseRows.map((row) => (
+            <tr class={row.highlight ? "highlight" : ""}>
+              <td>
+                <strong>{row.name}</strong>
+              </td>
+              <td>{row.ms} ms</td>
+              <td>{row.memory} MB</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {semanticRows.length > 0 && (
+        <table class="benchmark-table">
+          <caption>
+            With semantic analysis (scope resolution + symbol table)
+          </caption>
+          <thead>
+            <tr>
+              <th>Parser</th>
+              <th>Mean time</th>
+              <th>Memory</th>
+            </tr>
+          </thead>
+          <tbody>
+            {semanticRows.map((row) => (
+              <tr class={row.highlight ? "highlight" : ""}>
+                <td>
+                  <strong>{row.name}</strong>
+                </td>
+                <td>{row.ms} ms</td>
+                <td>{row.memory} MB</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <p class="benchmark-source">
+        <a href="https://github.com/yuku-toolchain/ecmascript-native-parser-benchmark">
+          Benchmark source
+        </a>{" "}
+        · numbers fetched at build time
+      </p>
+    </div>
+  )
+}
+
+<style>
+  .benchmark-wrap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>

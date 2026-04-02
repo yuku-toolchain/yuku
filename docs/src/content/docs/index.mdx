@@ -9,6 +9,8 @@ head:
       }
 ---
 
+import BenchmarkTable from '../../components/BenchmarkTable.astro';
+
 <div align="center">
 
 <h1 style="font-size: 5rem;margin-bottom: 2rem;color: var(--sl-color-accent);">yuku</h1>
@@ -32,6 +34,8 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 <span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
 
 </div>
+
+<BenchmarkTable />
 
 **Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
 
