@@ -11,7 +11,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
     return try parser.tree.createNode(.{
         .string_literal = .{
-            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
+            .value = try parser.stringValue(token),
         },
     }, token.span);
 }
@@ -38,15 +38,15 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
     if (token.tag == .bigint_literal) {
         return try parser.tree.createNode(.{
             .bigint_literal = .{
-                .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
+                .raw = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
             },
         }, token.span);
     }
 
     return try parser.tree.createNode(.{
         .numeric_literal = .{
-            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
+            .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
         },
     }, token.span);
 }
@@ -159,9 +159,14 @@ inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagged: 
         try parser.report(span, "Bad escape sequence in untagged template literal", .{});
     }
 
+    const cooked: ast.String = if (is_cooked_undefined)
+        .empty
+    else
+        try parser.templateElementValue(token, span);
+
     return parser.tree.createNode(.{
         .template_element = .{
-            .raw = parser.tree.sourceSlice(span.start, span.end),
+            .cooked = cooked,
             .tail = tail,
             .is_cooked_undefined = is_cooked_undefined,
         },

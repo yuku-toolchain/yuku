@@ -892,23 +892,54 @@ pub const WithStatement = struct {
 
 /// https://tc39.es/ecma262/#sec-literals-string-literals
 pub const StringLiteral = struct {
-    /// Raw string text including quotes.
-    raw: String = .empty,
-
-    /// Returns the string content without surrounding quotes
-    pub fn value(self: StringLiteral, tree: *const Tree) []const u8 {
-        return stripQuotes(tree.getString(self.raw));
-    }
-
-    pub fn stripQuotes(raw: []const u8) []const u8 {
-        return if (raw.len >= 2) raw[1 .. raw.len - 1] else raw;
-    }
+    /// Decoded string content, escape sequences resolved, surrounding quotes stripped.
+    value: String = .empty,
 };
 
 /// https://tc39.es/ecma262/#sec-literals-numeric-literals
 pub const NumericLiteral = struct {
-    raw: String = .empty,
     kind: Kind,
+    raw: String = .empty,
+
+    /// Computes the IEEE 754 double value.
+    pub fn value(self: NumericLiteral, tree: *const Tree) f64 {
+        const raw = tree.getString(self.raw);
+        if (raw.len == 0) return 0;
+        // strip numeric separators
+        var buf: [128]u8 = undefined;
+        var len: usize = 0;
+        for (raw) |c| {
+            if (c != '_') {
+                if (len >= buf.len) return 0;
+                buf[len] = c;
+                len += 1;
+            }
+        }
+        const s = buf[0..len];
+        if (s.len == 0) return 0;
+        return switch (self.kind) {
+            .decimal => std.fmt.parseFloat(f64, s) catch 0,
+            .hex => parseIntOrFloat(s[2..], 16),
+            .octal => blk: {
+                // modern: 0o/0O prefix; legacy: bare 0 prefix
+                const digits = if (s.len >= 2 and (s[1] == 'o' or s[1] == 'O')) s[2..] else s[1..];
+                break :blk parseIntOrFloat(digits, 8);
+            },
+            .binary => parseIntOrFloat(s[2..], 2),
+        };
+    }
+
+    fn parseIntOrFloat(digits: []const u8, base: u8) f64 {
+        const v = std.fmt.parseInt(u64, digits, base) catch {
+            var val: f64 = 0;
+            const fbase: f64 = @floatFromInt(base);
+            for (digits) |d| {
+                val = val * fbase + @as(f64, @floatFromInt(std.fmt.charToDigit(d, base) catch unreachable));
+            }
+            return val;
+        };
+        return @floatFromInt(v);
+    }
 
     pub const Kind = enum {
         decimal,
@@ -930,6 +961,7 @@ pub const NumericLiteral = struct {
 
 /// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
 pub const BigIntLiteral = struct {
+    /// Raw digits without the trailing `n` suffix (e.g. `"42"` for `42n`, `"0xff"` for `0xffn`).
     raw: String = .empty,
 };
 
@@ -953,10 +985,11 @@ pub const TemplateLiteral = struct {
 
 /// quasi
 pub const TemplateElement = struct {
-    raw: String = .empty,
+    /// Escape-decoded content. Empty when `is_cooked_undefined` is true.
+    cooked: String = .empty,
     tail: bool,
     /// True when this quasi's cooked template value is undefined per
-    /// ECMAScript TV semantics.
+    /// ECMAScript TV semantics (invalid escape in tagged template).
     is_cooked_undefined: bool = false,
 };
 
@@ -1470,7 +1503,7 @@ pub const JSXEmptyExpression = struct {};
 
 /// text content inside JSX elements
 pub const JSXText = struct {
-    raw: String = .empty,
+    value: String = .empty,
 };
 
 /// `{...children}`

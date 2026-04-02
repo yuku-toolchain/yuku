@@ -1,316 +1,407 @@
 ---
-title: AST Reference
-description: Complete AST node reference for Yuku's JavaScript and TypeScript parser.
+title: AST
+description: Internal AST structure, node types, and the data model for Yuku's parser.
 ---
 
-Internally, Yuku uses an optimized AST designed for performance in Zig. When serialized to JSON or exposed through Node.js bindings, this internal AST is converted to an [ESTree](https://github.com/estree/estree)-compatible format, matching the output of [Oxc](https://oxc.rs):
+Yuku's internal AST is a flat, arena-allocated structure optimized for sequential access. When serialized to JSON or exposed through Node.js bindings, it is converted to an [ESTree](https://github.com/estree/estree)-compatible format matching [Oxc](https://oxc.rs):
 
-- **JavaScript / JSX**: Fully conformant with the [ESTree](https://github.com/estree/estree) standard, identical to the AST produced by [Acorn](https://www.npmjs.com/package/acorn).
-- **TypeScript**: Conforms to the [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) format used by `@typescript-eslint`.
+- **JavaScript / JSX**: Fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
+- **TypeScript**: Conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
 
-The only extensions beyond the base specs are support for Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a non-standard `hashbang` field on `Program`.
+Extensions beyond the base specs: Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `Program`.
 
-This page covers the structure of the internal Zig AST, all node types, and how to work with them.
+This page covers the internal Zig AST: its memory model, core types, and the complete node reference.
 
-## Nodes
+## Memory Model
 
-All AST nodes are stored in a single flat array (`tree.nodes`). Instead of heap-allocated tree nodes connected by pointers, every node is identified by a `NodeIndex`, a simple `u32` that indexes into this array.
+The AST is not a graph of heap-allocated structs. All nodes live in a single flat array (`Tree.nodes`), and children reference each other by integer index. This gives linear memory layout and predictable cache behavior during traversal.
 
 ```
-NodeIndex  ->  nodes[i]  ->  { data: NodeData, span: Span }
+Tree
+ nodes   NodeList        flat array of all nodes (data + span, struct-of-arrays)
+ extra   []NodeIndex     variable-length child lists (IndexRange points here)
+ strings StringPool      all string content (source refs + interned extras)
 ```
 
-Each node has two parts:
+`NodeList` is a `MultiArrayList(Node)`, meaning `data` and `span` are stored in separate parallel arrays. Reading only spans, or only data, stays within a single array.
 
-- **`data`**: A tagged union (`NodeData`) that tells you what kind of node it is and holds its fields.
-- **`span`**: The byte range `{ start: u32, end: u32 }` in the original source code.
+All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everything at once.
 
-This flat layout gives excellent cache locality during traversals, because all node data is packed contiguously in memory.
+## The Tree
 
-### Node Data
+`Tree` is the root container returned by `parser.parse()`.
 
-`NodeData` is a Zig tagged union with a variant for every possible AST node type. When you read a node's data, you switch on the tag to determine the node type and access its fields:
+| Field | Type | Description |
+|-------|------|-------------|
+| `program` | `NodeIndex` | Root node (always a `program`) |
+| `nodes` | `NodeList` | All AST nodes |
+| `extra` | `ArrayList(NodeIndex)` | Variable-length child index lists |
+| `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints |
+| `comments` | `[]const Comment` | All comments found in source |
+| `source` | `[]const u8` | Original source text |
+| `source_type` | `SourceType` | `.script` or `.module` |
+| `lang` | `Lang` | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts` |
+
+Key read methods:
 
 ```zig
-const data = tree.getData(node_index);
+tree.getData(index)           // NodeData for a node
+tree.getSpan(index)           // Span (source byte range) for a node
+tree.getExtra(range)          // []const NodeIndex for an IndexRange
+tree.getString(handle)        // []const u8 from a String handle
+
+tree.hasErrors()              // true if any diagnostic has severity .error
+tree.isTs()                   // true for .ts, .tsx, .dts
+tree.isJsx()                  // true for .jsx, .tsx
+tree.isModule()               // true for source_type .module
+```
+
+## Core Types
+
+Four types appear in nearly every node definition. Understanding them once makes the entire node reference readable.
+
+### NodeIndex
+
+```zig
+pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
+```
+
+Every node is identified by its position in `Tree.nodes`. Optional child fields use `.null` to indicate absence:
+
+```zig
+// if_statement.alternate is .null when there is no else branch
+if (node.alternate != .null) {
+    const else_data = tree.getData(node.alternate);
+}
+```
+
+### IndexRange
+
+```zig
+pub const IndexRange = struct { start: u32, len: u32 };
+```
+
+Nodes with a variable number of children store them as a contiguous slice in `Tree.extra`. An `IndexRange` is a `(start, len)` window into that array.
+
+```zig
+const children = tree.getExtra(node.body); // []const NodeIndex
+for (children) |child_index| {
+    const child_data = tree.getData(child_index);
+}
+```
+
+`IndexRange.empty` (`{ .start = 0, .len = 0 }`) represents an empty list.
+
+### String
+
+```zig
+pub const String = struct { start: u32, end: u32 };
+```
+
+A `String` is a lightweight handle to string content . It points into one of two backing stores:
+
+- **Source slice (zero-copy)**: most identifiers and string literals parsed from source. The bytes live inside the original `source` slice .
+- **Pool entry**: programmatically added strings (`tree.addString()`), transformed names, or escaped identifiers. These live in the string pool's extra buffer.
+
+`tree.getString(handle)` resolves both cases transparently:
+
+```zig
+const name = tree.getString(node.name); // always returns []const u8
+```
+
+### Span
+
+```zig
+pub const Span = struct { start: u32, end: u32 };
+```
+
+Byte offsets into the source text. `start` is inclusive, `end` is exclusive:
+
+```zig
+const span = tree.getSpan(index);
+const source_text = tree.source[span.start..span.end];
+```
+
+## NodeData
+
+`NodeData` is a tagged union with a variant for every node type. `tree.getData(index)` returns one, and you switch on the tag to determine the type and unpack its fields:
+
+```zig
+const data = tree.getData(index);
 switch (data) {
+    .binary_expression => |expr| {
+        // expr.left and expr.right are NodeIndex (recurse with getData)
+        // expr.operator is a BinaryOperator enum
+        const left_data = tree.getData(expr.left);
+    },
     .variable_declaration => |decl| {
-        // decl.kind is .var, .let, .const, .using, or .await_using
-        // decl.declarators is an IndexRange into tree.extra
+        // decl.kind is VariableKind (.var, .let, .const, .using, .await_using)
+        // decl.declarators is IndexRange (read with getExtra)
+        const declarators = tree.getExtra(decl.declarators);
     },
-    .function => |func| {
-        // func.id, func.params, func.body are NodeIndex values
-        // func.async, func.generator are booleans
+    .identifier_reference => |id| {
+        // id.name is a String (resolve with getString)
+        const name = tree.getString(id.name);
     },
-    // ... other node types
     else => {},
 }
 ```
 
-### Variable-Length Children
+## Node Reference
 
-Some nodes have a variable number of children (e.g., function arguments, array elements, block statements). These are stored using `IndexRange`, which points to a contiguous slice in the `extra` array:
-
-```zig
-// IndexRange = { start: u32, len: u32 }
-// Points into tree.extra, a flat array of NodeIndex values
-
-const block_data = tree.getData(some_block).block_statement;
-const statements = tree.getExtra(block_data.body);
-
-for (statements) |stmt| {
-    const stmt_data = tree.getData(stmt);
-    // process each statement...
-}
-```
-
-### Optional Nodes
-
-Optional child nodes use `.null` (the maximum `u32` value) to indicate "not present":
+Every field of `ast.NodeData` is a distinct node type. The field name is the exact hook name used in visitor structs:
 
 ```zig
-const if_stmt = tree.getData(node).if_statement;
-
-// The else clause is optional
-if (if_stmt.alternate != .null) {
-    const else_body = tree.getData(if_stmt.alternate);
-    // process else...
-}
+// NodeData field:  binary_expression: BinaryExpression
+// Visitor hook:    enter_binary_expression / exit_binary_expression
 ```
 
-## String References
+The full `NodeData` union is what the traverser's compile-time validation checks against. Any `enter_*` or `exit_*` method on your visitor must match a field name here exactly.
 
-String values in the AST (identifiers, string literals, numeric literals, etc.) are stored as `StringId` values. A `StringId` is a `{ start: u32, end: u32 }` pair that can reference either the original source buffer (zero-copy) or strings added programmatically via `tree.addString()`.
+Optional child fields (`.null`) and optional child lists (`IndexRange.empty`) are noted where they apply.
 
-```zig
-const id = tree.getData(node).identifier_reference;
-const name = tree.getString(id.name);
-// "name" is resolved from the string pool
-```
-
-Use `tree.getString(id)` to resolve any `StringId` to its text.
-
-This applies to all text-carrying nodes: identifiers, string literals, numeric literals, BigInt literals, regex patterns, template elements, and more. When parsing source code, the original source bytes are referenced directly (zero-copy). When building or transforming ASTs programmatically, new strings are stored in a growable buffer alongside the source.
-
-## Node Types
-
-Below is a complete reference of every AST node type, grouped by category.
+---
 
 ### Program
 
-The root node of every AST.
+The root of every tree. There is always exactly one `program` node at `tree.program`.
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `program` | `source_type`, `body: IndexRange`, `hashbang: ?Hashbang` | Root node. `body` contains all top-level statements. |
-| `directive` | `expression: NodeIndex`, `value: StringId` | String directives like `"use strict"`. |
+```zig
+pub const Program = struct {
+    source_type: SourceType,    // .script or .module
+    body: IndexRange,           // (Statement | Directive)[]
+    hashbang: ?Hashbang,        // non-null for #!/usr/bin/env node lines
+};
+```
+
+---
 
 ### Statements
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `block_statement` | `body: IndexRange` | `{ ... }` block |
-| `expression_statement` | `expression: NodeIndex` | `expr;` |
-| `empty_statement` | (none) | `;` |
-| `debugger_statement` | (none) | `debugger;` |
-| `return_statement` | `argument: NodeIndex` | `return expr;` (argument may be `.null`) |
-| `throw_statement` | `argument: NodeIndex` | `throw expr;` |
-| `break_statement` | `label: NodeIndex` | `break;` or `break label;` |
-| `continue_statement` | `label: NodeIndex` | `continue;` or `continue label;` |
-| `labeled_statement` | `label: NodeIndex`, `body: NodeIndex` | `label: stmt` |
-| `if_statement` | `test`, `consequent`, `alternate: NodeIndex` | `if (test) consequent else alternate` |
-| `switch_statement` | `discriminant: NodeIndex`, `cases: IndexRange` | `switch (x) { ... }` |
-| `switch_case` | `test: NodeIndex`, `consequent: IndexRange` | `case x:` or `default:` (test is `.null` for default) |
-| `for_statement` | `init`, `test`, `update`, `body: NodeIndex` | `for (init; test; update) body` |
-| `for_in_statement` | `left`, `right`, `body: NodeIndex` | `for (left in right) body` |
-| `for_of_statement` | `left`, `right`, `body: NodeIndex`, `await: bool` | `for (left of right) body` |
-| `while_statement` | `test`, `body: NodeIndex` | `while (test) body` |
-| `do_while_statement` | `body`, `test: NodeIndex` | `do body while (test)` |
-| `try_statement` | `block`, `handler`, `finalizer: NodeIndex` | `try { } catch { } finally { }` |
-| `catch_clause` | `param: NodeIndex`, `body: NodeIndex` | `catch (param) { body }` |
-| `with_statement` | `object`, `body: NodeIndex` | `with (object) body` |
+| Node | JS Syntax | Notes |
+|------|-----------|-------|
+| `expression_statement` | `expr;` | Wraps any expression used as a statement |
+| `block_statement` | `{ ... }` | `body` is a statement/directive list |
+| `empty_statement` | `;` | No fields |
+| `debugger_statement` | `debugger;` | No fields |
+| `if_statement` | `if (test) cons else alt` | `alternate` is `.null` when no else branch |
+| `switch_statement` | `switch (d) { cases }` | `cases` is a list of `switch_case` nodes |
+| `switch_case` | `case x: ...` / `default: ...` | `test` is `.null` for the default case |
+| `for_statement` | `for (init; test; update) body` | `init`, `test`, and `update` are all optional (`.null`) |
+| `for_in_statement` | `for (x in y) body` | `left` is a declaration or assignment target |
+| `for_of_statement` | `for (x of y) body` | `await: bool` for `for await (...of...)` |
+| `while_statement` | `while (test) body` | |
+| `do_while_statement` | `do body while (test)` | |
+| `break_statement` | `break;` / `break label;` | `label` is `.null` for unlabeled |
+| `continue_statement` | `continue;` / `continue label;` | `label` is `.null` for unlabeled |
+| `labeled_statement` | `label: stmt` | |
+| `return_statement` | `return;` / `return expr;` | `argument` is `.null` for bare return |
+| `throw_statement` | `throw expr;` | |
+| `try_statement` | `try {} catch {} finally {}` | `handler` and `finalizer` are `.null` when absent |
+| `catch_clause` | `catch (e) { body }` | `param` is `.null` for `catch {}` without binding |
+| `with_statement` | `with (obj) body` | |
+
+---
 
 ### Declarations
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `variable_declaration` | `kind: VariableKind`, `declarators: IndexRange` | `var`/`let`/`const`/`using`/`await using` |
-| `variable_declarator` | `id: NodeIndex`, `init: NodeIndex` | `pattern = initializer` |
-| `function` | `type`, `id`, `params`, `body: NodeIndex`, `generator`, `async: bool` | Function declaration or expression |
-| `class` | `type`, `decorators: IndexRange`, `id`, `super_class`, `body: NodeIndex` | Class declaration or expression |
-| `class_body` | `body: IndexRange` | Contents of a class |
-| `method_definition` | `decorators: IndexRange`, `key`, `value: NodeIndex`, `kind`, `computed`, `static: bool` | Class method |
-| `property_definition` | `decorators: IndexRange`, `key`, `value: NodeIndex`, `computed`, `static`, `accessor: bool` | Class field |
-| `static_block` | `body: IndexRange` | `static { ... }` |
-| `decorator` | `expression: NodeIndex` | `@expression` |
+| Node | JS Syntax | Notes |
+|------|-----------|-------|
+| `variable_declaration` | `var/let/const/using x = ...` | `kind` is a `VariableKind` enum; `declarators` is a list of `variable_declarator` nodes |
+| `variable_declarator` | `x = init` | `id` is a binding pattern; `init` is `.null` for `let x;` |
+| `directive` | `"use strict";` | Only appears at the start of a function or module body, before regular statements |
+| `function` | `function foo() {}` | Covers all function forms; check the `type` field |
+| `class` | `class Foo {}` | Covers both declarations and expressions; check the `type` field |
+
+`function` and `class` are dual-purpose nodes. The `type` field distinguishes the form:
+
+```zig
+// FunctionType
+function_declaration          // function foo() {}
+function_expression           // const x = function() {}
+ts_declare_function           // declare function foo(): void
+ts_empty_body_function_expression  // abstract methods, interface methods
+
+// ClassType
+class_declaration             // class Foo {}
+class_expression              // const x = class {}
+```
+
+---
 
 ### Expressions
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `identifier_reference` | `name: StringId` | Variable reference (`foo`) |
-| `this_expression` | (none) | `this` |
-| `super` | (none) | `super` |
-| `null_literal` | (none) | `null` |
-| `boolean_literal` | `value: bool` | `true` or `false` |
-| `numeric_literal` | `raw: StringId`, `kind` | `42`, `0xFF`, `0o77`, `0b10` |
-| `bigint_literal` | `raw: StringId` | `42n` |
-| `string_literal` | `raw: StringId` | `"hello"` or `'hello'` |
-| `regexp_literal` | `pattern: StringId`, `flags: StringId` | `/pattern/flags` |
-| `template_literal` | `quasis: IndexRange`, `expressions: IndexRange` | `` `hello ${name}` `` |
-| `template_element` | `raw: StringId`, `tail`, `is_cooked_undefined` | Text part of a template |
-| `tagged_template_expression` | `tag`, `quasi: NodeIndex` | `` tag`template` `` |
-| `array_expression` | `elements: IndexRange` | `[a, b, c]` |
-| `object_expression` | `properties: IndexRange` | `{a: 1, b}` |
-| `object_property` | `key`, `value: NodeIndex`, `kind`, `method`, `shorthand`, `computed: bool` | Property in object literal |
-| `spread_element` | `argument: NodeIndex` | `...expr` |
-| `unary_expression` | `argument: NodeIndex`, `operator` | `!x`, `typeof x`, `-x` |
-| `update_expression` | `argument: NodeIndex`, `operator`, `prefix: bool` | `++x` or `x++` |
-| `binary_expression` | `left`, `right: NodeIndex`, `operator` | `a + b`, `a === b` |
-| `logical_expression` | `left`, `right: NodeIndex`, `operator` | `a && b`, `a \|\| b`, `a ?? b` |
-| `assignment_expression` | `left`, `right: NodeIndex`, `operator` | `a = b`, `a += b` |
-| `conditional_expression` | `test`, `consequent`, `alternate: NodeIndex` | `a ? b : c` |
-| `sequence_expression` | `expressions: IndexRange` | `a, b, c` |
-| `call_expression` | `callee: NodeIndex`, `arguments: IndexRange`, `optional: bool` | `f(a, b)` or `f?.(a)` |
-| `new_expression` | `callee: NodeIndex`, `arguments: IndexRange` | `new Foo(a)` |
-| `member_expression` | `object`, `property: NodeIndex`, `computed`, `optional: bool` | `a.b`, `a[b]`, `a?.b` |
-| `chain_expression` | `expression: NodeIndex` | Wrapper for optional chaining |
-| `parenthesized_expression` | `expression: NodeIndex` | `(expr)` |
-| `arrow_function_expression` | `expression`, `async: bool`, `params`, `body: NodeIndex` | `(a) => b` |
-| `yield_expression` | `argument: NodeIndex`, `delegate: bool` | `yield x` or `yield* x` |
-| `await_expression` | `argument: NodeIndex` | `await x` |
-| `import_expression` | `source`, `options: NodeIndex`, `phase: ?ImportPhase` | `import("x")` |
-| `meta_property` | `meta`, `property: NodeIndex` | `import.meta` or `new.target` |
+| Node | JS Syntax | Notes |
+|------|-----------|-------|
+| `binary_expression` | `a + b`, `a === b`, `a instanceof b` | `operator` is a `BinaryOperator` enum |
+| `logical_expression` | `a && b`, `a \|\| b`, `a ?? b` | `operator` is a `LogicalOperator` enum |
+| `unary_expression` | `!x`, `typeof x`, `void x`, `delete x` | `operator` is a `UnaryOperator` enum |
+| `update_expression` | `x++`, `++x`, `x--` | `operator` is `UpdateOperator`; `prefix: bool` distinguishes pre/post |
+| `assignment_expression` | `x = y`, `x += y`, `x ??= y` | `operator` is an `AssignmentOperator` enum |
+| `conditional_expression` | `test ? a : b` | |
+| `sequence_expression` | `a, b, c` | `expressions` is a node list |
+| `parenthesized_expression` | `(expr)` | Wraps an expression to preserve explicit parentheses in the tree |
+| `member_expression` | `obj.prop`, `obj[x]`, `obj.#priv` | `computed: bool` for bracket access; `optional: bool` for `?.` |
+| `call_expression` | `fn(args)`, `fn?.()` | `optional: bool` for `?.()` |
+| `new_expression` | `new Foo(args)` | |
+| `chain_expression` | `a?.b`, `a?.()` | Wrapper around an optional chain; the inner node carries `optional: true` |
+| `tagged_template_expression` | `` tag`hello` `` | `tag` is the function; `quasi` is the template literal |
+| `await_expression` | `await expr` | |
+| `yield_expression` | `yield expr`, `yield* expr` | `delegate: bool` for `yield*`; `argument` may be `.null` |
+| `meta_property` | `import.meta`, `new.target` | `meta` and `property` are `identifier_name` nodes |
+| `array_expression` | `[a, , b, ...c]` | `elements` may contain `.null` entries for holes |
+| `object_expression` | `{a: 1, b, ...c}` | `properties` contains `object_property` and `spread_element` nodes |
+| `object_property` | `key: value`, getters, setters, methods | `kind` (`PropertyKind`), `method`, `shorthand`, `computed` |
+| `spread_element` | `...expr` | Used in arrays, calls, and object literals |
+| `import_expression` | `import(src)`, `import.source(src)` | Dynamic import; `phase` may be `.source`, `.defer`, or `null` |
+| `this_expression` | `this` | No fields |
 
-### Functions and Parameters
+---
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `function` | `type`, `id`, `params`, `body: NodeIndex`, `generator`, `async: bool` | Shared for declarations and expressions |
-| `function_body` | `body: IndexRange` | Statements inside a function |
-| `formal_parameters` | `items: IndexRange`, `rest: NodeIndex`, `kind` | Parameter list `(a, b, ...rest)` |
-| `formal_parameter` | `pattern: NodeIndex` | Single parameter wrapping a binding pattern |
+### Literals
 
-`FormalParameterKind` distinguishes between:
-- `formal_parameters`: regular function params
-- `unique_formal_parameters`: params in methods, no duplicate names allowed
-- `arrow_formal_parameters`: arrow function params
+| Node | JS Syntax | Notes |
+|------|-----------|-------|
+| `string_literal` | `"hello"`, `'world'` | `value` is the decoded content without quotes (escape sequences resolved). Raw source text is available via the span. |
+| `numeric_literal` | `42`, `0xFF`, `0o7`, `0b1010` | `value` is the parsed `f64`; `kind` distinguishes decimal / hex / octal / binary |
+| `bigint_literal` | `42n` | `value` is the digits without the trailing `n` suffix |
+| `boolean_literal` | `true`, `false` | `value: bool` |
+| `null_literal` | `null` | No fields |
+| `regexp_literal` | `/pattern/flags` | `pattern` and `flags` are separate `String` handles |
+| `template_literal` | `` `hello ${name}` `` | `quasis` (list of `template_element`) and `expressions` are interleaved; always `quasis.len == expressions.len + 1` |
+| `template_element` | the text parts between `${}` | `cooked` is the escape-decoded content (empty when `is_cooked_undefined`); `tail: bool` marks the last segment. Raw source text is available via the span. |
 
-### Patterns (Destructuring)
-
-Patterns appear in variable declarations, function parameters, assignment targets, and catch clauses.
-
-| Node | Fields | Description |
-|------|--------|-------------|
-| `binding_identifier` | `name: StringId` | Simple identifier binding (`x`) |
-| `array_pattern` | `elements: IndexRange`, `rest: NodeIndex` | `[a, b, ...rest]` |
-| `object_pattern` | `properties: IndexRange`, `rest: NodeIndex` | `{a, b: c, ...rest}` |
-| `binding_property` | `key`, `value: NodeIndex`, `shorthand`, `computed: bool` | Property in object pattern |
-| `assignment_pattern` | `left`, `right: NodeIndex` | `pattern = default` |
-| `binding_rest_element` | `argument: NodeIndex` | `...rest` |
-
-Array pattern elements can be ``.null`` to represent holes: `[a, , b]`.
+---
 
 ### Identifiers
 
-Unlike ESTree, which uses a single generic `Identifier` for all positions, Yuku uses distinct node types for each identifier role. This eliminates ambiguity. When you encounter a node, its type tells you exactly how the identifier is used, with no runtime checks needed:
+Four distinct identifier node types all carry a single `name: String` field:
+
+| Node | Used For |
+|------|----------|
+| `identifier_reference` | A name used as a value: `x`, `console`, `Math` |
+| `binding_identifier` | A name being declared: `const x`, `function foo`, `import { x }` |
+| `identifier_name` | A bare name in non-expression position: object keys (`{foo: 1}`), member access right-hand side (`obj.foo`), `import.meta` |
+| `label_identifier` | A label name in `break label`, `continue label`, or `label: stmt` |
+| `private_identifier` | A private class member: `#field` (the `#` is not part of `name`) |
+
+:::note
+This distinction matters in the semantic traverser. `identifier_reference` nodes are recorded as references, `binding_identifier` nodes are recorded as declarations, and `identifier_name` nodes are never resolved against the scope chain.
 
 ```js
 const foo = bar.baz;
 //    ^^^   ^^^ ^^^
-//    |     |   IdentifierName (property key)
-//    |     IdentifierReference (variable usage)
-//    BindingIdentifier (declaration)
+//    |     |   IdentifierName (property, never resolved)
+//    |     IdentifierReference (variable use, resolved by scope chain)
+//    BindingIdentifier (declaration, recorded as a symbol)
 ```
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `binding_identifier` | `name: StringId` | Declaration position (`let x`, `function f`) |
-| `identifier_reference` | `name: StringId` | Expression position (reading a variable) |
-| `identifier_name` | `name: StringId` | Property keys, member access (`obj.prop`) |
-| `label_identifier` | `name: StringId` | Labels in `break`/`continue` |
-| `private_identifier` | `name: StringId` | `#name` (the stored name excludes the `#` prefix) |
+:::
 
-All identifier types store a `StringId` referencing the identifier text. Use `tree.getString(id.name)` to get the string value.
+---
 
-### Imports and Exports
+### Patterns (Destructuring)
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `import_declaration` | `specifiers: IndexRange`, `source`, `attributes: IndexRange`, `phase: ?ImportPhase` | `import ... from "x"` |
-| `import_specifier` | `imported`, `local: NodeIndex` | `{imported as local}` |
-| `import_default_specifier` | `local: NodeIndex` | `import local from "x"` |
-| `import_namespace_specifier` | `local: NodeIndex` | `import * as local from "x"` |
-| `import_attribute` | `key`, `value: NodeIndex` | `with { type: "json" }` |
-| `export_named_declaration` | `declaration`, `source: NodeIndex`, `specifiers`, `attributes: IndexRange` | `export { a, b }` |
-| `export_default_declaration` | `declaration: NodeIndex` | `export default expr` |
-| `export_all_declaration` | `exported`, `source: NodeIndex`, `attributes: IndexRange` | `export * from "x"` |
-| `export_specifier` | `local`, `exported: NodeIndex` | `{local as exported}` |
+| Node | JS Syntax | Notes |
+|------|-----------|-------|
+| `array_pattern` | `[a, , b, ...rest]` | `elements` may include `.null` for holes; `rest` is `.null` if absent |
+| `object_pattern` | `{a, b: c, ...rest}` | `properties` contains `binding_property` nodes; `rest` is `.null` if absent |
+| `binding_property` | `key: value` or shorthand `key` | `shorthand: bool`, `computed: bool` |
+| `assignment_pattern` | `x = default` | Used for default values in destructuring and function parameters |
+| `binding_rest_element` | `...rest` | `argument` is the binding pattern the rest collects into |
+| `formal_parameters` | `(a, b = 1, ...rest)` | `items` contains `formal_parameter` nodes; `rest` is `.null` if absent |
+| `formal_parameter` | a single parameter slot | `pattern` is the binding (may be any binding pattern, with optional default via `assignment_pattern`) |
 
-Import phases support source phase imports (`import source x from "x"`) and deferred imports (`import defer * as x from "x"`).
+---
+
+### Functions
+
+```zig
+pub const Function = struct {
+    type: FunctionType,    // declaration, expression, or TS forms
+    id: NodeIndex,         // BindingIdentifier (.null for anonymous functions)
+    generator: bool,       // true for function*
+    async: bool,           // true for async function
+    params: NodeIndex,     // FormalParameters
+    body: NodeIndex,       // FunctionBody (.null for TS overloads/abstract methods)
+};
+```
+
+| Node | Description |
+|------|-------------|
+| `function` | All named and anonymous function forms. Use `type`, `generator`, and `async` to distinguish them. |
+| `function_body` | The `{ ... }` body of a function. Contains directives and statements in `body: IndexRange`. |
+| `arrow_function_expression` | Arrow functions. `expression: bool` is `true` when the body is an expression (not a block). `async: bool` for async arrows. |
+
+---
+
+### Classes
+
+```zig
+pub const Class = struct {
+    type: ClassType,        // class_declaration or class_expression
+    decorators: IndexRange, // Decorator[] (empty if none)
+    id: NodeIndex,          // BindingIdentifier (.null for anonymous expressions)
+    super_class: NodeIndex, // Expression (.null if no extends clause)
+    body: NodeIndex,        // ClassBody
+};
+```
+
+| Node | Description |
+|------|-------------|
+| `class` | Both `class Foo {}` and `const x = class {}`. Check `type`. |
+| `class_body` | The `{ members }` block. `body` contains `method_definition`, `property_definition`, and `static_block` nodes. |
+| `method_definition` | A method, getter, setter, or constructor. `kind` is a `MethodDefinitionKind` enum (`constructor`, `method`, `get`, `set`). `static: bool`, `computed: bool`. |
+| `property_definition` | A class field (`x = 1`). `value` is `.null` for fields without an initializer. `accessor: bool` for auto-accessors. `static: bool`, `computed: bool`. |
+| `static_block` | `static { ... }`. `body` is a list of statements. |
+| `decorator` | `@expr`. `expression` is the decorator expression node. |
+| `super` | The `super` keyword. No fields. |
+
+---
+
+### Modules
+
+| Node | JS Syntax | Notes |
+|------|-----------|-------|
+| `import_declaration` | `import x from 'y'` | `specifiers` is empty for side-effect-only imports; `phase` is `.source` or `.defer` for staged imports, `null` for regular |
+| `import_specifier` | `{ imported as local }` | |
+| `import_default_specifier` | `import x from ...` | `local` is the binding |
+| `import_namespace_specifier` | `import * as x from ...` | `local` is the binding |
+| `import_attribute` | `{ type: "json" }` | Import attributes / assertions |
+| `export_named_declaration` | `export { x }`, `export var x` | `declaration` is `.null` for specifier-only; `source` is `.null` for local (non-re-export) |
+| `export_default_declaration` | `export default expr` | `declaration` is an expression, function, or class |
+| `export_all_declaration` | `export * from 'y'` | `exported` is `.null` for `export *`; non-null for `export * as name` |
+| `export_specifier` | `{ local as exported }` | |
+
+---
 
 ### JSX
 
-| Node | Fields | Description |
-|------|--------|-------------|
-| `jsx_element` | `opening_element`, `closing_element: NodeIndex`, `children: IndexRange` | `<Foo>...</Foo>` |
-| `jsx_opening_element` | `name: NodeIndex`, `attributes: IndexRange`, `self_closing: bool` | `<Foo bar={x}>` |
-| `jsx_closing_element` | `name: NodeIndex` | `</Foo>` |
-| `jsx_fragment` | `opening_fragment`, `closing_fragment: NodeIndex`, `children: IndexRange` | `<>...</>` |
-| `jsx_identifier` | `name: StringId` | Tag and attribute names |
-| `jsx_namespaced_name` | `namespace`, `name: NodeIndex` | `ns:name` |
-| `jsx_member_expression` | `object`, `property: NodeIndex` | `Foo.Bar` |
-| `jsx_attribute` | `name`, `value: NodeIndex` | `name={value}` or `name="str"` |
-| `jsx_spread_attribute` | `argument: NodeIndex` | `{...props}` |
-| `jsx_expression_container` | `expression: NodeIndex` | `{expr}` |
-| `jsx_empty_expression` | (none) | `{}` (empty expression container) |
-| `jsx_text` | `raw: StringId` | Text content between tags |
+JSX nodes are only present in `.jsx` and `.tsx` trees.
 
-## Operators
+| Node | JSX Syntax | Notes |
+|------|------------|-------|
+| `jsx_element` | `<Foo>...</Foo>` | `closing_element` is `.null` for self-closing tags |
+| `jsx_opening_element` | `<Foo ...>` | `self_closing: bool` for `<Foo />`; `name` is a JSX name node |
+| `jsx_closing_element` | `</Foo>` | |
+| `jsx_fragment` | `<>...</>` | |
+| `jsx_opening_fragment` | `<>` | No fields |
+| `jsx_closing_fragment` | `</>` | No fields |
+| `jsx_identifier` | `Foo` in JSX position | `name: String` |
+| `jsx_namespaced_name` | `namespace:name` | |
+| `jsx_member_expression` | `Foo.Bar.Baz` | |
+| `jsx_attribute` | `foo="bar"` or `foo={expr}` | `value` is `.null` for boolean attributes like `disabled` |
+| `jsx_spread_attribute` | `{...props}` | `argument` is the spread expression |
+| `jsx_expression_container` | `{expression}` | `expression` is a `jsx_empty_expression` node for `{}` |
+| `jsx_empty_expression` | `{}` | No fields |
+| `jsx_text` | Text content between tags | `value: String` is the text content |
+| `jsx_spread_child` | `{...children}` | `expression` is the spread expression |
 
-The AST uses dedicated enums for all operator types:
+---
 
-### BinaryOperator
-`equal`, `not_equal`, `strict_equal`, `strict_not_equal`, `less_than`, `less_than_or_equal`, `greater_than`, `greater_than_or_equal`, `add`, `subtract`, `multiply`, `divide`, `modulo`, `exponent`, `bitwise_or`, `bitwise_xor`, `bitwise_and`, `left_shift`, `right_shift`, `unsigned_right_shift`, `in`, `instanceof`
+### TypeScript
 
-### LogicalOperator
-`and` (`&&`), `or` (`||`), `nullish_coalescing` (`??`)
-
-### UnaryOperator
-`negate` (`-`), `positive` (`+`), `logical_not` (`!`), `bitwise_not` (`~`), `typeof`, `void`, `delete`
-
-### UpdateOperator
-`increment` (`++`), `decrement` (`--`)
-
-### AssignmentOperator
-`assign`, `add_assign`, `subtract_assign`, `multiply_assign`, `divide_assign`, `modulo_assign`, `exponent_assign`, `left_shift_assign`, `right_shift_assign`, `unsigned_right_shift_assign`, `bitwise_or_assign`, `bitwise_xor_assign`, `bitwise_and_assign`, `logical_or_assign`, `logical_and_assign`, `nullish_assign`
-
-## Comments
-
-Comments are collected separately from the AST during parsing:
-
-```zig
-for (tree.comments) |comment| {
-    // comment.type is .line or .block
-    // comment.start, comment.end are byte positions
-    const text = tree.getString(comment.value);
-    // For line comments: text excludes the "//" prefix
-    // For block comments: text excludes "/*" and "*/"
-}
-```
-
-## Diagnostics
-
-Diagnostics provide detailed error reporting:
-
-```zig
-for (tree.diagnostics) |d| {
-    // d.severity: .error, .warning, .hint, .info
-    // d.message: human-readable description
-    // d.span: { .start, .end } byte offsets in source
-    // d.help: optional suggestion text
-    // d.labels: additional highlighted regions with messages
-}
-```
-
-Labels allow a single diagnostic to highlight multiple source locations. For example, an "unterminated string" error might label where the string was opened.
+| Node | TS Syntax | Notes |
+|------|-----------|-------|
+| `ts_export_assignment` | `export = expr` | CommonJS-style TypeScript module export |
+| `ts_namespace_export_declaration` | `export as namespace name` | UMD global namespace declaration |

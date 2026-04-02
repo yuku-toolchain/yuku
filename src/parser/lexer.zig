@@ -312,6 +312,8 @@ pub const Lexer = struct {
                 self.cursor += 2;
                 return self.createToken(.template_middle, start, self.cursor);
             }
+            // raw CR requires cooked value normalization
+            if (c == '\r') self.setTokenFlag(.escaped);
             self.cursor += 1;
         }
         return error.NonTerminatedTemplateLiteral;
@@ -492,6 +494,9 @@ pub const Lexer = struct {
                 return self.createToken(.template_head, start, self.cursor);
             }
 
+            // raw CR requires cooked value normalization
+            if (c == '\r') self.setTokenFlag(.escaped);
+
             self.cursor += 1;
         }
 
@@ -527,6 +532,7 @@ pub const Lexer = struct {
 
     fn consumeEscapeImpl(self: *Lexer, comptime context: EscapeContext) LexicalError!void {
         self.cursor += 1; // skip backslash
+        self.setTokenFlag(.escaped);
 
         if (self.cursor >= self.source.len) {
             return error.UnterminatedString;
@@ -1012,13 +1018,13 @@ pub const Lexer = struct {
                     is_leading_zero = true;
 
                     // legacy octal (077) or decimal with leading zero (089)
-                    try self.consumeDecimalDigits(false);
-
                     var is_legacy_octal = true;
-
-                    for (self.source[start..self.cursor]) |c| {
-                        if (c == '8' or c == '9') {
-                            is_legacy_octal = false;
+                    while (self.cursor < self.source.len) {
+                        const c = self.source[self.cursor];
+                        if (c >= '0' and c <= '9') {
+                            if (c >= '8') is_legacy_octal = false;
+                            self.cursor += 1;
+                        } else {
                             break;
                         }
                     }

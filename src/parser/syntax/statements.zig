@@ -92,7 +92,8 @@ fn parseExpressionStatementWithExpression(
 fn parseDirective(parser: *Parser, expression: ast.NodeIndex) Error!?ast.NodeIndex {
     const string_literal_span = parser.tree.getSpan(expression);
 
-    // strip quotes: the span covers the full string literal including quotes
+    // directive value is the raw source text without quotes (escape sequences preserved).
+    // per spec, "use strict" recognition uses exact code unit sequences, not decoded values.
     const value_start = string_literal_span.start + 1;
     const value_end = string_literal_span.end - 1;
 

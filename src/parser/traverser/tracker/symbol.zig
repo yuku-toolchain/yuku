@@ -86,8 +86,6 @@ pub const Reference = struct {
     scope: sc.ScopeId,
     /// The AST node for this reference.
     node: ast.NodeIndex,
-    /// Set to the resolved symbol after calling `resolveAll`, or `.none` if unresolved.
-    resolved: SymbolId,
 };
 
 /// The result of symbol collection. Contains all symbols and references from the walk.
@@ -100,6 +98,21 @@ pub const SymbolTable = struct {
     hoisting_variables: []const ScopeMap,
     /// String pool for resolving `String` handles to text.
     strings: *const ast.StringPool,
+
+    // populated by resolveAll()
+
+    /// Forward index, for each reference, the symbol it resolves to (or `.none`).
+    /// Parallel to `references`, indexed by `ReferenceId`.
+    resolutions: []const SymbolId = &.{},
+    /// Flat array of `ReferenceId`s grouped by symbol. Ranges into this
+    /// array are stored in `symbol_ref_ranges`.
+    symbol_refs: []const ReferenceId = &.{},
+    /// Per-symbol range into `symbol_refs`. Indexed by `SymbolId`.
+    symbol_ref_ranges: []const Range = &.{},
+    /// References that could not be resolved to any symbol.
+    unresolved_refs: []const ReferenceId = &.{},
+
+    const Range = struct { start: u32, len: u32 };
 
     /// Returns the string content for a `String`.
     pub inline fn getString(self: SymbolTable, id: String) []const u8 {
@@ -152,13 +165,94 @@ pub const SymbolTable = struct {
         return null;
     }
 
-    /// Resolves all unresolved references by walking up scope chains.
-    pub fn resolveAll(self: *SymbolTable, scope_tree: sc.ScopeTree) void {
-        for (@constCast(self.references)) |*ref| {
-            if (ref.resolved == .none) {
-                ref.resolved = self.resolve(ref.scope, self.getString(ref.name), scope_tree) orelse .none;
+    /// Resolves all references.
+    ///
+    /// After this call:
+    /// - `referenceSymbol(ref_id)` returns the symbol a reference resolves to.
+    /// - `symbolReferences(sym_id)` returns all references to a symbol.
+    /// - `unresolvedReferences()` returns references with no matching symbol.
+    pub fn resolveAll(self: *SymbolTable, allocator: Allocator, scope_tree: sc.ScopeTree) Allocator.Error!void {
+        const ref_count: u32 = @intCast(self.references.len);
+        const sym_count: u32 = @intCast(self.symbols.len);
+
+        if (ref_count == 0) return;
+
+        // phase 1: resolve every reference and count hits per symbol
+        const resolutions = try allocator.alloc(SymbolId, ref_count);
+        const counts = try allocator.alloc(u32, sym_count);
+        @memset(counts, 0);
+        var unresolved_count: u32 = 0;
+
+        for (self.references, 0..) |ref, i| {
+            const resolved = self.resolve(ref.scope, self.getString(ref.name), scope_tree) orelse .none;
+            resolutions[i] = resolved;
+            if (resolved != .none) {
+                counts[@intFromEnum(resolved)] += 1;
+            } else {
+                unresolved_count += 1;
             }
         }
+
+        // phase 2: prefix sum to build per-symbol ranges
+        const ranges = try allocator.alloc(Range, sym_count);
+        var offset: u32 = 0;
+        for (0..sym_count) |i| {
+            ranges[i] = .{ .start = offset, .len = counts[i] };
+            offset += counts[i];
+        }
+
+        // phase 3: scatter reference ids into the grouped array
+        const symbol_refs = try allocator.alloc(ReferenceId, offset);
+        const unresolved = try allocator.alloc(ReferenceId, unresolved_count);
+        @memset(counts, 0); // reuse as write cursors
+        var unresolved_cursor: u32 = 0;
+
+        for (0..ref_count) |i| {
+            const ref_id: ReferenceId = @enumFromInt(@as(u32, @intCast(i)));
+            const resolved = resolutions[i];
+            if (resolved != .none) {
+                const sym_idx = @intFromEnum(resolved);
+                symbol_refs[ranges[sym_idx].start + counts[sym_idx]] = ref_id;
+                counts[sym_idx] += 1;
+            } else {
+                unresolved[unresolved_cursor] = ref_id;
+                unresolved_cursor += 1;
+            }
+        }
+
+        allocator.free(counts);
+
+        self.resolutions = resolutions;
+        self.symbol_refs = symbol_refs;
+        self.symbol_ref_ranges = ranges;
+        self.unresolved_refs = unresolved;
+    }
+
+    /// Returns the symbol that a reference resolves to, or `.none` if unresolved.
+    pub inline fn referenceSymbol(self: SymbolTable, id: ReferenceId) SymbolId {
+        const idx = @intFromEnum(id);
+        if (idx >= self.resolutions.len) return .none;
+        return self.resolutions[idx];
+    }
+
+    /// Returns all reference IDs that resolve to the given symbol.
+    pub inline fn symbolReferences(self: SymbolTable, id: SymbolId) []const ReferenceId {
+        const idx = @intFromEnum(id);
+        if (idx >= self.symbol_ref_ranges.len) return &.{};
+        const range = self.symbol_ref_ranges[idx];
+        return self.symbol_refs[range.start..][0..range.len];
+    }
+
+    /// Returns true if at least one reference resolves to this symbol.
+    pub inline fn isReferenced(self: SymbolTable, id: SymbolId) bool {
+        const idx = @intFromEnum(id);
+        if (idx >= self.symbol_ref_ranges.len) return false;
+        return self.symbol_ref_ranges[idx].len > 0;
+    }
+
+    /// Returns all reference IDs that could not be resolved to any symbol.
+    pub inline fn unresolvedReferences(self: SymbolTable) []const ReferenceId {
+        return self.unresolved_refs;
     }
 };
 
@@ -191,14 +285,14 @@ const TargetScope = enum {
 pub const SymbolTracker = struct {
     tree: *const ast.Tree,
     allocator: Allocator,
-    symbols: std.ArrayList(Symbol) = .{},
-    references: std.ArrayList(Reference) = .{},
+    symbols: std.ArrayList(Symbol) = .empty,
+    references: std.ArrayList(Reference) = .empty,
     /// Per-scope hash maps for name lookup.
-    scope_maps: std.ArrayList(ScopeMap) = .{},
+    scope_maps: std.ArrayList(ScopeMap) = .empty,
     /// Hoisted vars passing through intermediate block scopes.
     /// A `var` inside a block hoists to the function scope, but the name
     /// is still "taken" in each block it passes through (Section 14.2.1).
-    hoisting_variables: std.ArrayList(ScopeMap) = .{},
+    hoisting_variables: std.ArrayList(ScopeMap) = .empty,
 
     // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,
@@ -393,7 +487,6 @@ pub const SymbolTracker = struct {
             .name = name,
             .scope = scope,
             .node = node,
-            .resolved = .none,
         });
         return id;
     }

@@ -8,9 +8,6 @@ pub const String = struct {
     pub const empty: String = .{};
 };
 
-/// String storage for the AST. Source-range strings reference the original
-/// source text directly. Additional strings are interned into the extra buffer
-/// via `addString()`, which deduplicates: identical strings share the same `String`.
 pub const ASTStringPool = struct {
     source: []const u8 = "",
     extra: std.ArrayList(u8) = .empty,
@@ -65,7 +62,6 @@ pub const ASTStringPool = struct {
         return extra[id.start - src_len .. id.end - src_len];
     }
 
-    // map context for rehashing stored String keys.
     const MapCtx = struct {
         extra: []const u8,
         src_len: u32,
@@ -78,7 +74,6 @@ pub const ASTStringPool = struct {
         }
     };
 
-    // adapted context for looking up by `[]const u8`.
     const AdaptedCtx = struct {
         extra: []const u8,
         src_len: u32,
