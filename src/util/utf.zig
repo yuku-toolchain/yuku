@@ -266,16 +266,16 @@ fn appendCodePoint(out: *std.ArrayList(u8), alloc: std.mem.Allocator, cp: u21) e
 /// checks whether a string contains a legacy octal escape
 /// (\0n, \1-\7) or non-octal decimal escape (\8, \9).
 pub fn hasOctalEscape(str: []const u8) bool {
-    var i: usize = 0;
-    while (i < str.len) : (i += 1) {
-        if (str[i] != '\\') continue;
-        i += 1;
-        if (i >= str.len) break;
-        switch (str[i]) {
+    var pos: usize = 0;
+    while (std.mem.findScalarPos(u8, str, pos, '\\')) |i| {
+        const next = i + 1;
+        if (next >= str.len) break;
+        switch (str[next]) {
             '1'...'9' => return true,
-            '0' => if (i + 1 < str.len and str[i + 1] >= '0' and str[i + 1] <= '9') return true,
+            '0' => if (next + 1 < str.len and str[next + 1] >= '0' and str[next + 1] <= '9') return true,
             else => {},
         }
+        pos = next + 1;
     }
     return false;
 }
