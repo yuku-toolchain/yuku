@@ -760,12 +760,12 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
    |
 
 ✓ test/parser/suite/js/fail/0553477b06e31375.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric literal cannot contain consecutive separators
    |
  1 | 0o0__0
    |       ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing one of the consecutive underscores here
 
 
 ✓ test/parser/suite/js/fail/0557c70da3f698b5.module.js
@@ -1152,12 +1152,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/080d3c77054f5bff.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x0_
    |     ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/0816584df98b7bd5.module.js
@@ -5792,12 +5792,12 @@ error: The left-hand side of '**' cannot be an unparenthesized unary expression
 
 
 ✓ test/parser/suite/js/fail/29b902ac17fb2566.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x0_n;
    |       ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/29c12b2bbac25282.js
@@ -7466,12 +7466,12 @@ error: Expected ';' after class field, but found 'y'
 
 
 ✓ test/parser/suite/js/fail/3508e1a17258072b.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b0_
    |     ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/3558f8c0f0ba825b.js
@@ -8493,12 +8493,12 @@ error: Shorthand property cannot have a default value in object expression
 
 
 ✓ test/parser/suite/js/fail/3d3ed38a050cc979.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric literal cannot contain consecutive separators
    |
  1 | 0x0__0n;
    |         ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing one of the consecutive underscores here
 
 
 ✓ test/parser/suite/js/fail/3d62f07dca30fb8f.js
@@ -12934,12 +12934,12 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/5f5621cca1450878.js
-error: Hexadecimal literal must contain at least one hex digit
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x_1
    |     ^
    |
-   = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/5f58c4ffb8378874.js
@@ -13869,12 +13869,12 @@ error: Invalid hexadecimal escape sequence
 
 
 ✓ test/parser/suite/js/fail/66efd4d60285d887.js
-error: Binary literal must contain at least one binary digit
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b_1n;
    |       ^
    |
-   = help: Try adding at least one binary digit (0 or 1) here after '0b'
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/66fb7a2ad123acc6.js
@@ -14191,12 +14191,12 @@ error: 'export' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/68df05131d88f838.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b0_n;
    |       ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/68f0106ad505b13f.js
@@ -15493,12 +15493,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/726e68487f09b9fc.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o0_n;
    |       ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/72796a0333b7d720.js
@@ -15685,12 +15685,12 @@ error: Invalid Unicode escape sequence
 
 
 ✓ test/parser/suite/js/fail/73cc177e96bdcb21.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric literal cannot contain consecutive separators
    |
  1 | 0b0__0
    |       ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing one of the consecutive underscores here
 
 
 ✓ test/parser/suite/js/fail/73d1b1b1bc1dabfb.js
@@ -16124,12 +16124,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/js/fail/77767e17d0d3fa6d.js
-error: Octal literal must contain at least one octal digit
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o_1
    |     ^
    |
-   = help: Try adding at least one octal digit (0-7) here after '0o'
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/777d8a948b7471cc.js
@@ -17715,12 +17715,12 @@ error: Hexadecimal literal must contain at least one hex digit
 
 
 ✓ test/parser/suite/js/fail/82691553a1401032.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric literal cannot contain consecutive separators
    |
  1 | 0x0__0
    |       ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing one of the consecutive underscores here
 
 
 ✓ test/parser/suite/js/fail/8288f4da1396188d.js
@@ -20543,12 +20543,12 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/95cc71c650050f6b.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric literal cannot contain consecutive separators
    |
  1 | 0b0__0n;
    |         ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing one of the consecutive underscores here
 
 
 ✓ test/parser/suite/js/fail/95d33df23ba12d39.js
@@ -22538,12 +22538,12 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/a55e297cbd85d485.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric literal cannot contain consecutive separators
    |
  1 | 0o0__0n;
    |         ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing one of the consecutive underscores here
 
 
 ✓ test/parser/suite/js/fail/a5654aec70325d51.js
@@ -23404,12 +23404,12 @@ error: Setter must have exactly one parameter
 
 
 ✓ test/parser/suite/js/fail/aae6ebac8a9f5c80.js
-error: Octal literal must contain at least one octal digit
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o_1n;
    |       ^
    |
-   = help: Try adding at least one octal digit (0-7) here after '0o'
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/aae75623a18fa153.module.js
@@ -24678,12 +24678,12 @@ error: Expected ')' after while condition, but found 'null'
    |
 
 ✓ test/parser/suite/js/fail/b59bac6bdfe524e1.js
-error: Binary literal must contain at least one binary digit
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b_1
    |     ^
    |
-   = help: Try adding at least one binary digit (0 or 1) here after '0b'
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/b604734685039629.js
@@ -28852,12 +28852,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/d5e3aad46b771d44.js
-error: Hexadecimal literal must contain at least one hex digit
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x_1n;
    |       ^
    |
-   = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/d5f84d71afd585da.js
@@ -34273,12 +34273,12 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/fdd7f1c5380dab75.js
-error: Identifier cannot immediately follow a numeric literal
+error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o0_
    |     ^
    |
-   = help: Try adding whitespace here between the number and identifier
+   = help: Try removing the trailing underscore here or adding more digits after it
 
 
 ✓ test/parser/suite/js/fail/fdeb942fe9ba2cdd.js

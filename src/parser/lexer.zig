@@ -983,97 +983,85 @@ pub const Lexer = struct {
     fn scanNumber(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
         var tag: TokenTag = .numeric_literal;
-
-        // handle prefixes: 0x, 0o, 0b
         var has_decimal_or_exponent = false;
-
         var is_leading_zero = false;
 
         if (self.peek(0) == '0') {
-            const prefix = self.peek(1);
+            self.cursor += 1;
 
-            switch (prefix) {
+            switch (self.peek(0)) {
                 'x', 'X' => {
                     tag = .hex_literal;
-                    self.cursor += 2;
-                    const hex_start = self.cursor;
+                    self.cursor += 1;
+                    const digits_start = self.cursor;
                     try self.consumeHexDigits();
-                    if (self.cursor == hex_start) return error.InvalidHexLiteral;
+                    if (self.cursor == digits_start) return error.InvalidHexLiteral;
                 },
                 'o', 'O' => {
                     tag = .octal_literal;
-                    self.cursor += 2;
-                    const oct_start = self.cursor;
+                    self.cursor += 1;
+                    const digits_start = self.cursor;
                     try self.consumeOctalDigits();
-                    if (self.cursor == oct_start) return error.InvalidOctalLiteralDigit;
+                    if (self.cursor == digits_start) return error.InvalidOctalLiteralDigit;
                 },
                 'b', 'B' => {
                     tag = .binary_literal;
-                    self.cursor += 2;
-                    const bin_start = self.cursor;
+                    self.cursor += 1;
+                    const digits_start = self.cursor;
                     try self.consumeBinaryDigits();
-                    if (self.cursor == bin_start) return error.InvalidBinaryLiteral;
+                    if (self.cursor == digits_start) return error.InvalidBinaryLiteral;
                 },
                 '0'...'9' => {
                     is_leading_zero = true;
-
                     // legacy octal (077) or decimal with leading zero (089)
+                    // no separators allowed in legacy syntax
                     var is_legacy_octal = true;
                     while (self.cursor < self.source.len) {
                         const c = self.source[self.cursor];
                         if (c >= '0' and c <= '9') {
                             if (c >= '8') is_legacy_octal = false;
                             self.cursor += 1;
-                        } else {
-                            break;
-                        }
+                        } else break;
                     }
-
                     tag = if (is_legacy_octal) .octal_literal else .numeric_literal;
                 },
-                else => try self.consumeDecimalDigits(false),
+                else => {},
             }
         } else {
-            try self.consumeDecimalDigits(true);
+            try self.consumeDecimalDigits();
         }
 
-        // fraction and exponent only for regular decimal literals
         if (tag == .numeric_literal and self.peek(0) == '.') {
             const next = self.peek(1);
             if (next == '_') return error.NumericSeparatorMisuse;
             self.cursor += 1;
             has_decimal_or_exponent = true;
-            if (next >= '0' and next <= '9') try self.consumeDecimalDigits(true);
+            if (next >= '0' and next <= '9') try self.consumeDecimalDigits();
         }
 
         if (tag == .numeric_literal) {
-            const exp_char = self.peek(0);
-            if (exp_char == 'e' or exp_char == 'E') {
+            const exp = self.peek(0);
+            if (exp == 'e' or exp == 'E') {
                 has_decimal_or_exponent = true;
                 try self.consumeExponent();
             }
         }
 
-        // handle bigint suffix 'n'
         if (!is_leading_zero and self.peek(0) == 'n') {
-            // bigint cannot have decimal point or exponent
-            if (has_decimal_or_exponent) {
-                return error.InvalidBigIntSuffix;
-            }
-
+            if (has_decimal_or_exponent) return error.InvalidBigIntSuffix;
             self.cursor += 1;
             tag = .bigint_literal;
         }
 
-        // identifier cannot immediately follow a numeric literal
         const c = self.peek(0);
-
         if (ident_start_table_ascii[c] or c == '\\') return error.IdentifierAfterNumericLiteral;
-
         return self.createToken(tag, start, self.cursor);
     }
 
-    inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool, allow_separator: bool) LexicalError!void {
+    inline fn consumeDigits(self: *Lexer, comptime isValidDigit: fn (u8) bool) LexicalError!void {
+        // separator cannot start a digit sequence
+        if (self.cursor < self.source.len and self.source[self.cursor] == '_') return error.NumericSeparatorMisuse;
+
         var last_was_separator = false;
 
         while (self.cursor < self.source.len) {
@@ -1081,7 +1069,7 @@ pub const Lexer = struct {
             if (isValidDigit(c)) {
                 self.cursor += 1;
                 last_was_separator = false;
-            } else if (allow_separator and c == '_') {
+            } else if (c == '_') {
                 if (last_was_separator) {
                     return error.ConsecutiveNumericSeparators;
                 }
@@ -1097,26 +1085,26 @@ pub const Lexer = struct {
         }
     }
 
-    inline fn consumeDecimalDigits(self: *Lexer, allow_separator: bool) LexicalError!void {
-        return self.consumeDigits(std.ascii.isDigit, allow_separator);
+    inline fn consumeDecimalDigits(self: *Lexer) LexicalError!void {
+        return self.consumeDigits(std.ascii.isDigit);
     }
 
     inline fn consumeHexDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(std.ascii.isHex, false);
+        return self.consumeDigits(std.ascii.isHex);
     }
 
     inline fn consumeOctalDigits(self: *Lexer) LexicalError!void {
-        return self.consumeDigits(util.Utf.isOctalDigit, false);
+        return self.consumeDigits(util.Utf.isOctalDigit);
     }
 
     inline fn consumeBinaryDigits(self: *Lexer) LexicalError!void {
-        const isBinary = struct {
+        const isBinary = comptime struct {
             fn check(c: u8) bool {
                 return c == '0' or c == '1';
             }
         }.check;
 
-        return self.consumeDigits(isBinary, false);
+        return self.consumeDigits(isBinary);
     }
 
     fn consumeExponent(self: *Lexer) LexicalError!void {
@@ -1124,12 +1112,13 @@ pub const Lexer = struct {
 
         // handle optional sign: + or -
         const c = self.peek(0);
+
         if (c == '+' or c == '-') {
             self.cursor += 1;
         }
 
         const exp_start = self.cursor;
-        try self.consumeDecimalDigits(true);
+        try self.consumeDecimalDigits();
 
         if (self.cursor == exp_start) {
             return error.InvalidExponentPart;

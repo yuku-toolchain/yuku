@@ -1,8 +1,8 @@
 misc/js
 =======
-Passed:       33/33 (100.00%)
+Passed:       37/37 (100.00%)
 Failed:       0
-AST mismatch: 0/33
+AST mismatch: 0/37
 
 ✓ test/parser/misc/js/accessor-line-terminator.js
 ✓ test/parser/misc/js/async-arrow-function-line-terminator-1.js
@@ -50,6 +50,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/misc/js/await-using.js
 ✓ test/parser/misc/js/bigint-class-property-key.js
 ✓ test/parser/misc/js/bigint-object-key.js
+✓ test/parser/misc/js/binary-literal-with-separator.js
 ✓ test/parser/misc/js/class-extends-simple-arrow-function.js
 error: Expected '{' to start class body, but found '=>'
    |
@@ -91,10 +92,22 @@ error: Expected ';' after for-loop init, but found 'id'
  3 | 
    |
 
+✓ test/parser/misc/js/hex-literal-with-separator.js
 ✓ test/parser/misc/js/import-defer-normal.module.js
 ✓ test/parser/misc/js/import-defer-original.module.js
 ✓ test/parser/misc/js/import-expression-call.js
 ✓ test/parser/misc/js/just-await-using.js
+✓ test/parser/misc/js/legacy-octal-literal-with-separator.js
+error: Identifier cannot immediately follow a numeric literal
+   |
+ 1 | 012_7
+ 2 | 
+   | ^
+   |
+   = help: Try adding whitespace here between the number and identifier
+
+
+✓ test/parser/misc/js/octal-literal-with-separator.js
 ✓ test/parser/misc/js/tagged-template-with-optional-chaining.js
 error: Tagged template expressions are not permitted in an optional chain
    |

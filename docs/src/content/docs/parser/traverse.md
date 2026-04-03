@@ -408,7 +408,7 @@ Use `createNode` to append a new node and `createExtra` to allocate child lists:
 ```zig
 // Create a new node
 const new_node = try ctx.tree.createNode(
-    .{ .numeric_literal = .{ .value = 42 } },
+    .{ .numeric_literal = .{ .raw = "42" } },
     .none,
 );
 
