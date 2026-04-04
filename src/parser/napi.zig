@@ -1,5 +1,6 @@
 const napi = @import("napi-zig");
 const parser = @import("parser");
+const std = @import("std");
 
 pub const SourceType = enum {
     script,
@@ -64,13 +65,6 @@ pub fn parse(source: []const u8, options: Options) ParseResult {
         .diagnostics = &.{},
     };
 }
-
-/// return the parser version.
-pub fn version() []const u8 {
-    return "0.1.0";
-}
-
-const std = @import("std");
 
 comptime {
     napi.module(@This());

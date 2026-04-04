@@ -1,4 +1,5 @@
 const std = @import("std");
+const napi_zig = @import("napi_zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -150,7 +151,6 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(wasm_exe);
 
-    const napi_zig = @import("napi_zig");
     const napi_dep = b.dependency("napi_zig", .{});
 
     const napi_lib = napi_zig.addLib(b, napi_dep, .{
@@ -174,7 +174,7 @@ pub fn build(b: *std.Build) void {
                 .name = "yuku-parser",
                 .scope = "@yuku-parser",
                 .version = "0.1.0",
-                .description = "Fast JavaScript/TypeScript parser",
+                .description = "High-performance JavaScript/TypeScript parser",
                 .root = b.path("src/parser/napi.zig"),
                 .imports = &.{
                     .{ .name = "parser", .module = parser_module },
