@@ -14,6 +14,10 @@ Yuku's traverser system walks the AST and calls your visitor hooks at every node
 
 Every mode gives you the full tree, the current path from root, and whatever tracking that mode provides. Read-only traversers (basic, scoped, semantic) access the tree through `*const Tree`, so they cannot accidentally mutate the AST. The transform traverser gets `*Tree` for full mutation access.
 
+:::note
+The traverser system is stable and powers Yuku's semantic checker in production. However, the API surface may evolve as we build more tools on top of it (minifier, etc.). Breaking changes will be documented.
+:::
+
 ## Visitor Hooks
 
 A visitor is any struct with `enter_*` and `exit_*` methods. Hooks are named after node types:

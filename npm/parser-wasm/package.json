@@ -1,6 +1,6 @@
 {
 	"name": "yuku-parser-wasm",
-	"description": "WebAssembly module for Yuku parser, the JavaScript/TypeScript parser written in Zig.",
+	"description": "WebAssembly module for Yuku parser, the JavaScript/TypeScript compiler and toolchain written in Zig.",
 	"version": "0.2.19",
 	"type": "module",
 	"files": [
