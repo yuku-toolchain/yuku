@@ -29,7 +29,7 @@ pub const Serializer = struct {
         var buffer: std.ArrayList(u8) = try .initCapacity(allocator, tree.nodes.len * 64 + 4096);
         errdefer buffer.deinit(allocator);
 
-        const pos_map: ?[]u32 = if (tree.source.len > 0)
+        const pos_map: ?[]u32 = if (tree.source.len > 0 and !isAsciiOnly(tree.source))
             try buildUtf16PosMap(allocator, tree.source)
         else
             null;
@@ -831,8 +831,22 @@ pub const Serializer = struct {
     }
 };
 
-/// Builds a lookup table mapping byte positions to UTF-16 code unit offsets.
-/// ESTree positions use UTF-16 code units (matching JavaScript's string indexing).
+fn isAsciiOnly(source: []const u8) bool {
+    const Vec = @Vector(16, u8);
+    const threshold: Vec = @splat(0x80);
+    var i: usize = 0;
+
+    while (i + 16 <= source.len) : (i += 16) {
+        const chunk: Vec = source[i..][0..16].*;
+        if (@reduce(.Or, chunk & threshold) != 0) return false;
+    }
+
+    for (source[i..]) |c| {
+        if (c >= 0x80) return false;
+    }
+    return true;
+}
+
 fn buildUtf16PosMap(allocator: std.mem.Allocator, source: []const u8) ![]u32 {
     var map = try allocator.alloc(u32, source.len + 1);
     var byte_pos: usize = 0;
