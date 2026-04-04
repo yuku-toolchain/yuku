@@ -164,8 +164,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const napi_step = b.step("napi", "Build .node for current platform");
-    napi_step.dependOn(&napi_lib.step);
-    b.installArtifact(napi_lib);
+    napi_step.dependOn(napi_lib.step);
 
     // npm packaging
     napi_zig.addPack(b, napi_dep, .{
