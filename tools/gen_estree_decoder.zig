@@ -1,6 +1,6 @@
-// generates decode.js -- decodes the binary AST buffer from Zig into an ESTree JS object.
-// uses the same comptime layout functions as the serializer (transfer.zig),
-// guaranteeing the decoder always matches the binary format.
+// generates decode.js, a decoder that reads the binary AST buffer from Zig
+// and constructs an ESTree JS object. uses the same comptime layout functions
+// as the serializer (transfer.zig), guaranteeing the decoder matches the format.
 
 const std = @import("std");
 const parser = @import("parser");
