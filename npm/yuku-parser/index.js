@@ -1,9 +1,7 @@
-const binding = require('./binding.js');
-const { decode } = require('./decode.js');
+import binding from './binding.js';
+import { decode } from './decode.js';
 
-function parse(source, options) {
-  const buffer = binding.parse(source, options || {});
+export function parse(source, options) {
+  const buffer = binding.parse(source, options ?? {});
   return decode(buffer, source);
 }
-
-module.exports = { parse };

@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "description": "High-performance JavaScript/TypeScript parser",
   "license": "MIT",
+  "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
     "index.js",
     "index.d.ts",
-    "binding.js"
+    "binding.js",
+    "decode.js"
   ],
   "optionalDependencies": {
     "@yuku-parser/binding-linux-x64-gnu": "0.0.0",
