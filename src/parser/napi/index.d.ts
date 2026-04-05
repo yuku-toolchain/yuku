@@ -7,24 +7,24 @@ type SourceLang = "js" | "ts" | "jsx" | "tsx" | "dts";
 /** Options for configuring the parser. */
 interface ParseOptions {
 	/**
-	* Parse as a classic script or an ES module.
-	* Module mode enables `import`/`export`, `import.meta`, top-level `await`,
-	* and strict mode.
-	* @default "module"
-	*/
+	 * Parse as a classic script or an ES module.
+	 * Module mode enables `import`/`export`, `import.meta`, top-level `await`,
+	 * and strict mode.
+	 * @default "module"
+	 */
 	sourceType?: SourceType;
 	/**
-	* Language variant — controls which syntax extensions are enabled.
-	* @default "js"
-	*/
+	 * Language variant controls which syntax extensions are enabled.
+	 * @default "js"
+	 */
 	lang?: SourceLang;
 	/**
-	* Run semantic analysis after parsing and include semantic errors
-	* (e.g. duplicate declarations, invalid `break`/`continue` targets)
-	* alongside syntax errors. This requires a separate AST pass and may
-	* affect performance slightly.
-	* @default false
-	*/
+	 * Run semantic analysis after parsing and include semantic errors
+	 * (e.g. duplicate declarations, invalid `break`/`continue` targets)
+	 * alongside syntax errors. This requires a separate AST pass and may
+	 * affect performance slightly.
+	 * @default false
+	 */
 	semanticErrors?: boolean;
 }
 
@@ -33,33 +33,33 @@ interface Comment {
 	type: "Line" | "Block";
 	/** Comment text without the delimiters. */
 	value: string;
-	/** UTF-16 byte offset. */
+	/** Byte offset. */
 	start: number;
-	/** UTF-16 byte offset. */
+	/** Byte offset. */
 	end: number;
 }
 
 /** A labeled source span attached to a {@link Diagnostic}. */
 interface DiagnosticLabel {
-	/** UTF-16 byte offset. */
+	/** Byte offset. */
 	start: number;
-	/** UTF-16 byte offset. */
+	/** Byte offset. */
 	end: number;
 	message: string;
 }
 
 /**
-* A diagnostic produced during parsing or semantic analysis.
-* The parser is error-tolerant — an AST is always produced even when diagnostics exist.
-*/
+ * A diagnostic produced during parsing or semantic analysis.
+ * The parser is error tolerant: an AST is always produced even when diagnostics exist.
+ */
 interface Diagnostic {
 	severity: "error" | "warning" | "hint" | "info";
 	message: string;
 	/** Fix suggestion, or `null` if unavailable. */
 	help: string | null;
-	/** UTF-16 byte offset. */
+	/** Byte offset. */
 	start: number;
-	/** UTF-16 byte offset. */
+	/** Byte offset. */
 	end: number;
 	/** Additional source spans providing context. */
 	labels: DiagnosticLabel[];
@@ -74,6 +74,26 @@ interface ParseResult {
 	/** Syntax diagnostics, and semantic diagnostics when {@link ParseOptions.semanticErrors} is enabled. */
 	diagnostics: Diagnostic[];
 }
+
+/**
+ * Parse JS/TS source code synchronously on the current thread.
+ *
+ * Preferred for single file parsing. If you need to parallelize
+ * parsing multiple files, use worker threads with `parseSync`
+ * rather than `parse`.
+ */
+export function parseSync(source: string, options?: ParseOptions): ParseResult;
+
+/**
+ * Parse JS/TS source code asynchronously on a background thread.
+ *
+ * Parsing happens off the main thread, but the binary to ESTree
+ * decoding runs on the main thread when the promise resolves.
+ * For single files, `parseSync` is usually faster due to lower overhead.
+ */
+export function parse(source: string, options?: ParseOptions): Promise<ParseResult>;
+
+// AST node types
 
 interface BaseNode {
 	start: number;
@@ -161,10 +181,6 @@ interface Property extends BaseNode {
 interface SequenceExpression extends BaseNode {
 	type: "SequenceExpression";
 	expressions: Expression[];
-}
-interface ParenthesizedExpression extends BaseNode {
-	type: "ParenthesizedExpression";
-	expression: Expression;
 }
 interface BinaryExpression extends BaseNode {
 	type: "BinaryExpression";
@@ -601,9 +617,9 @@ interface Program extends BaseNode {
 	body: Array<Statement | ModuleDeclaration>;
 }
 type Declaration = FunctionDeclaration | ClassDeclaration | VariableDeclaration | TSDeclareFunction;
-type Expression = Identifier | Literal | ThisExpression | Super | ArrayExpression | ObjectExpression | FunctionExpression | ArrowFunctionExpression | ClassExpression | TaggedTemplateExpression | TemplateLiteral | MemberExpression | CallExpression | NewExpression | ChainExpression | SequenceExpression | ParenthesizedExpression | BinaryExpression | LogicalExpression | ConditionalExpression | UnaryExpression | UpdateExpression | AssignmentExpression | YieldExpression | AwaitExpression | ImportExpression | MetaProperty | SpreadElement | TSEmptyBodyFunctionExpression | JSXElement | JSXFragment;
+type Expression = Identifier | Literal | ThisExpression | Super | ArrayExpression | ObjectExpression | FunctionExpression | ArrowFunctionExpression | ClassExpression | TaggedTemplateExpression | TemplateLiteral | MemberExpression | CallExpression | NewExpression | ChainExpression | SequenceExpression | BinaryExpression | LogicalExpression | ConditionalExpression | UnaryExpression | UpdateExpression | AssignmentExpression | YieldExpression | AwaitExpression | ImportExpression | MetaProperty | SpreadElement | TSEmptyBodyFunctionExpression | JSXElement | JSXFragment;
 type Statement = ExpressionStatement | BlockStatement | EmptyStatement | DebuggerStatement | ReturnStatement | LabeledStatement | BreakStatement | ContinueStatement | IfStatement | SwitchStatement | ThrowStatement | TryStatement | WhileStatement | DoWhileStatement | ForStatement | ForInStatement | ForOfStatement | WithStatement | Declaration;
 type ModuleDeclaration = ImportDeclaration | ExportNamedDeclaration | ExportDefaultDeclaration | ExportAllDeclaration | TSExportAssignment | TSNamespaceExportDeclaration;
 type Node = Program | Statement | Expression | ModuleDeclaration | Property | PrivateIdentifier | TemplateElement | VariableDeclarator | CatchClause | SwitchCase | RestElement | ArrayPattern | ObjectPattern | AssignmentPattern | ClassBody | MethodDefinition | PropertyDefinition | AccessorProperty | StaticBlock | Decorator | ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportAttribute | ExportSpecifier | JSXOpeningElement | JSXClosingElement | JSXOpeningFragment | JSXClosingFragment | JSXIdentifier | JSXNamespacedName | JSXMemberExpression | JSXAttribute | JSXSpreadAttribute | JSXExpressionContainer | JSXEmptyExpression | JSXText | JSXSpreadChild;
 
-export { YieldExpression, WithStatement, WhileStatement, VariableDeclarator, VariableDeclaration, UpdateOperator, UpdateExpression, UnaryOperator, UnaryExpression, TryStatement, ThrowStatement, ThisExpression, TemplateLiteral, TemplateElement, TaggedTemplateExpression, TSNamespaceExportDeclaration, TSExportAssignment, TSEmptyBodyFunctionExpression, TSDeclareFunction, SwitchStatement, SwitchCase, Super, StringLiteral, StaticBlock, Statement, SpreadElement, SourceType, SourceLang, SequenceExpression, ReturnStatement, RestElement, RegExpLiteral, PropertyDefinition, Property, Program, PrivateIdentifier, ParseResult, ParseOptions, ParenthesizedExpression, ObjectPattern, ObjectExpression, NumericLiteral, NullLiteral, Node, NewExpression, ModuleDeclaration, MethodDefinition, MetaProperty, MemberExpression, LogicalOperator, LogicalExpression, Literal, LabeledStatement, JSXText, JSXTagName, JSXSpreadChild, JSXSpreadAttribute, JSXOpeningFragment, JSXOpeningElement, JSXNamespacedName, JSXMemberExpression, JSXIdentifier, JSXFragment, JSXExpressionContainer, JSXEmptyExpression, JSXElement, JSXClosingFragment, JSXClosingElement, JSXChild, JSXAttribute, ImportSpecifier, ImportNamespaceSpecifier, ImportExpression, ImportDefaultSpecifier, ImportDeclaration, ImportAttribute, IfStatement, Identifier, FunctionParameter, FunctionExpression, FunctionDeclaration, ForStatement, ForOfStatement, ForInStatement, ExpressionStatement, Expression, ExportSpecifier, ExportNamedDeclaration, ExportDefaultDeclaration, ExportAllDeclaration, EmptyStatement, DoWhileStatement, DiagnosticLabel, Diagnostic, Decorator, Declaration, DebuggerStatement, ContinueStatement, ConditionalExpression, Comment, ClassExpression, ClassElement, ClassDeclaration, ClassBody, ChainExpression, CatchClause, CallExpression, BreakStatement, BooleanLiteral, BlockStatement, BindingPattern, BinaryOperator, BinaryExpression, BigIntLiteral, BaseNode, AwaitExpression, AssignmentPattern, AssignmentOperator, AssignmentExpression, ArrowFunctionExpression, ArrayPattern, ArrayExpression, AccessorProperty };
+export type { ParseOptions, ParseResult, Comment, Diagnostic, DiagnosticLabel, SourceType, SourceLang, BaseNode, Program, Statement, Expression, Declaration, ModuleDeclaration, Node, Identifier, PrivateIdentifier, Literal, StringLiteral, NumericLiteral, BigIntLiteral, BooleanLiteral, NullLiteral, RegExpLiteral, BindingPattern, FunctionParameter, Property, ArrayPattern, ObjectPattern, AssignmentPattern, RestElement, SequenceExpression, BinaryExpression, LogicalExpression, ConditionalExpression, UnaryExpression, UpdateExpression, AssignmentExpression, YieldExpression, AwaitExpression, ArrayExpression, ObjectExpression, SpreadElement, MemberExpression, CallExpression, ChainExpression, TaggedTemplateExpression, NewExpression, MetaProperty, ImportExpression, TemplateLiteral, TemplateElement, Super, ThisExpression, ExpressionStatement, BlockStatement, IfStatement, SwitchStatement, SwitchCase, ForStatement, ForInStatement, ForOfStatement, WhileStatement, DoWhileStatement, BreakStatement, ContinueStatement, LabeledStatement, WithStatement, ReturnStatement, ThrowStatement, TryStatement, CatchClause, DebuggerStatement, EmptyStatement, VariableDeclaration, VariableDeclarator, FunctionDeclaration, FunctionExpression, TSDeclareFunction, TSEmptyBodyFunctionExpression, ArrowFunctionExpression, ClassDeclaration, ClassExpression, ClassBody, MethodDefinition, PropertyDefinition, AccessorProperty, StaticBlock, Decorator, ClassElement, ImportDeclaration, ImportSpecifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportAttribute, ExportNamedDeclaration, ExportDefaultDeclaration, ExportAllDeclaration, ExportSpecifier, TSExportAssignment, TSNamespaceExportDeclaration, JSXElement, JSXOpeningElement, JSXClosingElement, JSXFragment, JSXOpeningFragment, JSXClosingFragment, JSXIdentifier, JSXNamespacedName, JSXMemberExpression, JSXAttribute, JSXSpreadAttribute, JSXExpressionContainer, JSXEmptyExpression, JSXText, JSXSpreadChild, JSXTagName, JSXChild, BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator, AssignmentOperator, FunctionNodeBase, ClassNodeBase };

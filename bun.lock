@@ -12,6 +12,7 @@
         "jest-diff": "^30.3.0",
         "napi-zig": "^0.1.9",
         "typescript": "^5.9.3",
+        "yuku-parser": "workspace:*",
       },
     },
     "docs": {
