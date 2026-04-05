@@ -107,7 +107,7 @@ pub fn build(b: *std.Build) void {
 
     const napi_dep = b.dependency("napi_zig", .{});
 
-    const napi_lib = napi_zig.addLib(b, napi_dep, .{
+    _ = napi_zig.addLib(b, napi_dep, .{
         .name = "yuku-parser",
         .root = b.path("src/parser/napi/root.zig"),
         .target = target,
@@ -119,11 +119,9 @@ pub fn build(b: *std.Build) void {
             .scope = "@yuku-parser",
             .version = "0.1.0",
             .description = "High-performance JavaScript/TypeScript parser",
+            .dts = b.path("src/parser/napi/index.d.ts"),
         },
     });
-
-    const napi_step = b.step("napi", "Build .node for current platform");
-    napi_step.dependOn(napi_lib.step);
 
     // estree decoder codegen
     const gen_transfer_module = b.createModule(.{
