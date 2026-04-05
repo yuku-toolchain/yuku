@@ -77,19 +77,11 @@ interface ParseResult {
 
 /**
  * Parse JS/TS source code synchronously on the current thread.
- *
- * Preferred for single file parsing. If you need to parallelize
- * parsing multiple files, use worker threads with `parseSync`
- * rather than `parse`.
  */
 export function parseSync(source: string, options?: ParseOptions): ParseResult;
 
 /**
  * Parse JS/TS source code asynchronously on a background thread.
- *
- * Parsing happens off the main thread, but the binary to ESTree
- * decoding runs on the main thread when the promise resolves.
- * For single files, `parseSync` is usually faster due to lower overhead.
  */
 export function parse(source: string, options?: ParseOptions): Promise<ParseResult>;
 
