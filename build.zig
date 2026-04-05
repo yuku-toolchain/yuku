@@ -115,6 +115,11 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "parser", .module = parser_module },
         },
+        .npm = .{
+            .scope = "@yuku-parser",
+            .version = "0.1.0",
+            .description = "High-performance JavaScript/TypeScript parser",
+        },
     });
 
     const napi_step = b.step("napi", "Build .node for current platform");
@@ -146,21 +151,4 @@ pub fn build(b: *std.Build) void {
 
     const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
     gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
-
-    // npm packaging
-    napi_zig.addPack(b, napi_dep, .{
-        .output = "npm",
-        .entries = &.{
-            .{
-                .name = "yuku-parser",
-                .scope = "@yuku-parser",
-                .version = "0.1.0",
-                .description = "High-performance JavaScript/TypeScript parser",
-                .root = b.path("src/parser/napi/root.zig"),
-                .imports = &.{
-                    .{ .name = "parser", .module = parser_module },
-                },
-            },
-        },
-    });
 }
