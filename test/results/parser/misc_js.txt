@@ -101,8 +101,8 @@ error: Expected ';' after for-loop init, but found 'id'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 012_7
+   | ^^^
  2 | 
-   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 

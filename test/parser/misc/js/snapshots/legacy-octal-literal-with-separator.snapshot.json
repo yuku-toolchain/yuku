@@ -13,7 +13,7 @@
       "severity": "error",
       "message": "Identifier cannot immediately follow a numeric literal",
       "help": "Try adding whitespace here between the number and identifier",
-      "start": 6,
+      "start": 0,
       "end": 3,
       "labels": []
     }

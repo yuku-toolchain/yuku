@@ -104,7 +104,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Octal literal must contain at least one octal digit
    |
  1 | 0o8;
-   |     ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -133,7 +133,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 01n;
-   |     ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -394,6 +394,9 @@ error: Expected ')' to close parameter list, but found '='
 ✓ test/parser/suite/js/fail/025560435ed0b9a6.js
 error: Unterminated multi-line comment
    |
+ 1 | /*
+   | ^^
+ 2 | 
  3 | 
  4 | 
    | ^
@@ -485,7 +488,7 @@ error: Getter/setter cannot appear in destructuring pattern
 error: Invalid character at start of identifier
    |
  1 | \uD800\x62
-   |           ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -621,7 +624,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u002F2;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -763,7 +766,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 0o0__0
-   |       ^
+   | ^^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -779,7 +782,7 @@ error: Expected identifier or string literal, but found ','
 error: Invalid character in identifier
    |
  1 | var\u0009x;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -847,7 +850,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0b1a
-   |     ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -1128,7 +1131,7 @@ error: 'var' is reserved and cannot be used as a binding identifier
 error: Unterminated multi-line comment
    |
  1 | /*/
-   |    ^
+   | ^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -1155,7 +1158,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x0_
-   |     ^
+   | ^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -1191,7 +1194,7 @@ error: Invalid element in assignment pattern
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_8n;
-   |      ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -1200,7 +1203,7 @@ error: Identifier cannot immediately follow a numeric literal
 error: Invalid character in identifier
    |
  1 | var\u000Cx;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -1400,7 +1403,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_7n;
-   |      ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -1719,7 +1722,7 @@ error: Keywords cannot contain escape characters
 error: Invalid Unicode escape sequence
    |
  1 | \u12
-   |     ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -1820,7 +1823,7 @@ error: 'await' is reserved in an async/module context and cannot be used as an i
 error: Invalid character in identifier
    |
  1 | var\u000Dx;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -1928,7 +1931,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u002C2;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -2059,7 +2062,7 @@ error: Expected ';' after for-loop condition, but found ')'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u002A2;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -2077,7 +2080,7 @@ error: Class declaration requires a name
 error: Invalid hexadecimal escape sequence
    |
  1 | '\x1   
-   |        ^
+   | ^^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
 
@@ -2167,8 +2170,8 @@ error: 'function' is reserved and cannot be used as an identifier
 error: Unterminated string literal
    |
  1 | "Hello
+   | ^^^^^^
  2 | World"
-   |       ^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -2187,7 +2190,7 @@ error: Unterminated object
 error: Unterminated multi-line comment
    |
  1 | /* 
-   |    ^
+   | ^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -2312,7 +2315,7 @@ error: 'with' is reserved and cannot be used as an identifier
 error: Binary literal must contain at least one binary digit
    |
  1 | 0B9
-   |    ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -2384,7 +2387,7 @@ error: Unexpected token ')'
 error: Invalid Unicode escape sequence
    |
  1 | "\u"
-   |     ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -3060,7 +3063,7 @@ error: A rest element cannot have an initializer
 error: Exponent part is missing a number
    |
  1 | 1.e
-   |    ^
+   | ^^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -3599,7 +3602,7 @@ error: Shorthand property cannot have a default value in object expression
 error: Invalid Unicode escape sequence
    |
  1 | '\u{1F_639}';
-   |              ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -3671,7 +3674,7 @@ error: Expected '}' to close template expression, but found ';'
 error: Invalid character at start of identifier
    |
  1 | \uD800x
-   |        ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -3732,7 +3735,7 @@ error: 'function' is reserved and cannot be used as a binding identifier
 error: Invalid Unicode escape sequence
    |
  1 | a\o
-   |    ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -3763,7 +3766,7 @@ error: Expected ')' after import(), but found ''''
 error: Invalid Unicode escape sequence
    |
  1 | "\u000G"
-   |         ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -3809,7 +3812,7 @@ error: Expected ']' after computed property key, but found 'iter'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_0n;
-   |      ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -3953,6 +3956,7 @@ error: Invalid character in identifier
 error: Unterminated multi-line comment
    |
  1 | /*
+   | ^^^
  2 | 
    | ^
    |
@@ -4245,7 +4249,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 08_0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -4254,7 +4258,7 @@ error: Identifier cannot immediately follow a numeric literal
 error: Exponent part is missing a number
    |
  1 | 3e-
-   |    ^
+   | ^^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -4771,7 +4775,7 @@ error: A rest element cannot have an initializer
 error: Invalid character at start of identifier
    |
  1 | \u{0}
-   |      ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -4998,7 +5002,7 @@ error: Expected ')' after function arguments, but found 'v'
 error: Unterminated string literal
    |
  1 | "\\\"
-   |      ^
+   | ^^^^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -5228,7 +5232,7 @@ error: Invalid element in assignment pattern
 error: Invalid Unicode escape sequence
    |
  1 | a\u11z 
-   |        ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -5267,7 +5271,7 @@ error: Unexpected token '...'
 error: Unterminated string literal
    |
  1 | '
-   |  ^
+   | ^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -5307,7 +5311,7 @@ error: Rest element must be the last element
 error: Invalid Unicode escape sequence
    |
  1 | "\u{}"
-   |       ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -5411,9 +5415,9 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/js/fail/2765ef2d1706c70c.js
 error: Unterminated string literal
    |
- 3 | ing
- 4 | ";
-   |   ^
+ 1 | "
+   | ^
+ 2 | str
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -5528,7 +5532,7 @@ error: Unexpected token ':'
 error: Invalid Unicode escape sequence
    |
  1 | "\u{FFFF"
-   |          ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -5566,7 +5570,7 @@ error: A rest element cannot have an initializer
 error: Invalid Unicode escape sequence
    |
  1 | \ua
-   |    ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -5642,7 +5646,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Invalid character at start of identifier
    |
  1 | \u007B\u007D;
-   |              ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -5688,7 +5692,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Invalid Unicode escape sequence
    |
  1 | "\u111"
-   |        ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -5795,7 +5799,7 @@ error: The left-hand side of '**' cannot be an unparenthesized unary expression
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x0_n;
-   |       ^
+   | ^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -5957,7 +5961,7 @@ error: Invalid character at start of identifier
 error: Invalid character in identifier
    |
  1 | var\u2028x;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -6148,7 +6152,7 @@ error: Keywords cannot contain escape characters
 error: Invalid character at start of identifier
    |
  1 | �\
-   |   ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -6222,7 +6226,7 @@ error: Rest element must be the last element
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_0123456789
-   |             ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -6421,7 +6425,7 @@ error: Expected module specifier, but found 'a'
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 1__0123456789
-   |              ^
+   | ^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -6460,7 +6464,7 @@ error: Getter/setter cannot appear in destructuring pattern
 error: Invalid character in identifier
    |
  1 | var\u0020x;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -6509,7 +6513,7 @@ error: Expected '(' after import, but found ';'
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0x
-   |   ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -6549,7 +6553,7 @@ error: A rest element cannot have an initializer
 error: Invalid character at start of identifier
    |
  1 | \u0000
-   |       ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -6634,7 +6638,7 @@ error: Lexical declaration cannot appear in a single-statement context
 error: Binary literal must contain at least one binary digit
    |
  1 | 0b2n;
-   |      ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -6643,7 +6647,7 @@ error: Binary literal must contain at least one binary digit
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 10_
-   |    ^
+   | ^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -6891,7 +6895,7 @@ error: Invalid assignment target
 error: Invalid Unicode escape sequence
    |
  1 | \o
-   |   ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -7130,7 +7134,7 @@ error: Unexpected token ')'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 07n;
-   |     ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -7175,7 +7179,7 @@ error: The only valid meta property for 'new' is 'new.target'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 09_0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -7210,7 +7214,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 01_0n;
-   |       ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -7469,7 +7473,7 @@ error: Expected ';' after class field, but found 'y'
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b0_
-   |     ^
+   | ^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -7554,7 +7558,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 3x
-   |   ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -7819,7 +7823,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Invalid character in identifier
    |
  1 | a\u0000
-   |        ^
+   | ^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -7885,7 +7889,7 @@ error: Rest parameter must be the last parameter
 error: Unterminated string literal
    |
  1 | "\
-   |   ^
+   | ^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -7963,7 +7967,7 @@ error: Class declarations are not allowed in single-statement contexts
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0\u00620;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -8294,8 +8298,8 @@ error: A rest element cannot have an initializer
 error: Invalid hexadecimal escape sequence
    |
  1 | "\xx";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
 
@@ -8403,7 +8407,7 @@ error: A rest element cannot have an initializer
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 3in[]
-   |      ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -8496,7 +8500,7 @@ error: Shorthand property cannot have a default value in object expression
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 0x0__0n;
-   |         ^
+   | ^^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -8514,7 +8518,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Invalid character in identifier
    |
  1 | var\u00A0x;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -8977,7 +8981,7 @@ error: A rest element cannot have an initializer
 error: Invalid Unicode escape sequence
    |
  1 | a\x
-   |    ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -9646,7 +9650,7 @@ error: Invalid character at start of identifier
 error: Invalid Unicode escape sequence
    |
  1 | x\
-   |   ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -10188,7 +10192,7 @@ error: Invalid character at start of identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 08n;
-   |     ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -10249,7 +10253,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Binary literal must contain at least one binary digit
    |
  1 | 0b9
-   |    ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -10276,7 +10280,7 @@ error: Constructor cannot be async
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 3x0
-   |    ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -10325,7 +10329,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: BigInt literal cannot contain decimal point or exponent
    |
  1 | 2017.8n;
-   |         ^
+   | ^^^^^^
    |
    = help: Try removing the 'n' suffix here, or remove the decimal point/exponent from the number
 
@@ -10443,7 +10447,7 @@ error: A rest element cannot have an initializer
 error: Octal literal must contain at least one octal digit
    |
  1 | 0o
-   |   ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -10601,7 +10605,7 @@ error: Rest element is not allowed in parenthesized expression
 error: Invalid Unicode escape sequence
    |
  1 | "\uAA"
-   |       ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -11035,7 +11039,7 @@ error: Unterminated string literal
 error: Invalid character at start of identifier
    |
  1 | �!
-   |   ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -11249,7 +11253,7 @@ error: Classes can't have a private field named '#constructor'
 error: Invalid Unicode escape sequence
    |
  1 | "\uAAA"
-   |        ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -11405,7 +11409,7 @@ error: Keywords cannot contain escape characters
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 3in []
-   |       ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -11508,7 +11512,7 @@ error: Logical expressions and nullish coalescing cannot be mixed
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0B1a
-   |     ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -11720,7 +11724,7 @@ error: Rest element must be the last element
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 00n;
-   |     ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -11738,8 +11742,8 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Invalid Unicode escape sequence
    |
  1 | "\u";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -11829,7 +11833,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Invalid Unicode escape sequence
    |
  1 | "\u{1F_639}"
-   |             ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -11880,7 +11884,7 @@ error: 'catch' is reserved and cannot be used as a binding identifier
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 1_
-   |   ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -11911,7 +11915,7 @@ error: Expected ')' after import(), but found ''''
 error: Invalid Unicode escape sequence
    |
  1 | a\
-   |   ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -12031,7 +12035,7 @@ error: Expected ')' after while condition, but found '1'
 error: Invalid character at start of identifier
    |
  1 | ＊
-   |  ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -12182,7 +12186,7 @@ error: Destructuring declaration in for loop initializer must be initialized
 error: Exponent part is missing a number
    |
  1 | 1.e+z
-   |      ^
+   | ^^^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -12328,8 +12332,8 @@ error: Lexical declaration cannot appear in a single-statement context
 error: Invalid Unicode escape sequence
    |
  1 | "\u00";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -12396,7 +12400,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Invalid Unicode escape sequence
    |
  1 | "\uA"
-   |      ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -12772,7 +12776,7 @@ error: Expected '(' to start parameter list, but found '.'
 error: Unterminated string literal
    |
  1 | "\"
-   |    ^
+   | ^^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -12781,7 +12785,7 @@ error: Unterminated string literal
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 00_0n;
-   |       ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -12817,7 +12821,7 @@ error: Unexpected token '...'
 error: Exponent part is missing a number
    |
  1 | 3e
-   |   ^
+   | ^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -12876,7 +12880,7 @@ error: Rest element must be the last element
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 00_0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -12937,7 +12941,7 @@ error: Rest element must be the last element
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x_1
-   |     ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -13212,7 +13216,7 @@ error: Rest element must be the last element
 error: Invalid Unicode escape sequence
    |
  1 | \u
-   |   ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -13308,7 +13312,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Invalid Unicode escape sequence
    |
  1 | \u1
-   |    ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -13434,7 +13438,7 @@ error: Expected '(' after 'if', but found 'false'
 error: Binary literal must contain at least one binary digit
    |
  1 | 0b
-   |   ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -13464,7 +13468,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: BigInt literal cannot contain decimal point or exponent
    |
  1 | 0e0n;
-   |      ^
+   | ^^^
    |
    = help: Try removing the 'n' suffix here, or remove the decimal point/exponent from the number
 
@@ -13484,7 +13488,7 @@ error: Rest element must be the last element
 error: Invalid character at start of identifier
    |
  1 | �\x62
-   |      ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -13718,9 +13722,11 @@ error: Expected '{' to start class body, but found '['
 ✓ test/parser/suite/js/fail/65a7e95d594ad7ad.js
 error: Unterminated multi-line comment
    |
+ 1 | /*
+   | ^^
  2 | 
  3 | *
-   |  ^
+   | ^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -13863,7 +13869,7 @@ error: 'typeof' is reserved and cannot be used as a binding identifier
 error: Invalid hexadecimal escape sequence
    |
  1 | '\x1
-   |     ^
+   | ^^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
 
@@ -13872,7 +13878,7 @@ error: Invalid hexadecimal escape sequence
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b_1n;
-   |       ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -14094,7 +14100,7 @@ error: Async functions can only be declared at the top level or inside a block
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0a
-   |   ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -14121,7 +14127,7 @@ error: 'catch' is reserved and cannot be used as an identifier
 error: Invalid character at start of identifier
    |
  1 | \u005c
-   |       ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -14171,7 +14177,7 @@ error: Unexpected token ';'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_0;
-   |     ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -14194,7 +14200,7 @@ error: 'export' is reserved and cannot be used as an identifier
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b0_n;
-   |       ^
+   | ^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -14212,7 +14218,7 @@ error: Unexpected token 'end of file'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 09_0n;
-   |       ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -14401,7 +14407,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u002D2;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -14709,7 +14715,7 @@ error: Rest element must be the last element
 error: Invalid Unicode escape sequence
    |
  1 | a\u1z  
-   |        ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -14756,7 +14762,7 @@ error: 'import' keyword is not allowed here
 error: Invalid Unicode escape sequence
    |
  1 | a\uz   
-   |        ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -14893,8 +14899,8 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 error: Unterminated string literal
    |
  1 | '
+   | ^
  2 | '
-   |  ^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -14994,7 +15000,7 @@ error: 'await' is reserved in an async/module context and cannot be used as a bi
 error: Unterminated string literal
    |
  1 | '\x12  
-   |        ^
+   | ^^^^^^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -15021,7 +15027,7 @@ error: 'for await' is only valid in async functions or modules
 error: Invalid character at start of identifier
    |
  1 | \uD800\
-   |        ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -15051,7 +15057,7 @@ error: Expected ')' after import(), but found ''''
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_9;
-   |     ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -15111,7 +15117,7 @@ error: Invalid element in assignment pattern
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0X
-   |   ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -15496,7 +15502,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o0_n;
-   |       ^
+   | ^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -15516,7 +15522,7 @@ error: A rest element cannot have an initializer
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1.a
-   |    ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -15658,7 +15664,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Invalid Unicode escape sequence
    |
  1 | a\u113
-   |       ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -15678,8 +15684,8 @@ error: Invalid character at start of identifier
 error: Invalid Unicode escape sequence
    |
  1 | "\ux";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -15688,7 +15694,7 @@ error: Invalid Unicode escape sequence
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 0b0__0
-   |       ^
+   | ^^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -15715,7 +15721,7 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Invalid Unicode escape sequence
    |
  1 | "\u11"
-   |       ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -15880,7 +15886,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Unterminated string literal
    |
  1 | '\\\'
-   |      ^
+   | ^^^^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -15929,7 +15935,7 @@ error: Unterminated string literal
 error: Invalid character in identifier
    |
  1 | x\u005c
-   |        ^
+   | ^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -15945,7 +15951,7 @@ error: 'default' is reserved and cannot be used as a binding identifier
 error: Invalid character at start of identifier
    |
  1 | \uD800
-   |       ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -15976,7 +15982,7 @@ error: Unexpected token '...'
 error: Unterminated multi-line comment
    |
  1 | /*
-   |   ^
+   | ^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -16127,7 +16133,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o_1
-   |     ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -16179,7 +16185,7 @@ error: 'class' is reserved and cannot be used as an identifier
 error: Invalid character at start of identifier
    |
  1 | ‌ = []
-   |       ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -16262,7 +16268,7 @@ error: Expected '}' to close function body, but found 'end of file'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 09n;
-   |     ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -16308,8 +16314,8 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Invalid Unicode escape sequence
    |
  1 | "\u000";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -17263,7 +17269,7 @@ error: 'const' is reserved and cannot be used as a binding identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 00b0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -17709,7 +17715,7 @@ error: Unexpected token '.'
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0xgn;
-   |      ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -17718,7 +17724,7 @@ error: Hexadecimal literal must contain at least one hex digit
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 0x0__0
-   |       ^
+   | ^^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -17752,7 +17758,7 @@ error: Rest element is not allowed in parenthesized expression
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_8;
-   |     ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -17945,7 +17951,7 @@ error: A rest element cannot have an initializer
 error: Invalid character at start of identifier
    |
  1 | �
-   |  ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -18095,7 +18101,7 @@ error: Invalid element in assignment pattern
 error: Unterminated multi-line comment
    |
  1 | /*CHECK#1/
-   |           ^
+   | ^^^^^^^^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -18104,7 +18110,7 @@ error: Unterminated multi-line comment
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 09.x
-   |     ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -18162,7 +18168,7 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Invalid character in identifier
    |
  1 | var\u000Bx;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -18282,7 +18288,7 @@ error: 'if' is reserved and cannot be used as a binding identifier
 error: Unterminated multi-line comment
    |
  1 | /*hello
-   |        ^
+   | ^^^^^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -18804,7 +18810,7 @@ error: Unexpected token ')'
 error: Unterminated string literal
    |
  1 | "
-   |  ^
+   | ^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -18813,7 +18819,7 @@ error: Unterminated string literal
 error: Binary literal must contain at least one binary digit
    |
  1 | 0B
-   |   ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -18967,7 +18973,7 @@ error: Unexpected token '(' in binding pattern
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 01a
-   |    ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -19198,7 +19204,7 @@ error: Invalid element in assignment pattern
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_1;
-   |     ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -19289,7 +19295,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Unterminated template literal
    |
  1 | `
-   |  ^
+   | ^
    |
    = help: Try adding a closing backtick (`) here to complete the template
 
@@ -19298,7 +19304,7 @@ error: Unterminated template literal
 error: Unterminated multi-line comment
    |
  1 | /**
-   |    ^
+   | ^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -19314,7 +19320,7 @@ error: 'this' is reserved and cannot be used as a binding identifier
 error: Invalid character at start of identifier
    |
  1 | \u005B\u005D;
-   |              ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -19352,7 +19358,7 @@ error: Unexpected token ';'
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 10._1
-   |      ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -19616,7 +19622,7 @@ error: Invalid element in assignment pattern
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0__0123456789
-   |              ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -19780,7 +19786,7 @@ error: A rest element cannot have an initializer
 error: Octal literal must contain at least one octal digit
    |
  1 | 0o9
-   |    ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -19837,7 +19843,7 @@ error: A rest element cannot have an initializer
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 07_0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -19971,7 +19977,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 1_n;
-   |     ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -20076,7 +20082,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Invalid Unicode escape sequence
    |
  1 | a\u
-   |    ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -20085,7 +20091,7 @@ error: Invalid Unicode escape sequence
 error: Invalid hexadecimal escape sequence
    |
  1 | '\x
-   |    ^
+   | ^^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
 
@@ -20125,7 +20131,7 @@ error: Rest element must be the last element
 error: Binary literal must contain at least one binary digit
    |
  1 | 0b2;
-   |     ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -20421,7 +20427,7 @@ error: Expected 'while' after do statement body, but found ';'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u005F0123456789n;
-   |                    ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -20546,7 +20552,7 @@ error: A rest element cannot have an initializer
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 0b0__0n;
-   |         ^
+   | ^^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -20862,7 +20868,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0008n;
-   |       ^
+   | ^^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -21338,7 +21344,7 @@ error: Expected 'from' after export *, but found 'From'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0o1a
-   |     ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -22183,7 +22189,7 @@ error: Rest element must be the last element
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 10._e1
-   |       ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -22474,7 +22480,7 @@ error: Expected '(' for getter/setter definition, but found ';'
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 10__0123456789
-   |               ^
+   | ^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -22512,7 +22518,7 @@ error: Rest element must be the last element
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0x3in[]
-   |        ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -22521,7 +22527,7 @@ error: Identifier cannot immediately follow a numeric literal
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0x
-   |   ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -22541,7 +22547,7 @@ error: Rest element must be the last element
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 0o0__0n;
-   |         ^
+   | ^^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -22808,7 +22814,7 @@ error: A rest element cannot have an initializer
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0.toString
-   |           ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -22952,7 +22958,7 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Invalid Unicode escape sequence
    |
  1 | \x
-   |   ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -22972,7 +22978,7 @@ error: Keywords cannot contain escape characters
 error: Invalid character at start of identifier
    |
  1 | �x
-   |   ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -23115,7 +23121,7 @@ error: Async functions can only be declared at the top level or inside a block
 error: Invalid Unicode escape sequence
    |
  1 | \
-   |  ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -23228,7 +23234,7 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_9n;
-   |      ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -23316,7 +23322,7 @@ error: 'case' is reserved and cannot be used as a binding identifier
 error: Invalid Unicode escape sequence
    |
  1 | '\u'
-   |     ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -23407,7 +23413,7 @@ error: Setter must have exactly one parameter
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o_1n;
-   |       ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -23441,7 +23447,7 @@ error: Unexpected token '...'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 08_0n;
-   |       ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -23497,7 +23503,7 @@ error: A rest element cannot have an initializer
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u002B2;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -23545,7 +23551,7 @@ error: Invalid character at start of identifier
 error: Invalid Unicode escape sequence
    |
  1 | "\u{FFZ}"
-   |          ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -23585,7 +23591,7 @@ error: Unexpected token '...'
 error: Unterminated multi-line comment
    |
  1 | /*
-   |    ^
+   | ^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -23798,7 +23804,7 @@ error: Unexpected token '...'
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0xz
-   |    ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -24053,7 +24059,7 @@ error: 'delete' is reserved and cannot be used as a binding identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_1n;
-   |      ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -24166,7 +24172,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Invalid Unicode escape sequence
    |
  1 | \\
-   |   ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -24558,7 +24564,7 @@ error: Empty parentheses are only valid as arrow function parameters
 error: Octal literal must contain at least one octal digit
    |
  1 | 0O9
-   |    ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -24681,7 +24687,7 @@ error: Expected ')' after while condition, but found 'null'
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0b_1
-   |     ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -24773,7 +24779,7 @@ error: A rest element cannot have an initializer
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0xg
-   |    ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -24820,7 +24826,7 @@ error: Keywords cannot contain escape characters
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0O1a
-   |     ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -25025,7 +25031,7 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Invalid Unicode escape sequence
    |
  1 | "\u1"
-   |      ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -25041,7 +25047,7 @@ error: 'true' is reserved and cannot be used as a binding identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0__0123456789n;
-   |                ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -25199,7 +25205,7 @@ error: Unexpected token '...'
 error: Unterminated string literal
    |
  1 | ''
-   |    ^
+   | ^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -25764,7 +25770,7 @@ error: Unterminated string literal
 error: Invalid Unicode escape sequence
    |
  1 | a\u1
-   |     ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -25874,7 +25880,7 @@ error: A rest element cannot have an initializer
 error: Invalid character at start of identifier
    |
  1 | ‿ = 10
-   |       ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -25892,7 +25898,7 @@ error: Expected declaration after 'export', but found 'defer'
 error: Invalid character at start of identifier
    |
  1 | 
-   |  ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -25901,7 +25907,7 @@ error: Invalid character at start of identifier
 error: Invalid character in identifier
    |
  1 | x\u002a
-   |        ^
+   | ^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -25910,7 +25916,7 @@ error: Invalid character in identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0x1z
-   |     ^
+   | ^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -26070,7 +26076,7 @@ error: Invalid character at start of identifier
 error: BigInt literal cannot contain decimal point or exponent
    |
  1 | .0000000001n;
-   |              ^
+   | ^^^^^^^^^^^
    |
    = help: Try removing the 'n' suffix here, or remove the decimal point/exponent from the number
 
@@ -26097,7 +26103,7 @@ error: 'finally' is reserved and cannot be used as an identifier
 error: Invalid character at start of identifier
    |
  1 | ‍ = []
-   |       ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -26170,7 +26176,7 @@ error: 'break' is reserved and cannot be used as a binding identifier
 error: Invalid character in identifier
    |
  1 | var\u000Ax;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -26188,7 +26194,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Unterminated string literal
    |
  1 | '\'
-   |    ^
+   | ^^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -26265,7 +26271,7 @@ error: Rest element must be the last element
 error: Hexadecimal literal must contain at least one hex digit
    |
  1 | 0xG
-   |    ^
+   | ^^
    |
    = help: Try adding at least one hex digit (0-9, a-f, A-F) here after '0x'
 
@@ -26491,7 +26497,7 @@ error: Getter/setter cannot appear in destructuring pattern
 error: Invalid character at start of identifier
    |
  1 | #=
-   |   ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -26518,7 +26524,7 @@ error: Unterminated string literal
 error: Invalid character at start of identifier
    |
  1 | \uD800\u
-   |         ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -26818,7 +26824,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 10_n;
-   |      ^
+   | ^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -27058,8 +27064,8 @@ error: Classes may not have a static field named 'constructor'
 error: Invalid hexadecimal escape sequence
    |
  1 | "\x0";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
 
@@ -27184,7 +27190,7 @@ error: Unexpected token 'end of file' in binding pattern
 error: Invalid Unicode escape sequence
    |
  1 | "\u
-   |    ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -28053,7 +28059,7 @@ error: Unexpected token ')'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0\u006f0;
-   |          ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -28098,7 +28104,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Invalid character in identifier
    |
  1 | a\u{0}
-   |       ^
+   | ^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -28172,7 +28178,7 @@ error: Keywords cannot contain escape characters
 error: Unterminated multi-line comment
    |
  1 | /* 
-   |    ^
+   | ^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -28234,7 +28240,7 @@ error: Expected ';' after for-loop condition, but found ')'
 error: Exponent part is missing a number
    |
  1 | 3e+
-   |    ^
+   | ^^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -28662,7 +28668,7 @@ error: 'return' statement is only valid inside a function
 error: Invalid character at start of identifier
    |
  1 | \uD800\uDC00
-   |             ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -28855,7 +28861,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0x_1n;
-   |       ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -29082,7 +29088,7 @@ error: 'import' is reserved and cannot be used as an identifier
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 10__0123456789n;
-   |                 ^
+   | ^^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -29207,7 +29213,7 @@ error: Expected ')' after method parameters, but found '='
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 08a
-   |    ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -29283,7 +29289,7 @@ error: Keywords cannot contain escape characters
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 3in []
-   |       ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -29308,7 +29314,7 @@ error: 'debugger' is reserved and cannot be used as a binding identifier
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 00o0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -29380,7 +29386,7 @@ error: Invalid assignment target
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | .0_e1
-   |      ^
+   | ^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -29689,7 +29695,7 @@ error: Lexical declaration cannot appear in a single-statement context
 error: Octal literal must contain at least one octal digit
    |
  1 | 0o;
-   |    ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -29706,7 +29712,7 @@ error: 'var' is reserved and cannot be used as an identifier
 error: Octal literal must contain at least one octal digit
    |
  1 | 0O
-   |   ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -29749,7 +29755,7 @@ error: Expected '(' after 'if', but found '.'
 error: Octal literal must contain at least one octal digit
    |
  1 | 0o9n;
-   |      ^
+   | ^^
    |
    = help: Try adding at least one octal digit (0-7) here after '0o'
 
@@ -30025,7 +30031,7 @@ error: Rest element must be the last property
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 01_0;
-   |      ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -30034,7 +30040,7 @@ error: Identifier cannot immediately follow a numeric literal
 error: Invalid character in identifier
    |
  1 | var\u2029x;
-   |            ^
+   | ^^^^
    |
    = help: Try using a valid identifier character here (letters, digits, underscore, or dollar sign)
 
@@ -30153,8 +30159,8 @@ error: A rest element cannot have an initializer
 error: Unterminated string literal
    |
  1 | "
+   | ^
  2 | "
-   |  ^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -30631,7 +30637,7 @@ error: Classes may not have a static property named 'prototype'
 error: Unterminated multi-line comment
    |
  1 | /*hello  *
-   |           ^
+   | ^^^^^^^^^^
    |
    = help: Try adding the closing delimiter (*/) here to complete the comment
 
@@ -30876,7 +30882,7 @@ error: Unexpected token ',' as property key
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_0123456789n;
-   |               ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -31071,7 +31077,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 07_0n;
-   |       ^
+   | ^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -31150,8 +31156,8 @@ error: Unexpected token '#m' as property key
 error: Unterminated string literal
    |
  1 | '
- 2 | 
    | ^
+ 2 | 
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -31749,7 +31755,7 @@ error: Expected ')' after method parameters, but found '='
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 012348n;
-   |         ^
+   | ^^^^^^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -31902,7 +31908,7 @@ error: Invalid element in assignment pattern
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 10._
-   |     ^
+   | ^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -31948,7 +31954,7 @@ error: Optional chaining is not allowed in assignment pattern
 error: Invalid character at start of identifier
    |
  1 | \u00281\u0029;
-   |               ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -32386,7 +32392,7 @@ error: Unexpected token '=>' in expression
 error: Invalid Unicode escape sequence
    |
  1 | \u113
-   |      ^
+   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -32448,7 +32454,7 @@ error: Rest parameter must be the last parameter
 error: Unterminated string literal
    |
  1 | '\03
-   |     ^
+   | ^^^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -32457,7 +32463,7 @@ error: Unterminated string literal
 error: Unterminated template literal
    |
  1 | `test
-   |      ^
+   | ^^^^^
    |
    = help: Try adding a closing backtick (`) here to complete the template
 
@@ -32505,7 +32511,7 @@ error: Rest element must be the last element
 error: Unterminated string literal
    |
  1 | '\
-   |   ^
+   | ^^
    |
    = help: Try adding a closing quote here to complete the string
 
@@ -33119,7 +33125,7 @@ error: Unexpected token ')'
 error: Binary literal must contain at least one binary digit
    |
  1 | 0b;
-   |    ^
+   | ^^
    |
    = help: Try adding at least one binary digit (0 or 1) here after '0b'
 
@@ -33245,7 +33251,7 @@ error: Invalid character at start of identifier
 error: Invalid character at start of identifier
    |
  1 | \u003B;
-   |        ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -33265,7 +33271,7 @@ error: A rest element cannot have an initializer
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 1\u005F0123456789
-   |                  ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -33325,7 +33331,7 @@ error: 'else' is reserved and cannot be used as an identifier
 error: Invalid Unicode escape sequence
    |
  1 | a\u12
-   |      ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -33425,7 +33431,7 @@ error: Keywords cannot contain escape characters
 error: Exponent part is missing a number
    |
  1 | 3ea
-   |    ^
+   | ^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -33549,7 +33555,7 @@ error: Expected '(' for getter/setter definition, but found ';'
 error: Identifier cannot immediately follow a numeric literal
    |
  1 | 0_7;
-   |     ^
+   | ^
    |
    = help: Try adding whitespace here between the number and identifier
 
@@ -33558,7 +33564,7 @@ error: Identifier cannot immediately follow a numeric literal
 error: Invalid Unicode escape sequence
    |
  1 | "\u{110000}"
-   |             ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -33661,7 +33667,7 @@ error: Rest element must be the last element
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 10.0_e1
-   |        ^
+   | ^^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -34007,7 +34013,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Numeric literal cannot contain consecutive separators
    |
  1 | 1__0123456789n;
-   |                ^
+   | ^^
    |
    = help: Try removing one of the consecutive underscores here
 
@@ -34102,8 +34108,8 @@ error: 'yield' is reserved in a generator context and cannot be used as an ident
 error: Invalid Unicode escape sequence
    |
  1 | "\u0";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -34276,7 +34282,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 error: Numeric separator cannot appear at the end of a numeric literal
    |
  1 | 0o0_
-   |     ^
+   | ^^^^
    |
    = help: Try removing the trailing underscore here or adding more digits after it
 
@@ -34356,7 +34362,7 @@ error: A rest element cannot have an initializer
 error: Exponent part is missing a number
    |
  1 | 1.e+
-   |     ^
+   | ^^^^
    |
    = help: Try adding digits here after the exponent (e.g., e10, e-5, E+2)
 
@@ -34374,7 +34380,7 @@ error: Lexical declaration cannot appear in a single-statement context
 error: Invalid character at start of identifier
    |
  1 | �\u
-   |    ^
+   | ^
    |
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
@@ -34509,7 +34515,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 error: Invalid Unicode escape sequence
    |
  1 | a\u111z
-   |        ^
+   | ^^
    |
    = help: Try using \uHHHH (4 hex digits) or \u{HHHHHH} (1-6 hex digits) here
 
@@ -34588,8 +34594,8 @@ error: Rest element must be the last element
 error: Invalid hexadecimal escape sequence
    |
  1 | "\x";
+   | ^^
  2 | 
-   | ^
    |
    = help: Try adding two hexadecimal digits here (e.g., \x41 for 'A')
 

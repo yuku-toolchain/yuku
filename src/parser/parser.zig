@@ -75,7 +75,7 @@ pub const Parser = struct {
             .source_type = options.source_type,
             .lang = options.lang,
             .lexer = undefined,
-            .current_token = undefined,
+            .current_token = Token.eof(0),
         };
     }
 
