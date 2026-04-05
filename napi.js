@@ -7,9 +7,9 @@ const source = await Bun.file('test/index.js').text();
 binding.parse(source, { lang: "js" });
 decode(binding.parse(source, { lang: "js" }), source);
 
-console.log(`file: ${(source.length / 1024).toFixed(1)} KB`);
+console.log(`file: ${(source.length / 1024 / 1024).toFixed(2)} MB`);
 
-console.time("  native (parse + serialize + decode)");
+console.time("total");
 
 console.time("  native (parse + serialize)");
 const buffer = binding.parse(source, { lang: "js" });
@@ -17,9 +17,10 @@ console.timeEnd("  native (parse + serialize)");
 
 console.time("  js decode");
 const result = decode(buffer, source);
-console.log(JSON.stringify(result.program.body, null, 2))
+// console.log(JSON.stringify(result.program.body, null, 2));
 console.timeEnd("  js decode");
 
-console.timeEnd("  native (parse + serialize + decode)");
+console.timeEnd("total");
 
-console.log(`buffer: ${(buffer.byteLength / 1024).toFixed(1)} KB, nodes in body: ${result.program.body.length}`);
+console.log(`buffer: ${(buffer.byteLength / 1024 / 1024).toFixed(2)} MB`);
+console.log(`body: ${result.program.body.length}, comments: ${result.comments.length}, diags: ${result.diagnostics.length}`);

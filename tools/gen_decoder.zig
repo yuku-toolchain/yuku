@@ -27,12 +27,13 @@ fn generate(w: *Writer) !void {
     try writeLookupTables(w);
     try w.writeAll(
         \\const _td = new TextDecoder("utf-8");
-        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _pool;
+        \\let _u8, _u32, _srcBytes, _srcLen, _nodesOff, _extraBase, _spOff, _pool;
         \\function str(s, e) {
         \\  if (s === e) return "";
-        \\  if (s < _srcLen) return _src.slice(s, e);
+        \\  if (s < _srcLen) return _td.decode(_srcBytes.subarray(s, e));
         \\  return _pool.slice(s - _srcLen, e - _srcLen);
         \\}
+        \\function raw(s, e) { return _td.decode(_srcBytes.subarray(s, e)); }
         \\function node(i) {
         \\  const o = _nodesOff + i * 32;
         \\  const tag = _u8[o];
@@ -224,20 +225,20 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
     } else if (comptime eql(u8, name, "string_literal")) {
         const s = comptime rt.u32SlotForField(ast.StringLiteral, fieldIdx(ast.StringLiteral, "value")) + 1;
         try w.print(
-            \\    case {d}: return {{ type: "Literal", start, end, value: str(f{d}, f{d}), raw: _src.slice(start, end) }};
+            \\    case {d}: return {{ type: "Literal", start, end, value: str(f{d}, f{d}), raw: raw(start, end) }};
         , .{ tag, s, s + 1 });
         try w.writeByte('\n');
         //
     } else if (comptime eql(u8, name, "numeric_literal")) {
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end); const v = +r; return {{ type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }}; }}
+            \\    case {d}: {{ const r = raw(start, end); const v = +r; return {{ type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }}; }}
         , .{tag});
         try w.writeByte('\n');
         //
     } else if (comptime eql(u8, name, "bigint_literal")) {
         const s = comptime rt.u32SlotForField(ast.BigIntLiteral, fieldIdx(ast.BigIntLiteral, "raw")) + 1;
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end); return {{ type: "Literal", start, end, value: "(BigInt) " + r, raw: r, bigint: str(f{d}, f{d}).replace(/_/g, "") }}; }}
+            \\    case {d}: {{ const r = raw(start, end); return {{ type: "Literal", start, end, value: "(BigInt) " + r, raw: r, bigint: str(f{d}, f{d}).replace(/_/g, "") }}; }}
         , .{ tag, s, s + 1 });
         try w.writeByte('\n');
         //
@@ -267,7 +268,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const bit_undef = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.TemplateElement, fieldIdx(ast.TemplateElement, "is_cooked_undefined")));
         const sc = comptime rt.u32SlotForField(ast.TemplateElement, fieldIdx(ast.TemplateElement, "cooked")) + 1;
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return {{ type: "TemplateElement", start, end, value: {{ raw: r, cooked: (flags & {d}) ? null : str(f{d}, f{d}) }}, tail: !!(flags & {d}) }}; }}
+            \\    case {d}: {{ const r = raw(start, end).replace(/\r\n?/g, "\n"); return {{ type: "TemplateElement", start, end, value: {{ raw: r, cooked: (flags & {d}) ? null : str(f{d}, f{d}) }}, tail: !!(flags & {d}) }}; }}
         , .{ tag, bit_undef, sc, sc + 1, bit_tail });
         try w.writeByte('\n');
         //
@@ -385,8 +386,8 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  _u8 = new Uint8Array(buffer);
         \\  const aLen = (buffer.byteLength >> 2) << 2;
         \\  _u32 = new Uint32Array(buffer, 0, aLen >> 2);
-        \\  _src = source;
         \\  _srcLen = _u32[5];
+        \\  _srcBytes = new TextEncoder().encode(source);
         \\  const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
         \\  const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
         \\  _nodesOff = 36;
@@ -423,7 +424,7 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\    diagnostics[j] = { severity: sev, message: msg, start: ds, end: de, help, labels };
         \\  }
         \\  const program = node(progIdx);
-        \\  _u8 = _u32 = _src = _pool = null;
+        \\  _u8 = _u32 = _srcBytes = _pool = null;
         \\  return { program, comments, diagnostics };
         \\}
         \\
