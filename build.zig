@@ -166,24 +166,24 @@ pub fn build(b: *std.Build) void {
     const napi_step = b.step("napi", "Build .node for current platform");
     napi_step.dependOn(napi_lib.step);
 
-    // decoder codegen
-    const gen_decoder_module = b.createModule(.{
-        .root_source_file = b.path("tools/gen_decoder.zig"),
+    // estree decoder codegen
+    const gen_estree_module = b.createModule(.{
+        .root_source_file = b.path("tools/gen_estree_decoder.zig"),
         .target = b.graph.host,
         .optimize = optimize,
     });
-    gen_decoder_module.addImport("parser", parser_module);
+    gen_estree_module.addImport("parser", parser_module);
 
-    const gen_decoder_exe = b.addExecutable(.{
-        .name = "gen-decoder",
-        .root_module = gen_decoder_module,
+    const gen_estree_exe = b.addExecutable(.{
+        .name = "gen-estree-decoder",
+        .root_module = gen_estree_module,
     });
 
-    const run_gen_decoder = b.addRunArtifact(gen_decoder_exe);
-    const gen_decoder_output = run_gen_decoder.captureStdOut(.{});
+    const run_gen_estree = b.addRunArtifact(gen_estree_exe);
+    const gen_estree_output = run_gen_estree.captureStdOut(.{});
 
-    const gen_decoder_step = b.step("gen-decoder", "Generate decode.js from AST types");
-    gen_decoder_step.dependOn(&b.addInstallFile(gen_decoder_output, "decode.js").step);
+    const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
+    gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
 
     // npm packaging
     napi_zig.addPack(b, napi_dep, .{

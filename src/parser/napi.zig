@@ -9,9 +9,9 @@ pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     }) catch return error.ParseFailed;
     defer tree.deinit();
 
-    const size = parser.raw_transfer.bufferSize(&tree);
+    const size = parser.transfer.bufferSize(&tree);
     const ab = try env.createArrayBuffer(size);
-    _ = parser.raw_transfer.serializeInto(&tree, ab.data);
+    _ = parser.transfer.serializeInto(&tree, ab.data);
 
     return ab.val;
 }
