@@ -1,5 +1,5 @@
 const binding = require("./zig-out/lib/yuku-parser.node");
-const { decode } = require("./decode.js");
+const { decode } = require("./zig-out/decode");
 
 const source = await Bun.file('test/index.js').text();
 
