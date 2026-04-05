@@ -17,10 +17,11 @@
 		"bumpp": "^11.0.1",
 		"fast-deep-equal": "^3.1.3",
 		"jest-diff": "^30.3.0",
+		"oxc-parser": "^0.123.0",
 		"typescript": "^5.9.3",
-		"yuku-shared": "workspace:*",
+		"yuku-parser-types": "workspace:*",
 		"yuku-parser-wasm": "workspace:*",
-		"yuku-parser-types": "workspace:*"
+		"yuku-shared": "workspace:*"
 	},
 	"workspaces": [
 		"npm/**/*",
