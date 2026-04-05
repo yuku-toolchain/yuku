@@ -105,57 +105,11 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
 
-    const wasm_target = b.resolveTargetQuery(.{
-        .cpu_arch = .wasm32,
-        .os_tag = .freestanding,
-        .cpu_features_add = std.Target.wasm.featureSet(&.{
-            .bulk_memory,
-            .mutable_globals,
-            .nontrapping_fptoint,
-            .sign_ext,
-        }),
-    });
-
-    const wasm_util_module = b.createModule(.{
-        .root_source_file = b.path("src/util/root.zig"),
-        .target = wasm_target,
-        .optimize = .ReleaseSmall,
-    });
-
-    const wasm_parser_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/root.zig"),
-        .target = wasm_target,
-        .optimize = .ReleaseSmall,
-    });
-
-    wasm_parser_module.addImport("util", wasm_util_module);
-
-    const wasm_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/wasm.zig"),
-        .target = wasm_target,
-        .optimize = .ReleaseSmall,
-    });
-
-    wasm_module.addImport("parser", wasm_parser_module);
-
-    const wasm_exe = b.addExecutable(.{
-        .name = "yuku",
-        .root_module = wasm_module,
-    });
-
-    wasm_exe.entry = .disabled;
-    wasm_exe.rdynamic = true;
-    wasm_exe.initial_memory = 64 * 1024 * 1024; // 64MB initial
-    wasm_exe.max_memory = 256 * 1024 * 1024; // 256MB max
-    wasm_exe.stack_size = 1024 * 1024;
-
-    b.installArtifact(wasm_exe);
-
     const napi_dep = b.dependency("napi_zig", .{});
 
     const napi_lib = napi_zig.addLib(b, napi_dep, .{
         .name = "yuku-parser",
-        .root = b.path("src/parser/napi.zig"),
+        .root = b.path("src/parser/napi/root.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
@@ -167,12 +121,20 @@ pub fn build(b: *std.Build) void {
     napi_step.dependOn(napi_lib.step);
 
     // estree decoder codegen
+    const gen_transfer_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/napi/transfer.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    gen_transfer_module.addImport("parser", parser_module);
+
     const gen_estree_module = b.createModule(.{
         .root_source_file = b.path("tools/gen_estree_decoder.zig"),
         .target = b.graph.host,
         .optimize = optimize,
     });
     gen_estree_module.addImport("parser", parser_module);
+    gen_estree_module.addImport("transfer", gen_transfer_module);
 
     const gen_estree_exe = b.addExecutable(.{
         .name = "gen-estree-decoder",
@@ -194,7 +156,7 @@ pub fn build(b: *std.Build) void {
                 .scope = "@yuku-parser",
                 .version = "0.1.0",
                 .description = "High-performance JavaScript/TypeScript parser",
-                .root = b.path("src/parser/napi.zig"),
+                .root = b.path("src/parser/napi/root.zig"),
                 .imports = &.{
                     .{ .name = "parser", .module = parser_module },
                 },

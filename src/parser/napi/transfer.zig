@@ -24,7 +24,7 @@
 // the same comptime layout functions defined here, guaranteeing agreement.
 
 const std = @import("std");
-const ast = @import("ast.zig");
+const ast = @import("parser").ast;
 
 pub const VERSION: u32 = 1;
 pub const HEADER_SIZE: u32 = 36;

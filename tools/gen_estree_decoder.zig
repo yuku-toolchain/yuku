@@ -5,7 +5,7 @@
 const std = @import("std");
 const parser = @import("parser");
 const ast = parser.ast;
-const rt = parser.transfer;
+const rt = @import("transfer");
 
 const Writer = std.Io.Writer;
 
