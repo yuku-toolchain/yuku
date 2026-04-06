@@ -26,9 +26,8 @@ fn generate(w: *Writer) !void {
     try writeLookupTables(w);
     try w.writeAll(
         \\const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _pm;
-        \\function _p(v) { return _pm ? _pm[v] : v; }
-        \\function _pool(s, e) {
+        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, str;
+        \\function _poolDecode(s, e) {
         \\  const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
         \\  let hasEd = false;
         \\  for (let i = a; i < b; i++) if (_u8[i] === 0xED) { hasEd = true; break; }
@@ -42,11 +41,6 @@ fn generate(w: *Writer) !void {
         \\    else { r += String.fromCodePoint(((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) | ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)); i += 4; }
         \\  }
         \\  return r;
-        \\}
-        \\function str(s, e) {
-        \\  if (s === e) return "";
-        \\  if (s < _srcLen) return _pm ? _src.slice(_pm[s], _pm[e]) : _src.slice(s, e);
-        \\  return _pool(s, e);
         \\}
         \\function node(i) {
         \\  const o = _nodesOff + i * 32;
@@ -402,7 +396,14 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  _srcLen = _u32[5];
         \\  const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
         \\  const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
-        \\  _pm = (_u32[9] & 1) ? null : buildPosMap(source, _srcLen);
+        \\  const pm = (_u32[9] & 1) ? null : buildPosMap(source, _srcLen);
+        \\  if (pm) {{
+        \\    _p = function(v) {{ return pm[v]; }};
+        \\    str = function(s, e) {{ if (s === e) return ""; if (s < _srcLen) return _src.slice(pm[s], pm[e]); return _poolDecode(s, e); }};
+        \\  }} else {{
+        \\    _p = function(v) {{ return v; }};
+        \\    str = function(s, e) {{ if (s === e) return ""; if (s < _srcLen) return _src.slice(s, e); return _poolDecode(s, e); }};
+        \\  }}
         \\  _nodesOff = {d};
         \\  const eOff = _nodesOff + nodeCount * 32;
         \\  _extraBase = eOff >> 2;
@@ -436,7 +437,7 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\    diagnostics[j] = {{ severity: sev, message: msg, start: ds, end: de, help, labels }};
         \\  }}
         \\  const program = node(progIdx);
-        \\  _u8 = _u32 = _src = _pm = null;
+        \\  _u8 = _u32 = _src = null;
         \\  return {{ program, comments, diagnostics }};
         \\}}
         \\
