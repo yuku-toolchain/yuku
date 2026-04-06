@@ -25,13 +25,28 @@ fn generate(w: *Writer) !void {
     );
     try writeLookupTables(w);
     try w.writeAll(
-        \\const _td = new TextDecoder("utf-8");
+        \\const _td = new TextDecoder("utf-8", { ignoreBOM: true });
         \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _pm;
         \\function _p(v) { return _pm ? _pm[v] : v; }
+        \\function _pool(s, e) {
+        \\  const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
+        \\  let hasEd = false;
+        \\  for (let i = a; i < b; i++) if (_u8[i] === 0xED) { hasEd = true; break; }
+        \\  if (!hasEd) return _td.decode(_u8.subarray(a, b));
+        \\  let r = "";
+        \\  for (let i = a; i < b; ) {
+        \\    const c = _u8[i];
+        \\    if (c < 0x80) { r += String.fromCharCode(c); i++; }
+        \\    else if (c < 0xE0) { r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F)); i += 2; }
+        \\    else if (c < 0xF0) { r += String.fromCharCode(((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)); i += 3; }
+        \\    else { r += String.fromCodePoint(((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) | ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)); i += 4; }
+        \\  }
+        \\  return r;
+        \\}
         \\function str(s, e) {
         \\  if (s === e) return "";
         \\  if (s < _srcLen) return _pm ? _src.slice(_pm[s], _pm[e]) : _src.slice(s, e);
-        \\  return _td.decode(_u8.subarray(_spOff + s - _srcLen, _spOff + e - _srcLen));
+        \\  return _pool(s, e);
         \\}
         \\function node(i) {
         \\  const o = _nodesOff + i * 32;
