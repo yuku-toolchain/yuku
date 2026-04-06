@@ -3,12 +3,8 @@ import { basename, dirname, join } from "node:path";
 import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
-import type { Diagnostic } from "yuku-parser-types";
-import { formatDiagnostics } from "yuku-parser-types/print";
-import { parseSync, preload } from "yuku-parser-wasm";
-import { deserializeAstJson, serializeAstJson } from "yuku-shared";
-
-await preload();
+import { parseSync, type Diagnostic } from "yuku-parser";
+import { deserializeAstJson, formatDiagnostics, serializeAstJson } from "../ast-helpers-for-test";
 
 console.clear();
 console.log("");
@@ -319,7 +315,6 @@ for (const [, result] of results) {
 		if (entry && entry.diagnostics.length > 0) {
 			lines.push(
 				formatDiagnostics(entry.source, [entry.diagnostics[0]], file, {
-					colors: false,
 					showFilename: false,
 				}),
 			);

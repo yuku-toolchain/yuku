@@ -1,8 +1,8 @@
 suite/jsx/pass
 ==============
-Passed:       55/55 (100.00%)
-Failed:       0
-AST mismatch: 0/55
+Passed:       50/55 (90.91%)
+Failed:       5
+AST mismatch: 5/55
 
 ✓ test/parser/suite/jsx/pass/09e94bc7badc2295.jsx
 ✓ test/parser/suite/jsx/pass/1274dd5b5e0d3c51.jsx
@@ -29,14 +29,14 @@ AST mismatch: 0/55
 ✓ test/parser/suite/jsx/pass/67b2c689f8d4b0a4.jsx
 ✓ test/parser/suite/jsx/pass/6f64f2da1ec85cca.jsx
 ✓ test/parser/suite/jsx/pass/77c84baff40a7781.jsx
-✓ test/parser/suite/jsx/pass/7c72c25ede5da042.jsx
+✗ test/parser/suite/jsx/pass/7c72c25ede5da042.jsx
 ✓ test/parser/suite/jsx/pass/7cd0cf0c4f0ac1d7.jsx
 ✓ test/parser/suite/jsx/pass/8576905f0f55a0f3.jsx
 ✓ test/parser/suite/jsx/pass/85d681b9a572db1e.jsx
-✓ test/parser/suite/jsx/pass/867147a4a3de08de.jsx
+✗ test/parser/suite/jsx/pass/867147a4a3de08de.jsx
 ✓ test/parser/suite/jsx/pass/8c70bfa998fe9cf0.jsx
 ✓ test/parser/suite/jsx/pass/952fa0a7487ad59d.jsx
-✓ test/parser/suite/jsx/pass/965ec56a9ee30b60.jsx
+✗ test/parser/suite/jsx/pass/965ec56a9ee30b60.jsx
 ✓ test/parser/suite/jsx/pass/a5b315df40815714.jsx
 ✓ test/parser/suite/jsx/pass/a831e74cbbbd8025.jsx
 ✓ test/parser/suite/jsx/pass/a9d56d0a63b8a8aa.jsx
@@ -47,13 +47,13 @@ AST mismatch: 0/55
 ✓ test/parser/suite/jsx/pass/b4ed3552e9a23892.jsx
 ✓ test/parser/suite/jsx/pass/b647c859e511e9aa.jsx
 ✓ test/parser/suite/jsx/pass/bc54581506958d8d.jsx
-✓ test/parser/suite/jsx/pass/c05a275ed1a00bae.jsx
+✗ test/parser/suite/jsx/pass/c05a275ed1a00bae.jsx
 ✓ test/parser/suite/jsx/pass/c8c3f0e0dc8af04c.jsx
 ✓ test/parser/suite/jsx/pass/d11804f5a29e51ad.jsx
 ✓ test/parser/suite/jsx/pass/d6e300b3d2594c4a.jsx
 ✓ test/parser/suite/jsx/pass/d70f6b94d5e485ac.jsx
 ✓ test/parser/suite/jsx/pass/e0e0159a8941c0b0.jsx
-✓ test/parser/suite/jsx/pass/e9b26f73b26f26ad.jsx
+✗ test/parser/suite/jsx/pass/e9b26f73b26f26ad.jsx
 ✓ test/parser/suite/jsx/pass/ec995be9cb428966.jsx
 ✓ test/parser/suite/jsx/pass/eeb88aa6783b034d.jsx
 ✓ test/parser/suite/jsx/pass/f51bea5ea6c9708a.jsx

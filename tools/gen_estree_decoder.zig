@@ -237,7 +237,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
     } else if (comptime eql(u8, name, "bigint_literal")) {
         const s = comptime rt.u32SlotForField(ast.BigIntLiteral, fieldIdx(ast.BigIntLiteral, "raw")) + 1;
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end); return {{ type: "Literal", start, end, value: "(BigInt) " + r, raw: r, bigint: str(f{d}, f{d}).replace(/_/g, "") }}; }}
+            \\    case {d}: {{ const r = _src.slice(start, end); const d = str(f{d}, f{d}).replace(/_/g, ""); return {{ type: "Literal", start, end, value: BigInt(d), raw: r, bigint: d }}; }}
         , .{ tag, s, s + 1 });
         try w.writeByte('\n');
         //
@@ -258,7 +258,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const sp = comptime rt.u32SlotForField(ast.RegExpLiteral, fieldIdx(ast.RegExpLiteral, "pattern")) + 1;
         const sf = comptime rt.u32SlotForField(ast.RegExpLiteral, fieldIdx(ast.RegExpLiteral, "flags")) + 1;
         try w.print(
-            \\    case {d}: {{ const p = str(f{d}, f{d}), fl = str(f{d}, f{d}); return {{ type: "Literal", start, end, value: "(RegExp) /" + p + "/" + fl, raw: "/" + p + "/" + fl, regex: {{ pattern: p, flags: fl.split("").sort().join("") }} }}; }}
+            \\    case {d}: {{ const p = str(f{d}, f{d}), fl = str(f{d}, f{d}); let v = null; try {{ v = new RegExp(p, fl); }} catch {{}} return {{ type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: {{ pattern: p, flags: fl.split("").sort().join("") }} }}; }}
         , .{ tag, sp, sp + 1, sf, sf + 1 });
         try w.writeByte('\n');
         //

@@ -1,5 +1,5 @@
-import { printDiagnostics } from "yuku-parser-types/print";
-import { parse } from "yuku-parser-wasm";
+import { printDiagnostics } from "./ast-helpers-for-test";
+import { parse } from "yuku-parser";
 
 console.clear();
 

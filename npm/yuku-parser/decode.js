@@ -64,11 +64,11 @@ function node(i) {
     case 32: return { type: "Super", start, end };
     case 33: return { type: "Literal", start, end, value: str(f1, f2), raw: _src.slice(start, end) };
     case 34: { const r = _src.slice(start, end); const v = +r; return { type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }; }
-    case 35: { const r = _src.slice(start, end); return { type: "Literal", start, end, value: "(BigInt) " + r, raw: r, bigint: str(f1, f2).replace(/_/g, "") }; }
+    case 35: { const r = _src.slice(start, end); const d = str(f1, f2).replace(/_/g, ""); return { type: "Literal", start, end, value: BigInt(d), raw: r, bigint: d }; }
     case 36: { const v = !!(flags & 1); return { type: "Literal", start, end, value: v, raw: v ? "true" : "false" }; }
     case 37: return { type: "Literal", start, end, value: null, raw: "null" };
     case 38: return { type: "ThisExpression", start, end };
-    case 39: { const p = str(f1, f2), fl = str(f3, f4); return { type: "Literal", start, end, value: "(RegExp) /" + p + "/" + fl, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
+    case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
     case 41: { const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return { type: "TemplateElement", start, end, value: { raw: r, cooked: (flags & 2) ? null : str(f1, f2) }, tail: !!(flags & 1) }; }
     case 42: return { type: "Identifier", start, end, name: str(f1, f2) };
