@@ -51,7 +51,7 @@ comptime {
 }
 
 // comptime layout functions
-// used by both the serializer (below) and the decoder generator (tools/gen_decoder.zig).
+// used by both the serializer (below) and the decoder generator (tools/gen_estree_decoder.zig).
 
 /// number of flag bits consumed by field `field_idx` in struct T.
 pub fn flagBitCount(comptime T: type, comptime field_idx: usize) u8 {
@@ -60,7 +60,8 @@ pub fn flagBitCount(comptime T: type, comptime field_idx: usize) u8 {
     if (f.type == ?ast.ImportPhase) return 1 + enumBitWidth(ast.ImportPhase);
     if (f.type == ?ast.Hashbang) return 1;
     if (comptime isEnumType(f.type)) return enumBitWidth(f.type);
-    return 0;
+    if (f.type == ast.NodeIndex or f.type == ast.IndexRange or f.type == ast.String) return 0;
+    @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
 }
 
 /// starting flag bit position for field `target` in struct T.
@@ -79,7 +80,8 @@ pub fn fieldU32Count(comptime T: type, comptime field_idx: usize) u8 {
     if (f.type == ast.IndexRange) return if (isFirstRange(T, field_idx)) 1 else 2;
     if (f.type == ast.String) return 2;
     if (f.type == ?ast.Hashbang) return 2;
-    return 0;
+    if (f.type == bool or f.type == ?ast.ImportPhase or comptime isEnumType(f.type)) return 0;
+    @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
 }
 
 /// first u32 slot index for field `target` in struct T.
@@ -292,10 +294,8 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
 
         if (f.type == bool) {
             if (val) n.flags |= @as(u8, 1) << @as(u3, @intCast(comptime flagBitForField(T, i)));
-            //
         } else if (f.type == ast.NodeIndex) {
             setSlot(n, comptime u32SlotForField(T, i), @intFromEnum(val));
-            //
         } else if (f.type == ast.IndexRange) {
             const slot = comptime u32SlotForField(T, i);
             if (comptime isFirstRange(T, i)) {
@@ -305,22 +305,18 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
                 setSlot(n, slot, val.start);
                 setSlot(n, slot + 1, @intCast(val.len));
             }
-            //
         } else if (f.type == ast.String) {
             const slot = comptime u32SlotForField(T, i);
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.end);
-            //
         } else if (comptime isEnumType(f.type)) {
             n.flags |= @as(u8, @intFromEnum(val)) << @as(u3, @intCast(comptime flagBitForField(T, i)));
-            //
         } else if (f.type == ?ast.ImportPhase) {
             const bit = comptime flagBitForField(T, i);
             if (val) |v| {
                 n.flags |= @as(u8, 1) << @as(u3, @intCast(bit));
                 n.flags |= @as(u8, @intFromEnum(v)) << @as(u3, @intCast(bit + 1));
             }
-            //
         } else if (f.type == ?ast.Hashbang) {
             const slot = comptime u32SlotForField(T, i);
             if (val) |h| {
@@ -328,6 +324,8 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
                 setSlot(n, slot, h.value.start);
                 setSlot(n, slot + 1, h.value.end);
             }
+        } else {
+            @compileError("unsupported field type '" ++ @typeName(f.type) ++ "' in " ++ @typeName(T));
         }
     }
 }

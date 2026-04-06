@@ -163,6 +163,8 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
         const bit = comptime rt.flagBitForField(T, i);
         const s = comptime rt.u32SlotForField(T, i) + 1;
         try w.print("(flags & {d}) ? str(f{d}, f{d}) : null", .{ @as(u32, 1) << @intCast(bit), s, s + 1 });
+    } else {
+        @compileError("unsupported field type in decoder: " ++ @typeName(F));
     }
 }
 
@@ -184,17 +186,14 @@ fn isSpecial(comptime name: []const u8) bool {
     });
 }
 
-fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, comptime T: type) !void {
+fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, comptime _: type) !void {
     const eql = std.mem.eql;
-    _ = T;
 
     if (comptime eql(u8, name, "formal_parameter")) {
         const s = comptime slotOf("formal_parameter", ast.FormalParameter, "pattern");
         try w.print("    case {d}: return node(f{d});\n", .{ tag, s });
-        //
     } else if (comptime eql(u8, name, "formal_parameters")) {
         try w.print("    case {d}: return {{ params: fnParams(i) }};\n", .{tag});
-        //
     } else if (comptime eql(u8, name, "function")) {
         const sid = comptime slotOf("function", ast.Function, "id");
         const sp = comptime slotOf("function", ast.Function, "params");
@@ -206,7 +205,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (ft === 2) r.declare = true; return r; }}
         , .{ tag, mask_type, sid, sid, bit_gen, bit_async, sp, sp, sb, sb });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "arrow_function_expression")) {
         const sp = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "params");
         const sb = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "body");
@@ -216,7 +214,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: node(f{d}), expression: !!(flags & {d}) }};
         , .{ tag, bit_async, sp, sp, sb, bit_expr });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "program")) {
         // program has: source_type(enum), body(range), hashbang(?Hashbang)
         const body_slot = comptime slotOf("program", ast.Program, "body");
@@ -226,7 +223,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? str(f{d}, f{d}) : null, body: nodeArr(f{d}, f0) }};
         , .{ tag, hb_bit, hb_slot, hb_slot + 1, body_slot });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "directive")) {
         const se = comptime slotOf("directive", ast.Directive, "expression");
         const sv = comptime rt.u32SlotForField(ast.Directive, fieldIdx(ast.Directive, "value")) + 1;
@@ -234,41 +230,35 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: "ExpressionStatement", start, end, expression: node(f{d}), directive: str(f{d}, f{d}) }};
         , .{ tag, se, sv, sv + 1 });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "string_literal")) {
         const s = comptime rt.u32SlotForField(ast.StringLiteral, fieldIdx(ast.StringLiteral, "value")) + 1;
         try w.print(
             \\    case {d}: return {{ type: "Literal", start, end, value: str(f{d}, f{d}), raw: _src.slice(start, end) }};
         , .{ tag, s, s + 1 });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "numeric_literal")) {
         const kind_mask = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.NumericLiteral.Kind))) - 1;
         try w.print(
             \\    case {d}: {{ const r = _src.slice(start, end); const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, ""); const v = (flags & {d}) === 2 && s[1] !== "o" && s[1] !== "O" ? parseInt(s.slice(1), 8) : +s; return {{ type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }}; }}
         , .{ tag, kind_mask });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "bigint_literal")) {
         const s = comptime rt.u32SlotForField(ast.BigIntLiteral, fieldIdx(ast.BigIntLiteral, "raw")) + 1;
         try w.print(
             \\    case {d}: {{ const r = _src.slice(start, end); const d = str(f{d}, f{d}).replace(/_/g, ""); const v = BigInt(d); return {{ type: "Literal", start, end, value: v, raw: r, bigint: v.toString() }}; }}
         , .{ tag, s, s + 1 });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "boolean_literal")) {
         const bit = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.BooleanLiteral, 0));
         try w.print(
             \\    case {d}: {{ const v = !!(flags & {d}); return {{ type: "Literal", start, end, value: v, raw: v ? "true" : "false" }}; }}
         , .{ tag, bit });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "null_literal")) {
         try w.print(
             \\    case {d}: return {{ type: "Literal", start, end, value: null, raw: "null" }};
         , .{tag});
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "regexp_literal")) {
         const sp = comptime rt.u32SlotForField(ast.RegExpLiteral, fieldIdx(ast.RegExpLiteral, "pattern")) + 1;
         const sf = comptime rt.u32SlotForField(ast.RegExpLiteral, fieldIdx(ast.RegExpLiteral, "flags")) + 1;
@@ -276,7 +266,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: {{ const p = str(f{d}, f{d}), fl = str(f{d}, f{d}); let v = null; try {{ v = new RegExp(p, fl); }} catch {{}} return {{ type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: {{ pattern: p, flags: fl.split("").sort().join("") }} }}; }}
         , .{ tag, sp, sp + 1, sf, sf + 1 });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "template_element")) {
         const bit_tail = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.TemplateElement, fieldIdx(ast.TemplateElement, "tail")));
         const bit_undef = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.TemplateElement, fieldIdx(ast.TemplateElement, "is_cooked_undefined")));
@@ -285,7 +274,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: {{ const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return {{ type: "TemplateElement", start, end, value: {{ raw: r, cooked: (flags & {d}) ? null : str(f{d}, f{d}) }}, tail: !!(flags & {d}) }}; }}
         , .{ tag, bit_undef, sc, sc + 1, bit_tail });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "class")) {
         const mask = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.ClassType))) - 1;
         const sd = comptime slotOfRange("class", ast.Class, "decorators");
@@ -296,7 +284,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: CLASS_TYPES[flags & {d}], start, end, decorators: nodeArr(f{d}, f0), id: f{d} !== NULL ? node(f{d}) : null, superClass: f{d} !== NULL ? node(f{d}) : null, body: node(f{d}) }};
         , .{ tag, mask, sd, si, si, ss, ss, sb });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "property_definition")) {
         const bit_comp = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "computed")));
         const bit_stat = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "static")));
@@ -308,7 +295,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: (flags & {d}) ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: f{d} !== NULL ? node(f{d}) : null, computed: !!(flags & {d}), static: !!(flags & {d}) }};
         , .{ tag, bit_acc, sd, sk, sv, sv, bit_comp, bit_stat });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "unary_expression")) {
         const sa = comptime slotOf("unary_expression", ast.UnaryExpression, "argument");
         const mask = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.UnaryOperator))) - 1;
@@ -316,7 +302,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: "UnaryExpression", start, end, operator: UNARY_OPS[flags & {d}], prefix: true, argument: f{d} !== NULL ? node(f{d}) : null }};
         , .{ tag, mask, sa, sa });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "binding_property")) {
         const sk = comptime slotOf("binding_property", ast.BindingProperty, "key");
         const sv = comptime slotOf("binding_property", ast.BindingProperty, "value");
@@ -326,7 +311,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: return {{ type: "Property", start, end, kind: "init", key: node(f{d}), value: node(f{d}), method: false, shorthand: !!(flags & {d}), computed: !!(flags & {d}) }};
         , .{ tag, sk, sv, bit_sh, bit_comp });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "array_pattern")) {
         const se = comptime slotOfRange("array_pattern", ast.ArrayPattern, "elements");
         const sr = comptime slotOf("array_pattern", ast.ArrayPattern, "rest");
@@ -334,7 +318,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: {{ const el = nodeArrHoles(f{d}, f0); if (f{d} !== NULL) el.push(node(f{d})); return {{ type: "ArrayPattern", start, end, elements: el }}; }}
         , .{ tag, se, sr, sr });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "object_pattern")) {
         const sp = comptime slotOfRange("object_pattern", ast.ObjectPattern, "properties");
         const sr = comptime slotOf("object_pattern", ast.ObjectPattern, "rest");
@@ -342,13 +325,11 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
             \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); return {{ type: "ObjectPattern", start, end, properties: pr }}; }}
         , .{ tag, sp, sr, sr });
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "jsx_opening_fragment")) {
         try w.print(
             \\    case {d}: return {{ type: "JSXOpeningFragment", start, end, attributes: [], selfClosing: false }};
         , .{tag});
         try w.writeByte('\n');
-        //
     } else if (comptime eql(u8, name, "jsx_text")) {
         const s = comptime rt.u32SlotForField(ast.JSXText, fieldIdx(ast.JSXText, "value")) + 1;
         try w.print(
@@ -541,17 +522,11 @@ fn isOneOf(comptime name: []const u8, comptime list: []const []const u8) bool {
     return false;
 }
 
-/// helper: get the u32 slot + 1 (JS field name) for a named NodeIndex field
-fn slotOf(comptime tag_name: []const u8, comptime T: type, comptime field_name: []const u8) u32 {
-    _ = tag_name;
+fn slotOf(comptime _: []const u8, comptime T: type, comptime field_name: []const u8) u32 {
     return rt.u32SlotForField(T, fieldIdx(T, field_name)) + 1;
 }
 
-/// helper: get the u32 slot + 1 for the start of a named IndexRange field (first range only)
-fn slotOfRange(comptime tag_name: []const u8, comptime T: type, comptime field_name: []const u8) u32 {
-    _ = tag_name;
-    return rt.u32SlotForField(T, fieldIdx(T, field_name)) + 1;
-}
+const slotOfRange = slotOf;
 
 /// find field index by name
 fn fieldIdx(comptime T: type, comptime name: []const u8) usize {

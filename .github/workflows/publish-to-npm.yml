@@ -42,7 +42,7 @@ jobs:
         run: bun run test
 
       - name: Build
-        run: bun run build:npm
+        run: bun run npm:build-release
 
       - name: Generate changelog
         run: bunx changelogithub
