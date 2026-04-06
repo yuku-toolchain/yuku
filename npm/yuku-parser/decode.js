@@ -103,8 +103,8 @@ function node(i) {
     case 72: { const pr = nodeArr(f1, f0); if (f2 !== NULL) pr.push(node(f2)); return { type: "ObjectPattern", start, end, properties: pr }; }
     case 73: return { type: "Property", start, end, kind: "init", key: node(f1), value: node(f2), method: false, shorthand: !!(flags & 1), computed: !!(flags & 2) };
     case 74: return { type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & 2) ? str(f2, f3) : null, body: nodeArr(f1, f0) };
-    case 75: return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? [null, "source", "defer"][(flags >> 1) & 1] : null };
-    case 76: return { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? [null, "source", "defer"][(flags >> 1) & 1] : null };
+    case 75: return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
+    case 76: return { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
     case 77: return { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null };
     case 78: return { type: "ImportDefaultSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };
     case 79: return { type: "ImportNamespaceSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };

@@ -142,7 +142,7 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
         }
     } else if (F == ?ast.ImportPhase) {
         const bit = comptime rt.flagBitForField(T, i);
-        try w.print("(flags & {d}) ? [null, \"source\", \"defer\"][(flags >> {d}) & 1] : null", .{ @as(u32, 1) << @intCast(bit), bit + 1 });
+        try w.print("(flags & {d}) ? [\"source\", \"defer\"][(flags >> {d}) & 1] : null", .{ @as(u32, 1) << @intCast(bit), bit + 1 });
     } else if (F == ?ast.Hashbang) {
         const bit = comptime rt.flagBitForField(T, i);
         const s = comptime rt.u32SlotForField(T, i) + 1;
