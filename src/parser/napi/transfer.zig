@@ -11,9 +11,10 @@
 //   ?Hashbang          1 flag bit (presence) + 2 u32 slots (value.start/end)
 //
 // binary format:
-//   header (36 bytes):  magic[4] version[4] node_count[4] extra_count[4]
+//   header (40 bytes):  magic[4] version[4] node_count[4] extra_count[4]
 //                       string_pool_len[4] source_len[4] comment_count[4]
-//                       diagnostic_count[4] program_index[4]
+//                       diagnostic_count[4] program_index[4] flags[4]
+//   flags bit 0: source is all ASCII (byte offsets == utf16 indices)
 //   nodes  (N * 32 bytes): tag[1] flags[1] field0[2] field1..5[4 each] span[8]
 //   extra  (M * 4 bytes)
 //   string pool (P bytes)
@@ -27,7 +28,7 @@ const std = @import("std");
 const ast = @import("parser").ast;
 
 pub const VERSION: u32 = 1;
-pub const HEADER_SIZE: u32 = 36;
+pub const HEADER_SIZE: u32 = 40;
 pub const NODE_SIZE: u32 = 32;
 pub const COMMENT_SIZE: u32 = 20;
 
@@ -173,6 +174,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     const comment_count: u32 = @intCast(tree.comments.len);
     const diag_count: u32 = @intCast(tree.diagnostics.items.len);
     const program_index: u32 = @intFromEnum(tree.program);
+    const flags: u32 = if (isAsciiOnly(tree.source)) 1 else 0;
 
     var pos: usize = 0;
 
@@ -186,6 +188,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     w32(buf, 24, comment_count);
     w32(buf, 28, diag_count);
     w32(buf, 32, program_index);
+    w32(buf, 36, flags);
     pos = HEADER_SIZE;
 
     // nodes
@@ -342,4 +345,17 @@ fn setSlot(n: *PackedNode, comptime slot: u8, val: u32) void {
 
 inline fn w32(buf: []u8, pos: usize, val: u32) void {
     std.mem.writeInt(u32, buf[pos..][0..4], val, .little);
+}
+
+fn isAsciiOnly(source: []const u8) bool {
+    const Vec = @Vector(16, u8);
+    const hi: Vec = @splat(0x80);
+    var i: usize = 0;
+    while (i + 16 <= source.len) : (i += 16) {
+        if (@reduce(.Or, source[i..][0..16].* & hi) != 0) return false;
+    }
+    for (source[i..]) |c| {
+        if (c >= 0x80) return false;
+    }
+    return true;
 }

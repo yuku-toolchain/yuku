@@ -13,11 +13,12 @@ const CLASS_TYPES = ["ClassDeclaration", "ClassExpression"];
 const COMMENT_TYPES = ["Line", "Block"];
 const SEVERITY = ["error", "warning", "hint", "info"];
 const _td = new TextDecoder("utf-8");
-let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _pool;
+let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _pm;
+function _p(v) { return _pm ? _pm[v] : v; }
 function str(s, e) {
   if (s === e) return "";
-  if (s < _srcLen) return _src.slice(s, e);
-  return _pool.slice(s - _srcLen, e - _srcLen);
+  if (s < _srcLen) return _pm ? _src.slice(_pm[s], _pm[e]) : _src.slice(s, e);
+  return _td.decode(_u8.subarray(_spOff + s - _srcLen, _spOff + e - _srcLen));
 }
 function node(i) {
   const o = _nodesOff + i * 32;
@@ -26,7 +27,7 @@ function node(i) {
   const f0 = _u8[o + 2] | (_u8[o + 3] << 8);
   const b = o >> 2;
   const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4], f5 = _u32[b + 5];
-  const start = _u32[b + 6], end = _u32[b + 7];
+  const start = _p(_u32[b + 6]), end = _p(_u32[b + 7]);
   switch (tag) {
     case 0: return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) };
     case 1: return node(f1);
@@ -155,6 +156,23 @@ function fnParams(idx) {
   if (rest !== NULL) p.push(node(rest));
   return p;
 }
+function buildPosMap(src, byteLen) {
+  const m = new Uint32Array(byteLen + 1);
+  let bp = 0, u16p = 0;
+  for (let i = 0; i < src.length; i++) {
+    m[bp] = u16p;
+    const cp = src.codePointAt(i);
+    let bytes = 1;
+    if (cp > 0x7F) { if (cp > 0x7FF) { bytes = cp > 0xFFFF ? 4 : 3; } else { bytes = 2; } }
+    const units = bytes === 4 ? 2 : 1;
+    u16p += units;
+    for (let k = 1; k < bytes; k++) m[bp + k] = u16p;
+    bp += bytes;
+    if (bytes === 4) i++;
+  }
+  m[byteLen] = u16p;
+  return m;
+}
 function decode(buffer, source) {
   _u8 = new Uint8Array(buffer);
   const aLen = (buffer.byteLength >> 2) << 2;
@@ -163,24 +181,24 @@ function decode(buffer, source) {
   _srcLen = _u32[5];
   const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
   const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
-  _nodesOff = 36;
+  _pm = (_u32[9] & 1) ? null : buildPosMap(source, _srcLen);
+  _nodesOff = 40;
   const eOff = _nodesOff + nodeCount * 32;
   _extraBase = eOff >> 2;
   _spOff = eOff + extraCount * 4;
-  _pool = spLen > 0 ? _td.decode(_u8.subarray(_spOff, _spOff + spLen)) : "";
   const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;
   const dv = new DataView(buffer);
   const comments = new Array(commentCount);
   for (let j = 0; j < commentCount; j++) {
     const o = cOff + j * 20;
-    comments[j] = { type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)), start: dv.getUint32(o + 4, true), end: dv.getUint32(o + 8, true) };
+    comments[j] = { type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)), start: _p(dv.getUint32(o + 4, true)), end: _p(dv.getUint32(o + 8, true)) };
   }
   const diagnostics = new Array(diagCount);
   let dp = dOff;
   for (let j = 0; j < diagCount; j++) {
     const sev = SEVERITY[_u8[dp]]; dp++;
-    const ds = dv.getUint32(dp, true); dp += 4;
-    const de = dv.getUint32(dp, true); dp += 4;
+    const ds = _p(dv.getUint32(dp, true)); dp += 4;
+    const de = _p(dv.getUint32(dp, true)); dp += 4;
     const ml = dv.getUint32(dp, true); dp += 4;
     const msg = _td.decode(_u8.subarray(dp, dp + ml)); dp += ml;
     const hh = _u8[dp]; dp++;
@@ -189,15 +207,15 @@ function decode(buffer, source) {
     const lc = dv.getUint32(dp, true); dp += 4;
     const labels = new Array(lc);
     for (let k = 0; k < lc; k++) {
-      const ls = dv.getUint32(dp, true); dp += 4;
-      const le = dv.getUint32(dp, true); dp += 4;
+      const ls = _p(dv.getUint32(dp, true)); dp += 4;
+      const le = _p(dv.getUint32(dp, true)); dp += 4;
       const lml = dv.getUint32(dp, true); dp += 4;
       labels[k] = { start: ls, end: le, message: _td.decode(_u8.subarray(dp, dp + lml)) }; dp += lml;
     }
     diagnostics[j] = { severity: sev, message: msg, start: ds, end: de, help, labels };
   }
   const program = node(progIdx);
-  _u8 = _u32 = _src = _pool = null;
+  _u8 = _u32 = _src = _pm = null;
   return { program, comments, diagnostics };
 }
 export { decode };

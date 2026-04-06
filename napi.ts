@@ -1,5 +1,7 @@
 import { parse } from "yuku-parser"
 
-const result = await parse("import defer * as x from 'cool'")
+const source = await Bun.file("test/index.js").text()
 
-console.log(JSON.stringify(result, null, 2))
+console.time("parse")
+await parse(source)
+console.timeEnd("parse")
