@@ -1,4 +1,4 @@
-// generates decode.js, a decoder that reads the binary AST buffer from Zig
+// generates decode.js, a decoder that reads the binary AST buffer passed from Zig
 // and constructs an ESTree JS object. uses the same comptime layout functions
 // as the serializer (transfer.zig), guaranteeing the decoder matches the format.
 
@@ -155,13 +155,16 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     return isOneOf(name, &.{
-        "parenthesized_expression", "formal_parameter",          "formal_parameters",
-        "function",                 "arrow_function_expression", "program",
-        "directive",                "string_literal",            "numeric_literal",
-        "bigint_literal",           "boolean_literal",           "null_literal",
-        "regexp_literal",           "template_element",          "class",
-        "property_definition",      "unary_expression",          "binding_property",
-        "array_pattern",            "object_pattern",            "jsx_opening_fragment",
+        "formal_parameter",    "formal_parameters",
+        "function",            "arrow_function_expression",
+        "program",             "directive",
+        "string_literal",      "numeric_literal",
+        "bigint_literal",      "boolean_literal",
+        "null_literal",        "regexp_literal",
+        "template_element",    "class",
+        "property_definition", "unary_expression",
+        "binding_property",    "array_pattern",
+        "object_pattern",      "jsx_opening_fragment",
         "jsx_text",
     });
 }
@@ -170,11 +173,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
     const eql = std.mem.eql;
     _ = T;
 
-    if (comptime eql(u8, name, "parenthesized_expression")) {
-        const s = comptime slotOf("parenthesized_expression", ast.ParenthesizedExpression, "expression");
-        try w.print("    case {d}: return node(f{d});\n", .{ tag, s });
-        //
-    } else if (comptime eql(u8, name, "formal_parameter")) {
+    if (comptime eql(u8, name, "formal_parameter")) {
         const s = comptime slotOf("formal_parameter", ast.FormalParameter, "pattern");
         try w.print("    case {d}: return node(f{d});\n", .{ tag, s });
         //
@@ -229,15 +228,16 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         try w.writeByte('\n');
         //
     } else if (comptime eql(u8, name, "numeric_literal")) {
+        const kind_mask = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.NumericLiteral.Kind))) - 1;
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end); const v = +r; return {{ type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }}; }}
-        , .{tag});
+            \\    case {d}: {{ const r = _src.slice(start, end); const s = r.indexOf("_") === -1 ? r : r.replace(/_/g, ""); const v = (flags & {d}) === 2 && s[1] !== "o" && s[1] !== "O" ? parseInt(s.slice(1), 8) : +s; return {{ type: "Literal", start, end, value: v === v && isFinite(v) ? v : null, raw: r }}; }}
+        , .{ tag, kind_mask });
         try w.writeByte('\n');
         //
     } else if (comptime eql(u8, name, "bigint_literal")) {
         const s = comptime rt.u32SlotForField(ast.BigIntLiteral, fieldIdx(ast.BigIntLiteral, "raw")) + 1;
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end); const d = str(f{d}, f{d}).replace(/_/g, ""); return {{ type: "Literal", start, end, value: BigInt(d), raw: r, bigint: d }}; }}
+            \\    case {d}: {{ const r = _src.slice(start, end); const d = str(f{d}, f{d}).replace(/_/g, ""); const v = BigInt(d); return {{ type: "Literal", start, end, value: v, raw: r, bigint: v.toString() }}; }}
         , .{ tag, s, s + 1 });
         try w.writeByte('\n');
         //
