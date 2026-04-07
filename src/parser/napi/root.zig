@@ -17,10 +17,12 @@ pub fn parse_sync(env: napi.Env, source: []const u8, options: Options) !napi.Val
 
 pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     const owned = try alloc.dupe(u8, source);
+    errdefer alloc.free(owned);
     return env.runWorker("parse", ParseWork{
         .source = owned,
         .options = options,
     });
+}
 }
 
 const ParseWork = struct {
