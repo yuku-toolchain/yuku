@@ -42,7 +42,7 @@ jobs:
         run: bun run test
 
       - name: Build
-        run: bun run npm:build-release
+        run: bun run npm:build
 
       - name: Generate changelog
         run: bunx changelogithub
@@ -54,7 +54,4 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish packages to npm
-        run: |
-              for dir in npm/*/; do
-                (cd "$dir" && bun pm pack && npm publish ./*.tgz --access public)
-              done
+        run: napi publish
