@@ -44,12 +44,6 @@ jobs:
       - name: Build
         run: bun run build:npm
 
-      - name: Generate changelog
-        run: bunx changelogithub
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Update npm
         run: npm install -g npm@latest
 
