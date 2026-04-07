@@ -1,8 +1,12 @@
 {
   "name": "@yuku-parser/binding-freebsd-x64",
-  "version": "0.0.0",
-  "os": ["freebsd"],
-  "cpu": ["x64"],
+  "version": "0.0.1",
+  "os": [
+    "freebsd"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "main": "yuku-parser.node",
   "files": [
     "yuku-parser.node"

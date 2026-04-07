@@ -1,8 +1,12 @@
 {
   "name": "@yuku-parser/binding-darwin-arm64",
-  "version": "0.0.0",
-  "os": ["darwin"],
-  "cpu": ["arm64"],
+  "version": "0.0.1",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
   "main": "yuku-parser.node",
   "files": [
     "yuku-parser.node"

@@ -1,9 +1,15 @@
 {
   "name": "@yuku-parser/binding-linux-arm64-musl",
-  "version": "0.0.0",
-  "os": ["linux"],
-  "cpu": ["arm64"],
-  "libc": ["musl"],
+  "version": "0.0.1",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "libc": [
+    "musl"
+  ],
   "main": "yuku-parser.node",
   "files": [
     "yuku-parser.node"
