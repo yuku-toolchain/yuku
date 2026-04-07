@@ -17,7 +17,7 @@
 		"@types/node": "^25.5.0",
 		"fast-deep-equal": "^3.1.3",
 		"jest-diff": "^30.3.0",
-		"napi-zig": "^0.1.11",
+		"napi-zig": "^0.1.20",
 		"typescript": "^6.0.2",
 		"yuku-parser": "workspace:*"
 	},
