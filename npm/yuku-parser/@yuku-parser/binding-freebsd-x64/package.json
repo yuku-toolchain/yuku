@@ -1,0 +1,18 @@
+{
+  "name": "@yuku-parser/binding-freebsd-x64",
+  "version": "0.4.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuku-toolchain/yuku.git"
+  },
+  "os": [
+    "freebsd"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "yuku-parser.node",
+  "files": [
+    "yuku-parser.node"
+  ]
+}

@@ -1,5 +1,5 @@
-import { printDiagnostics } from "yuku-parser-types/print";
-import { parse } from "yuku-parser-wasm";
+import { printDiagnostics } from "./ast-helpers-for-test";
+import { parse } from "yuku-parser";
 
 console.clear();
 
@@ -7,12 +7,19 @@ console.log();
 
 const source = await Bun.file("test/index.js").text();
 
-const result = await parse(source, {
+await parse(source, {
   sourceType: "module",
-	semanticErrors: true,
+	// semanticErrors: true,
 });
 
-console.log(result.program);
+console.time("parse");
+const result = await parse(source, {
+  sourceType: "module",
+	// semanticErrors: true,
+});
+console.timeEnd("parse");
+
+// console.log(result.program);
 
 console.log();
 

@@ -10,3 +10,5 @@ jsx-roadmap.md
 test/**/suite
 profiler/files
 zig-pkg
+yuku-parser.*
+.node

@@ -2,25 +2,24 @@
 	"name": "yuku-root",
 	"private": true,
 	"scripts": {
-		"build:npm": "zig build && bun run --filter './npm/**/*' build",
 		"dev:docs": "bun run --filter './docs' dev",
 		"test:tools": "zig build test-tools",
-		"publish:npm": "bumpp -r --commit 'npm %s' --push --tag --yes --release 'patch'",
 		"format": "zig fmt **/*.zig",
 		"test": "bun load-files && bun build:npm && bun test/parser/run.ts",
 		"load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
-		"play": "bun build:npm && bun --console-depth=20 test/playground.ts"
+		"play": "bun --console-depth=20 test/playground.ts",
+		"release:npm": "napi bump",
+		"debug:npm": "napi build",
+		"build:npm": "napi build --release && zig build gen-estree-decoder && cp ./zig-out/decode.js ./npm/yuku-parser"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.11",
 		"@types/node": "^25.5.0",
-		"bumpp": "^11.0.1",
 		"fast-deep-equal": "^3.1.3",
 		"jest-diff": "^30.3.0",
-		"typescript": "^5.9.3",
-		"yuku-shared": "workspace:*",
-		"yuku-parser-wasm": "workspace:*",
-		"yuku-parser-types": "workspace:*"
+		"napi-zig": "^0.1.23",
+		"typescript": "^6.0.2",
+		"yuku-parser": "workspace:*"
 	},
 	"workspaces": [
 		"npm/**/*",

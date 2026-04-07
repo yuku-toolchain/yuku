@@ -105,49 +105,51 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = util_module })).step);
 
-    const wasm_target = b.resolveTargetQuery(.{
-        .cpu_arch = .wasm32,
-        .os_tag = .freestanding,
-        .cpu_features_add = std.Target.wasm.featureSet(&.{
-            .bulk_memory,
-            .mutable_globals,
-            .nontrapping_fptoint,
-            .sign_ext,
-        }),
+    const napi_dep = b.dependency("napi_zig", .{});
+
+    _ = napi_zig.addLib(b, napi_dep, .{
+        .name = "yuku-parser",
+        .root = b.path("src/parser/napi/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "parser", .module = parser_module },
+        },
+        .npm = .{
+            .scope = "@yuku-parser",
+            .description = "High-performance JavaScript/TypeScript parser",
+            .repository = .{
+                .type = "git",
+                .url = "https://github.com/yuku-toolchain/yuku.git",
+            },
+            .dts = b.path("src/parser/napi/index.d.ts"),
+        },
     });
 
-    const wasm_util_module = b.createModule(.{
-        .root_source_file = b.path("src/util/root.zig"),
-        .target = wasm_target,
-        .optimize = .ReleaseSmall,
+    // estree decoder codegen
+    const ast_transfer_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/napi/transfer.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    ast_transfer_module.addImport("parser", parser_module);
+
+    const gen_estree_module = b.createModule(.{
+        .root_source_file = b.path("tools/gen_estree_decoder.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    gen_estree_module.addImport("parser", parser_module);
+    gen_estree_module.addImport("transfer", ast_transfer_module);
+
+    const gen_estree_exe = b.addExecutable(.{
+        .name = "gen-estree-decoder",
+        .root_module = gen_estree_module,
     });
 
-    const wasm_parser_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/root.zig"),
-        .target = wasm_target,
-        .optimize = .ReleaseSmall,
-    });
+    const run_gen_estree = b.addRunArtifact(gen_estree_exe);
+    const gen_estree_output = run_gen_estree.captureStdOut(.{});
 
-    wasm_parser_module.addImport("util", wasm_util_module);
-
-    const wasm_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/wasm.zig"),
-        .target = wasm_target,
-        .optimize = .ReleaseSmall,
-    });
-
-    wasm_module.addImport("parser", wasm_parser_module);
-
-    const wasm_exe = b.addExecutable(.{
-        .name = "yuku",
-        .root_module = wasm_module,
-    });
-
-    wasm_exe.entry = .disabled;
-    wasm_exe.rdynamic = true;
-    wasm_exe.initial_memory = 64 * 1024 * 1024; // 64MB initial
-    wasm_exe.max_memory = 256 * 1024 * 1024; // 256MB max
-    wasm_exe.stack_size = 1024 * 1024;
-
-    b.installArtifact(wasm_exe);
+    const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
+    gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
 }

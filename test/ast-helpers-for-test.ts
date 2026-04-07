@@ -1,4 +1,76 @@
-import type { Diagnostic } from ".";
+import type { Diagnostic } from "yuku-parser";
+
+const BIG_INT_PREFIX = "(BigInt) ";
+const REGEXP_PREFIX = "(RegExp) ";
+const REGEXP_LITERAL = /^\/(.+)\/([dgimsuyv]*)$/;
+
+// JSON can't represent BigInt or RegExp values natively, so we use tagged strings
+// in test snapshots to preserve them.
+
+export function serializeAstJson(
+	obj: unknown,
+	space?: string | number,
+): string {
+	return JSON.stringify(
+		obj,
+		(_, value) => {
+			if (typeof value === "bigint") {
+				return `${BIG_INT_PREFIX}${value}n`;
+			}
+
+			if (value instanceof RegExp) {
+				return `${REGEXP_PREFIX}${value.toString()}`;
+			}
+
+			return value;
+		},
+		space,
+	);
+}
+
+export function deserializeAstJson<T = unknown>(jsonString: string): T {
+	return JSON.parse(jsonString, (_, value) => {
+		if (
+			typeof value === "object" &&
+			value !== null &&
+			typeof value.value === "bigint"
+		) {
+			value.bigint = value.value.toString();
+			return value;
+		}
+
+		if (typeof value !== "string") {
+			return value;
+		}
+
+		if (value.startsWith(BIG_INT_PREFIX)) {
+			return BigInt(
+				value
+					.slice(BIG_INT_PREFIX.length)
+					.replace(/n$/, "")
+					.replaceAll("_", ""),
+			);
+		}
+
+		if (value.startsWith(REGEXP_PREFIX)) {
+			const match = value.slice(REGEXP_PREFIX.length).match(REGEXP_LITERAL);
+
+			if (match) {
+				try {
+					return new RegExp(match[1]!, match[2]);
+				} catch {
+					return null;
+				}
+			}
+
+			return null;
+		}
+
+		return value;
+	}) as T;
+}
+
+//
 
 interface Pos {
 	line: number;
@@ -12,21 +84,6 @@ interface LineMarker {
 	message: string;
 	isPrimary: boolean;
 }
-
-const R = "\x1b[0m";
-const B = "\x1b[1m";
-const DIM = "\x1b[2m";
-const RED = "\x1b[91m";
-const YEL = "\x1b[93m";
-const BLU = "\x1b[94m";
-const CYN = "\x1b[96m";
-
-const SEV_COLOR: Record<string, string> = {
-	error: RED,
-	warning: YEL,
-	info: BLU,
-	hint: CYN,
-};
 
 function offsetToPos(source: string, offset: number): Pos {
 	const o = Math.max(0, Math.min(offset, source.length));
@@ -134,7 +191,6 @@ function buildMarkers(
 function renderUnderlines(
 	rawLine: string,
 	markers: LineMarker[],
-	sevColor: string,
 	gutter: string,
 ): string[] {
 	const rows: string[] = [];
@@ -163,27 +219,13 @@ function renderUnderlines(
 
 		while (rows.length <= rowIdx) rows.push("");
 		const ch = marker.isPrimary ? "^" : "~";
-		const color = marker.isPrimary ? sevColor : BLU;
-		rows[rowIdx] =
-			gutter +
-			" ".repeat(expStart) +
-			B +
-			color +
-			ch.repeat(width) +
-			R +
-			color +
-			msg +
-			R;
+		rows[rowIdx] = gutter + " ".repeat(expStart) + ch.repeat(width) + msg;
 	}
 
 	return rows;
 }
 
-const ANSI_CODES = [R, B, DIM, RED, YEL, BLU, CYN];
-
 export interface FormatDiagnosticsOptions {
-	/** Whether to include ANSI color codes in the output. @default true */
-	colors?: boolean;
 	/** Whether to show the `--> filename:line:col` location line. @default true */
 	showFilename?: boolean;
 }
@@ -199,7 +241,6 @@ export function formatDiagnostics(
 
 	for (let di = 0; di < diagnostics.length; di++) {
 		const diag = diagnostics[di];
-		const sevColor = SEV_COLOR[diag.severity] ?? RED;
 		const pos = offsetToPos(source, diag.start);
 		const markers = buildMarkers(source, sourceLines, diag);
 
@@ -223,14 +264,14 @@ export function formatDiagnostics(
 			displayLines.length > 0 ? displayLines[displayLines.length - 1] + 1 : 1;
 		const gw = Math.max(String(maxNum).length, 2);
 		const pad = (n: number) => String(n).padStart(gw);
-		const lineGutter = (n: number) => `${DIM}${pad(n + 1)} |${R} `;
-		const emptyGutter = `${DIM}${" ".repeat(gw)} |${R} `;
-		const blankGutter = `${DIM}${" ".repeat(gw)} |${R}`;
+		const lineGutter = (n: number) => `${pad(n + 1)} | `;
+		const emptyGutter = `${" ".repeat(gw)} | `;
+		const blankGutter = `${" ".repeat(gw)} |`;
 
-		output.push(`${B}${sevColor}${diag.severity}${R}${B}: ${diag.message}${R}`);
+		output.push(`${diag.severity}: ${diag.message}`);
 		if (options?.showFilename !== false) {
 			output.push(
-				`${DIM}${" ".repeat(gw)} --> ${filename}:${pos.line + 1}:${pos.col + 1}${R}`,
+				`${" ".repeat(gw)} --> ${filename}:${pos.line + 1}:${pos.col + 1}`,
 			);
 		}
 		output.push(blankGutter);
@@ -238,7 +279,7 @@ export function formatDiagnostics(
 		let prev = -2;
 		for (const ln of displayLines) {
 			if (prev >= 0 && ln > prev + 1) {
-				output.push(`${DIM}${".".repeat(gw)} |${R}`);
+				output.push(`${".".repeat(gw)} |`);
 			}
 			prev = ln;
 
@@ -249,7 +290,6 @@ export function formatDiagnostics(
 				for (const row of renderUnderlines(
 					sourceLines[ln] ?? "",
 					lineM,
-					sevColor,
 					emptyGutter,
 				)) {
 					output.push(row);
@@ -260,20 +300,14 @@ export function formatDiagnostics(
 		output.push(blankGutter);
 
 		if (diag.help) {
-			output.push(`${DIM}${" ".repeat(gw)} =${R} ${CYN}help${R}: ${diag.help}`);
+			output.push(`${" ".repeat(gw)} = help: ${diag.help}`);
 			output.push("");
 		}
 
 		if (di < diagnostics.length - 1) output.push("");
 	}
 
-	let result = output.join("\n");
-	if (options?.colors === false) {
-		for (const code of ANSI_CODES) {
-			result = result.replaceAll(code, "");
-		}
-	}
-	return result;
+	return output.join("\n");
 }
 
 export function printDiagnostics(
