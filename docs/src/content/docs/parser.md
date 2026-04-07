@@ -32,6 +32,7 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main() !void {
+    // the page allocator is used as the backing allocator for the tree's internal arena
     var tree = try parser.parse(std.heap.page_allocator, "const x = 5;", .{});
     defer tree.deinit();
 
@@ -68,7 +69,7 @@ const tree = try parser.parse(allocator, source, .{
 
 ## The Tree
 
-`parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. All memory is owned by the tree's arena allocator. `tree.deinit()` frees everything at once.
+`parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. The allocator passed to `parse` is used as the backing allocator for the tree's internal arena. All memory is owned by this arena, and `tree.deinit()` frees everything at once.
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
