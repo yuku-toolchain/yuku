@@ -54,4 +54,4 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish packages to npm
-        run: napi publish
+        run: bun napi publish
