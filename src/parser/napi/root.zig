@@ -9,7 +9,7 @@ const Options = struct {
     semantic_errors: bool = false,
 };
 
-const alloc = std.heap.c_allocator;
+const alloc = std.heap.smp_allocator;
 
 pub fn parse_sync(env: napi.Env, source: []const u8, options: Options) !napi.Val {
     return serializeTree(env, source, options);
