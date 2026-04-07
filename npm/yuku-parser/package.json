@@ -18,6 +18,7 @@
     "@yuku-parser/binding-linux-x64-musl": "0.0.0",
     "@yuku-parser/binding-linux-arm64-musl": "0.0.0",
     "@yuku-parser/binding-darwin-x64": "0.0.0",
-    "@yuku-parser/binding-darwin-arm64": "0.0.0"
+    "@yuku-parser/binding-darwin-arm64": "0.0.0",
+    "@yuku-parser/binding-win32-x64": "0.0.0"
   }
 }

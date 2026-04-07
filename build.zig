@@ -123,12 +123,12 @@ pub fn build(b: *std.Build) void {
     });
 
     // estree decoder codegen
-    const gen_transfer_module = b.createModule(.{
+    const ast_transfer_module = b.createModule(.{
         .root_source_file = b.path("src/parser/napi/transfer.zig"),
         .target = b.graph.host,
         .optimize = optimize,
     });
-    gen_transfer_module.addImport("parser", parser_module);
+    ast_transfer_module.addImport("parser", parser_module);
 
     const gen_estree_module = b.createModule(.{
         .root_source_file = b.path("tools/gen_estree_decoder.zig"),
@@ -136,7 +136,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     gen_estree_module.addImport("parser", parser_module);
-    gen_estree_module.addImport("transfer", gen_transfer_module);
+    gen_estree_module.addImport("transfer", ast_transfer_module);
 
     const gen_estree_exe = b.addExecutable(.{
         .name = "gen-estree-decoder",
