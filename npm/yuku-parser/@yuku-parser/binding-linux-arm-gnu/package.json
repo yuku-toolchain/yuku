@@ -1,0 +1,11 @@
+{
+  "name": "@yuku-parser/binding-linux-arm-gnu",
+  "version": "0.0.0",
+  "os": ["linux"],
+  "cpu": ["arm"],
+  "libc": ["glibc"],
+  "main": "yuku-parser.node",
+  "files": [
+    "yuku-parser.node"
+  ]
+}
