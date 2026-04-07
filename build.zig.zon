@@ -7,8 +7,8 @@
             .hash = "codspeed_zig-0.1.0-cdqftph4DwBYmqHqHdMwFXJ4xMB_Tj2rNAsM2k3RmvQZ",
         },
         .napi_zig = .{
-            .url = "git+https://github.com/yuku-toolchain/napi-zig.git/?ref=HEAD#e0e6a9077d12af208a90caa3f1accfb6e9c7c389",
-            .hash = "napi_zig-0.1.0-XRkY0QEpAQDP8Y7b_J03hJ4W0fKLwHH-J_3W6piH2Onr",
+            .url = "git+https://github.com/yuku-toolchain/napi-zig.git/?ref=HEAD#c65dd4f7ff724b74a0c4c6228ed8c1e3bf3ce35d",
+            .hash = "napi_zig-0.1.0-XRkY0T1FAQDYQ-32h7Ru7iLXhZfrXY4OajfvO5tqDlmN",
         },
     },
     .fingerprint = 0xc32fad6e9edaaa9b, // Changing this has security and trust implications.
