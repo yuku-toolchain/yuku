@@ -118,6 +118,10 @@ pub fn build(b: *std.Build) void {
         .npm = .{
             .scope = "@yuku-parser",
             .description = "High-performance JavaScript/TypeScript parser",
+            .repository = .{
+                .type = "git",
+                .url = "https://github.com/yuku-toolchain/yuku.git",
+            },
             .dts = b.path("src/parser/napi/index.d.ts"),
         },
     });
