@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/binding-linux-arm-musl",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "os": [
     "linux"
   ],
