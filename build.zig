@@ -107,7 +107,7 @@ pub fn build(b: *std.Build) void {
 
     const napi_dep = b.dependency("napi_zig", .{});
 
-    _ = napi_zig.addLib(b, napi_dep, .{
+    napi_zig.addLib(b, napi_dep, .{
         .name = "yuku-parser",
         .root = b.path("src/parser/napi/root.zig"),
         .target = target,
