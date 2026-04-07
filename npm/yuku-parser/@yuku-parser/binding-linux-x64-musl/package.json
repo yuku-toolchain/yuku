@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/binding-linux-x64-musl",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "os": [
     "linux"
   ],
