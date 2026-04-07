@@ -23,7 +23,6 @@ pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
         .options = options,
     });
 }
-}
 
 const ParseWork = struct {
     source: []const u8,
