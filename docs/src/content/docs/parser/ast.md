@@ -285,9 +285,6 @@ Four distinct identifier node types all carry a single `name: String` field:
 | `label_identifier` | A label name in `break label`, `continue label`, or `label: stmt` |
 | `private_identifier` | A private class member: `#field` (the `#` is not part of `name`) |
 
-:::note
-This distinction matters in the semantic traverser. `identifier_reference` nodes are recorded as references, `binding_identifier` nodes are recorded as declarations, and `identifier_name` nodes are never resolved against the scope chain.
-
 ```js
 const foo = bar.baz;
 //    ^^^   ^^^ ^^^
