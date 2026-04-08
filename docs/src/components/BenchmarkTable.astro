@@ -1,6 +1,17 @@
 ---
-const BENCHMARK_URL =
-  "https://raw.githubusercontent.com/yuku-toolchain/ecmascript-native-parser-benchmark/refs/heads/main/result/typescript.json";
+interface Props {
+  variant?: "native" | "js";
+  source?: string;
+}
+
+const { variant = "native", source = "typescript" } = Astro.props;
+
+const REPO = variant === "native"
+  ? "yuku-toolchain/parser-benchmark-native"
+  : "yuku-toolchain/parser-benchmark-js";
+
+const BENCHMARK_URL = `https://raw.githubusercontent.com/${REPO}/refs/heads/main/result/${source}.json`;
+const BENCHMARK_SOURCE = `https://github.com/${REPO}`;
 
 interface Result {
   command: string;
@@ -111,7 +122,7 @@ try {
       )}
 
       <p class="benchmark-source">
-        <a href="https://github.com/yuku-toolchain/ecmascript-native-parser-benchmark">
+        <a href={BENCHMARK_SOURCE}>
           Benchmark source
         </a>{" "}
         · numbers fetched at build time

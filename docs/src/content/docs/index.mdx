@@ -27,16 +27,6 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 **Fast by design.** The parser is built using data-oriented design principles and generous performance engineering.
 
-<div align="center" style="margin: 1.5rem 0;">
-
-![Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark/refs/heads/main/charts/typescript.png)
-
-<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro · [Source](https://github.com/yuku-toolchain/parser-benchmark)</span>
-
-</div>
-
-<BenchmarkTable />
-
 **Pure Zig, zero dependencies.** The entire toolchain is written in Zig with no external C libraries or runtime dependencies. This makes it easy to build, embed, and cross-compile.
 
 **Modern JavaScript.** Full support for modern and experimental features including decorators, source phase imports, deferred imports, `using`/`await using` declarations, and more.
@@ -47,6 +37,37 @@ Yuku currently provides a 100% spec-compliant, reliable, and fast JavaScript/JSX
 
 More tooling is planned (a resolver, transpiler including `.d.ts` generation, minifier, and more), built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
 
-## Get started
+## Performance
 
-See the [Parser documentation](/parser) to install Yuku and start parsing JavaScript in your Zig project.
+Yuku prioritizes correctness while delivering top-tier speed and efficiency. On the native (Zig/Rust) side, Yuku is competitive with Oxc:
+
+<div align="center" style="margin: 1.5rem 0;">
+
+![Native Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark-native/refs/heads/main/charts/typescript.png)
+
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro · [Source](https://github.com/yuku-toolchain/parser-benchmark-native)</span>
+
+<BenchmarkTable variant="native" />
+
+</div>
+
+On the JavaScript side, Yuku is **2-5x faster** than alternatives:
+
+<div align="center" style="margin: 1.5rem 0;">
+
+![JavaScript Benchmark: Parsing React.js source](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark-js/refs/heads/main/charts/react.png)
+
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled React source (72 KB) · macOS (ARM) | Apple M4 Pro · [Source](https://github.com/yuku-toolchain/parser-benchmark-js)</span>
+
+<BenchmarkTable variant="js" source="react" />
+
+![JavaScript Benchmark: Parsing TypeScript source to JavaScript](https://raw.githubusercontent.com/yuku-toolchain/parser-benchmark-js/refs/heads/main/charts/typescript.png)
+
+<span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">Parsing the bundled TypeScript compiler source (7.8 MB) · macOS (ARM) | Apple M4 Pro · [Source](https://github.com/yuku-toolchain/parser-benchmark-js)</span>
+
+<BenchmarkTable variant="js" source="typescript" />
+</div>
+
+**A note on Oxc:** Oxc has an `experimentalRawTransfer` option that makes `oxc-parser` roughly 2-3x faster than the results shown above. However, it is currently experimental and comes with significant limitations: it only works in Node.js (not Bun, Deno, etc.), and it allocates gigabytes of memory upfront for a single parse, leading to out-of-memory errors on many systems and failures when parsing files in parallel.
+
+Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly, flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing all 45,000+ Test262 cases with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
