@@ -7,13 +7,13 @@ console.log();
 
 const source = await Bun.file("test/index.js").text();
 
-await parse(source, {
+parse(source, {
   sourceType: "module",
 	// semanticErrors: true,
 });
 
 console.time("parse");
-const result = await parse(source, {
+const result = parse(source, {
   sourceType: "module",
 	// semanticErrors: true,
 });

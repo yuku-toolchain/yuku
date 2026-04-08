@@ -3,7 +3,7 @@ import { basename, dirname, join } from "node:path";
 import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
-import { parseSync, type Diagnostic } from "yuku-parser";
+import { parse, type Diagnostic } from "yuku-parser";
 import { deserializeAstJson, formatDiagnostics, serializeAstJson } from "../ast-helpers-for-test";
 
 console.clear();
@@ -138,7 +138,7 @@ const runTest = async (
 		const lang = getLanguage(file);
 		const sourceType = file.includes(".module.") ? "module" : "script";
 
-		const parsed = parseSync(content, {
+		const parsed = parse(content, {
 			sourceType,
 			lang,
 			semanticErrors: config.semanticErrors ?? false,

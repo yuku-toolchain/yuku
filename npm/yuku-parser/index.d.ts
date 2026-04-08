@@ -76,14 +76,9 @@ interface ParseResult {
 }
 
 /**
- * Parse JS/TS source code synchronously on the current thread.
+ * Parse JS/TS source code and return an ESTree / TypeScript-ESTree compatible AST.
  */
-export function parseSync(source: string, options?: ParseOptions): ParseResult;
-
-/**
- * Parse JS/TS source code asynchronously on a background thread.
- */
-export function parse(source: string, options?: ParseOptions): Promise<ParseResult>;
+export function parse(source: string, options?: ParseOptions): ParseResult;
 
 // AST node types
 
