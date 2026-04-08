@@ -5,7 +5,21 @@ description: A fast, spec-compliant JavaScript and TypeScript parser written in 
 
 Yuku's parser turns JavaScript and TypeScript source code into an Abstract Syntax Tree (AST).
 
-## Installation
+## Node.js
+
+```bash
+npm install yuku-parser
+```
+
+```js
+import { parse } from "yuku-parser";
+
+const { program, comments, diagnostics } = parse("const x = 1 + 2;");
+```
+
+See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
+
+## Zig Installation
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
@@ -57,6 +71,7 @@ const tree = try parser.parse(allocator, source, .{
 |-------|--------|---------|-------------|
 | `source_type` | `.script`, `.module` | `.module` | Script mode or ES module mode (strict mode) |
 | `lang` | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js` | Language variant and syntax features to enable |
+| `preserve_parens` | `true`, `false` | `false` | Keep `ParenthesizedExpression` nodes in the AST |
 
 Both fields can be inferred from a file path:
 
@@ -167,26 +182,4 @@ All allocations (scope tree, symbol table) use the tree's arena, so they are val
 
 :::note
 If you need the scope tree and symbol table without checking for semantic early errors, use the [semantic traverser](/parser/traverse#semantic-traverser) directly with an empty visitor (or your own visitor hooks). This is what `semantic.analyze` uses [internally](https://github.com/yuku-toolchain/yuku/blob/main/src/parser/semantic_checker.zig).
-
-```zig
-const sem = parser.traverser.semantic;
-
-var visitor = struct {}{}; // empty visitor, no error checking
-const result = try sem.traverse(@TypeOf(visitor), &tree, &visitor);
-
-// result.scope_tree and result.symbol_table are ready to use
-```
 :::
-
-## JSON Serialization
-
-The AST can be serialized to [ESTree](https://github.com/estree/estree)-compatible JSON. JavaScript/JSX output matches [Acorn](https://www.npmjs.com/package/acorn). TypeScript output conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree).
-
-```zig
-const json = try parser.estree.toJSON(&tree, allocator, .{});
-defer allocator.free(json);
-
-std.debug.print("{s}\n", .{json});
-```
-
-The output includes the program AST, all comments, and diagnostics. Source positions are converted to UTF-16 offsets for JavaScript interoperability.

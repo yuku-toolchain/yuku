@@ -10,7 +10,7 @@ Yuku's internal AST is a flat, arena-allocated structure optimized for sequentia
 
 Extensions beyond the base specs: Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `Program`.
 
-This page covers the internal Zig AST: its memory model, core types, and the complete node reference.
+This page covers the internal Zig AST, its memory model, core types, and the complete node reference.
 
 ## Memory Model
 
@@ -284,9 +284,6 @@ Four distinct identifier node types all carry a single `name: String` field:
 | `identifier_name` | A bare name in non-expression position: object keys (`{foo: 1}`), member access right-hand side (`obj.foo`), `import.meta` |
 | `label_identifier` | A label name in `break label`, `continue label`, or `label: stmt` |
 | `private_identifier` | A private class member: `#field` (the `#` is not part of `name`) |
-
-:::note
-This distinction matters in the semantic traverser. `identifier_reference` nodes are recorded as references, `binding_identifier` nodes are recorded as declarations, and `identifier_name` nodes are never resolved against the scope chain.
 
 ```js
 const foo = bar.baz;

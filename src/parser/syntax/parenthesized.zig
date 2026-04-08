@@ -173,6 +173,7 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
     }
 
     if (elements.len == 1) {
+        if (!parser.preserve_parens) return elements[0];
         return try parser.tree.createNode(
             .{ .parenthesized_expression = .{ .expression = elements[0] } },
             .{ .start = cover.start, .end = cover.end },
@@ -186,6 +187,8 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
         .{ .sequence_expression = .{ .expressions = cover.elements } },
         .{ .start = first_span.start, .end = last_span.end },
     );
+
+    if (!parser.preserve_parens) return seq_expr;
 
     return try parser.tree.createNode(
         .{ .parenthesized_expression = .{ .expression = seq_expr } },

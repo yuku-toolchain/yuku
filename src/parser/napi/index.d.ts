@@ -19,6 +19,13 @@ interface ParseOptions {
 	 */
 	lang?: SourceLang;
 	/**
+	 * When true, parenthesized expressions are represented as
+	 * `ParenthesizedExpression` nodes in the AST. When false,
+	 * parentheses are stripped and only the inner expression is kept.
+	 * @default false
+	 */
+	preserveParens?: boolean;
+	/**
 	 * Run semantic analysis after parsing and include semantic errors
 	 * (e.g. duplicate declarations, invalid `break`/`continue` targets)
 	 * alongside syntax errors. This requires a separate AST pass and may
@@ -76,14 +83,9 @@ interface ParseResult {
 }
 
 /**
- * Parse JS/TS source code synchronously on the current thread.
+ * Parse JS/TS source code and return an ESTree / TypeScript-ESTree compatible AST.
  */
-export function parseSync(source: string, options?: ParseOptions): ParseResult;
-
-/**
- * Parse JS/TS source code asynchronously on a background thread.
- */
-export function parse(source: string, options?: ParseOptions): Promise<ParseResult>;
+export function parse(source: string, options?: ParseOptions): ParseResult;
 
 // AST node types
 
@@ -612,10 +614,15 @@ interface Program extends BaseNode {
 	hashbang: string | null;
 	body: Array<Statement | ModuleDeclaration>;
 }
+
 type Declaration = FunctionDeclaration | ClassDeclaration | VariableDeclaration | TSDeclareFunction;
+
 type Expression = Identifier | Literal | ThisExpression | Super | ArrayExpression | ObjectExpression | FunctionExpression | ArrowFunctionExpression | ClassExpression | TaggedTemplateExpression | TemplateLiteral | MemberExpression | CallExpression | NewExpression | ChainExpression | SequenceExpression | ParenthesizedExpression | BinaryExpression | LogicalExpression | ConditionalExpression | UnaryExpression | UpdateExpression | AssignmentExpression | YieldExpression | AwaitExpression | ImportExpression | MetaProperty | SpreadElement | TSEmptyBodyFunctionExpression | JSXElement | JSXFragment;
+
 type Statement = ExpressionStatement | BlockStatement | EmptyStatement | DebuggerStatement | ReturnStatement | LabeledStatement | BreakStatement | ContinueStatement | IfStatement | SwitchStatement | ThrowStatement | TryStatement | WhileStatement | DoWhileStatement | ForStatement | ForInStatement | ForOfStatement | WithStatement | Declaration;
+
 type ModuleDeclaration = ImportDeclaration | ExportNamedDeclaration | ExportDefaultDeclaration | ExportAllDeclaration | TSExportAssignment | TSNamespaceExportDeclaration;
+
 type Node = Program | Statement | Expression | ModuleDeclaration | Property | PrivateIdentifier | TemplateElement | VariableDeclarator | CatchClause | SwitchCase | RestElement | ArrayPattern | ObjectPattern | AssignmentPattern | ClassBody | MethodDefinition | PropertyDefinition | AccessorProperty | StaticBlock | Decorator | ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier | ImportAttribute | ExportSpecifier | JSXOpeningElement | JSXClosingElement | JSXOpeningFragment | JSXClosingFragment | JSXIdentifier | JSXNamespacedName | JSXMemberExpression | JSXAttribute | JSXSpreadAttribute | JSXExpressionContainer | JSXEmptyExpression | JSXText | JSXSpreadChild;
 
 export type { ParseOptions, ParseResult, Comment, Diagnostic, DiagnosticLabel, SourceType, SourceLang, BaseNode, Program, Statement, Expression, Declaration, ModuleDeclaration, Node, Identifier, PrivateIdentifier, Literal, StringLiteral, NumericLiteral, BigIntLiteral, BooleanLiteral, NullLiteral, RegExpLiteral, BindingPattern, FunctionParameter, Property, ArrayPattern, ObjectPattern, AssignmentPattern, RestElement, SequenceExpression, ParenthesizedExpression, BinaryExpression, LogicalExpression, ConditionalExpression, UnaryExpression, UpdateExpression, AssignmentExpression, YieldExpression, AwaitExpression, ArrayExpression, ObjectExpression, SpreadElement, MemberExpression, CallExpression, ChainExpression, TaggedTemplateExpression, NewExpression, MetaProperty, ImportExpression, TemplateLiteral, TemplateElement, Super, ThisExpression, ExpressionStatement, BlockStatement, IfStatement, SwitchStatement, SwitchCase, ForStatement, ForInStatement, ForOfStatement, WhileStatement, DoWhileStatement, BreakStatement, ContinueStatement, LabeledStatement, WithStatement, ReturnStatement, ThrowStatement, TryStatement, CatchClause, DebuggerStatement, EmptyStatement, VariableDeclaration, VariableDeclarator, FunctionDeclaration, FunctionExpression, TSDeclareFunction, TSEmptyBodyFunctionExpression, ArrowFunctionExpression, ClassDeclaration, ClassExpression, ClassBody, MethodDefinition, PropertyDefinition, AccessorProperty, StaticBlock, Decorator, ClassElement, ImportDeclaration, ImportSpecifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportAttribute, ExportNamedDeclaration, ExportDefaultDeclaration, ExportAllDeclaration, ExportSpecifier, TSExportAssignment, TSNamespaceExportDeclaration, JSXElement, JSXOpeningElement, JSXClosingElement, JSXFragment, JSXOpeningFragment, JSXClosingFragment, JSXIdentifier, JSXNamespacedName, JSXMemberExpression, JSXAttribute, JSXSpreadAttribute, JSXExpressionContainer, JSXEmptyExpression, JSXText, JSXSpreadChild, JSXTagName, JSXChild, BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator, AssignmentOperator, FunctionNodeBase, ClassNodeBase };
