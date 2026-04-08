@@ -10,7 +10,7 @@ Yuku's internal AST is a flat, arena-allocated structure optimized for sequentia
 
 Extensions beyond the base specs: Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `Program`.
 
-This page covers the internal Zig AST: its memory model, core types, and the complete node reference.
+This page covers the internal Zig AST, its memory model, core types, and the complete node reference.
 
 ## Memory Model
 
