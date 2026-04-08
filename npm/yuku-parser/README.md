@@ -48,8 +48,8 @@ The `Node` union type covers every possible AST node. Individual types like `Sta
 
 The AST is standard ESTree, so any ESTree-compatible walker works. For example, with [zimmerframe](https://github.com/sveltejs/zimmerframe):
 
-```js
-import { parse } from "yuku-parser";
+```ts
+import { parse, type Node } from "yuku-parser";
 import { walk } from "zimmerframe";
 
 const { program } = parse(`
@@ -57,10 +57,8 @@ const { program } = parse(`
   console.log(message);
 `);
 
-const state = {};
-
-walk(program, state, {
-  Identifier(node, { path }) {
+walk(program as Node, null, {
+  Identifier(node) {
     console.log(node.name);
   },
   VariableDeclaration(node) {
