@@ -7,7 +7,7 @@ const codspeed = @import("codspeed");
 const parser_bench_files = .{
     .{ .name = "typescript.js", .path = "files/typescript.js" },
     .{ .name = "three.js", .path = "files/three.js" },
-    .{ .name = "antd.js", .path = "files/antd.js" },
+    .{ .name = "react.js", .path = "files/react.js" },
 };
 
 pub fn main() !void {
