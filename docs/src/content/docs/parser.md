@@ -5,7 +5,21 @@ description: A fast, spec-compliant JavaScript and TypeScript parser written in 
 
 Yuku's parser turns JavaScript and TypeScript source code into an Abstract Syntax Tree (AST).
 
-## Installation
+## Node.js
+
+```bash
+npm install yuku-parser
+```
+
+```js
+import { parse } from "yuku-parser";
+
+const { program, comments, diagnostics } = parse("const x = 1 + 2;");
+```
+
+See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
+
+## Zig Installation
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
