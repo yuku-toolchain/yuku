@@ -6,6 +6,7 @@ const transfer = @import("transfer.zig");
 const Options = struct {
     source_type: parser.ast.SourceType = .module,
     lang: parser.ast.Lang = .js,
+    preserve_parens: bool = false,
     semantic_errors: bool = false,
 };
 
@@ -15,6 +16,7 @@ pub fn parse_sync(env: napi.Env, source: []const u8, options: Options) !napi.Val
     var tree = parser.parse(alloc, source, .{
         .source_type = options.source_type,
         .lang = options.lang,
+        .preserve_parens = options.preserve_parens,
     }) catch return error.ParseFailed;
     defer tree.deinit();
 

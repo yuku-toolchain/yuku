@@ -75,6 +75,7 @@ All options are optional.
 const result = parse(source, {
   sourceType: "module",
   lang: "jsx",
+  preserveParens: false,
   semanticErrors: false,
 });
 ```
@@ -83,6 +84,7 @@ const result = parse(source, {
 |--------|--------|---------|-------------|
 | `sourceType` | `"module"`, `"script"` | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. |
 | `lang` | `"js"`, `"ts"`, `"jsx"`, `"tsx"`, `"dts"` | `"js"` | Language variant controls which syntax extensions are enabled. |
+| `preserveParens` | `true`, `false` | `false` | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
 | `semanticErrors` | `true`, `false` | `false` | Run semantic analysis and report semantic errors alongside syntax errors. |
 
 ## Result

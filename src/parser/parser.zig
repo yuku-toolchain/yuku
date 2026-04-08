@@ -14,6 +14,10 @@ pub const Options = struct {
     /// Language variant determines which syntax features are enabled.
     /// Defaults to `.js` (plain JavaScript).
     lang: ast.Lang = .js,
+    /// When true, parenthesized expressions are represented as
+    /// `ParenthesizedExpression` nodes in the AST. When false (default),
+    /// parentheses are stripped and only the inner expression is kept.
+    preserve_parens: bool = false,
 };
 
 const ParserContext = struct {
@@ -49,6 +53,7 @@ pub const Parser = struct {
     source: []const u8,
     source_type: ast.SourceType,
     lang: ast.Lang,
+    preserve_parens: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     current_token: Token,
@@ -74,6 +79,7 @@ pub const Parser = struct {
             .source = source,
             .source_type = options.source_type,
             .lang = options.lang,
+            .preserve_parens = options.preserve_parens,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
