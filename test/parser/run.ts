@@ -141,7 +141,8 @@ const runTest = async (
 		const parsed = parse(content, {
 			sourceType,
 			lang,
-			semanticErrors: config.semanticErrors ?? false,
+      semanticErrors: config.semanticErrors ?? false,
+      preserveParens: true
 		});
 
     const hasErrors = parsed.diagnostics && parsed.diagnostics.length > 0;
