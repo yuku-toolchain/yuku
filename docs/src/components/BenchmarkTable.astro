@@ -7,8 +7,8 @@ interface Props {
 const { variant = "native", source = "typescript" } = Astro.props;
 
 const REPO = variant === "native"
-  ? "yuku-toolchain/parser-benchmark-native"
-  : "yuku-toolchain/parser-benchmark-js";
+  ? "yuku-toolchain/ecmascript-parser-benchmark-native"
+  : "yuku-toolchain/ecmascript-parser-benchmark-js";
 
 const BENCHMARK_URL = `https://raw.githubusercontent.com/${REPO}/refs/heads/main/result/${source}.json`;
 const BENCHMARK_SOURCE = `https://github.com/${REPO}`;
