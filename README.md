@@ -23,23 +23,7 @@ Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API r
 
 ## 🤝 Contributing
 
-Yuku is pure Zig with no external dependencies.
-
-```bash
-git clone https://github.com/yuku-toolchain/yuku.git
-cd yuku
-zig build
-```
-
-### Testing
-
-Run the full test suite (45,000+ files from Test262 and others) with AST matching:
-
-```bash
-bun run test
-```
-
-The first run will download the test suite (wait for it to finish). After the run completes, check `test/results` for results.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
 
 ## Roadmap
 
