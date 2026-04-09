@@ -17,7 +17,11 @@ Yuku is a high-performance JavaScript and TypeScript compiler and toolchain writ
 
 </div>
 
-## Quick Start
+## 📖 Documentation
+
+Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
+
+## 🚀 Quick Start
 
 ### JavaScript
 
@@ -42,14 +46,10 @@ var tree = try parser.parse(allocator, "const x = 5;", .{});
 defer tree.deinit();
 ```
 
-## Documentation
-
-Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
-
-## Contributing
+## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
 
-## License
+## 📖 License
 
 Yuku is free and open-source software licensed under the [MIT License](LICENSE).
