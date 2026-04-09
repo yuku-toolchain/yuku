@@ -21,11 +21,9 @@ Yuku is a high-performance JavaScript and TypeScript compiler and toolchain writ
 
 Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API reference.
 
-## 🚀 Quick Start
+## [Parser](https://yuku.fyi/parser)
 
-### Parser
-
-#### JavaScript
+### JavaScript
 
 ```bash
 npm install yuku-parser
@@ -37,7 +35,7 @@ import { parse } from "yuku-parser";
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-#### Zig
+### Zig
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
