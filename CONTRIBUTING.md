@@ -2,6 +2,11 @@
 
 Yuku is pure Zig with no external dependencies.
 
+## Prerequisites
+
+- [Zig](https://ziglang.org/) (build + compile)
+- [Bun](https://bun.sh/) (test runner + playground only, no `bun install` needed)
+
 ## Setup
 
 ```bash
