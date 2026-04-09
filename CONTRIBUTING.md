@@ -28,4 +28,4 @@ A scratch space for quickly testing the parser:
 bun play
 ```
 
-This rebuilds the npm package and runs `test/playground.ts`. Edit it however you want. Change the input file, swap parser options, log different parts of the AST. By default it parses `test/index.js`, but nothing is fixed.
+This recompiles the project and rebuilds the npm package before running `test/playground.ts`, so any changes you make to the source (e.g. the parser) will be reflected immediately. Edit it however you want. Change the input file, swap parser options, log different parts of the AST. By default it parses `test/index.js`, but nothing is fixed.

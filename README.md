@@ -52,6 +52,6 @@ defer tree.deinit();
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
 
-## 📖 License
+## ⚖️ License
 
 Yuku is free and open-source software licensed under the [MIT License](LICENSE).
