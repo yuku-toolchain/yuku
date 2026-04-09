@@ -23,7 +23,9 @@ Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API r
 
 ## 🚀 Quick Start
 
-### JavaScript
+### Parser
+
+#### JavaScript
 
 ```bash
 npm install yuku-parser
@@ -35,7 +37,7 @@ import { parse } from "yuku-parser";
 const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 ```
 
-### Zig
+#### Zig
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
