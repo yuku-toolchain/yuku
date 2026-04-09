@@ -5,13 +5,14 @@ Yuku is pure Zig with no external dependencies.
 ## Prerequisites
 
 - [Zig](https://ziglang.org/) (build + compile)
-- [Bun](https://bun.sh/) (test runner + playground only, no `bun install` needed)
+- [Bun](https://bun.sh/) (test runner, playground, workspace dependencies)
 
 ## Setup
 
 ```bash
 git clone https://github.com/yuku-toolchain/yuku.git
 cd yuku
+bun install
 zig build
 ```
 
