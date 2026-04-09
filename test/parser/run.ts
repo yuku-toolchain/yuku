@@ -3,7 +3,7 @@ import { basename, dirname, join } from "node:path";
 import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
-import { parse, type Diagnostic } from "yuku-parser";
+import { parse, type Diagnostic, type SourceLang } from "yuku-parser";
 import { deserializeAstJson, formatDiagnostics, serializeAstJson } from "../ast-helpers-for-test";
 
 console.clear();
@@ -16,15 +16,14 @@ const isCI = !!process.env.CI;
 const updateSnapshots = process.argv.includes("--update-snapshots");
 
 type TestType = "should_pass" | "should_fail" | "snapshot";
-type Language = "js" | "ts" | "jsx" | "tsx" | "dts";
 
 interface TestConfig {
 	path: string;
 	type: TestType;
-	languages: Language[];
+	languages: SourceLang[];
 	exclude?: string[];
 	skipOnCI?: boolean;
-	checkAstOnError?: boolean;
+	internal?: boolean;
 	semanticErrors?: boolean;
 }
 
@@ -44,13 +43,13 @@ const configs: TestConfig[] = [
 		path: "misc/jsx",
 		type: "snapshot",
 		languages: ["jsx"],
-		checkAstOnError: true,
+		internal: true,
 	},
 	{
 		path: "misc/js",
 		type: "snapshot",
 		languages: ["js"],
-		checkAstOnError: true,
+		internal: true,
 	},
 ];
 
@@ -74,7 +73,7 @@ interface TestResult {
 
 const results = new Map<string, TestResult>();
 
-const getLanguage = (path: string): Language => {
+const getLanguage = (path: string): SourceLang => {
 	if (path.endsWith(".tsx")) return "tsx";
 	if (path.endsWith(".jsx")) return "jsx";
 	if (path.endsWith(".d.ts")) return "dts";
@@ -99,7 +98,7 @@ const isTestArtifact = (path: string): boolean => {
 
 const shouldIncludeFile = (
 	path: string,
-	languages: Language[],
+	languages: SourceLang[],
 	exclude?: string[],
 ): boolean => {
 	if (isTestArtifact(path)) return false;
@@ -133,7 +132,7 @@ const runTest = async (
 	result: TestResult,
 ): Promise<boolean> => {
 	try {
-		const { type, checkAstOnError } = config;
+		const { type, internal } = config;
 		const content = await Bun.file(file).text();
 		const lang = getLanguage(file);
 		const sourceType = file.includes(".module.") ? "module" : "script";
@@ -157,6 +156,9 @@ const runTest = async (
 
 		if (type === "should_pass") {
 			if (hasErrors) {
+				clearProgress();
+				console.log(`\nx ${file}`);
+				console.log(formatDiagnostics(content, parsed.diagnostics, file));
 				result.failures.push(file);
 				return false;
 			}
@@ -166,6 +168,8 @@ const runTest = async (
 
 		if (type === "should_fail") {
 			if (!hasErrors) {
+				clearProgress();
+				console.log(`\nx ${file} (expected error, but parsed successfully)`);
 				result.failures.push(file);
 				return false;
 			}
@@ -174,7 +178,10 @@ const runTest = async (
 		}
 
 		if (type === "snapshot") {
-			if (hasErrors && !checkAstOnError) {
+			if (hasErrors && !internal) {
+				clearProgress();
+				console.log(`\nx ${file}`);
+				console.log(formatDiagnostics(content, parsed.diagnostics, file));
 				result.failures.push(file);
 				return false;
 			}
@@ -184,8 +191,6 @@ const runTest = async (
 			const snapshotFile = join(snapshotsDir, `${base}.snapshot.json`);
 
 			if (!(await Bun.file(snapshotFile).exists())) {
-				await mkdir(snapshotsDir, { recursive: true });
-				await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
 				result.passed++;
 				return true;
 			}
@@ -194,7 +199,7 @@ const runTest = async (
 			result.astComparisons++;
 
 			if (!equal(parsed, snapshot)) {
-				if (updateSnapshots) {
+				if (updateSnapshots && internal) {
 					await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
 					result.passed++;
 					return true;

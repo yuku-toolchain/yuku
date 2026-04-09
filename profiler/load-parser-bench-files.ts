@@ -26,4 +26,4 @@ const gitCmd = [
 
 Bun.spawnSync({ cmd: gitCmd });
 
-console.log("\nParser benchmark files downloaded\n");
+console.log("\nParser benchmark files downloaded");

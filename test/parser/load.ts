@@ -1,12 +1,27 @@
-import { rm } from "node:fs/promises";
+import { readdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import Bun from "bun";
 
 const TEST_SUITE_REPO_URL =
 	"https://github.com/yuku-toolchain/parser-test-suite";
-const REMOVE_FILES = ["README.md", ".gitignore"];
+const INCLUDE_FOLDERS = ["js", "jsx"];
+const SUITE_DIR = "test/parser/suite";
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-const shouldLoad = !(await Bun.file("test/parser/suite").exists());
+let shouldLoad = !(await Bun.file(SUITE_DIR).exists());
+
+if (!shouldLoad) {
+	try {
+		const info = await stat(SUITE_DIR);
+		if (Date.now() - info.mtimeMs > ONE_DAY_MS) {
+      await rm(SUITE_DIR, { recursive: true, force: true });
+      console.log("suite expired, re-downloading");
+			shouldLoad = true;
+		}
+	} catch {
+		shouldLoad = true;
+	}
+}
 
 if (!shouldLoad) {
 	process.exit(0);
@@ -27,13 +42,12 @@ if (argv.length > 0) {
 	}
 }
 
-console.log("\nDownloading test suite...");
+console.log("\nDownloading test suite...\n");
 
 const gitCmd = [
 	"git",
 	"clone",
-	"--quiet",
-	"--no-progress",
+	"--progress",
 	"--single-branch",
 	"--depth",
 	"1",
@@ -42,13 +56,12 @@ const gitCmd = [
 	dest,
 ];
 
-Bun.spawnSync({ cmd: gitCmd });
+Bun.spawnSync({ cmd: gitCmd, stderr: "inherit" });
 
-for (const fileToRemove of REMOVE_FILES) {
-	try {
-		await rm(path.join(dest, fileToRemove), { force: true });
-	} catch (err) {
-		console.warn(`Failed to remove file ${fileToRemove}:`, err);
+const entries = await readdir(dest);
+for (const entry of entries) {
+	if (!INCLUDE_FOLDERS.includes(entry)) {
+		await rm(path.join(dest, entry), { recursive: true, force: true });
 	}
 }
 
