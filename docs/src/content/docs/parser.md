@@ -19,7 +19,7 @@ const { program, comments, diagnostics } = parse("const x = 1 + 2;");
 
 See [yuku-parser on npm](https://www.npmjs.com/package/yuku-parser) for the full API.
 
-## Zig Installation
+## Zig
 
 ```bash
 zig fetch --save git+https://github.com/yuku-toolchain/yuku.git
