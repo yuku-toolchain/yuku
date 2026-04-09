@@ -51,7 +51,7 @@ Yuku prioritizes correctness while delivering top-tier speed and efficiency. On 
 
 </div>
 
-On the JavaScript side (npm), Yuku is **2-5x faster** than alternatives:
+On the JavaScript side (npm), Yuku is **3-5x faster** than alternatives:
 
 <div align="center" style="margin: 1.5rem 0;">
 
@@ -69,10 +69,14 @@ On the JavaScript side (npm), Yuku is **2-5x faster** than alternatives:
 </div>
 
 <details>
-<summary>A note on Oxc's <code>experimentalRawTransfer</code></summary>
+<summary>A note on Oxc's npm performance</summary>
 
-Oxc has an `experimentalRawTransfer` option that makes `oxc-parser` roughly 2-3x faster than the results shown above. However, it is currently experimental and comes with significant limitations: it only works in Node.js (not Bun, Deno, etc.), and it allocates gigabytes of memory upfront for a single parse, leading to out-of-memory errors and failures when parsing files in parallel.
+You may wonder why Oxc is slower in this npm benchmark, even slower than Babel. This is because Oxc's npm package has the overhead of passing the AST from Rust to JavaScript. What it does is serialize the AST to a JSON string on the Rust side and then call `JSON.parse` on the JavaScript side. This overhead makes it slower, even though Oxc is very fast at raw parsing speed.
 
-Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly, flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing all 45,000+ Test262 cases with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
+If you benchmark Babel and Oxc by just calling their `parse` functions, Oxc will appear faster than Babel. This is because the `program` field returned by Oxc's parse call is a getter that only runs `JSON.parse` when you actually access it. That deserialization is the main bottleneck, and it grows as the AST gets larger (i.e., as the source file gets longer). The npm benchmarks above measure the time to actually obtain the full AST for all parsers.
+
+Oxc also has an `experimentalRawTransfer` option that makes `oxc-parser` roughly 2-3x faster than the results shown above. However, it is currently experimental and comes with significant limitations: it only works in Node.js (not Bun, Deno, etc.), and it allocates gigabytes of memory upfront for a single parse, leading to out-of-memory errors and failures when parsing files in parallel.
+
+Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly: flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing all 45,000+ Test262 cases with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
 
 </details>

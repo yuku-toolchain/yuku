@@ -48,6 +48,13 @@ defer tree.deinit();
 
 [Read the parser documentation →](https://yuku.fyi/parser)
 
+## Performance
+
+Yuku prioritizes correctness while delivering top-tier speed and efficiency.
+
+- [Native benchmark (Zig/Rust)](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-native) - competitive with Oxc on raw parsing speed
+- [npm benchmark](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js) - 3-5x faster than alternatives
+
 ## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
