@@ -24,12 +24,3 @@ Visit [yuku.fyi](https://yuku.fyi) for the full documentation, guides, and API r
 ## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and playground instructions.
-
-## Roadmap
-
-- [x] JavaScript Parser
-- [x] WASM
-- [x] JSX Support
-- [x] Visitor/Traverser
-- [ ] TypeScript Support (In Progress)
-- [ ] Module Resolver
