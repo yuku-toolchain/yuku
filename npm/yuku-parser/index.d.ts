@@ -19,10 +19,10 @@ interface ParseOptions {
 	 */
 	lang?: SourceLang;
 	/**
-	 * When true (default), parenthesized expressions are represented as
+	 * When true, parenthesized expressions are represented as
 	 * `ParenthesizedExpression` nodes in the AST. When false,
 	 * parentheses are stripped and only the inner expression is kept.
-	 * @default true
+	 * @default false
 	 */
 	preserveParens?: boolean;
 	/**

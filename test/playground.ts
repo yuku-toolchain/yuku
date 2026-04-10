@@ -1,12 +1,103 @@
-import { printDiagnostics } from "./ast-helpers-for-test";
 import { parse } from "yuku-parser";
 
 const source = await Bun.file("test/index.js").text();
 
-const result = parse(source, {
-  sourceType: "module",
+parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
+});parse(source, {
+  preserveParens: true
 });
 
-console.log();
+console.time("parse");
+const result = parse(source, {
+  preserveParens: true
+});
+console.timeEnd("parse");
 
-printDiagnostics(source, result.diagnostics, "test.js");
+// console.log(JSON.stringify(result.program.body, null, 2));
+
+// printDiagnostics(source, result.diagnostics, "test.js");
