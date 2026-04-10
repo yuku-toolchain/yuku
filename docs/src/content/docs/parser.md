@@ -72,6 +72,7 @@ const tree = try parser.parse(allocator, source, .{
 | `source_type` | `.script`, `.module` | `.module` | Script mode or ES module mode (strict mode) |
 | `lang` | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js` | Language variant and syntax features to enable |
 | `preserve_parens` | `true`, `false` | `true` | Keep `ParenthesizedExpression` nodes in the AST |
+| `allow_return_outside_function` | `true`, `false` | `false` | Allow `return` statements at the top level |
 
 Both fields can be inferred from a file path:
 

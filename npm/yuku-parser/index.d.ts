@@ -26,6 +26,12 @@ interface ParseOptions {
 	 */
 	preserveParens?: boolean;
 	/**
+	 * When true, `return` statements are allowed at the top level,
+	 * outside of any function.
+	 * @default false
+	 */
+	allowReturnOutsideFunction?: boolean;
+	/**
 	 * Run semantic analysis after parsing and include semantic errors
 	 * (e.g. duplicate declarations, invalid `break`/`continue` targets)
 	 * alongside syntax errors. This requires a separate AST pass and may

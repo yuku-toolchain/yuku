@@ -1,103 +1,12 @@
+import { printDiagnostics } from "./ast-helpers-for-test";
 import { parse } from "yuku-parser";
 
 const source = await Bun.file("test/index.js").text();
 
-parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});parse(source, {
-  preserveParens: true
-});
+console.log("--- without allowReturnOutsideFunction ---");
+const r1 = parse(source);
+printDiagnostics(source, r1.diagnostics, "test.js");
 
-console.time("parse");
-const result = parse(source, {
-  preserveParens: true
-});
-console.timeEnd("parse");
-
-// console.log(JSON.stringify(result.program.body, null, 2));
-
-// printDiagnostics(source, result.diagnostics, "test.js");
+console.log("--- with allowReturnOutsideFunction ---");
+const r2 = parse(source, { allowReturnOutsideFunction: true });
+printDiagnostics(source, r2.diagnostics, "test.js");
