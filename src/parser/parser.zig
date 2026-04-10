@@ -14,10 +14,10 @@ pub const Options = struct {
     /// Language variant determines which syntax features are enabled.
     /// Defaults to `.js` (plain JavaScript).
     lang: ast.Lang = .js,
-    /// When true, parenthesized expressions are represented as
-    /// `ParenthesizedExpression` nodes in the AST. When false (default),
+    /// When true (default), parenthesized expressions are represented as
+    /// `ParenthesizedExpression` nodes in the AST. When false,
     /// parentheses are stripped and only the inner expression is kept.
-    preserve_parens: bool = false,
+    preserve_parens: bool = true,
 };
 
 const ParserContext = struct {

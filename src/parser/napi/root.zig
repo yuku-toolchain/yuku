@@ -6,7 +6,7 @@ const transfer = @import("transfer.zig");
 const Options = struct {
     source_type: parser.ast.SourceType = .module,
     lang: parser.ast.Lang = .js,
-    preserve_parens: bool = false,
+    preserve_parens: bool = true,
     semantic_errors: bool = false,
 };
 
