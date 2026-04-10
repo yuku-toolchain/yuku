@@ -3,340 +3,287 @@ import { basename, dirname, join } from "node:path";
 import { Glob } from "bun";
 import equal from "fast-deep-equal";
 import { diff } from "jest-diff";
-import { parse, type Diagnostic, type SourceLang } from "yuku-parser";
+import {
+  parse,
+  type ParseOptions,
+  type ParseResult,
+  type Diagnostic,
+  type SourceLang,
+} from "yuku-parser";
 import { deserializeAstJson, formatDiagnostics, serializeAstJson } from "../ast-helpers-for-test";
 
-console.clear();
-console.log("");
+type Expect = "pass" | "fail" | "snapshot";
 
-const TEST_DIR = "test";
-const PARSER_TEST_DIR = `${TEST_DIR}/parser`;
-const RESULTS_DIR = `${TEST_DIR}/results/parser`;
+interface TestSuite {
+  path: string;
+  expect: Expect;
+  lang: SourceLang[];
+  options?: Partial<ParseOptions>;
+  recursive?: boolean;
+  allowErrors?: boolean;
+  skipOnCI?: boolean;
+}
+
+interface FileResult {
+  file: string;
+  passed: boolean;
+  snapshotCompared: boolean;
+  source?: string;
+  diagnostics?: Diagnostic[];
+}
+
+interface SuiteResult {
+  suite: TestSuite;
+  files: FileResult[];
+}
+
+const suites: TestSuite[] = [
+  { path: "suite/js/pass", expect: "snapshot", lang: ["js"], options: { semanticErrors: true } },
+  { path: "suite/js/fail", expect: "fail", lang: ["js"] },
+  {
+    path: "suite/js/semantic",
+    expect: "fail",
+    lang: ["js"],
+    options: { semanticErrors: true },
+    skipOnCI: true,
+  },
+  { path: "suite/jsx/pass", expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
+  { path: "suite/jsx/fail", expect: "fail", lang: ["jsx"] },
+  { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true },
+  { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true },
+  {
+    path: "misc/js/preserve-parens-disabled",
+    expect: "snapshot",
+    lang: ["js"],
+    allowErrors: true,
+    options: { preserveParens: false },
+  },
+  {
+    path: "misc/js/allow-return-outside-function",
+    expect: "snapshot",
+    lang: ["js"],
+    allowErrors: true,
+    options: { allowReturnOutsideFunction: true },
+  },
+];
+
+type SnapshotResult =
+  | { status: "no_snapshot" }
+  | { status: "match" }
+  | { status: "mismatch"; snapshot: unknown };
+
+const PARSER_DIR = "test/parser";
+const RESULTS_DIR = "test/results/parser";
 const isCI = !!process.env.CI;
 const updateSnapshots = process.argv.includes("--update-snapshots");
 
-type TestType = "should_pass" | "should_fail" | "snapshot";
-
-interface TestConfig {
-	path: string;
-	type: TestType;
-	languages: SourceLang[];
-	exclude?: string[];
-	skipOnCI?: boolean;
-	internal?: boolean;
-	semanticErrors?: boolean;
+function langFromPath(path: string): SourceLang {
+  if (path.endsWith(".tsx")) return "tsx";
+  if (path.endsWith(".jsx")) return "jsx";
+  if (path.endsWith(".d.ts")) return "dts";
+  if (path.endsWith(".ts")) return "ts";
+  return "js";
 }
 
-const configs: TestConfig[] = [
-	{ path: "suite/js/pass", type: "snapshot", languages: ["js"], semanticErrors: true },
-	{ path: "suite/js/fail", type: "should_fail", languages: ["js"] },
-	{
-		path: "suite/js/semantic",
-		type: "should_fail",
-		languages: ["js"],
-		semanticErrors: true,
-		skipOnCI: true,
-	},
-	{ path: "suite/jsx/pass", type: "snapshot", languages: ["jsx"], semanticErrors: true },
-	{ path: "suite/jsx/fail", type: "should_fail", languages: ["jsx"] },
-	{
-		path: "misc/jsx",
-		type: "snapshot",
-		languages: ["jsx"],
-		internal: true,
-	},
-	{
-		path: "misc/js",
-		type: "snapshot",
-		languages: ["js"],
-		internal: true,
-	},
-];
-
-interface DiagnosticEntry {
-	file: string;
-	source: string;
-	diagnostics: Diagnostic[];
+function baseName(file: string): string {
+  const name = basename(file);
+  const dot = name.indexOf(".");
+  return dot >= 0 ? name.substring(0, dot) : name;
 }
 
-interface TestResult {
-	path: string;
-	passed: number;
-	failed: number;
-	total: number;
-	failures: string[];
-	astMismatches: number;
-	astComparisons: number;
-	fileResults: { file: string; passed: boolean }[];
-	diagnosticEntries: DiagnosticEntry[];
+function isSourceFile(path: string, langs: SourceLang[]): boolean {
+  if (path.includes("/snapshots/") || path.endsWith(".snapshot.json")) return false;
+  return langs.includes(langFromPath(path));
 }
 
-const results = new Map<string, TestResult>();
+async function collectFiles(suite: TestSuite): Promise<string[]> {
+  const pattern = suite.recursive === false ? "*" : "**/*";
+  const glob = new Glob(`${PARSER_DIR}/${suite.path}/${pattern}`);
+  const files: string[] = [];
+  for await (const file of glob.scan(".")) {
+    if (isSourceFile(file, suite.lang)) files.push(file);
+  }
+  return files;
+}
 
-const getLanguage = (path: string): SourceLang => {
-	if (path.endsWith(".tsx")) return "tsx";
-	if (path.endsWith(".jsx")) return "jsx";
-	if (path.endsWith(".d.ts")) return "dts";
-	if (path.endsWith(".ts")) return "ts";
-	return "js";
-};
+function parseFile(content: string, file: string, suite: TestSuite) {
+  return parse(content, {
+    sourceType: file.includes(".module.") ? "module" : "script",
+    lang: langFromPath(file),
+    preserveParens: true,
+    ...suite.options,
+  });
+}
 
-const getBaseName = (file: string): string => {
-	const name = basename(file);
-	const firstDot = name.indexOf(".");
-	return firstDot >= 0 ? name.substring(0, firstDot) : name;
-};
+function runTest(file: string, content: string, parsed: ParseResult, suite: TestSuite): boolean {
+  const hasErrors = parsed.diagnostics.length > 0;
 
-const isTestArtifact = (path: string): boolean => {
-	return (
-		path.endsWith(".snapshot.json") ||
-		path.includes(".snap") ||
-		path.includes("/snapshots/") ||
-		path.includes("\\snapshots\\")
-	);
-};
+  switch (suite.expect) {
+    case "pass":
+      return !hasErrors;
 
-const shouldIncludeFile = (
-	path: string,
-	languages: SourceLang[],
-	exclude?: string[],
-): boolean => {
-	if (isTestArtifact(path)) return false;
-	if (exclude?.some((p) => path.includes(p) || basename(path) === p)) {
-		return false;
-	}
-	return languages.includes(getLanguage(path));
-};
+    case "fail":
+      return hasErrors;
+
+    case "snapshot":
+      if (hasErrors && !suite.allowErrors) return false;
+      return true;
+  }
+}
+
+async function checkSnapshot(file: string, parsed: ParseResult): Promise<SnapshotResult> {
+  const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
+
+  if (!(await Bun.file(snapshotFile).exists())) {
+    return { status: "no_snapshot" };
+  }
+
+  const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
+
+  if (equal(parsed, snapshot)) {
+    return { status: "match" };
+  }
+
+  if (updateSnapshots) {
+    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    return { status: "match" };
+  }
+
+  return { status: "mismatch", snapshot };
+}
 
 let progressCurrent = 0;
 let progressTotal = 0;
 
-const updateProgress = (file: string, passed: boolean) => {
-	if (isCI) return;
-	progressCurrent++;
-	const icon = passed ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
-	const label = file.length > 60 ? `...${file.slice(-57)}` : file;
-	process.stdout.write(
-		`\r\x1b[K  ${icon} ${progressCurrent}/${progressTotal}  ${label}`,
-	);
-};
-
-const clearProgress = () => {
-	if (isCI) return;
-	process.stdout.write("\r\x1b[K");
-};
-
-const runTest = async (
-	file: string,
-	config: TestConfig,
-	result: TestResult,
-): Promise<boolean> => {
-	try {
-		const { type, internal } = config;
-		const content = await Bun.file(file).text();
-		const lang = getLanguage(file);
-		const sourceType = file.includes(".module.") ? "module" : "script";
-
-		const parsed = parse(content, {
-			sourceType,
-			lang,
-      semanticErrors: config.semanticErrors ?? false,
-      preserveParens: true
-		});
-
-    const hasErrors = parsed.diagnostics && parsed.diagnostics.length > 0;
-
-    if (hasErrors) {
-      result.diagnosticEntries.push({
-				file,
-				source: content,
-				diagnostics: parsed.diagnostics,
-			});
-    }
-
-		if (type === "should_pass") {
-			if (hasErrors) {
-				clearProgress();
-				console.log(`\nx ${file}`);
-				console.log(formatDiagnostics(content, parsed.diagnostics, file));
-				result.failures.push(file);
-				return false;
-			}
-			result.passed++;
-			return true;
-		}
-
-		if (type === "should_fail") {
-			if (!hasErrors) {
-				clearProgress();
-				console.log(`\nx ${file} (expected error, but parsed successfully)`);
-				result.failures.push(file);
-				return false;
-			}
-			result.passed++;
-			return true;
-		}
-
-		if (type === "snapshot") {
-			if (hasErrors && !internal) {
-				clearProgress();
-				console.log(`\nx ${file}`);
-				console.log(formatDiagnostics(content, parsed.diagnostics, file));
-				result.failures.push(file);
-				return false;
-			}
-
-			const snapshotsDir = join(dirname(file), "snapshots");
-			const base = getBaseName(file);
-			const snapshotFile = join(snapshotsDir, `${base}.snapshot.json`);
-
-			if (!(await Bun.file(snapshotFile).exists())) {
-				result.passed++;
-				return true;
-			}
-
-			const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
-			result.astComparisons++;
-
-			if (!equal(parsed, snapshot)) {
-				if (updateSnapshots && internal) {
-					await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
-					result.passed++;
-					return true;
-				}
-
-				clearProgress();
-				console.log(
-					`\nx ${file}\n${diff(snapshot, parsed, { contextLines: 2 })}\n`,
-				);
-				result.failures.push(`${file} (AST mismatch)`);
-				result.astMismatches++;
-				return false;
-			}
-
-			result.passed++;
-			return true;
-		}
-	} catch (err) {
-		result.failures.push(`${file} - error: ${err}`);
-		return false;
-	}
-	return true;
-};
-
-const collectFiles = async (config: TestConfig): Promise<string[]> => {
-	const glob = new Glob(`${PARSER_TEST_DIR}/${config.path}/**/*`);
-	const files: string[] = [];
-	for await (const file of glob.scan(".")) {
-		if (shouldIncludeFile(file, config.languages, config.exclude)) {
-			files.push(file);
-		}
-	}
-	return files;
-};
-
-const runCategory = async (config: TestConfig, files: string[]) => {
-	const result: TestResult = {
-		path: config.path,
-		passed: 0,
-		failed: 0,
-		total: files.length,
-		failures: [],
-		astMismatches: 0,
-		astComparisons: 0,
-		fileResults: [],
-		diagnosticEntries: [],
-	};
-	results.set(config.path, result);
-
-	if (result.total === 0) return;
-
-	for (const file of files) {
-		const passed = await runTest(file, config, result);
-		result.fileResults.push({ file, passed });
-		updateProgress(file, passed);
-	}
-
-	result.failed = result.failures.length;
-};
-
-const configFiles = new Map<TestConfig, string[]>();
-
-for (const config of configs) {
-	if (config.skipOnCI && isCI) continue;
-	const files = await collectFiles(config);
-	configFiles.set(config, files);
-	progressTotal += files.length;
+function showProgress(file: string, passed: boolean) {
+  if (isCI) return;
+  progressCurrent++;
+  const icon = passed ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
+  const label = file.length > 60 ? `...${file.slice(-57)}` : file;
+  process.stdout.write(`\r\x1b[K  ${icon} ${progressCurrent}/${progressTotal}  ${label}`);
 }
 
-for (const [config, files] of configFiles) {
-	await runCategory(config, files);
+function clearProgress() {
+  if (!isCI) process.stdout.write("\r\x1b[K");
+}
+
+async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult> {
+  const result: SuiteResult = { suite, files: [] };
+
+  for (const file of files) {
+    const content = await Bun.file(file).text();
+    const parsed = parseFile(content, file, suite);
+    let passed = runTest(file, content, parsed, suite);
+
+    const entry: FileResult = { file, passed, snapshotCompared: false };
+
+    if (parsed.diagnostics.length > 0) {
+      entry.source = content;
+      entry.diagnostics = parsed.diagnostics;
+    }
+
+    if (passed && suite.expect === "snapshot") {
+      const snap = await checkSnapshot(file, parsed);
+      if (snap.status !== "no_snapshot") {
+        entry.snapshotCompared = true;
+      }
+      if (snap.status === "mismatch") {
+        passed = false;
+        entry.passed = false;
+        clearProgress();
+        console.log(`\nx ${file}\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`);
+      }
+    }
+
+    if (!passed) {
+      clearProgress();
+      if (
+        suite.expect === "pass" ||
+        (suite.expect === "snapshot" && !suite.allowErrors && parsed.diagnostics.length > 0)
+      ) {
+        console.log(`\nx ${file}`);
+        console.log(formatDiagnostics(content, parsed.diagnostics, file));
+      } else if (suite.expect === "fail" && parsed.diagnostics.length === 0) {
+        console.log(`\nx ${file} (expected error, but parsed successfully)`);
+      }
+    }
+
+    result.files.push(entry);
+    showProgress(file, passed);
+  }
+
+  return result;
+}
+
+function writeResultFile(result: SuiteResult): string {
+  const passed = result.files.filter((f) => f.passed).length;
+  const failed = result.files.filter((f) => !f.passed).length;
+  const total = result.files.length;
+  const rate = ((passed / total) * 100).toFixed(2);
+
+  const lines: string[] = [
+    result.suite.path,
+    "=".repeat(result.suite.path.length),
+    `Passed:       ${passed}/${total} (${rate}%)`,
+    `Failed:       ${failed}`,
+  ];
+
+  if (result.suite.expect === "snapshot") {
+    const comparisons = result.files.filter((f) => f.snapshotCompared).length;
+    const mismatches = result.files.filter((f) => f.snapshotCompared && !f.passed).length;
+    if (comparisons > 0) {
+      lines.push(`AST mismatch: ${mismatches}/${comparisons}`);
+    }
+  }
+
+  lines.push("");
+
+  const sorted = [...result.files].sort((a, b) => a.file.localeCompare(b.file));
+  for (const { file, passed, source, diagnostics } of sorted) {
+    lines.push(`${passed ? "✓" : "✗"} ${file}`);
+    if (diagnostics && diagnostics.length > 0 && source) {
+      lines.push(formatDiagnostics(source, [diagnostics[0]], file, { showFilename: false }));
+      lines.push("");
+    }
+  }
+
+  lines.push("");
+  return lines.join("\n");
+}
+
+console.clear();
+console.log("");
+
+const suiteFiles = new Map<TestSuite, string[]>();
+for (const suite of suites) {
+  if (suite.skipOnCI && isCI) continue;
+  const files = await collectFiles(suite);
+  suiteFiles.set(suite, files);
+  progressTotal += files.length;
+}
+
+const results: SuiteResult[] = [];
+for (const [suite, files] of suiteFiles) {
+  results.push(await runSuite(suite, files));
 }
 
 clearProgress();
 
-const getResultName = (path: string): string => {
-	return `${path.replace(/^suite\//, "").replace(/\//g, "_")}.txt`;
-};
-
 await mkdir(RESULTS_DIR, { recursive: true });
 
 let totalFailed = 0;
+for (const result of results) {
+  if (result.files.length === 0) continue;
 
-for (const [, result] of results) {
-	if (result.total === 0) continue;
+  const failed = result.files.filter((f) => !f.passed).length;
+  totalFailed += failed;
 
-	totalFailed += result.failures.length;
-
-	const diagMap = new Map<string, DiagnosticEntry>();
-	for (const entry of result.diagnosticEntries) {
-		diagMap.set(entry.file, entry);
-	}
-
-	const suiteRate = ((result.passed / result.total) * 100).toFixed(2);
-	const lines: string[] = [
-		result.path,
-		"=".repeat(result.path.length),
-		`Passed:       ${result.passed}/${result.total} (${suiteRate}%)`,
-		`Failed:       ${result.failed}`,
-	];
-
-	if (result.astComparisons > 0) {
-		lines.push(
-			`AST mismatch: ${result.astMismatches}/${result.astComparisons}`,
-		);
-	}
-
-	lines.push("");
-
-	const sorted = [...result.fileResults].sort((a, b) =>
-		a.file.localeCompare(b.file),
-	);
-
-	for (const { file, passed } of sorted) {
-		const icon = passed ? "✓" : "✗";
-		lines.push(`${icon} ${file}`);
-
-		const entry = diagMap.get(file);
-		if (entry && entry.diagnostics.length > 0) {
-			lines.push(
-				formatDiagnostics(entry.source, [entry.diagnostics[0]], file, {
-					showFilename: false,
-				}),
-			);
-			lines.push("");
-		}
-	}
-
-	lines.push("");
-	await Bun.write(
-		`${RESULTS_DIR}/${getResultName(result.path)}`,
-		lines.join("\n"),
-	);
+  const name = result.suite.path.replace(/^suite\//, "").replace(/\//g, "_");
+  await Bun.write(`${RESULTS_DIR}/${name}.txt`, writeResultFile(result));
 }
 
 console.log(`Results saved to ${RESULTS_DIR}/\n`);
 
 if (isCI && totalFailed > 0) {
-	process.exit(1);
+  process.exit(1);
 }

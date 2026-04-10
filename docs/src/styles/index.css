@@ -2,78 +2,78 @@
 
 /* Dark mode colors. */
 :root {
-	--sl-color-accent-low: #3d2800;
-	--sl-color-accent: #f4c013;
-	--sl-color-accent-high: #ffe082;
-	--sl-color-white: #ffffff;
-	--sl-color-gray-1: #f5f0e6;
-	--sl-color-gray-2: #c9c1b0;
-	--sl-color-gray-3: #918979;
-	--sl-color-gray-4: #5e5647;
-	--sl-color-gray-5: #3a3328;
-	--sl-color-gray-6: #252015;
-	--sl-color-black: #18140c;
+  --sl-color-accent-low: #3d2800;
+  --sl-color-accent: #f4c013;
+  --sl-color-accent-high: #ffe082;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #f5f0e6;
+  --sl-color-gray-2: #c9c1b0;
+  --sl-color-gray-3: #918979;
+  --sl-color-gray-4: #5e5647;
+  --sl-color-gray-5: #3a3328;
+  --sl-color-gray-6: #252015;
+  --sl-color-black: #18140c;
 }
 
 /* Light mode colors. */
 :root[data-theme="light"] {
-	--sl-color-accent-low: #fff3cc;
-	--sl-color-accent: #d9a000;
-	--sl-color-accent-high: #6b4700;
-	--sl-color-white: #18140c;
-	--sl-color-gray-1: #252015;
-	--sl-color-gray-2: #3a3328;
-	--sl-color-gray-3: #5e5647;
-	--sl-color-gray-4: #918979;
-	--sl-color-gray-5: #c9c1b0;
-	--sl-color-gray-6: #f5f0e6;
-	--sl-color-gray-7: #faf8f3;
-	--sl-color-black: #ffffff;
+  --sl-color-accent-low: #fff3cc;
+  --sl-color-accent: #d9a000;
+  --sl-color-accent-high: #6b4700;
+  --sl-color-white: #18140c;
+  --sl-color-gray-1: #252015;
+  --sl-color-gray-2: #3a3328;
+  --sl-color-gray-3: #5e5647;
+  --sl-color-gray-4: #918979;
+  --sl-color-gray-5: #c9c1b0;
+  --sl-color-gray-6: #f5f0e6;
+  --sl-color-gray-7: #faf8f3;
+  --sl-color-black: #ffffff;
 }
 
 /* General customizations. */
 :root {
-	--sl-content-width: 56rem;
-	--sl-font-size-h1: 1.5rem;
-	--sl-font-size-h2: 1rem;
-	--sl-font-size-h3: 0.75rem;
+  --sl-content-width: 56rem;
+  --sl-font-size-h1: 1.5rem;
+  --sl-font-size-h2: 1rem;
+  --sl-font-size-h3: 0.75rem;
 }
 
 table code {
-	background: none;
-	padding: 0;
+  background: none;
+  padding: 0;
 }
 
 /* Homepage (hero) customizations. */
 .hero {
-	padding-block: clamp(1.25rem, calc(0.5rem + 5vmin), 5rem);
+  padding-block: clamp(1.25rem, calc(0.5rem + 5vmin), 5rem);
 }
 
 .hero img {
-	max-height: 15rem;
-	user-select: none;
+  max-height: 15rem;
+  user-select: none;
 }
 
 @media (width >= 800px) {
-	.hero img {
-		object-position: right;
-	}
+  .hero img {
+    object-position: right;
+  }
 }
 
 .title-wrapper {
-	display: none;
+  display: none;
 }
 
 .header {
-	padding: 16px;
+  padding: 16px;
 }
 
 .header > .header {
-	grid-template-columns: 270px auto;
-	padding: 0;
+  grid-template-columns: 270px auto;
+  padding: 0;
 }
 
 .content-panel,
 .right-sidebar-panel {
-	padding: 36px;
+  padding: 36px;
 }
