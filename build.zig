@@ -153,3 +153,43 @@ pub fn build(b: *std.Build) void {
     const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
     gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
 }
+
+    // c header codegen
+    const gen_c_header_module = b.createModule(.{
+        .root_source_file = b.path("tools/gen_c_header.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    gen_c_header_module.addImport("parser", parser_module);
+    gen_c_header_module.addImport("transfer", ast_transfer_module);
+
+    const gen_c_header_exe = b.addExecutable(.{
+        .name = "gen-c-header",
+        .root_module = gen_c_header_module,
+    });
+
+    const run_gen_c_header = b.addRunArtifact(gen_c_header_exe);
+    const gen_c_header_output = run_gen_c_header.captureStdOut(.{});
+
+    const gen_c_header_step = b.step("gen-c-header", "Generate yuku-c.h C header from AST types");
+    gen_c_header_step.dependOn(&b.addInstallFile(gen_c_header_output, "yuku-c.h").step);
+
+    // C shared library
+    const c_api_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/capi/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    c_api_module.addImport("parser", parser_module);
+    c_api_module.addImport("transfer", ast_transfer_module);
+
+    const c_lib = b.addLibrary(.{
+        .name = "yuku-c",
+        .linkage = .dynamic,
+        .root_module = c_api_module,
+    });
+    b.installArtifact(c_lib);
+
+    const c_lib_step = b.step("c-lib", "Build C shared library (libyuku-c)");
+    c_lib_step.dependOn(&c_lib.step);
+}
