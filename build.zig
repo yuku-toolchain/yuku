@@ -180,8 +180,15 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+    const c_transfer_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/napi/transfer.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    c_transfer_module.addImport("parser", parser_module);
+
     c_lib.root_module.addImport("parser", parser_module);
-    c_lib.root_module.addImport("transfer", ast_transfer_module);
+    c_lib.root_module.addImport("transfer", c_transfer_module);
     b.installArtifact(c_lib);
 
     const c_lib_step = b.step("c-lib", "Build C shared library (libyuku-c)");

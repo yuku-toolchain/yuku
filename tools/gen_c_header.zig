@@ -467,6 +467,8 @@ fn writeDiagnosticAccessors(w: *Writer) !void {
         \\    } else {
         \\        out->help = NULL; out->help_len = 0;
         \\    }
+        \\    uint32_t lc; memcpy(&lc, base + pos, 4); pos += 4;
+        \\    for (uint32_t k = 0; k < lc; k++) { pos += 8; uint32_t lml; memcpy(&lml, base + pos, 4); pos += 4 + lml; }
         \\    return pos;
         \\}
         \\
