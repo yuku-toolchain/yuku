@@ -11,4 +11,5 @@ test/**/suite
 profiler/files
 zig-pkg
 yuku-parser.*
-.node
+test_c_header
+test_e2e
