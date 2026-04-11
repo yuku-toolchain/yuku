@@ -7,7 +7,7 @@
 // Output: zig-out/lib/libyuku-c.{dylib,so,dll}
 //
 // Usage from C:
-//   #include "yuku.h"
+//   #include "yuku-c.h"
 //   YukuResult result = yuku_parse(source, len, YUKU_SOURCE_MODULE, YUKU_LANG_JS);
 //   // ... walk the buffer using yuku.h inline accessors ...
 //   yuku_free(&result);

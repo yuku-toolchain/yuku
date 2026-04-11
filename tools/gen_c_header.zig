@@ -1,4 +1,4 @@
-// generates yuku.h, a C header for reading the binary AST buffer produced by yuku_parse().
+// generates yuku-c.h, a C header for reading the binary AST buffer produced by yuku_parse().
 // uses the same comptime layout functions as the serializer (transfer.zig), guaranteeing
 // the generated accessors match the binary format exactly.
 //
