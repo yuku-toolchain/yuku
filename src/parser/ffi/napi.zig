@@ -11,10 +11,8 @@ const Options = struct {
     semantic_errors: bool = false,
 };
 
-const alloc = std.heap.smp_allocator;
-
-pub fn parse_sync(env: napi.Env, source: []const u8, options: Options) !napi.Val {
-    var tree = parser.parse(alloc, source, .{
+pub fn parse(env: napi.Env, source: []const u8, options: Options) !napi.Val {
+    var tree = parser.parse(std.heap.page_allocator, source, .{
         .source_type = options.source_type,
         .lang = options.lang,
         .preserve_parens = options.preserve_parens,
