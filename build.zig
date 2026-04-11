@@ -109,7 +109,7 @@ pub fn build(b: *std.Build) void {
 
     napi_zig.addLib(b, napi_dep, .{
         .name = "yuku-parser",
-        .root = b.path("src/parser/napi/root.zig"),
+        .root = b.path("src/parser/ffi/napi.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
@@ -122,13 +122,13 @@ pub fn build(b: *std.Build) void {
                 .type = "git",
                 .url = "https://github.com/yuku-toolchain/yuku.git",
             },
-            .dts = b.path("src/parser/napi/index.d.ts"),
+            .dts = b.path("src/parser/ffi/index.d.ts"),
         },
     });
 
     // estree decoder codegen
     const ast_transfer_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/napi/transfer.zig"),
+        .root_source_file = b.path("src/parser/ffi/transfer.zig"),
         .target = b.graph.host,
         .optimize = optimize,
     });

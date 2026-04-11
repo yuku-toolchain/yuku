@@ -22,9 +22,14 @@ interface ParseOptions {
    * When true, parenthesized expressions are represented as
    * `ParenthesizedExpression` nodes in the AST. When false,
    * parentheses are stripped and only the inner expression is kept.
-   * @default false
+   * @default true
    */
   preserveParens?: boolean;
+  /**
+   * Allow `return` statements outside of functions, at the top level.
+   * @default false
+   */
+  allowReturnOutsideFunction?: boolean;
   /**
    * Run semantic analysis after parsing and include semantic errors
    * (e.g. duplicate declarations, invalid `break`/`continue` targets)
