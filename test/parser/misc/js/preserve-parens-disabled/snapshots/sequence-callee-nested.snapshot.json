@@ -1,0 +1,131 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 60,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 59,
+        "expression": {
+          "type": "SequenceExpression",
+          "start": 1,
+          "end": 57,
+          "expressions": [
+            {
+              "type": "AssignmentExpression",
+              "start": 2,
+              "end": 51,
+              "left": {
+                "type": "Identifier",
+                "start": 2,
+                "end": 5,
+                "name": "res"
+              },
+              "right": {
+                "type": "CallExpression",
+                "start": 8,
+                "end": 51,
+                "callee": {
+                  "type": "SequenceExpression",
+                  "start": 9,
+                  "end": 40,
+                  "expressions": [
+                    {
+                      "type": "Literal",
+                      "start": 9,
+                      "end": 10,
+                      "value": 0,
+                      "raw": "0"
+                    },
+                    {
+                      "type": "MemberExpression",
+                      "start": 12,
+                      "end": 40,
+                      "object": {
+                        "type": "Identifier",
+                        "start": 12,
+                        "end": 14,
+                        "name": "fn"
+                      },
+                      "property": {
+                        "type": "MemberExpression",
+                        "start": 15,
+                        "end": 39,
+                        "object": {
+                          "type": "CallExpression",
+                          "start": 15,
+                          "end": 36,
+                          "callee": {
+                            "type": "Identifier",
+                            "start": 15,
+                            "end": 32,
+                            "name": "__getOwnPropNames"
+                          },
+                          "arguments": [
+                            {
+                              "type": "Identifier",
+                              "start": 33,
+                              "end": 35,
+                              "name": "fn"
+                            }
+                          ],
+                          "optional": false
+                        },
+                        "property": {
+                          "type": "Literal",
+                          "start": 37,
+                          "end": 38,
+                          "value": 0,
+                          "raw": "0"
+                        },
+                        "computed": true,
+                        "optional": false
+                      },
+                      "computed": true,
+                      "optional": false
+                    }
+                  ]
+                },
+                "arguments": [
+                  {
+                    "type": "AssignmentExpression",
+                    "start": 43,
+                    "end": 49,
+                    "left": {
+                      "type": "Identifier",
+                      "start": 43,
+                      "end": 45,
+                      "name": "fn"
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "start": 48,
+                      "end": 49,
+                      "value": 0,
+                      "raw": "0"
+                    },
+                    "operator": "="
+                  }
+                ],
+                "optional": false
+              },
+              "operator": "="
+            },
+            {
+              "type": "Identifier",
+              "start": 54,
+              "end": 57,
+              "name": "res"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

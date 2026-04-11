@@ -1,17 +1,17 @@
 {
-	"name": "yuku-docs",
-	"version": "0.2.19",
-	"dependencies": {
-		"@astrojs/starlight": "^0.38.1",
-		"astro": "^6.0.6",
-		"sharp": "^0.34.2"
-	},
-	"scripts": {
-		"dev": "astro dev",
-		"start": "astro dev",
-		"build": "astro build",
-		"preview": "astro preview",
-		"astro": "astro"
-	},
-	"type": "module"
+  "name": "yuku-docs",
+  "version": "0.2.19",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.38.1",
+    "astro": "^6.0.6",
+    "sharp": "^0.34.2"
+  }
 }

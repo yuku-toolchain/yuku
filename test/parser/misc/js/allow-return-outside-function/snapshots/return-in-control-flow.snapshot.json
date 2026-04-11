@@ -1,0 +1,36 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 25,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "IfStatement",
+        "start": 0,
+        "end": 24,
+        "test": {
+          "type": "Identifier",
+          "start": 4,
+          "end": 13,
+          "name": "condition"
+        },
+        "consequent": {
+          "type": "ReturnStatement",
+          "start": 15,
+          "end": 24,
+          "argument": {
+            "type": "Identifier",
+            "start": 22,
+            "end": 23,
+            "name": "x"
+          }
+        },
+        "alternate": null
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

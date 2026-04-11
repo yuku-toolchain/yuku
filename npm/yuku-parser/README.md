@@ -15,8 +15,8 @@ import { parse } from "yuku-parser";
 
 const result = parse("const x = 1 + 2;");
 
-console.log(result.program);     // ESTree / TypeScript-ESTree Program node
-console.log(result.comments);    // all comments
+console.log(result.program); // ESTree / TypeScript-ESTree Program node
+console.log(result.comments); // all comments
 console.log(result.diagnostics); // errors and warnings
 ```
 
@@ -76,16 +76,18 @@ const result = parse(source, {
   sourceType: "module",
   lang: "jsx",
   preserveParens: true,
+  allowReturnOutsideFunction: false,
   semanticErrors: false,
 });
 ```
 
-| Option | Values | Default | Description |
-|--------|--------|---------|-------------|
-| `sourceType` | `"module"`, `"script"` | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode. |
-| `lang` | `"js"`, `"ts"`, `"jsx"`, `"tsx"`, `"dts"` | `"js"` | Language variant controls which syntax extensions are enabled. |
-| `preserveParens` | `true`, `false` | `true` | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
-| `semanticErrors` | `true`, `false` | `false` | Run semantic analysis and report semantic errors alongside syntax errors. |
+| Option           | Values                                    | Default    | Description                                                                                                                  |
+| ---------------- | ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `sourceType`     | `"module"`, `"script"`                    | `"module"` | Module mode enables `import`/`export`, `import.meta`, top-level `await`, and strict mode.                                    |
+| `lang`           | `"js"`, `"ts"`, `"jsx"`, `"tsx"`, `"dts"` | `"js"`     | Language variant controls which syntax extensions are enabled.                                                               |
+| `preserveParens` | `true`, `false`                           | `true`     | Keep `ParenthesizedExpression` nodes in the AST. When false, parentheses are stripped and only the inner expression is kept. |
+| `allowReturnOutsideFunction` | `true`, `false`              | `false`    | Allow `return` statements outside of functions, at the top level.                                                            |
+| `semanticErrors` | `true`, `false`                           | `false`    | Run semantic analysis and report semantic errors alongside syntax errors.                                                    |
 
 ## Result
 
