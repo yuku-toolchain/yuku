@@ -1,0 +1,10 @@
+misc/js/allow-return-outside-function
+=====================================
+Passed:       4/4 (100.00%)
+Failed:       0
+AST mismatch: 0/4
+
+✓ test/parser/misc/js/allow-return-outside-function/return-expression.js
+✓ test/parser/misc/js/allow-return-outside-function/return-in-control-flow.js
+✓ test/parser/misc/js/allow-return-outside-function/return-with-value.js
+✓ test/parser/misc/js/allow-return-outside-function/return-without-value.js

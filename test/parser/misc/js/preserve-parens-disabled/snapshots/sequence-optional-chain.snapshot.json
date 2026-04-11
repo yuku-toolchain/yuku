@@ -1,0 +1,57 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 17,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "start": 0,
+        "end": 16,
+        "expression": {
+          "type": "ChainExpression",
+          "start": 0,
+          "end": 15,
+          "expression": {
+            "type": "CallExpression",
+            "start": 0,
+            "end": 15,
+            "callee": {
+              "type": "SequenceExpression",
+              "start": 1,
+              "end": 7,
+              "expressions": [
+                {
+                  "type": "Literal",
+                  "start": 1,
+                  "end": 2,
+                  "value": 0,
+                  "raw": "0"
+                },
+                {
+                  "type": "Identifier",
+                  "start": 4,
+                  "end": 7,
+                  "name": "foo"
+                }
+              ]
+            },
+            "arguments": [
+              {
+                "type": "Identifier",
+                "start": 11,
+                "end": 14,
+                "name": "bar"
+              }
+            ],
+            "optional": true
+          }
+        }
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

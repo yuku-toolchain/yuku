@@ -18,6 +18,9 @@ pub const Options = struct {
     /// `ParenthesizedExpression` nodes in the AST. When false,
     /// parentheses are stripped and only the inner expression is kept.
     preserve_parens: bool = true,
+    /// When true, `return` statements are allowed at the top level,
+    /// outside of any function. Defaults to false.
+    allow_return_outside_function: bool = false,
 };
 
 const ParserContext = struct {
@@ -54,6 +57,7 @@ pub const Parser = struct {
     source_type: ast.SourceType,
     lang: ast.Lang,
     preserve_parens: bool,
+    allow_return_outside_function: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
     current_token: Token,
@@ -80,6 +84,7 @@ pub const Parser = struct {
             .source_type = options.source_type,
             .lang = options.lang,
             .preserve_parens = options.preserve_parens,
+            .allow_return_outside_function = options.allow_return_outside_function,
             .lexer = undefined,
             .current_token = Token.eof(0),
         };
@@ -91,6 +96,11 @@ pub const Parser = struct {
 
     pub fn parse(self: *Parser) Error!ast.Tree {
         try self.parseInner();
+
+        if (!self.preserve_parens) {
+            stripParenthesizedExpressions(&self.tree);
+        }
+
         return self.tree;
     }
 
@@ -103,7 +113,7 @@ pub const Parser = struct {
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
         self.context.yield_is_keyword = false;
         self.context.await_is_keyword = self.tree.isModule();
-        self.context.allow_return_statement = false;
+        self.context.allow_return_statement = self.allow_return_outside_function;
 
         // let's begin
         try self.advance() orelse {
@@ -367,6 +377,22 @@ pub const Parser = struct {
         return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
+    fn stripParenthesizedExpressions(tree: *ast.Tree) void {
+        const datas = tree.nodes.items(.data);
+        const spans = tree.nodes.items(.span);
+        for (0..datas.len) |i| {
+            if (datas[i] != .parenthesized_expression) continue;
+
+            // resolve to the innermost non-paren expression
+            var inner = @intFromEnum(datas[i].parenthesized_expression.expression);
+            while (datas[inner] == .parenthesized_expression) {
+                inner = @intFromEnum(datas[inner].parenthesized_expression.expression);
+            }
+
+            datas[i] = datas[inner];
+            spans[i] = spans[inner];
+        }
+    }
 
     pub const ReportOptions = struct {
         severity: ast.Severity = .@"error",

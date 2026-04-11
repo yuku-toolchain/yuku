@@ -5,12 +5,12 @@ description: Walk, analyze, and transform JavaScript and TypeScript ASTs with Yu
 
 Yuku's traverser system walks the AST and calls your visitor hooks at every node. There are four modes, each adding more context on top of the previous:
 
-| Mode | Context | Result |
-|------|---------|--------|
-| **Basic** | Path (parents, ancestors, depth) | |
-| **Scoped** | Path + lexical scopes | `ScopeTree` |
-| **Semantic** | Path + scopes + symbols/references | `ScopeTree` + `SymbolTable` |
-| **Transform** | Path + mutable tree | |
+| Mode          | Context                            | Result                      |
+| ------------- | ---------------------------------- | --------------------------- |
+| **Basic**     | Path (parents, ancestors, depth)   |                             |
+| **Scoped**    | Path + lexical scopes              | `ScopeTree`                 |
+| **Semantic**  | Path + scopes + symbols/references | `ScopeTree` + `SymbolTable` |
+| **Transform** | Path + mutable tree                |                             |
 
 Every mode gives you the full tree, the current path from root, and whatever tracking that mode provides. Read-only traversers (basic, scoped, semantic) access the tree through `*const Tree`, so they cannot accidentally mutate the AST. The transform traverser gets `*Tree` for full mutation access.
 
@@ -49,6 +49,7 @@ pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *Ctx)
 ```
 
 When both exist, the order is:
+
 - **Enter**: `enter_node` fires first, then `enter_<type>`
 - **Exit**: `exit_<type>` fires first, then `exit_node`
 
@@ -56,11 +57,11 @@ When both exist, the order is:
 
 Enter hooks return an `Action` to control traversal:
 
-| Action | Effect |
-|--------|--------|
-| `.proceed` | Walk into this node's children |
-| `.skip` | Skip children, move to next sibling |
-| `.stop` | Stop the entire traversal |
+| Action     | Effect                              |
+| ---------- | ----------------------------------- |
+| `.proceed` | Walk into this node's children      |
+| `.skip`    | Skip children, move to next sibling |
+| `.stop`    | Stop the entire traversal           |
 
 Enter hooks can return either `Action` or `Allocator.Error!Action`. Both work. Exit hooks return `void`.
 
@@ -175,18 +176,18 @@ Returns a `ScopeTree` containing all scopes created during the walk.
 
 The scope tracker automatically pushes and pops scopes as the walker enters and exits scope-creating nodes:
 
-| Node | Scope Kind |
-|------|------------|
-| Program | `global` (+ `module` if source_type is module) |
-| Function declaration/expression | `function` |
-| Arrow function | `function` |
-| Block statement | `block` |
-| For / for-in / for-of | `block` |
-| Catch clause | `block` |
-| Switch statement | `block` |
-| Class declaration/expression | `class` |
-| Static block | `static_block` |
-| Named function/class expression | `expression_name` + `function`/`class` |
+| Node                            | Scope Kind                                     |
+| ------------------------------- | ---------------------------------------------- |
+| Program                         | `global` (+ `module` if source_type is module) |
+| Function declaration/expression | `function`                                     |
+| Arrow function                  | `function`                                     |
+| Block statement                 | `block`                                        |
+| For / for-in / for-of           | `block`                                        |
+| Catch clause                    | `block`                                        |
+| Switch statement                | `block`                                        |
+| Class declaration/expression    | `class`                                        |
+| Static block                    | `static_block`                                 |
+| Named function/class expression | `expression_name` + `function`/`class`         |
 
 Named function and class expressions create two scopes. For `const x = function foo() { ... }`:
 
@@ -228,6 +229,7 @@ pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *scop
 ### Strict Mode
 
 Strict mode is tracked automatically:
+
 - Module scopes are always strict
 - `"use strict"` directives set the flag on the current scope
 - Child scopes inherit strict mode from their parent
@@ -272,7 +274,7 @@ The semantic traverser uses a two-phase approach for symbol declaration:
 2. **Phase 2 (post_enter)**: After your enter hooks run but before children are walked, the tracker creates the actual symbol or reference for `binding_identifier` and `identifier_reference` nodes.
 
 :::note
-Your enter hooks see the scope state *before* the current node's bindings are declared. This lets you inspect what is about to be declared before it happens.
+Your enter hooks see the scope state _before_ the current node's bindings are declared. This lets you inspect what is about to be declared before it happens.
 :::
 
 ```zig

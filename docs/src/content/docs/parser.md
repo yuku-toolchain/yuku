@@ -67,11 +67,12 @@ const tree = try parser.parse(allocator, source, .{
 });
 ```
 
-| Field | Values | Default | Description |
-|-------|--------|---------|-------------|
-| `source_type` | `.script`, `.module` | `.module` | Script mode or ES module mode (strict mode) |
-| `lang` | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js` | Language variant and syntax features to enable |
-| `preserve_parens` | `true`, `false` | `true` | Keep `ParenthesizedExpression` nodes in the AST |
+| Field                           | Values                               | Default   | Description                                     |
+| ------------------------------- | ------------------------------------ | --------- | ----------------------------------------------- |
+| `source_type`                   | `.script`, `.module`                 | `.module` | Script mode or ES module mode (strict mode)     |
+| `lang`                          | `.js`, `.ts`, `.jsx`, `.tsx`, `.dts` | `.js`     | Language variant and syntax features to enable  |
+| `preserve_parens`               | `true`, `false`                      | `true`    | Keep `ParenthesizedExpression` nodes in the AST |
+| `allow_return_outside_function` | `true`, `false`                      | `false`   | Allow `return` statements at the top level      |
 
 Both fields can be inferred from a file path:
 
@@ -134,12 +135,12 @@ Each diagnostic has a `severity` (`.error`, `.warning`, `.hint`, `.info`), a `me
 
 The [traverser system](/parser/traverse) walks the AST and calls visitor hooks at every node. There are four modes with increasing context:
 
-| Mode | Context | Result |
-|------|---------|--------|
-| **Basic** | Path (parents, ancestors, depth) | |
-| **Scoped** | Path + lexical scopes | `ScopeTree` |
-| **Semantic** | Path + scopes + symbols/references | `ScopeTree` + `SymbolTable` |
-| **Transform** | Path + mutable tree | |
+| Mode          | Context                            | Result                      |
+| ------------- | ---------------------------------- | --------------------------- |
+| **Basic**     | Path (parents, ancestors, depth)   |                             |
+| **Scoped**    | Path + lexical scopes              | `ScopeTree`                 |
+| **Semantic**  | Path + scopes + symbols/references | `ScopeTree` + `SymbolTable` |
+| **Transform** | Path + mutable tree                |                             |
 
 ```zig
 const traverser = parser.traverser;
