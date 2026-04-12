@@ -85,7 +85,7 @@ pub const Lexer = struct {
     }
 
     fn ensureCapacity(self: *Lexer) error{OutOfMemory}!void {
-        try self.comments.ensureTotalCapacity(self.allocator, @max(32, @min(self.source.len / 300, 32_768)));
+        try self.comments.ensureTotalCapacity(self.allocator, @max(32, self.source.len / 256));
     }
 
     fn skipHashbang(self: *Lexer) void {
@@ -109,6 +109,21 @@ pub const Lexer = struct {
         }
 
         const current_char = self.source[self.cursor];
+
+        // fast path, plain ASCII identifier in normal mode
+        if (ident_start_table_ascii[current_char] and self.mode == .normal) {
+            const start = self.cursor;
+            const src = self.source;
+            var pos = start + 1;
+            while (pos < src.len and ident_continue_table_ascii[src[pos]]) {
+                pos += 1;
+            }
+            if (pos >= src.len or (src[pos] != '\\' and src[pos] < 0x80)) {
+                self.cursor = pos;
+                return self.createToken(self.getKeywordType(src[start..pos]), start, pos);
+            }
+            return self.scanIdentifierOrKeyword();
+        }
 
         return switch (current_char) {
             '+', '*', '-', '!', '<', '>', '=', '|', '&', '^', '%', '/', '?' => self.scanPunctuation(),
@@ -445,30 +460,47 @@ pub const Lexer = struct {
 
     fn scanString(self: *Lexer) LexicalError!Token {
         const start = self.cursor;
-        const quote = self.source[start];
-        self.cursor += 1;
+        const src = self.source;
+        const quote = src[start];
+        var pos = self.cursor + 1;
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
+        if (self.mode == .normal) {
+            while (pos < src.len) {
+                const c = src[pos];
 
-            if (c == '\\' and self.mode != .jsx_tag) {
-                try self.consumeEscape(.string);
-                continue;
+                if (c == quote) {
+                    pos += 1;
+                    self.cursor = pos;
+                    return self.createToken(.string_literal, start, pos);
+                }
+
+                if (c == '\\') {
+                    self.cursor = pos;
+                    try self.consumeEscape(.string);
+                    pos = self.cursor;
+                    continue;
+                }
+
+                if (c == '\n' or c == '\r') {
+                    self.cursor = pos;
+                    return error.UnterminatedString;
+                }
+
+                pos += 1;
             }
-
-            if (c == quote) {
-                self.cursor += 1;
-                return self.createToken(.string_literal, start, self.cursor);
+        } else {
+            // jsx tag mode, no escapes, newlines allowed in attribute values
+            while (pos < src.len) {
+                if (src[pos] == quote) {
+                    pos += 1;
+                    self.cursor = pos;
+                    return self.createToken(.string_literal, start, pos);
+                }
+                pos += 1;
             }
-
-            // in jsx tag mode, strings can contain newlines (for multi-line attribute values)
-            if ((c == '\n' or c == '\r') and self.mode != .jsx_tag) {
-                return error.UnterminatedString;
-            }
-
-            self.cursor += 1;
         }
 
+        self.cursor = pos;
         return error.UnterminatedString;
     }
 
@@ -696,36 +728,43 @@ pub const Lexer = struct {
 
         const table = if (is_jsx_tag) &ident_continue_jsx_table_ascii else &ident_continue_table_ascii;
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
+        const src = self.source;
+        var pos = self.cursor;
 
-            if (table[c]) {
-                self.cursor += 1;
-                continue;
+        while (true) {
+            while (pos < src.len and table[src[pos]]) {
+                pos += 1;
             }
+
+            if (pos >= src.len) break;
+
+            const c = src[pos];
 
             if (c == '\\') {
                 // jsx tag names don't support escape sequences
                 if (is_jsx_tag) {
+                    self.cursor = pos;
                     return error.JsxIdentifierCannotContainEscapes;
                 }
 
                 has_escape = true;
 
-                self.cursor += 1; // consume backslash to get to 'u'
+                self.cursor = pos + 1; // consume backslash to get to 'u'
 
                 _ = try self.consumeUnicodeEscape(.identifier_continue);
 
+                pos = self.cursor;
                 continue;
             }
 
             if (c >= 0x80) {
                 @branchHint(.cold);
 
-                const cp = try util.Utf.codePointAt(self.source, self.cursor);
+                self.cursor = pos;
+                const cp = try util.Utf.codePointAt(src, pos);
 
                 if (util.UnicodeId.canContinueId(cp.value)) {
-                    self.cursor += cp.len;
+                    pos += cp.len;
                     continue;
                 }
             }
@@ -733,6 +772,7 @@ pub const Lexer = struct {
             break;
         }
 
+        self.cursor = pos;
         return has_escape;
     }
 
@@ -934,46 +974,48 @@ pub const Lexer = struct {
             7 => {
                 switch (lexeme[0]) {
                     'd' => {
-                        if (std.mem.eql(u8, lexeme, "default")) return .default;
-                        if (std.mem.eql(u8, lexeme, "declare")) return .declare;
+                        if (lexeme[1] == 'e') {
+                            if (lexeme[2] == 'f' and lexeme[3] == 'a' and lexeme[4] == 'u' and lexeme[5] == 'l' and lexeme[6] == 't') return .default;
+                            if (lexeme[2] == 'c' and lexeme[3] == 'l' and lexeme[4] == 'a' and lexeme[5] == 'r' and lexeme[6] == 'e') return .declare;
+                        }
                     },
-                    'e' => if (std.mem.eql(u8, lexeme, "extends")) return .extends,
-                    'f' => if (std.mem.eql(u8, lexeme, "finally")) return .finally,
+                    'e' => if (lexeme[1] == 'x' and lexeme[2] == 't' and lexeme[3] == 'e' and lexeme[4] == 'n' and lexeme[5] == 'd' and lexeme[6] == 's') return .extends,
+                    'f' => if (lexeme[1] == 'i' and lexeme[2] == 'n' and lexeme[3] == 'a' and lexeme[4] == 'l' and lexeme[5] == 'l' and lexeme[6] == 'y') return .finally,
                     'p' => {
-                        if (std.mem.eql(u8, lexeme, "private")) return .private;
-                        if (std.mem.eql(u8, lexeme, "package")) return .package;
+                        if (lexeme[1] == 'r' and lexeme[2] == 'i' and lexeme[3] == 'v' and lexeme[4] == 'a' and lexeme[5] == 't' and lexeme[6] == 'e') return .private;
+                        if (lexeme[1] == 'a' and lexeme[2] == 'c' and lexeme[3] == 'k' and lexeme[4] == 'a' and lexeme[5] == 'g' and lexeme[6] == 'e') return .package;
                     },
                     else => {},
                 }
             },
             8 => {
                 switch (lexeme[0]) {
-                    'a' => if (std.mem.eql(u8, lexeme, "accessor")) return .accessor,
-                    'c' => if (std.mem.eql(u8, lexeme, "continue")) return .@"continue",
-                    'd' => if (std.mem.eql(u8, lexeme, "debugger")) return .debugger,
-                    'f' => if (std.mem.eql(u8, lexeme, "function")) return .function,
+                    'a' => if (lexeme[1] == 'c' and lexeme[2] == 'c' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 's' and lexeme[6] == 'o' and lexeme[7] == 'r') return .accessor,
+                    'c' => if (lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'n' and lexeme[6] == 'u' and lexeme[7] == 'e') return .@"continue",
+                    'd' => if (lexeme[1] == 'e' and lexeme[2] == 'b' and lexeme[3] == 'u' and lexeme[4] == 'g' and lexeme[5] == 'g' and lexeme[6] == 'e' and lexeme[7] == 'r') return .debugger,
+                    'f' => if (lexeme[1] == 'u' and lexeme[2] == 'n' and lexeme[3] == 'c' and lexeme[4] == 't' and lexeme[5] == 'i' and lexeme[6] == 'o' and lexeme[7] == 'n') return .function,
                     else => {},
                 }
             },
             9 => {
                 switch (lexeme[0]) {
-                    'i' => if (std.mem.eql(u8, lexeme, "interface")) return .interface,
-                    'n' => if (std.mem.eql(u8, lexeme, "namespace")) return .namespace,
-                    'p' => if (std.mem.eql(u8, lexeme, "protected")) return .protected,
+                    'i' => if (lexeme[1] == 'n' and lexeme[2] == 't' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 'f' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .interface,
+                    'n' => if (lexeme[1] == 'a' and lexeme[2] == 'm' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 'p' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .namespace,
+                    'p' => if (lexeme[1] == 'r' and lexeme[2] == 'o' and lexeme[3] == 't' and lexeme[4] == 'e' and lexeme[5] == 'c' and lexeme[6] == 't' and lexeme[7] == 'e' and lexeme[8] == 'd') return .protected,
                     else => {},
                 }
             },
             10 => {
                 switch (lexeme[0]) {
                     'i' => {
-                        if (std.mem.eql(u8, lexeme, "instanceof")) return .instanceof;
-                        if (std.mem.eql(u8, lexeme, "implements")) return .implements;
+                        if (lexeme[1] == 'n' and lexeme[2] == 's' and lexeme[3] == 't' and lexeme[4] == 'a' and lexeme[5] == 'n' and lexeme[6] == 'c' and lexeme[7] == 'e' and lexeme[8] == 'o' and lexeme[9] == 'f') return .instanceof;
+                        if (lexeme[1] == 'm' and lexeme[2] == 'p' and lexeme[3] == 'l' and lexeme[4] == 'e' and lexeme[5] == 'm' and lexeme[6] == 'e' and lexeme[7] == 'n' and lexeme[8] == 't' and lexeme[9] == 's') return .implements;
                     },
                     else => {},
                 }
             },
             11 => {
-                if (lexeme[0] == 'c' and std.mem.eql(u8, lexeme, "constructor")) return .constructor;
+                if (lexeme[0] == 'c' and lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 's' and lexeme[4] == 't' and lexeme[5] == 'r' and lexeme[6] == 'u' and lexeme[7] == 'c' and lexeme[8] == 't' and lexeme[9] == 'o' and lexeme[10] == 'r') return .constructor;
             },
             else => {},
         }
@@ -1125,149 +1167,170 @@ pub const Lexer = struct {
         }
     }
 
+    // byte classification for whitespace/comment scanning
+    const ws_class: [256]u8 = blk: {
+        var t: [256]u8 = @splat(0);
+        t[' '] = 1;
+        t['\t'] = 1;
+        t[0x0B] = 1;
+        t[0x0C] = 1;
+        t['\n'] = 2;
+        t['\r'] = 2;
+        t['/'] = 3;
+        t['<'] = 4;
+        t['-'] = 5;
+        for (0x80..256) |i| t[i] = 6;
+        break :blk t;
+    };
+
     inline fn skipWsAndComments(self: *Lexer) LexicalError!void {
         var can_be_html_close_comment = self.cursor == 0 or self.hasTokenFlag(.line_terminator_before);
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
+        const src = self.source;
+        var pos = self.cursor;
 
-            if (std.ascii.isAscii(c)) {
-                @branchHint(.likely);
-
-                switch (c) {
-                    ' ', '\t', '\u{000B}', '\u{000C}' => {
-                        self.cursor += 1;
-                        continue;
-                    },
-                    '\n', '\r' => {
-                        self.setTokenFlag(.line_terminator_before);
-                        can_be_html_close_comment = true;
-                        self.cursor += 1;
-                        continue;
-                    },
-                    '/' => {
-                        const next = self.peek(1);
-                        if (next == '/') {
-                            try self.scanLineComment();
-                            continue;
-                        } else if (next == '*') {
-                            try self.scanBlockComment();
-                            if (self.hasTokenFlag(.line_terminator_before)) can_be_html_close_comment = true;
-                            continue;
-                        }
-                        break;
-                    },
-                    '<' => {
-                        // html-style comments (<!-- ... -->) are only valid in script mode
-                        if (self.source_type == .script) {
-                            const c1 = self.peek(1);
-                            const c2 = self.peek(2);
-                            const c3 = self.peek(3);
-                            if (c1 == '!' and c2 == '-' and c3 == '-') {
-                                try self.scanHtmlComment();
-                                // scanHtmlComment stops before the line terminator (or consumes -->)
-                                continue;
-                            }
-                        }
-                        break;
-                    },
-
-                    '-' => {
-                        // html-style close comment --> is only valid at line start in script mode
-                        // "line start" means start of file or after a line terminator,
-                        // with only whitespace/comments before it.
-                        if (self.source_type == .script and can_be_html_close_comment) {
-                            const c1 = self.peek(1);
-                            const c2 = self.peek(2);
-                            if (c1 == '-' and c2 == '>') {
-                                try self.scanHtmlCloseComment();
-                                continue;
-                            }
-                        }
-                        break;
-                    },
-
-                    else => break,
-                }
-            } else {
-                @branchHint(.unlikely);
-
-                const us_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
-
-                if (us_len > 0) {
+        while (pos < src.len) {
+            switch (ws_class[src[pos]]) {
+                1 => {
+                    pos += 1;
+                },
+                2 => {
                     self.setTokenFlag(.line_terminator_before);
                     can_be_html_close_comment = true;
-                    self.cursor += us_len;
-                    continue;
-                }
+                    pos += 1;
+                },
+                3 => {
+                    self.cursor = pos;
+                    const next = self.peek(1);
+                    if (next == '/') {
+                        try self.scanLineComment();
+                        pos = self.cursor;
+                    } else if (next == '*') {
+                        try self.scanBlockComment();
+                        if (self.hasTokenFlag(.line_terminator_before)) can_be_html_close_comment = true;
+                        pos = self.cursor;
+                    } else break;
+                },
+                4 => {
+                    // html-style comments (<!-- ... -->) are only valid in script mode
+                    if (self.source_type == .script) {
+                        self.cursor = pos;
+                        const c1 = self.peek(1);
+                        const c2 = self.peek(2);
+                        const c3 = self.peek(3);
+                        if (c1 == '!' and c2 == '-' and c3 == '-') {
+                            try self.scanHtmlComment();
+                            pos = self.cursor;
+                            continue;
+                        }
+                    }
+                    break;
+                },
+                5 => {
+                    // html-style close comment --> is only valid at line start in script mode
+                    if (self.source_type == .script and can_be_html_close_comment) {
+                        self.cursor = pos;
+                        const c1 = self.peek(1);
+                        const c2 = self.peek(2);
+                        if (c1 == '-' and c2 == '>') {
+                            try self.scanHtmlCloseComment();
+                            pos = self.cursor;
+                            continue;
+                        }
+                    }
+                    break;
+                },
+                6 => {
+                    @branchHint(.unlikely);
 
-                const cp = try util.Utf.codePointAt(self.source, self.cursor);
+                    const us_len = util.Utf.unicodeSeparatorLen(src, pos);
 
-                if (util.Utf.isMultiByteSpace(cp.value)) {
-                    self.cursor += cp.len;
-                    continue;
-                }
-                break;
+                    if (us_len > 0) {
+                        self.setTokenFlag(.line_terminator_before);
+                        can_be_html_close_comment = true;
+                        pos += us_len;
+                        continue;
+                    }
+
+                    self.cursor = pos;
+                    const cp = try util.Utf.codePointAt(src, pos);
+
+                    if (util.Utf.isMultiByteSpace(cp.value)) {
+                        pos += cp.len;
+                        continue;
+                    }
+                    break;
+                },
+                else => break,
             }
         }
+
+        self.cursor = pos;
     }
 
     /// scans a single-line comment (// ...)
     fn scanLineComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
-        self.cursor += 2; // skip '//'
+        const src = self.source;
+        var pos = self.cursor + 2; // skip '//'
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
-            if (self.isLineTerminator(c)) break;
-            self.cursor += 1;
+        while (pos < src.len) {
+            const c = src[pos];
+            if (c == '\n' or c == '\r') break;
+            if (c == 0xE2 and util.Utf.unicodeSeparatorLen(src, pos) > 0) break;
+            pos += 1;
         }
+
+        self.cursor = pos;
 
         self.comments.append(self.allocator, .{
             .type = .line,
             .start = start,
-            .end = self.cursor,
+            .end = pos,
         }) catch return error.OutOfMemory;
     }
 
     /// scans a multi-line comment (/* ... */)
     fn scanBlockComment(self: *Lexer) LexicalError!void {
         const start = self.cursor;
-        self.cursor += 2; // skip '/*'
+        const src = self.source;
+        var pos = self.cursor + 2; // skip '/*'
 
-        while (self.cursor < self.source.len) {
-            const c = self.source[self.cursor];
+        while (pos < src.len) {
+            const c = src[pos];
             switch (c) {
                 '*' => {
-                    if (self.cursor + 1 < self.source.len and self.source[self.cursor + 1] == '/') {
-                        self.cursor += 2; // skip '*/'
+                    if (pos + 1 < src.len and src[pos + 1] == '/') {
+                        pos += 2; // skip '*/'
+                        self.cursor = pos;
                         self.comments.append(self.allocator, .{
                             .type = .block,
                             .start = start,
-                            .end = self.cursor,
+                            .end = pos,
                         }) catch return error.OutOfMemory;
                         return;
                     }
-                    self.cursor += 1;
+                    pos += 1;
                 },
                 '\n', '\r' => {
                     self.setTokenFlag(.line_terminator_before);
-                    self.cursor += 1;
+                    pos += 1;
                 },
                 0x80...0xFF => {
-                    const lt_len = util.Utf.unicodeSeparatorLen(self.source, self.cursor);
+                    const lt_len = util.Utf.unicodeSeparatorLen(src, pos);
 
                     if (lt_len > 0) {
                         self.setTokenFlag(.line_terminator_before);
-                        self.cursor += lt_len;
+                        pos += lt_len;
                     } else {
-                        self.cursor += 1;
+                        pos += 1;
                     }
                 },
-                else => self.cursor += 1,
+                else => pos += 1,
             }
         }
 
+        self.cursor = pos;
         return error.UnterminatedMultiLineComment;
     }
 
