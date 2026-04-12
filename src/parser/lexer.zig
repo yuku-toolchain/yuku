@@ -760,6 +760,7 @@ pub const Lexer = struct {
             if (c >= 0x80) {
                 @branchHint(.cold);
 
+                self.cursor = pos;
                 const cp = try util.Utf.codePointAt(src, pos);
 
                 if (util.UnicodeId.canContinueId(cp.value)) {
@@ -1251,6 +1252,7 @@ pub const Lexer = struct {
                         continue;
                     }
 
+                    self.cursor = pos;
                     const cp = try util.Utf.codePointAt(src, pos);
 
                     if (util.Utf.isMultiByteSpace(cp.value)) {
