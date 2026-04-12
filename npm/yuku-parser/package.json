@@ -1,6 +1,6 @@
 {
   "name": "yuku-parser",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "High-performance JavaScript/TypeScript parser",
   "license": "MIT",
   "repository": {
@@ -17,16 +17,16 @@
   "main": "index.js",
   "types": "index.d.ts",
   "optionalDependencies": {
-    "@yuku-parser/binding-darwin-arm64": "0.4.4",
-    "@yuku-parser/binding-darwin-x64": "0.4.4",
-    "@yuku-parser/binding-freebsd-x64": "0.4.4",
-    "@yuku-parser/binding-linux-arm-gnu": "0.4.4",
-    "@yuku-parser/binding-linux-arm-musl": "0.4.4",
-    "@yuku-parser/binding-linux-arm64-gnu": "0.4.4",
-    "@yuku-parser/binding-linux-arm64-musl": "0.4.4",
-    "@yuku-parser/binding-linux-x64-gnu": "0.4.4",
-    "@yuku-parser/binding-linux-x64-musl": "0.4.4",
-    "@yuku-parser/binding-win32-arm64": "0.4.4",
-    "@yuku-parser/binding-win32-x64": "0.4.4"
+    "@yuku-parser/binding-darwin-arm64": "0.4.5",
+    "@yuku-parser/binding-darwin-x64": "0.4.5",
+    "@yuku-parser/binding-freebsd-x64": "0.4.5",
+    "@yuku-parser/binding-linux-arm-gnu": "0.4.5",
+    "@yuku-parser/binding-linux-arm-musl": "0.4.5",
+    "@yuku-parser/binding-linux-arm64-gnu": "0.4.5",
+    "@yuku-parser/binding-linux-arm64-musl": "0.4.5",
+    "@yuku-parser/binding-linux-x64-gnu": "0.4.5",
+    "@yuku-parser/binding-linux-x64-musl": "0.4.5",
+    "@yuku-parser/binding-win32-arm64": "0.4.5",
+    "@yuku-parser/binding-win32-x64": "0.4.5"
   }
 }
