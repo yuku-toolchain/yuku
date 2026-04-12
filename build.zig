@@ -54,7 +54,6 @@ pub fn build(b: *std.Build) void {
         .root_module = profiler_module,
     });
 
-
     b.installArtifact(profiler_exe);
 
     const run_cmd = b.addRunArtifact(exe);
@@ -152,4 +151,46 @@ pub fn build(b: *std.Build) void {
 
     const gen_estree_step = b.step("gen-estree-decoder", "Generate decode.js ESTree decoder from AST types");
     gen_estree_step.dependOn(&b.addInstallFile(gen_estree_output, "decode.js").step);
+
+    // c header codegen
+    const gen_c_header_exe = b.addExecutable(.{
+        .name = "gen-c-header",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/gen_c_header.zig"),
+            .target = b.graph.host,
+            .optimize = optimize,
+        }),
+    });
+    gen_c_header_exe.root_module.addImport("parser", parser_module);
+    gen_c_header_exe.root_module.addImport("transfer", ast_transfer_module);
+
+    const run_gen_c_header = b.addRunArtifact(gen_c_header_exe);
+    const gen_c_header_output = run_gen_c_header.captureStdOut(.{});
+
+    const gen_c_header_step = b.step("gen-c-header", "Generate yuku-c.h C header from AST types");
+    gen_c_header_step.dependOn(&b.addInstallFile(gen_c_header_output, "yuku-c.h").step);
+
+    // C shared library
+    const c_lib = b.addLibrary(.{
+        .name = "yuku-c",
+        .linkage = .dynamic,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/parser/capi/root.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const c_transfer_module = b.createModule(.{
+        .root_source_file = b.path("src/parser/napi/transfer.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    c_transfer_module.addImport("parser", parser_module);
+
+    c_lib.root_module.addImport("parser", parser_module);
+    c_lib.root_module.addImport("transfer", c_transfer_module);
+    b.installArtifact(c_lib);
+
+    const c_lib_step = b.step("c-lib", "Build C shared library (libyuku-c)");
+    c_lib_step.dependOn(&c_lib.step);
 }
