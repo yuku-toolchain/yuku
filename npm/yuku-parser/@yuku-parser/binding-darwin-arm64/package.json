@@ -1,6 +1,6 @@
 {
   "name": "@yuku-parser/binding-darwin-arm64",
-  "version": "0.4.4",
+  "version": "0.4.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/yuku-toolchain/yuku.git"
