@@ -177,34 +177,40 @@ pub const SymbolTable = struct {
 
         if (ref_count == 0) return;
 
-        // phase 1: resolve every reference and count hits per symbol
+        // phase 1, resolve every reference
         const resolutions = try allocator.alloc(SymbolId, ref_count);
-        const counts = try allocator.alloc(u32, sym_count);
-        @memset(counts, 0);
-        var unresolved_count: u32 = 0;
 
         for (self.references, 0..) |ref, i| {
-            const resolved = self.resolve(ref.scope, self.getString(ref.name), scope_tree) orelse .none;
-            resolutions[i] = resolved;
-            if (resolved != .none) {
-                counts[@intFromEnum(resolved)] += 1;
-            } else {
-                unresolved_count += 1;
-            }
+            const name = self.getString(ref.name);
+            const pctx = PrehashCtx{ .h = std.hash.Wyhash.hash(0, name) };
+            resolutions[i] = blk: {
+                var it = scope_tree.ancestors(ref.scope);
+                while (it.next()) |ancestor| {
+                    const idx = @intFromEnum(ancestor);
+                    if (self.scope_maps[idx].getAdapted(name, pctx)) |id| break :blk id;
+                    if (self.hoisting_variables[idx].getAdapted(name, pctx)) |id| break :blk id;
+                }
+                break :blk .none;
+            };
         }
 
-        // phase 2: prefix sum to build per-symbol ranges
+        // phase 2, build reverse index using Range.len as both
+        // counter and scatter cursor
         const ranges = try allocator.alloc(Range, sym_count);
-        var offset: u32 = 0;
-        for (0..sym_count) |i| {
-            ranges[i] = .{ .start = offset, .len = counts[i] };
-            offset += counts[i];
+        for (ranges) |*r| r.* = .{ .start = 0, .len = 0 };
+        for (resolutions) |sym_id| {
+            if (sym_id != .none) ranges[@intFromEnum(sym_id)].len += 1;
         }
 
-        // phase 3: scatter reference ids into the grouped array
+        var offset: u32 = 0;
+        for (ranges) |*r| {
+            r.start = offset;
+            offset += r.len;
+            r.len = 0;
+        }
+
         const symbol_refs = try allocator.alloc(ReferenceId, offset);
-        const unresolved = try allocator.alloc(ReferenceId, unresolved_count);
-        @memset(counts, 0); // reuse as write cursors
+        const unresolved = try allocator.alloc(ReferenceId, ref_count - offset);
         var unresolved_cursor: u32 = 0;
 
         for (0..ref_count) |i| {
@@ -212,15 +218,13 @@ pub const SymbolTable = struct {
             const resolved = resolutions[i];
             if (resolved != .none) {
                 const sym_idx = @intFromEnum(resolved);
-                symbol_refs[ranges[sym_idx].start + counts[sym_idx]] = ref_id;
-                counts[sym_idx] += 1;
+                symbol_refs[ranges[sym_idx].start + ranges[sym_idx].len] = ref_id;
+                ranges[sym_idx].len += 1;
             } else {
                 unresolved[unresolved_cursor] = ref_id;
                 unresolved_cursor += 1;
             }
         }
-
-        allocator.free(counts);
 
         self.resolutions = resolutions;
         self.symbol_refs = symbol_refs;
@@ -253,6 +257,15 @@ pub const SymbolTable = struct {
     /// Returns all reference IDs that could not be resolved to any symbol.
     pub inline fn unresolvedReferences(self: SymbolTable) []const ReferenceId {
         return self.unresolved_refs;
+    }
+};
+
+/// Pre-computed hash context for string hash map lookups.
+const PrehashCtx = struct {
+    h: u64,
+    pub fn hash(self: @This(), _: []const u8) u64 { return self.h; }
+    pub fn eql(_: @This(), a: []const u8, b: []const u8) bool {
+        return std.mem.eql(u8, a, b);
     }
 };
 
