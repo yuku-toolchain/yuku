@@ -3,7 +3,7 @@ import path from "node:path";
 import Bun from "bun";
 
 const TEST_SUITE_REPO_URL = "https://github.com/yuku-toolchain/parser-test-suite";
-const INCLUDE_FOLDERS = ["js", "jsx"];
+const INCLUDE_FOLDERS = ["js", "jsx", "ts"];
 const SUITE_DIR = "test/parser/suite";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 

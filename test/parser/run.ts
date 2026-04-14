@@ -45,10 +45,11 @@ const suites: TestSuite[] = [
     expect: "fail",
     lang: ["js"],
     options: { semanticErrors: true },
-    skipOnCI: true,
   },
   { path: "suite/jsx/pass", expect: "snapshot", lang: ["jsx"], options: { semanticErrors: true } },
   { path: "suite/jsx/fail", expect: "fail", lang: ["jsx"] },
+  { path: "suite/ts/pass", expect: "snapshot", lang: ["ts", "tsx"], skipOnCI: true },
+  // { path: "suite/ts/fail", expect: "fail", lang: ["ts", "tsx"] },
   { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true },
   { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true },
   {
