@@ -181,7 +181,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const c_transfer_module = b.createModule(.{
-        .root_source_file = b.path("src/parser/napi/transfer.zig"),
+        .root_source_file = b.path("src/parser/ffi/transfer.zig"),
         .target = target,
         .optimize = optimize,
     });
