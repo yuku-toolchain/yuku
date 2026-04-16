@@ -22,6 +22,7 @@ const parenthesized = @import("parenthesized.zig");
 const patterns = @import("patterns.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
+const ts_types = @import("ts/types.zig");
 
 const ParseExpressionOpts = struct {
     /// whether we are parsing this expression in a cover context.

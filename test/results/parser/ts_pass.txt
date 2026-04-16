@@ -2,7 +2,7 @@ suite/ts/pass
 =============
 Passed:       0/8977 (0.00%)
 Failed:       8977
-AST mismatch: 1855/1855
+AST mismatch: 1728/1728
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -843,6 +843,22 @@ error: Expected ';' after class field, but found 'B'
 
 
 ✗ test/parser/suite/ts/pass/02f4d642b1024044.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | 
+ 4 | export default class C {
+   | ~~~~~~~~~~~~~~~~~~~~~~~~
+ 5 | }
+   | ~ first exported here
+ 6 | 
+ 7 | export default class C {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~
+ 8 | }
+   | ^
+   | ~ exported again here
+   |
+
 ✗ test/parser/suite/ts/pass/02fff8d5a3757968.ts
 error: Expected ')' to close parameter list, but found '?'
    |
@@ -936,6 +952,18 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✗ test/parser/suite/ts/pass/033c41017004b086.ts
 ✗ test/parser/suite/ts/pass/034ca37635d0ffdc.ts
+error: Identifier 'v' has already been declared
+   |
+ 7 | function test1() {
+ 8 |     for (let v; ; ) { var v; }
+   |                           ^
+   |              ~ 'v' was first declared as a variable here
+   |                           ~ cannot be redeclared here
+ 9 | }
+   |
+   = help: Consider removing or renaming this declaration of 'v'
+
+
 ✗ test/parser/suite/ts/pass/0353593f28f8ef9a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -1396,6 +1424,20 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✗ test/parser/suite/ts/pass/052828046408782c.ts
 ✗ test/parser/suite/ts/pass/05296599e9fb6537.ts
 ✗ test/parser/suite/ts/pass/052e3f2c3ddcf578.ts
+error: Identifier 'Markup' has already been declared
+   |
+ 1 | // @target: es2015
+ 2 | var Markup;
+   |     ~~~~~~ 'Markup' was first declared as a variable here
+ 3 | 
+ 4 | class Markup {
+   |       ^^^^^^
+   |       ~~~~~~ cannot be redeclared here
+ 5 |     constructor() {
+   |
+   = help: Consider removing or renaming this declaration of 'Markup'
+
+
 ✗ test/parser/suite/ts/pass/053778ba966afd25.module.ts
 ✗ test/parser/suite/ts/pass/054a64d3925a96d7.ts
 error: Expected ';' after class field, but found 'x'
@@ -2804,6 +2846,16 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/09a1d6c3a37de1a1.ts
+error: Cannot use 'export' declaration outside a module
+   |
+ 2 | {
+ 3 |    export function bar() {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |    }
+   | ^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/09a41ab3d4412e71.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -3612,6 +3664,14 @@ error: 'const' declarations must be initialized
 
 
 ✗ test/parser/suite/ts/pass/0c05eb90456d1bdc.ts
+error: Duplicate label 'target'
+   |
+ 5 | while (true) {
+ 6 |   target:
+   |   ^^^^^^
+ 7 |   while (true) {
+   |
+
 ✗ test/parser/suite/ts/pass/0c0b1e3c55bcb619.module.ts
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -3690,6 +3750,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0c63afab136ff78a.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | eval = 1;
+   | ^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/0c65394c25133f00.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'B'
    |
@@ -3758,6 +3825,17 @@ error: Expected '{' to start function body, but found ':'
 
 ✗ test/parser/suite/ts/pass/0c87140e462cd8e4.ts
 ✗ test/parser/suite/ts/pass/0c9d889b961f6912.module.ts
+error: Duplicate export of 'default'
+   |
+ 6 | 
+ 7 | export default function () { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 8 | export { default } from './hi'
+   |          ^^^^^^^
+   |          ~~~~~~~ exported again here
+ 9 | export { aa as default } from './hi'
+   |
+
 ✗ test/parser/suite/ts/pass/0cb1b3df33ce7aef.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -3913,6 +3991,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0d2185396fa29978.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | var v = function f(eval) {
+   |                    ^^^^
+ 5 | };
+   |
+
 ✗ test/parser/suite/ts/pass/0d29438b308e4096.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -4328,6 +4414,16 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/0ed8e6225a4afccb.module.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 2 | export function foo() {
+ 3 |    export function bar() {
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |    }
+   | ^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/0edb7ea5a53e55d6.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -4393,6 +4489,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0f09e010e5d84467.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 3 | 
+ 4 | ++eval;
+   | ^^^^^^
+ 5 | --eval;
+   |
+
 ✗ test/parser/suite/ts/pass/0f0a6397402e703b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IData'
    |
@@ -4526,6 +4630,15 @@ error: 'const' declarations must be initialized
 
 
 ✗ test/parser/suite/ts/pass/0f4c14b6701b04d0.ts
+error: Label 'target' does not denote an iteration statement
+   |
+ 2 | target:
+ 3 |   continue target;
+   |   ^^^^^^^^^^^^^^^^
+   |
+   = help: A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement
+
+
 ✗ test/parser/suite/ts/pass/0f7e8d9557f0fa7f.ts
 error: Expected ';' after class field, but found 'H'
    |
@@ -4694,6 +4807,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0ff63a135e127a5c.ts
+error: Illegal continue statement
+   |
+ 5 |     case 5:
+ 6 |         continue;
+   |         ^^^^^^^^^
+ 7 | }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/10032d5d16e68d0b.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -4739,6 +4862,22 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/1028e105dfe0d9bc.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | 
+ 4 | export default function f() {
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 5 | }
+   | ~ first exported here
+ 6 | 
+ 7 | export default function f() {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 8 | }
+   | ^
+   | ~ exported again here
+   |
+
 ✗ test/parser/suite/ts/pass/102f0828fb7dddb9.ts
 ✗ test/parser/suite/ts/pass/1032320de1673334.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -5540,6 +5679,15 @@ error: 'const' declarations must be initialized
 
 ✗ test/parser/suite/ts/pass/127e962c06b64a61.ts
 ✗ test/parser/suite/ts/pass/1291f5d5e9a6dbd4.ts
+error: Illegal break statement
+   |
+ 1 | // @target: es2015
+ 2 | break;
+   | ^^^^^^
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
 ✗ test/parser/suite/ts/pass/129ba87b3767828b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -5564,6 +5712,16 @@ error: Expected ';' after class field, but found '['
 
 
 ✗ test/parser/suite/ts/pass/12f22188052c4702.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/12f2b6ba4d54a870.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -6230,6 +6388,17 @@ error: Expected ';' after class field, but found 'x'
 
 ✗ test/parser/suite/ts/pass/152655c47dd6cdee.ts
 ✗ test/parser/suite/ts/pass/15371163f95d91e1.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default 0;
+   | ~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default function() {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/1541e016f58a1bb7.module.ts
 error: Expected declaration after 'export', but found 'enum'
    |
@@ -6309,6 +6478,20 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/158e388406e2e3b7.ts
+error: Identifier 'x' has already been declared
+   |
+ 2 | {
+ 3 |     let x;
+   |         ~ 'x' was first declared as a variable here
+ 4 |     {
+ 5 |         var x = 1;
+   |             ^
+   |             ~ cannot be redeclared here
+ 6 |     }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/ts/pass/159479b4eaab1f39.ts
 ✗ test/parser/suite/ts/pass/15963d4fdbcc2629.ts
 error: Expected ';' after class field, but found ':'
@@ -7503,6 +7686,13 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/196a813ab9a08ea0.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | var v = { set foo(eval) { } }
+   |                   ^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/1970d67538ca7716.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -7810,6 +8000,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1a964a2c4756dc39.ts
+error: Private field '#method' must be declared in an enclosing class
+   |
+10 | console.log(C.getInstance().getField());
+11 | C.getInstance().#method; // Error
+   |                 ^^^^^^^
+12 | C.getInstance().#field; // Error
+   |
+
 ✗ test/parser/suite/ts/pass/1a9a8faf00041376.ts
 ✗ test/parser/suite/ts/pass/1a9f5f182faeff58.ts
 error: Expected ';' after class field, but found ':'
@@ -8615,6 +8813,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/1d376b616228a05f.ts
 ✗ test/parser/suite/ts/pass/1d3d5d75833ab052.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 3 | class test {
+ 4 |     constructor (static) { }
+   |                  ^^^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/1d481838779ddba2.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
@@ -10308,6 +10514,16 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/22c720a519ecf008.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 7 | class C extends Base {
+ 8 |     [super.bar()]() { }
+   |      ^^^^^^^^^
+ 9 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/22c7559c26cd9965.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'connectmodule'
    |
@@ -11180,6 +11396,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/257c2a538ca20656.module.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+26 | /// shadowed arguments
+27 | function f1(arguments, ...a) {
+   |             ^^^^^^^^^
+28 | }
+   |
+
 ✗ test/parser/suite/ts/pass/257f4b2fffdb7735.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -13360,7 +13584,23 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/2c82b050900068c0.ts
+error: Private field '#method' must be declared in an enclosing class
+   |
+10 | console.log(C.getClass().getField());
+11 | C.getClass().#method; // Error
+   |              ^^^^^^^
+12 | C.getClass().#field; // Error
+   |
+
 ✗ test/parser/suite/ts/pass/2c84337734f4a8c5.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | function f(eval) {
+   |            ^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/2c8555978ed9dc76.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -13567,6 +13807,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/2d6cbe29890859ee.module.ts
+error: 'with' statements are not allowed in strict mode
+   |
+ 2 | "use strict";
+ 3 | with (a) {
+   | ^^^^^^^^^^^
+ 4 | }
+   | ^
+   |
+
 ✗ test/parser/suite/ts/pass/2d78a74878ec1ebc.ts
 error: Expected ')' after method parameters, but found ':'
    |
@@ -13577,6 +13826,18 @@ error: Expected ')' after method parameters, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/2d7afd9d26731334.ts
+error: Identifier 'a' has already been declared
+   |
+ 2 | 
+ 3 | function f0(a, [a, [b]], {b}) { }
+   |                 ^
+   |             ~ 'a' was first declared as a parameter here
+   |                 ~ cannot be redeclared here
+ 4 | function f1([a, a]) { }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/ts/pass/2d7b656f7e2c55bd.ts
 ✗ test/parser/suite/ts/pass/2d7cf33c7d69558b.ts
 ✗ test/parser/suite/ts/pass/2d7fad4bbcc2a34a.ts
@@ -13880,6 +14141,14 @@ error: Expected ')' after method parameters, but found ':'
 
 ✗ test/parser/suite/ts/pass/2e2d3854ab2da4b9.ts
 ✗ test/parser/suite/ts/pass/2e2ffd4369575eef.ts
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 2 | // @target: es5, es2015
+ 3 | const a = new.target;
+   |           ^^^^^^^^^^
+ 4 | const b = () => new.target;
+   |
+
 ✗ test/parser/suite/ts/pass/2e3afd4beae14763.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -15607,6 +15876,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/334202a257523643.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 4 | class C {
+ 5 |     f(arguments) {
+   |       ^^^^^^^^^
+ 6 |         var a = () => arguments;
+   |
+
 ✗ test/parser/suite/ts/pass/3349572b26680fc2.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -16243,6 +16520,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/3536849d391da08d.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+10 |             function inner() {
+11 |                 super.sayHello();
+   |                 ^^^^^^^^^^^^^^
+12 |             }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/353c10dc8d526c39.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -16927,6 +17214,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/37903a588d3e49f0.module.ts
+error: 'package' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | "use strict"
+ 3 | import * as package from "./1"
+   |             ^^^^^^^
+ 4 | import {foo as private} from "./1"
+   |
+
 ✗ test/parser/suite/ts/pass/3798743df342c94e.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -16950,6 +17245,18 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/37ac156c7fbd5ee4.module.ts
+error: Identifier 'a' has already been declared
+   |
+ 3 | "use strict"
+ 4 | function f0(a, [a, [b]], {b}) { }
+   |                 ^
+   |             ~ 'a' was first declared as a parameter here
+   |                 ~ cannot be redeclared here
+ 5 | function f1([a, a]) { }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/ts/pass/37b2f4b2b3688ed6.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -17005,6 +17312,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✗ test/parser/suite/ts/pass/37d6c90a51416a71.ts
 ✗ test/parser/suite/ts/pass/37dd345a66f22af2.ts
+error: Duplicate label 'target'
+   |
+ 3 | while (true) {
+ 4 |   target:
+   |   ^^^^^^
+ 5 |   while (true) {
+   |
+
 ✗ test/parser/suite/ts/pass/37df90b8eb4efba0.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -17534,6 +17849,16 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/3a0e45519904869b.ts
+error: Illegal break statement
+   |
+ 7 | // naked break not allowed
+ 8 | break;
+   | ^^^^^^
+ 9 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
 ✗ test/parser/suite/ts/pass/3a1d201f17b32701.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'TestTscEdit'
    |
@@ -19169,6 +19494,13 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/3f015840dca0db8d.module.ts
+error: 'yield' is reserved in strict mode and cannot be used as an identifier
+   |
+ 2 | "use strict";
+ 3 | yield(foo);
+   | ^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/3f1774e9702f6aeb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -20002,6 +20334,14 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/419ed0aaa5ff7c38.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // Should be an error
+ 4 | for (let let of [1,2,3]) {}
+   |          ^^^
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/41aa6401e2979187.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Base'
    |
@@ -20532,6 +20872,17 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/4357127d6a7ebafa.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | const foo = 1
+ 4 | export default foo
+   | ~~~~~~~~~~~~~~~~~~ first exported here
+ 5 | export default class Foo {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 6 | 
+   |
+
 ✗ test/parser/suite/ts/pass/435cf26cb52b4903.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'InexactOptionals'
    |
@@ -20892,6 +21243,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/447eebd15f70c46d.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 6 | class D extends C {
+ 7 |     static c = super();
+   |                ^^^^^^^
+ 8 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/449700773f14a53c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -21397,6 +21758,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4615a87a28f65d84.ts
+error: Duplicate label 'target'
+   |
+ 2 | target:
+ 3 | target:
+   | ^^^^^^
+ 4 | while (true) {
+   |
+
 ✗ test/parser/suite/ts/pass/46186e4c55c6605f.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -21488,6 +21857,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/467104d2ed9fdabe.module.ts
+error: 'export' declaration may only appear at the top level
+   |
+ 3 | export function foo() {
+ 4 |    export var x = this;
+   |    ^^^^^^^^^^^^^^^^^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/467a77cb53a5f247.ts
 ✗ test/parser/suite/ts/pass/4681c0bd4d890351.ts
 ✗ test/parser/suite/ts/pass/468a5c79239d5c3a.ts
@@ -21804,6 +22181,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/47807c6ae2571454.module.ts
+error: Deleting a variable in strict mode is not allowed
+   |
+ 3 | var a;
+ 4 | delete a;
+   | ^^^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/47822a4e7e2a5168.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'X'
    |
@@ -22025,6 +22409,14 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/48322585650cd3f8.ts
+error: Cannot break to label 'target' across function boundaries
+   |
+ 5 |     while (true) {
+ 6 |       break target;
+   |       ^^^^^^^^^^^^^
+ 7 |     }
+   |
+
 ✗ test/parser/suite/ts/pass/48367c8bdf6f1ad9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -22785,6 +23177,21 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4a8d51db37175e4b.ts
+error: Identifier 'b' has already been declared
+   |
+ 8 | class C {}
+ 9 | (({ [class extends C { static x = 1 }.x]: b = "" }) => { var C; })();
+   |                                           ~ 'b' was first declared as a class here
+10 | 
+11 | const x = "";
+12 | (({ [class extends C { static x = 1 }.x]: b = "" }, d = x) => { var x; })();
+   |                                           ^
+   |                                           ~ cannot be redeclared here
+13 | 
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✗ test/parser/suite/ts/pass/4a9004f5d7772ece.ts
 ✗ test/parser/suite/ts/pass/4a9450d42bf7f35a.ts
 error: Expected ']' after computed property key, but found ':'
@@ -23748,6 +24155,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/4e0c6094a2930bf0.ts
 ✗ test/parser/suite/ts/pass/4e13c91b63b36440.ts
+error: Duplicate label 'target'
+   |
+ 4 | target:
+ 5 | target:
+   | ^^^^^^
+ 6 | while (true) {
+   |
+
 ✗ test/parser/suite/ts/pass/4e160c2d1e6b1652.ts
 error: Expected ',' or '}' in object, but found '?'
    |
@@ -24391,6 +24806,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4fbe0b328fa8af31.ts
+error: 'await using' is not allowed at the top level of a script
+   |
+ 6 | 
+ 7 | await using x = null;
+   | ^^^^^^^^^^^^^^^^^^^^^
+ 8 | 
+   |
+
 ✗ test/parser/suite/ts/pass/4fbf108370bba7ec.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Mxs'
    |
@@ -25305,6 +25728,16 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/5286e2bbaba0939b.ts
+error: Illegal break statement
+   |
+ 3 |   function f() {
+ 4 |     break;
+   |     ^^^^^^
+ 5 |   }
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
 ✗ test/parser/suite/ts/pass/5297467285a5e33c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Person'
    |
@@ -25917,6 +26350,16 @@ error: Expected ')' to close parameter list, but found ':'
 
 ✗ test/parser/suite/ts/pass/54cf019adb052da9.ts
 ✗ test/parser/suite/ts/pass/54d7e58a5dcb0207.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 4 | function foo() {
+ 5 |     super(value => String(value));
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 6 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/54d8822fc997b8ba.ts
 error: Expected ';' after class field, but found 'f1'
    |
@@ -26191,6 +26634,19 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/55bd9f7879b03e2c.module.ts
+error: Identifier 'a' has already been declared
+   |
+ 2 | //@module: commonjs
+ 3 | export var a = 10;
+   |            ~ 'a' was first declared as a variable here
+ 4 | export function a() {
+   |                 ^
+   |                 ~ cannot be redeclared here
+ 5 | }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/ts/pass/55bde1b2bc5ace0b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -26613,6 +27069,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/56d217602897bdd3.ts
 ✗ test/parser/suite/ts/pass/56d4a512d86ed210.ts
+error: Use of undefined label 'target'
+   |
+ 2 | while (true) {
+ 3 |   continue target;
+   |   ^^^^^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✗ test/parser/suite/ts/pass/56e1c080a70c37f0.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -26840,6 +27304,13 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/57658e1e4c0e3966.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | arguments = 1;
+   | ^^^^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/576c4d2ddf2cee8a.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'ExtendedService'
    |
@@ -26906,6 +27377,20 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/57a14171580f45d4.module.ts
+error: Identifier 'Foo' has already been declared
+   |
+ 2 | // GH #38532
+ 3 | import Foo from "blah";
+   |        ~~~ 'Foo' was first declared as a import here
+ 4 | 
+ 5 | export function Foo() { }
+   |                 ^^^
+   |                 ~~~ cannot be redeclared here
+ 6 | 
+   |
+   = help: Consider removing or renaming this declaration of 'Foo'
+
+
 ✗ test/parser/suite/ts/pass/57a40752fc53c23c.module.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -27270,6 +27755,16 @@ error: Expected ';' after class field, but found '<'
 
 ✗ test/parser/suite/ts/pass/58d6ae53d33ac379.module.ts
 ✗ test/parser/suite/ts/pass/58df139dea95360b.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+17 |     p1: function () {
+18 |         super.method();
+   |         ^^^^^^^^^^^^
+19 |     },
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/58e3251cb68c971a.ts
 error: Expected ';' after class field, but found '_t'
    |
@@ -28606,6 +29101,21 @@ error: Expected ')' to close parameter list, but found ':'
 
 ✗ test/parser/suite/ts/pass/5dba561b66fae533.ts
 ✗ test/parser/suite/ts/pass/5dc29d782d6c8b28.module.ts
+error: Identifier 'C' has already been declared
+   |
+ 7 | // @fileName: /node_modules/projB/index.ts
+ 8 | export class C {}
+   |              ~ 'C' was first declared as a class here
+ 9 | 
+10 | // @fileName: /a.ts
+11 | import { C } from "projB";
+   |          ^
+   |          ~ cannot be redeclared here
+12 | 
+   |
+   = help: Consider removing or renaming this declaration of 'C'
+
+
 ✗ test/parser/suite/ts/pass/5dc88c6013adfd3d.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -29684,6 +30194,16 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/61819de3b56bf114.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function bar() { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | export default class C {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+   |
+
 ✗ test/parser/suite/ts/pass/618ae869d8084357.ts
 error: 'enum' is reserved and cannot be used as a binding identifier
    |
@@ -31975,6 +32495,22 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✗ test/parser/suite/ts/pass/692b9a847c1149ab.ts
 ✗ test/parser/suite/ts/pass/6930a1cddc118f91.ts
 ✗ test/parser/suite/ts/pass/693aaecb1cfb3183.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default {
+   | ~~~~~~~~~~~~~~~~~
+ 4 |     uhoh: "another default",
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 5 | };
+   | ~~ first exported here
+ 6 | 
+ 7 | export default function Foo() { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 8 | 
+   |
+
 ✗ test/parser/suite/ts/pass/695865ed06d9cfda.ts
 ✗ test/parser/suite/ts/pass/6966b5316760269b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -33550,6 +34086,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/6e1ee2dd504b97ce.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | eval++;
+   | ^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/6e1f7e2d20701cd1.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -34194,6 +34737,19 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/702b9bd383c586b7.ts
+error: Identifier 'v' has already been declared
+   |
+ 1 | //@target: ES6
+ 2 | for (let v of []) {
+   |          ~ 'v' was first declared as a variable here
+ 3 |     var v;
+   |         ^
+   |         ~ cannot be redeclared here
+ 4 | }
+   |
+   = help: Consider removing or renaming this declaration of 'v'
+
+
 ✗ test/parser/suite/ts/pass/702ba49e53144249.module.ts
 ✗ test/parser/suite/ts/pass/702e11cb3030282f.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -34240,6 +34796,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/70425adb194f08f2.ts
+error: Cannot continue to label 'target' across function boundaries
+   |
+ 7 |     while (true) {
+ 8 |       continue target;
+   |       ^^^^^^^^^^^^^^^^
+ 9 |     }
+   |
+
 ✗ test/parser/suite/ts/pass/7044371b33ea86d6.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
@@ -34561,6 +35125,19 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7153ac1b9d9e1e40.ts
+error: Identifier 'foo' has already been declared
+   |
+ 1 | // @target: es2015
+ 2 | class foo { };
+   |       ~~~ 'foo' was first declared as a class here
+ 3 | function foo() {}
+   |          ^^^
+   |          ~~~ cannot be redeclared here
+ 4 | 
+   |
+   = help: Consider removing or renaming this declaration of 'foo'
+
+
 ✗ test/parser/suite/ts/pass/7155cac4ad6f46a2.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -36009,6 +36586,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/75acb3e9118d09ee.ts
 ✗ test/parser/suite/ts/pass/75bc58e2025f6d79.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+17 | throw NotEarlyError;
+18 | var public = 1;
+   |     ^^^^^^
+19 | 
+   |
+
 ✗ test/parser/suite/ts/pass/75c1500d8a1d1f82.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -37480,6 +38065,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7a283c13f0fcce22.ts
+error: Illegal continue statement
+   |
+ 3 |   function f() {
+ 4 |     continue;
+   |     ^^^^^^^^^
+ 5 |   }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/7a2fcbb58bee292d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -37650,6 +38245,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7ab551d56cc54e08.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 4 | }
+ 5 | catch(eval) {
+   |       ^^^^
+ 6 | }
+   |
+
 ✗ test/parser/suite/ts/pass/7ab78bd402f16816.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -37889,6 +38492,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7b28736bed0ab406.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | let x = 50, let = 5;
+   |             ^^^
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/7b33bb8848e7340b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -37985,6 +38596,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7b8feaac9c98b7d9.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/7b8ff371f637765d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Record2'
    |
@@ -39463,6 +40084,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✗ test/parser/suite/ts/pass/805d12c9fc2051b5.ts
 ✗ test/parser/suite/ts/pass/805e7d096c6afb53.ts
 ✗ test/parser/suite/ts/pass/8067686818574509.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | var eval;
+   |     ^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/806794234614669f.tsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -40550,6 +41178,16 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/8447f2a7404b4c89.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 4 | class C extends Base {
+ 5 |     [(super(), "prop")]() { }
+   |       ^^^^^^^
+ 6 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/844f3f5f2f208984.ts
 ✗ test/parser/suite/ts/pass/8451c9f240cfc0fa.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -40710,6 +41348,14 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/84cdbcc1411d77fe.module.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 5 | class test {
+ 6 |     constructor (static) { }
+   |                  ^^^^^^
+ 7 | }
+   |
+
 ✗ test/parser/suite/ts/pass/84d344795ce1a4c3.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -40851,6 +41497,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✗ test/parser/suite/ts/pass/8540c79232d68bf9.ts
 ✗ test/parser/suite/ts/pass/8553f3ab261adeff.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 2 | "use strict"
+ 3 | var [public] = [1];
+   |      ^^^^^^
+ 4 | var { x: public } = { x: 1 };
+   |
+
 ✗ test/parser/suite/ts/pass/8558a9f51bd7e915.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -41326,6 +41980,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/86ba8aa30a461081.ts
+error: Yield expression is not allowed in formal parameters
+   |
+ 3 |   // 'yield' here is an identifier, and not a yield expression.
+ 4 |   function*foo(a = yield) {
+   |                    ^^^^^
+ 5 |   }
+   |
+
 ✗ test/parser/suite/ts/pass/86bb7b2e3ad3664e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'K'
    |
@@ -41382,6 +42044,14 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/870fdd42cafb4a26.ts
+error: Use of undefined label 'target'
+   |
+ 2 | while (true) {
+ 3 |   break target;
+   |   ^^^^^^^^^^^^^
+ 4 | }
+   |
+
 ✗ test/parser/suite/ts/pass/872acdb7578f9dfb.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -42017,6 +42687,28 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/88cb205e14e0cd7b.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default function Foo (){
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 4 |     
+   | ~~~~~
+ 5 | }
+   | ~ first exported here
+ 6 | 
+ 7 | export default {
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~
+ 8 |     uhoh: "another default",
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 9 | };
+   | ^^
+   | ~~ exported again here
+10 | 
+   |
+
 ✗ test/parser/suite/ts/pass/88cc835ce77dad1f.ts
 ✗ test/parser/suite/ts/pass/88cd15e9e53228fc.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -42236,6 +42928,19 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/899cae5fbcd64bc6.ts
+error: Identifier 'e' has already been declared
+   |
+ 5 | 
+ 6 | } catch(e) {
+   |         ~ 'e' was first declared as a parameter here
+ 7 |     const e = null;
+   |           ^
+   |           ~ cannot be redeclared here
+ 8 | }
+   |
+   = help: Consider removing or renaming this declaration of 'e'
+
+
 ✗ test/parser/suite/ts/pass/89a90d87d03c0820.ts
 error: The only valid meta property for 'new' is 'new.target'
    |
@@ -43382,6 +44087,19 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8d63ec9e5abba293.ts
+error: Identifier 'v' has already been declared
+   |
+ 1 | //@target: ES6
+ 2 | for (let v of []) {
+   |          ~ 'v' was first declared as a variable here
+ 3 |     var v = 0;
+   |         ^
+   |         ~ cannot be redeclared here
+ 4 | }
+   |
+   = help: Consider removing or renaming this declaration of 'v'
+
+
 ✗ test/parser/suite/ts/pass/8d73f821d5599b70.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -43839,6 +44557,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8e958aa177b9829f.ts
+error: Private field '#nope' must be declared in an enclosing class
+   |
+ 2 | 
+ 3 | exports.#nope = 1;           // Error (outside class body)
+   |         ^^^^^
+ 4 | function A() { }
+   |
+
 ✗ test/parser/suite/ts/pass/8e987dc2be37a901.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -43911,6 +44637,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/8ee313bda63ce6dd.module.tsx
 ✗ test/parser/suite/ts/pass/8ee7307933c57819.ts
+error: 'public' is reserved in strict mode and cannot be used as an identifier
+   |
+ 2 | class C {
+ 3 |     [public]() { }
+   |      ^^^^^^
+ 4 | }
+   |
+
 ✗ test/parser/suite/ts/pass/8ee760d17bd140bd.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -43978,6 +44712,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8efc6c63af2a3905.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | let x = 50, let = 5;
+   |             ^^^
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/8f04e7247e654a5f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Sequence'
    |
@@ -44278,6 +45020,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/8f98fe5bf13b7281.module.tsx
 ✗ test/parser/suite/ts/pass/8fbab75776366129.ts
+error: Illegal break statement
+   |
+ 4 | // naked break not allowed
+ 5 | break;
+   | ^^^^^^
+ 6 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
 ✗ test/parser/suite/ts/pass/8fc277199bec892d.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -45107,6 +45859,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/927748d11d85014e.ts
+error: Illegal continue statement
+   |
+ 3 |   default:
+ 4 |     continue;
+   |     ^^^^^^^^^
+ 5 | }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/927d059da0f9ccba.ts
 ✗ test/parser/suite/ts/pass/9281ee6ca57d95f0.ts
 ✗ test/parser/suite/ts/pass/9286281dcdaafa16.ts
@@ -45331,6 +46093,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/93621a6eabf6fb18.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 1 | //@target: ES6
+ 2 | for (var a = 1 of X) {
+   |          ^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/ts/pass/9366df311d97f1b8.ts
 ✗ test/parser/suite/ts/pass/93777bc6c214c974.ts
 error: Expected ';' after class field, but found ':'
@@ -46720,6 +47490,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/97d35f8dbb14a4b0.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 4 | class C extends Base {
+ 5 |     [(super(), "prop")]() { }
+   |       ^^^^^^^
+ 6 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/97d52ef48fa09743.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -47484,6 +48264,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/99fedadb9eb4543e.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // Should be an error
+ 4 | for (let let of [1,2,3]) {}
+   |          ^^^
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/9a00fcdffeeb7c1e.tsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
    |
@@ -48850,6 +49638,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/9e5cb38a5f5d5047.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/9e70015cc2bc40cd.ts
 ✗ test/parser/suite/ts/pass/9e72e404a790b730.module.ts
 error: Expected declaration after 'export', but found 'type'
@@ -50496,6 +51294,13 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/a3d03aca539b4e16.module.ts
+error: 'static' is reserved in strict mode and cannot be used as an identifier
+   |
+ 5 | foo1();
+ 6 | static();
+   | ^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/a3d3a0a87a457c12.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -50715,6 +51520,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a4776496a3fc1606.ts
+error: Illegal continue statement
+   |
+ 1 | // @target: es2015
+ 2 | continue;
+   | ^^^^^^^^^
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/a47b559437eab0f9.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -50892,6 +51706,14 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/a4edcdea780301ad.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 5 | class test {
+ 6 |     constructor (static) { }
+   |                  ^^^^^^
+ 7 | }
+   |
+
 ✗ test/parser/suite/ts/pass/a4f0048c633232f3.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -51199,6 +52021,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a5f9c2a73058382a.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+17 |     p1: function () {
+18 |         super.method();
+   |         ^^^^^^^^^^^^
+19 |     },
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/a604fe4af0638f51.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -51939,6 +52771,17 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/a8d30e72e68fb2c6.ts
+error: Identifier 'v' has already been declared
+   |
+ 1 | //@target: ES6
+ 2 | for (let [v, v] of [[]]) {}
+   |              ^
+   |           ~ 'v' was first declared as a variable here
+   |              ~ cannot be redeclared here
+   |
+   = help: Consider removing or renaming this declaration of 'v'
+
+
 ✗ test/parser/suite/ts/pass/a8d4c633710a83a0.ts
 ✗ test/parser/suite/ts/pass/a8d5c9fd10b14f49.module.ts
 error: Expected '{' to start function body, but found ':'
@@ -53172,6 +54015,19 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/ad01171333d96a98.ts
+error: Identifier 'var1' has already been declared
+   |
+ 3 | // Errors: redeclaration
+ 4 | let var1 = 0;
+   |     ~~~~ 'var1' was first declared as a variable here
+ 5 | let var1 = 0; // error
+   |     ^^^^
+   |     ~~~~ cannot be redeclared here
+ 6 | 
+   |
+   = help: Consider removing or renaming this declaration of 'var1'
+
+
 ✗ test/parser/suite/ts/pass/ad0694b5bf8229b3.ts
 ✗ test/parser/suite/ts/pass/ad1a88f425314bab.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'MorphTuple'
@@ -54259,6 +55115,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b11f9ce81fa5fd63.ts
+error: Cannot break to label 'target' across function boundaries
+   |
+ 7 |     while (true) {
+ 8 |       break target;
+   |       ^^^^^^^^^^^^^
+ 9 |     }
+   |
+
 ✗ test/parser/suite/ts/pass/b129ece671d68195.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDef'
    |
@@ -54327,6 +55191,14 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/b178f8990ade6f95.ts
+error: for-in/of loop variable declaration may not have an initializer
+   |
+ 1 | //@target: ES5, ES2015
+ 2 | for (var a = 1 of X) {
+   |          ^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/ts/pass/b1794f4577729dee.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -54944,6 +55816,16 @@ error: Expected ')' after method parameters, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/b338dd29b0fe5641.ts
+error: Illegal break statement
+   |
+ 7 | // naked break not allowed
+ 8 | break;
+   | ^^^^^^
+ 9 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
 ✗ test/parser/suite/ts/pass/b346500fc8619ce8.ts
 error: Expected ')' after method parameters, but found ':'
    |
@@ -56184,6 +57066,14 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/b6f4760035f77cd7.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | const x = 50, let = 5;
+   |               ^^^
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/b70180a6c5f7a128.ts
 ✗ test/parser/suite/ts/pass/b70c7d10161cc3cf.tsx
 error: Invalid character at start of identifier
@@ -56341,6 +57231,16 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/b78a65906332d71a.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 9 |     // use of super in static properties initializers.
+10 |     [super.bar()]() { }
+   |      ^^^^^^^^^
+11 | }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/b78e4f2282d86fb1.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -56581,6 +57481,18 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b83efdc85b59d01b.ts
+error: A switch statement can only have one default clause
+   |
+ 6 |         case 2:
+ 7 |         default:    // No issues.
+   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 8 |             break;
+   | ~~~~~~~~~~~~~~~~~~ first default defined here
+ 9 |         default:    // Error; second 'default' clause.
+   |         ^^^^^^^^
+10 |         default:    // Error; third 'default' clause.
+   |
+
 ✗ test/parser/suite/ts/pass/b844d484c6b6296a.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -56917,6 +57829,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b922d8c2fd4c3c27.ts
+error: Illegal continue statement
+   |
+ 3 |     if (true) {
+ 4 |         continue;
+   |         ^^^^^^^^^
+ 5 |     }
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/b923df8dd2ff3712.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Callable'
    |
@@ -57180,6 +58102,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/b9eb48b4a548ab66.ts
 ✗ test/parser/suite/ts/pass/b9f5db097d266b11.ts
+error: Private fields cannot be deleted
+   |
+ 6 |     constructor() {
+ 7 |         delete this.#v; // Error: The operand of a delete operator cannot be a private name.
+   |         ^^^^^^^^^^^^^^
+ 8 |     }
+   |
+
 ✗ test/parser/suite/ts/pass/b9f8a85870e2e61e.module.ts
 error: Expected declaration after 'export', but found 'type'
    |
@@ -57598,6 +58528,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/bb2899ee75af6ffb.ts
+error: Cannot continue to label 'TWO' across function boundaries
+   |
+ 6 |   var x = () => {
+ 7 |     continue TWO;
+   |     ^^^^^^^^^^^^^
+ 8 |   }
+   |
+
 ✗ test/parser/suite/ts/pass/bb2ce7fee4b980b4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Guid'
    |
@@ -58617,6 +59555,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/be42e965c0383c62.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 8 |     static arrowFunctionBoundary = () => super.f + 1;
+ 9 |     static functionExprBoundary = function () { return super.f + 2 };
+   |                                                        ^^^^^^^
+10 |     static classExprBoundary = class { a = super.f + 3 };
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/be4ad351a930e0b8.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -59040,6 +59988,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/bf9d28c442102332.ts
+error: Yield expression is not allowed in formal parameters
+   |
+ 1 | // @target: es6
+ 2 | function*foo(a = yield) {
+   |                  ^^^^^
+ 3 | }
+   |
+
 ✗ test/parser/suite/ts/pass/bfab7ff7c1b7a53d.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -59617,6 +60573,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c12a14bf698f9df2.ts
+error: Illegal break statement
+   |
+ 7 | // naked break not allowed
+ 8 | break;
+   | ^^^^^^
+ 9 | 
+   |
+   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
+
+
 ✗ test/parser/suite/ts/pass/c12db8e7fb7336aa.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -60182,6 +61148,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/c29f8fa19d187426.ts
 ✗ test/parser/suite/ts/pass/c2a2602f3ebf23bb.module.ts
+error: 'public' is reserved in strict mode and cannot be used as a binding identifier
+   |
+19 | throw NotEarlyError;
+20 | var public = 1;
+   |     ^^^^^^
+21 | 
+   |
+
 ✗ test/parser/suite/ts/pass/c2a559b01ac7896d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -61949,6 +62923,18 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/c88fe6561859a71d.ts
+error: Identifier 'a' has already been declared
+   |
+ 5 | function g([a, b, c, d] = [1, 2, 3, 4]) { }
+ 6 | function h([a, [b], [[c]], {x = 10, y: [a, b, c], z: {a1, b1}}]){ }
+   |                                         ^
+   |             ~ 'a' was first declared as a parameter here
+   |                                         ~ cannot be redeclared here
+ 7 | function h1([a, [b], [[c]], {x = 10, y = [1, 2, 3], z: {a1, b1}}]){ }
+   |
+   = help: Consider removing or renaming this declaration of 'a'
+
+
 ✗ test/parser/suite/ts/pass/c89fa25c0794afaf.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -62430,6 +63416,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/ca0cdde37aaec33e.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | ++eval;
+   | ^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/ca122c9910481fdf.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Boolean'
    |
@@ -62667,6 +63660,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/caf902ccfa6f7ec3.ts
 ✗ test/parser/suite/ts/pass/cb0e3ada713fd0a3.ts
+error: Illegal continue statement
+   |
+ 7 | // naked continue not allowed
+ 8 | continue;
+   | ^^^^^^^^^
+ 9 | 
+   |
+   = help: A 'continue' statement can only be used within an enclosing iteration statement
+
+
 ✗ test/parser/suite/ts/pass/cb1c1de7d245952b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Z'
    |
@@ -63117,6 +64120,13 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/cc7b04da234ac562.ts
+error: 'using' is not allowed at the top level of a script
+   |
+ 6 | 
+ 7 | using x = {};
+   | ^^^^^^^^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/cc8e054142f4000b.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -63456,6 +64466,27 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/cd98ac0690e2442f.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default {
+   | ~~~~~~~~~~~~~~~~~
+ 4 |     lol: 1
+   | ~~~~~~~~~~~
+ 5 | }
+   | ~ first exported here
+ 6 | 
+ 7 | export default {
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~
+ 8 |     lol: 2
+   | ^^^^^^^^^^^
+   | ~~~~~~~~~~~
+ 9 | }
+   | ^
+   | ~ exported again here
+   |
+
 ✗ test/parser/suite/ts/pass/cda0cbfdcecc3afa.ts
 ✗ test/parser/suite/ts/pass/cda39f51a15b95d9.ts
 ✗ test/parser/suite/ts/pass/cdcd9c679f675516.ts
@@ -63515,6 +64546,22 @@ error: Unexpected token ','
 
 
 ✗ test/parser/suite/ts/pass/ce124ae9a0e99d8e.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default {
+   | ~~~~~~~~~~~~~~~~~
+ 4 |     uhoh: "another default",
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 5 | };
+   | ~~ first exported here
+ 6 | 
+ 7 | export default class C { }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 8 | 
+   |
+
 ✗ test/parser/suite/ts/pass/ce1f1cc3862fcaf0.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -64097,6 +65144,23 @@ error: Expected ';' after class field, but found 'amount'
 
 
 ✗ test/parser/suite/ts/pass/d017c9355a112b5f.module.ts
+error: Duplicate export of 'default'
+   |
+ 2 | // @target: es2015
+ 3 | export default class C { }
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 4 | 
+ 5 | export default {
+   | ^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~
+ 6 |     uhoh: "another default",
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 7 | };
+   | ^^
+   | ~~ exported again here
+   |
+
 ✗ test/parser/suite/ts/pass/d020ef81363361fc.ts
 ✗ test/parser/suite/ts/pass/d02671ea82773b13.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
@@ -64154,6 +65218,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d02d7d0feac77d82.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 1 | //@target: ES6
+ 2 | for (let let of []) {}
+   |          ^^^
+   |
+
 ✗ test/parser/suite/ts/pass/d038ab62cc79092a.ts
 ✗ test/parser/suite/ts/pass/d03f432462f2b5cb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm'
@@ -65268,6 +66339,16 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d344d078383ab683.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+10 |     [
+11 |         { [super.bar()]: 1 }[0]
+   |            ^^^^^^^^^
+12 |     ]() { }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/d34684ddca57d8d0.ts
 error: Unexpected token ')'
    |
@@ -66183,6 +67264,14 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/d6424bb20f39ebf1.module.ts
+error: 'static' is reserved in strict mode and cannot be used as a binding identifier
+   |
+ 5 | class test {
+ 6 |     constructor (static) { }
+   |                  ^^^^^^
+ 7 | }
+   |
+
 ✗ test/parser/suite/ts/pass/d64cfae8621838ab.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -67610,6 +68699,16 @@ error: Expected ';' after class field, but found ':'
 
 ✗ test/parser/suite/ts/pass/db623d2b20c1ec6f.ts
 ✗ test/parser/suite/ts/pass/db644223d3095c7d.ts
+error: 'super' property access is only valid inside a method or class body
+   |
+ 8 |     [
+ 9 |         { [super.bar()]: 1 }[0]
+   |            ^^^^^^^^^
+10 |     ]() { }
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/db6629cbd26c3f6c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Hmm'
    |
@@ -68222,6 +69321,20 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/dd60a04b844ec883.ts
+error: Identifier 'x' has already been declared
+   |
+ 5 | {
+ 6 |     const x = 0;
+   |           ~ 'x' was first declared as a variable here
+ 7 | 
+ 8 |     var x = 0;
+   |         ^
+   |         ~ cannot be redeclared here
+ 9 | }
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/ts/pass/dd64ff5ff772d7f2.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -68758,6 +69871,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/df42156a6503f9b9.ts
+error: Cannot continue to label 'TWO' across function boundaries
+   |
+ 4 |   var x = () => {
+ 5 |     continue TWO;
+   |     ^^^^^^^^^^^^^
+ 6 |   }
+   |
+
 ✗ test/parser/suite/ts/pass/df454f44d8776d5f.module.ts
 ✗ test/parser/suite/ts/pass/df491d1d31a784e5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -69117,6 +70238,16 @@ error: Expected '(' to start parameter list, but found '<'
 ✗ test/parser/suite/ts/pass/e0bd5395afc548b0.ts
 ✗ test/parser/suite/ts/pass/e0beab7fbe9f59e5.ts
 ✗ test/parser/suite/ts/pass/e0c2b208a96b37e6.ts
+error: 'super()' is only valid in a constructor of a derived class
+   |
+ 6 | class D extends C {
+ 7 |     x = super(); 
+   |         ^^^^^^^
+ 8 |  
+   |
+   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
+
+
 ✗ test/parser/suite/ts/pass/e0c74b9d146dc6a8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -69595,6 +70726,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e22424cab3f4ae33.ts
+error: Cannot continue to label 'target' across function boundaries
+   |
+ 5 |     while (true) {
+ 6 |       continue target;
+   |       ^^^^^^^^^^^^^^^^
+ 7 |     }
+   |
+
 ✗ test/parser/suite/ts/pass/e235d06b2207baf7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -69696,6 +70835,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✗ test/parser/suite/ts/pass/e270bdcc1515fdb1.ts
 ✗ test/parser/suite/ts/pass/e27e176dfb219e6a.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 3 | "use strict";
+ 4 | function eval() {
+   |          ^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/e28753df60744959.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -70445,6 +71592,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e4a8ac38abc733e8.module.ts
+error: Cannot assign to 'eval' or 'arguments' in strict mode
+   |
+ 2 | "use strict";
+ 3 | eval += 1;
+   | ^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/e4a8c63933979d1a.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -71144,6 +72298,20 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/e735c766788502ea.ts
 ✗ test/parser/suite/ts/pass/e7388fb185ee3ee5.ts
+error: Identifier 'x' has already been declared
+   |
+ 2 | if (true) {
+ 3 |     let x;
+   |         ~ 'x' was first declared as a variable here
+ 4 |     if (true) {
+ 5 |         var x = 0; // Error
+   |             ^
+   |             ~ cannot be redeclared here
+ 6 |         var { x = 0 } = { x: 0 }; // Error
+   |
+   = help: Consider removing or renaming this declaration of 'x'
+
+
 ✗ test/parser/suite/ts/pass/e745c574a7f413ba.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -72463,6 +73631,14 @@ error: Expected declaration after 'export', but found 'declare'
 
 ✗ test/parser/suite/ts/pass/eb4cd6f1723f2b19.ts
 ✗ test/parser/suite/ts/pass/eb4d77629aa1b4ac.module.ts
+error: 'eval' is not allowed as a binding identifier in strict mode
+   |
+ 2 | "use strict";
+ 3 | var v = function eval() {
+   |                  ^^^^
+ 4 | };
+   |
+
 ✗ test/parser/suite/ts/pass/eb4d90ce5598ceb5.ts
 error: Expected ';' after class field, but found '<'
    |
@@ -72487,6 +73663,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/eb5a2ab750bc422b.ts
 ✗ test/parser/suite/ts/pass/eb5c0944e503c65f.ts
+error: 'new.target' is only valid inside functions, class field initializers, or static blocks
+   |
+ 2 | // @target: es6
+ 3 | const a = new.target;
+   |           ^^^^^^^^^^
+ 4 | const b = () => new.target;
+   |
+
 ✗ test/parser/suite/ts/pass/eb7095ac1b4743f3.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Tree1'
    |
@@ -73585,6 +74769,14 @@ error: Expected ')' to close parameter list, but found ':'
 
 ✗ test/parser/suite/ts/pass/ef15e49548304716.ts
 ✗ test/parser/suite/ts/pass/ef1759dbfdabf857.ts
+error: 'let' is not allowed as a variable name in a lexical declaration
+   |
+ 3 | // All use of let in const declaration should be an error
+ 4 | const x = 50, let = 5;
+   |               ^^^
+ 5 | 
+   |
+
 ✗ test/parser/suite/ts/pass/ef189e3057a635a0.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -73840,6 +75032,18 @@ error: Expected ')' to close parameter list, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/eff575122955dc0c.module.ts
+error: Duplicate export of 'default'
+   |
+ 3 | 
+ 4 | export default class AA1 {}
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
+ 5 | 
+ 6 | export default class BB1 {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 7 | 
+   |
+
 ✗ test/parser/suite/ts/pass/eff590eddfc030c3.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Element'
    |
@@ -73896,6 +75100,13 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/f02ff9c08aef9a56.module.ts
+error: Deleting a variable in strict mode is not allowed
+   |
+ 2 | "use strict";
+ 3 | delete a;
+   | ^^^^^^^^
+   |
+
 ✗ test/parser/suite/ts/pass/f03a34d3ac3e7bd3.module.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -74152,6 +75363,21 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/f104bb42cfe691da.ts
+error: Identifier 'b' has already been declared
+   |
+ 8 | class C {}
+ 9 | (({ [class extends C { static x = 1 }.x]: b = "" }) => { var C; })();
+   |                                           ~ 'b' was first declared as a class here
+10 | 
+11 | const x = "";
+12 | (({ [class extends C { static x = 1 }.x]: b = "" }, d = x) => { var x; })();
+   |                                           ^
+   |                                           ~ cannot be redeclared here
+13 | 
+   |
+   = help: Consider removing or renaming this declaration of 'b'
+
+
 ✗ test/parser/suite/ts/pass/f10e531f003cc577.ts
 ✗ test/parser/suite/ts/pass/f10e8c528882e7c4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I1'
@@ -74771,6 +75997,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✗ test/parser/suite/ts/pass/f2c3e06c13291123.ts
 ✗ test/parser/suite/ts/pass/f2c4560dbdb3b229.ts
 ✗ test/parser/suite/ts/pass/f2c6db3ad9c90b42.ts
+error: 'arguments' is not allowed as a binding identifier in strict mode
+   |
+ 4 | class C {
+ 5 |     f(arguments) {
+   |       ^^^^^^^^^
+ 6 |         var a = () => arguments;
+   |
+
 ✗ test/parser/suite/ts/pass/f2c99af289ffea6f.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -75119,6 +76353,18 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f4086b948d683c80.ts
+error: Identifier 'foo1' has already been declared
+   |
+21 | 
+22 | let { foo1, foo1 } = { foo1: 10 };
+   |             ^^^^
+   |       ~~~~ 'foo1' was first declared as a variable here
+   |             ~~~~ cannot be redeclared here
+23 | let { foo2, bar2: foo2 } = { foo2: 20, bar2: 220 };
+   |
+   = help: Consider removing or renaming this declaration of 'foo1'
+
+
 ✗ test/parser/suite/ts/pass/f409574dd2ee106c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -75816,6 +77062,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f5dab850cf19bf50.module.ts
+error: 'public' is reserved in strict mode and cannot be used as an identifier
+   |
+ 3 | class C {
+ 4 |     [public]() { }
+   |      ^^^^^^
+ 5 | }
+   |
+
 ✗ test/parser/suite/ts/pass/f5e69884b5f754dd.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |

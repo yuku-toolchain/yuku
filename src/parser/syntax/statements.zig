@@ -14,6 +14,7 @@ const extensions = @import("extensions.zig");
 const grammar = @import("../grammar.zig");
 const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
+const ts_statements = @import("ts/statements.zig");
 
 const ParseStatementOpts = struct {
     /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
