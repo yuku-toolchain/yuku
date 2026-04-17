@@ -225,14 +225,14 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
     // typescript arrow return type: `(a): Type => ...`
     // only valid when an arrow follows; consumed before the `=>` check.
-    // the annotation is produced but not yet attached; task 1.4 wires it onto the arrow function.
+    var return_type: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        _ = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        return_type = try ts_types.parseTypeAnnotation(parser) orelse return null;
     }
 
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
-        return parenthesized.coverToArrowFunction(parser, cover, false, start);
+        return parenthesized.coverToArrowFunction(parser, cover, false, start, return_type);
     }
 
     // not an arrow function - convert to parenthesized expression
@@ -304,9 +304,9 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
 
     // typescript arrow return type: `async (a): Type => ...`
     // only valid when an arrow follows; consumed before the `=>` check.
-    // the annotation is produced but not yet attached; task 1.4 wires it onto the arrow function.
+    var return_type: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        _ = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        return_type = try ts_types.parseTypeAnnotation(parser) orelse return null;
     }
 
     // [no LineTerminator here] => ConciseBody
@@ -315,7 +315,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
         // now we know 'async' is a keyword, now report if it is escaped
         if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
 
-        return parenthesized.coverToArrowFunction(parser, cover, true, start);
+        return parenthesized.coverToArrowFunction(parser, cover, true, start, return_type);
     }
 
     // async(...)

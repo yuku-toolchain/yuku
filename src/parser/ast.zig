@@ -609,6 +609,16 @@ pub const Class = struct {
     super_class: NodeIndex,
     /// ClassBody
     body: NodeIndex,
+    /// typescript. TSTypeParameterDeclaration (optional, may be `.null`)
+    type_parameters: NodeIndex = .null,
+    /// typescript. TSTypeParameterInstantiation (optional, may be `.null`)
+    super_type_arguments: NodeIndex = .null,
+    /// typescript. TSClassImplements[]
+    implements: IndexRange = .empty,
+    /// typescript. true for `abstract class`
+    abstract: bool = false,
+    /// typescript. true for `declare class`
+    declare: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-ClassBody
@@ -628,6 +638,12 @@ pub const MethodDefinition = struct {
     kind: MethodDefinitionKind,
     computed: bool,
     static: bool,
+    /// typescript. true for `override` modifier
+    override: bool = false,
+    /// typescript. true for optional method (`foo?()`)
+    optional: bool = false,
+    /// typescript. `.none` means no accessibility modifier was written
+    accessibility: Accessibility = .none,
 };
 
 /// https://tc39.es/ecma262/#prod-FieldDefinition
@@ -641,6 +657,20 @@ pub const PropertyDefinition = struct {
     computed: bool,
     static: bool,
     accessor: bool,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true for `declare` modifier
+    declare: bool = false,
+    /// typescript. true for `override` modifier
+    override: bool = false,
+    /// typescript. true for optional property (`foo?: T`)
+    optional: bool = false,
+    /// typescript. true for definite assignment assertion (`foo!: T`)
+    definite: bool = false,
+    /// typescript. true for `readonly` modifier
+    readonly: bool = false,
+    /// typescript. `.none` means no accessibility modifier was written
+    accessibility: Accessibility = .none,
 };
 
 /// https://tc39.es/ecma262/#prod-ClassStaticBlock
@@ -724,6 +754,8 @@ pub const VariableDeclaration = struct {
     kind: VariableKind,
     /// VariableDeclarator[]
     declarators: IndexRange,
+    /// typescript. true for `declare var x: T`
+    declare: bool = false,
 };
 
 /// `id = init`
@@ -732,6 +764,8 @@ pub const VariableDeclarator = struct {
     id: NodeIndex,
     /// Expression (optional, may be `.null`)
     init: NodeIndex,
+    /// typescript. true for definite assignment assertion (`let x!: T`)
+    definite: bool = false,
 };
 
 /// `expression;`
@@ -997,6 +1031,12 @@ pub const TemplateElement = struct {
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const IdentifierReference = struct {
     name: String = .empty,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when the identifier is marked optional in a binding position
+    optional: bool = false,
 };
 
 /// `#name`.
@@ -1009,16 +1049,34 @@ pub const PrivateIdentifier = struct {
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const BindingIdentifier = struct {
     name: String = .empty,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when the binding is marked optional (`x?: T`)
+    optional: bool = false,
 };
 
 /// property keys, meta properties
 pub const IdentifierName = struct {
     name: String = .empty,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when the identifier is marked optional in a binding position
+    optional: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-LabelIdentifier
 pub const LabelIdentifier = struct {
     name: String = .empty,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when the identifier is marked optional in a binding position
+    optional: bool = false,
 };
 
 /// `pattern = init`
@@ -1028,6 +1086,12 @@ pub const AssignmentPattern = struct {
     left: NodeIndex,
     /// Expression
     right: NodeIndex,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when the pattern is marked optional in a binding position
+    optional: bool = false,
 };
 
 /// `...argument`
@@ -1035,6 +1099,12 @@ pub const AssignmentPattern = struct {
 pub const BindingRestElement = struct {
     /// BindingPattern
     argument: NodeIndex,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when marked optional in a binding position
+    optional: bool = false,
 };
 
 /// `[a, b, ...rest]`
@@ -1044,6 +1114,12 @@ pub const ArrayPattern = struct {
     elements: IndexRange,
     /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when marked optional in a binding position
+    optional: bool = false,
 };
 
 /// `{a, b: c, ...rest}`
@@ -1053,6 +1129,12 @@ pub const ObjectPattern = struct {
     properties: IndexRange,
     /// BindingRestElement (optional, may be `.null`)
     rest: NodeIndex,
+    /// typescript. Decorator[]
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when marked optional in a binding position
+    optional: bool = false,
 };
 
 /// `key: value` or `key` (shorthand)
@@ -1093,6 +1175,8 @@ pub const ObjectProperty = struct {
     method: bool,
     shorthand: bool,
     computed: bool,
+    /// typescript. appears when the property is in a binding context (unused in ESTree standard)
+    optional: bool = false,
 };
 
 pub const Program = struct {
@@ -1142,6 +1226,12 @@ pub const Function = struct {
     params: NodeIndex,
     /// FunctionBody (optional, may be `.null` for declarations/overloads)
     body: NodeIndex,
+    /// typescript. TSTypeParameterDeclaration (optional, may be `.null`)
+    type_parameters: NodeIndex = .null,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    return_type: NodeIndex = .null,
+    /// typescript. true for `declare function` (redundant with FunctionType.ts_declare_function, kept for uniform field access)
+    declare: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-FunctionBody
@@ -1169,6 +1259,17 @@ pub const FormalParameters = struct {
 pub const FormalParameter = struct {
     /// BindingPattern
     pattern: NodeIndex,
+    /// typescript. Decorator[]. in typescript, decorators on parameters.
+    /// note: the decoder unwraps FormalParameter to its inner pattern, so
+    /// decorators set here are merged onto the inner pattern in the ESTree output.
+    decorators: IndexRange = .empty,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`).
+    /// normally the annotation is attached to the inner pattern (BindingIdentifier,
+    /// ObjectPattern, etc.); this field is retained for parity with the target AST
+    /// and may be populated in rare wrapper cases.
+    type_annotation: NodeIndex = .null,
+    /// typescript. true when the parameter is marked optional (`x?`)
+    optional: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-ParenthesizedExpression
@@ -1187,6 +1288,10 @@ pub const ArrowFunctionExpression = struct {
     params: NodeIndex,
     /// FunctionBody if `expression` is false, otherwise an Expression
     body: NodeIndex,
+    /// typescript. TSTypeParameterDeclaration (optional, may be `.null`)
+    type_parameters: NodeIndex = .null,
+    /// typescript. TSTypeAnnotation (optional, may be `.null`)
+    return_type: NodeIndex = .null,
     // TODO: add pure field too, `true` if the function is marked with a `/*#__NO_SIDE_EFFECTS__*/` comment
     // TODO: handle PIFE ("Possibly-Invoked Function Expression") cases, there are other needs which are needed this
 };
@@ -1220,6 +1325,8 @@ pub const CallExpression = struct {
     arguments: IndexRange,
     /// true for func?.() (optional chaining)
     optional: bool,
+    /// typescript. TSTypeParameterInstantiation (optional, may be `.null`)
+    type_arguments: NodeIndex = .null,
 };
 
 /// `foo?.bar`, `foo?.bar.baz`, `foo?.()`
@@ -1237,6 +1344,8 @@ pub const TaggedTemplateExpression = struct {
     tag: NodeIndex,
     /// TemplateLiteral
     quasi: NodeIndex,
+    /// typescript. TSTypeParameterInstantiation (optional, may be `.null`)
+    type_arguments: NodeIndex = .null,
 };
 
 /// `new Callee()`, `new Callee(args)`
@@ -1246,6 +1355,8 @@ pub const NewExpression = struct {
     callee: NodeIndex,
     /// (Expression | SpreadElement)[]
     arguments: IndexRange,
+    /// typescript. TSTypeParameterInstantiation (optional, may be `.null`)
+    type_arguments: NodeIndex = .null,
 };
 
 /// `await expression`
@@ -1286,6 +1397,24 @@ pub const ImportOrExportKind = enum {
     }
 };
 
+/// typescript class member accessibility modifier.
+/// `.none` means no modifier was written.
+pub const Accessibility = enum {
+    none,
+    public,
+    private,
+    protected,
+
+    pub fn toString(self: Accessibility) []const u8 {
+        return switch (self) {
+            .none => "",
+            .public => "public",
+            .private => "private",
+            .protected => "protected",
+        };
+    }
+};
+
 /// import phase for source phase imports and deferred imports
 /// https://github.com/estree/estree/blob/master/stage3/source-phase-imports.md
 /// https://github.com/estree/estree/blob/master/stage3/defer-import-eval.md
@@ -1318,6 +1447,8 @@ pub const ImportDeclaration = struct {
     attributes: IndexRange,
     /// import phase: source, defer, or null (regular import)
     phase: ?ImportPhase,
+    /// typescript. `.value` (default) or `.type` for `import type { ... }`
+    import_kind: ImportOrExportKind = .value,
 };
 
 /// `import {imported as local} from "source"`
@@ -1328,6 +1459,8 @@ pub const ImportSpecifier = struct {
     imported: NodeIndex,
     /// BindingIdentifier - local binding
     local: NodeIndex,
+    /// typescript. `.value` (default) or `.type` for `import { type X } from "..."`
+    import_kind: ImportOrExportKind = .value,
 };
 
 /// `import local from "source"`
@@ -1364,6 +1497,8 @@ pub const ExportNamedDeclaration = struct {
     source: NodeIndex,
     /// ImportAttribute[] - export attributes/assertions
     attributes: IndexRange,
+    /// typescript. `.value` (default) or `.type` for `export type { ... }`
+    export_kind: ImportOrExportKind = .value,
 };
 
 /// `export default expression`
@@ -1382,6 +1517,8 @@ pub const ExportAllDeclaration = struct {
     source: NodeIndex,
     /// ImportAttribute[] - export attributes/assertions
     attributes: IndexRange,
+    /// typescript. `.value` (default) or `.type` for `export type * from "..."`
+    export_kind: ImportOrExportKind = .value,
 };
 
 /// `export { local as exported }`
@@ -1391,6 +1528,8 @@ pub const ExportSpecifier = struct {
     local: NodeIndex,
     /// ModuleExportName (IdentifierName or StringLiteral) - exported name
     exported: NodeIndex,
+    /// typescript. `.value` (default) or `.type` for `export { type X }`
+    export_kind: ImportOrExportKind = .value,
 };
 
 /// `export = expression`
@@ -1432,6 +1571,8 @@ pub const JSXOpeningElement = struct {
     attributes: IndexRange,
     /// true for `<Foo />`, false for `<Foo>`
     self_closing: bool,
+    /// typescript. TSTypeParameterInstantiation (optional, may be `.null`)
+    type_arguments: NodeIndex = .null,
 };
 
 /// `</Foo>`

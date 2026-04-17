@@ -31,6 +31,7 @@
 //   28      4     diagnostic_count    number of diagnostics
 //   32      4     program_index       node index of the root Program node
 //   36      4     flags               bit 0: source is all ascii
+//                                     bit 1: language is typescript (ts/tsx/dts)
 //
 //
 // 3. nodes (48 bytes each)
@@ -268,7 +269,8 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     const comment_count: u32 = @intCast(tree.comments.len);
     const diag_count: u32 = @intCast(tree.diagnostics.items.len);
     const program_index: u32 = @intFromEnum(tree.program);
-    const flags: u32 = if (isAsciiOnly(tree.source)) 1 else 0;
+    var flags: u32 = if (isAsciiOnly(tree.source)) 1 else 0;
+    if (tree.isTs()) flags |= 2;
 
     var pos: usize = 0;
 

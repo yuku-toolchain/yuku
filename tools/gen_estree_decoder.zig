@@ -26,7 +26,7 @@ fn generate(w: *Writer) !void {
     try writeLookupTables(w);
     try w.writeAll(
         \\const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, str;
+        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, _isTs, str;
         \\function _poolDecode(s, e) {
         \\  const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
         \\  let hasEd = false;
@@ -79,6 +79,8 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArray(w, "CLASS_TYPES", &.{ "ClassDeclaration", "ClassExpression" });
     try writeArray(w, "COMMENT_TYPES", &.{ "Line", "Block" });
     try writeArray(w, "SEVERITY", &.{ "error", "warning", "hint", "info" });
+    try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
+    try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
 }
 
 fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
@@ -86,6 +88,17 @@ fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
     for (items, 0..) |item, i| {
         if (i > 0) try w.writeAll(", ");
         try w.print("\"{s}\"", .{item});
+    }
+    try w.writeAll("];\n");
+}
+
+/// writes a lookup table whose elements are raw JS expressions (strings with
+/// their own quoting, or literals like `null`).
+fn writeArrayRaw(w: *Writer, name: []const u8, items: []const []const u8) !void {
+    try w.print("const {s} = [", .{name});
+    for (items, 0..) |item, i| {
+        if (i > 0) try w.writeAll(", ");
+        try w.writeAll(item);
     }
     try w.writeAll("];\n");
 }
@@ -108,18 +121,124 @@ fn writeNodeCase(w: *Writer, comptime name: []const u8, comptime tag: usize, com
     }
     // generic case
     const etype = comptime estreeType(name);
-    try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
-    try writeStructFields(w, name, T);
-    try w.writeAll(" };\n");
+    const has_ts = comptime hasAnyTsField(name, T);
+    if (!has_ts) {
+        try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
+        try writeStructFields(w, name, T, .all);
+        try w.writeAll(" };\n");
+        return;
+    }
+    try w.print("    case {d}: {{ const r = {{ type: \"{s}\", start, end", .{ tag, etype });
+    try writeStructFields(w, name, T, .non_ts);
+    try w.writeAll(" }; if (_isTs) { ");
+    try writeStructFields(w, name, T, .ts_only);
+    // rest elements carry `value: null` in the target TS AST for parity with Babel's shape.
+    if (comptime std.mem.eql(u8, name, "binding_rest_element")) {
+        try w.writeAll("r.value = null; ");
+    }
+    try w.writeAll("} return r; }\n");
 }
 
-fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type) !void {
+const FieldSelection = enum { all, non_ts, ts_only };
+
+fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type, comptime sel: FieldSelection) !void {
     if (@typeInfo(T) != .@"struct") return;
     inline for (std.meta.fields(T), 0..) |f, i| {
+        const is_ts = comptime isTsField(tag_name, f.name);
+        const include = switch (sel) {
+            .all => true,
+            .non_ts => !is_ts,
+            .ts_only => is_ts,
+        };
+        if (!include) continue;
         const js = comptime estreeField(tag_name, f.name);
-        try w.print(", {s}: ", .{js});
+        if (sel == .ts_only) {
+            try w.print("r.{s} = ", .{js});
+        } else {
+            try w.print(", {s}: ", .{js});
+        }
         try writeFieldExpr(w, tag_name, f.name, T, i, f.type);
+        if (sel == .ts_only) try w.writeAll("; ");
     }
+}
+
+/// returns true if `field_name` on struct `tag_name` was introduced for
+/// typescript support. these fields are emitted only when the source
+/// language is TypeScript so JS/JSX output stays clean.
+fn isTsField(comptime tag_name: []const u8, comptime field_name: []const u8) bool {
+    const pairs = &[_][2][]const u8{
+        .{ "variable_declaration", "declare" },
+        .{ "variable_declarator", "definite" },
+        .{ "function", "declare" },
+        .{ "function", "type_parameters" },
+        .{ "function", "return_type" },
+        .{ "arrow_function_expression", "type_parameters" },
+        .{ "arrow_function_expression", "return_type" },
+        .{ "class", "type_parameters" },
+        .{ "class", "super_type_arguments" },
+        .{ "class", "implements" },
+        .{ "class", "abstract" },
+        .{ "class", "declare" },
+        .{ "method_definition", "override" },
+        .{ "method_definition", "optional" },
+        .{ "method_definition", "accessibility" },
+        .{ "property_definition", "type_annotation" },
+        .{ "property_definition", "declare" },
+        .{ "property_definition", "override" },
+        .{ "property_definition", "optional" },
+        .{ "property_definition", "definite" },
+        .{ "property_definition", "readonly" },
+        .{ "property_definition", "accessibility" },
+        .{ "call_expression", "type_arguments" },
+        .{ "new_expression", "type_arguments" },
+        .{ "tagged_template_expression", "type_arguments" },
+        .{ "jsx_opening_element", "type_arguments" },
+        .{ "import_declaration", "import_kind" },
+        .{ "import_specifier", "import_kind" },
+        .{ "export_named_declaration", "export_kind" },
+        .{ "export_all_declaration", "export_kind" },
+        .{ "export_specifier", "export_kind" },
+        .{ "formal_parameter", "decorators" },
+        .{ "formal_parameter", "optional" },
+        .{ "formal_parameter", "type_annotation" },
+        .{ "binding_rest_element", "decorators" },
+        .{ "binding_rest_element", "optional" },
+        .{ "binding_rest_element", "type_annotation" },
+        .{ "binding_identifier", "decorators" },
+        .{ "binding_identifier", "optional" },
+        .{ "binding_identifier", "type_annotation" },
+        .{ "identifier_reference", "decorators" },
+        .{ "identifier_reference", "optional" },
+        .{ "identifier_reference", "type_annotation" },
+        .{ "identifier_name", "decorators" },
+        .{ "identifier_name", "optional" },
+        .{ "identifier_name", "type_annotation" },
+        .{ "label_identifier", "decorators" },
+        .{ "label_identifier", "optional" },
+        .{ "label_identifier", "type_annotation" },
+        .{ "assignment_pattern", "decorators" },
+        .{ "assignment_pattern", "optional" },
+        .{ "assignment_pattern", "type_annotation" },
+        .{ "object_pattern", "decorators" },
+        .{ "object_pattern", "optional" },
+        .{ "object_pattern", "type_annotation" },
+        .{ "array_pattern", "decorators" },
+        .{ "array_pattern", "optional" },
+        .{ "array_pattern", "type_annotation" },
+        .{ "object_property", "optional" },
+    };
+    for (pairs) |p| {
+        if (std.mem.eql(u8, p[0], tag_name) and std.mem.eql(u8, p[1], field_name)) return true;
+    }
+    return false;
+}
+
+fn hasAnyTsField(comptime tag_name: []const u8, comptime T: type) bool {
+    if (@typeInfo(T) != .@"struct") return false;
+    inline for (std.meta.fields(T)) |f| {
+        if (comptime isTsField(tag_name, f.name)) return true;
+    }
+    return false;
 }
 
 fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name: []const u8, comptime T: type, comptime i: usize, comptime F: type) !void {
@@ -192,21 +311,26 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const sid = comptime slotOf("function", ast.Function, "id");
         const sp = comptime slotOf("function", ast.Function, "params");
         const sb = comptime slotOf("function", ast.Function, "body");
+        const stp = comptime slotOf("function", ast.Function, "type_parameters");
+        const srt = comptime slotOf("function", ast.Function, "return_type");
         const bit_gen = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Function, fieldIdx(ast.Function, "generator")));
         const bit_async = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Function, fieldIdx(ast.Function, "async")));
+        const bit_declare = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Function, fieldIdx(ast.Function, "declare")));
         const mask_type = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.FunctionType))) - 1;
         try w.print(
-            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (ft === 2) r.declare = true; return r; }}
-        , .{ tag, mask_type, sid, sid, bit_gen, bit_async, sp, sp, sb, sb });
+            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; r.declare = ft === 2 || !!(flags & {d}); }} return r; }}
+        , .{ tag, mask_type, sid, sid, bit_gen, bit_async, sp, sp, sb, sb, stp, stp, srt, srt, bit_declare });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "arrow_function_expression")) {
         const sp = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "params");
         const sb = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "body");
+        const stp = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "type_parameters");
+        const srt = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "return_type");
         const bit_expr = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.ArrowFunctionExpression, fieldIdx(ast.ArrowFunctionExpression, "expression")));
         const bit_async = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.ArrowFunctionExpression, fieldIdx(ast.ArrowFunctionExpression, "async")));
         try w.print(
-            \\    case {d}: return {{ type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: node(f{d}), expression: !!(flags & {d}) }};
-        , .{ tag, bit_async, sp, sp, sb, bit_expr });
+            \\    case {d}: {{ const r = {{ type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: node(f{d}), expression: !!(flags & {d}) }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
+        , .{ tag, bit_async, sp, sp, sb, bit_expr, stp, stp, srt, srt });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "program")) {
         // program has: source_type(enum), body(range), hashbang(?Hashbang)
@@ -274,20 +398,33 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const si = comptime slotOf("class", ast.Class, "id");
         const ss = comptime slotOf("class", ast.Class, "super_class");
         const sb = comptime slotOf("class", ast.Class, "body");
+        const stp = comptime slotOf("class", ast.Class, "type_parameters");
+        const ssta = comptime slotOf("class", ast.Class, "super_type_arguments");
+        const simp = comptime slotOfRange("class", ast.Class, "implements");
+        const bit_abstract = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Class, fieldIdx(ast.Class, "abstract")));
+        const bit_declare = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Class, fieldIdx(ast.Class, "declare")));
         try w.print(
-            \\    case {d}: return {{ type: CLASS_TYPES[flags & {d}], start, end, decorators: nodeArr(f{d}, f0), id: f{d} !== NULL ? node(f{d}) : null, superClass: f{d} !== NULL ? node(f{d}) : null, body: node(f{d}) }};
-        , .{ tag, mask, sd, si, si, ss, ss, sb });
+            \\    case {d}: {{ const r = {{ type: CLASS_TYPES[flags & {d}], start, end, decorators: nodeArr(f{d}, f0), id: f{d} !== NULL ? node(f{d}) : null, superClass: f{d} !== NULL ? node(f{d}) : null, body: node(f{d}) }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.superTypeArguments = f{d} !== NULL ? node(f{d}) : null; r.implements = nodeArr(f{d}, f{d}); r.abstract = !!(flags & {d}); r.declare = !!(flags & {d}); }} return r; }}
+        , .{ tag, mask, sd, si, si, ss, ss, sb, stp, stp, ssta, ssta, simp, simp + 1, bit_abstract, bit_declare });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "property_definition")) {
         const bit_comp = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "computed")));
         const bit_stat = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "static")));
         const bit_acc = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "accessor")));
+        const bit_declare = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "declare")));
+        const bit_override = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "override")));
+        const bit_optional = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "optional")));
+        const bit_definite = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "definite")));
+        const bit_readonly = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "readonly")));
+        const acc_bit = comptime rt.flagBitForField(ast.PropertyDefinition, fieldIdx(ast.PropertyDefinition, "accessibility"));
+        const acc_mask = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.Accessibility))) - 1;
         const sd = comptime slotOfRange("property_definition", ast.PropertyDefinition, "decorators");
         const sk = comptime slotOf("property_definition", ast.PropertyDefinition, "key");
         const sv = comptime slotOf("property_definition", ast.PropertyDefinition, "value");
+        const sta = comptime slotOf("property_definition", ast.PropertyDefinition, "type_annotation");
         try w.print(
-            \\    case {d}: return {{ type: (flags & {d}) ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: f{d} !== NULL ? node(f{d}) : null, computed: !!(flags & {d}), static: !!(flags & {d}) }};
-        , .{ tag, bit_acc, sd, sk, sv, sv, bit_comp, bit_stat });
+            \\    case {d}: {{ const r = {{ type: (flags & {d}) ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: f{d} !== NULL ? node(f{d}) : null, computed: !!(flags & {d}), static: !!(flags & {d}) }}; if (_isTs) {{ r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; r.declare = !!(flags & {d}); r.override = !!(flags & {d}); r.optional = !!(flags & {d}); r.definite = !!(flags & {d}); r.readonly = !!(flags & {d}); r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}]; }} return r; }}
+        , .{ tag, bit_acc, sd, sk, sv, sv, bit_comp, bit_stat, sta, sta, bit_declare, bit_override, bit_optional, bit_definite, bit_readonly, acc_bit, acc_mask });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "unary_expression")) {
         const sa = comptime slotOf("unary_expression", ast.UnaryExpression, "argument");
@@ -308,16 +445,22 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
     } else if (comptime eql(u8, name, "array_pattern")) {
         const se = comptime slotOfRange("array_pattern", ast.ArrayPattern, "elements");
         const sr = comptime slotOf("array_pattern", ast.ArrayPattern, "rest");
+        const sdec = comptime slotOfRange("array_pattern", ast.ArrayPattern, "decorators");
+        const sta = comptime slotOf("array_pattern", ast.ArrayPattern, "type_annotation");
+        const bit_opt = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.ArrayPattern, fieldIdx(ast.ArrayPattern, "optional")));
         try w.print(
-            \\    case {d}: {{ const el = nodeArrHoles(f{d}, f0); if (f{d} !== NULL) el.push(node(f{d})); return {{ type: "ArrayPattern", start, end, elements: el }}; }}
-        , .{ tag, se, sr, sr });
+            \\    case {d}: {{ const el = nodeArrHoles(f{d}, f0); if (f{d} !== NULL) el.push(node(f{d})); const r = {{ type: "ArrayPattern", start, end, elements: el }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); if (flags & {d}) r.optional = true; r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
+        , .{ tag, se, sr, sr, sdec, sdec + 1, bit_opt, sta, sta });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "object_pattern")) {
         const sp = comptime slotOfRange("object_pattern", ast.ObjectPattern, "properties");
         const sr = comptime slotOf("object_pattern", ast.ObjectPattern, "rest");
+        const sdec = comptime slotOfRange("object_pattern", ast.ObjectPattern, "decorators");
+        const sta = comptime slotOf("object_pattern", ast.ObjectPattern, "type_annotation");
+        const bit_opt = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.ObjectPattern, fieldIdx(ast.ObjectPattern, "optional")));
         try w.print(
-            \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); return {{ type: "ObjectPattern", start, end, properties: pr }}; }}
-        , .{ tag, sp, sr, sr });
+            \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); const r = {{ type: "ObjectPattern", start, end, properties: pr }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); if (flags & {d}) r.optional = true; r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
+        , .{ tag, sp, sr, sr, sdec, sdec + 1, bit_opt, sta, sta });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "jsx_opening_fragment")) {
         try w.print(
@@ -406,6 +549,7 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  _srcLen = _u32[5];
         \\  const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
         \\  const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
+        \\  _isTs = !!(_u32[9] & 2);
         \\  const pm = (_u32[9] & 1) ? null : buildPosMap(source, _srcLen);
         \\  if (pm) {{
         \\    _p = function(v) {{ return pm[v]; }};
@@ -448,6 +592,7 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  }}
         \\  const program = node(progIdx);
         \\  _u8 = _u32 = _src = null;
+        \\  _isTs = false;
         \\  return {{ program, comments, diagnostics }};
         \\}}
         \\
@@ -519,6 +664,8 @@ fn enumTable(comptime E: type) []const u8 {
     if (E == ast.MethodDefinitionKind) return "METHOD_KINDS";
     if (E == ast.FunctionType) return "FUNCTION_TYPES";
     if (E == ast.ClassType) return "CLASS_TYPES";
+    if (E == ast.ImportOrExportKind) return "IMPORT_EXPORT_KINDS";
+    if (E == ast.Accessibility) return "ACCESSIBILITY";
     @compileError("no lookup table for enum");
 }
 

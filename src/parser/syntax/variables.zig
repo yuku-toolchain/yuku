@@ -82,10 +82,11 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const id_span = parser.tree.getSpan(id);
 
     // typescript: `let x: Type = ...`
-    // the annotation node is produced but not yet attached; task 1.4 wires it onto the declarator.
+    // annotation attaches to the inner binding pattern (`id`) to match ESTree shape.
     var end = id_span.end;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        ts_types.applyTypeAnnotationToPattern(parser, id, annotation);
         end = parser.tree.getSpan(annotation).end;
     }
 

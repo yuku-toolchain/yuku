@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       0/8885 (0.00%)
-Failed:       8885
-AST mismatch: 1722/1722
+Passed:       2/8885 (0.02%)
+Failed:       8883
+AST mismatch: 1720/1722
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -24505,7 +24505,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/4f4cfbc566c77120.ts
-✗ test/parser/suite/ts/pass/4f5002ef5f91.ts
+✓ test/parser/suite/ts/pass/4f5002ef5f91.ts
 ✗ test/parser/suite/ts/pass/4f501a103ef6c912.ts
 error: Expected a type, but found '{'
    |
@@ -50797,7 +50797,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/a3a2c908039ace55.ts
+✓ test/parser/suite/ts/pass/a3a2c908039ace55.ts
 ✗ test/parser/suite/ts/pass/a3a82de1fe6ee38a.ts
 error: Expected ';' after class field, but found 'set'
    |

@@ -12,8 +12,10 @@ const FUNCTION_TYPES = ["FunctionDeclaration", "FunctionExpression", "TSDeclareF
 const CLASS_TYPES = ["ClassDeclaration", "ClassExpression"];
 const COMMENT_TYPES = ["Line", "Block"];
 const SEVERITY = ["error", "warning", "hint", "info"];
+const IMPORT_EXPORT_KINDS = ["value", "type"];
+const ACCESSIBILITY = [null, "public", "private", "protected"];
 const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, str;
+let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, _isTs, str;
 function _poolDecode(s, e) {
   const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
   let hasEd = false;
@@ -40,8 +42,8 @@ function node(i) {
   switch (tag) {
     case 0: return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) };
     case 1: return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 2: return { type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & 2), params: f1 !== NULL ? fnParams(f1) : [], body: node(f2), expression: !!(flags & 1) };
-    case 3: { const ft = flags & 3; const r = { type: FUNCTION_TYPES[ft], start, end, id: f1 !== NULL ? node(f1) : null, generator: !!(flags & 4), async: !!(flags & 8), params: f2 !== NULL ? fnParams(f2) : [], body: f3 !== NULL ? node(f3) : null, expression: false }; if (ft === 2) r.declare = true; return r; }
+    case 2: { const r = { type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & 2), params: f1 !== NULL ? fnParams(f1) : [], body: node(f2), expression: !!(flags & 1) }; if (_isTs) { r.typeParameters = f3 !== NULL ? node(f3) : null; r.returnType = f4 !== NULL ? node(f4) : null; } return r; }
+    case 3: { const ft = flags & 3; const r = { type: FUNCTION_TYPES[ft], start, end, id: f1 !== NULL ? node(f1) : null, generator: !!(flags & 4), async: !!(flags & 8), params: f2 !== NULL ? fnParams(f2) : [], body: f3 !== NULL ? node(f3) : null, expression: false }; if (_isTs) { r.typeParameters = f4 !== NULL ? node(f4) : null; r.returnType = f5 !== NULL ? node(f5) : null; r.declare = ft === 2 || !!(flags & 16); } return r; }
     case 4: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
     case 5: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
     case 6: return { params: fnParams(i) };
@@ -55,20 +57,20 @@ function node(i) {
     case 14: return { type: "ArrayExpression", start, end, elements: nodeArrHoles(f1, f0) };
     case 15: return { type: "ObjectExpression", start, end, properties: nodeArr(f1, f0) };
     case 16: return { type: "SpreadElement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 17: return { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) };
+    case 17: { const r = { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) }; if (_isTs) { r.optional = !!(flags & 32); } return r; }
     case 18: return { type: "MemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2) };
-    case 19: return { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0), optional: !!(flags & 1) };
+    case 19: { const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 20: return { type: "ChainExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 21: return { type: "TaggedTemplateExpression", start, end, tag: f1 !== NULL ? node(f1) : null, quasi: f2 !== NULL ? node(f2) : null };
-    case 22: return { type: "NewExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0) };
+    case 21: { const r = { type: "TaggedTemplateExpression", start, end, tag: f1 !== NULL ? node(f1) : null, quasi: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
+    case 22: { const r = { type: "NewExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 23: return { type: "AwaitExpression", start, end, argument: f1 !== NULL ? node(f1) : null };
     case 24: return { type: "YieldExpression", start, end, argument: f1 !== NULL ? node(f1) : null, delegate: !!(flags & 1) };
     case 25: return { type: "MetaProperty", start, end, meta: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
     case 26: return { type: "Decorator", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 27: return { type: CLASS_TYPES[flags & 1], start, end, decorators: nodeArr(f1, f0), id: f2 !== NULL ? node(f2) : null, superClass: f3 !== NULL ? node(f3) : null, body: node(f4) };
+    case 27: { const r = { type: CLASS_TYPES[flags & 1], start, end, decorators: nodeArr(f1, f0), id: f2 !== NULL ? node(f2) : null, superClass: f3 !== NULL ? node(f3) : null, body: node(f4) }; if (_isTs) { r.typeParameters = f5 !== NULL ? node(f5) : null; r.superTypeArguments = f6 !== NULL ? node(f6) : null; r.implements = nodeArr(f7, f8); r.abstract = !!(flags & 2); r.declare = !!(flags & 4); } return r; }
     case 28: return { type: "ClassBody", start, end, body: nodeArr(f1, f0) };
-    case 29: return { type: "MethodDefinition", start, end, decorators: nodeArr(f1, f0), key: f2 !== NULL ? node(f2) : null, value: f3 !== NULL ? node(f3) : null, kind: METHOD_KINDS[flags & 3], computed: !!(flags & 4), static: !!(flags & 8) };
-    case 30: return { type: (flags & 4) ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f1, f0), key: node(f2), value: f3 !== NULL ? node(f3) : null, computed: !!(flags & 1), static: !!(flags & 2) };
+    case 29: { const r = { type: "MethodDefinition", start, end, decorators: nodeArr(f1, f0), key: f2 !== NULL ? node(f2) : null, value: f3 !== NULL ? node(f3) : null, kind: METHOD_KINDS[flags & 3], computed: !!(flags & 4), static: !!(flags & 8) }; if (_isTs) { r.override = !!(flags & 16); r.optional = !!(flags & 32); r.accessibility = ACCESSIBILITY[(flags >> 6) & 3]; } return r; }
+    case 30: { const r = { type: (flags & 4) ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f1, f0), key: node(f2), value: f3 !== NULL ? node(f3) : null, computed: !!(flags & 1), static: !!(flags & 2) }; if (_isTs) { r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.declare = !!(flags & 8); r.override = !!(flags & 16); r.optional = !!(flags & 32); r.definite = !!(flags & 64); r.readonly = !!(flags & 128); r.accessibility = ACCESSIBILITY[(flags >> 8) & 3]; } return r; }
     case 31: return { type: "StaticBlock", start, end, body: nodeArr(f1, f0) };
     case 32: return { type: "Super", start, end };
     case 33: return { type: "Literal", start, end, value: str(f1, f2), raw: _src.slice(start, end) };
@@ -80,11 +82,11 @@ function node(i) {
     case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
     case 41: { const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return { type: "TemplateElement", start, end, value: { raw: r, cooked: (flags & 2) ? null : str(f1, f2) }, tail: !!(flags & 1) }; }
-    case 42: return { type: "Identifier", start, end, name: str(f1, f2) };
+    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
     case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
-    case 44: return { type: "Identifier", start, end, name: str(f1, f2) };
-    case 45: return { type: "Identifier", start, end, name: str(f1, f2) };
-    case 46: return { type: "Identifier", start, end, name: str(f1, f2) };
+    case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
     case 47: return { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 48: return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
     case 49: return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) };
@@ -104,30 +106,30 @@ function node(i) {
     case 63: return { type: "CatchClause", start, end, param: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null };
     case 64: return { type: "DebuggerStatement", start, end };
     case 65: return { type: "EmptyStatement", start, end };
-    case 66: return { type: "VariableDeclaration", start, end, kind: VAR_KINDS[flags & 7], declarations: nodeArr(f1, f0) };
-    case 67: return { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null };
+    case 66: { const r = { type: "VariableDeclaration", start, end, kind: VAR_KINDS[flags & 7], declarations: nodeArr(f1, f0) }; if (_isTs) { r.declare = !!(flags & 8); } return r; }
+    case 67: { const r = { type: "VariableDeclarator", start, end, id: f1 !== NULL ? node(f1) : null, init: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.definite = !!(flags & 1); } return r; }
     case 68: return { type: "ExpressionStatement", start, end, expression: node(f1), directive: str(f2, f3) };
-    case 69: return { type: "AssignmentPattern", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null };
-    case 70: return { type: "RestElement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 71: { const el = nodeArrHoles(f1, f0); if (f2 !== NULL) el.push(node(f2)); return { type: "ArrayPattern", start, end, elements: el }; }
-    case 72: { const pr = nodeArr(f1, f0); if (f2 !== NULL) pr.push(node(f2)); return { type: "ObjectPattern", start, end, properties: pr }; }
+    case 69: { const r = { type: "AssignmentPattern", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 70: { const r = { type: "RestElement", start, end, argument: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.decorators = nodeArr(f2, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
+    case 71: { const el = nodeArrHoles(f1, f0); if (f2 !== NULL) el.push(node(f2)); const r = { type: "ArrayPattern", start, end, elements: el }; if (_isTs) { r.decorators = nodeArr(f3, f4); if (flags & 1) r.optional = true; r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
+    case 72: { const pr = nodeArr(f1, f0); if (f2 !== NULL) pr.push(node(f2)); const r = { type: "ObjectPattern", start, end, properties: pr }; if (_isTs) { r.decorators = nodeArr(f3, f4); if (flags & 1) r.optional = true; r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
     case 73: return { type: "Property", start, end, kind: "init", key: node(f1), value: node(f2), method: false, shorthand: !!(flags & 1), computed: !!(flags & 2) };
     case 74: return { type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & 2) ? str(f2, f3) : null, body: nodeArr(f1, f0) };
     case 75: return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
-    case 76: return { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
-    case 77: return { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null };
+    case 76: { const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
+    case 77: { const r = { type: "ImportSpecifier", start, end, imported: f1 !== NULL ? node(f1) : null, local: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 78: return { type: "ImportDefaultSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };
     case 79: return { type: "ImportNamespaceSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };
     case 80: return { type: "ImportAttribute", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
-    case 81: return { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f5) };
+    case 81: { const r = { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f5) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 82: return { type: "ExportDefaultDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null };
-    case 83: return { type: "ExportAllDeclaration", start, end, exported: f1 !== NULL ? node(f1) : null, source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0) };
-    case 84: return { type: "ExportSpecifier", start, end, local: f1 !== NULL ? node(f1) : null, exported: f2 !== NULL ? node(f2) : null };
+    case 83: { const r = { type: "ExportAllDeclaration", start, end, exported: f1 !== NULL ? node(f1) : null, source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
+    case 84: { const r = { type: "ExportSpecifier", start, end, local: f1 !== NULL ? node(f1) : null, exported: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 85: return { type: "TSExportAssignment", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 86: return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null };
     case 87: return { type: "TSTypeAnnotation", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
     case 88: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
-    case 89: return { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) };
+    case 89: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 90: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
     case 91: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
     case 92: return { type: "JSXOpeningFragment", start, end, attributes: [], selfClosing: false };
@@ -191,6 +193,7 @@ function decode(buffer, source) {
   _srcLen = _u32[5];
   const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
   const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
+  _isTs = !!(_u32[9] & 2);
   const pm = (_u32[9] & 1) ? null : buildPosMap(source, _srcLen);
   if (pm) {
     _p = function(v) { return pm[v]; };
@@ -233,6 +236,7 @@ function decode(buffer, source) {
   }
   const program = node(progIdx);
   _u8 = _u32 = _src = null;
+  _isTs = false;
   return { program, comments, diagnostics };
 }
 export { decode };

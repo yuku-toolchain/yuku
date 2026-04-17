@@ -107,10 +107,11 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     )) return null;
 
     // typescript return type: `function f(): Type { ... }`
-    // the annotation node is produced but not yet attached; task 1.4 wires it onto the function.
+    var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        return_type = annotation;
         return_type_end = parser.tree.getSpan(annotation).end;
     }
 
@@ -155,6 +156,8 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
             .async = opts.is_async,
             .params = params,
             .body = body,
+            .return_type = return_type,
+            .declare = opts.is_declare,
         },
     }, .{
         .start = start,
@@ -243,9 +246,11 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
     // typescript: `function f(x: Type) { ... }`
-    // the annotation node is produced but not yet attached; task 1.4 wires it onto the parameter.
+    // annotation attaches to the inner binding pattern so the decoder emits
+    // `{ type: "Identifier", typeAnnotation: ... }` after unwrapping FormalParameter.
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        _ = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);
     }
 
     if (parser.current_token.tag == .assign) {
