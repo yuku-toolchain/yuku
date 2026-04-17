@@ -30,13 +30,13 @@ function _poolDecode(s, e) {
   return r;
 }
 function node(i) {
-  const o = _nodesOff + i * 32;
+  const o = _nodesOff + i * 48;
   const tag = _u8[o];
-  const flags = _u8[o + 1];
-  const f0 = _u8[o + 2] | (_u8[o + 3] << 8);
+  const flags = _u8[o + 2] | (_u8[o + 3] << 8);
+  const f0 = _u8[o + 4] | (_u8[o + 5] << 8);
   const b = o >> 2;
-  const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4], f5 = _u32[b + 5];
-  const start = _p(_u32[b + 6]), end = _p(_u32[b + 7]);
+  const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8], f8 = _u32[b + 9];
+  const start = _p(_u32[b + 10]), end = _p(_u32[b + 11]);
   switch (tag) {
     case 0: return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) };
     case 1: return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
@@ -154,14 +154,14 @@ function nodeArrHoles(s, len) {
   return r;
 }
 function fnParams(idx) {
-  const po = _nodesOff + idx * 32;
-  const len = _u8[po + 2] | (_u8[po + 3] << 8);
+  const po = _nodesOff + idx * 48;
+  const len = _u8[po + 4] | (_u8[po + 5] << 8);
   const pb = po >> 2;
-  const iStart = _u32[pb + 1], rest = _u32[pb + 2];
+  const iStart = _u32[pb + 2], rest = _u32[pb + 3];
   const p = [];
   for (let j = 0; j < len; j++) {
     const fi = _u32[_extraBase + iStart + j];
-    p.push(node(_u32[(_nodesOff + fi * 32 >> 2) + 1]));
+    p.push(node(_u32[(_nodesOff + fi * 48 >> 2) + 2]));
   }
   if (rest !== NULL) p.push(node(rest));
   return p;
@@ -200,7 +200,7 @@ function decode(buffer, source) {
     str = function(s, e) { if (s === e) return ""; if (s < _srcLen) return _src.slice(s, e); return _poolDecode(s, e); };
   }
   _nodesOff = 40;
-  const eOff = _nodesOff + nodeCount * 32;
+  const eOff = _nodesOff + nodeCount * 48;
   _extraBase = eOff >> 2;
   _spOff = eOff + extraCount * 4;
   const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;

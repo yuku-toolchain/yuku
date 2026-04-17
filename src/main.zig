@@ -2,7 +2,7 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main(init: std.process.Init) !void {
-    const file_path = "test/index.js";
+    const file_path = "test/index.ts";
 
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, file_path, init.arena.allocator(), std.Io.Limit.limited(10 * 1024 * 1024));
 
@@ -24,7 +24,7 @@ const BenchMode = enum { parse_only, with_semantic, with_resolve };
 fn bench(io: std.Io, source: []const u8, mode: BenchMode, n: i96) !i96 {
     const start = std.Io.Clock.awake.now(io);
     for (0..@intCast(n)) |_| {
-        var tree = try parser.parse(std.heap.page_allocator, source, .{});
+        var tree = try parser.parse(std.heap.page_allocator, source, .{ .lang = .ts });
         if (mode != .parse_only) {
             var result = try parser.semantic.analyze(&tree);
             if (mode == .with_resolve)

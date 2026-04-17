@@ -43,13 +43,13 @@ fn generate(w: *Writer) !void {
         \\  return r;
         \\}
         \\function node(i) {
-        \\  const o = _nodesOff + i * 32;
+        \\  const o = _nodesOff + i * 48;
         \\  const tag = _u8[o];
-        \\  const flags = _u8[o + 1];
-        \\  const f0 = _u8[o + 2] | (_u8[o + 3] << 8);
+        \\  const flags = _u8[o + 2] | (_u8[o + 3] << 8);
+        \\  const f0 = _u8[o + 4] | (_u8[o + 5] << 8);
         \\  const b = o >> 2;
-        \\  const f1 = _u32[b + 1], f2 = _u32[b + 2], f3 = _u32[b + 3], f4 = _u32[b + 4], f5 = _u32[b + 5];
-        \\  const start = _p(_u32[b + 6]), end = _p(_u32[b + 7]);
+        \\  const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8], f8 = _u32[b + 9];
+        \\  const start = _p(_u32[b + 10]), end = _p(_u32[b + 11]);
         \\  switch (tag) {
         \\
     );
@@ -335,11 +335,21 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
 
 // helpers and decode function
 
+// number of u32-sized words the packed node header occupies before the
+// data slots begin. the header is tag + pad + flags(u16) + field0(u16) +
+// pad(u16) = 8 bytes = 2 u32 words.
+const NODE_HEADER_U32S = 2;
+
+/// returns the u32 array index of data slot `field_idx` within a node.
+/// equal to `u32SlotForField + NODE_HEADER_U32S`.
+fn u32IndexOf(comptime T: type, comptime field_name: []const u8) u32 {
+    return rt.u32SlotForField(T, fieldIdx(T, field_name)) + NODE_HEADER_U32S;
+}
+
 fn writeHelpers(w: *Writer) !void {
-    // fnParams: uses comptime-computed offsets for FormalParameters and FormalParameter
-    const fp_items_slot = comptime rt.u32SlotForField(ast.FormalParameters, fieldIdx(ast.FormalParameters, "items")) + 1;
-    const fp_rest_slot = comptime rt.u32SlotForField(ast.FormalParameters, fieldIdx(ast.FormalParameters, "rest")) + 1;
-    const fparam_pattern_slot = comptime rt.u32SlotForField(ast.FormalParameter, fieldIdx(ast.FormalParameter, "pattern")) + 1;
+    const items_idx = comptime u32IndexOf(ast.FormalParameters, "items");
+    const rest_idx = comptime u32IndexOf(ast.FormalParameters, "rest");
+    const pattern_idx = comptime u32IndexOf(ast.FormalParameter, "pattern");
 
     try w.print(
         \\function nodeArr(s, len) {{
@@ -353,20 +363,20 @@ fn writeHelpers(w: *Writer) !void {
         \\  return r;
         \\}}
         \\function fnParams(idx) {{
-        \\  const po = _nodesOff + idx * 32;
-        \\  const len = _u8[po + 2] | (_u8[po + 3] << 8);
+        \\  const po = _nodesOff + idx * 48;
+        \\  const len = _u8[po + 4] | (_u8[po + 5] << 8);
         \\  const pb = po >> 2;
         \\  const iStart = _u32[pb + {d}], rest = _u32[pb + {d}];
         \\  const p = [];
         \\  for (let j = 0; j < len; j++) {{
         \\    const fi = _u32[_extraBase + iStart + j];
-        \\    p.push(node(_u32[(_nodesOff + fi * 32 >> 2) + {d}]));
+        \\    p.push(node(_u32[(_nodesOff + fi * 48 >> 2) + {d}]));
         \\  }}
         \\  if (rest !== NULL) p.push(node(rest));
         \\  return p;
         \\}}
         \\
-    , .{ fp_items_slot, fp_rest_slot, fparam_pattern_slot });
+    , .{ items_idx, rest_idx, pattern_idx });
 }
 
 fn writeDecodeFunction(w: *Writer) !void {
@@ -405,7 +415,7 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\    str = function(s, e) {{ if (s === e) return ""; if (s < _srcLen) return _src.slice(s, e); return _poolDecode(s, e); }};
         \\  }}
         \\  _nodesOff = {d};
-        \\  const eOff = _nodesOff + nodeCount * 32;
+        \\  const eOff = _nodesOff + nodeCount * 48;
         \\  _extraBase = eOff >> 2;
         \\  _spOff = eOff + extraCount * 4;
         \\  const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;

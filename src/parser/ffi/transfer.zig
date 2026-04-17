@@ -1,4 +1,4 @@
-// Yuku AST Transfer Format v1
+// Yuku AST Transfer Format v2
 //
 // serializes the parsed AST into a compact binary buffer for passing to JS.
 // the buffer is returned as an ArrayBuffer from the native NAPI binding.
@@ -11,7 +11,7 @@
 //
 //   offset  section
 //   0       header      (40 bytes, fixed)
-//   40      nodes       (node_count * 32 bytes)
+//   40      nodes       (node_count * 48 bytes)
 //   ...     extra       (extra_count * 4 bytes)
 //   ...     strings     (string_pool_len bytes, raw utf8)
 //   ...     comments    (comment_count * 20 bytes)
@@ -22,7 +22,7 @@
 //
 //   offset  size  field
 //   0       4     magic               "YUKU" (0x59 0x55 0x4B 0x55)
-//   4       4     version             format version (currently 1)
+//   4       4     version             format version (currently 2)
 //   8       4     node_count          number of AST nodes
 //   12      4     extra_count         number of u32 entries in the extra array
 //   16      4     string_pool_len     byte length of the string pool
@@ -33,19 +33,24 @@
 //   36      4     flags               bit 0: source is all ascii
 //
 //
-// 3. nodes (32 bytes each)
+// 3. nodes (48 bytes each)
 //
 //   offset  size  field
 //   0       1     tag         node type (index into the NodeData union)
-//   1       1     flags       packed booleans and small enums
-//   2       2     field0      u16 value (first IndexRange length)
-//   4       4     field1      u32 slot 0
-//   8       4     field2      u32 slot 1
-//   12      4     field3      u32 slot 2
-//   16      4     field4      u32 slot 3
-//   20      4     field5      u32 slot 4
-//   24      4     span_start  byte offset in source
-//   28      4     span_end    byte offset in source
+//   1       1     (padding)
+//   2       2     flags       packed booleans and small enums (16 bits)
+//   4       2     field0      u16 value (first IndexRange length)
+//   6       2     (padding)
+//   8       4     field1      u32 slot 0
+//   12      4     field2      u32 slot 1
+//   16      4     field3      u32 slot 2
+//   20      4     field4      u32 slot 3
+//   24      4     field5      u32 slot 4
+//   28      4     field6      u32 slot 5
+//   32      4     field7      u32 slot 6
+//   36      4     field8      u32 slot 7
+//   40      4     span_start  byte offset in source
+//   44      4     span_end    byte offset in source
 //
 //   fields are assigned to slots by iterating the AST struct's fields
 //   in declaration order. for each field:
@@ -109,20 +114,25 @@
 const std = @import("std");
 const ast = @import("parser").ast;
 
-pub const VERSION: u32 = 1;
+pub const VERSION: u32 = 2;
 pub const HEADER_SIZE: u32 = 40;
-pub const NODE_SIZE: u32 = 32;
+pub const NODE_SIZE: u32 = 48;
 pub const COMMENT_SIZE: u32 = 20;
 
 const PackedNode = extern struct {
     tag: u8,
-    flags: u8,
+    _pad0: u8 = 0,
+    flags: u16,
     field0: u16,
+    _pad1: u16 = 0,
     field1: u32,
     field2: u32,
     field3: u32,
     field4: u32,
     field5: u32,
+    field6: u32,
+    field7: u32,
+    field8: u32,
     span_start: u32,
     span_end: u32,
 };
@@ -226,10 +236,10 @@ fn validateAllNodeLayouts() void {
     for (@typeInfo(ast.NodeData).@"union".fields) |field| {
         const T = field.type;
         if (@typeInfo(T) != .@"struct") continue;
-        if (totalU32Slots(T) > 5)
-            @compileError("node '" ++ field.name ++ "' needs more than 5 u32 slots");
-        if (totalFlagBits(T) > 8)
-            @compileError("node '" ++ field.name ++ "' needs more than 8 flag bits");
+        if (totalU32Slots(T) > 8)
+            @compileError("node '" ++ field.name ++ "' needs more than 8 u32 slots");
+        if (totalFlagBits(T) > 16)
+            @compileError("node '" ++ field.name ++ "' needs more than 16 flag bits");
     }
 }
 
@@ -354,6 +364,9 @@ fn packNode(data: ast.NodeData, span: ast.Span) PackedNode {
         .field3 = 0,
         .field4 = 0,
         .field5 = 0,
+        .field6 = 0,
+        .field7 = 0,
+        .field8 = 0,
         .span_start = span.start,
         .span_end = span.end,
     };
@@ -375,7 +388,7 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
         const val = @field(payload, f.name);
 
         if (f.type == bool) {
-            if (val) n.flags |= @as(u8, 1) << @as(u3, @intCast(comptime flagBitForField(T, i)));
+            if (val) n.flags |= @as(u16, 1) << @as(u4, @intCast(comptime flagBitForField(T, i)));
         } else if (f.type == ast.NodeIndex) {
             setSlot(n, comptime u32SlotForField(T, i), @intFromEnum(val));
         } else if (f.type == ast.IndexRange) {
@@ -392,17 +405,17 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.end);
         } else if (comptime isEnumType(f.type)) {
-            n.flags |= @as(u8, @intFromEnum(val)) << @as(u3, @intCast(comptime flagBitForField(T, i)));
+            n.flags |= @as(u16, @intFromEnum(val)) << @as(u4, @intCast(comptime flagBitForField(T, i)));
         } else if (f.type == ?ast.ImportPhase) {
             const bit = comptime flagBitForField(T, i);
             if (val) |v| {
-                n.flags |= @as(u8, 1) << @as(u3, @intCast(bit));
-                n.flags |= @as(u8, @intFromEnum(v)) << @as(u3, @intCast(bit + 1));
+                n.flags |= @as(u16, 1) << @as(u4, @intCast(bit));
+                n.flags |= @as(u16, @intFromEnum(v)) << @as(u4, @intCast(bit + 1));
             }
         } else if (f.type == ?ast.Hashbang) {
             const slot = comptime u32SlotForField(T, i);
             if (val) |h| {
-                n.flags |= @as(u8, 1) << @as(u3, @intCast(comptime flagBitForField(T, i)));
+                n.flags |= @as(u16, 1) << @as(u4, @intCast(comptime flagBitForField(T, i)));
                 setSlot(n, slot, h.value.start);
                 setSlot(n, slot + 1, h.value.end);
             }
@@ -419,6 +432,9 @@ fn setSlot(n: *PackedNode, comptime slot: u8, val: u32) void {
         2 => n.field3 = val,
         3 => n.field4 = val,
         4 => n.field5 = val,
+        5 => n.field6 = val,
+        6 => n.field7 = val,
+        7 => n.field8 = val,
         else => @compileError("too many u32 slots"),
     }
 }
