@@ -179,61 +179,78 @@ pub const TokenTag = enum(u32) {
     accessor = 134 | Mask.IsIdentifierLike, // "accessor"
     constructor = 135 | Mask.IsIdentifierLike, // "constructor"
 
+    // typescript contextual keywords
+    type = 136 | Mask.IsKeyword | Mask.IsIdentifierLike, // "type"
+    abstract = 137 | Mask.IsKeyword | Mask.IsIdentifierLike, // "abstract"
+    override = 138 | Mask.IsKeyword | Mask.IsIdentifierLike, // "override"
+    readonly = 139 | Mask.IsKeyword | Mask.IsIdentifierLike, // "readonly"
+    keyof = 140 | Mask.IsKeyword | Mask.IsIdentifierLike, // "keyof"
+    unique = 141 | Mask.IsKeyword | Mask.IsIdentifierLike, // "unique"
+    infer = 142 | Mask.IsKeyword | Mask.IsIdentifierLike, // "infer"
+    out = 143 | Mask.IsKeyword | Mask.IsIdentifierLike, // "out"
+    asserts = 144 | Mask.IsKeyword | Mask.IsIdentifierLike, // "asserts"
+    satisfies = 145 | Mask.IsKeyword | Mask.IsIdentifierLike, // "satisfies"
+    intrinsic = 146 | Mask.IsKeyword | Mask.IsIdentifierLike, // "intrinsic"
+    @"is" = 147 | Mask.IsKeyword | Mask.IsIdentifierLike, // "is"
+    global = 148 | Mask.IsKeyword | Mask.IsIdentifierLike, // "global"
+    module = 149 | Mask.IsKeyword | Mask.IsIdentifierLike, // "module"
+    require = 150 | Mask.IsKeyword | Mask.IsIdentifierLike, // "require"
+
     eof = 131, // end of file
     pub fn precedence(self: TokenTag) u5 {
         return @intCast((@intFromEnum(self) >> Mask.PrecShift) & Mask.PrecOverlap);
     }
 
-    pub fn is(self: TokenTag, mask: u32) bool {
+    pub fn hasMask(self: TokenTag, mask: u32) bool {
         return (@intFromEnum(self) & mask) != 0;
     }
 
     pub fn isNumericLiteral(self: TokenTag) bool {
-        return self.is(Mask.IsNumericLiteral);
+        return self.hasMask(Mask.IsNumericLiteral);
     }
 
     pub fn isBinaryOperator(self: TokenTag) bool {
-        return self.is(Mask.IsBinaryOp);
+        return self.hasMask(Mask.IsBinaryOp);
     }
 
     pub fn isLogicalOperator(self: TokenTag) bool {
-        return self.is(Mask.IsLogicalOp);
+        return self.hasMask(Mask.IsLogicalOp);
     }
 
     pub fn isUnaryOperator(self: TokenTag) bool {
-        return self.is(Mask.IsUnaryOp);
+        return self.hasMask(Mask.IsUnaryOp);
     }
 
     pub fn isAssignmentOperator(self: TokenTag) bool {
-        return self.is(Mask.IsAssignmentOp);
+        return self.hasMask(Mask.IsAssignmentOp);
     }
 
     /// returns true for identifier-like tokens.
     /// includes: identifiers, all keywords, literal keywords.
     pub fn isIdentifierLike(self: TokenTag) bool {
-        return self.is(Mask.IsIdentifierLike);
+        return self.hasMask(Mask.IsIdentifierLike);
     }
 
     pub fn isKeyword(self: TokenTag) bool {
-        return self.is(Mask.IsKeyword);
+        return self.hasMask(Mask.IsKeyword);
     }
 
     /// returns true for unconditionally reserved keywords.
     /// these can NEVER be used as identifiers.
     pub fn isUnconditionallyReserved(self: TokenTag) bool {
-        return self.is(Mask.IsUnconditionallyReserved);
+        return self.hasMask(Mask.IsUnconditionallyReserved);
     }
 
     /// returns true for keywords reserved ONLY in strict mode.
     /// these can be identifiers in sloppy mode but not in strict mode.
     /// includes: let, static, implements, interface, package, private, protected, public, yield
     pub fn isStrictModeReserved(self: TokenTag) bool {
-        return self.is(Mask.IsStrictModeReserved);
+        return self.hasMask(Mask.IsStrictModeReserved);
     }
 
     /// returns true for any reserved keyword (unconditional or strict-mode-only).
     pub fn isReserved(self: TokenTag) bool {
-        return self.is(Mask.IsUnconditionallyReserved) or self.is(Mask.IsStrictModeReserved);
+        return self.hasMask(Mask.IsUnconditionallyReserved) or self.hasMask(Mask.IsStrictModeReserved);
     }
 
     pub fn toString(self: TokenTag) ?[]const u8 {
@@ -374,6 +391,22 @@ pub const TokenTag = enum(u32) {
             .set => "set",
             .accessor => "accessor",
             .constructor => "constructor",
+
+            .type => "type",
+            .abstract => "abstract",
+            .override => "override",
+            .readonly => "readonly",
+            .keyof => "keyof",
+            .unique => "unique",
+            .infer => "infer",
+            .out => "out",
+            .asserts => "asserts",
+            .satisfies => "satisfies",
+            .intrinsic => "intrinsic",
+            .@"is" => "is",
+            .global => "global",
+            .module => "module",
+            .require => "require",
 
             .eof,
             .numeric_literal,
