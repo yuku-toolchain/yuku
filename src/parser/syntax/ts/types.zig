@@ -9,7 +9,6 @@ const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
 
-/// parses any TSType node.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     try parser.reportExpected(
         parser.current_token.span,
@@ -19,8 +18,7 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-/// parses a `: Type` type annotation and returns a `TSTypeAnnotation` node.
-/// the caller must have already confirmed the current token is `:` before calling.
+/// `: Type`.
 pub fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
 
