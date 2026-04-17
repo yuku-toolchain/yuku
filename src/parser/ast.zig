@@ -1031,12 +1031,6 @@ pub const TemplateElement = struct {
 /// https://tc39.es/ecma262/#sec-identifiers
 pub const IdentifierReference = struct {
     name: String = .empty,
-    /// typescript: Decorator[]
-    decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
-    type_annotation: NodeIndex = .null,
-    /// typescript: true when the identifier is marked optional in a binding position
-    optional: bool = false,
 };
 
 /// `#name`.
@@ -1060,23 +1054,11 @@ pub const BindingIdentifier = struct {
 /// property keys, meta properties
 pub const IdentifierName = struct {
     name: String = .empty,
-    /// typescript: Decorator[]
-    decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
-    type_annotation: NodeIndex = .null,
-    /// typescript: true when the identifier is marked optional in a binding position
-    optional: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-LabelIdentifier
 pub const LabelIdentifier = struct {
     name: String = .empty,
-    /// typescript: Decorator[]
-    decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
-    type_annotation: NodeIndex = .null,
-    /// typescript: true when the identifier is marked optional in a binding position
-    optional: bool = false,
 };
 
 /// `pattern = init`
@@ -1175,8 +1157,6 @@ pub const ObjectProperty = struct {
     method: bool,
     shorthand: bool,
     computed: bool,
-    /// typescript: appears when the property is in a binding context (unused in ESTree standard)
-    optional: bool = false,
 };
 
 pub const Program = struct {

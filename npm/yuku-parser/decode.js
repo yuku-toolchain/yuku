@@ -57,7 +57,7 @@ function node(i) {
     case 14: return { type: "ArrayExpression", start, end, elements: nodeArrHoles(f1, f0) };
     case 15: return { type: "ObjectExpression", start, end, properties: nodeArr(f1, f0) };
     case 16: return { type: "SpreadElement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 17: { const r = { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) }; if (_isTs) { r.optional = !!(flags & 32); } return r; }
+    case 17: return { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) };
     case 18: return { type: "MemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2) };
     case 19: { const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 20: return { type: "ChainExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
@@ -82,11 +82,11 @@ function node(i) {
     case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
     case 41: { const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return { type: "TemplateElement", start, end, value: { raw: r, cooked: (flags & 2) ? null : str(f1, f2) }, tail: !!(flags & 1) }; }
-    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
     case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
-    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
-    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
+    case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
+    case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 47: return { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 48: return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
     case 49: return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) };

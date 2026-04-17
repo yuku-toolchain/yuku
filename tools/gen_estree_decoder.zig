@@ -122,7 +122,8 @@ fn writeNodeCase(w: *Writer, comptime name: []const u8, comptime tag: usize, com
     // generic case
     const etype = comptime estreeType(name);
     const has_ts = comptime hasAnyTsField(name, T);
-    if (!has_ts) {
+    const has_ts_defaults = comptime needsIdentifierDefaults(name);
+    if (!has_ts and !has_ts_defaults) {
         try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
         try writeStructFields(w, name, T, .all);
         try w.writeAll(" };\n");
@@ -132,11 +133,19 @@ fn writeNodeCase(w: *Writer, comptime name: []const u8, comptime tag: usize, com
     try writeStructFields(w, name, T, .non_ts);
     try w.writeAll(" }; if (_isTs) { ");
     try writeStructFields(w, name, T, .ts_only);
-    // rest elements carry `value: null` in the target TS AST for parity with Babel's shape.
+    if (comptime has_ts_defaults) {
+        try w.writeAll("r.decorators = []; r.optional = false; r.typeAnnotation = null; ");
+    }
     if (comptime std.mem.eql(u8, name, "binding_rest_element")) {
         try w.writeAll("r.value = null; ");
     }
     try w.writeAll("} return r; }\n");
+}
+
+fn needsIdentifierDefaults(comptime name: []const u8) bool {
+    return std.mem.eql(u8, name, "identifier_reference") or
+        std.mem.eql(u8, name, "identifier_name") or
+        std.mem.eql(u8, name, "label_identifier");
 }
 
 const FieldSelection = enum { all, non_ts, ts_only };
@@ -164,7 +173,7 @@ fn writeStructFields(w: *Writer, comptime tag_name: []const u8, comptime T: type
 
 /// returns true if `field_name` on struct `tag_name` was introduced for
 /// typescript support. these fields are emitted only when the source
-/// language is TypeScript so JS/JSX output stays clean.
+/// language is TypeScript.
 fn isTsField(comptime tag_name: []const u8, comptime field_name: []const u8) bool {
     const pairs = &[_][2][]const u8{
         .{ "variable_declaration", "declare" },
@@ -203,15 +212,6 @@ fn isTsField(comptime tag_name: []const u8, comptime field_name: []const u8) boo
         .{ "binding_identifier", "decorators" },
         .{ "binding_identifier", "optional" },
         .{ "binding_identifier", "type_annotation" },
-        .{ "identifier_reference", "decorators" },
-        .{ "identifier_reference", "optional" },
-        .{ "identifier_reference", "type_annotation" },
-        .{ "identifier_name", "decorators" },
-        .{ "identifier_name", "optional" },
-        .{ "identifier_name", "type_annotation" },
-        .{ "label_identifier", "decorators" },
-        .{ "label_identifier", "optional" },
-        .{ "label_identifier", "type_annotation" },
         .{ "assignment_pattern", "decorators" },
         .{ "assignment_pattern", "optional" },
         .{ "assignment_pattern", "type_annotation" },
@@ -221,7 +221,6 @@ fn isTsField(comptime tag_name: []const u8, comptime field_name: []const u8) boo
         .{ "array_pattern", "decorators" },
         .{ "array_pattern", "optional" },
         .{ "array_pattern", "type_annotation" },
-        .{ "object_property", "optional" },
     };
     for (pairs) |p| {
         if (std.mem.eql(u8, p[0], tag_name) and std.mem.eql(u8, p[1], field_name)) return true;
