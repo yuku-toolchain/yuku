@@ -158,7 +158,6 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
             .params = params,
             .body = body,
             .return_type = return_type,
-            .declare = opts.is_declare,
         },
     }, .{
         .start = start,

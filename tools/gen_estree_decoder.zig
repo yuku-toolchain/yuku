@@ -169,7 +169,6 @@ fn isTsField(comptime tag_name: []const u8, comptime field_name: []const u8) boo
     const pairs = &[_][2][]const u8{
         .{ "variable_declaration", "declare" },
         .{ "variable_declarator", "definite" },
-        .{ "function", "declare" },
         .{ "function", "type_parameters" },
         .{ "function", "return_type" },
         .{ "arrow_function_expression", "type_parameters" },
@@ -198,9 +197,6 @@ fn isTsField(comptime tag_name: []const u8, comptime field_name: []const u8) boo
         .{ "export_named_declaration", "export_kind" },
         .{ "export_all_declaration", "export_kind" },
         .{ "export_specifier", "export_kind" },
-        .{ "formal_parameter", "decorators" },
-        .{ "formal_parameter", "optional" },
-        .{ "formal_parameter", "type_annotation" },
         .{ "binding_rest_element", "decorators" },
         .{ "binding_rest_element", "optional" },
         .{ "binding_rest_element", "type_annotation" },
@@ -315,11 +311,10 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const srt = comptime slotOf("function", ast.Function, "return_type");
         const bit_gen = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Function, fieldIdx(ast.Function, "generator")));
         const bit_async = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Function, fieldIdx(ast.Function, "async")));
-        const bit_declare = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.Function, fieldIdx(ast.Function, "declare")));
         const mask_type = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.FunctionType))) - 1;
         try w.print(
-            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; r.declare = ft === 2 || !!(flags & {d}); }} return r; }}
-        , .{ tag, mask_type, sid, sid, bit_gen, bit_async, sp, sp, sb, sb, stp, stp, srt, srt, bit_declare });
+            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; r.declare = ft === 2; }} return r; }}
+        , .{ tag, mask_type, sid, sid, bit_gen, bit_async, sp, sp, sb, sb, stp, stp, srt, srt });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "arrow_function_expression")) {
         const sp = comptime slotOf("arrow_function_expression", ast.ArrowFunctionExpression, "params");

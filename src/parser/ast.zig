@@ -1230,8 +1230,6 @@ pub const Function = struct {
     type_parameters: NodeIndex = .null,
     /// typescript: TSTypeAnnotation (optional, may be `.null`)
     return_type: NodeIndex = .null,
-    /// typescript: true for `declare function`
-    declare: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-FunctionBody
@@ -1259,17 +1257,6 @@ pub const FormalParameters = struct {
 pub const FormalParameter = struct {
     /// BindingPattern
     pattern: NodeIndex,
-    /// typescript: Decorator[]. in typescript, decorators on parameters.
-    /// note: the decoder unwraps FormalParameter to its inner pattern, so
-    /// decorators set here are merged onto the inner pattern in the ESTree output.
-    decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`).
-    /// normally the annotation is attached to the inner pattern (BindingIdentifier,
-    /// ObjectPattern, etc.); this field is retained for parity with the target AST
-    /// and may be populated in rare wrapper cases.
-    type_annotation: NodeIndex = .null,
-    /// typescript: true when the parameter is marked optional (`x?`)
-    optional: bool = false,
 };
 
 /// https://tc39.es/ecma262/#prod-ParenthesizedExpression

@@ -43,7 +43,7 @@ function node(i) {
     case 0: return { type: "SequenceExpression", start, end, expressions: nodeArr(f1, f0) };
     case 1: return { type: "ParenthesizedExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 2: { const r = { type: "ArrowFunctionExpression", start, end, id: null, generator: false, async: !!(flags & 2), params: f1 !== NULL ? fnParams(f1) : [], body: node(f2), expression: !!(flags & 1) }; if (_isTs) { r.typeParameters = f3 !== NULL ? node(f3) : null; r.returnType = f4 !== NULL ? node(f4) : null; } return r; }
-    case 3: { const ft = flags & 3; const r = { type: FUNCTION_TYPES[ft], start, end, id: f1 !== NULL ? node(f1) : null, generator: !!(flags & 4), async: !!(flags & 8), params: f2 !== NULL ? fnParams(f2) : [], body: f3 !== NULL ? node(f3) : null, expression: false }; if (_isTs) { r.typeParameters = f4 !== NULL ? node(f4) : null; r.returnType = f5 !== NULL ? node(f5) : null; r.declare = ft === 2 || !!(flags & 16); } return r; }
+    case 3: { const ft = flags & 3; const r = { type: FUNCTION_TYPES[ft], start, end, id: f1 !== NULL ? node(f1) : null, generator: !!(flags & 4), async: !!(flags & 8), params: f2 !== NULL ? fnParams(f2) : [], body: f3 !== NULL ? node(f3) : null, expression: false }; if (_isTs) { r.typeParameters = f4 !== NULL ? node(f4) : null; r.returnType = f5 !== NULL ? node(f5) : null; r.declare = ft === 2; } return r; }
     case 4: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
     case 5: return { type: "BlockStatement", start, end, body: nodeArr(f1, f0) };
     case 6: return { params: fnParams(i) };
