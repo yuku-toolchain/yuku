@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       0/8977 (0.00%)
-Failed:       8977
-AST mismatch: 1728/1728
+Passed:       0/8885 (0.00%)
+Failed:       8885
+AST mismatch: 1723/1723
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -842,23 +842,6 @@ error: Expected ';' after class field, but found 'B'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/02f4d642b1024044.module.ts
-error: Duplicate export of 'default'
-   |
- 3 | 
- 4 | export default class C {
-   | ~~~~~~~~~~~~~~~~~~~~~~~~
- 5 | }
-   | ~ first exported here
- 6 | 
- 7 | export default class C {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~
- 8 | }
-   | ^
-   | ~ exported again here
-   |
-
 ✗ test/parser/suite/ts/pass/02fff8d5a3757968.ts
 error: Expected ')' to close parameter list, but found '?'
    |
@@ -951,19 +934,6 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/033c41017004b086.ts
-✗ test/parser/suite/ts/pass/034ca37635d0ffdc.ts
-error: Identifier 'v' has already been declared
-   |
- 7 | function test1() {
- 8 |     for (let v; ; ) { var v; }
-   |                           ^
-   |              ~ 'v' was first declared as a variable here
-   |                           ~ cannot be redeclared here
- 9 | }
-   |
-   = help: Consider removing or renaming this declaration of 'v'
-
-
 ✗ test/parser/suite/ts/pass/0353593f28f8ef9a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -1423,21 +1393,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/052828046408782c.ts
 ✗ test/parser/suite/ts/pass/05296599e9fb6537.ts
-✗ test/parser/suite/ts/pass/052e3f2c3ddcf578.ts
-error: Identifier 'Markup' has already been declared
-   |
- 1 | // @target: es2015
- 2 | var Markup;
-   |     ~~~~~~ 'Markup' was first declared as a variable here
- 3 | 
- 4 | class Markup {
-   |       ^^^^^^
-   |       ~~~~~~ cannot be redeclared here
- 5 |     constructor() {
-   |
-   = help: Consider removing or renaming this declaration of 'Markup'
-
-
 ✗ test/parser/suite/ts/pass/053778ba966afd25.module.ts
 ✗ test/parser/suite/ts/pass/054a64d3925a96d7.ts
 error: Expected ';' after class field, but found 'x'
@@ -1950,17 +1905,6 @@ error: Expected '(' to start parameter list, but found '<'
  5 | var r = f(1);
    |
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
-
-✗ test/parser/suite/ts/pass/06fa0cacd356bc48.ts
-error: Expected ';' after class field, but found 'total'
-   |
- 2 | class TestProgressBar {
- 3 |     public total: number;
-   |            ^^^^^
- 4 |     public total(total: number) {
-   |
-   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/06fbea5fd70573b6.ts
@@ -3436,17 +3380,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0b636b7c56d43a7e.ts
-✗ test/parser/suite/ts/pass/0b7022c2912d906b.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
-   |
- 2 | // @lib: es5
- 3 | declare var console: any;
-   |         ^^^
- 4 | 
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/0b72f2103dcb193b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -3662,15 +3595,6 @@ error: 'const' declarations must be initialized
    |
    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
-
-✗ test/parser/suite/ts/pass/0c05eb90456d1bdc.ts
-error: Duplicate label 'target'
-   |
- 5 | while (true) {
- 6 |   target:
-   |   ^^^^^^
- 7 |   while (true) {
-   |
 
 ✗ test/parser/suite/ts/pass/0c0b1e3c55bcb619.module.ts
 error: Expected declaration after 'export', but found 'interface'
@@ -4045,7 +3969,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/0d53486e837d9c54.ts
 ✗ test/parser/suite/ts/pass/0d54da2e6d01ad7e.ts
-✗ test/parser/suite/ts/pass/0d60c6b142b81094.ts
 ✗ test/parser/suite/ts/pass/0d6d55bfc2262ed2.ts
 ✗ test/parser/suite/ts/pass/0d7e9b609da60972.ts
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -4145,17 +4068,6 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/0df4d6788c6cea45.ts
-✗ test/parser/suite/ts/pass/0dfe55321fa3e37e.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'T1'
-   |
- 1 | // @target: es2015
- 2 | type T1 = { x: string }
-   |      ^^
- 3 | 
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/0dfe629e682b20c5.ts
 ✗ test/parser/suite/ts/pass/0e0aa7239aee95b1.ts
 error: 'enum' is reserved and cannot be used as an identifier
@@ -5598,17 +5510,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/12436a1cce9c1b8d.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
-   |
- 1 | // @target: es2015
- 2 | var baz: foo;
-   |        ^
- 3 | class baz { }
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/12439d9083149884.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -6475,21 +6376,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  7 |     declare var a: {
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/158e388406e2e3b7.ts
-error: Identifier 'x' has already been declared
-   |
- 2 | {
- 3 |     let x;
-   |         ~ 'x' was first declared as a variable here
- 4 |     {
- 5 |         var x = 1;
-   |             ^
-   |             ~ cannot be redeclared here
- 6 |     }
-   |
-   = help: Consider removing or renaming this declaration of 'x'
 
 
 ✗ test/parser/suite/ts/pass/159479b4eaab1f39.ts
@@ -8126,17 +8012,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 11 | type Results = Result[];
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/1afe553c02f66033.ts
-error: Expected ';' after class field, but found ':'
-   |
- 2 | class C {
- 3 |     ["a"]: string;
-   |          ^
- 4 |     ["a"]: string;
-   |
-   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/1b08295bb8bb212c.module.ts
@@ -11888,17 +11763,6 @@ error: Expected ']' after computed property key, but found ':'
  4 | }
    |
 
-✗ test/parser/suite/ts/pass/272f987258c226bc.ts
-error: Expected ';' after class field, but found ':'
-   |
- 2 | class A {
- 3 |     m1: string;
-   |       ^
- 4 |     f() {}
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/273461f5fcc43446.module.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -13825,19 +13689,6 @@ error: Expected ')' after method parameters, but found ':'
  4 |   }
    |
 
-✗ test/parser/suite/ts/pass/2d7afd9d26731334.ts
-error: Identifier 'a' has already been declared
-   |
- 2 | 
- 3 | function f0(a, [a, [b]], {b}) { }
-   |                 ^
-   |             ~ 'a' was first declared as a parameter here
-   |                 ~ cannot be redeclared here
- 4 | function f1([a, a]) { }
-   |
-   = help: Consider removing or renaming this declaration of 'a'
-
-
 ✗ test/parser/suite/ts/pass/2d7b656f7e2c55bd.ts
 ✗ test/parser/suite/ts/pass/2d7cf33c7d69558b.ts
 ✗ test/parser/suite/ts/pass/2d7fad4bbcc2a34a.ts
@@ -14615,15 +14466,6 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/2f92d1233db03509.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // enum then interface
- 3 | enum e1 { One } // error
-   | ^^^^
- 4 | 
-   |
-
 ✗ test/parser/suite/ts/pass/2f96eea6683d0f90.ts
 ✗ test/parser/suite/ts/pass/2fc37117a17ec212.ts
 ✗ test/parser/suite/ts/pass/2fc52d8db8643639.module.ts
@@ -15218,7 +15060,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/31a62a532853ee23.ts
 ✗ test/parser/suite/ts/pass/31a9ca50695fab45.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'TypeScript2'
    |
@@ -16174,17 +16015,6 @@ error: 'const' declarations must be initialized
 13 | 
    |
    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
-✗ test/parser/suite/ts/pass/346518100c615ad7.ts
-error: Expected '(' to start parameter list, but found '<'
-   |
-11 |     function bar(private, implements, let) { }
-12 |     function baz<implements, protected>() { }
-   |                 ^
-13 |     function barn(cb: (private, public, package) => void) { }
-   |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/34670d92ed5fe7d7.tsx
@@ -17244,19 +17074,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/37ac156c7fbd5ee4.module.ts
-error: Identifier 'a' has already been declared
-   |
- 3 | "use strict"
- 4 | function f0(a, [a, [b]], {b}) { }
-   |                 ^
-   |             ~ 'a' was first declared as a parameter here
-   |                 ~ cannot be redeclared here
- 5 | function f1([a, a]) { }
-   |
-   = help: Consider removing or renaming this declaration of 'a'
-
-
 ✗ test/parser/suite/ts/pass/37b2f4b2b3688ed6.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -17311,15 +17128,6 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/37d6c90a51416a71.ts
-✗ test/parser/suite/ts/pass/37dd345a66f22af2.ts
-error: Duplicate label 'target'
-   |
- 3 | while (true) {
- 4 |   target:
-   |   ^^^^^^
- 5 |   while (true) {
-   |
-
 ✗ test/parser/suite/ts/pass/37df90b8eb4efba0.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -17580,17 +17388,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  3 | declare function ff(t: number): void;
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/38dac743458ee63e.ts
-error: Expected ';' after class field, but found ':'
-   |
- 3 | class C {
- 4 |     x: number;
-   |      ^
- 5 |     get x() { // error
-   |
-   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/38de42abcbfaa288.module.ts
@@ -18667,16 +18464,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/3c50611c01d42830.ts
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a?:string, b?:number, ...b:number[]){}
-   |               ^
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
 ✗ test/parser/suite/ts/pass/3c6abbdd4f937038.ts
 ✗ test/parser/suite/ts/pass/3c6b3a1d3e1316e8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -18720,17 +18507,6 @@ error: Expected '{' to start class body, but found '<'
  3 | }
    |
    = help: Class body must be enclosed in braces: class Name { ... }
-
-
-✗ test/parser/suite/ts/pass/3c8953d20cdac738.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'T'
-   |
- 1 | // @target: es2015
- 2 | namespace T {
-   |           ^
- 3 |     var x = 2;
-   |
-   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/3c8e56e91e08504a.module.ts
@@ -19534,17 +19310,6 @@ error: Expected ';' after class field, but found 'foo'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/3f2a45d0bfe82d0a.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Z'
-   |
- 1 | // @target: es2015
- 2 | namespace Z {
-   |           ^
- 3 |     export namespace M {
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/3f3298ad6eb36683.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -20186,15 +19951,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4141f0ea19f93567.ts
-✗ test/parser/suite/ts/pass/4146d3853f3cb7ee.ts
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: () => Foo2;
-   |       ^
- 8 | 
-   |
-
 ✗ test/parser/suite/ts/pass/4149501f6994637f.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -21757,15 +21513,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/4615a87a28f65d84.ts
-error: Duplicate label 'target'
-   |
- 2 | target:
- 3 | target:
-   | ^^^^^^
- 4 | while (true) {
-   |
-
 ✗ test/parser/suite/ts/pass/46186e4c55c6605f.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -23303,17 +23050,6 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/4b367b3e8329102f.ts
-error: Expected ')' to close parameter list, but found ':'
-   |
- 5 | 
- 6 | function f1(obj: { a?: string, b?: string | undefined }) {
-   |                ^
- 7 |     let a = obj.a;  // string | undefined
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
 ✗ test/parser/suite/ts/pass/4b3cef4a912f22cf.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -24154,15 +23890,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4e0c6094a2930bf0.ts
-✗ test/parser/suite/ts/pass/4e13c91b63b36440.ts
-error: Duplicate label 'target'
-   |
- 4 | target:
- 5 | target:
-   | ^^^^^^
- 6 | while (true) {
-   |
-
 ✗ test/parser/suite/ts/pass/4e160c2d1e6b1652.ts
 error: Expected ',' or '}' in object, but found '?'
    |
@@ -24311,17 +24038,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  2 | interface Number {
    |           ^^^^^^
  3 |     doStuff(): string;
-   |
-   = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/4e7f2369ee03df0f.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'i'
-   |
- 3 | 
- 4 | interface i {
-   |           ^
- 5 |     foo(): void;
    |
    = help: Try inserting a semicolon here
 
@@ -26631,20 +26347,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  8 | 
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/55bd9f7879b03e2c.module.ts
-error: Identifier 'a' has already been declared
-   |
- 2 | //@module: commonjs
- 3 | export var a = 10;
-   |            ~ 'a' was first declared as a variable here
- 4 | export function a() {
-   |                 ^
-   |                 ~ cannot be redeclared here
- 5 | }
-   |
-   = help: Consider removing or renaming this declaration of 'a'
 
 
 ✗ test/parser/suite/ts/pass/55bde1b2bc5ace0b.ts
@@ -29065,17 +28767,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5dab81fbef25effb.module.ts
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | 
- 6 | export function f();
-   |                    ^
- 7 | export function f() {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
 ✗ test/parser/suite/ts/pass/5db28939575e22e2.ts
 ✗ test/parser/suite/ts/pass/5db2966f6ca288a6.ts
 error: Expected ')' to close parameter list, but found ':'
@@ -29537,7 +29228,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5f240197b626e0cb.ts
 ✗ test/parser/suite/ts/pass/5f2991190ac0b34f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -29703,17 +29393,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  2 | var strOrNum: string | number;
    |             ^
  3 | var strOrBool: string | boolean;
-   |
-   = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/5fa5d6ce39f303b4.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
-   |
- 1 | // @target: es2015
- 2 | declare var x: any;
-   |         ^^^
- 3 | namespace myMod {
    |
    = help: Try inserting a semicolon here
 
@@ -30877,17 +30556,6 @@ error: Expected ';' after class field, but found 'B'
 14 |     {
    |
    = help: Add a semicolon after the field declaration.
-
-
-✗ test/parser/suite/ts/pass/63aa2e51dc7e959c.ts
-error: Expected '(' to start parameter list, but found '<'
-   |
- 6 |     // Type parameters are in scope in parameters and return types
- 7 |     function f<T>(x: T): T {
-   |               ^
- 8 |         return undefined;
-   |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/63ae35c3d900335d.ts
@@ -32277,15 +31945,6 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/6868b50a275651d1.ts
-error: Expected ')' after method parameters, but found ':'
-   |
- 6 |  
- 7 |     static fnOverload(foo: string){ } // error
-   |                          ^
- 8 |  
-   |
-
 ✗ test/parser/suite/ts/pass/686cc2e5be002170.ts
 ✗ test/parser/suite/ts/pass/68728d53b88a94bf.ts
 error: Expected ')' to close parameter list, but found ':'
@@ -33102,17 +32761,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/6aeccb3f27b03a0e.ts
-error: Expected ';' after class field, but found 'foo'
-   |
-17 | var x4a = 1; // error
-18 | class x4a { public foo() { } } // error
-   |                    ^^^
-19 | 
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/6af6cc8d114e53e8.ts
 error: Destructuring declaration must have an initializer
    |
@@ -33294,17 +32942,6 @@ error: Invalid operand for increment/decrement operator
    |   ^^^^^^^^^^^^^^^
    |
    = help: The '++' and '--' operators require a variable or property reference, not a literal or complex expression.
-
-
-✗ test/parser/suite/ts/pass/6bb7c830421f5df0.module.ts
-error: Expected '{' to start function body, but found ':'
-   |
- 3 | class SomeClass {
- 4 |     static get someProp(): number {
-   |                          ^
- 5 |         return 0;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/6bb9063f8e37f58d.ts
@@ -34171,17 +33808,6 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/6e54d3c2ac5bfdc8.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'any1'
-   |
- 2 | // @useUnknownInCatchVariables: false
- 3 | type any1 = any;
-   |      ^^^^
- 4 | type unknown1 = unknown;
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/6e591b69e0b66934.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -34736,20 +34362,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/702b9bd383c586b7.ts
-error: Identifier 'v' has already been declared
-   |
- 1 | //@target: ES6
- 2 | for (let v of []) {
-   |          ~ 'v' was first declared as a variable here
- 3 |     var v;
-   |         ^
-   |         ~ cannot be redeclared here
- 4 | }
-   |
-   = help: Consider removing or renaming this declaration of 'v'
-
-
 ✗ test/parser/suite/ts/pass/702ba49e53144249.module.ts
 ✗ test/parser/suite/ts/pass/702e11cb3030282f.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -35281,17 +34893,6 @@ error: Expected '{' to start class body, but found '<'
  3 | }
    |
    = help: Class body must be enclosed in braces: class Name { ... }
-
-
-✗ test/parser/suite/ts/pass/71c5013f96067cbd.ts
-error: Expected ';' after class field, but found 'get'
-   |
- 2 | class C {
- 3 |     public get Foo() { return "foo";} // ok
-   |            ^^^
- 4 |     public set Foo(foo:string) {} // ok
-   |
-   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/71d05669f25cfd1b.ts
@@ -36155,17 +35756,6 @@ error: Expected ')' after method parameters, but found ':'
    |                 ^
  8 |     foo() {
    |
-
-✗ test/parser/suite/ts/pass/74478e1e1fbded79.ts
-error: Expected ';' after class field, but found ':'
-   |
- 3 | class C {
- 4 |     x: number;
-   |      ^
- 5 |     x() { // error
-   |
-   = help: Add a semicolon after the field declaration.
-
 
 ✗ test/parser/suite/ts/pass/744a9a34dad0040b.ts
 error: Expected ')' to close parameter list, but found ':'
@@ -37194,17 +36784,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7757cf0d49468937.ts
-✗ test/parser/suite/ts/pass/775c2f0fc9670ee8.ts
-error: Expected ';' after class field, but found 'a'
-   |
- 3 | class a {
- 4 |     public a;
-   |            ^
- 5 |     public a;
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/775dd8530bd861fb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Series'
    |
@@ -38500,17 +38079,6 @@ error: 'let' is not allowed as a variable name in a lexical declaration
  5 | 
    |
 
-✗ test/parser/suite/ts/pass/7b33bb8848e7340b.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
-   |
-12 | 
-13 | interface I {
-   |           ^
-14 |     1;
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/7b355389846c42ad.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -39148,7 +38716,6 @@ error: Expected ';' after class field, but found '['
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/7d6cfb4bd317c962.ts
 ✗ test/parser/suite/ts/pass/7d8acc505d2f22fd.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Test'
    |
@@ -39456,17 +39023,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/7e37aae63408dee5.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'm1'
-   |
- 2 | // module then var
- 3 | namespace m1 { }
-   |           ^^
- 4 | var m1 = 1; // Should be allowed
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/7e43e59fe714c943.ts
 ✗ test/parser/suite/ts/pass/7e4e8a8b5a3d8d1c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
@@ -39587,15 +39143,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
    = help: Try inserting a semicolon here
 
-
-✗ test/parser/suite/ts/pass/7ebd3350738cf505.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // enum then var
- 3 | enum e1111 { One } // error
-   | ^^^^
- 4 | var e1111 = 1; // error
-   |
 
 ✗ test/parser/suite/ts/pass/7ed6faf475be2aa4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
@@ -39810,17 +39357,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7f67e41a1a8982c1.module.ts
-✗ test/parser/suite/ts/pass/7f6c9f31a97ec3b2.module.ts
-error: Unexpected token '=' in binding pattern
-   |
- 4 | var a = 10;
- 5 | let = 30;
-   |     ^
- 6 | let
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
 ✗ test/parser/suite/ts/pass/7f6d66c0557a3124.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -39960,17 +39496,6 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/7fff70453733a21e.ts
-✗ test/parser/suite/ts/pass/80007ff0a2634c0c.ts
-error: Expected ';' after class field, but found 'aaaaa'
-   |
- 2 | class C65 {
- 3 |     public aaaaa() { }
-   |            ^^^^^
- 4 |     public get aaaaa() {
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/80066b95de43b9f2.ts
 error: Empty parentheses are only valid as arrow function parameters
    |
@@ -40445,7 +39970,6 @@ error: Expected ';' after class field, but found '_path'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/8123a342f69b1d8d.ts
 ✗ test/parser/suite/ts/pass/812f5c708c9ee821.ts
 ✗ test/parser/suite/ts/pass/813d89157111e4c8.ts
 ✗ test/parser/suite/ts/pass/813edaa02a2cbc31.ts
@@ -41394,17 +40918,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/84eec779b2870845.ts
-error: Expected ';' after class field, but found 'foo'
-   |
- 2 | //// class then class
- 3 | class c3 { public foo() { } } // error
-   |                   ^^^
- 4 | class c3 { public bar() { } } // error
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/84ef506f911c7de7.ts
 ✗ test/parser/suite/ts/pass/84ff5ff2b43dc233.ts
 error: Invalid element in assignment pattern
@@ -41592,17 +41105,6 @@ error: 'const' declarations must be initialized
 
 
 ✗ test/parser/suite/ts/pass/85914e292c0616b5.ts
-✗ test/parser/suite/ts/pass/85923446c5b314b4.ts
-error: Expected '{' to start class body, but found '<'
-   |
- 1 | // @target: es2015
- 2 | class X<A,B,C> { }
-   |        ^
- 3 | enum X { MyVal }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
 ✗ test/parser/suite/ts/pass/8599d6407fdf8d37.ts
 error: Expected ';' after class field, but found 'secret'
    |
@@ -41610,17 +41112,6 @@ error: Expected ';' after class field, but found 'secret'
  4 |   protected secret(): void {}
    |             ^^^^^^
  5 | }
-   |
-   = help: Add a semicolon after the field declaration.
-
-
-✗ test/parser/suite/ts/pass/85a3a7a4776c89cd.ts
-error: Expected ';' after class field, but found ':'
-   |
- 4 | class C {
- 5 |     "1": number;
-   |        ^
- 6 |     "1.0": number; // not a duplicate
    |
    = help: Add a semicolon after the field declaration.
 
@@ -41765,17 +41256,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  2 | interface Foo {
    |           ^^^
  3 |     fooProp: "hello" | "world";
-   |
-   = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/860133fc781154d0.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
-   |
- 5 | 
- 6 | namespace M {
-   |           ^
- 7 |     function fn1() { }
    |
    = help: Try inserting a semicolon here
 
@@ -42217,17 +41697,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/878ecae443b73bd3.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Number'
-   |
- 4 | 
- 5 | interface Number {
-   |           ^^^^^^
- 6 |     foo: string;
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/8790b9af4c964768.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm3b'
    |
@@ -42461,17 +41930,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✗ test/parser/suite/ts/pass/881204e0792e6594.ts
 ✗ test/parser/suite/ts/pass/881e9832fba76452.ts
-✗ test/parser/suite/ts/pass/8822d29390d10bf9.ts
-error: Expected ';' after class field, but found ':'
-   |
- 5 |  
- 6 |     static bar:string; // errror - duplicate id
-   |               ^
- 7 |  
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/8829dd61b3d456ab.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -42510,17 +41968,6 @@ error: Expected ';' after class field, but found ':'
  5 |     #foo: number;
    |         ^
  6 |     constructor () {
-   |
-   = help: Add a semicolon after the field declaration.
-
-
-✗ test/parser/suite/ts/pass/883b6f099db945ef.ts
-error: Expected ';' after class field, but found 'public'
-   |
- 5 | 
- 6 |   public public() {}
-   |          ^^^^^^
- 7 |   public static() {}
    |
    = help: Add a semicolon after the field declaration.
 
@@ -42925,20 +42372,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  3 | const nameN = "n";
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/899cae5fbcd64bc6.ts
-error: Identifier 'e' has already been declared
-   |
- 5 | 
- 6 | } catch(e) {
-   |         ~ 'e' was first declared as a parameter here
- 7 |     const e = null;
-   |           ^
-   |           ~ cannot be redeclared here
- 8 | }
-   |
-   = help: Consider removing or renaming this declaration of 'e'
 
 
 ✗ test/parser/suite/ts/pass/89a90d87d03c0820.ts
@@ -44086,20 +43519,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/8d63ec9e5abba293.ts
-error: Identifier 'v' has already been declared
-   |
- 1 | //@target: ES6
- 2 | for (let v of []) {
-   |          ~ 'v' was first declared as a variable here
- 3 |     var v = 0;
-   |         ^
-   |         ~ cannot be redeclared here
- 4 | }
-   |
-   = help: Consider removing or renaming this declaration of 'v'
-
-
 ✗ test/parser/suite/ts/pass/8d73f821d5599b70.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -44995,17 +44414,6 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/8f772e0a3fc52727.module.ts
-✗ test/parser/suite/ts/pass/8f7e301df76ee98f.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
-   |
- 1 | // @target: es2015
- 2 | var foo: string;
-   |        ^
- 3 | function foo(): number { }
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/8f85b411268665c6.ts
 ✗ test/parser/suite/ts/pass/8f912f9e5326a7a6.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -46365,17 +45773,6 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/9480b283236022a5.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
-   |
-15 |     function e() { } // error
-16 |     var p: string;
-   |          ^
-17 |     var p: number; // error
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/94821781a9b9574e.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -47270,17 +46667,6 @@ error: Expected ')' to close parameter list, but found ':'
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
-✗ test/parser/suite/ts/pass/9747a31fd2db46f8.ts
-error: Expected ';' after class field, but found 'foo'
-   |
- 2 | //// class then function
- 3 | class c2 { public foo() { } } // error
-   |                   ^^^
- 4 | function c2() { } // error
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/9750242839722cc1.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '才能ソЫⅨ蒤郳र्क्ड्राüışğİliيونيكودöÄüß才能ソЫⅨ蒤郳र्क्ड्राüışğİliيونيكودöÄüßAbcd123'
    |
@@ -47345,17 +46731,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/977e5bf635a122b8.ts
-error: Expected ';' after class field, but found ':'
-   |
- 1 | // @target: es2015
- 2 | class C { foo: string; } // error
-   |              ^
- 3 | var C = ''; // error
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/97828cdd146dfdc9.ts
 error: Unexpected token ':'
    |
@@ -47398,17 +46773,6 @@ error: 'const' declarations must be initialized
  9 | 
    |
    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
-✗ test/parser/suite/ts/pass/97a4581f38513580.ts
-error: Expected ')' to close parameter list, but found ':'
-   |
- 8 | // If the declaration includes a type annotation, the parameter is of that type
- 9 | function a1([a, b, [[c]]]: [number, number, string[][]]) { }
-   |                          ^
-10 | function a2(o: { x: number, a: number }) { }
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/97a4ddd634e65500.module.ts
@@ -47553,17 +46917,6 @@ error: Expected declaration after 'export', but found 'interface'
  6 |     [index: TypeNotFound]: any;
    |
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
-✗ test/parser/suite/ts/pass/97fc097a537346e6.ts
-error: Expected ';' after class field, but found 'foo'
-   |
- 2 | //// class then var
- 3 | class c1 { public foo() { } }
-   |                   ^^^
- 4 | var c1 = 1; // error
-   |
-   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/97ff4665a04f7975.ts
@@ -48830,17 +48183,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/9bdfde55722fff60.module.ts
-error: Expected ';' after class field, but found ':'
-   |
- 3 | export class C {
- 4 |     x: number;
-   |      ^
- 5 |   get x(): number { return 1; }
-   |
-   = help: Add a semicolon after the field declaration.
-
-
 ✗ test/parser/suite/ts/pass/9be5289dec4d84f7.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -49256,17 +48598,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/9d6c7d4ffae60c1a.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
-   |
- 1 | // @target: es2015
- 2 | abstract class CM {}
-   |          ^^^^^
- 3 | namespace CM {}
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/9d6cb8414276e108.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -49455,17 +48786,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  3 |     export interface interfaceWithPublicAndOptional<T,U> { one: T; two?: U; };  var obj4: interfaceWithPublicAndOptional<number,string> = { one: 1 };;
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/9df00784538c5fa0.ts
-error: Unexpected token '<'
-   |
- 8 | var f3 = (x, x) => { }
- 9 | var f4 = <T>(x: T, x: T) => { }
-   |          ^
-10 | 
-   |
-   = help: Expected an expression
 
 
 ✗ test/parser/suite/ts/pass/9df1f88b6f21e66d.ts
@@ -52770,18 +52090,6 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/a8d30e72e68fb2c6.ts
-error: Identifier 'v' has already been declared
-   |
- 1 | //@target: ES6
- 2 | for (let [v, v] of [[]]) {}
-   |              ^
-   |           ~ 'v' was first declared as a variable here
-   |              ~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'v'
-
-
 ✗ test/parser/suite/ts/pass/a8d4c633710a83a0.ts
 ✗ test/parser/suite/ts/pass/a8d5c9fd10b14f49.module.ts
 error: Expected '{' to start function body, but found ':'
@@ -53865,17 +53173,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ac48c6e92d7e902b.module.ts
-error: Expected declaration after 'export', but found 'declare'
-   |
- 3 | export const foo = 1
- 4 | export declare class foo {}
-   |        ^^^^^^^
- 5 | export interface foo {}
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
 ✗ test/parser/suite/ts/pass/ac5a2596c482ffc6.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -54012,20 +53309,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  3 | declare function doThis(value: "foo" | "bar"): void;
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/ad01171333d96a98.ts
-error: Identifier 'var1' has already been declared
-   |
- 3 | // Errors: redeclaration
- 4 | let var1 = 0;
-   |     ~~~~ 'var1' was first declared as a variable here
- 5 | let var1 = 0; // error
-   |     ^^^^
-   |     ~~~~ cannot be redeclared here
- 6 | 
-   |
-   = help: Consider removing or renaming this declaration of 'var1'
 
 
 ✗ test/parser/suite/ts/pass/ad0694b5bf8229b3.ts
@@ -59095,17 +58378,6 @@ error: Expected ';' after class field, but found 'get'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/bcfa10dbab0af144.ts
-error: Unexpected token '=' in binding pattern
-   |
- 5 | var a = 10;
- 6 | let = 30;
-   |     ^
- 7 | let
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
 ✗ test/parser/suite/ts/pass/bcfa953cbae488da.ts
 error: Expected ')' after method parameters, but found 'p'
    |
@@ -61116,16 +60388,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/c286fb5d9a0c126f.ts
-error: Expected '{' to start function body, but found ':'
-   |
- 2 | var myFn;
- 3 | function myFn(): any { }
-   |                ^
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
 ✗ test/parser/suite/ts/pass/c2931b578130cf07.ts
 error: Expected ')' after method parameters, but found ':'
    |
@@ -62357,15 +61619,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/c704100a0154e651.ts
-error: Expected ')' after method parameters, but found ':'
-   |
-26 |         #foo = "foo";
-27 |         set #foo(value: string) { }
-   |                       ^
-28 |     }
-   |
-
 ✗ test/parser/suite/ts/pass/c70923f25132380e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'X'
    |
@@ -62703,17 +61956,6 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/c7fba9bf20d03127.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'm'
-   |
- 1 | // @target: es2015
- 2 | namespace m {
-   |           ^
- 3 |   export var m = '';
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/c7fc13a707bd4d0e.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -62922,19 +62164,6 @@ error: Expected ')' to close parameter list, but found ':'
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
-✗ test/parser/suite/ts/pass/c88fe6561859a71d.ts
-error: Identifier 'a' has already been declared
-   |
- 5 | function g([a, b, c, d] = [1, 2, 3, 4]) { }
- 6 | function h([a, [b], [[c]], {x = 10, y: [a, b, c], z: {a1, b1}}]){ }
-   |                                         ^
-   |             ~ 'a' was first declared as a parameter here
-   |                                         ~ cannot be redeclared here
- 7 | function h1([a, [b], [[c]], {x = 10, y = [1, 2, 3], z: {a1, b1}}]){ }
-   |
-   = help: Consider removing or renaming this declaration of 'a'
-
-
 ✗ test/parser/suite/ts/pass/c89fa25c0794afaf.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -63013,17 +62242,6 @@ error: Expected ')' after method parameters, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/c8e33745292c962f.ts
-✗ test/parser/suite/ts/pass/c8ec98353e48bad2.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
-   |
- 2 | // @lib: es5
- 3 | var console: any;
-   |            ^
- 4 | 
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/c909f4b2ee290259.module.ts
 error: Expected ')' after method parameters, but found 'a'
    |
@@ -64751,17 +63969,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ceb230f28fb0d235.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
-   |
- 1 | // @target: es2015
- 2 | namespace M {
-   |           ^
- 3 |     export class Point { x: number; y: number }
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/ceb29e53552dcc65.ts
 error: Unexpected token '@' in binding pattern
    |
@@ -65046,17 +64253,6 @@ error: Expected ')' after method parameters, but found 'x'
    |                     ^
  7 |     set x(readonly value: number) {}
    |
-
-✗ test/parser/suite/ts/pass/cfb60f40de93563f.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
-   |
- 4 | // https://github.com/Microsoft/TypeScript/issues/20461
- 5 | declare const y: any;
-   |         ^^^^^
- 6 | 
-   |
-   = help: Try inserting a semicolon here
-
 
 ✗ test/parser/suite/ts/pass/cfdd1d27f8feae23.ts
 error: Expected ';' after class field, but found 'n'
@@ -66555,15 +65751,6 @@ error: Invalid regular expression flag
    = help: Valid regex flags are: `g` (global), `i` (ignoreCase), `m` (multiline), `s` (dotAll), `u` (unicode), `y` (sticky), `d` (hasIndices), `v` (setNotation)
 
 
-✗ test/parser/suite/ts/pass/d3ddd8e831c21db1.ts
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: () => Foo2;
-   |       ^
- 8 | 
-   |
-
 ✗ test/parser/suite/ts/pass/d3e80cb829714a28.ts
 ✗ test/parser/suite/ts/pass/d3ebdf57cc532d91.ts
 error: Expected ';' after class field, but found ':'
@@ -67939,17 +67126,6 @@ error: Expected ';' after class field, but found ':'
 
 ✗ test/parser/suite/ts/pass/d91c608d4355a0fe.ts
 ✗ test/parser/suite/ts/pass/d92c9e3639d47417.ts
-✗ test/parser/suite/ts/pass/d9332d77682d2d54.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'c11'
-   |
-10 | 
-11 | interface c11 {
-   |           ^^^
-12 |     bar(): void;
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/d943d25cabc51367.ts
 ✗ test/parser/suite/ts/pass/d95db639e0eefed5.ts
 error: Expected ')' to close parameter list, but found ':'
@@ -69320,21 +68496,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/dd60a04b844ec883.ts
-error: Identifier 'x' has already been declared
-   |
- 5 | {
- 6 |     const x = 0;
-   |           ~ 'x' was first declared as a variable here
- 7 | 
- 8 |     var x = 0;
-   |         ^
-   |         ~ cannot be redeclared here
- 9 | }
-   |
-   = help: Consider removing or renaming this declaration of 'x'
-
-
 ✗ test/parser/suite/ts/pass/dd64ff5ff772d7f2.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -69586,15 +68747,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    |
    = help: Try inserting a semicolon here
 
-
-✗ test/parser/suite/ts/pass/de2ddf9acc0fff83.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 2 | // @lib: es5
- 3 | const enum E {
-   |       ^^^^
- 4 |     A
-   |
 
 ✗ test/parser/suite/ts/pass/de3fa281b05a2ada.module.ts
 ✗ test/parser/suite/ts/pass/de467e8d7618cd38.ts
@@ -70527,17 +69679,6 @@ error: 'this' is reserved and cannot be used as a binding identifier
    |                   ^^^^
  5 | new fnNumber(); // Error
    |
-
-✗ test/parser/suite/ts/pass/e16f39ef58204367.module.ts
-error: Expected declaration after 'export', but found 'type'
-   |
- 2 | // @target: es2015
- 3 | export type A = {}
-   |        ^^^^
- 4 | type A = {}
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✗ test/parser/suite/ts/pass/e17093e426ba81fb.ts
 error: Unexpected token 'end of file' in binding pattern
@@ -72297,21 +71438,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e735c766788502ea.ts
-✗ test/parser/suite/ts/pass/e7388fb185ee3ee5.ts
-error: Identifier 'x' has already been declared
-   |
- 2 | if (true) {
- 3 |     let x;
-   |         ~ 'x' was first declared as a variable here
- 4 |     if (true) {
- 5 |         var x = 0; // Error
-   |             ^
-   |             ~ cannot be redeclared here
- 6 |         var { x = 0 } = { x: 0 }; // Error
-   |
-   = help: Consider removing or renaming this declaration of 'x'
-
-
 ✗ test/parser/suite/ts/pass/e745c574a7f413ba.ts
 error: Expected ')' to close parameter list, but found ':'
    |
@@ -72464,17 +71590,6 @@ error: Expected ')' to close parameter list, but found ':'
  8 | function a2(o: { x: number, a: number }) { }
    |
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
-✗ test/parser/suite/ts/pass/e7a4efc45660c665.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
-   |
- 2 | // @strict: false
- 3 | declare var Point: { new(x:number, y:number): {x: number; y: number; }; }
-   |         ^^^
- 4 | 
-   |
-   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/e7a650506f98f1d9.ts
@@ -74212,17 +73327,6 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/ed11b7dd1b4d866b.module.ts
-error: Expected declaration after 'export', but found 'interface'
-   |
- 5 | 
- 6 | export interface Bar {
-   |        ^^^^^^^^^
- 7 |     _brand1: any;
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
 ✗ test/parser/suite/ts/pass/ed1cc19fe5002959.ts
 ✗ test/parser/suite/ts/pass/ed1e86010a40c33b.ts
 ✗ test/parser/suite/ts/pass/ed1f0a1fc2219971.ts
@@ -74234,17 +73338,6 @@ error: Expected '{' to start class body, but found '<'
  3 |     constructor(...s: T[]) { }
    |
    = help: Class body must be enclosed in braces: class Name { ... }
-
-
-✗ test/parser/suite/ts/pass/ed244bfa8ba4da8e.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'I1'
-   |
- 9 | 
-10 | interface I1 {
-   |           ^^
-11 |     C1M1():number;
-   |
-   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/ed2bdc0634074e99.ts
@@ -74527,15 +73620,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ee4e4ba0f186dd1b.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @sourcemap: true
- 3 | enum e {
-   | ^^^^
- 4 |     x,
-   |
-
 ✗ test/parser/suite/ts/pass/ee4f3c721f150cba.ts
 error: Expected ';' after class field, but found 'myMethod'
    |
@@ -74721,17 +73805,6 @@ error: Expected '(' to start parameter list, but found '<'
  7 |     let { ...r0 } = obj;
    |
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
-
-✗ test/parser/suite/ts/pass/ef00cf83ab78d050.ts
-error: Expected '{' to start function body, but found ':'
-   |
- 2 | class C {
- 3 |     a(): number { return 0; } // error: duplicate identifier
-   |        ^
- 4 |     a: number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/ef0563e170f7e1ad.ts
@@ -76352,19 +75425,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f4086b948d683c80.ts
-error: Identifier 'foo1' has already been declared
-   |
-21 | 
-22 | let { foo1, foo1 } = { foo1: 10 };
-   |             ^^^^
-   |       ~~~~ 'foo1' was first declared as a variable here
-   |             ~~~~ cannot be redeclared here
-23 | let { foo2, bar2: foo2 } = { foo2: 20, bar2: 220 };
-   |
-   = help: Consider removing or renaming this declaration of 'foo1'
-
-
 ✗ test/parser/suite/ts/pass/f409574dd2ee106c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found ':'
    |
@@ -77275,17 +76335,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f67f227af3ecb9d9.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'M0'
-   |
-24 | 
-25 | namespace M0 {
-   |           ^^
-26 |     let x2;
-   |
-   = help: Try inserting a semicolon here
-
-
 ✗ test/parser/suite/ts/pass/f6991574fc9f0dc5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
@@ -77656,17 +76705,6 @@ error: Expected '{' to start function body, but found ':'
  3 | var x = foo();
    |
    = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/f79e5f83d5f2679e.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Ref'
-   |
- 4 | 
- 5 | interface Ref<T> {
-   |           ^^^
- 6 |     prop: T;
-   |
-   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/f7a955e9da76f31a.ts
@@ -78349,17 +77387,6 @@ error: Expected ';' after class field, but found ':'
  3 | class D extends C, {
    |
    = help: Add a semicolon after the field declaration.
-
-
-✗ test/parser/suite/ts/pass/f9f88a6af56a2033.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Z'
-   |
- 1 | // @target: es2015
- 2 | namespace Z {
-   |           ^
- 3 |     export namespace M {
-   |
-   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/fa20020cd8440de0.module.ts
@@ -79744,17 +78771,6 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
  3 |     groupBy<T>(): { [key: string]: T[]; };
    |
    = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/ff0d11e0630eb73e.ts
-error: Expected ';' after class field, but found 'foo'
-   |
-17 | function y3a() { } // error
-18 | class y3a { public foo() { } } // error
-   |                    ^^^
-19 | 
-   |
-   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/ff253b05c1b71000.ts
