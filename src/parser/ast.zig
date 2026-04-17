@@ -24,11 +24,13 @@ pub const Severity = enum {
     }
 };
 
+/// A span inside a diagnostic that carries an explanatory message.
 pub const Label = struct {
     span: Span,
     message: []const u8,
 };
 
+/// An error, warning, hint, or info produced during parsing or semantic analysis.
 pub const Diagnostic = struct {
     severity: Severity = .@"error",
     message: []const u8,
@@ -38,8 +40,8 @@ pub const Diagnostic = struct {
 };
 
 /// Source type of a JavaScript/TypeScript file.
-/// Determines how the code is parsed and evaluated.
-/// https://tc39.es/ecma262/#sec-types-of-source-code
+///
+/// Determines whether the file is parsed as an ES module or a classic script.
 pub const SourceType = enum {
     script,
     module,
@@ -99,9 +101,16 @@ pub const Lang = enum {
     }
 };
 
+/// A line or block comment from the source.
+///
+/// ## Example
+/// ```js
+/// // this is a line comment
+/// /* this is a block comment */
+/// ```
 pub const Comment = struct {
     type: Type,
-    /// Comment content (without delimiters).
+    /// comment content without the surrounding delimiters
     value: String = .empty,
     start: u32,
     end: u32,
@@ -275,10 +284,12 @@ pub const Tree = struct {
 };
 
 
-/// Index into the AST node array. `.null` for optional nodes.
+/// Index into the AST node array.
+///
+/// `.null` marks an absent child for optional slots.
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 
-/// range of indices in the extra array for storing node lists.
+/// Range of indices into the extra array for storing variadic node lists.
 pub const IndexRange = struct {
     start: u32,
     len: u32,
@@ -286,7 +297,14 @@ pub const IndexRange = struct {
     pub const empty: IndexRange = .{ .start = 0, .len = 0 };
 };
 
-/// https://tc39.es/ecma262/#sec-binary-operators
+/// Binary operators.
+///
+/// ## Example
+/// ```js
+/// a + b
+/// a === b
+/// a instanceof B
+/// ```
 pub const BinaryOperator = enum {
     equal, // ==
     not_equal, // !=
@@ -375,6 +393,14 @@ pub const BinaryOperator = enum {
     }
 };
 
+/// Logical operators.
+///
+/// ## Example
+/// ```js
+/// a && b
+/// a || b
+/// a ?? b
+/// ```
 pub const LogicalOperator = enum {
     @"and", // &&
     @"or", // ||
@@ -402,6 +428,16 @@ pub const LogicalOperator = enum {
     }
 };
 
+/// Unary operators.
+///
+/// ## Example
+/// ```js
+/// -x
+/// !flag
+/// typeof x
+/// void 0
+/// delete obj.prop
+/// ```
 pub const UnaryOperator = enum {
     negate, // -
     positive, // +
@@ -441,6 +477,13 @@ pub const UnaryOperator = enum {
     }
 };
 
+/// Update operators.
+///
+/// ## Example
+/// ```js
+/// ++x
+/// x--
+/// ```
 pub const UpdateOperator = enum {
     increment, // ++
     decrement, // --
@@ -465,6 +508,15 @@ pub const UpdateOperator = enum {
     }
 };
 
+/// Assignment operators.
+///
+/// ## Example
+/// ```js
+/// x = 1
+/// x += 2
+/// x &&= y
+/// x ??= 0
+/// ```
 pub const AssignmentOperator = enum {
     assign, // =
     add_assign, // +=
@@ -531,6 +583,16 @@ pub const AssignmentOperator = enum {
     }
 };
 
+/// Variable declaration kind.
+///
+/// ## Example
+/// ```js
+/// var x;
+/// let y;
+/// const z = 0;
+/// using r = resource();
+/// await using ar = asyncResource();
+/// ```
 pub const VariableKind = enum {
     @"var",
     let,
@@ -549,6 +611,14 @@ pub const VariableKind = enum {
     }
 };
 
+/// Object property kind.
+///
+/// ## Example
+/// ```js
+/// { a: 1,          // init
+///   get b() {},    // get
+///   set b(v) {} }  // set
+/// ```
 pub const PropertyKind = enum {
     init,
     get,
@@ -563,13 +633,29 @@ pub const PropertyKind = enum {
     }
 };
 
-/// https://tc39.es/ecma262/#sec-class-definitions
+/// Class form.
+///
+/// ## Example
+/// ```js
+/// class Foo {}          // class_declaration
+/// const x = class {};   //           class_expression
+/// ```
 pub const ClassType = enum {
     class_declaration,
     class_expression,
 };
 
-/// https://tc39.es/ecma262/#prod-MethodDefinition
+/// Kind of a class method definition.
+///
+/// ## Example
+/// ```js
+/// class C {
+///   constructor() {}   // constructor
+///   method() {}        // method
+///   get prop() {}      // get
+///   set prop(v) {}     // set
+/// }
+/// ```
 pub const MethodDefinitionKind = enum {
     constructor,
     method,
@@ -586,353 +672,587 @@ pub const MethodDefinitionKind = enum {
     }
 };
 
-/// https://github.com/tc39/proposal-decorators
+/// The `super` keyword used as an expression head.
+///
+/// ## Example
+/// ```js
+/// foo(super);
+/// //  ^^^^^ Super
+/// ```
 pub const Super = struct {};
+
+/// The `null` literal.
+///
+/// ## Example
+/// ```js
+/// const x = null;
+/// //        ^^^^ NullLiteral
+/// ```
 pub const NullLiteral = struct {};
+
+/// The `this` keyword used as an expression.
+///
+/// ## Example
+/// ```js
+/// const x = this;
+/// //        ^^^^ ThisExpression
+/// ```
 pub const ThisExpression = struct {};
+
+/// The `debugger;` statement. Suspends execution when a debugger is attached.
 pub const DebuggerStatement = struct {};
+
+/// A standalone `;` used as a statement.
 pub const EmptyStatement = struct {};
 
+/// A decorator applied to a class or class member.
+///
+/// ## Example
+/// ```js
+/// class C { @foo bar() {} }
+/// //         ^^^ expression (of the decorator `@foo`)
+/// ```
 pub const Decorator = struct {
-    /// Expression
     expression: NodeIndex,
 };
 
-/// https://tc39.es/ecma262/#sec-class-definitions
+/// A class declaration or expression.
+///
+/// ## Example
+/// ```ts
+/// class Foo<T> extends Base<T> implements I {}
+/// //    ^^^ id
+/// //       ^^^ type_parameters
+/// //                   ^^^^ super_class
+/// //                       ^^^ super_type_arguments
+/// //                                      ^ implements[0]
+/// //                                        ^^ body
+/// ```
+/// Column-0 modifiers: `@dec class` populates `decorators`; `abstract class`
+/// sets `abstract = true`; `declare class` sets `declare = true`.
 pub const Class = struct {
     type: ClassType,
-    /// Decorator[]
     decorators: IndexRange,
-    /// BindingIdentifier (optional, may be `.null` for class expressions)
+    /// `.null` for anonymous class expressions
     id: NodeIndex,
-    /// Expression (optional, may be `.null` if no extends clause)
+    /// `.null` when the class has no `extends` clause
     super_class: NodeIndex,
-    /// ClassBody
     body: NodeIndex,
-    /// typescript: TSTypeParameterDeclaration (optional, may be `.null`)
+    /// ts: `.null` when the class has no `<T, U>` parameters
     type_parameters: NodeIndex = .null,
-    /// typescript: TSTypeParameterInstantiation (optional, may be `.null`)
+    /// ts: `.null` when `extends` has no `<T>` arguments
     super_type_arguments: NodeIndex = .null,
-    /// typescript: TSClassImplements[]
+    /// ts: empty when the class has no `implements` clause
     implements: IndexRange = .empty,
-    /// typescript: true for `abstract class`
+    /// ts: true for `abstract class`
     abstract: bool = false,
-    /// typescript: true for `declare class`
+    /// ts: true for `declare class`
     declare: bool = false,
 };
 
-/// https://tc39.es/ecma262/#prod-ClassBody
+/// The `{ ... }` body of a class, holding its members.
+///
+/// ## Example
+/// ```js
+/// class C {
+///   a;
+///   b() {}
+///   static {}
+/// }
+/// // body: [a, b, static block]
+/// ```
 pub const ClassBody = struct {
-    /// ClassElement[]
     body: IndexRange,
 };
 
-/// https://tc39.es/ecma262/#prod-MethodDefinition
+/// A method, getter, setter, or constructor in a class body.
+///
+/// ## Example
+/// ```ts
+/// class C { public override foo?(): void {} }
+/// //        ^^^^^^ accessibility
+/// //               ^^^^^^^^ override
+/// //                        ^^^ key
+/// //                           ^ optional
+/// //                            ^^^^^^^^^^^ value (a Function)
+/// ```
+/// `decorators` comes from `@dec` preceding the method; `static ...`, `*` and
+/// `async` modifiers live on the member head and appear on the inner `Function`.
 pub const MethodDefinition = struct {
-    /// Decorator[]
     decorators: IndexRange,
-    /// PropertyKey (IdentifierName | PrivateIdentifier | Expression)
+    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
     key: NodeIndex,
-    /// Function
+    /// a `Function` node
     value: NodeIndex,
     kind: MethodDefinitionKind,
     computed: bool,
     static: bool,
-    /// typescript: true for `override` modifier
+    /// ts: true for the `override` modifier
     override: bool = false,
-    /// typescript: true for optional method (`foo?()`)
+    /// ts: true for optional method (`foo?()`)
     optional: bool = false,
-    /// typescript: `.none` means no accessibility modifier was written
+    /// ts: `.none` when no modifier was written
     accessibility: Accessibility = .none,
 };
 
-/// https://tc39.es/ecma262/#prod-FieldDefinition
+/// A class field or auto-accessor declaration.
+///
+/// ## Example
+/// ```ts
+/// class C { public readonly foo!: number = 0 }
+/// //        ^^^^^^ accessibility
+/// //               ^^^^^^^^ readonly
+/// //                        ^^^ key
+/// //                           ^ definite
+/// //                            ^^^^^^^^ type_annotation
+/// //                                       ^ value
+/// ```
+/// `decorators` comes from `@dec` preceding the field; `declare`, `override`,
+/// and `static` live on the member head; `accessor foo` sets `accessor = true`.
 pub const PropertyDefinition = struct {
-    /// Decorator[]
     decorators: IndexRange,
-    /// PropertyKey (IdentifierName | PrivateIdentifier | Expression)
+    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
     key: NodeIndex,
-    /// Expression (optional, may be `.null`)
+    /// initializer, `.null` when absent
     value: NodeIndex,
     computed: bool,
     static: bool,
+    /// true for `accessor x;` auto-accessor fields
     accessor: bool,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when the field has no annotation
     type_annotation: NodeIndex = .null,
-    /// typescript: true for `declare` modifier
+    /// ts: true for the `declare` modifier
     declare: bool = false,
-    /// typescript: true for `override` modifier
+    /// ts: true for the `override` modifier
     override: bool = false,
-    /// typescript: true for optional property (`foo?: T`)
+    /// ts: true for optional property (`foo?: T`)
     optional: bool = false,
-    /// typescript: true for definite assignment assertion (`foo!: T`)
+    /// ts: true for definite assignment assertion (`foo!: T`)
     definite: bool = false,
-    /// typescript: true for `readonly` modifier
+    /// ts: true for the `readonly` modifier
     readonly: bool = false,
-    /// typescript: `.none` means no accessibility modifier was written
+    /// ts: `.none` when no modifier was written
     accessibility: Accessibility = .none,
 };
 
-/// https://tc39.es/ecma262/#prod-ClassStaticBlock
+/// A `static { ... }` block inside a class body.
+///
+/// ## Example
+/// ```js
+/// class C { static { init(); } }
+/// //                 ^^^^^^^ body
+/// ```
 pub const StaticBlock = struct {
-    /// Statement[]
     body: IndexRange,
 };
 
-/// https://tc39.es/ecma262/#prod-FormalParameters
+/// Which grammar production the parameter list came from.
+///
+/// Constrains which binding forms are legal and whether duplicates are
+/// allowed in strict mode.
 pub const FormalParameterKind = enum {
-    /// https://tc39.es/ecma262/#prod-FormalParameters
+    /// plain `function` parameter list
     formal_parameters,
-    /// https://tc39.es/ecma262/#prod-UniqueFormalParameters
+    /// parameters of a generator, async, arrow, method, or setter
     unique_formal_parameters,
-    /// https://tc39.es/ecma262/#prod-ArrowFormalParameters
+    /// arrow function parameter list
     arrow_formal_parameters,
-    /// Part of TypeScript type signatures
+    /// parameters of a TypeScript type signature
     signature,
 };
 
-/// `left operator right`
-/// https://tc39.es/ecma262/#sec-binary-operators
+/// Binary expression with a non-logical operator.
+///
+/// ## Example
+/// ```js
+/// r = a + b
+/// //  ^ left
+/// //    ^ operator
+/// //      ^ right
+/// ```
 pub const BinaryExpression = struct {
-    /// Expression
     left: NodeIndex,
-    /// Expression
     right: NodeIndex,
     operator: BinaryOperator,
 };
 
-/// `left operator right`
-/// https://tc39.es/ecma262/#sec-binary-logical-operators
+/// Short-circuiting logical expression.
+///
+/// ## Example
+/// ```js
+/// r = a && b
+/// //  ^ left
+/// //    ^^ operator
+/// //       ^ right
+/// ```
 pub const LogicalExpression = struct {
-    /// Expression
     left: NodeIndex,
-    /// Expression
     right: NodeIndex,
     operator: LogicalOperator,
 };
 
-/// `test ? consequent : alternate`
-/// https://tc39.es/ecma262/#sec-conditional-operator
+/// Ternary expression.
+///
+/// ## Example
+/// ```js
+/// r = a ? b : c
+/// //  ^ test
+/// //      ^ consequent
+/// //          ^ alternate
+/// ```
 pub const ConditionalExpression = struct {
-    /// Expression (ShortCircuitExpression)
     @"test": NodeIndex,
-    /// Expression (AssignmentExpression)
     consequent: NodeIndex,
-    /// Expression (AssignmentExpression)
     alternate: NodeIndex,
 };
 
-/// `operator argument`
-/// https://tc39.es/ecma262/#sec-unary-operators
+/// Unary prefix expression.
+///
+/// ## Example
+/// ```js
+/// typeof foo
+/// //     ^^^ argument
+/// ```
+/// `operator` is one of `-`, `+`, `!`, `~`, `typeof`, `void`, `delete`.
 pub const UnaryExpression = struct {
-    /// Expression
     argument: NodeIndex,
     operator: UnaryOperator,
 };
 
-/// `++argument` or `argument++`
-/// https://tc39.es/ecma262/#sec-update-expressions
+/// `++` or `--` applied to an assignable target.
+///
+/// ## Example
+/// ```js
+/// ++x    // prefix = true
+/// x--    // prefix = false
+/// ```
 pub const UpdateExpression = struct {
-    /// SimpleAssignmentTarget (IdentifierReference | MemberExpression)
+    /// an `IdentifierReference` or `MemberExpression`
     argument: NodeIndex,
     operator: UpdateOperator,
     prefix: bool,
 };
 
-/// `left operator right`
-/// https://tc39.es/ecma262/#sec-assignment-operators
+/// Assignment expression.
+///
+/// ## Example
+/// ```js
+/// x += 1
+/// //^^ operator
+/// //   ^ right
+/// ```
+/// `left` is the assignment target (here `x`); it can also be an `ArrayPattern`
+/// or `ObjectPattern` for destructuring assignment.
 pub const AssignmentExpression = struct {
-    /// AssignmentTarget (IdentifierReference | MemberExpression | ArrayPattern | ObjectPattern)
+    /// an assignment target: `IdentifierReference`, `MemberExpression`,
+    /// `ArrayPattern`, or `ObjectPattern`
     left: NodeIndex,
-    /// Expression
     right: NodeIndex,
     operator: AssignmentOperator,
 };
 
-/// https://tc39.es/ecma262/#sec-variable-statement
+/// A `var`, `let`, `const`, `using`, or `await using` declaration.
+///
+/// ## Example
+/// ```ts
+/// const x = 1, y = 2;
+/// //    ^^^^^^^^^^^^ declarators
+/// ```
+/// `kind` is `.@"const"`. `declare = true` for `declare const ...`.
 pub const VariableDeclaration = struct {
     kind: VariableKind,
-    /// VariableDeclarator[]
     declarators: IndexRange,
-    /// typescript: true for `declare var x: T`
+    /// ts: true for `declare var x: T`
     declare: bool = false,
 };
 
-/// `id = init`
+/// A single binding in a variable declaration.
+///
+/// ## Example
+/// ```ts
+/// let x!: number = 1;
+/// //  ^ id
+/// //   ^ definite
+/// //    ^^^^^^^^ type_annotation on the binding
+/// //               ^ init
+/// ```
 pub const VariableDeclarator = struct {
-    /// BindingPattern
+    /// a binding pattern (`BindingIdentifier`, `ArrayPattern`, `ObjectPattern`)
     id: NodeIndex,
-    /// Expression (optional, may be `.null`)
+    /// initializer, `.null` when absent
     init: NodeIndex,
-    /// typescript: true for definite assignment assertion (`let x!: T`)
+    /// ts: true for definite assignment assertion (`let x!: T`)
     definite: bool = false,
 };
 
-/// `expression;`
+/// A statement consisting of a single expression.
+///
+/// ## Example
+/// ```js
+/// { foo(); }
+/// //^^^^^ expression
+/// ```
 pub const ExpressionStatement = struct {
-    /// Expression
     expression: NodeIndex,
 };
 
-/// `if (test) consequent else alternate`
-/// https://tc39.es/ecma262/#sec-if-statement
+/// An `if`/`else` statement.
+///
+/// ## Example
+/// ```js
+/// if (cond) thenStmt; else elseStmt;
+/// //  ^^^^ test
+/// //        ^^^^^^^^ consequent
+/// //                       ^^^^^^^^ alternate
+/// ```
 pub const IfStatement = struct {
-    /// Expression (the condition)
     @"test": NodeIndex,
-    /// Statement (the if-body)
     consequent: NodeIndex,
-    /// Statement (optional, may be `.null` for no else clause)
+    /// `.null` when there is no `else` clause
     alternate: NodeIndex,
 };
 
-/// `switch (discriminant) { cases }`
-/// https://tc39.es/ecma262/#sec-switch-statement
+/// A `switch` statement.
+///
+/// ## Example
+/// ```js
+/// switch (x) { case 1: stmt; }
+/// //      ^ discriminant
+/// //           ^^^^^^^^^^^^^ cases
+/// ```
 pub const SwitchStatement = struct {
-    /// Expression (the value to match)
     discriminant: NodeIndex,
-    /// SwitchCase[]
     cases: IndexRange,
 };
 
-/// `for (init; test; update) body`
-/// https://tc39.es/ecma262/#sec-for-statement
+/// A `for (init; test; update)` loop.
+///
+/// ## Example
+/// ```js
+/// for (let i = 0; i < n; i++) body;
+/// //   ^^^^^^^^^ init
+/// //              ^^^^^ test
+/// //                     ^^^ update
+/// //                          ^^^^^ body
+/// ```
 pub const ForStatement = struct {
-    /// VariableDeclaration | Expression | null
+    /// `VariableDeclaration`, expression, or `.null`
     init: NodeIndex,
-    /// Expression | null
+    /// expression or `.null`
     @"test": NodeIndex,
-    /// Expression | null
+    /// expression or `.null`
     update: NodeIndex,
-    /// Statement
     body: NodeIndex,
 };
 
-/// `for (left in right) body`
-/// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
+/// A `for (... in ...)` loop.
+///
+/// ## Example
+/// ```js
+/// for (const k in obj) body;
+/// //   ^^^^^^^ left
+/// //              ^^^ right
+/// //                   ^^^^^ body
+/// ```
 pub const ForInStatement = struct {
-    /// VariableDeclaration | AssignmentTarget (IdentifierReference | MemberExpression | ArrayPattern | ObjectPattern)
+    /// `VariableDeclaration` or an assignment target
     left: NodeIndex,
-    /// Expression
     right: NodeIndex,
-    /// Statement
     body: NodeIndex,
 };
 
-/// `for (left of right) body` or `for await (left of right) body`
-/// https://tc39.es/ecma262/#sec-for-in-and-for-of-statements
+/// A `for (... of ...)` or `for await (... of ...)` loop.
+///
+/// ## Example
+/// ```js
+/// for await (const x of iter) body;
+/// //  ^^^^^ await
+/// //         ^^^^^^^ left
+/// //                    ^^^^ right
+/// //                          ^^^^^ body
+/// ```
 pub const ForOfStatement = struct {
-    /// VariableDeclaration | AssignmentTarget (IdentifierReference | MemberExpression | ArrayPattern | ObjectPattern)
     left: NodeIndex,
-    /// Expression
     right: NodeIndex,
-    /// Statement
     body: NodeIndex,
     /// true for `for await (...)`
     await: bool,
 };
 
-/// `break;` or `break label;`
-/// https://tc39.es/ecma262/#sec-break-statement
+/// A `break` statement, optionally targeting a label.
+///
+/// ## Example
+/// ```js
+/// break;
+/// break outer;
+/// //    ^^^^^ label
+/// ```
 pub const BreakStatement = struct {
-    /// LabelIdentifier (optional, may be `.null`)
+    /// `.null` for bare `break`
     label: NodeIndex,
 };
 
-/// `continue;` or `continue label;`
-/// https://tc39.es/ecma262/#sec-continue-statement
+/// A `continue` statement, optionally targeting a label.
+///
+/// ## Example
+/// ```js
+/// continue;
+/// continue outer;
+/// //       ^^^^^ label
+/// ```
 pub const ContinueStatement = struct {
-    /// LabelIdentifier (optional, may be `.null`)
+    /// `.null` for bare `continue`
     label: NodeIndex,
 };
 
-/// `label: statement`
-/// https://tc39.es/ecma262/#sec-labelled-statements
+/// A labeled statement.
+///
+/// ## Example
+/// ```js
+/// outer: for (;;) break outer;
+/// //     ^^^^^^^^^^^^^^^^^^^^^ body
+/// ```
+/// `label` is the identifier before `:` (here `outer`).
 pub const LabeledStatement = struct {
-    /// LabelIdentifier
     label: NodeIndex,
-    /// Statement
     body: NodeIndex,
 };
 
-/// `case test: consequent` or `default: consequent`
-/// https://tc39.es/ecma262/#prod-CaseClause
+/// A single `case` or `default` clause inside a `switch`.
+///
+/// ## Example
+/// ```js
+/// case 1: doIt(); break;
+/// //   ^ test
+/// //      ^^^^^^^^^^^^^^ consequent
+/// ```
+/// `test` is `.null` for the `default` clause.
 pub const SwitchCase = struct {
-    /// Expression (optional, `.null` for default case)
+    /// `.null` for the `default` clause
     @"test": NodeIndex,
-    /// Statement[]
     consequent: IndexRange,
 };
 
-/// `return;` or `return expression;`
-/// https://tc39.es/ecma262/#sec-return-statement
+/// A `return` statement.
+///
+/// ## Example
+/// ```js
+/// return;
+/// return x + 1;
+/// //     ^^^^^ argument
+/// ```
 pub const ReturnStatement = struct {
-    /// Expression (optional, may be `.null`)
+    /// `.null` for bare `return`
     argument: NodeIndex,
 };
 
-/// `throw expression;`
-/// https://tc39.es/ecma262/#sec-throw-statement
+/// A `throw` statement.
+///
+/// ## Example
+/// ```js
+/// throw new Error("boom");
+/// //    ^^^^^^^^^^^^^^^^^ argument
+/// ```
 pub const ThrowStatement = struct {
-    /// Expression (required)
     argument: NodeIndex,
 };
 
-/// `try { } catch { } finally { }`
-/// https://tc39.es/ecma262/#sec-try-statement
+/// A `try`/`catch`/`finally` statement.
+///
+/// ## Example
+/// ```js
+/// try { a } catch (e) { b } finally { c }
+/// //  ^^^^^ block
+/// //        ^^^^^^^^^^^^^^^ handler
+/// //                                ^^^^^ finalizer
+/// ```
 pub const TryStatement = struct {
-    /// BlockStatement
     block: NodeIndex,
-    /// CatchClause (optional, may be `.null`)
+    /// `.null` when no `catch` clause is present
     handler: NodeIndex,
-    /// BlockStatement (optional, may be `.null`)
+    /// `.null` when no `finally` clause is present
     finalizer: NodeIndex,
 };
 
-/// `catch (param) { body }`
-/// https://tc39.es/ecma262/#prod-Catch
+/// The `catch` clause of a `try` statement.
+///
+/// ## Example
+/// ```js
+/// try {} catch (e) { body }
+/// //            ^ param
+/// //               ^^^^^^^^ body
+/// ```
+/// `param` is `.null` for `catch { }` with no binding.
 pub const CatchClause = struct {
-    /// BindingPattern (optional, may be `.null` for `catch { }`)
+    /// `.null` for `catch { }` with no binding
     param: NodeIndex,
-    /// BlockStatement
     body: NodeIndex,
 };
 
-/// `while (test) body`
-/// https://tc39.es/ecma262/#sec-while-statement
+/// A `while` statement.
+///
+/// ## Example
+/// ```js
+/// while (cond) body;
+/// //     ^^^^ test
+/// //           ^^^^^ body
+/// ```
 pub const WhileStatement = struct {
-    /// Expression
     @"test": NodeIndex,
-    /// Statement
     body: NodeIndex,
 };
 
-/// `do body while (test);`
-/// https://tc39.es/ecma262/#sec-do-while-statement
+/// A `do { ... } while (...)` statement.
+///
+/// ## Example
+/// ```js
+/// do body; while (cond);
+/// // ^^^^^ body
+/// //              ^^^^ test
+/// ```
 pub const DoWhileStatement = struct {
-    /// Statement
     body: NodeIndex,
-    /// Expression
     @"test": NodeIndex,
 };
 
-/// `with (object) body`
-/// https://tc39.es/ecma262/#sec-with-statement
+/// A `with` statement. Forbidden in strict mode.
+///
+/// ## Example
+/// ```js
+/// with (obj) body;
+/// //    ^^^ object
+/// //         ^^^^^ body
+/// ```
 pub const WithStatement = struct {
-    /// Expression
     object: NodeIndex,
-    /// Statement
     body: NodeIndex,
 };
 
-/// https://tc39.es/ecma262/#sec-literals-string-literals
+/// A string literal.
+///
+/// ## Example
+/// ```js
+/// "hello\n"
+/// //    ^^ escape sequences are decoded into `value`
+/// ```
 pub const StringLiteral = struct {
-    /// Decoded string content, escape sequences resolved, surrounding quotes stripped.
+    /// decoded content with escape sequences resolved and quotes stripped
     value: String = .empty,
 };
 
-/// https://tc39.es/ecma262/#sec-literals-numeric-literals
+/// A numeric literal in one of four bases.
+///
+/// ## Example
+/// ```js
+/// 42          // decimal
+/// 0xFF        // hex
+/// 0o17        // octal
+/// 0b1010      // binary
+/// 1_000_000   // numeric separators are stripped when computing `value()`
+/// ```
 pub const NumericLiteral = struct {
     kind: Kind,
+    /// the raw lexeme, including prefix (`0x`, `0b`, `0o`) and separators
     raw: String = .empty,
 
     /// Computes the IEEE 754 double value.
@@ -993,165 +1313,295 @@ pub const NumericLiteral = struct {
     };
 };
 
-/// https://tc39.es/ecma262/#sec-ecmascript-language-lexical-grammar-literals
+/// A BigInt literal (numeric literal with a trailing `n`).
+///
+/// ## Example
+/// ```js
+/// 42n
+/// // raw = "42"
+/// 0xFFn
+/// // raw = "0xff"
+/// ```
 pub const BigIntLiteral = struct {
-    /// Raw digits without the trailing `n` suffix (e.g. `"42"` for `42n`, `"0xff"` for `0xffn`).
+    /// digits without the trailing `n`
     raw: String = .empty,
 };
 
+/// A `true` or `false` literal.
 pub const BooleanLiteral = struct {
     value: bool,
 };
 
-/// https://tc39.es/ecma262/#sec-literals-regular-expression-literals
+/// A regular expression literal.
+///
+/// ## Example
+/// ```js
+/// const r = /foo/gi;
+/// //         ^^^ pattern
+/// //             ^^ flags
+/// ```
 pub const RegExpLiteral = struct {
     pattern: String = .empty,
     flags: String = .empty,
 };
 
-/// https://tc39.es/ecma262/#sec-template-literals
+/// A template literal with zero or more interpolations.
+///
+/// ## Example
+/// ```js
+/// `hello ${name}!`
+/// ```
+/// `quasis` are the static text spans (`"hello "` and `"!"`), always
+/// `expressions.len + 1` elements. `expressions` are the interpolations
+/// (here, `name`).
 pub const TemplateLiteral = struct {
-    /// TemplateElement[]
+    /// the static text spans; always `expressions.len + 1` elements
     quasis: IndexRange,
-    /// Expression[]
+    /// the interpolated expressions
     expressions: IndexRange,
 };
 
-/// quasi
+/// A single quasi span inside a template literal.
+///
+/// ## Example
+/// ```js
+/// `a ${x} b`
+/// ```
+/// The two quasi elements are `"a "` (`tail = false`) and `" b"` (`tail = true`).
 pub const TemplateElement = struct {
-    /// Escape-decoded content. Empty when `is_cooked_undefined` is true.
+    /// escape-decoded content, empty when `is_cooked_undefined`
     cooked: String = .empty,
+    /// true for the final element (after the last interpolation)
     tail: bool,
-    /// True when this quasi's cooked template value is undefined per
-    /// ECMAScript TV semantics (invalid escape in tagged template).
+    /// true when the cooked value is undefined per ECMAScript TV semantics
+    /// (invalid escape in tagged template)
     is_cooked_undefined: bool = false,
 };
 
-/// used in expressions
-/// https://tc39.es/ecma262/#sec-identifiers
+/// An identifier used as an expression.
+///
+/// ## Example
+/// ```js
+/// console.log(x);
+/// ```
+/// `console` and `x` are both `IdentifierReference`s. `log` is an `IdentifierName`
+/// because it is a property access, not a reference.
 pub const IdentifierReference = struct {
     name: String = .empty,
 };
 
-/// `#name`.
-/// `name` refers to the identifier name without the `#` prefix.
+/// A `#privateName` identifier used inside a class.
+///
+/// The stored `name` does not include the leading `#`.
+///
+/// ## Example
+/// ```js
+/// class C { #secret = 1; }
+/// //        ^^^^^^^ PrivateIdentifier (name = "secret")
+/// ```
 pub const PrivateIdentifier = struct {
     name: String = .empty,
 };
 
-/// used in declarations
-/// https://tc39.es/ecma262/#sec-identifiers
+/// An identifier that introduces a new binding.
+///
+/// ## Example
+/// ```ts
+/// function foo(x?: number) {}
+/// //       ^^^ BindingIdentifier (id)
+/// //           ^ BindingIdentifier (optional = true, type_annotation set)
+/// ```
 pub const BindingIdentifier = struct {
     name: String = .empty,
-    /// typescript: Decorator[]
+    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`).
+    /// empty for non-parameter bindings.
     decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// typescript: true when the binding is marked optional (`x?: T`)
+    /// ts: true when marked optional (`x?: T`)
     optional: bool = false,
 };
 
-/// property keys, meta properties
+/// An identifier used as a property key or meta property name.
+///
+/// ## Example
+/// ```js
+/// obj.foo
+/// //  ^^^ IdentifierName
+/// { foo: 1 }
+/// //^^^ IdentifierName
+/// ```
 pub const IdentifierName = struct {
     name: String = .empty,
 };
 
-/// https://tc39.es/ecma262/#prod-LabelIdentifier
+/// An identifier used as a statement label or as the target of `break`/`continue`.
+///
+/// ## Example
+/// ```js
+/// outer: for (;;) break outer;
+/// //                    ^^^^^ LabelIdentifier (break target)
+/// ```
+/// The label before `:` (here `outer`) is also a `LabelIdentifier`.
 pub const LabelIdentifier = struct {
     name: String = .empty,
 };
 
-/// `pattern = init`
-/// https://tc39.es/ecma262/#prod-AssignmentPattern
+/// A binding pattern with a default value.
+///
+/// ## Example
+/// ```js
+/// function f(x = 0) {}
+/// //         ^^^^^ AssignmentPattern
+/// //         ^ left
+/// //             ^ right
+/// ```
 pub const AssignmentPattern = struct {
-    /// BindingPattern
     left: NodeIndex,
-    /// Expression
     right: NodeIndex,
-    /// typescript: Decorator[]
+    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// typescript: true when the pattern is marked optional in a binding position
+    /// ts: true when marked optional in a parameter position
     optional: bool = false,
 };
 
-/// `...argument`
-/// https://tc39.es/ecma262/#prod-BindingRestElement
+/// A `...rest` element in a binding pattern or function parameter list.
+///
+/// ## Example
+/// ```js
+/// function f(...args) {}
+/// //         ^^^^^^^ BindingRestElement
+/// //            ^^^^ argument
+/// ```
 pub const BindingRestElement = struct {
-    /// BindingPattern
     argument: NodeIndex,
-    /// typescript: Decorator[]
+    /// ts: decorators on a parameter rest element (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// typescript: true when marked optional in a binding position
+    /// ts: true when marked optional in a parameter position
     optional: bool = false,
 };
 
-/// `[a, b, ...rest]`
-/// https://tc39.es/ecma262/#prod-ArrayBindingPattern
+/// An array destructuring pattern.
+///
+/// ## Example
+/// ```js
+/// const [a, , b, ...rest] = arr;
+/// //     ^ elements[0]
+/// //          ^ elements[2]
+/// //             ^^^^^^^ rest
+/// ```
+/// `elements[1]` is `.null` (hole between the two commas).
 pub const ArrayPattern = struct {
-    /// (BindingPattern | null)[] - null for holes
+    /// binding patterns or `.null` for holes
     elements: IndexRange,
-    /// BindingRestElement (optional, may be `.null`)
+    /// `.null` when no rest element is present
     rest: NodeIndex,
-    /// typescript: Decorator[]
+    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// typescript: true when marked optional in a binding position
+    /// ts: true when marked optional in a parameter position
     optional: bool = false,
 };
 
-/// `{a, b: c, ...rest}`
-/// https://tc39.es/ecma262/#prod-ObjectBindingPattern
+/// An object destructuring pattern.
+///
+/// ## Example
+/// ```js
+/// const { a, b: c, ...rest } = obj;
+/// //      ^ properties[0]
+/// //         ^^^^ properties[1]
+/// //               ^^^^^^^ rest
+/// ```
 pub const ObjectPattern = struct {
-    /// BindingProperty[]
     properties: IndexRange,
-    /// BindingRestElement (optional, may be `.null`)
+    /// `.null` when no rest element is present
     rest: NodeIndex,
-    /// typescript: Decorator[]
+    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// typescript: true when marked optional in a binding position
+    /// ts: true when marked optional in a parameter position
     optional: bool = false,
 };
 
-/// `key: value` or `key` (shorthand)
+/// A single property inside an `ObjectPattern`.
+///
+/// ## Example
+/// ```js
+/// const { a, b: c, [k]: d } = obj;
+/// //      ^ shorthand
+/// //         ^^^^ key/value pair (shorthand = false)
+/// //               ^^^^^^ computed (key in brackets)
+/// ```
 pub const BindingProperty = struct {
-    /// PropertyKey
     key: NodeIndex,
-    /// BindingPattern
+    /// a binding pattern (`BindingIdentifier`, `ArrayPattern`, etc.)
     value: NodeIndex,
     shorthand: bool,
     computed: bool,
 };
 
-/// `[a, b, ...c]`
+/// An array literal expression.
+///
+/// ## Example
+/// ```js
+/// x = [a, , b, ...c]
+/// //   ^ elements[0]
+/// //        ^ elements[2]
+/// //           ^^^^ elements[3] (SpreadElement)
+/// ```
+/// `elements[1]` is `.null` (hole between the two commas).
 pub const ArrayExpression = struct {
-    /// (Expression | SpreadElement | null)[] - null for holes
+    /// expressions, spread elements, or `.null` for holes
     elements: IndexRange,
 };
 
-/// `{a: 1, b, ...c}`
+/// An object literal expression.
+///
+/// ## Example
+/// ```js
+/// { a: 1, b, ...c }
+/// //^^^^ properties[0]
+/// //      ^ properties[1] (shorthand)
+/// //         ^^^^ properties[2] (SpreadElement)
+/// ```
 pub const ObjectExpression = struct {
-    /// (ObjectProperty | SpreadElement)[]
+    /// object properties or spread elements
     properties: IndexRange,
 };
 
-/// `...argument`
+/// A `...argument` element inside an array or object literal, or a call argument list.
+///
+/// ## Example
+/// ```js
+/// foo(...args)
+/// //  ^^^^^^^ SpreadElement
+/// //     ^^^^ argument
+/// ```
 pub const SpreadElement = struct {
-    /// Expression
     argument: NodeIndex,
 };
 
-/// `key: value`, getter/setter, or method
+/// A property in an object literal.
+///
+/// ## Example
+/// ```js
+/// ({
+///   a: 1,        // kind = init
+///   b() {},      // method = true
+///   c,           // shorthand = true
+///   [k]: v,      // computed = true
+///   get d() {},  // kind = get
+/// })
+/// ```
 pub const ObjectProperty = struct {
-    /// PropertyKey
     key: NodeIndex,
-    /// Expression (for init) or Function (for methods/getters/setters)
+    /// expression for init, or a `Function` for methods/getters/setters
     value: NodeIndex,
     kind: PropertyKind,
     method: bool,
@@ -1159,199 +1609,312 @@ pub const ObjectProperty = struct {
     computed: bool,
 };
 
+/// The top-level node of every parsed file.
+///
+/// ## Example
+/// ```js
+/// #!/usr/bin/env node
+/// "use strict";
+/// import x from "y";
+/// console.log(x);
+/// ```
+/// `hashbang` is the `#!` line if present. `body` contains directives
+/// (`"use strict";`), imports, and statements.
 pub const Program = struct {
     source_type: SourceType,
-    /// (Statement | Directive)[]
+    /// statements and directives
     body: IndexRange,
-    /// Hashbang comment (e.g. `#!/usr/bin/env node`), null if not present
+    /// `null` when the file has no `#!` line
     hashbang: ?Hashbang = null,
 };
 
+/// A hashbang comment at the top of a source file.
+///
+/// ## Example
+/// ```js
+/// #!/usr/bin/env node
+/// ```
+/// `value` is everything after `#!`, so `/usr/bin/env node` here.
 pub const Hashbang = struct {
     value: String = .empty,
 };
 
-/// `"use strict";`
+/// A directive prologue such as `"use strict";`.
+///
+/// ## Example
+/// ```js
+/// "use strict";
+/// ```
+/// `expression` is the underlying `StringLiteral` (`"use strict"`).
+/// `value` is the text between the quotes (`use strict`).
 pub const Directive = struct {
-    /// StringLiteral
+    /// the underlying `StringLiteral`
     expression: NodeIndex,
-    /// Directive value without quotes.
+    /// the directive text without surrounding quotes
     value: String = .empty,
 };
 
+/// Form of a function node, matching its ESTree output type.
 pub const FunctionType = enum {
     function_declaration,
     function_expression,
+    /// `declare function f(): void;`
     ts_declare_function,
-    // https://github.com/typescript-eslint/typescript-eslint/pull/1289
-    // TODO:
-    // declare class MyClass {
-    //  myMethod(): void;
-    // }
-    //
-    // interface MyInterface {
-    //  myFunction(): string;
-    // }
+    /// body-less signature used in ambient contexts and overloads
     ts_empty_body_function_expression,
 };
 
-/// https://tc39.es/ecma262/#sec-function-definitions
+/// A function declaration or expression.
+///
+/// The `declare function` form is encoded by `type = .ts_declare_function`;
+/// there is no separate flag.
+///
+/// ## Example
+/// ```ts
+/// async function* foo<T>(x: T): T { yield x; }
+/// //            ^ generator
+/// //              ^^^ id
+/// //                 ^^^ type_parameters
+/// //                    ^^^^^^ params
+/// //                          ^^^ return_type
+/// //                              ^^^^^^^^^^^^ body
+/// ```
+/// `async = true` for `async function`.
 pub const Function = struct {
     type: FunctionType,
-    /// BindingIdentifier (optional, may be `.null` for anonymous functions)
+    /// `.null` for anonymous functions
     id: NodeIndex,
     generator: bool,
     async: bool,
-    /// FormalParameters
     params: NodeIndex,
-    /// FunctionBody (optional, may be `.null` for declarations/overloads)
+    /// `.null` for `declare function` and empty-body signatures
     body: NodeIndex,
-    /// typescript: TSTypeParameterDeclaration (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_parameters: NodeIndex = .null,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     return_type: NodeIndex = .null,
 };
 
-/// https://tc39.es/ecma262/#prod-FunctionBody
+/// The body of a function. Structurally identical to `BlockStatement`
+/// but kept distinct so the root of a function stays typed.
 pub const FunctionBody = struct {
-    // (Statement | Directive)[]
     body: IndexRange,
 };
 
-/// https://tc39.es/ecma262/#prod-BlockStatement
+/// A braced block statement.
+///
+/// ## Example
+/// ```js
+/// { stmt1; stmt2; }
+/// //^^^^^^^^^^^^^ body
+/// ```
 pub const BlockStatement = struct {
-    // (Statement | Directive)[]
     body: IndexRange,
 };
 
-/// https://tc39.es/ecma262/#prod-FormalParameters
+/// The parameter list of a function.
+///
+/// ## Example
+/// ```js
+/// function f(a, b = 1, ...rest) {}
+/// //         ^^^^^^^^ items
+/// //                   ^^^^^^^ rest
+/// ```
 pub const FormalParameters = struct {
-    /// FormalParameter[]
     items: IndexRange,
-    /// BindingRestElement (optional, may be `.null`)
+    /// `.null` when no rest element is present
     rest: NodeIndex,
     kind: FormalParameterKind,
 };
 
-/// https://tc39.es/ecma262/#prod-FormalParameter
+/// A thin wrapper marking a binding pattern as a function parameter.
+///
+/// TypeScript metadata (decorators, type annotation, optional) lives on
+/// the inner pattern. The ESTree decoder unwraps this node to that pattern.
 pub const FormalParameter = struct {
-    /// BindingPattern
+    /// a binding pattern (`BindingIdentifier`, `ObjectPattern`, `ArrayPattern`,
+    /// `AssignmentPattern`)
     pattern: NodeIndex,
 };
 
-/// https://tc39.es/ecma262/#prod-ParenthesizedExpression
+/// An expression wrapped in parentheses, preserved when `preserveParens` is on.
+///
+/// ## Example
+/// ```js
+/// x + (a + b)
+/// //   ^^^^^ expression
+/// ```
 pub const ParenthesizedExpression = struct {
-    /// Expression
     expression: NodeIndex,
 };
 
-// https://tc39.es/ecma262/#prod-ArrowFunction
+/// An arrow function expression.
+///
+/// ## Example
+/// ```ts
+/// async <T>(x: T): T => x
+/// //    ^^^ type_parameters
+/// //       ^^^^^^ params
+/// //             ^^^ return_type
+/// //                    ^ body (expression = true)
+/// ```
+/// `async = true` for `async (...) => ...`.
 pub const ArrowFunctionExpression = struct {
-    /// Is the function body an arrow expression? i.e. `() => expr` instead of `() => {}`
+    /// true for concise body `() => expr`; false for block body `() => { ... }`
     expression: bool,
-    /// async (a, b) => {}
     async: bool,
-    /// FormalParameters
     params: NodeIndex,
-    /// FunctionBody if `expression` is false, otherwise an Expression
+    /// a `FunctionBody` when `expression` is false, otherwise an expression
     body: NodeIndex,
-    /// typescript: TSTypeParameterDeclaration (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_parameters: NodeIndex = .null,
-    /// typescript: TSTypeAnnotation (optional, may be `.null`)
+    /// ts: `.null` when absent
     return_type: NodeIndex = .null,
-    // TODO: add pure field too, `true` if the function is marked with a `/*#__NO_SIDE_EFFECTS__*/` comment
-    // TODO: handle PIFE ("Possibly-Invoked Function Expression") cases, there are other needs which are needed this
 };
 
-/// `a, b, c`
-/// https://tc39.es/ecma262/#prod-Expression
+/// A comma-separated sequence of expressions.
+///
+/// ## Example
+/// ```js
+/// x = (a, b, c)
+/// //   ^^^^^^^ expressions
+/// ```
 pub const SequenceExpression = struct {
-    /// Expression[]
     expressions: IndexRange,
 };
 
-/// `obj.prop`, `obj[expr]`, `obj.#priv`
-/// https://tc39.es/ecma262/#sec-property-accessors
+/// Property access, in static, computed, or optional form.
+///
+/// ## Example
+/// ```js
+/// obj.foo          // computed = false, optional = false
+/// obj[expr]        // computed = true
+/// obj?.foo         // optional = true
+/// obj.#priv        // property is a PrivateIdentifier
+/// ```
 pub const MemberExpression = struct {
-    /// Expression - the object being accessed
     object: NodeIndex,
-    /// Expression (computed) | IdentifierName (static) | PrivateIdentifier (private)
+    /// an expression when `computed`, otherwise `IdentifierName` or `PrivateIdentifier`
     property: NodeIndex,
-    /// true for obj[expr], false for obj.prop
     computed: bool,
-    /// true for obj?.prop (optional chaining)
+    /// true for `obj?.foo`
     optional: bool,
 };
 
-/// `func()`, `func?.()`
-/// https://tc39.es/ecma262/#sec-function-calls
+/// A function call.
+///
+/// ## Example
+/// ```ts
+/// foo<T>(a, ...b)
+/// // ^^^ type_arguments
+/// //     ^^^^^^^ arguments
+/// ```
+/// `callee` is the called expression (here `foo`). `optional = true` for `foo?.()`.
 pub const CallExpression = struct {
-    /// Expression - the function being called
     callee: NodeIndex,
-    /// (Expression | SpreadElement)[]
+    /// expressions or spread elements
     arguments: IndexRange,
-    /// true for func?.() (optional chaining)
+    /// true for `foo?.()`
     optional: bool,
-    /// typescript: TSTypeParameterInstantiation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
-/// `foo?.bar`, `foo?.bar.baz`, `foo?.()`
-/// Wraps an optional chain expression
-/// https://tc39.es/ecma262/#sec-optional-chains
+/// Wraps an optional chain so that short-circuiting applies to the whole chain.
+///
+/// ## Example
+/// ```js
+/// r = foo?.bar.baz
+/// //  ^^^^^^^^^^^^ expression
+/// ```
 pub const ChainExpression = struct {
-    /// ChainElement (CallExpression | MemberExpression with optional somewhere in chain)
+    /// a `CallExpression` or `MemberExpression` with an optional link in the chain
     expression: NodeIndex,
 };
 
-/// `` tag`hello ${name}` ``
-/// https://tc39.es/ecma262/#sec-tagged-templates
+/// A tagged template expression.
+///
+/// ## Example
+/// ```ts
+/// obj.tag<T>`hello`
+/// //  ^^^ tag (the last property access)
+/// //     ^^^ type_arguments
+/// //        ^^^^^^^ quasi (TemplateLiteral)
+/// ```
 pub const TaggedTemplateExpression = struct {
-    /// Expression - the tag function
     tag: NodeIndex,
-    /// TemplateLiteral
     quasi: NodeIndex,
-    /// typescript: TSTypeParameterInstantiation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
-/// `new Callee()`, `new Callee(args)`
-/// https://tc39.es/ecma262/#sec-new-operator
+/// A `new` expression.
+///
+/// ## Example
+/// ```ts
+/// new Foo<T>(a, b)
+/// //  ^^^ callee
+/// //     ^^^ type_arguments
+/// //         ^^^^ arguments
+/// ```
 pub const NewExpression = struct {
-    /// Expression - the constructor being called
     callee: NodeIndex,
-    /// (Expression | SpreadElement)[]
     arguments: IndexRange,
-    /// typescript: TSTypeParameterInstantiation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
-/// `await expression`
-/// https://tc39.es/ecma262/#sec-await
+/// An `await` expression.
+///
+/// ## Example
+/// ```js
+/// await promise
+/// //    ^^^^^^^ argument
+/// ```
 pub const AwaitExpression = struct {
-    /// Expression
     argument: NodeIndex,
 };
 
-/// `yield expression` or `yield* expression`
-/// https://tc39.es/ecma262/#sec-generator-function-definitions-runtime-semantics-evaluation
+/// A `yield` or `yield*` expression.
+///
+/// ## Example
+/// ```js
+/// yield x      // delegate = false
+/// yield* iter  // delegate = true
+/// yield        // argument = .null
+/// ```
 pub const YieldExpression = struct {
-    /// Expression (optional, may be `.null`)
+    /// `.null` for bare `yield`
     argument: NodeIndex,
-    /// true for `yield*`, false for `yield`
+    /// true for `yield*`
     delegate: bool,
 };
 
-/// `import.meta` or `new.target`
-/// https://tc39.es/ecma262/#prod-MetaProperty
+/// A meta property.
+///
+/// ## Example
+/// ```js
+/// import.meta
+/// //     ^^^^ property
+/// new.target
+/// //  ^^^^^^ property
+/// ```
+/// `meta` is the head keyword (`import` or `new`).
 pub const MetaProperty = struct {
-    /// IdentifierName ('import' or 'new')
     meta: NodeIndex,
-    /// IdentifierName ('meta' or 'target')
     property: NodeIndex,
 };
 
-/// import or export kind for TypeScript
+/// `value` vs `type` on a TypeScript import or export specifier.
+///
+/// ## Example
+/// ```ts
+/// import type { T } from "m";
+/// //     ^^^^ kind = type
+/// import { type T, v } from "m";
+/// //       ^^^^ specifier kind = type
+/// //               ^ specifier kind = value
+/// ```
 pub const ImportOrExportKind = enum {
     value,
     type,
@@ -1364,8 +1927,10 @@ pub const ImportOrExportKind = enum {
     }
 };
 
-/// typescript class member accessibility modifier.
-/// `.none` means no modifier was written.
+/// Accessibility modifier on a TypeScript class member.
+///
+/// `.none` means no modifier was written (distinct from `public`, which
+/// was written explicitly).
 pub const Accessibility = enum {
     none,
     public,
@@ -1382,248 +1947,385 @@ pub const Accessibility = enum {
     }
 };
 
-/// import phase for source phase imports and deferred imports
-/// https://github.com/estree/estree/blob/master/stage3/source-phase-imports.md
-/// https://github.com/estree/estree/blob/master/stage3/defer-import-eval.md
+/// Stage 3 import phase modifier.
+///
+/// ## Example
+/// ```js
+/// import source x from "m";  // phase = .source
+/// import defer * as x from "m";  // phase = .defer
+/// ```
 pub const ImportPhase = enum {
-    /// `import source x from "x"` or `import.source("x")`
     source,
-    /// `import defer * as x from "x"` or `import.defer("x")`
     @"defer",
 };
 
-/// `import(source)` or `import(source, options)` or `import.source(source)` or `import.defer(source)`
-/// https://tc39.es/ecma262/#sec-import-calls
+/// A dynamic `import()` call or phased import.
+///
+/// ## Example
+/// ```js
+/// import("m")                 // phase = null
+/// import("m", { with: {} })   // options set
+/// import.source("m")          // phase = .source
+/// import.defer("m")           // phase = .defer
+/// ```
 pub const ImportExpression = struct {
-    /// Expression - the module specifier
     source: NodeIndex,
-    /// Expression (optional, may be `.null`) - import options/attributes
+    /// `.null` when no options argument was passed
     options: NodeIndex,
-    /// import phase: source, defer, or null (regular import)
+    /// `null` for a plain `import(...)`
     phase: ?ImportPhase,
 };
 
-/// `import ... from 'source'` or `import 'source'`
-/// https://tc39.es/ecma262/#sec-imports
+/// A static `import` declaration.
+///
+/// ## Example
+/// ```ts
+/// import { foo as bar } from "m";
+/// //       ^^^^^^^^^^ specifiers[0]
+/// //                         ^^^ source
+/// ```
+/// `import_kind = .type` for `import type { ... }`; `phase` is set for Stage 3
+/// `import source` / `import defer` forms; `attributes` holds a trailing
+/// `with { ... }` clause.
 pub const ImportDeclaration = struct {
-    /// ImportDeclarationSpecifier[] - null for side-effect imports (import 'foo')
     specifiers: IndexRange,
-    /// StringLiteral - the module specifier
     source: NodeIndex,
-    /// ImportAttribute[] - import attributes/assertions
     attributes: IndexRange,
-    /// import phase: source, defer, or null (regular import)
+    /// `null` for a regular import
     phase: ?ImportPhase,
-    /// typescript: `.value` (default) or `.type` for `import type { ... }`
+    /// ts: `.type` for `import type { ... }`
     import_kind: ImportOrExportKind = .value,
 };
 
-/// `import {imported as local} from "source"`
-///          ~~~~~~~~~~~~~~~~~
-/// https://tc39.es/ecma262/#prod-ImportSpecifier
+/// A single `{ imported as local }` specifier in an import declaration.
+///
+/// ## Example
+/// ```ts
+/// import { foo as bar } from "m";
+/// //       ^^^ imported
+/// //              ^^^ local
+///
+/// import { type T } from "m";
+/// //       ^^^^ import_kind = type
+/// ```
 pub const ImportSpecifier = struct {
-    /// ModuleExportName (IdentifierName or StringLiteral) - imported symbol
+    /// `IdentifierName` or `StringLiteral`
     imported: NodeIndex,
-    /// BindingIdentifier - local binding
     local: NodeIndex,
-    /// typescript: `.value` (default) or `.type` for `import { type X } from "..."`
+    /// ts: `.type` for `import { type X }`
     import_kind: ImportOrExportKind = .value,
 };
 
-/// `import local from "source"`
-///         ~~~~~
-/// https://tc39.es/ecma262/#prod-ImportedDefaultBinding
+/// The default-binding specifier in an import declaration.
+///
+/// ## Example
+/// ```js
+/// import local from "m";
+/// //     ^^^^^ local
+/// ```
 pub const ImportDefaultSpecifier = struct {
-    /// BindingIdentifier - local binding
     local: NodeIndex,
 };
 
-/// `import * as local from "source"`
-/// https://tc39.es/ecma262/#prod-NameSpaceImport
+/// A `* as local` namespace import specifier.
+///
+/// ## Example
+/// ```js
+/// import * as ns from "m";
+/// //          ^^ local
+/// ```
 pub const ImportNamespaceSpecifier = struct {
-    /// BindingIdentifier - local binding
     local: NodeIndex,
 };
 
-/// `type: "json"` in import attributes
+/// A single `key: value` attribute in a `with { ... }` clause.
+///
+/// ## Example
+/// ```js
+/// import x from "m" with { type: "json" };
+/// //                       ^^^^ key
+/// //                             ^^^^^^ value
+/// ```
 pub const ImportAttribute = struct {
-    /// ImportAttributeKey (IdentifierName or StringLiteral)
+    /// `IdentifierName` or `StringLiteral`
     key: NodeIndex,
-    /// StringLiteral
     value: NodeIndex,
 };
 
-/// `export { foo, bar }` or `export { foo } from 'source'` or `export var/let/const/function/class`
-/// https://tc39.es/ecma262/#prod-ExportDeclaration
+/// An `export { ... }` or `export <decl>` declaration.
+///
+/// ## Example
+/// ```ts
+/// export type { foo, bar } from "m";
+/// //     ^^^^ export_kind = type
+/// //            ^^^^^^^^ specifiers
+/// //                            ^^^ source
+/// ```
+/// For `export const x = 1`, `declaration` is the inner `VariableDeclaration`
+/// and `specifiers` is empty.
 pub const ExportNamedDeclaration = struct {
-    /// Declaration (optional, may be `.null`) - for `export var x`
+    /// `.null` for the `export { ... }` form
     declaration: NodeIndex,
-    /// ExportSpecifier[]
     specifiers: IndexRange,
-    /// StringLiteral (optional, may be `.null`) - for re-exports
+    /// `.null` when there is no `from` clause
     source: NodeIndex,
-    /// ImportAttribute[] - export attributes/assertions
     attributes: IndexRange,
-    /// typescript: `.value` (default) or `.type` for `export type { ... }`
+    /// ts: `.type` for `export type { ... }`
     export_kind: ImportOrExportKind = .value,
 };
 
-/// `export default expression`
-/// https://tc39.es/ecma262/#prod-ExportDeclaration
+/// An `export default ...` declaration.
+///
+/// ## Example
+/// ```js
+/// export default foo;
+/// //             ^^^ declaration
+/// export default function () {}
+/// //             ^^^^^^^^^^^^^^ declaration (Function)
+/// ```
 pub const ExportDefaultDeclaration = struct {
-    /// Expression | FunctionDeclaration | ClassDeclaration
+    /// an expression, `Function`, or `Class`
     declaration: NodeIndex,
 };
 
-/// `export * from 'source'` or `export * as name from 'source'`
-/// https://tc39.es/ecma262/#prod-ExportDeclaration
+/// An `export * from "m"` or `export * as ns from "m"` declaration.
+///
+/// ## Example
+/// ```ts
+/// export * as ns from "m";
+/// //          ^^ exported
+/// //                  ^^^ source
+/// ```
+/// `export_kind = .type` for `export type * from "..."`.
 pub const ExportAllDeclaration = struct {
-    /// ModuleExportName (optional, may be `.null`) - for `export * as name`
+    /// `.null` for `export *` without `as`
     exported: NodeIndex,
-    /// StringLiteral - the module specifier
     source: NodeIndex,
-    /// ImportAttribute[] - export attributes/assertions
     attributes: IndexRange,
-    /// typescript: `.value` (default) or `.type` for `export type * from "..."`
+    /// ts: `.type` for `export type * from "..."`
     export_kind: ImportOrExportKind = .value,
 };
 
-/// `export { local as exported }`
-/// https://tc39.es/ecma262/#prod-ExportSpecifier
+/// A single `{ local as exported }` specifier in an export declaration.
+///
+/// ## Example
+/// ```ts
+/// export { foo as bar };
+/// //       ^^^ local
+/// //              ^^^ exported
+///
+/// export { type X };
+/// //       ^^^^ export_kind = type
+/// ```
 pub const ExportSpecifier = struct {
-    /// IdentifierReference (local export) or ModuleExportName/IdentifierName/StringLiteral (re-export with 'from')
+    /// `IdentifierReference`, or `IdentifierName` / `StringLiteral` when re-exporting from a module
     local: NodeIndex,
-    /// ModuleExportName (IdentifierName or StringLiteral) - exported name
+    /// `IdentifierName` or `StringLiteral`
     exported: NodeIndex,
-    /// typescript: `.value` (default) or `.type` for `export { type X }`
+    /// ts: `.type` for `export { type X }`
     export_kind: ImportOrExportKind = .value,
 };
 
-/// `export = expression`
+/// TypeScript `export = expr` (CommonJS-style ambient export).
+///
+/// ## Example
+/// ```ts
+/// export = MyNamespace;
+/// //       ^^^^^^^^^^^ expression
+/// ```
 pub const TSExportAssignment = struct {
-    /// Expression
     expression: NodeIndex,
 };
 
-/// `export as namespace name`
+/// TypeScript `export as namespace Name` (UMD ambient namespace export).
+///
+/// ## Example
+/// ```ts
+/// export as namespace MyLib;
+/// //                  ^^^^^ id
+/// ```
 pub const TSNamespaceExportDeclaration = struct {
-    /// IdentifierName
     id: NodeIndex,
 };
 
-/// `: Type` annotation wrapper. the span starts at the `:` token and covers the inner type.
-/// appears at variable declarators, function parameters, function return types, and other annotation sites.
+/// A `: Type` annotation wrapper.
+///
+/// The span starts at the `:` token and covers the inner type.
+///
+/// ## Example
+/// ```ts
+/// let x: number = 0;
+/// //   ^^^^^^^^ TSTypeAnnotation
+/// //     ^^^^^^ type_annotation
+/// ```
 pub const TSTypeAnnotation = struct {
-    /// TSType (the annotated type node)
+    /// the inner `TSType` node
     type_annotation: NodeIndex,
 };
 
-/// `<Foo>children</Foo>` or `<Foo />`
-/// https://facebook.github.io/jsx/#prod-JSXElement
+/// A JSX element, possibly self-closing.
+///
+/// ## Example
+/// ```jsx
+/// x = <Foo bar="baz">hello</Foo>
+/// //  ^^^^^^^^^^^^^^^ opening_element
+/// //                 ^^^^^ children
+/// //                      ^^^^^^ closing_element
+/// ```
+/// `closing_element = .null` for self-closing tags like `<Foo />`.
 pub const JSXElement = struct {
-    /// JSXOpeningElement
     opening_element: NodeIndex,
-    /// (JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild)[]
     children: IndexRange,
-    /// JSXClosingElement (optional, may be `.null` for self-closing tags)
+    /// `.null` for self-closing tags
     closing_element: NodeIndex,
 };
 
-/// `<Foo bar={baz}>` or `<Foo />`
-/// https://facebook.github.io/jsx/#prod-JSXOpeningElement
+/// The opening `<Foo ...>` of a JSX element.
+///
+/// ## Example
+/// ```tsx
+/// <Foo<T> bar={baz} />
+/// //  ^^^ type_arguments
+/// //      ^^^^^^^^^ attributes
+/// ```
+/// `name` is the tag (here `Foo`). `self_closing = true` for the trailing `/>`.
 pub const JSXOpeningElement = struct {
-    /// JSXIdentifier | JSXNamespacedName | JSXMemberExpression
+    /// `JSXIdentifier`, `JSXNamespacedName`, or `JSXMemberExpression`
     name: NodeIndex,
-    /// (JSXAttribute | JSXSpreadAttribute)[]
     attributes: IndexRange,
-    /// true for `<Foo />`, false for `<Foo>`
     self_closing: bool,
-    /// typescript: TSTypeParameterInstantiation (optional, may be `.null`)
+    /// ts: `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
-/// `</Foo>`
-/// https://facebook.github.io/jsx/#prod-JSXClosingElement
+/// The closing `</Foo>` of a JSX element.
 pub const JSXClosingElement = struct {
-    /// JSXIdentifier | JSXNamespacedName | JSXMemberExpression
+    /// `JSXIdentifier`, `JSXNamespacedName`, or `JSXMemberExpression`
     name: NodeIndex,
 };
 
-/// `<>children</>`
-/// https://facebook.github.io/jsx/#prod-JSXFragment
+/// A JSX fragment `<>...</>`.
+///
+/// ## Example
+/// ```jsx
+/// x = <>hello</>
+/// //    ^^^^^ children
+/// ```
+/// `opening_fragment` is `<>`, `closing_fragment` is `</>`.
 pub const JSXFragment = struct {
-    /// JSXOpeningFragment
     opening_fragment: NodeIndex,
-    /// (JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild)[]
     children: IndexRange,
-    /// JSXClosingFragment
     closing_fragment: NodeIndex,
 };
 
-/// `<>`
+/// The opening `<>` of a JSX fragment.
 pub const JSXOpeningFragment = struct {};
 
-/// `</>`
+/// The closing `</>` of a JSX fragment.
 pub const JSXClosingFragment = struct {};
 
-/// used in jsx tag names and attributes
-/// https://facebook.github.io/jsx/#prod-JSXIdentifier
+/// An identifier used as a JSX tag name or attribute name.
+///
+/// ## Example
+/// ```jsx
+/// <Foo bar="baz" />
+/// //   ^^^ JSXIdentifier (attribute name)
+/// ```
+/// The tag `Foo` is also a `JSXIdentifier`.
 pub const JSXIdentifier = struct {
     name: String = .empty,
 };
 
-/// `<namespace:name />`
-/// https://facebook.github.io/jsx/#prod-JSXNamespacedName
+/// A JSX name of the form `namespace:name`.
+///
+/// ## Example
+/// ```jsx
+/// <svg:path />
+/// //   ^^^^ name
+/// ```
+/// `namespace` is the portion before `:` (here `svg`).
 pub const JSXNamespacedName = struct {
-    /// JSXIdentifier - namespace portion
     namespace: NodeIndex,
-    /// JSXIdentifier - name portion
     name: NodeIndex,
 };
 
-/// `<Foo.Bar.Baz />`
-/// https://facebook.github.io/jsx/#prod-JSXMemberExpression
+/// A dotted JSX tag name.
+///
+/// ## Example
+/// ```jsx
+/// <Foo.Bar.Baz />
+/// //       ^^^ property
+/// ```
+/// `object` is the qualifier (`Foo.Bar`, itself a `JSXMemberExpression`).
 pub const JSXMemberExpression = struct {
-    /// JSXIdentifier | JSXMemberExpression
+    /// `JSXIdentifier` or a nested `JSXMemberExpression`
     object: NodeIndex,
-    /// JSXIdentifier
     property: NodeIndex,
 };
 
-/// `foo="bar"` or `foo={expr}` or just `foo`
-/// https://facebook.github.io/jsx/#prod-JSXAttribute
+/// A single JSX attribute.
+///
+/// ## Example
+/// ```jsx
+/// <Foo bar="baz" disabled />
+/// //   ^^^ name
+/// //       ^^^^^ value (StringLiteral)
+/// //             ^^^^^^^^ boolean attribute (value = .null)
+/// ```
 pub const JSXAttribute = struct {
-    /// JSXIdentifier | JSXNamespacedName
+    /// `JSXIdentifier` or `JSXNamespacedName`
     name: NodeIndex,
-    /// StringLiteral | JSXExpressionContainer | JSXElement | JSXFragment (optional, may be `.null` for boolean-like attributes)
+    /// `StringLiteral`, `JSXExpressionContainer`, `JSXElement`, `JSXFragment`,
+    /// or `.null` for boolean-like attributes
     value: NodeIndex,
 };
 
-/// `{...props}`
-/// https://facebook.github.io/jsx/#prod-JSXSpreadAttribute
+/// A spread attribute `{...props}`.
+///
+/// ## Example
+/// ```jsx
+/// <Foo {...props} />
+/// //    ^^^^^^^^ argument
+/// ```
 pub const JSXSpreadAttribute = struct {
-    /// Expression - the expression being spread
     argument: NodeIndex,
 };
 
-/// `{expression}`
-/// https://facebook.github.io/jsx/#prod-JSXExpressionContainer
+/// A `{expression}` container inside JSX.
+///
+/// ## Example
+/// ```jsx
+/// <Foo bar={baz}>{children}</Foo>
+/// //       ^^^^^ attribute container
+/// //             ^^^^^^^^^^ child container
+/// ```
 pub const JSXExpressionContainer = struct {
-    /// JSXEmptyExpression | Expression
+    /// a `JSXEmptyExpression` for `{}` or any expression otherwise
     expression: NodeIndex,
 };
 
-/// `{}`
+/// The empty `{}` placeholder inside a JSX element.
 pub const JSXEmptyExpression = struct {};
 
-/// text content inside JSX elements
+/// A span of raw text inside a JSX element or fragment.
+///
+/// ## Example
+/// ```jsx
+/// <Foo>hello world</Foo>
+/// //   ^^^^^^^^^^^ value
+/// ```
 pub const JSXText = struct {
     value: String = .empty,
 };
 
-/// `{...children}`
+/// A spread child `{...children}` inside a JSX element.
+///
+/// ## Example
+/// ```jsx
+/// <Foo>{...kids}</Foo>
+/// //    ^^^^^^^ expression
+/// ```
 pub const JSXSpreadChild = struct {
-    /// Expression - the expression being spread
     expression: NodeIndex,
 };
 
