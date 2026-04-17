@@ -5,6 +5,7 @@ const Precedence = @import("../token.zig").Precedence;
 const Token = @import("../token.zig").Token;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
+const ts_types = @import("ts/types.zig");
 const std = @import("std");
 
 pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_param: ?u32) Error!?ast.NodeIndex {
@@ -80,8 +81,15 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.getSpan(id);
 
-    var init: ast.NodeIndex = .null;
+    // typescript: `let x: Type = ...`
+    // the annotation node is produced but not yet attached; task 1.4 wires it onto the declarator.
     var end = id_span.end;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(annotation).end;
+    }
+
+    var init: ast.NodeIndex = .null;
 
     const is_using = kind == .using or kind == .await_using;
     const is_destructuring = patterns.isDestructuringPattern(parser, id);

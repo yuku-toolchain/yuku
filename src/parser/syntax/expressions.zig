@@ -223,6 +223,13 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
+    // typescript arrow return type: `(a): Type => ...`
+    // only valid when an arrow follows; consumed before the `=>` check.
+    // the annotation is produced but not yet attached; task 1.4 wires it onto the arrow function.
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        _ = try ts_types.parseTypeAnnotation(parser) orelse return null;
+    }
+
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
         return parenthesized.coverToArrowFunction(parser, cover, false, start);
@@ -294,6 +301,13 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
     defer parser.context.await_is_keyword = saved_await_is_keyword;
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
+
+    // typescript arrow return type: `async (a): Type => ...`
+    // only valid when an arrow follows; consumed before the `=>` check.
+    // the annotation is produced but not yet attached; task 1.4 wires it onto the arrow function.
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        _ = try ts_types.parseTypeAnnotation(parser) orelse return null;
+    }
 
     // [no LineTerminator here] => ConciseBody
     // async (...) => ...

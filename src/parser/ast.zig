@@ -1405,6 +1405,13 @@ pub const TSNamespaceExportDeclaration = struct {
     id: NodeIndex,
 };
 
+/// `: Type` annotation wrapper. the span starts at the `:` token and covers the inner type.
+/// appears at variable declarators, function parameters, function return types, and other annotation sites.
+pub const TSTypeAnnotation = struct {
+    /// TSType (the annotated type node)
+    type_annotation: NodeIndex,
+};
+
 /// `<Foo>children</Foo>` or `<Foo />`
 /// https://facebook.github.io/jsx/#prod-JSXElement
 pub const JSXElement = struct {
@@ -1602,6 +1609,7 @@ pub const NodeData = union(enum) {
     // typescript
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
+    ts_type_annotation: TSTypeAnnotation,
 
     // jsx
     jsx_element: JSXElement,

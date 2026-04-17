@@ -4,6 +4,7 @@ const Error = @import("../parser.zig").Error;
 
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
+const ts_types = @import("ts/types.zig");
 
 const ParseFunctionOpts = struct {
     is_async: bool = false,
@@ -105,6 +106,14 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
     )) return null;
 
+    // typescript return type: `function f(): Type { ... }`
+    // the annotation node is produced but not yet attached; task 1.4 wires it onto the function.
+    var return_type_end: u32 = params_end;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        return_type_end = parser.tree.getSpan(annotation).end;
+    }
+
     var body: ast.NodeIndex = .null;
 
     if (opts.is_declare) {
@@ -120,7 +129,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         body = try parseFunctionBody(parser) orelse .null;
     }
 
-    const end = if (body != .null) parser.tree.getSpan(body).end else params_end;
+    const end = if (body != .null) parser.tree.getSpan(body).end else return_type_end;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
@@ -232,6 +241,12 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
 
 pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
+
+    // typescript: `function f(x: Type) { ... }`
+    // the annotation node is produced but not yet attached; task 1.4 wires it onto the parameter.
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        _ = try ts_types.parseTypeAnnotation(parser) orelse return null;
+    }
 
     if (parser.current_token.tag == .assign) {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
