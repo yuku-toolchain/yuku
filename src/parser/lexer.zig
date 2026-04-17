@@ -886,6 +886,7 @@ pub const Lexer = struct {
             },
             3 => {
                 switch (lexeme[0]) {
+                    'a' => if (lexeme[1] == 'n' and lexeme[2] == 'y') return .any,
                     'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .@"for",
                     'g' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .get,
                     'l' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .let,
@@ -940,6 +941,8 @@ pub const Lexer = struct {
                         return .infer,
                     'k' => if (lexeme[1] == 'e' and lexeme[2] == 'y' and lexeme[3] == 'o' and lexeme[4] == 'f')
                         return .keyof,
+                    'n' => if (lexeme[1] == 'e' and lexeme[2] == 'v' and lexeme[3] == 'e' and lexeme[4] == 'r')
+                        return .never,
                     's' => if (lexeme[1] == 'u' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'r')
                         return .super,
                     't' => if (lexeme[1] == 'h' and lexeme[2] == 'r' and lexeme[3] == 'o' and lexeme[4] == 'w')
@@ -957,6 +960,8 @@ pub const Lexer = struct {
                 switch (lexeme[0]) {
                     'a' => if (lexeme[1] == 's' and lexeme[2] == 's' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 't')
                         return .assert,
+                    'b' => if (lexeme[1] == 'i' and lexeme[2] == 'g' and lexeme[3] == 'i' and lexeme[4] == 'n' and lexeme[5] == 't')
+                        return .bigint,
                     'd' => if (lexeme[1] == 'e' and lexeme[2] == 'l' and lexeme[3] == 'e' and lexeme[4] == 't' and lexeme[5] == 'e')
                         return .delete,
                     'e' => if (lexeme[1] == 'x' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
@@ -967,11 +972,19 @@ pub const Lexer = struct {
                         return .import,
                     'm' => if (lexeme[1] == 'o' and lexeme[2] == 'd' and lexeme[3] == 'u' and lexeme[4] == 'l' and lexeme[5] == 'e')
                         return .module,
+                    'n' => if (lexeme[1] == 'u' and lexeme[2] == 'm' and lexeme[3] == 'b' and lexeme[4] == 'e' and lexeme[5] == 'r')
+                        return .number,
+                    'o' => if (lexeme[1] == 'b' and lexeme[2] == 'j' and lexeme[3] == 'e' and lexeme[4] == 'c' and lexeme[5] == 't')
+                        return .object,
                     'p' => if (lexeme[1] == 'u' and lexeme[2] == 'b' and lexeme[3] == 'l' and lexeme[4] == 'i' and lexeme[5] == 'c')
                         return .public,
                     'r' => if (lexeme[1] == 'e' and lexeme[2] == 't' and lexeme[3] == 'u' and lexeme[4] == 'r' and lexeme[5] == 'n')
                         return .@"return",
                     's' => {
+                        if (lexeme[1] == 't' and lexeme[2] == 'r' and lexeme[3] == 'i' and lexeme[4] == 'n' and lexeme[5] == 'g')
+                            return .string;
+                        if (lexeme[1] == 'y' and lexeme[2] == 'm' and lexeme[3] == 'b' and lexeme[4] == 'o' and lexeme[5] == 'l')
+                            return .symbol;
                         if (lexeme[1] == 'w' and lexeme[2] == 'i' and lexeme[3] == 't' and lexeme[4] == 'c' and lexeme[5] == 'h')
                             return .@"switch";
                         if (lexeme[1] == 't' and lexeme[2] == 'a' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'c')
@@ -989,6 +1002,7 @@ pub const Lexer = struct {
             7 => {
                 switch (lexeme[0]) {
                     'a' => if (lexeme[1] == 's' and lexeme[2] == 's' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 't' and lexeme[6] == 's') return .asserts,
+                    'b' => if (lexeme[1] == 'o' and lexeme[2] == 'o' and lexeme[3] == 'l' and lexeme[4] == 'e' and lexeme[5] == 'a' and lexeme[6] == 'n') return .boolean,
                     'd' => {
                         if (lexeme[1] == 'e') {
                             if (lexeme[2] == 'f' and lexeme[3] == 'a' and lexeme[4] == 'u' and lexeme[5] == 'l' and lexeme[6] == 't') return .default;
@@ -1002,6 +1016,7 @@ pub const Lexer = struct {
                         if (lexeme[1] == 'a' and lexeme[2] == 'c' and lexeme[3] == 'k' and lexeme[4] == 'a' and lexeme[5] == 'g' and lexeme[6] == 'e') return .package;
                     },
                     'r' => if (lexeme[1] == 'e' and lexeme[2] == 'q' and lexeme[3] == 'u' and lexeme[4] == 'i' and lexeme[5] == 'r' and lexeme[6] == 'e') return .require,
+                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'k' and lexeme[3] == 'n' and lexeme[4] == 'o' and lexeme[5] == 'w' and lexeme[6] == 'n') return .unknown,
                     else => {},
                 }
             },
@@ -1028,6 +1043,7 @@ pub const Lexer = struct {
                     'n' => if (lexeme[1] == 'a' and lexeme[2] == 'm' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 'p' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .namespace,
                     'p' => if (lexeme[1] == 'r' and lexeme[2] == 'o' and lexeme[3] == 't' and lexeme[4] == 'e' and lexeme[5] == 'c' and lexeme[6] == 't' and lexeme[7] == 'e' and lexeme[8] == 'd') return .protected,
                     's' => if (lexeme[1] == 'a' and lexeme[2] == 't' and lexeme[3] == 'i' and lexeme[4] == 's' and lexeme[5] == 'f' and lexeme[6] == 'i' and lexeme[7] == 'e' and lexeme[8] == 's') return .satisfies,
+                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'd' and lexeme[3] == 'e' and lexeme[4] == 'f' and lexeme[5] == 'i' and lexeme[6] == 'n' and lexeme[7] == 'e' and lexeme[8] == 'd') return .@"undefined",
                     else => {},
                 }
             },

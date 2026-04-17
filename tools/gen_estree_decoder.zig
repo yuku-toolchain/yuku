@@ -604,6 +604,8 @@ fn estreeType(comptime name: []const u8) []const u8 {
         .{ "binding_identifier", "Identifier" },
         .{ "identifier_name", "Identifier" },
         .{ "label_identifier", "Identifier" },
+        // snake_to_pascal would turn "bigint" into "Bigint"; typescript uses "BigInt"
+        .{ "ts_bigint_keyword", "TSBigIntKeyword" },
     };
     inline for (overrides) |o| {
         if (comptime std.mem.eql(u8, name, o[0])) return o[1];

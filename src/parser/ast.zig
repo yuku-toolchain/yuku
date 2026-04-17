@@ -2163,6 +2163,136 @@ pub const TSTypeAnnotation = struct {
     type_annotation: NodeIndex,
 };
 
+/// The `any` primitive type. Disables all type checking for the annotated value.
+///
+/// ## Example
+/// ```ts
+/// let x: any;
+/// //     ^^^ TSAnyKeyword
+/// ```
+pub const TSAnyKeyword = struct {};
+
+/// The `bigint` primitive type. Integer values of arbitrary precision.
+///
+/// ## Example
+/// ```ts
+/// let x: bigint;
+/// //     ^^^^^^ TSBigIntKeyword
+/// ```
+pub const TSBigIntKeyword = struct {};
+
+/// The `boolean` primitive type.
+///
+/// ## Example
+/// ```ts
+/// let x: boolean;
+/// //     ^^^^^^^ TSBooleanKeyword
+/// ```
+pub const TSBooleanKeyword = struct {};
+
+/// The `intrinsic` keyword. Marks a type as built into the TypeScript compiler
+/// (for example `Uppercase<T>` and other string-manipulation utilities).
+///
+/// ## Example
+/// ```ts
+/// type Uppercase<S extends string> = intrinsic;
+/// //                                 ^^^^^^^^^ TSIntrinsicKeyword
+/// ```
+pub const TSIntrinsicKeyword = struct {};
+
+/// The `never` primitive type. Represents values that never occur (for example
+/// the return type of a function that always throws).
+///
+/// ## Example
+/// ```ts
+/// function fail(): never { throw new Error(); }
+/// //               ^^^^^ TSNeverKeyword
+/// ```
+pub const TSNeverKeyword = struct {};
+
+/// The `null` keyword used in type position.
+///
+/// ## Example
+/// ```ts
+/// let x: string | null;
+/// //              ^^^^ TSNullKeyword
+/// ```
+pub const TSNullKeyword = struct {};
+
+/// The `number` primitive type.
+///
+/// ## Example
+/// ```ts
+/// let x: number;
+/// //     ^^^^^^ TSNumberKeyword
+/// ```
+pub const TSNumberKeyword = struct {};
+
+/// The `object` primitive type. Any non-primitive value.
+///
+/// ## Example
+/// ```ts
+/// let x: object;
+/// //     ^^^^^^ TSObjectKeyword
+/// ```
+pub const TSObjectKeyword = struct {};
+
+/// The `string` primitive type.
+///
+/// ## Example
+/// ```ts
+/// let x: string;
+/// //     ^^^^^^ TSStringKeyword
+/// ```
+pub const TSStringKeyword = struct {};
+
+/// The `symbol` primitive type.
+///
+/// ## Example
+/// ```ts
+/// let x: symbol;
+/// //     ^^^^^^ TSSymbolKeyword
+/// ```
+pub const TSSymbolKeyword = struct {};
+
+/// The polymorphic `this` type. Refers to the type of the enclosing class or
+/// interface at the usage site.
+///
+/// ## Example
+/// ```ts
+/// class C { self(): this { return this; } }
+/// //                ^^^^ TSThisType
+/// ```
+pub const TSThisType = struct {};
+
+/// The `undefined` keyword used in type position.
+///
+/// ## Example
+/// ```ts
+/// let x: string | undefined;
+/// //              ^^^^^^^^^ TSUndefinedKeyword
+/// ```
+pub const TSUndefinedKeyword = struct {};
+
+/// The `unknown` primitive type. The type-safe counterpart of `any`.
+///
+/// ## Example
+/// ```ts
+/// let x: unknown;
+/// //     ^^^^^^^ TSUnknownKeyword
+/// ```
+pub const TSUnknownKeyword = struct {};
+
+/// The `void` keyword used in type position. Typically the return type of a
+/// function that returns no meaningful value.
+///
+/// ## Example
+/// ```ts
+/// function log(): void {}
+/// //              ^^^^ TSVoidKeyword
+/// ```
+pub const TSVoidKeyword = struct {};
+
 /// A JSX element, possibly self-closing.
 ///
 /// ## Example
@@ -2417,9 +2547,23 @@ pub const NodeData = union(enum) {
     export_specifier: ExportSpecifier,
 
     // typescript
+    ts_any_keyword: TSAnyKeyword,
+    ts_bigint_keyword: TSBigIntKeyword,
+    ts_boolean_keyword: TSBooleanKeyword,
     ts_export_assignment: TSExportAssignment,
+    ts_intrinsic_keyword: TSIntrinsicKeyword,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
+    ts_never_keyword: TSNeverKeyword,
+    ts_null_keyword: TSNullKeyword,
+    ts_number_keyword: TSNumberKeyword,
+    ts_object_keyword: TSObjectKeyword,
+    ts_string_keyword: TSStringKeyword,
+    ts_symbol_keyword: TSSymbolKeyword,
+    ts_this_type: TSThisType,
     ts_type_annotation: TSTypeAnnotation,
+    ts_undefined_keyword: TSUndefinedKeyword,
+    ts_unknown_keyword: TSUnknownKeyword,
+    ts_void_keyword: TSVoidKeyword,
 
     // jsx
     jsx_element: JSXElement,

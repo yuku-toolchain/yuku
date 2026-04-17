@@ -1,1 +1,3 @@
-const nice: string = "wow"
+function nice(cool: string): number {
+  return 10;
+}

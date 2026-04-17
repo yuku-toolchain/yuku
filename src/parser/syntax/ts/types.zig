@@ -1,8 +1,3 @@
-// typescript type parsing
-//
-// parses type annotations, type expressions, and type-level constructs.
-// called from expression and statement parsing when typescript syntax is encountered.
-
 const std = @import("std");
 const ast = @import("../../ast.zig");
 const Parser = @import("../../parser.zig").Parser;
@@ -10,12 +5,43 @@ const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
+    if (try parseTypeKeyword(parser)) |node| return node;
+
     try parser.reportExpected(
         parser.current_token.span,
         "Expected a type",
-        .{ .help = "TypeScript type parsing is being implemented incrementally; this type form is not supported yet" },
+        .{ .help = "todo" },
     );
+
     return null;
+}
+
+inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+
+    if (token.isEscaped()) return null;
+
+    const data: ast.NodeData = switch (token.tag) {
+        .any => .{ .ts_any_keyword = .{} },
+        .bigint => .{ .ts_bigint_keyword = .{} },
+        .boolean => .{ .ts_boolean_keyword = .{} },
+        .intrinsic => .{ .ts_intrinsic_keyword = .{} },
+        .never => .{ .ts_never_keyword = .{} },
+        .null_literal => .{ .ts_null_keyword = .{} },
+        .number => .{ .ts_number_keyword = .{} },
+        .object => .{ .ts_object_keyword = .{} },
+        .string => .{ .ts_string_keyword = .{} },
+        .symbol => .{ .ts_symbol_keyword = .{} },
+        .this => .{ .ts_this_type = .{} },
+        .@"undefined" => .{ .ts_undefined_keyword = .{} },
+        .unknown => .{ .ts_unknown_keyword = .{} },
+        .void => .{ .ts_void_keyword = .{} },
+        else => return null,
+    };
+
+    try parser.advance() orelse return null;
+
+    return try parser.tree.createNode(data, token.span);
 }
 
 /// `: Type`.
