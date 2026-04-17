@@ -1654,7 +1654,7 @@ pub const Directive = struct {
     value: String = .empty,
 };
 
-/// Form of a function node, matching its ESTree output type.
+/// Form of a function node.
 pub const FunctionType = enum {
     function_declaration,
     function_expression,
@@ -1730,7 +1730,7 @@ pub const FormalParameters = struct {
 /// A thin wrapper marking a binding pattern as a function parameter.
 ///
 /// TypeScript metadata (decorators, type annotation, optional) lives on
-/// the inner pattern. The ESTree decoder unwraps this node to that pattern.
+/// the inner pattern.
 pub const FormalParameter = struct {
     /// a binding pattern (`BindingIdentifier`, `ObjectPattern`, `ArrayPattern`,
     /// `AssignmentPattern`)
