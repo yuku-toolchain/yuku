@@ -10,10 +10,6 @@ const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
 
 /// parses any TSType node.
-///
-/// phase 1.3 scaffolding: concrete type nodes (keywords, references, unions, etc.) are added
-/// incrementally starting in phase 2. until then this function reports a diagnostic at the
-/// current token and returns null so callers unwind cleanly.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     try parser.reportExpected(
         parser.current_token.span,
