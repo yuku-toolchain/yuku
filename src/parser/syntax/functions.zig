@@ -106,9 +106,10 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
     )) return null;
 
-    // typescript return type: `function f(): Type { ... }`
+    // typescript return type, `function f(): Type { ... }`
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
+
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         return_type = annotation;
@@ -245,9 +246,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
 pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    // typescript: `function f(x: Type) { ... }`
-    // annotation attaches to the inner binding pattern so the decoder emits
-    // `{ type: "Identifier", typeAnnotation: ... }` after unwrapping FormalParameter.
+    // `function f(x: Type) { ... }`
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);

@@ -81,8 +81,8 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.getSpan(id);
 
-    // typescript: `let x: Type = ...`
-    // annotation attaches to the inner binding pattern (`id`) to match ESTree shape.
+    // `let x: Type = ...`
+    // annotation attaches to the inner binding pattern (`id`).
     var end = id_span.end;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;

@@ -25,6 +25,7 @@ fn bench(io: std.Io, source: []const u8, mode: BenchMode, n: i96) !i96 {
     const start = std.Io.Clock.awake.now(io);
     for (0..@intCast(n)) |_| {
         var tree = try parser.parse(std.heap.page_allocator, source, .{ .lang = .ts });
+
         if (mode != .parse_only) {
             var result = try parser.semantic.analyze(&tree);
             if (mode == .with_resolve)
