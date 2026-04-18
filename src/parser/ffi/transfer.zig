@@ -1,4 +1,4 @@
-// Yuku AST transfer format, version 2.
+// Yuku AST transfer format v3.
 //
 // serializes the parsed ast into a compact binary buffer for passing to js.
 // the buffer is returned as an arraybuffer from the native napi binding.
