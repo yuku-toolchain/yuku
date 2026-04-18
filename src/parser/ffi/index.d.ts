@@ -610,8 +610,6 @@ interface JSXFragment extends BaseNode {
 }
 interface JSXOpeningFragment extends BaseNode {
   type: "JSXOpeningFragment";
-  attributes: [];
-  selfClosing: false;
 }
 interface JSXClosingFragment extends BaseNode {
   type: "JSXClosingFragment";

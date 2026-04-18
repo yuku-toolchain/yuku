@@ -146,7 +146,7 @@ function node(i) {
     case 103: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 104: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
     case 105: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
-    case 106: { const r = { type: "JSXOpeningFragment", start, end }; if (!_isTs) { r.attributes = []; r.selfClosing = false; } return r; }
+    case 106: return { type: "JSXOpeningFragment", start, end };
     case 107: return { type: "JSXClosingFragment", start, end };
     case 108: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
     case 109: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };

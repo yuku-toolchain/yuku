@@ -197,12 +197,12 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter", "formal_parameters",    "function",            "arrow_function_expression",
-        "program",          "directive",            "string_literal",      "numeric_literal",
-        "bigint_literal",   "boolean_literal",      "null_literal",        "regexp_literal",
-        "template_element", "class",                "property_definition", "unary_expression",
-        "binding_property", "array_pattern",        "object_pattern",      "jsx_opening_fragment",
-        "jsx_text",         "expression_statement",
+        "formal_parameter",     "formal_parameters", "function",            "arrow_function_expression",
+        "program",              "directive",         "string_literal",      "numeric_literal",
+        "bigint_literal",       "boolean_literal",   "null_literal",        "regexp_literal",
+        "template_element",     "class",             "property_definition", "unary_expression",
+        "binding_property",     "array_pattern",     "object_pattern",      "jsx_text",
+        "expression_statement",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -345,11 +345,6 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); const r = {{ type: "ObjectPattern", start, end, properties: pr }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); r.optional = !!(flags & {d}); r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
         , .{ tag, sp, sr, sr, sdec, sdec + 1, comptime flagMask(ast.ObjectPattern, "optional"), sta, sta });
-    } else if (comptime eql(u8, name, "jsx_opening_fragment")) {
-        // .jsx includes attributes/selfClosing on fragments; .tsx omits both.
-        try emit(w,
-            \\    case {d}: {{ const r = {{ type: "JSXOpeningFragment", start, end }}; if (!_isTs) {{ r.attributes = []; r.selfClosing = false; }} return r; }}
-        , .{tag});
     } else if (comptime eql(u8, name, "jsx_text")) {
         const sv = comptime slotOf(ast.JSXText, "value");
         try emit(w,
