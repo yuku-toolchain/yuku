@@ -10,51 +10,27 @@
 // 1. buffer layout
 //
 //   offset  section
-//   0       header      (40 bytes, fixed)
-//   40      nodes       (node_count * 48 bytes)
+//   0       header      (sizeof(Header) bytes, fixed)
+//   ...     nodes       (node_count * sizeof(PackedNode) bytes)
 //   ...     extra       (extra_count * 4 bytes)
 //   ...     strings     (string_pool_len bytes, raw utf8)
-//   ...     comments    (comment_count * 20 bytes)
+//   ...     comments    (comment_count * sizeof(CommentEntry) bytes)
 //   ...     diagnostics (variable length)
 //
 //
-// 2. header (40 bytes)
+// 2. fixed structures
 //
-//   offset  size  field
-//   0       4     magic               "YUKU" (0x59 0x55 0x4B 0x55)
-//   4       4     version             format version (currently 2)
-//   8       4     node_count          number of AST nodes
-//   12      4     extra_count         number of u32 entries in the extra array
-//   16      4     string_pool_len     byte length of the string pool
-//   20      4     source_len          byte length of the original source (utf8)
-//   24      4     comment_count       number of comments
-//   28      4     diagnostic_count    number of diagnostics
-//   32      4     program_index       node index of the root Program node
-//   36      4     flags               bit 0: source is all ascii
-//                                     bit 1: language is typescript (ts/tsx/dts)
+//   `Header`, `PackedNode`, and `CommentEntry` below are `extern struct`s.
+//   their `@sizeOf` and `@offsetOf` values are the single source of truth
+//   for both the serializer and the JS decoder. changing a field in any of
+//   these structs propagates to the generated decoder automatically via the
+//   `pub const` offsets exported from this file.
 //
 //
-// 3. nodes (48 bytes each)
+// 3. node field packing
 //
-//   offset  size  field
-//   0       1     tag         node type (index into the NodeData union)
-//   1       1     (padding)
-//   2       2     flags       packed booleans and small enums (16 bits)
-//   4       2     field0      u16 value (first IndexRange length)
-//   6       2     (padding)
-//   8       4     field1      u32 slot 0
-//   12      4     field2      u32 slot 1
-//   16      4     field3      u32 slot 2
-//   20      4     field4      u32 slot 3
-//   24      4     field5      u32 slot 4
-//   28      4     field6      u32 slot 5
-//   32      4     field7      u32 slot 6
-//   36      4     field8      u32 slot 7
-//   40      4     span_start  byte offset in source
-//   44      4     span_end    byte offset in source
-//
-//   fields are assigned to slots by iterating the AST struct's fields
-//   in declaration order. for each field:
+//   fields of an AST struct are assigned to `PackedNode` slots by iterating
+//   the struct in declaration order. for each field:
 //
 //     bool              1 bit in flags (bit position = sum of prior flag widths)
 //     enum              ceil(log2(N)) bits in flags
@@ -82,23 +58,12 @@
 //   may contain WTF8 encoded lone surrogates.
 //
 //
-// 6. comments (20 bytes each)
-//
-//   offset  size  field
-//   0       1     type          0 = line, 1 = block
-//   1       3     (padding)
-//   4       4     start         byte offset in source
-//   8       4     end           byte offset in source
-//   12      4     value_start   String start (comment content without delimiters)
-//   16      4     value_end     String end
-//
-//
-// 7. diagnostics (variable length, sequential)
+// 6. diagnostics (variable length, sequential)
 //
 //   each diagnostic:
 //     1 byte    severity        0 = error, 1 = warning, 2 = hint, 3 = info
-//     4 bytes   span_start      byte offset in source
-//     4 bytes   span_end        byte offset in source
+//     4 bytes   span_start
+//     4 bytes   span_end
 //     4 bytes   message_len
 //     N bytes   message         utf8 text
 //     1 byte    has_help        0 or 1
@@ -107,8 +72,8 @@
 //       N bytes   help          utf8 text
 //     4 bytes   label_count
 //     for each label:
-//       4 bytes   start         byte offset in source
-//       4 bytes   end           byte offset in source
+//       4 bytes   start
+//       4 bytes   end
 //       4 bytes   message_len
 //       N bytes   message       utf8 text
 
@@ -116,24 +81,31 @@ const std = @import("std");
 const ast = @import("parser").ast;
 
 pub const VERSION: u32 = 2;
-pub const HEADER_SIZE: u32 = 40;
-pub const NODE_SIZE: u32 = 48;
-pub const COMMENT_SIZE: u32 = 20;
-/// byte offsets within a PackedNode, derived from the struct.
-pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
-pub const NODE_FIELD0_OFFSET: u8 = @offsetOf(PackedNode, "field0");
-/// u32 indices (byte offset / 4) within a PackedNode.
-pub const NODE_HEADER_U32S: u8 = @offsetOf(PackedNode, "field1") / 4;
-pub const NODE_SPAN_START_U32: u8 = @offsetOf(PackedNode, "span_start") / 4;
-pub const NODE_SPAN_END_U32: u8 = @offsetOf(PackedNode, "span_end") / 4;
-/// `flags` (u32 index 9 in the header) bit positions.
-pub const FLAG_ASCII: u32 = 1;
-pub const FLAG_TS: u32 = 2;
 
+/// fixed-size header prefixing the buffer. field order defines the on-wire
+/// layout; the serializer writes this struct via `@memcpy` and the decoder
+/// reads each field by the u32 index derived from `@offsetOf` below.
+const Header = extern struct {
+    magic: [4]u8,
+    version: u32,
+    node_count: u32,
+    extra_count: u32,
+    string_pool_len: u32,
+    source_len: u32,
+    comment_count: u32,
+    diag_count: u32,
+    program_index: u32,
+    flags: u32,
+};
+
+/// packed AST node entry. the `tag` identifies the `ast.NodeData` variant;
+/// `flags` holds packed booleans and small enums; `field1..field8` are u32
+/// data slots assigned to struct fields by the rules in section 3.
 const PackedNode = extern struct {
     tag: u8,
     _pad0: u8 = 0,
     flags: u16,
+    /// first IndexRange's length (other IndexRanges use full u32 slots).
     field0: u16,
     _pad1: u16 = 0,
     field1: u32,
@@ -148,13 +120,59 @@ const PackedNode = extern struct {
     span_end: u32,
 };
 
+/// comment entry in the comments section.
+const CommentEntry = extern struct {
+    type: u8,
+    _pad: [3]u8 = [_]u8{0} ** 3,
+    start: u32,
+    end: u32,
+    value_start: u32,
+    value_end: u32,
+};
+
+// section sizes
+pub const HEADER_SIZE: u32 = @sizeOf(Header);
+pub const NODE_SIZE: u32 = @sizeOf(PackedNode);
+pub const COMMENT_SIZE: u32 = @sizeOf(CommentEntry);
+
+// `Header` field u32 indices, for the decoder
+pub const HDR_NODE_COUNT_U32: u32 = @offsetOf(Header, "node_count") / 4;
+pub const HDR_EXTRA_COUNT_U32: u32 = @offsetOf(Header, "extra_count") / 4;
+pub const HDR_STRING_POOL_LEN_U32: u32 = @offsetOf(Header, "string_pool_len") / 4;
+pub const HDR_SOURCE_LEN_U32: u32 = @offsetOf(Header, "source_len") / 4;
+pub const HDR_COMMENT_COUNT_U32: u32 = @offsetOf(Header, "comment_count") / 4;
+pub const HDR_DIAG_COUNT_U32: u32 = @offsetOf(Header, "diag_count") / 4;
+pub const HDR_PROGRAM_INDEX_U32: u32 = @offsetOf(Header, "program_index") / 4;
+pub const HDR_FLAGS_U32: u32 = @offsetOf(Header, "flags") / 4;
+
+// `Header.flags` bit positions
+pub const FLAG_ASCII: u32 = 1;
+pub const FLAG_TS: u32 = 2;
+
+// `PackedNode` byte offsets and u32 indices
+pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
+pub const NODE_FIELD0_OFFSET: u8 = @offsetOf(PackedNode, "field0");
+pub const NODE_HEADER_U32S: u8 = @offsetOf(PackedNode, "field1") / 4;
+pub const NODE_SPAN_START_U32: u8 = @offsetOf(PackedNode, "span_start") / 4;
+pub const NODE_SPAN_END_U32: u8 = @offsetOf(PackedNode, "span_end") / 4;
+
+// `PackedNode` capacity, number of u32 data slots and flag bits available
+// per node. used by `validateAllNodeLayouts` to reject AST structs that
+// don't fit. both values track the struct layout automatically.
+pub const NODE_DATA_SLOTS: u8 = NODE_SPAN_START_U32 - NODE_HEADER_U32S;
+pub const NODE_FLAG_BITS: u8 = @bitSizeOf(fieldType(PackedNode, "flags"));
+
+// `CommentEntry` byte offsets, for the decoder
+pub const COMMENT_START_OFFSET: u8 = @offsetOf(CommentEntry, "start");
+pub const COMMENT_END_OFFSET: u8 = @offsetOf(CommentEntry, "end");
+pub const COMMENT_VALUE_START_OFFSET: u8 = @offsetOf(CommentEntry, "value_start");
+pub const COMMENT_VALUE_END_OFFSET: u8 = @offsetOf(CommentEntry, "value_end");
+
 comptime {
-    std.debug.assert(@sizeOf(PackedNode) == NODE_SIZE);
     validateAllNodeLayouts();
 }
 
-// comptime layout functions
-// used by both the serializer (below) and the decoder generator (tools/gen_estree_decoder.zig).
+// layout functions used by both the serializer (below) and the decoder generator (tools/gen_estree_decoder.zig).
 
 /// number of flag bits consumed by field `field_idx` in struct T.
 pub fn flagBitCount(comptime T: type, comptime field_idx: usize) u8 {
@@ -242,21 +260,39 @@ pub fn totalFlagBits(comptime T: type) u8 {
     }
 }
 
+/// looks up a field's type by name.
+fn fieldType(comptime T: type, comptime name: []const u8) type {
+    for (@typeInfo(T).@"struct".fields) |f| {
+        if (std.mem.eql(u8, f.name, name)) return f.type;
+    }
+    @compileError("field '" ++ name ++ "' not found in " ++ @typeName(T));
+}
+
 fn validateAllNodeLayouts() void {
     @setEvalBranchQuota(10_000);
     for (@typeInfo(ast.NodeData).@"union".fields) |field| {
         const T = field.type;
         if (@typeInfo(T) != .@"struct") continue;
-        if (totalU32Slots(T) > 8)
-            @compileError("node '" ++ field.name ++ "' needs more than 8 u32 slots");
-        if (totalFlagBits(T) > 16)
-            @compileError("node '" ++ field.name ++ "' needs more than 16 flag bits");
+        if (totalU32Slots(T) > NODE_DATA_SLOTS) @compileError(std.fmt.comptimePrint(
+            "node '{s}' needs more than {d} u32 slots",
+            .{ field.name, NODE_DATA_SLOTS },
+        ));
+        if (totalFlagBits(T) > NODE_FLAG_BITS) @compileError(std.fmt.comptimePrint(
+            "node '{s}' needs more than {d} flag bits",
+            .{ field.name, NODE_FLAG_BITS },
+        ));
     }
 }
 
 // serialization
 
 pub fn bufferSize(tree: *const ast.Tree) usize {
+    // fixed-size diagnostic prologue, severity + span_start + span_end +
+    // message_len + has_help + label_count.
+    const diag_fixed = 1 + 4 + 4 + 4 + 1 + 4;
+    const help_prefix = 4; // help_len
+    const label_fixed = 4 + 4 + 4; // start + end + message_len
+
     var size: usize = HEADER_SIZE +
         tree.nodes.len * NODE_SIZE +
         tree.extra.items.len * 4 +
@@ -264,45 +300,40 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
         tree.comments.len * COMMENT_SIZE;
 
     for (tree.diagnostics.items) |d| {
-        size += 18 + d.message.len;
-        if (d.help) |h| size += 4 + h.len;
-        for (d.labels) |lbl| size += 12 + lbl.message.len;
+        size += diag_fixed + d.message.len;
+        if (d.help) |h| size += help_prefix + h.len;
+        for (d.labels) |lbl| size += label_fixed + lbl.message.len;
     }
     return size;
 }
 
 pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
-    const node_count: u32 = @intCast(tree.nodes.len);
-    const extra_count: u32 = @intCast(tree.extra.items.len);
-    const source_len: u32 = @intCast(tree.source.len);
     const string_pool_len: u32 = @intCast(tree.strings.extra.items.len);
-    const comment_count: u32 = @intCast(tree.comments.len);
-    const diag_count: u32 = @intCast(tree.diagnostics.items.len);
-    const program_index: u32 = @intFromEnum(tree.program);
-    var flags: u32 = if (isAsciiOnly(tree.source)) FLAG_ASCII else 0;
-    if (tree.isTs()) flags |= FLAG_TS;
-
-    var pos: usize = 0;
+    var hdr_flags: u32 = if (isAsciiOnly(tree.source)) FLAG_ASCII else 0;
+    if (tree.isTs()) hdr_flags |= FLAG_TS;
 
     // header
-    @memcpy(buf[0..4], "YUKU");
-    w32(buf, 4, VERSION);
-    w32(buf, 8, node_count);
-    w32(buf, 12, extra_count);
-    w32(buf, 16, string_pool_len);
-    w32(buf, 20, source_len);
-    w32(buf, 24, comment_count);
-    w32(buf, 28, diag_count);
-    w32(buf, 32, program_index);
-    w32(buf, 36, flags);
-    pos = HEADER_SIZE;
+    const hdr = Header{
+        .magic = "YUKU".*,
+        .version = VERSION,
+        .node_count = @intCast(tree.nodes.len),
+        .extra_count = @intCast(tree.extra.items.len),
+        .string_pool_len = string_pool_len,
+        .source_len = @intCast(tree.source.len),
+        .comment_count = @intCast(tree.comments.len),
+        .diag_count = @intCast(tree.diagnostics.items.len),
+        .program_index = @intFromEnum(tree.program),
+        .flags = hdr_flags,
+    };
+    @memcpy(buf[0..HEADER_SIZE], std.mem.asBytes(&hdr));
+    var pos: usize = HEADER_SIZE;
 
     // nodes
     const data_items = tree.nodes.items(.data);
     const span_items = tree.nodes.items(.span);
-    for (0..node_count) |i| {
-        const node: *const [NODE_SIZE]u8 = @ptrCast(&packNode(data_items[i], span_items[i]));
-        @memcpy(buf[pos..][0..NODE_SIZE], node);
+    for (0..hdr.node_count) |i| {
+        const n = packNode(data_items[i], span_items[i]);
+        @memcpy(buf[pos..][0..NODE_SIZE], std.mem.asBytes(&n));
         pos += NODE_SIZE;
     }
 
@@ -317,16 +348,18 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
 
     // comments
     for (tree.comments) |c| {
-        buf[pos] = @intFromEnum(c.type);
-        @memset(buf[pos + 1 ..][0..3], 0);
-        w32(buf, pos + 4, c.start);
-        w32(buf, pos + 8, c.end);
-        w32(buf, pos + 12, c.value.start);
-        w32(buf, pos + 16, c.value.end);
+        const entry = CommentEntry{
+            .type = @intFromEnum(c.type),
+            .start = c.start,
+            .end = c.end,
+            .value_start = c.value.start,
+            .value_end = c.value.end,
+        };
+        @memcpy(buf[pos..][0..COMMENT_SIZE], std.mem.asBytes(&entry));
         pos += COMMENT_SIZE;
     }
 
-    // diagnostics
+    // diagnostics (variable length)
     for (tree.diagnostics.items) |d| {
         buf[pos] = @intFromEnum(d.severity);
         pos += 1;
@@ -367,21 +400,9 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
 }
 
 fn packNode(data: ast.NodeData, span: ast.Span) PackedNode {
-    var n = PackedNode{
-        .tag = 0,
-        .flags = 0,
-        .field0 = 0,
-        .field1 = 0,
-        .field2 = 0,
-        .field3 = 0,
-        .field4 = 0,
-        .field5 = 0,
-        .field6 = 0,
-        .field7 = 0,
-        .field8 = 0,
-        .span_start = span.start,
-        .span_end = span.end,
-    };
+    var n: PackedNode = std.mem.zeroes(PackedNode);
+    n.span_start = span.start;
+    n.span_end = span.end;
     switch (data) {
         inline else => |payload, tag| {
             n.tag = @intFromEnum(tag);
@@ -398,13 +419,14 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
 
     inline for (std.meta.fields(T), 0..) |f, i| {
         const val = @field(payload, f.name);
+        const bit = comptime flagBitForField(T, i);
+        const slot = comptime u32SlotForField(T, i);
 
         if (f.type == bool) {
-            if (val) n.flags |= @as(u16, 1) << @as(u4, @intCast(comptime flagBitForField(T, i)));
+            if (val) setFlagBit(n, bit);
         } else if (f.type == ast.NodeIndex) {
-            setSlot(n, comptime u32SlotForField(T, i), @intFromEnum(val));
+            setSlot(n, slot, @intFromEnum(val));
         } else if (f.type == ast.IndexRange) {
-            const slot = comptime u32SlotForField(T, i);
             if (comptime isFirstRange(T, i)) {
                 n.field0 = @intCast(val.len);
                 setSlot(n, slot, val.start);
@@ -413,21 +435,18 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
                 setSlot(n, slot + 1, @intCast(val.len));
             }
         } else if (f.type == ast.String) {
-            const slot = comptime u32SlotForField(T, i);
             setSlot(n, slot, val.start);
             setSlot(n, slot + 1, val.end);
         } else if (comptime isEnumType(f.type)) {
-            n.flags |= @as(u16, @intFromEnum(val)) << @as(u4, @intCast(comptime flagBitForField(T, i)));
+            setFlagBits(n, bit, @intFromEnum(val));
         } else if (f.type == ?ast.ImportPhase) {
-            const bit = comptime flagBitForField(T, i);
             if (val) |v| {
-                n.flags |= @as(u16, 1) << @as(u4, @intCast(bit));
-                n.flags |= @as(u16, @intFromEnum(v)) << @as(u4, @intCast(bit + 1));
+                setFlagBit(n, bit);
+                setFlagBits(n, bit + 1, @intFromEnum(v));
             }
         } else if (f.type == ?ast.Hashbang) {
-            const slot = comptime u32SlotForField(T, i);
             if (val) |h| {
-                n.flags |= @as(u16, 1) << @as(u4, @intCast(comptime flagBitForField(T, i)));
+                setFlagBit(n, bit);
                 setSlot(n, slot, h.value.start);
                 setSlot(n, slot + 1, h.value.end);
             }
@@ -437,18 +456,19 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
     }
 }
 
-fn setSlot(n: *PackedNode, comptime slot: u8, val: u32) void {
-    switch (slot) {
-        0 => n.field1 = val,
-        1 => n.field2 = val,
-        2 => n.field3 = val,
-        3 => n.field4 = val,
-        4 => n.field5 = val,
-        5 => n.field6 = val,
-        6 => n.field7 = val,
-        7 => n.field8 = val,
-        else => @compileError("too many u32 slots"),
-    }
+const FlagShift = std.math.Log2Int(@TypeOf(@as(PackedNode, undefined).flags));
+
+inline fn setFlagBit(n: *PackedNode, comptime bit: u8) void {
+    n.flags |= @as(u16, 1) << @as(FlagShift, @intCast(bit));
+}
+
+inline fn setFlagBits(n: *PackedNode, comptime bit: u8, val: anytype) void {
+    n.flags |= @as(u16, @intCast(val)) << @as(FlagShift, @intCast(bit));
+}
+
+inline fn setSlot(n: *PackedNode, comptime slot: u8, val: u32) void {
+    if (comptime slot >= NODE_DATA_SLOTS) @compileError("slot index out of range");
+    @as([*]u32, @ptrCast(&n.field1))[slot] = val;
 }
 
 inline fn w32(buf: []u8, pos: usize, val: u32) void {

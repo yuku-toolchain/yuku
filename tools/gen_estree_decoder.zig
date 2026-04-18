@@ -436,11 +436,11 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  const aLen = (buffer.byteLength >> 2) << 2;
         \\  _u32 = new Uint32Array(buffer, 0, aLen >> 2);
         \\  _src = source;
-        \\  _srcLen = _u32[5];
-        \\  const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
-        \\  const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
-        \\  _isTs = !!(_u32[9] & {[ts]d});
-        \\  const pm = (_u32[9] & {[ascii]d}) ? null : buildPosMap(source, _srcLen);
+        \\  _srcLen = _u32[{[u_src]d}];
+        \\  const nodeCount = _u32[{[u_nc]d}], extraCount = _u32[{[u_ec]d}], spLen = _u32[{[u_sp]d}];
+        \\  const commentCount = _u32[{[u_cc]d}], diagCount = _u32[{[u_dc]d}], progIdx = _u32[{[u_pi]d}];
+        \\  _isTs = !!(_u32[{[u_fl]d}] & {[ts]d});
+        \\  const pm = (_u32[{[u_fl]d}] & {[ascii]d}) ? null : buildPosMap(source, _srcLen);
         \\  if (pm) {{
         \\    _p = function(v) {{ return pm[v]; }};
         \\    str = function(s, e) {{ if (s === e) return ""; if (s < _srcLen) return _src.slice(pm[s], pm[e]); return _poolDecode(s, e); }};
@@ -457,7 +457,7 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  const comments = new Array(commentCount);
         \\  for (let j = 0; j < commentCount; j++) {{
         \\    const o = cOff + j * {[csize]d};
-        \\    comments[j] = {{ type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)), start: _p(dv.getUint32(o + 4, true)), end: _p(dv.getUint32(o + 8, true)) }};
+        \\    comments[j] = {{ type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + {[c_vs]d}, true), dv.getUint32(o + {[c_ve]d}, true)), start: _p(dv.getUint32(o + {[c_s]d}, true)), end: _p(dv.getUint32(o + {[c_e]d}, true)) }};
         \\  }}
         \\  const diagnostics = new Array(diagCount);
         \\  let dp = dOff;
@@ -487,11 +487,23 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\}}
         \\
     , .{
+        .u_src = rt.HDR_SOURCE_LEN_U32,
+        .u_nc = rt.HDR_NODE_COUNT_U32,
+        .u_ec = rt.HDR_EXTRA_COUNT_U32,
+        .u_sp = rt.HDR_STRING_POOL_LEN_U32,
+        .u_cc = rt.HDR_COMMENT_COUNT_U32,
+        .u_dc = rt.HDR_DIAG_COUNT_U32,
+        .u_pi = rt.HDR_PROGRAM_INDEX_U32,
+        .u_fl = rt.HDR_FLAGS_U32,
         .ts = rt.FLAG_TS,
         .ascii = rt.FLAG_ASCII,
         .hdr = rt.HEADER_SIZE,
         .size = rt.NODE_SIZE,
         .csize = rt.COMMENT_SIZE,
+        .c_s = rt.COMMENT_START_OFFSET,
+        .c_e = rt.COMMENT_END_OFFSET,
+        .c_vs = rt.COMMENT_VALUE_START_OFFSET,
+        .c_ve = rt.COMMENT_VALUE_END_OFFSET,
     });
 }
 
