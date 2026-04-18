@@ -4,26 +4,55 @@ const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
 
+/// Parses a `TSType`. The entry point for any type position.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
-    if (try parseTypeKeyword(parser)) |node| return node;
-    if (try parseTypeReference(parser)) |node| return node;
+    const ty = try parsePrimaryType(parser) orelse {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected a type",
+            .{ .help = "todo" },
+        );
+        return null;
+    };
 
-    try parser.reportExpected(
-        parser.current_token.span,
-        "Expected a type",
-        .{ .help = "todo" },
-    );
+    return ty;
+}
+
+fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+
+    if (!token.isEscaped()) {
+        switch (token.tag) {
+            .any,
+            .bigint,
+            .boolean,
+            .intrinsic,
+            .never,
+            .null_literal,
+            .number,
+            .object,
+            .string,
+            .symbol,
+            .this,
+            .@"undefined",
+            .unknown,
+            .void,
+            => return parseTypeKeyword(parser),
+            else => {},
+        }
+    }
+
+    if (token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) {
+        return parseTypeReference(parser);
+    }
 
     return null;
 }
 
-/// matches primitive type keywords such as `any`, `string`, `void`, `null`,
-/// `this`, returning their corresponding `TSKeyword` node. returns null when
-/// the current token is not a primitive type keyword.
+/// parses a primitive type keyword (`any`, `string`, `void`, `null`, `this`,
+/// ...) into its corresponding `TSKeyword` node.
 inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
-
-    if (token.isEscaped()) return null;
 
     const data: ast.NodeData = switch (token.tag) {
         .any => .{ .ts_any_keyword = .{} },
@@ -40,7 +69,7 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
         .@"undefined" => .{ .ts_undefined_keyword = .{} },
         .unknown => .{ .ts_unknown_keyword = .{} },
         .void => .{ .ts_void_keyword = .{} },
-        else => return null,
+        else => unreachable,
     };
 
     try parser.advance() orelse return null;
@@ -49,16 +78,10 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// parses a `TSTypeReference`: an identifier, an optional dotted tail forming a
-/// `TSQualifiedName`, and an optional `<T, U>` type argument list.
-///
-/// returns null when the current token cannot start a type reference. reserved
-/// literal keywords like `true`, `false`, and reserved statement keywords like
-/// `if` or `else` are rejected here so they surface as `Expected a type`.
+/// `TSQualifiedName`, and an optional `<T, U>` type argument list. the caller
+/// must have already verified via `parsePrimaryType`'s dispatch that the
+/// leading token is identifier-like and not unconditionally reserved.
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
-    const first_tag = parser.current_token.tag;
-    if (!first_tag.isIdentifierLike()) return null;
-    if (first_tag.isUnconditionallyReserved()) return null;
-
     const first_token = parser.current_token;
     const start = first_token.span.start;
 
