@@ -334,6 +334,15 @@ pub const Lexer = struct {
         return error.NonTerminatedTemplateLiteral;
     }
 
+    /// splits a compound right-angle-bracket token (`>>`, `>>>`, `>=`, `>>=`,
+    /// `>>>=`) into a leading `>` token. used by the typescript type parser to
+    /// close nested type argument lists like `Foo<Bar<T>>` where the source
+    /// `>>` must be read as two separate `>` closes.
+    pub fn reScanGreaterThan(self: *Lexer, token_start: u32) Token {
+        self.rewindTo(token_start + 1);
+        return self.createToken(.greater_than, token_start, token_start + 1);
+    }
+
     /// scans JSX text content between '<' and '{' in JSX children.
     /// called by the parser when parsing JSX element children.
     pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {

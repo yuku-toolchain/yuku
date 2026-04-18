@@ -2293,6 +2293,61 @@ pub const TSUnknownKeyword = struct {};
 /// ```
 pub const TSVoidKeyword = struct {};
 
+/// A reference to a named type, optionally applied to type arguments.
+///
+/// `type_name` carries the identifier or dotted path that names the type, and
+/// `type_arguments` carries the `<T, U>` instantiation when present.
+///
+/// ## Example
+/// ```ts
+/// let x: Foo;
+/// //     ^^^ TSTypeReference (type_arguments = .null)
+/// let y: Promise<number>;
+/// //     ^^^^^^^^^^^^^^^ TSTypeReference
+/// //     ^^^^^^^ type_name
+/// //            ^^^^^^^^ type_arguments
+/// let z: Tools.Pos;
+/// //     ^^^^^^^^^ TSTypeReference (type_name is a TSQualifiedName)
+/// ```
+pub const TSTypeReference = struct {
+    /// `IdentifierReference`, `TSQualifiedName`, or `ThisExpression`
+    type_name: NodeIndex,
+    /// `TSTypeParameterInstantiation` or `.null` when absent
+    type_arguments: NodeIndex = .null,
+};
+
+/// A dotted type name like `A.B.C`. Left associative, so `A.B.C` is parsed as
+/// `(A.B).C` with the outer `TSQualifiedName` holding the inner one as `left`.
+///
+/// ## Example
+/// ```ts
+/// let x: Tools.Pos;
+/// //     ^^^^^^^^^ TSQualifiedName
+/// //     ^^^^^ left (IdentifierReference, or nested TSQualifiedName)
+/// //           ^^^ right (IdentifierName)
+/// ```
+pub const TSQualifiedName = struct {
+    /// `IdentifierReference`, `TSQualifiedName`, or `ThisExpression`
+    left: NodeIndex,
+    /// `IdentifierName`
+    right: NodeIndex,
+};
+
+/// The `<T, U>` type argument list applied to a type reference, call site,
+/// `new` expression, tagged template, JSX opening element, or instantiation
+/// expression. Holds the arguments in source order.
+///
+/// ## Example
+/// ```ts
+/// let x: Promise<number, string>;
+/// //            ^^^^^^^^^^^^^^^^ TSTypeParameterInstantiation
+/// //             ^^^^^^  ^^^^^^ params
+/// ```
+pub const TSTypeParameterInstantiation = struct {
+    /// the `TSType` arguments in source order
+    params: IndexRange,
+};
+
 /// A JSX element, possibly self-closing.
 ///
 /// ## Example
@@ -2557,10 +2612,13 @@ pub const NodeData = union(enum) {
     ts_null_keyword: TSNullKeyword,
     ts_number_keyword: TSNumberKeyword,
     ts_object_keyword: TSObjectKeyword,
+    ts_qualified_name: TSQualifiedName,
     ts_string_keyword: TSStringKeyword,
     ts_symbol_keyword: TSSymbolKeyword,
     ts_this_type: TSThisType,
     ts_type_annotation: TSTypeAnnotation,
+    ts_type_parameter_instantiation: TSTypeParameterInstantiation,
+    ts_type_reference: TSTypeReference,
     ts_undefined_keyword: TSUndefinedKeyword,
     ts_unknown_keyword: TSUnknownKeyword,
     ts_void_keyword: TSVoidKeyword,

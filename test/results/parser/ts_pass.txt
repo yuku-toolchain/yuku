@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2012/8399 (23.96%)
-Failed:       6387
-AST mismatch: 5/2017
+Passed:       2104/8399 (25.05%)
+Failed:       6295
+AST mismatch: 5/2109
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -152,16 +152,7 @@ error: Expected 'from' after import clause, but found '='
    = help: Import statements require 'from' followed by a module specifier: import x from 'module'
 
 
-✗ test/parser/suite/ts/pass/00c613a93a9a5cb9.ts
-error: Expected a type, but found 'HTMLElement'
-   |
- 7 | 
- 8 | var x: HTMLElement;
-   |        ^^^^^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/00c613a93a9a5cb9.ts
 ✓ test/parser/suite/ts/pass/00cd03c78b45a902.ts
 ✗ test/parser/suite/ts/pass/00d2ad1e696856c7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
@@ -266,14 +257,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/015dd7a496915ae7.module.ts
-error: Expected a type, but found 'Array'
+error: Expected ';' after class field, but found 'aFunction'
    |
- 4 | 
- 5 |         let outerArray: Array<number> = [1, 2, 3];
-   |                         ^^^^^
- 6 |         let innerArray: Array<number> = [1, 2, 3];
+15 | 
+16 |     public aFunction(func: (newValue: any, oldValue: any) => void): void {
+   |            ^^^^^^^^^
+17 |     }
    |
-   = help: todo
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/015fda93614f0e35.ts
@@ -488,17 +479,7 @@ error: Expected a type, but found '{'
 
 ✓ test/parser/suite/ts/pass/02049c6073ae8522.ts
 ✓ test/parser/suite/ts/pass/020719fb89b72a87.ts
-✗ test/parser/suite/ts/pass/02141f2ca7c90482.module.ts
-error: Expected a type, but found 'DoesNotExist'
-   |
- 5 | export class Q {
- 6 |     set bet(arg: DoesNotExist) {}
-   |                  ^^^^^^^^^^^^
- 7 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/02141f2ca7c90482.module.ts
 ✗ test/parser/suite/ts/pass/0217a2c2be06a2eb.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -619,17 +600,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/027d9d9da27ac6b6.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | // @noEmitHelpers: true
- 4 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 5 |    // Legal to use 'await' in a type context.
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/027d9d9da27ac6b6.ts
 ✗ test/parser/suite/ts/pass/028044fe2b3366ef.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Digits'
    |
@@ -864,17 +835,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/036a54a99dda42d9.ts
-error: Expected a type, but found 'C'
-   |
- 7 | 
- 8 |     method(other: C) {
-   |                   ^
- 9 |         const obj = { ...other };
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/036a54a99dda42d9.ts
 ✗ test/parser/suite/ts/pass/0370f2d9ccdcab55.ts
 error: Expected a type, but found '{'
    |
@@ -1522,14 +1483,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/063141ff1384af23.ts
-error: Expected a type, but found 'a'
+error: Expected '{' to start function body, but found 'is'
    |
  3 | 
  4 | function f1(a: string): a is ?string {
-   |                         ^
+   |                           ^^
  5 |     return true;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/063308f7b7463dee.ts
@@ -1714,16 +1675,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/072776713e5fdf6d.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 1 | //@target: ES6
- 2 | function* g1(): IterableIterator<string> { }
-   |                 ^^^^^^^^^^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/072776713e5fdf6d.ts
 ✗ test/parser/suite/ts/pass/0729ba81c1cf0b9b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'foo'
    |
@@ -1935,17 +1887,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/07ef5b9c66fa814f.ts
-error: Expected a type, but found 'bool'
-   |
- 1 | // @target: es2015
- 2 | var x: bool;
-   |        ^^^^
- 3 | var a: boolean = x;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/07ef5b9c66fa814f.ts
 ✗ test/parser/suite/ts/pass/07f3a1aefe5e4312.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -2709,17 +2651,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/0a83bb9248f9d0d5.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | 
- 4 | var foo = async (): Promise<void> => {
-   |                     ^^^^^^^
- 5 |    // Legal to use 'await' in a type context.
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/0a83bb9248f9d0d5.ts
 ✗ test/parser/suite/ts/pass/0a84a66cc8d61a1b.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Obj'
    |
@@ -2778,17 +2710,7 @@ error: Expected a type, but found '{'
 
 
 ✓ test/parser/suite/ts/pass/0aa9baecf862fee7.ts
-✗ test/parser/suite/ts/pass/0aac95e58cbd8cf0.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 4 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/0aac95e58cbd8cf0.ts
 ✗ test/parser/suite/ts/pass/0ab654e1465d02b6.ts
 error: Expected ')' after method parameters, but found 'stringOrUndefined'
    |
@@ -3326,17 +3248,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/0c7c750191212cd2.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 1 | //@target: ES6
- 2 | function* g(): IterableIterator<number, string> {
-   |                ^^^^^^^^^^^^^^^^
- 3 |     return "";
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/0c7c750191212cd2.ts
 ✓ test/parser/suite/ts/pass/0c87140e462cd8e4.ts
 ✗ test/parser/suite/ts/pass/0c9d889b961f6912.module.ts
 error: Duplicate export of 'default'
@@ -3964,12 +3876,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0f011574139884f1.ts
-error: Expected a type, but found 'XEvent'
+error: Expected a type, but found '{'
    |
- 2 | class XEvent {}
  3 | var p: XEvent = XEvent.prototype;
-   |        ^^^^^^
  4 | var x: {prototype: XEvent} = XEvent;
+   |        ^
    |
    = help: todo
 
@@ -4105,14 +4016,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0f4a1bd3dc242b17.ts
-error: Expected a type, but found 'Map'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
 56 | const testMathCbrt = Math.cbrt(0);
 57 | const testMap: Map<any, any> = null as any;
-   |                ^^^
+   |                                     ^^
 58 | const testSet: Set<any> = null as any;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/0f4c14b6701b04d0.ts
@@ -4315,14 +4226,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/101e15b2b8d5bc06.ts
-error: Expected a type, but found 'A'
+error: Expected ')' to close parameter list, but found '&'
    |
  6 | 
  7 | function f10(obj: A & { x: string } | B) {
-   |                   ^
+   |                     ^
  8 |     if (obj instanceof Object) {
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/1028e105dfe0d9bc.module.ts
@@ -4682,16 +4593,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/111aa251cd158974.ts
-error: Expected a type, but found 'Unknown'
-   |
- 1 | // @target: es2015
- 2 | var foo: Unknown = 0;
-   |          ^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/111aa251cd158974.ts
 ✓ test/parser/suite/ts/pass/111e0910e7953877.ts
 ✗ test/parser/suite/ts/pass/1120c4e5403ba126.module.ts
 error: Expected ';' after class field, but found 'injectRequestService'
@@ -4842,12 +4744,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/11832de965fe22b3.ts
 ✗ test/parser/suite/ts/pass/118b908adc56e507.ts
-error: Expected a type, but found 'BigInt64Array'
+error: Expected a type, but found '12n'
    |
-19 | // Test BigInt64Array
-20 | let bigIntArray: BigInt64Array = new BigInt64Array();
-   |                  ^^^^^^^^^^^^^
-21 | bigIntArray = new BigInt64Array(10);
+58 | const x = -12n; // should emit as const x = -12n
+59 | const y: 12n = 12n; // should emit type 12n
+   |          ^^^
+60 | let z = 12n; // should emit type bigint in declaration file
    |
    = help: todo
 
@@ -5103,14 +5005,14 @@ error: Illegal break statement
 
 
 ✗ test/parser/suite/ts/pass/129ba87b3767828b.ts
-error: Expected a type, but found 'Object'
+error: Expected ';' after class field, but found ':'
    |
- 7 | var STRING: string;
- 8 | var OBJECT: Object;
-   |             ^^^^^^
- 9 | 
+10 | class CLASS {
+11 |     num: number;
+   |        ^
+12 | }
    |
-   = help: todo
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/12c4b27082eb1060.ts
@@ -5137,14 +5039,14 @@ error: Illegal continue statement
 
 
 ✗ test/parser/suite/ts/pass/12f2b6ba4d54a870.ts
-error: Expected a type, but found 'C3'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '['
    |
-20 | */
-21 | var c3 : C3 = new C3();
-   |          ^^
-22 | var o1 = {one : 1};
+23 | 
+24 | var arr_any: any[] = [];
+   |                 ^
+25 | 
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/12fe48504f38d72f.ts
@@ -5445,25 +5347,25 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/14360699064a46df.ts
 ✗ test/parser/suite/ts/pass/1436ae61f7a06758.ts
-error: Expected a type, but found 'Foo'
+error: Expected '{' to start function body, but found ';'
    |
  2 | 
  3 | function Foo():Foo; // error
-   |                ^^^
+   |                   ^
  4 | function Foo(s:string):Foo; // error
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/143aa097cec2d947.ts
-error: Expected a type, but found 'Generator'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
- 5 | 
- 6 | function* g1(): Generator<number, boolean, string> {
-   |                 ^^^^^^^^^
- 7 |     yield; // error
+17 | 
+18 | declare const generator: Generator<number, symbol, string>;
+   |         ^^^^^
+19 | 
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/1441fe261a998072.module.ts
@@ -7053,15 +6955,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/19d3a6c40826d77a.ts
 ✗ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
-error: Expected a type, but found 'Object'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 4 | var a: any = x;
- 5 | var b: Object = x;
-   |        ^^^^^^
  6 | var c: number = x;
+ 7 | enum E { A };
+   | ^^^^
+ 8 | var d: E = x;
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/19d9761c28ff2511.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'ConstructorOptions'
@@ -7098,17 +6998,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/1a42d55a28785b71.ts
-error: Expected a type, but found 'Promise'
-   |
-19 | // should not be error, Promise<any> currently working correctly 
-20 | async function test5(isError: boolean = true): Promise<any> { //should not be error
-   |                                                ^^^^^^^
-21 |     if (isError === true) {
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/1a42d55a28785b71.ts
 ✓ test/parser/suite/ts/pass/1a4f8969ce197d0d.ts
 ✗ test/parser/suite/ts/pass/1a53bfc79e597ed4.ts
 error: 'enum' is reserved and cannot be used as an identifier
@@ -7370,14 +7260,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1b3530ea75b86dac.ts
-error: Expected a type, but found 'Object'
+error: Expected ')' to close parameter list, but found '?'
    |
-22 | 
-23 | function withMultiParams(a : number, b, c: Object) {
-   |                                            ^^^^^^
-24 |     return a;
+27 | 
+28 | function withOptionalParams(a?: string) {
+   |                              ^
+29 | }
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/1b3a3a9d931c3d0f.ts
@@ -7865,14 +7755,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1cfd0199211802fb.module.ts
-error: Expected a type, but found 'C'
+error: Expected '{' to start function body, but found ':'
    |
  8 | export var circularReference = class C {
  9 |     static getTags(c: C): C { return c }
-   |                       ^
+   |                         ^
 10 |     tags(c: C): C { return c }
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/1d06aa9fd69041ca.module.ts
@@ -7978,14 +7868,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/1d654891deba2df8.ts
 ✗ test/parser/suite/ts/pass/1d655d3b013881af.ts
-error: Expected a type, but found 'Function'
+error: Expected ')' to close parameter list, but found '|'
    |
-23 | 
-24 | function assertFunction(x: Function) {
-   |                            ^^^^^^^^
-25 |     return x;
+31 | 
+32 | function assertObjectOrNull(x: object | null) {
+   |                                       ^
+33 |     return x;
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✓ test/parser/suite/ts/pass/1d6806a8f07ef061.ts
@@ -8289,14 +8179,14 @@ error: 'enum' is reserved and cannot be used as an identifier
 
 ✓ test/parser/suite/ts/pass/1ebbc74e4d682dd2.ts
 ✗ test/parser/suite/ts/pass/1ec28531b3524bcd.ts
-error: Expected a type, but found 'readonly'
+error: 'const' declarations must be initialized
    |
  9 | 
 10 | const frozenArray2: readonly [string, number][] = Object.freeze([['a', 1], ['b', 2], ['c', 3]]);
-   |                     ^^^^^^^^
+   |       ^^^^^^^^^^^^
 11 | const o5 = Object.fromEntries(frozenArray2);
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/1ed457ac9ed7e263.ts
@@ -8581,14 +8471,14 @@ error: Expected a type, but found '{'
 
 
 ✗ test/parser/suite/ts/pass/2021acf383433e92.ts
-error: Expected a type, but found 'Vector'
+error: Expected '{' to start function body, but found ':'
    |
 15 | class Vector {
 16 |     static norm(v:Vector):Vector {return null;}
-   |                   ^^^^^^
+   |                          ^
 17 |     static minus(v1:Vector, v2:Vector):Vector {return null;}
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/2029ac9ce2b7925b.ts
@@ -8603,14 +8493,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/2029b28958d1e167.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected '{' to start function body, but found ';'
    |
  1 | //@target: es6
  2 | function foo1(strs: TemplateStringsArray, x: number): string;
-   |                     ^^^^^^^^^^^^^^^^^^^^
+   |                                                             ^
  3 | function foo1(strs: string[], x: number): number;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/2032f79366b6d9a5.ts
@@ -9027,14 +8917,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/21852a7ce3f8f2b2.ts
 ✗ test/parser/suite/ts/pass/218cb58a97113f33.ts
-error: Expected a type, but found 'RegExp'
+error: 'const' declarations must be initialized
    |
  1 | // @target: esnext
  2 | const regexes: RegExp[] = [
-   |                ^^^^^^
+   |       ^^^^^^^
  3 |     /\u{10000}[\u{10000}]/,
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✓ test/parser/suite/ts/pass/218e02c6c2dd2ed7.ts
@@ -9370,16 +9260,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/22d1234bd3f13f43.ts
-error: Expected a type, but found 'Null'
-   |
- 1 | // @target: es2015
- 2 | var x: Null;
-   |        ^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/22d1234bd3f13f43.ts
 ✓ test/parser/suite/ts/pass/22d9e7fd6bff9e1a.ts
 ✗ test/parser/suite/ts/pass/22e6adb05e605f5a.ts
 error: Expected ';' after class field, but found ':'
@@ -9668,14 +9549,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/23dc8eb99bccc292.ts
 ✗ test/parser/suite/ts/pass/23e48735d0577c0c.ts
-error: Expected a type, but found 'T0'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'T0'
    |
- 1 | // @target: es2015
  2 | var v0: T0;
-   |         ^^
  3 | type T0 = string | I0;
+   |      ^^
+ 4 | class I0 {
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/23e82831ddff1efe.ts
@@ -9916,14 +9797,14 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/24c7986cc8963601.ts
-error: Expected a type, but found 'thing'
+error: Expected ')' after function arguments, but found 'is'
    |
  2 | [true, true, false, null]
  3 |     .filter((thing): thing is boolean => thing !== null)
-   |                      ^^^^^
+   |            ~ Opened here
  4 |     .map(thing => thing.toString());
    |
-   = help: todo
+   = help: Function calls must end with ')'. Check for missing commas or unclosed parentheses.
 
 
 ✗ test/parser/suite/ts/pass/24d093474506a285.ts
@@ -10378,17 +10259,7 @@ error: Expected ';' after class field, but found 'p'
 
 
 ✓ test/parser/suite/ts/pass/267890589be988aa.ts
-✗ test/parser/suite/ts/pass/267e28dfa5b0344f.ts
-error: Expected a type, but found 'Function'
-   |
- 4 |         constructor() {
- 5 |         function doSomething(a: Function) {
-   |                                 ^^^^^^^^
- 6 |         }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/267e28dfa5b0344f.ts
 ✓ test/parser/suite/ts/pass/267e58675f834d65.module.ts
 ✓ test/parser/suite/ts/pass/26819c774bfe2270.ts
 ✗ test/parser/suite/ts/pass/26842685203ac1dc.ts
@@ -10613,15 +10484,13 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/2770ef90e9c8f4e0.ts
-error: Expected a type, but found 'A2'
+error: Private field '#method' must be declared in an enclosing class
    |
- 6 |         console.log(this.#method);
- 7 |         let a: A2 = this;
-   |                ^^
- 8 |         a.#method();
+13 | }
+14 | new A2().#method(); // Error
+   |          ^^^^^^^
+15 | 
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/277a72b3f4f37f3f.ts
 error: Expected '{' to start class body, but found '<'
@@ -10845,17 +10714,7 @@ error: Expected ';' after class field, but found 'name'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/2809646f75c2d4ea.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | 
- 4 | var foo = async (): Promise<void> => {
-   |                     ^^^^^^^
- 5 | };
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/2809646f75c2d4ea.ts
 ✗ test/parser/suite/ts/pass/283cf36069f28bcb.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -10988,26 +10847,16 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/2894b3a78ee39406.ts
-✗ test/parser/suite/ts/pass/2898e217314ee819.ts
-error: Expected a type, but found 'Base'
-   |
- 8 |             #x;
- 9 |             testBase(x: Base) {
-   |                         ^^^^
-10 |                 console.log(x.#x);
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/2898e217314ee819.ts
 ✗ test/parser/suite/ts/pass/289a2bf13e287fad.ts
-error: Expected a type, but found 'x'
+error: Expected '{' to start function body, but found 'is'
    |
  4 | // test fix for #18112, type guard predicates should narrow returned element
  5 | function isNumber(x: any): x is number {
-   |                            ^
+   |                              ^^
  6 |   return typeof x === "number";
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/28ad807046defc13.ts
@@ -11998,16 +11847,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/2c2ebef2f85f7c41.ts
-✗ test/parser/suite/ts/pass/2c32e5f7cb5abd32.ts
-error: Expected a type, but found 'Worker'
-   |
- 7 | 
- 8 | var x: Worker;
-   |        ^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/2c32e5f7cb5abd32.ts
 ✓ test/parser/suite/ts/pass/2c43147b010e5353.ts
 ✗ test/parser/suite/ts/pass/2c4363fdba6f9706.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'StatelessComponent'
@@ -12670,17 +12510,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/2e85f15faaeba709.ts
 ✓ test/parser/suite/ts/pass/2e877f6c7b9c1901.ts
 ✓ test/parser/suite/ts/pass/2e89bbc83f525a2d.ts
-✗ test/parser/suite/ts/pass/2e9a53cbadd3f567.ts
-error: Expected a type, but found 'Bar'
-   |
-17 | 
-18 | var a: Bar, b: string;
-   |        ^^^
-19 | [a, b] = new FooIterator;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/2e9a53cbadd3f567.ts
 ✗ test/parser/suite/ts/pass/2ebd4551c16cb2f0.ts
 error: Expected a type, but found '{'
    |
@@ -12785,17 +12615,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/2ef57b14a8e58005.ts
-error: Expected a type, but found 'Object'
-   |
- 8 | var exprString1: string;
- 9 | var exprIsObject1: Object;
-   |                    ^^^^^^
-10 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/2ef57b14a8e58005.ts
 ✗ test/parser/suite/ts/pass/2efd0001c9af6d25.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
@@ -13280,14 +13100,14 @@ error: Expected a type, but found '['
 
 
 ✗ test/parser/suite/ts/pass/309acd53029c80e1.ts
-error: Expected a type, but found 'Bar'
+error: Expected ')' to close parameter list, but found '['
    |
 17 | 
 18 | function fun([[a], b]: Bar[][]) { }
-   |                        ^^^
+   |                           ^
 19 | fun(new FooArrayIterator);
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/309ecfaefa57fed8.ts
@@ -13459,17 +13279,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/3123f0b9d1f6e1a6.ts
-error: Expected a type, but found 'Symbol'
-   |
-14 | var sym: symbol; 
-15 | var Sym: Symbol;
-   |          ^^^^^^
-16 | sym = Sym;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3123f0b9d1f6e1a6.ts
 ✗ test/parser/suite/ts/pass/3136ade1694d9423.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -14018,14 +13828,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/32bd8e9d53d5180c.ts
-error: Expected a type, but found 'Object'
+error: Expected ')' to close parameter list, but found '|'
    |
  3 | // @emitDecoratorMetadata: true
  4 | function PropDeco(target: Object, propKey: string | symbol) { }
-   |                           ^^^^^^
+   |                                                   ^
  5 | 
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✓ test/parser/suite/ts/pass/32c29a8c3f0fa509.ts
@@ -14075,17 +13885,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/32f3f7d802313363.ts
-error: Expected a type, but found 'Bar'
-   |
-17 | 
-18 | var a: Bar, b: string;
-   |        ^^^
-19 | [a, ...b] = new FooIterator;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/32f3f7d802313363.ts
 ✓ test/parser/suite/ts/pass/3315eaff94d1d29a.ts
 ✗ test/parser/suite/ts/pass/331815ddddff94d9.ts
 error: Expected ';' after class field, but found 'foo'
@@ -14456,14 +14256,14 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/3451baf722c004ab.ts
 ✓ test/parser/suite/ts/pass/34550e9547d89011.module.ts
 ✗ test/parser/suite/ts/pass/3461aa7801ec78e1.ts
-error: Expected a type, but found 'Readonly'
+error: Expected '>' to close a type argument list, but found '['
    |
 11 | 
 12 | const readonlyLocales: Readonly<string[]> = ['de-DE', 'ja-JP'];
-   |                        ^^^^^^^^
+   |                                       ^
 13 | 
    |
-   = help: todo
+   = help: Each '<' in a type must be matched by a '>'
 
 
 ✗ test/parser/suite/ts/pass/34670d92ed5fe7d7.tsx
@@ -14600,17 +14400,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/34d950f5f20ee1f2.ts
-error: Expected a type, but found 'Promise'
-   |
- 4 | 
- 5 | var foo = async (): Promise<void> => {
-   |                     ^^^^^^^
- 6 |    // Legal to use 'await' in a type context.
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/34d950f5f20ee1f2.ts
 ✗ test/parser/suite/ts/pass/34e0a3143a99fb38.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -15136,11 +14926,11 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/36eeebdd339892bd.ts
-error: Expected a type, but found 'IterableIterator'
+error: Expected a type, but found '('
    |
  1 | //@target: ES6
  2 | function* g(): IterableIterator<(x: string) => number> {
-   |                ^^^^^^^^^^^^^^^^
+   |                                 ^
  3 |     yield * {
    |
    = help: todo
@@ -15546,14 +15336,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3835c045c639a8bb.ts
 ✓ test/parser/suite/ts/pass/383dc34f8d496650.module.ts
 ✗ test/parser/suite/ts/pass/385e77ba67b13549.ts
-error: Expected a type, but found 'Function'
+error: Expected ')' to close parameter list, but found '|'
    |
- 4 | 
- 5 | function action(f: Function) {}
-   |                    ^^^^^^^^
- 6 | 
+ 8 | 
+ 9 | function f1(x: string | number) {
+   |                       ^
+10 |     x = "abc";
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/385eee735619105f.ts
@@ -15579,16 +15369,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/3876c756bddc5ca5.module.ts
-✗ test/parser/suite/ts/pass/388361eb3e31fcf1.ts
-error: Expected a type, but found 'ArrayBuffer'
-   |
- 3 | 
- 4 | var foo: ArrayBuffer = new SharedArrayBuffer(1024); // should error
-   |          ^^^^^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/388361eb3e31fcf1.ts
 ✗ test/parser/suite/ts/pass/3886e3d96d998ca0.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -15873,14 +15654,14 @@ error: Expected a type, but found 'typeof'
 
 
 ✗ test/parser/suite/ts/pass/3a046a56336f644e.ts
-error: Expected a type, but found 'Bar'
+error: Expected ')' to close parameter list, but found '['
    |
 17 | 
 18 | function fun([a, b]: Bar[]) { }
-   |                      ^^^
+   |                         ^
 19 | fun(new FooIterator);
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/3a0b95bc3078c98d.ts
@@ -16003,14 +15784,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/3a65d291bac44098.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected '{' to start function body, but found ';'
    |
  2 | 
  3 | function foo1(strs: TemplateStringsArray, x: number): string;
-   |                     ^^^^^^^^^^^^^^^^^^^^
+   |                                                             ^
  4 | function foo1(strs: string[], x: number): number;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/3a66bcb0ff2adb2c.module.ts
@@ -16486,16 +16267,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/3bf67897627ecaa9.ts
-error: Expected a type, but found 'Iterable'
-   |
- 1 | //@target: ES6
- 2 | function* g1(): Iterable<string> { }
-   |                 ^^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3bf67897627ecaa9.ts
 ✗ test/parser/suite/ts/pass/3bfac6403a65d163.module.ts
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -16641,17 +16413,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/3c6abbdd4f937038.ts
-✗ test/parser/suite/ts/pass/3c6b3a1d3e1316e8.ts
-error: Expected a type, but found 'Function'
-   |
- 1 | // @target: es2015
- 2 | var tag: Function;
-   |          ^^^^^^^^
- 3 | tag `Hello world!`;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3c6b3a1d3e1316e8.ts
 ✗ test/parser/suite/ts/pass/3c6ecd5b89c14ef1.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -16740,16 +16502,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/3cbf584f44d54860.ts
-error: Expected a type, but found 'ArrayLike'
-   |
- 4 | function func() {}
- 5 | const array: ArrayLike<any> = func;
-   |              ^^^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3cbf584f44d54860.ts
 ✗ test/parser/suite/ts/pass/3cca85bffac95d2c.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
    |
@@ -16818,11 +16571,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/3d0cfe3aa80dab15.ts
 ✗ test/parser/suite/ts/pass/3d16863fd4c6d852.ts
-error: Expected a type, but found 'Generator'
+error: Expected a type, but found '('
    |
  4 | 
  5 | function* g3(): Generator<Generator<(x: string) => number>> {
-   |                 ^^^^^^^^^
+   |                                     ^
  6 |     yield function* () {
    |
    = help: todo
@@ -16909,17 +16662,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/3d5d86b23aa60438.ts
 ✓ test/parser/suite/ts/pass/3d6b16024dadf050.ts
-✗ test/parser/suite/ts/pass/3d6b85f6564ec059.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 1 | //@target: ES6
- 2 | function* g(): IterableIterator<number, string> {
-   |                ^^^^^^^^^^^^^^^^
- 3 |     yield 0;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3d6b85f6564ec059.ts
 ✗ test/parser/suite/ts/pass/3d75278132a28075.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '__test1__'
    |
@@ -17278,17 +17021,7 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/3e9be4870c935b22.ts
-error: Expected a type, but found 'A'
-   |
-21 |     }
-22 |     static test(_a: A) {
-   |                     ^
-23 |         [_a.#field] = [2];
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3e9be4870c935b22.ts
 ✗ test/parser/suite/ts/pass/3e9f4be2adc7f3de.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -17388,17 +17121,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/3ef9c1f4cc8df545.ts
-error: Expected a type, but found 'C2'
-   |
- 9 | 
-10 | var c: C2;
-   |        ^^
-11 | var obj = c[Symbol.toStringTag]().x;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/3ef9c1f4cc8df545.ts
 ✗ test/parser/suite/ts/pass/3efa6d47daa2cb47.ts
 error: Unexpected token '<'
    |
@@ -17845,11 +17568,11 @@ error: Expected a type, but found '['
 
 
 ✗ test/parser/suite/ts/pass/409c04ff75b183ef.ts
-error: Expected a type, but found 'IterableIterator'
+error: Expected a type, but found '('
    |
  1 | //@target: ES6
  2 | function* g(): IterableIterator<(x: string) => number, (x: string) => number> {
-   |                ^^^^^^^^^^^^^^^^
+   |                                 ^
  3 |     yield x => x.length;
    |
    = help: todo
@@ -17933,17 +17656,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/40cd3352840435f9.ts
-✗ test/parser/suite/ts/pass/40cd45e3233eb6e5.ts
-error: Expected a type, but found 'Iterator'
-   |
- 3 | 
- 4 | function* f(): Iterator<number> {
-   |                ^^^^^^^^
- 5 |     return invalid;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/40cd45e3233eb6e5.ts
 ✗ test/parser/suite/ts/pass/40d134d933061b79.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I1'
    |
@@ -18162,17 +17875,7 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/419c38cbd28dea87.ts
-error: Expected a type, but found 'Promise'
-   |
-29 | 
-30 | async function fn4(): Promise<number> {
-   |                       ^^^^^^^
-31 |     let ar = [];
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/419c38cbd28dea87.ts
 ✗ test/parser/suite/ts/pass/419ed0aaa5ff7c38.ts
 error: 'let' is not allowed as a variable name in a lexical declaration
    |
@@ -18428,14 +18131,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/428ecc55a1ef6828.ts
-error: Expected a type, but found 'Bar'
+error: Expected ')' to close parameter list, but found '['
    |
 17 | 
 18 | function fun(...[[a = new Foo], b = [new Foo]]: Bar[][]) { }
-   |                                                 ^^^
+   |                                                    ^
 19 | fun(...new FooArrayIterator);
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/42a769578fee1a4c.ts
@@ -18673,17 +18376,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/435368ecfb9a77ef.ts
-✗ test/parser/suite/ts/pass/435705dcfd5ab04e.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 4 |    // Legal to use 'await' in a type context.
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/435705dcfd5ab04e.ts
 ✗ test/parser/suite/ts/pass/4357127d6a7ebafa.module.ts
 error: Duplicate export of 'default'
    |
@@ -18762,14 +18455,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/437b17f2d2fa398f.ts
-error: Expected a type, but found 'RegExp'
+error: 'const' declarations must be initialized
    |
  2 | 
  3 | const regexes: RegExp[] = [
-   |                ^^^^^^
+   |       ^^^^^^^
  4 |   /\q\u\i\c\k\_\f\o\x\-\j\u\m\p\s/,
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/439bccc961714ff0.ts
@@ -18820,17 +18513,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/43bbcaba57fab961.module.ts
 ✓ test/parser/suite/ts/pass/43bdbd90328368a9.ts
-✗ test/parser/suite/ts/pass/43bf4d57cbf6f591.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 1 | //@target: ES6
- 2 | function* g(): IterableIterator<number, number> {
-   |                ^^^^^^^^^^^^^^^^
- 3 |     return 0;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/43bf4d57cbf6f591.ts
 ✓ test/parser/suite/ts/pass/43ca2465375e9dc9.ts
 ✗ test/parser/suite/ts/pass/43ce7e0f48b40f38.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Action'
@@ -19168,14 +18851,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/450308bc2936c44a.ts
-error: Expected a type, but found 'D'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'C'
    |
-10 |         c.#x;     // OK
-11 |         const d: D = new C();
-   |                  ^
-12 |         d.#x;    // Error
+14 | }
+15 | interface C {
+   |           ^
+16 |     new (): D;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/450849316531f32e.ts
@@ -19924,11 +19607,11 @@ error: Expected ';' after class field, but found 'constructor'
 
 
 ✗ test/parser/suite/ts/pass/47b2f0724ca129e8.ts
-error: Expected a type, but found 'IterableIterator'
+error: Expected a type, but found '('
    |
  1 | //@target: ES6
  2 | function* g(): IterableIterator<(x: string) => number> {
-   |                ^^^^^^^^^^^^^^^^
+   |                                 ^
  3 |     yield * function* () {
    |
    = help: todo
@@ -20066,14 +19749,14 @@ error: Cannot break to label 'target' across function boundaries
    |
 
 ✗ test/parser/suite/ts/pass/48367c8bdf6f1ad9.ts
-error: Expected a type, but found 'readonly'
+error: 'const' declarations must be initialized
    |
  8 | 
  9 | const dates: readonly Date[] = [new Date(), new Date()];
-   |              ^^^^^^^^
+   |       ^^^^^
 10 | str = dates.toLocaleString(); // OK
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/4838a987793853f2.ts
@@ -20142,17 +19825,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/4854905691d3f0a4.module.ts
 ✓ test/parser/suite/ts/pass/48603e8192c09d0a.ts
-✗ test/parser/suite/ts/pass/48703ad3443e2755.ts
-error: Expected a type, but found 'Object'
-   |
- 7 | var STRING: string;
- 8 | var OBJECT: Object;
-   |             ^^^^^^
- 9 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/48703ad3443e2755.ts
 ✗ test/parser/suite/ts/pass/4877fda5f1775b90.ts
 error: Expected ')' after method parameters, but found 'readonly'
    |
@@ -20391,12 +20064,12 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/4957c457dd441f54.ts
 ✗ test/parser/suite/ts/pass/4968cd47d06d76ac.ts
-error: Expected a type, but found 'Function'
+error: Expected a type, but found '{'
    |
- 4 | var x1: any;
- 5 | var x2: Function;
-   |         ^^^^^^^^
  6 | 
+ 7 | var a: {};
+   |        ^
+ 8 | var b: Object;
    |
    = help: todo
 
@@ -20526,14 +20199,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/49b8f606cc92897f.module.ts
 ✗ test/parser/suite/ts/pass/49bfcf8a26c1293a.ts
-error: Expected a type, but found 'Date'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
- 5 | function fn3(): boolean { }
- 6 | function fn4(): Date {  }
-   |                 ^^^^
- 7 | function fn7(): any {  } // should be valid: any includes void
+ 8 | 
+ 9 | interface I { id: number }
+   |           ^
+10 | class C implements I {
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/49c392728df0cbaa.ts
@@ -20744,14 +20417,14 @@ error: Expected ')' after method parameters, but found 'y'
 
 ✓ test/parser/suite/ts/pass/4a78875ce9e16d1c.ts
 ✗ test/parser/suite/ts/pass/4a7de41ad03273d1.ts
-error: Expected a type, but found 'C'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
-67 | }
-68 | var c: C;
-   |        ^
-69 | var r1 = c.abstract;
+71 | 
+72 | interface I {
+   |           ^
+73 |     abstract;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/4a8d51db37175e4b.ts
@@ -20851,14 +20524,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/4b0ca2fb8f2c7387.module.tsx
 ✓ test/parser/suite/ts/pass/4b1161892d618e24.ts
 ✗ test/parser/suite/ts/pass/4b148749e0f3b80f.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected '{' to start function body, but found ';'
    |
  1 | //@target: es6
  2 | function foo(strs: TemplateStringsArray): number;
-   |                    ^^^^^^^^^^^^^^^^^^^^
+   |                                                 ^
  3 | function foo(strs: TemplateStringsArray, x: number): string;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/4b1bc8b5deffbff7.ts
@@ -21522,11 +21195,11 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/4daf4546b946e339.ts
-error: Expected a type, but found 'Function'
+error: Expected a type, but found '('
    |
  1 | // @target: es2015
  2 | function f1(c1: Function, c2: () => object,  callable: typeof c1 | typeof c2) {
-   |                 ^^^^^^^^
+   |                               ^
  3 |     const a = c1();
    |
    = help: todo
@@ -21900,14 +21573,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4ed25e2bf34ba6f4.ts
-error: Expected a type, but found 'C'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
- 7 | 
- 8 | var c: C;
-   |        ^
- 9 | var r1: void = c.valueOf();
+10 | 
+11 | interface I {
+   |           ^
+12 |     valueOf(): void;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/4ed66b965b454f89.module.ts
@@ -22233,17 +21906,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/4fcc600a991fdab5.ts
-✗ test/parser/suite/ts/pass/4fcfc708b72dc43a.ts
-error: Expected a type, but found 'yield'
-   |
- 3 |    // Legal to use 'yield' in a type context.
- 4 |    var v: yield;
-   |           ^^^^^
- 5 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/4fcfc708b72dc43a.ts
 ✗ test/parser/suite/ts/pass/4fd0c0c14d009c8d.ts
 error: Expected a type, but found '{'
    |
@@ -22930,17 +22593,7 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/526016c07a8594eb.ts
-error: Expected a type, but found 'Object'
-   |
- 7 | var STRING: string;
- 8 | var OBJECT: Object;
-   |             ^^^^^^
- 9 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/526016c07a8594eb.ts
 ✓ test/parser/suite/ts/pass/5263853f324daf85.ts
 ✗ test/parser/suite/ts/pass/52660ddfdf4ffbfd.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Thing1'
@@ -23302,17 +22955,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/53f38ef4be30c8ee.ts
-error: Expected a type, but found 'Object'
-   |
- 4 | var a: any = x;
- 5 | var b: Object = x;
-   |        ^^^^^^
- 6 | var c: Boolean = x;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/53f38ef4be30c8ee.ts
 ✗ test/parser/suite/ts/pass/53f437293635ad7f.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'T00'
    |
@@ -24241,17 +23884,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/5729ea9cb17b2009.ts
-✗ test/parser/suite/ts/pass/573b4aee3c14b09e.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 4 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/573b4aee3c14b09e.ts
 ✓ test/parser/suite/ts/pass/5744b24da8a0baba.ts
 ✓ test/parser/suite/ts/pass/5746dbffad821d1d.ts
 ✗ test/parser/suite/ts/pass/574d4d19f9dee4dc.ts
@@ -25365,14 +24998,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/5bb4fdff62b8ac7d.ts
-error: Expected a type, but found 'keyof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
 13 | // `keyof A` should not include '#foo*'
 14 | let k: keyof A = "bar"; // OK
-   |        ^^^^^
+   |              ^
 15 | k = "baz"; // OK
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/5bbecec50afb8473.ts
@@ -26172,17 +25805,7 @@ error: Expected ')' to close parameter list, but found '['
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
-✗ test/parser/suite/ts/pass/5ebbd3e57dc47ce0.ts
-error: Expected a type, but found 'Int8Array'
-   |
- 3 | // All declarations should pass, as valueOf has been specialized for all TypedArrays
- 4 | const typedArray0: Int8Array = (new Int8Array()).valueOf();
-   |                    ^^^^^^^^^
- 5 | const typedArray1: Uint8Array = (new Uint8Array()).valueOf();
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/5ebbd3e57dc47ce0.ts
 ✗ test/parser/suite/ts/pass/5ebcea4baf32732d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Validation'
    |
@@ -26382,17 +26005,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5f4c2ee6af28a47d.ts
-error: Expected a type, but found 'Number'
-   |
-21 | 
-22 | var numObj: Number = 123;
-   |             ^^^^^^
-23 | var boolObj: Boolean = true;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/5f4c2ee6af28a47d.ts
 ✓ test/parser/suite/ts/pass/5f4df684b58d9d9b.ts
 ✓ test/parser/suite/ts/pass/5f547cbc348a4590.ts
 ✗ test/parser/suite/ts/pass/5f569fd202cd9a3d.ts
@@ -26531,30 +26144,10 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/5ff78bcb7697cacb.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | 
- 4 | var foo = async (): Promise<void> => {
-   |                     ^^^^^^^
- 5 | };
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/5ff78bcb7697cacb.ts
 ✓ test/parser/suite/ts/pass/5ffca47d25fda001.ts
 ✓ test/parser/suite/ts/pass/60092f82a50dcb40.ts
-✗ test/parser/suite/ts/pass/600cca1a3d2cfa83.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function await(): Promise<void> {
-   |                         ^^^^^^^
- 4 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/600cca1a3d2cfa83.ts
 ✗ test/parser/suite/ts/pass/600dc3c315b33031.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -27068,14 +26661,14 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/61e8bc07d6810f50.ts
-error: Expected a type, but found 'readonly'
+error: Expected ')' to close parameter list, but found 'number'
    |
  3 | 
  4 | function narrow(x: readonly number[] | number): readonly number[] {
-   |                    ^^^^^^^^
+   |                             ^^^^^^
  5 |     if (x instanceof Array) {
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/61eb5df2350adb21.ts
@@ -27403,17 +26996,7 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/634e5d4c2306dda8.ts
-error: Expected a type, but found 'Bar'
-   |
-17 | 
-18 | var a: Bar, b: Bar;
-   |        ^^^
-19 | [a, b] = new FooIterator;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/634e5d4c2306dda8.ts
 ✗ test/parser/suite/ts/pass/635279cc72d52cb9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -28149,14 +27732,14 @@ error: Expected ';' after class field, but found 'x'
 
 
 ✗ test/parser/suite/ts/pass/65ff23f517194703.ts
-error: Expected a type, but found 'hasOwnProperty'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'm1'
    |
- 4 | 
- 5 | var hasOwnProperty: hasOwnProperty; // Error
-   |                     ^^^^^^^^^^^^^^
  6 | 
+ 7 | namespace m1 {
+   |           ^^
+ 8 |     export var __proto__;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/6605056b2629af9a.ts
@@ -28283,14 +27866,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/669f9976f5f2fa01.ts
-error: Expected a type, but found 'readonly'
+error: Expected ')' to close parameter list, but found 'string'
    |
 10 | 
 11 | function f1(...args: readonly string[]) {
-   |                      ^^^^^^^^
+   |                               ^^^^^^
 12 |     f0(...args);  // Error
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/66a0f1f8ae896077.ts
@@ -28781,28 +28364,8 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/686cc2e5be002170.ts
-✗ test/parser/suite/ts/pass/68728d53b88a94bf.ts
-error: Expected a type, but found 'TemplateStringsArray'
-   |
- 2 | 
- 3 | function f(x: TemplateStringsArray, y: number, z: number) {
-   |               ^^^^^^^^^^^^^^^^^^^^
- 4 | }
-   |
-   = help: todo
-
-
-✗ test/parser/suite/ts/pass/688840adb3271e28.ts
-error: Expected a type, but found 'Object'
-   |
- 7 | var STRING: string;
- 8 | var OBJECT: Object;
-   |             ^^^^^^
- 9 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/68728d53b88a94bf.ts
+✓ test/parser/suite/ts/pass/688840adb3271e28.ts
 ✗ test/parser/suite/ts/pass/689242b1cca1fdfa.ts
 error: Expected ';' after class field, but found 'p'
    |
@@ -29279,17 +28842,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/6a50615db54d8478.ts
-error: Expected a type, but found 'A'
-   |
- 1 | // @target: es2015
- 2 | let oneA: A;
-   |           ^
- 3 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/6a50615db54d8478.ts
 ✗ test/parser/suite/ts/pass/6a6c07d56de9e738.ts
 error: Expected a type, but found '{'
    |
@@ -29368,17 +28921,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/6a8e3f5cfeaa8c82.ts
-error: Expected a type, but found 'Iterable'
-   |
- 1 | //@target: ES6
- 2 | var iter: Iterable<number>;
-   |           ^^^^^^^^
- 3 | for (let num of iter) { }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/6a8e3f5cfeaa8c82.ts
 ✗ test/parser/suite/ts/pass/6a8f791b0af41a67.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -29640,17 +29183,7 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/ts/pass/6ba640b127628646.ts
-✗ test/parser/suite/ts/pass/6bab59e5f6630186.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 6 | // Allow generators to fallback to IterableIterator if they do not need a type for the sent value while in strictNullChecks mode.
- 7 | function* f(): IterableIterator<number> {
-   |                ^^^^^^^^^^^^^^^^
- 8 |     yield 1;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/6bab59e5f6630186.ts
 ✗ test/parser/suite/ts/pass/6bb9063f8e37f58d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'X'
    |
@@ -30487,17 +30020,7 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/6ecd7935dff35bd4.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | // @noEmitHelpers: true
- 4 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 5 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/6ecd7935dff35bd4.ts
 ✗ test/parser/suite/ts/pass/6ed0ef2e46c44364.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Either'
    |
@@ -30787,17 +30310,7 @@ error: Expected a type, but found '['
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/6fd325d08f06cd7f.module.ts
-error: Expected a type, but found 'HTMLElement'
-   |
- 1 | // @target: es2015
- 2 | export function removeClass (node:HTMLElement, className:string) {
-   |                                   ^^^^^^^^^^^
- 3 |     node.className = node.className.replace(_classNameRegexp(className), function (everything, leftDelimiter, name, rightDelimiter) {
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/6fd325d08f06cd7f.module.ts
 ✓ test/parser/suite/ts/pass/6fd847c45d8496b4.ts
 ✗ test/parser/suite/ts/pass/6fda7188f82e3e40.module.ts
 error: Expected declaration after 'export', but found 'namespace'
@@ -30900,14 +30413,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/702ba49e53144249.module.ts
 ✗ test/parser/suite/ts/pass/702e11cb3030282f.module.ts
-error: Expected a type, but found 'C'
+error: Expected '{' to start function body, but found ':'
    |
- 4 | 
- 5 | var before: C = new C();
+ 7 | export default class C {
+ 8 |     method(): C {
    |             ^
- 6 | 
+ 9 |         return new C();
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/702f195db0f72fde.ts
@@ -30966,11 +30479,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/7049b7934839d326.ts
 ✓ test/parser/suite/ts/pass/705391485a41b29e.ts
 ✗ test/parser/suite/ts/pass/705bcdf84a637f8e.ts
-error: Expected a type, but found 'Iterator'
+error: Expected a type, but found '('
    |
  1 | //@target: ES6
  2 | function* g2(): Iterator<Iterable<(x: string) => number>> {
-   |                 ^^^^^^^^
+   |                                   ^
  3 |     yield function* () {
    |
    = help: todo
@@ -31360,15 +30873,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/71c0b3431d50d27a.ts
-error: Expected a type, but found 'T'
+error: Expected ')' after method parameters, but found '?'
    |
-14 | 
-15 | var t: T;
-   |        ^
-16 | var s: S;
+21 | class T1 {
+22 |     m(p1?, p2?) {
+   |         ^
+23 | 
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/71c1f2e16ed59c88.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -31628,11 +31139,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/7285033372eaf519.ts
 ✗ test/parser/suite/ts/pass/7286a5833dc6a400.ts
-error: Expected a type, but found 'Promise'
+error: Expected a type, but found '['
    |
  6 | 
  7 | async function fAsyncExplicit(): Promise<[number, boolean]> {
-   |                                  ^^^^^^^
+   |                                          ^
  8 |     // This is contextually typed as a tuple.
    |
    = help: todo
@@ -31743,14 +31254,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/7302a87d64d312b2.ts
 ✗ test/parser/suite/ts/pass/730a93f9efe4ddda.ts
-error: Expected a type, but found 'Runtype'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Runtype'
    |
- 5 | 
- 6 | const wat: Runtype<any> = Num;
-   |            ^^^^^^^
- 7 | const Foo = Obj({ foo: Num })
+ 8 | 
+ 9 | interface Runtype<A> {
+   |           ^^^^^^^
+10 |   constraint: Constraint<this>
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/73177831275d6816.module.ts
@@ -31888,14 +31399,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/73a4200b07a1e037.ts
-error: Expected a type, but found 'readonly'
+error: 'const' declarations must be initialized
    |
  8 | 
  9 | const dates: readonly Date[] = [new Date(), new Date()];
-   |              ^^^^^^^^
+   |       ^^^^^
 10 | str = dates.toLocaleString(); // OK
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/73b167ae19bb71d4.ts
@@ -31977,14 +31488,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/73e1407c136d4283.ts
-error: Expected a type, but found 'Object'
+error: 'const' declarations must be initialized
    |
  2 | // @strictNullChecks: true
  3 | const x: Object | string = { x: 0 };
-   |          ^^^^^^
+   |       ^
  4 | const y: Object | undefined = { x: 0 };
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✓ test/parser/suite/ts/pass/73e1c8a634df98a1.ts
@@ -32313,14 +31824,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7513b89173bf28cd.ts
-error: Expected a type, but found 'readonly'
+error: 'const' declarations must be initialized
    |
  8 | 
  9 | const dates: readonly Date[] = [new Date(), new Date()];
-   |              ^^^^^^^^
+   |       ^^^^^
 10 | str = dates.toLocaleString(); // OK
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/75142913f21adcd6.ts
@@ -32623,14 +32134,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/760ba9b8688dd919.ts
-error: Expected a type, but found 'Class4'
+error: Expected '{' to start class body, but found '<'
    |
- 1 | // @target: es2015
- 2 | var someVariable: Class4<Class2>;
-   |                   ^^^^^^
- 3 | 
+21 | 
+22 | class Class3<T>
+   |             ^
+23 | 
    |
-   = help: todo
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✗ test/parser/suite/ts/pass/7616f30ca849751e.ts
@@ -33072,11 +32583,11 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/77407685bf816494.ts
-error: Expected a type, but found 'Promise'
+error: Expected a type, but found '['
    |
  3 | 
  4 | const test1: Promise<[one: number, two: string]> = (async () => {
-   |              ^^^^^^^
+   |                      ^
  5 |     return [1, 'two'];
    |
    = help: todo
@@ -33458,15 +32969,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7868b82c29a2a651.ts
-error: Expected a type, but found 'RegExp'
+error: Expected ';' after for-loop init, but found ':'
    |
- 8 | 
- 9 | var aRegExp: RegExp;
-   |              ^^^^^^
-10 | for (aRegExp in {}) { }
+11 | 
+12 | for (var idx : number in {}) { }
+   |              ^
+13 | 
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/786eb5e692cc6c8b.ts
 error: Expected '{' to start class body, but found '<'
@@ -34293,17 +33802,7 @@ error: Expected a type, but found '['
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/7b1398a3bf87bd4d.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 4 |    // Legal to use 'await' in a type context.
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/7b1398a3bf87bd4d.ts
 ✗ test/parser/suite/ts/pass/7b13a6bbd8f981ec.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'MyPropertyDescriptor'
    |
@@ -34536,11 +34035,11 @@ error: Expected ';' after class field, but found '_t'
 ✓ test/parser/suite/ts/pass/7be196c4ad3adec8.module.ts
 ✓ test/parser/suite/ts/pass/7bf7f6dee235e61f.ts
 ✗ test/parser/suite/ts/pass/7c01ea941a26d207.module.ts
-error: Expected a type, but found 'Promise'
+error: Expected a type, but found '['
    |
  2 | // @target: es2017
  3 | export async function get(): Promise<[]> {
-   |                              ^^^^^^^
+   |                                      ^
  4 |   let emails = [];
    |
    = help: todo
@@ -34870,14 +34369,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/7d14d39532d3ae7a.ts
 ✗ test/parser/suite/ts/pass/7d14ff996716b084.ts
-error: Expected a type, but found 'C'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '['
    |
 12 |     f2() {
 13 |         var a: C[];
-   |                ^
+   |                 ^
 14 |         var a = [this, this.c];  // C[] since this is subtype of C
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/7d1f185b89dbc736.ts
@@ -34977,17 +34476,7 @@ error: Expected ';' after for-loop init, but found ')'
    |
 
 ✓ test/parser/suite/ts/pass/7d90abc813f234b5.ts
-✗ test/parser/suite/ts/pass/7d9ac4dd02299d34.ts
-error: Expected a type, but found 'TemplateStringsArray'
-   |
- 5 | 
- 6 | function f(x: TemplateStringsArray, y: number, z: number) {
-   |               ^^^^^^^^^^^^^^^^^^^^
- 7 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/7d9ac4dd02299d34.ts
 ✗ test/parser/suite/ts/pass/7d9ad189be53c3e5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Test'
    |
@@ -35066,14 +34555,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7dc0b5bc41025706.ts
-error: Expected a type, but found 'Bar'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '['
    |
 17 | 
 18 | var a: Bar, b: string[];
-   |        ^^^
+   |                      ^
 19 | [a, ...b] = new FooIterator;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/7dc216c3c7d466db.ts
@@ -35547,14 +35036,14 @@ error: Expected a type, but found '{'
 
 
 ✗ test/parser/suite/ts/pass/7f8b3b4585b490ae.ts
-error: Expected a type, but found 'Promise'
+error: Expected '{' to start function body, but found ':'
    |
- 4 | 
- 5 | async (): Promise<void> => {
-   |           ^^^^^^^
- 6 |     await 0;
+45 | 
+46 |     async asyncMethod(): Promise<void> {
+   |                        ^
+47 |         await 2;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/7f8f3d5bcc83ca7e.ts
@@ -35714,17 +35203,7 @@ error: Expected ';' after class field, but found '_filterProviders'
 
 
 ✓ test/parser/suite/ts/pass/8046bef10ea3a49e.ts
-✗ test/parser/suite/ts/pass/80483e541d745ce8.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 4 |   return;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/80483e541d745ce8.ts
 ✗ test/parser/suite/ts/pass/804f39b95a2c277e.ts
 error: Expected ';' after class field, but found '?'
    |
@@ -35738,14 +35217,14 @@ error: Expected ';' after class field, but found '?'
 
 ✓ test/parser/suite/ts/pass/80501198b5902ab6.ts
 ✗ test/parser/suite/ts/pass/8057c288ea6b92f0.ts
-error: Expected a type, but found 'A'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
    |
  8 | 
  9 | let a: A | null = null;
-   |        ^
+   |          ^
 10 | 
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/805d12c9fc2051b5.ts
@@ -35846,17 +35325,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/808c3d7d48aa5e13.ts
-error: Expected a type, but found 'BigInt64Array'
-   |
-19 | // Test BigInt64Array
-20 | let bigIntArray: BigInt64Array = new BigInt64Array();
-   |                  ^^^^^^^^^^^^^
-21 | bigIntArray = new BigInt64Array(10);
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/808c3d7d48aa5e13.ts
 ✗ test/parser/suite/ts/pass/8093c97ac0565a1f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -36104,14 +35573,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/815bb016553894d3.ts
-error: Expected a type, but found 'Iterator'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
 24 | 
 25 |         const i: Iterator<any> = null as any;
-   |                  ^^^^^^^^
+   |                                       ^^
 26 |         const j: AsyncIterator<any> = null as any;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/8176957b59aec3ed.ts
@@ -36126,14 +35595,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/8184cdac6ebbb56e.ts
-error: Expected a type, but found 'Foo'
+error: Expected '{' to start function body, but found ';'
    |
  2 | // @strict: false
  3 | function Foo():Foo; // error
-   |                ^^^
+   |                   ^
  4 | function Foo(s:string):Foo; // error
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/818d186fa937dfad.ts
@@ -36301,17 +35770,7 @@ error: Expected ')' after method parameters, but found 'p1'
    |
 
 ✓ test/parser/suite/ts/pass/8265bf79b9f29ab8.ts
-✗ test/parser/suite/ts/pass/826aa4e88b709f88.ts
-error: Expected a type, but found 'Object'
-   |
- 1 | // @target: es2015
- 2 | var obj: Object;
-   |          ^^^^^^
- 3 | if (ArrayBuffer.isView(obj)) {
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/826aa4e88b709f88.ts
 ✗ test/parser/suite/ts/pass/826ba5a803798969.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -37234,14 +36693,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/85ee0edebb024405.ts
-error: Expected a type, but found 'Date'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
- 7 | function fn5(): boolean { return true; }
- 8 | function fn6(): Date { return new Date(12); }
-   |                 ^^^^
- 9 | function fn7(): any { return null; }
+11 | 
+12 | interface I { id: number }
+   |           ^
+13 | class C implements I {
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/85ff8a2aaec1ed17.ts
@@ -38801,14 +38260,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8b2840e169d72b29.ts
 ✓ test/parser/suite/ts/pass/8b297e99ac717a21.ts
 ✗ test/parser/suite/ts/pass/8b2a1d6af40c373e.ts
-error: Expected a type, but found 'Temporal'
-   |
-64 | {
-65 |     let instant: Temporal.Instant;
-   |                  ^^^^^^^^
-66 |     instant = Temporal.Instant.from("2019-03-30T01:45:00+01:00[Europe/Berlin]");
-   |
-   = help: todo
+error: Expected '>' to close a type argument list, but found '['
+    |
+370 |     // Attempt to write some mnemonic poetry
+371 |     const monthsByDays: Record<number, Temporal.ZonedDateTime[]> = {};
+    |                                                              ^
+372 |     for (let month = 1; month <= 12; month++) {
+    |
+    = help: Each '<' in a type must be matched by a '>'
 
 
 ✓ test/parser/suite/ts/pass/8b346bee6c8577e0.ts
@@ -39335,14 +38794,14 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/8d8534e4eb3f4146.ts
-error: Expected a type, but found 'Record'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'RecordOfRecords'
    |
- 2 | // @strict: true
- 3 | const foo: Record<never, never> = {} // OK
-   |            ^^^^^^
  4 | 
+ 5 | interface RecordOfRecords extends Record<keyof any, RecordOfRecords> {}
+   |           ^^^^^^^^^^^^^^^
+ 6 | const recordOfRecords: RecordOfRecords = {}
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/8d8a217ab35537d5.ts
@@ -39419,17 +38878,7 @@ error: Expected a type, but found '{'
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/8db96f22cd975c84.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function await(): Promise<void> {
-   |                         ^^^^^^^
- 4 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/8db96f22cd975c84.ts
 ✗ test/parser/suite/ts/pass/8dbef3eac9ab0375.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Collection'
    |
@@ -39540,14 +38989,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8e0d4ba5722f76c5.ts
-error: Expected a type, but found 'PropertyKey'
+error: Unexpected token ':' as class element key
    |
- 2 | // @experimentalDecorators: true
- 3 | function x(o: object, k: PropertyKey) { }
-   |                          ^^^^^^^^^^^
- 4 | let i = 0;
+11 | class A {
+12 |     @x ["property"]: any;
+   |                    ^
+13 |     @x [Symbol.toStringTag]: any;
    |
-   = help: todo
+   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
 
 
 ✗ test/parser/suite/ts/pass/8e181f4965a93989.ts
@@ -39604,14 +39053,14 @@ error: 'enum' is reserved and cannot be used as a binding identifier
    |
 
 ✗ test/parser/suite/ts/pass/8e383f86bff36815.module.ts
-error: Expected a type, but found 'Node'
+error: Expected ')' to close parameter list, but found '|'
    |
  5 | 
  6 | export function assertIsElement(node: Node | null): node is Element {
-   |                                       ^^^^
+   |                                            ^
  7 |     let nodeType = node === null ? null : node.nodeType;
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/8e3987aa381cfee7.ts
@@ -40060,14 +39509,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8f46ff99077713ce.ts
-error: Expected a type, but found 'AsyncGenerator'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
 23 | const testIntlPluralRules = new Intl.PluralRules("ar-EG").select(0);
 24 | const testAsyncGenerator: AsyncGenerator<any> = null as any;
-   |                           ^^^^^^^^^^^^^^
+   |                                                      ^^
 25 | const testAsyncGeneratorFunction: AsyncGeneratorFunction = null as any;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/8f52bcaca74f7d96.ts
@@ -40174,14 +39623,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8fd6b5fdb48f41cf.ts
-error: Expected a type, but found 'Date'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '['
    |
  2 | // @strict: false
  3 | let a: Date[];
-   |        ^^^^
+   |            ^
  4 | let b: boolean[];
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/8fdc2645fc64f9bd.ts
@@ -40333,14 +39782,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/907a3d40a9d1d891.ts
-error: Expected a type, but found 'x'
+error: Expected '{' to start function body, but found 'is'
    |
  1 | // @target: es2015
  2 | function addProp2(x: any): x is { a: string; a: string; } {
-   |                            ^
+   |                              ^^
  3 |     return true;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/908092dab46148b0.ts
@@ -40377,17 +39826,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/90938f804bcca4de.ts
-✗ test/parser/suite/ts/pass/9094ea2f23c89f31.ts
-error: Expected a type, but found 'A3'
-   |
- 4 |     #method() { };
- 5 |     constructor(a: A3, b: any) {
-   |                    ^^
- 6 |         this.#method = () => {} // Error, not writable 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/9094ea2f23c89f31.ts
 ✗ test/parser/suite/ts/pass/9094f50b03d5a554.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -40663,17 +40102,7 @@ error: 'enum' is reserved and cannot be used as an identifier
  3 | enum F { c, d }
    |
 
-✗ test/parser/suite/ts/pass/917ff264616e98d0.module.ts
-error: Expected a type, but found 'Promise'
-   |
- 1 | // @target: es6
- 2 | export default async function foo(): Promise<void> {}
-   |                                      ^^^^^^^
- 3 | foo();
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/917ff264616e98d0.module.ts
 ✗ test/parser/suite/ts/pass/91883733123cba74.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
    |
@@ -41583,17 +41012,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/95c809c5c0c63f7a.ts
-✗ test/parser/suite/ts/pass/95e2dc27c7b94633.ts
-error: Expected a type, but found 'TemplateStringsArray'
-   |
- 5 | 
- 6 | function f(x: TemplateStringsArray, y: number, z: number) {
-   |               ^^^^^^^^^^^^^^^^^^^^
- 7 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/95e2dc27c7b94633.ts
 ✗ test/parser/suite/ts/pass/95e6493f94f4f3e4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -42666,17 +42085,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/98fa109059eb3f88.ts
-error: Expected a type, but found 'Object'
-   |
- 4 | var a: any = x;
- 5 | var b: Object = x;
-   |        ^^^^^^
- 6 | var c: string = x;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/98fa109059eb3f88.ts
 ✗ test/parser/suite/ts/pass/98fed2794aeb03f2.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
@@ -43621,14 +43030,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/9bef1986a2df19de.ts
-error: Expected a type, but found 'Bar'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '['
    |
 17 | 
 18 | var a: Bar, b: Bar[];
-   |        ^^^
+   |                   ^
 19 | [a, ...b] = new FooIterator
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/9bf419e0e65a7b72.ts
@@ -44955,17 +44364,7 @@ error: Expected a type, but found ''a''
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/a0ceb505f12cda0a.ts
-error: Expected a type, but found 'Record'
-   |
- 5 | 
- 6 | function test({c, d = c}: Record<string, number>) {}
-   |                           ^^^^^^
- 7 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/a0ceb505f12cda0a.ts
 ✗ test/parser/suite/ts/pass/a0d0cf5991c73e2f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -45306,17 +44705,7 @@ error: Expected a type, but found '('
    = help: todo
 
 
-✗ test/parser/suite/ts/pass/a2404e0b864076f3.ts
-error: Expected a type, but found 'A'
-   |
-12 |            }
-13 |            baz (a: A) {
-   |                    ^
-14 |                a.#foo; // compile-time error, shadowed
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/a2404e0b864076f3.ts
 ✗ test/parser/suite/ts/pass/a24ab2eab613cbc2.module.ts
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -45686,17 +45075,7 @@ error: Expected ';' after class field, but found 'constructor'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/a3cdd323355c0e1d.ts
-error: Expected a type, but found 'Record'
-   |
- 2 | // @strict: true
- 3 | function f(cnd: Record<number, boolean>){
-   |                 ^^^^^^
- 4 |     // Type is a union of 2^(n-1) members, where n is the number of spread objects
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/a3cdd323355c0e1d.ts
 ✗ test/parser/suite/ts/pass/a3d03aca539b4e16.module.ts
 error: 'static' is reserved in strict mode and cannot be used as an identifier
    |
@@ -45883,14 +45262,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a474d4436afa4485.module.ts
-error: Expected a type, but found 'Function'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
    |
- 4 | 
- 5 | function action(f: Function) {}
-   |                    ^^^^^^^^
- 6 | 
+ 8 | 
+ 9 | export let x1: string | number;
+   |                       ^
+10 | x1 = "abc";
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/a4755715db2c2098.ts
@@ -46169,14 +45548,14 @@ error: Expected ';' after class field, but found 'p'
 
 
 ✗ test/parser/suite/ts/pass/a53688298d172b09.ts
-error: Expected a type, but found 'asserts'
+error: Expected '{' to start function body, but found 'condition'
    |
  6 | 
  7 | function assert(condition: unknown): asserts condition {
-   |                                      ^^^^^^^
+   |                                              ^^^^^^^^^
  8 |     if (!condition) {
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/a53ab07e9c0adc14.ts
@@ -46464,14 +45843,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a63105be9e60e57d.ts
-error: Expected a type, but found 'I'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
- 5 |     #prop;
- 6 |     func(x: I) {
-   |             ^
- 7 |         x.#prop = 123;
+ 9 | }
+10 | interface I extends C {}
+   |           ^
+11 | 
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/a631ff86af8e5bcb.module.ts
@@ -46971,14 +46350,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts
-error: Expected a type, but found 'a'
+error: Expected '{' to start function body, but found 'is'
    |
  3 | 
  4 | function f1(a: string): a is string! {
-   |                         ^
+   |                           ^^
  5 |     return true;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/a88f91fb7ee6f1dc.ts
@@ -47054,11 +46433,11 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/a8d4c633710a83a0.ts
 ✗ test/parser/suite/ts/pass/a8d5c9fd10b14f49.module.ts
-error: Expected a type, but found 'Promise'
+error: Expected a type, but found 'true'
    |
  6 | 
  7 | function truePromise(): Promise<true> {
-   |                         ^^^^^^^
+   |                                 ^^^^
  8 |     return Promise.resolve(true);
    |
    = help: todo
@@ -47958,14 +47337,14 @@ error: Expected a type, but found '{'
 
 
 ✗ test/parser/suite/ts/pass/abcd9331c1af3b94.ts
-error: Expected a type, but found 'x'
+error: Expected '{' to start function body, but found 'is'
    |
  9 | 
 10 | function isZero(x: number): x is 0 {
-   |                             ^
+   |                               ^^
 11 |   return x === 0;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/abcf0ff9a2be5282.ts
@@ -48366,14 +47745,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/add26ac395dcad12.module.ts
-error: Expected a type, but found 'x'
+error: Expected '{' to start function body, but found 'is'
    |
  4 | 
  5 | export function f(x: any): x is number {
-   |                            ^
+   |                              ^^
  6 |     return typeof x === "number";
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/ade303b2805e8d3f.ts
@@ -48397,17 +47776,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/adeb515b85b43b32.module.tsx
-✗ test/parser/suite/ts/pass/adfa61e1e3152b88.ts
-error: Expected a type, but found 'Uppercase'
-   |
- 3 | 
- 4 | const x: Uppercase<string> = 42;
-   |          ^^^^^^^^^
- 5 | const y: Uppercase<string> = { foo: "bar" };
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/adfa61e1e3152b88.ts
 ✗ test/parser/suite/ts/pass/ae04b6f2c0172802.ts
 error: Expected a type, but found '('
    |
@@ -48440,17 +47809,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/ae093c82c0f4f48e.module.ts
-error: Expected a type, but found 'RegExpMatchArray'
-   |
- 6 | 
- 7 | export function foo(matchResult: RegExpMatchArray, execResult: RegExpExecArray) {
-   |                                  ^^^^^^^^^^^^^^^^
- 8 |     matchResult[0].length;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/ae093c82c0f4f48e.module.ts
 ✗ test/parser/suite/ts/pass/ae0b286513bc9c33.ts
 error: Expected ';' after class field, but found 'bar'
    |
@@ -48532,15 +47891,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/ae84fe678e58d57a.ts
-error: Expected a type, but found 'Color'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 1 | // @target: es2015
- 2 | const v: Color = Color.Green;
-   |          ^^^^^
  3 | const v2: ConstColor = ConstColor.Green;
+ 4 | enum Color { Red, Green, Blue }
+   | ^^^^
+ 5 | const enum ConstColor { Red, Green, Blue }
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/ae8cc0d4df0b618f.module.ts
 error: Expected ';' after class field, but found 'static'
@@ -48565,17 +47922,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/ae90a7eea834ccbc.ts
-✗ test/parser/suite/ts/pass/aeb5d396fa1f9dca.ts
-error: Expected a type, but found 'Number'
-   |
- 1 | // @target: es2015
- 2 | var x: Number;
-   |        ^^^^^^
- 3 | var y: Number;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/aeb5d396fa1f9dca.ts
 ✗ test/parser/suite/ts/pass/aed4b51c6c5cff37.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -48731,17 +48078,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/af96d4faea8b7ad8.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | 
- 4 | var foo = async (): Promise<void> => {
-   |                     ^^^^^^^
- 5 |    // Legal to use 'await' in a type context.
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/af96d4faea8b7ad8.ts
 ✓ test/parser/suite/ts/pass/af97b77fbff61867.ts
 ✗ test/parser/suite/ts/pass/af987f3db044b9cd.ts
 error: Unexpected token '<'
@@ -48764,17 +48101,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/afa276004cbdf93e.ts
-error: Expected a type, but found 'Promise'
-   |
- 4 | 
- 5 | var foo = async (): Promise<void> => {
-   |                     ^^^^^^^
- 6 | };
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/afa276004cbdf93e.ts
 ✗ test/parser/suite/ts/pass/afa9a29149b290d3.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -49754,14 +49081,14 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/b3072a5407286487.module.ts
-error: Expected a type, but found 'A'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
- 6 |     foo() {
- 7 |         var aVal: A.B;
-   |                   ^
- 8 |         return aVal;
+11 | 
+12 | namespace A {
+   |           ^
+13 |     export interface B { }
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/b30853b98128a9e9.ts
@@ -50147,17 +49474,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/b4537e43e567f7be.ts
-error: Expected a type, but found 'Iterable'
-   |
- 1 | //@target: ES6
- 2 | var iter: Iterable<number>;
-   |           ^^^^^^^^
- 3 | var array = [...iter];
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/b4537e43e567f7be.ts
 ✗ test/parser/suite/ts/pass/b45656e0077ccf9b.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -50533,11 +49850,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/b5db8fe8b1a0b28c.ts
 ✗ test/parser/suite/ts/pass/b5e8b520198d7e08.ts
-error: Expected a type, but found 'Iterable'
+error: Expected a type, but found '('
    |
  1 | //@target: ES6
  2 | var iter: Iterable<(x: string) => number> = [s => s.length];
-   |           ^^^^^^^^
+   |                    ^
    |
    = help: todo
 
@@ -50717,16 +50034,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/b62d60b077c65403.ts
-error: Expected a type, but found 'x'
-   |
- 1 | // @target: es2015
- 2 | var v : x.void;
-   |         ^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/b62d60b077c65403.ts
 ✓ test/parser/suite/ts/pass/b62d7a8c789c51a8.ts
 ✓ test/parser/suite/ts/pass/b63246437b78541f.ts
 ✓ test/parser/suite/ts/pass/b650c8777e782669.ts
@@ -51306,11 +50614,11 @@ error: Expected ';' after class field, but found 'a'
 
 
 ✗ test/parser/suite/ts/pass/b80db1dbe0f6b12e.ts
-error: Expected a type, but found 'Iterator'
+error: Expected a type, but found '('
    |
  2 | //@target: ES6
  3 | function* g2(): Iterator<() => Iterable<(x: string) => number>> {
-   |                 ^^^^^^^^
+   |                          ^
  4 |     yield function* () {
    |
    = help: todo
@@ -51440,17 +50748,7 @@ error: Expected ';' after class field, but found 'foo'
 
 
 ✓ test/parser/suite/ts/pass/b89be447c015bcc9.ts
-✗ test/parser/suite/ts/pass/b89e756c6d6410dd.ts
-error: Expected a type, but found 'ReadonlyArray'
-   |
-23 | }
-24 | function f2(_: ReadonlyArray<number>): void {}
-   |                ^^^^^^^^^^^^^
-25 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/b89e756c6d6410dd.ts
 ✗ test/parser/suite/ts/pass/b89fdbd16b91801e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Editor'
    |
@@ -52026,14 +51324,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/ba635d554b61ce35.ts
 ✗ test/parser/suite/ts/pass/ba7fb8b0763db24e.ts
-error: Expected a type, but found 'Bar'
+error: Expected ')' to close parameter list, but found '['
    |
 17 | 
 18 | function fun(...[a, b]: Bar[]) { }
-   |                         ^^^
+   |                            ^
 19 | fun(...new FooIterator);
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/ba8088bb4898e987.ts
@@ -52070,15 +51368,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/ba8d3653fc145ad9.ts
-error: Expected a type, but found 'A2'
+error: Private field '#prop' must be declared in an enclosing class
    |
- 8 |         console.log(this.#prop);
- 9 |         let a: A2 = this;
-   |                ^^
-10 |         a.#prop;
+15 | }
+16 | new A2().#prop; // Error
+   |          ^^^^^
+17 | 
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/baa07cd7b13606f8.ts
 error: Expected ')' after method parameters, but found '['
@@ -52414,17 +51710,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/bbb4edd6caf38d50.module.ts
-✗ test/parser/suite/ts/pass/bbc7192d0f367d5b.ts
-error: Expected a type, but found 'Base'
-   |
- 7 |             #x() { };
- 8 |             testBase(x: Base) {
-   |                         ^^^^
- 9 |                 console.log(x.#x);
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/bbc7192d0f367d5b.ts
 ✓ test/parser/suite/ts/pass/bbd2fc2695b054ff.ts
 ✓ test/parser/suite/ts/pass/bbdf28e5789b659c.ts
 ✗ test/parser/suite/ts/pass/bbe63fccc31abf85.ts
@@ -52449,17 +51735,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/bbf7afd596c3e95b.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 8 | 
- 9 | function* b(): IterableIterator<number> {
-   |                ^^^^^^^^^^^^^^^^
-10 |     yield;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/bbf7afd596c3e95b.ts
 ✗ test/parser/suite/ts/pass/bbfac8e28d8d9eb5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
    |
@@ -52483,15 +51759,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/bc0f7c24294ad30f.ts
-error: Expected a type, but found 'B'
+error: Duplicate private name '#foo'
    |
-11 |     static #foo = true;
-12 |     test(x: B) {
-   |             ^
-13 |         x.#foo; // error (#foo is a static property on B, not an instance property)
+ 3 | class A {
+ 4 |     #foo = 1;
+   |     ~~~~~~~~~ first declared here
+ 5 |     static #foo = true; // error (duplicate)
+   |     ^^^^^^^^^^^^^^^^^^^
+ 6 |                         // because static and instance private names
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/bc1a8b14e771c339.module.ts
 error: Expected ';' after class field, but found 'B'
@@ -52980,17 +52256,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/bddcb72a7a2158cc.ts
-error: Expected a type, but found 'Undefined'
-   |
- 1 | // @target: es2015
- 2 | var x: Undefined;
-   |        ^^^^^^^^^
- 3 | var y = undefined;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/bddcb72a7a2158cc.ts
 ✓ test/parser/suite/ts/pass/bddf51701ff85628.ts
 ✓ test/parser/suite/ts/pass/bde676d186a2fa0a.ts
 ✗ test/parser/suite/ts/pass/be16e547d4821944.ts
@@ -53173,14 +52439,14 @@ error: Expected declaration after 'export', but found 'abstract'
 
 ✓ test/parser/suite/ts/pass/be6f9b744c9be9dd.ts
 ✗ test/parser/suite/ts/pass/be7fa31b1129c2cf.tsx
-error: Expected a type, but found 'A'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '&'
    |
  5 | class C { c; }
  6 | let intersected: A & C;
-   |                  ^
+   |                    ^
  7 | let element = <div { ...intersected } />;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/be838ca459e995bb.ts
@@ -53253,14 +52519,14 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/bedee008df6cdecf.ts
 ✗ test/parser/suite/ts/pass/beea7e029ba3bb7f.ts
-error: Expected a type, but found 'A'
+error: Expected '(' to start parameter list, but found '<'
    |
-13 | 
-14 | var a: A;
-   |        ^
-15 | var b: B;
+17 | 
+18 | function foo2<T extends A>(x: T) {
+   |              ^
+19 |     var y = x;
    |
-   = help: todo
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/beeb672f1d4bc8e5.ts
@@ -53831,11 +53097,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c0a9fe2d0e1b74d9.module.ts
-error: Expected a type, but found 'Required'
+error: Expected a type, but found '{'
    |
  1 | // @target: es2015
  2 | const a: Required<{ a?: 1; x: 1 }> = { a: 1, x: 1 };
-   |          ^^^^^^^^
+   |                   ^
  3 | const b: Required<{ b?: 1; x: 1 }> = { b: 1, x: 1 };
    |
    = help: todo
@@ -54110,14 +53376,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c19de378d91a50cb.ts
-error: Expected a type, but found 'Promise'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
-12 | // async function with which promised type is void - return can be omitted
-13 | async function f2(): Promise<void> {
-   |                      ^^^^^^^
-14 |     
+31 | 
+32 | declare function use(s: string): void;
+   |         ^^^^^^^^
+33 | let x1 = () => { use("Test"); }
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/c1a24c5857b20200.ts
@@ -54341,28 +53607,18 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c20f5f331b348bea.ts
-error: Expected a type, but found 'C'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
    |
- 4 | class D extends C { foo() { } }
  5 | var x: C;
-   |        ^
  6 | var x : C | D;
+   |           ^
+ 7 | 
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/c217d4582c2f9fd6.ts
-✗ test/parser/suite/ts/pass/c223772d14e46764.ts
-error: Expected a type, but found 'Base'
-   |
- 7 |             get #x() { return 1; };
- 8 |             testBase(x: Base) {
-   |                         ^^^^
- 9 |                 console.log(x.#x);
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/c223772d14e46764.ts
 ✗ test/parser/suite/ts/pass/c2254ec2676f1543.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -54512,14 +53768,14 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
    |
 
 ✗ test/parser/suite/ts/pass/c2a559b01ac7896d.ts
-error: Expected a type, but found 'asdf'
+error: Unexpected token '<'
    |
- 3 | var x = asdf;
- 4 | var y: asdf;
-   |        ^^^^
- 5 | 
+10 | 
+11 | var z = <asdf>x; // should be an error
+   |         ^
+12 | 
    |
-   = help: todo
+   = help: Expected an expression
 
 
 ✗ test/parser/suite/ts/pass/c2a9465cc4a47566.ts
@@ -54668,16 +53924,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/c329bf242ca9a1c0.ts
-✗ test/parser/suite/ts/pass/c32cff1cec056999.ts
-error: Expected a type, but found 'Iterator'
-   |
- 1 | //@target: ES6
- 2 | function* g1(): Iterator<string> { }
-   |                 ^^^^^^^^
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/c32cff1cec056999.ts
 ✗ test/parser/suite/ts/pass/c32fc6e8b7e394e3.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -55201,14 +54448,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/c56f78b8812f1237.ts
 ✗ test/parser/suite/ts/pass/c572683d9bd4bc1e.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected '{' to start function body, but found ';'
    |
  2 | // Ambiguous call picks the first overload in declaration order
  3 | function fn1(strs: TemplateStringsArray, s: string): string;
-   |                    ^^^^^^^^^^^^^^^^^^^^
+   |                                                            ^
  4 | function fn1(strs: TemplateStringsArray, n: number): number;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/c57d3c8bb5a6c060.ts
@@ -55493,11 +54740,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/c68749a913dceacf.ts
 ✓ test/parser/suite/ts/pass/c691aef343454620.ts
 ✗ test/parser/suite/ts/pass/c6a430f76d3146b6.ts
-error: Expected a type, but found 'Generator'
+error: Expected a type, but found '{'
    |
  5 | 
  6 | function* f1(): Generator<any, { x: 'x' }, any> {
-   |                 ^^^^^^^^^
+   |                                ^
  7 |   return { x: 'x' };
    |
    = help: todo
@@ -56686,17 +55933,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/caa360d6d2313193.ts
-✗ test/parser/suite/ts/pass/cabe94d9b47ea18d.ts
-error: Expected a type, but found 'Promise'
-   |
- 2 | // @noEmitHelpers: true
- 3 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 4 |   return;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/cabe94d9b47ea18d.ts
 ✗ test/parser/suite/ts/pass/cac9b0bfd5576803.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -56709,12 +55946,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/cad2d1190171c26c.ts
-error: Expected a type, but found 'C'
+error: Expected a type, but found '{'
    |
- 4 | 
  5 | var c: C;
-   |        ^
  6 | var o: {} = c;
+   |        ^
+ 7 | c = 1;
    |
    = help: todo
 
@@ -56805,17 +56042,7 @@ error: Empty parentheses are only valid as arrow function parameters
    |
 
 ✓ test/parser/suite/ts/pass/cb4681fedf13990c.ts
-✗ test/parser/suite/ts/pass/cb471564e1471aed.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | // @noEmitHelpers: true
- 4 | async function await(): Promise<void> {
-   |                         ^^^^^^^
- 5 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/cb471564e1471aed.ts
 ✗ test/parser/suite/ts/pass/cb51769ec29262a4.module.ts
 error: Unexpected token '!' in expression
    |
@@ -57082,17 +56309,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/cc4452acdf38ccf2.ts
-✗ test/parser/suite/ts/pass/cc4f8f7c07365537.ts
-error: Expected a type, but found 'IterableIterator'
-   |
- 1 | //@target: ES6
- 2 | function* g(): IterableIterator<any> {
-   |                ^^^^^^^^^^^^^^^^
- 3 |     return;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/cc4f8f7c07365537.ts
 ✗ test/parser/suite/ts/pass/cc56f467eecff94f.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -57638,17 +56855,7 @@ error: Expected ';' after class field, but found 'static'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/ce45ed1398bcac52.ts
-error: Expected a type, but found 'Object'
-   |
- 7 | var STRING: string;
- 8 | var OBJECT: Object;
-   |             ^^^^^^
- 9 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/ce45ed1398bcac52.ts
 ✗ test/parser/suite/ts/pass/ce466f2d04677b6f.ts
 error: Expected ']' after computed property key, but found ':'
    |
@@ -58094,14 +57301,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d0289f4b1f4c0740.ts
-error: Expected a type, but found 'Animal'
+error: Expected '(' to start parameter list, but found '<'
    |
- 6 | 
- 7 | function run(a: Animal) {
-   |                 ^^^^^^
- 8 |     a.run();
+10 | 
+11 | function f<T extends Cat | Dog>(a: T) {
+   |           ^
+12 |     a.run();
    |
-   = help: todo
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/d029f4d3805ed0a5.ts
@@ -58333,14 +57540,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d0cf98d4a230d978.ts
-error: Expected a type, but found 'Cat'
+error: Expected ')' to close parameter list, but found '|'
    |
  6 | 
  7 | function run(a: Cat | Dog) {
-   |                 ^^^
+   |                     ^
  8 |     a.run();
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✓ test/parser/suite/ts/pass/d0d83b4ebea2f12d.ts
@@ -58425,13 +57632,13 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/d1087a586b6eb522.ts
 ✗ test/parser/suite/ts/pass/d10c383bfce17ee8.ts
-error: Expected a type, but found 'SVGRectElement'
+error: Unexpected token '!' in expression
    |
  2 | // @strict: true
  3 | let rect2: SVGRectElement = document.querySelector('.svg-rectangle')!; // Error: Element
-   |            ^^^^^^^^^^^^^^
+   |                                                                     ^
    |
-   = help: todo
+   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
 
 
 ✗ test/parser/suite/ts/pass/d10d698276ffbacf.ts
@@ -58502,14 +57709,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d17e990b52e7c3ed.ts
-error: Expected a type, but found 'Function'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'foo'
    |
- 2 | // @strict: false
- 3 | function f(n: Function) { }
-   |               ^^^^^^^^
- 4 | f(function () { });
+ 5 | 
+ 6 | interface foo {
+   |           ^^^
+ 7 |     get(handler: (bar: number)=>void): void;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/d17eb0a1cfd687f1.module.ts
@@ -58790,14 +57997,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d2773efdbc223505.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected '{' to start function body, but found ';'
    |
  3 | // Ambiguous call picks the first overload in declaration order
  4 | function fn1(strs: TemplateStringsArray, s: string): string;
-   |                    ^^^^^^^^^^^^^^^^^^^^
+   |                                                            ^
  5 | function fn1(strs: TemplateStringsArray, n: number): number;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/d27bad2f2a948cb3.ts
@@ -59056,17 +58263,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/d2f34ef6cc1417ca.ts
 ✓ test/parser/suite/ts/pass/d2f8347bbdd54e63.ts
 ✓ test/parser/suite/ts/pass/d2fa14550615e0a9.module.ts
-✗ test/parser/suite/ts/pass/d3034b378da3a7a1.ts
-error: Expected a type, but found 'Promise'
-   |
- 4 | class X {
- 5 |     f = async (): Promise<this> => this;
-   |                   ^^^^^^^
- 6 | }
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/d3034b378da3a7a1.ts
 ✓ test/parser/suite/ts/pass/d303cb9266464595.ts
 ✗ test/parser/suite/ts/pass/d31c5d7583413197.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
@@ -59468,14 +58665,14 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/d49dcbbc6fb8041e.ts
-error: Expected a type, but found 'RegExp'
+error: 'const' declarations must be initialized
    |
  2 | 
  3 | const regexes: RegExp[] = [
-   |                ^^^^^^
+   |       ^^^^^^^
  4 |   /[[]/,  // Valid
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/d4a189ce03740064.ts
@@ -59533,17 +58730,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/d4cb03d212b13675.ts
-error: Expected a type, but found 'Promise'
-   |
- 1 | // @target: es2015
- 2 | function f(x: Promise<number>) {
-   |               ^^^^^^^
- 3 |     x.toLowerCase();
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/d4cb03d212b13675.ts
 ✓ test/parser/suite/ts/pass/d4d01bcb6b536e00.ts
 ✗ test/parser/suite/ts/pass/d4d1baa9bffd88c9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'P'
@@ -59730,14 +58917,14 @@ error: Expected a type, but found '{'
 
 
 ✗ test/parser/suite/ts/pass/d554e92de0aec433.module.ts
-error: Expected a type, but found 'C1'
+error: 'const' declarations must be initialized
    |
  3 | 
  4 | const Foo: C1 & C2 =
-   |            ^^
+   |       ^^^
  5 |     class {
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/d558f34b4d3b56ef.ts
@@ -59786,14 +58973,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/d57265107e73bba1.ts
 ✗ test/parser/suite/ts/pass/d57f1be4539023e9.module.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected ')' to close parameter list, but found '['
    |
  1 | // @target: es2015
  2 | export function tag(parts: TemplateStringsArray, ...values: any[]) {
-   |                            ^^^^^^^^^^^^^^^^^^^^
+   |                                                                ^
  3 |     return parts[0];
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/d588d28e3e662317.module.ts
@@ -60224,14 +59411,14 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/d7c9a74568702cab.ts
 ✗ test/parser/suite/ts/pass/d7cb7f2821d305be.ts
-error: Expected a type, but found 'Intl'
+error: 'const' declarations must be initialized
    |
 25 | // New additions to NumberFormatPartTypes
 26 | const types: Intl.NumberFormatPartTypes[] = [ 'compact', 'unit', 'unknown' ];
-   |              ^^^^
+   |       ^^^^^
 27 | 
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/d7cd05b9fd2525ed.module.ts
@@ -60674,17 +59861,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/d9cc71f2ef5e557a.module.ts
-error: Expected a type, but found 'Foo'
-   |
- 7 | 
- 8 | export function test(foo: Foo) {
-   |                           ^^^
- 9 |     return true;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/d9cc71f2ef5e557a.module.ts
 ✓ test/parser/suite/ts/pass/d9d10d972e39aa9a.ts
 ✗ test/parser/suite/ts/pass/d9d1a7353663ab2e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'D'
@@ -61396,17 +60573,7 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/ts/pass/dbf9136820dfe980.ts
-✗ test/parser/suite/ts/pass/dbfe0b36b185a9f1.ts
-error: Expected a type, but found 'Set'
-   |
- 2 | //@lib: ES6
- 3 | const strSet: Set<string> = new Set()
-   |               ^^^
- 4 | strSet.add('Hello')
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/dbfe0b36b185a9f1.ts
 ✓ test/parser/suite/ts/pass/dc0c5eddab6f192e.ts
 ✗ test/parser/suite/ts/pass/dc24a71d42504e42.ts
 error: Expected ';' after class field, but found ':'
@@ -61870,14 +61037,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/ddf5882a5ffbe502.ts
-error: Expected a type, but found 'Foo'
+error: Expected '{' to start function body, but found ';'
    |
  2 | 
  3 | function Foo():Foo; // error
-   |                ^^^
+   |                   ^
  4 | function Foo(s:string):Foo; // error
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/ddfe04becea6a99f.module.ts
@@ -62642,14 +61809,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e0fc106feaafed7a.ts
-error: Expected a type, but found 'Object'
+error: Expected ')' to close parameter list, but found '|'
    |
  5 | // @strictPropertyInitialization: false
  6 | function PropDeco(target: Object, propKey: string | symbol) { }
-   |                           ^^^^^^
+   |                                                   ^
  7 | 
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/e0fcf64b7f31d54c.module.ts
@@ -62730,17 +61897,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e126c018bf418dfb.ts
-error: Expected a type, but found 'CustomEvent'
-   |
- 1 | // @target: es2015
- 2 | var x: CustomEvent;
-   |        ^^^^^^^^^^^
- 3 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/e126c018bf418dfb.ts
 ✗ test/parser/suite/ts/pass/e12a1952eeebaa94.ts
 error: Expected ';' after class field, but found 'x'
    |
@@ -63957,17 +63114,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e564f0c1f0bc2376.ts
-error: Expected a type, but found 'Readonly'
-   |
- 2 | // @strict: true
- 3 | function update(b: Readonly<Float32Array>) {
-   |                    ^^^^^^^^
- 4 |     const c = copy(b);
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/e564f0c1f0bc2376.ts
 ✗ test/parser/suite/ts/pass/e56e912427cdb00a.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -64451,17 +63598,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/e775cab79a2af479.ts
 ✓ test/parser/suite/ts/pass/e77ca1811869072f.ts
-✗ test/parser/suite/ts/pass/e782d3d7fda3df54.ts
-error: Expected a type, but found 'RegExpExecArray'
-   |
- 2 | // RegExpExecArray.slice can have zero, one, or two arguments
- 3 | var regExpExecArrayValue: RegExpExecArray;
-   |                           ^^^^^^^^^^^^^^^
- 4 | regExpExecArrayValue.slice();
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/e782d3d7fda3df54.ts
 ✗ test/parser/suite/ts/pass/e787c9913f9a1773.ts
 error: Expected ';' after class field, but found 'static'
    |
@@ -64496,14 +63633,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e795a578eebaebed.ts
-error: Expected a type, but found 'T0'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'T0'
    |
- 1 | // @target: es2015
  2 | var v0: T0;
-   |         ^^
  3 | type T0 = string | I0;
+   |      ^^
+ 4 | interface I0 {
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/e7999ee5a6de94b0.ts
@@ -64770,14 +63907,14 @@ error: Expected a type, but found '('
 
 
 ✗ test/parser/suite/ts/pass/e8a521115d1a6797.ts
-error: Expected a type, but found 'TemplateStringsArray'
+error: Expected '{' to start function body, but found ';'
    |
  1 | // @target: es2015
  2 | function foo(strs: TemplateStringsArray): number;
-   |                    ^^^^^^^^^^^^^^^^^^^^
+   |                                                 ^
  3 | function foo(strs: TemplateStringsArray, x: number): string;
    |
-   = help: todo
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/e8b272ee8c4e2410.ts
@@ -64974,17 +64111,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e94f94f4e6d7ca42.ts
-error: Expected a type, but found 'Promise'
-   |
- 3 | // @noEmitHelpers: true
- 4 | async function foo(): Promise<void> {
-   |                       ^^^^^^^
- 5 |   return;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/e94f94f4e6d7ca42.ts
 ✓ test/parser/suite/ts/pass/e9530a1f78322ea5.ts
 ✗ test/parser/suite/ts/pass/e957a2ad75040d7c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -65528,14 +64655,14 @@ error: Expected ';' after class field, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/eb566f657d185b0c.ts
-error: Expected a type, but found 'Bar'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '['
    |
 17 | 
 18 | var a: Bar, b: string[];
-   |        ^^^
+   |                      ^
 19 | [a, b] = new FooIterator;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/eb5a2ab750bc422b.ts
@@ -66054,14 +65181,14 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/ed2bdc0634074e99.ts
 ✗ test/parser/suite/ts/pass/ed2ec22d1b414bb6.ts
-error: Expected a type, but found 'Object'
+error: Expected ')' to close parameter list, but found '|'
    |
  4 | // @strictPropertyInitialization: false
  5 | function PropDeco(target: Object, propKey: string | symbol) { }
-   |                           ^^^^^^
+   |                                                   ^
  6 | 
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✓ test/parser/suite/ts/pass/ed41251ce40e0f1a.ts
@@ -66974,15 +66101,13 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/f0c4832478873c21.ts
-error: Expected a type, but found 'A'
+error: Expected ')' after method parameters, but found 'p'
    |
- 3 | class B { bar() { } }
- 4 | function foo(x: A) {
-   |                 ^
- 5 |    var x: B = new B();
+ 9 | class C {
+10 |     constructor(public p: number) {
+   |                        ^
+11 |         var p: string;
    |
-   = help: todo
-
 
 ✗ test/parser/suite/ts/pass/f0d23916018cbdc4.module.tsx
 error: Expected '{' to start class body, but found '<'
@@ -67399,14 +66524,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/f24502e8e1486696.ts
 ✓ test/parser/suite/ts/pass/f253b08399636a97.module.ts
 ✗ test/parser/suite/ts/pass/f259b17628144d69.ts
-error: Expected a type, but found 'Bar'
+error: Expected ')' to close parameter list, but found '['
    |
 17 | 
 18 | function fun(...[a, b]: Bar[]) { }
-   |                         ^^^
+   |                            ^
 19 | fun(new FooIterator);
    |
-   = help: todo
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
 ✗ test/parser/suite/ts/pass/f25ab828c0fcc33e.ts
@@ -67578,17 +66703,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/f2ae9e3370afd17a.ts
-error: Expected a type, but found 'Object'
-   |
- 8 | var STRING: string;
- 9 | var OBJECT: Object;
-   |             ^^^^^^
-10 | 
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/f2ae9e3370afd17a.ts
 ✗ test/parser/suite/ts/pass/f2b4539a96f78c54.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '__test1__'
    |
@@ -67643,14 +66758,14 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
    |
 
 ✗ test/parser/suite/ts/pass/f2c99af289ffea6f.ts
-error: Expected a type, but found 'Promise'
+error: Expected '>' to close a type argument list, but found '['
    |
- 3 |     a: number,
  4 |     b: Promise<number>,
-   |        ^^^^^^^
  5 |     c: Promise<string[]>,
+   |                      ^
+ 6 |     d: Promise<{ prop: string }>,
    |
-   = help: todo
+   = help: Each '<' in a type must be matched by a '>'
 
 
 ✗ test/parser/suite/ts/pass/f2ce4959be41e96f.module.ts
@@ -68551,14 +67666,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f5c547dd3f96da2d.ts
-error: Expected a type, but found 'Record'
+error: Expected '>' to close a type argument list, but found '|'
    |
- 4 | 
- 5 | function f1(obj: Record<string, unknown>, key: string) {
-   |                  ^^^^^^
- 6 |     if (typeof obj[key] === "string") {
+10 | 
+11 | function f2(obj: Record<string, string | undefined>, key: string) {
+   |                                        ^
+12 |     if (obj[key] !== undefined) {
    |
-   = help: todo
+   = help: Each '<' in a type must be matched by a '>'
 
 
 ✗ test/parser/suite/ts/pass/f5cfbb8521586701.ts
@@ -68710,14 +67825,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/f64d095e298a8f51.module.tsx
 ✓ test/parser/suite/ts/pass/f64ee1b50a09d4e3.module.ts
 ✗ test/parser/suite/ts/pass/f65156a72be3e813.ts
-error: Expected a type, but found 'StringTree'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'StringTree'
    |
- 1 | // @target: es2015
- 2 | var x: StringTree;
-   |        ^^^^^^^^^^
- 3 | if (typeof x !== "string") {
+ 7 | 
+ 8 | type StringTree = string | StringTreeArray;
+   |      ^^^^^^^^^^
+ 9 | interface StringTreeArray extends Array<StringTree> { }
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/f65433e81d19a0c7.ts
@@ -68779,14 +67894,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/f6acace18c8c8c99.ts
 ✗ test/parser/suite/ts/pass/f6adad28945142de.ts
-error: Expected a type, but found 'Overload'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Overload'
    |
- 4 | // small repro from #11875
- 5 | var use: Overload;
-   |          ^^^^^^^^
- 6 | use((req, res) => {});
+ 7 | 
+ 8 | interface Overload {
+   |           ^^^^^^^^
+ 9 |     (handler1: (req1: string) => void): void;
    |
-   = help: todo
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/f6b9bda12fe53bde.ts
@@ -68889,17 +68004,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/f70b8952e4d26e90.ts
-error: Expected a type, but found 'Foo'
-   |
- 1 | // @target: es2015
- 2 | var v : Foo<T> = 1;
-   |         ^^^
- 3 | var v : Foo<T>= 1;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/f70b8952e4d26e90.ts
 ✗ test/parser/suite/ts/pass/f70e078c681a44ee.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -68956,17 +68061,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/f72b4f2098d783f3.ts
-✗ test/parser/suite/ts/pass/f73a48df71b443c4.ts
-error: Expected a type, but found 'Date'
-   |
- 4 | var c: boolean;
- 5 | var d: Date;
-   |        ^^^^
- 6 | var e: RegExp;
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/f73a48df71b443c4.ts
 ✗ test/parser/suite/ts/pass/f73a98c8de69435e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Base'
    |
@@ -69323,14 +68418,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/f86af6f7e4c529b7.ts
 ✗ test/parser/suite/ts/pass/f8715c323d0dda27.ts
-error: Expected a type, but found 'RegExp'
+error: 'const' declarations must be initialized
    |
  7 | // See https://en.wikipedia.org/wiki/Mathematical_Alphanumeric_Symbols
  8 | const regexes: RegExp[] = [
-   |                ^^^^^^
+   |       ^^^^^^^
  9 |     /[𝘈-𝘡][𝘡-𝘈]/,
    |
-   = help: todo
+   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
 ✗ test/parser/suite/ts/pass/f875e56d1173aabd.module.ts
@@ -69381,15 +68476,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/f89adcdb56eeef94.ts
 ✗ test/parser/suite/ts/pass/f89c1dade7d4a1fd.ts
-error: Expected a type, but found 'Object'
+error: Expected ')' after method parameters, but found '?'
    |
- 2 | // @strict: false
- 3 | var errObj: Object = { toString: 0 }; // Error, incompatible toString
-   |             ^^^^^^
  4 | var goodObj: Object = {
+ 5 |     toString(x?) {
+   |               ^
+ 6 |         return "";
    |
-   = help: todo
-
 
 ✓ test/parser/suite/ts/pass/f89e1e85d670048c.ts
 ✗ test/parser/suite/ts/pass/f8a04b3bf4b9e749.ts
@@ -69472,17 +68565,7 @@ error: Expected ')' to close parameter list, but found '|'
 ✓ test/parser/suite/ts/pass/f8d8140df6828254.ts
 ✓ test/parser/suite/ts/pass/f8db026430c68851.ts
 ✓ test/parser/suite/ts/pass/f8e0177b6565cc04.ts
-✗ test/parser/suite/ts/pass/f8e44b1045b178bd.ts
-error: Expected a type, but found 'C'
-   |
-16 | }
-17 | var c: C;
-   |        ^
-18 | var z = c.foo().bar().baz();  // Fluent pattern
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/f8e44b1045b178bd.ts
 ✓ test/parser/suite/ts/pass/f8e4c02f859b8915.ts
 ✗ test/parser/suite/ts/pass/f8ef266d896c5fdd.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -69876,17 +68959,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/fac186e4ec9b032c.ts
-error: Expected a type, but found 'Record'
-   |
- 1 | // @target: es5, es2015
- 2 | const classesByRow: Record<string, object> = {};
-   |                     ^^^^^^
- 3 | for (const row of ['1', '2', '3', '4', '5']) {
-   |
-   = help: todo
-
-
+✓ test/parser/suite/ts/pass/fac186e4ec9b032c.ts
 ✗ test/parser/suite/ts/pass/fac374c92a5f55b0.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
    |
