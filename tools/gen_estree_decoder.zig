@@ -123,7 +123,8 @@ fn writeNodeCase(w: *Writer, comptime name: []const u8, comptime tag: usize, com
     const etype = comptime estreeType(name);
     const has_ts = comptime hasAnyTsField(name, T);
     const has_ts_defaults = comptime needsIdentifierDefaults(name);
-    if (!has_ts and !has_ts_defaults) {
+    const ts_constants = comptime tsConstantDefaults(name);
+    if (!has_ts and !has_ts_defaults and ts_constants.len == 0) {
         try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
         try writeStructFields(w, name, T, .all);
         try w.writeAll(" };\n");
@@ -136,6 +137,9 @@ fn writeNodeCase(w: *Writer, comptime name: []const u8, comptime tag: usize, com
     if (comptime has_ts_defaults) {
         try w.writeAll("r.decorators = []; r.optional = false; r.typeAnnotation = null; ");
     }
+    if (comptime ts_constants.len > 0) {
+        try w.writeAll(ts_constants);
+    }
     if (comptime std.mem.eql(u8, name, "binding_rest_element")) {
         try w.writeAll("r.value = null; ");
     }
@@ -146,6 +150,15 @@ fn needsIdentifierDefaults(comptime name: []const u8) bool {
     return std.mem.eql(u8, name, "identifier_reference") or
         std.mem.eql(u8, name, "identifier_name") or
         std.mem.eql(u8, name, "label_identifier");
+}
+
+/// extra TS-only emissions for nodes that carry ESTree-only constant fields
+/// no zig syntax ever sets. returns the raw JS snippet to insert inside the
+/// `if (_isTs) { ... }` block, or an empty string.
+fn tsConstantDefaults(comptime name: []const u8) []const u8 {
+    if (std.mem.eql(u8, name, "object_property")) return "r.optional = false; ";
+    if (std.mem.eql(u8, name, "export_default_declaration")) return "r.exportKind = \"value\"; ";
+    return "";
 }
 
 const FieldSelection = enum { all, non_ts, ts_only };
@@ -290,7 +303,7 @@ fn isSpecial(comptime name: []const u8) bool {
         "property_definition", "unary_expression",
         "binding_property",    "array_pattern",
         "object_pattern",      "jsx_opening_fragment",
-        "jsx_text",
+        "jsx_text",            "expression_statement",
     });
 }
 
@@ -383,8 +396,8 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const bit_undef = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.TemplateElement, fieldIdx(ast.TemplateElement, "is_cooked_undefined")));
         const sc = comptime rt.u32SlotForField(ast.TemplateElement, fieldIdx(ast.TemplateElement, "cooked")) + 1;
         try w.print(
-            \\    case {d}: {{ const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return {{ type: "TemplateElement", start, end, value: {{ raw: r, cooked: (flags & {d}) ? null : str(f{d}, f{d}) }}, tail: !!(flags & {d}) }}; }}
-        , .{ tag, bit_undef, sc, sc + 1, bit_tail });
+            \\    case {d}: {{ const raw = _src.slice(start, end).replace(/\r\n?/g, "\n"); const tl = !!(flags & {d}); const s = _isTs ? start - 1 : start; const e = _isTs ? (tl ? end + 1 : end + 2) : end; return {{ type: "TemplateElement", start: s, end: e, value: {{ raw, cooked: (flags & {d}) ? null : str(f{d}, f{d}) }}, tail: tl }}; }}
+        , .{ tag, bit_tail, bit_undef, sc, sc + 1 });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "class")) {
         const mask = comptime (@as(u32, 1) << @intCast(rt.enumBitWidth(ast.ClassType))) - 1;
@@ -433,7 +446,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const bit_sh = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.BindingProperty, fieldIdx(ast.BindingProperty, "shorthand")));
         const bit_comp = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.BindingProperty, fieldIdx(ast.BindingProperty, "computed")));
         try w.print(
-            \\    case {d}: return {{ type: "Property", start, end, kind: "init", key: node(f{d}), value: node(f{d}), method: false, shorthand: !!(flags & {d}), computed: !!(flags & {d}) }};
+            \\    case {d}: {{ const r = {{ type: "Property", start, end, kind: "init", key: node(f{d}), value: node(f{d}), method: false, shorthand: !!(flags & {d}), computed: !!(flags & {d}) }}; if (_isTs) r.optional = false; return r; }}
         , .{ tag, sk, sv, bit_sh, bit_comp });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "array_pattern")) {
@@ -443,7 +456,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const sta = comptime slotOf("array_pattern", ast.ArrayPattern, "type_annotation");
         const bit_opt = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.ArrayPattern, fieldIdx(ast.ArrayPattern, "optional")));
         try w.print(
-            \\    case {d}: {{ const el = nodeArrHoles(f{d}, f0); if (f{d} !== NULL) el.push(node(f{d})); const r = {{ type: "ArrayPattern", start, end, elements: el }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); if (flags & {d}) r.optional = true; r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
+            \\    case {d}: {{ const el = nodeArrHoles(f{d}, f0); if (f{d} !== NULL) el.push(node(f{d})); const r = {{ type: "ArrayPattern", start, end, elements: el }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); r.optional = !!(flags & {d}); r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
         , .{ tag, se, sr, sr, sdec, sdec + 1, bit_opt, sta, sta });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "object_pattern")) {
@@ -453,12 +466,14 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         const sta = comptime slotOf("object_pattern", ast.ObjectPattern, "type_annotation");
         const bit_opt = comptime @as(u32, 1) << @intCast(rt.flagBitForField(ast.ObjectPattern, fieldIdx(ast.ObjectPattern, "optional")));
         try w.print(
-            \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); const r = {{ type: "ObjectPattern", start, end, properties: pr }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); if (flags & {d}) r.optional = true; r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
+            \\    case {d}: {{ const pr = nodeArr(f{d}, f0); if (f{d} !== NULL) pr.push(node(f{d})); const r = {{ type: "ObjectPattern", start, end, properties: pr }}; if (_isTs) {{ r.decorators = nodeArr(f{d}, f{d}); r.optional = !!(flags & {d}); r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; }} return r; }}
         , .{ tag, sp, sr, sr, sdec, sdec + 1, bit_opt, sta, sta });
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "jsx_opening_fragment")) {
+        // pure JSX (.jsx) snapshots include `attributes: []` and `selfClosing: false`;
+        // TypeScript-flavored (.tsx) snapshots omit both on fragments.
         try w.print(
-            \\    case {d}: return {{ type: "JSXOpeningFragment", start, end, attributes: [], selfClosing: false }};
+            \\    case {d}: {{ const r = {{ type: "JSXOpeningFragment", start, end }}; if (!_isTs) {{ r.attributes = []; r.selfClosing = false; }} return r; }}
         , .{tag});
         try w.writeByte('\n');
     } else if (comptime eql(u8, name, "jsx_text")) {
@@ -466,6 +481,12 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
         try w.print(
             \\    case {d}: {{ const t = str(f{d}, f{d}); return {{ type: "JSXText", start, end, value: t, raw: t }}; }}
         , .{ tag, s, s + 1 });
+        try w.writeByte('\n');
+    } else if (comptime eql(u8, name, "expression_statement")) {
+        const se = comptime slotOf("expression_statement", ast.ExpressionStatement, "expression");
+        try w.print(
+            \\    case {d}: {{ const r = {{ type: "ExpressionStatement", start, end, expression: node(f{d}) }}; if (_isTs) r.directive = null; return r; }}
+        , .{ tag, se });
         try w.writeByte('\n');
     }
 }

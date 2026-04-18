@@ -416,7 +416,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32) Error!?ast.NodeIndex 
 
     var source: ast.NodeIndex = .null;
     var attributes: ast.IndexRange = ast.IndexRange.empty;
-    var end = parser.current_token.span.start;
+    var end = parser.prev_token_end;
 
     // re-export: export { foo } from 'module'
     if (parser.current_token.tag == .from) {

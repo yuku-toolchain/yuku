@@ -57,7 +57,7 @@ function node(i) {
     case 14: return { type: "ArrayExpression", start, end, elements: nodeArrHoles(f1, f0) };
     case 15: return { type: "ObjectExpression", start, end, properties: nodeArr(f1, f0) };
     case 16: return { type: "SpreadElement", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 17: return { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) };
+    case 17: { const r = { type: "Property", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null, kind: PROPERTY_KINDS[flags & 3], method: !!(flags & 4), shorthand: !!(flags & 8), computed: !!(flags & 16) }; if (_isTs) { r.optional = false; } return r; }
     case 18: return { type: "MemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1), optional: !!(flags & 2) };
     case 19: { const r = { type: "CallExpression", start, end, callee: f1 !== NULL ? node(f1) : null, arguments: nodeArr(f2, f0), optional: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 20: return { type: "ChainExpression", start, end, expression: f1 !== NULL ? node(f1) : null };
@@ -81,13 +81,13 @@ function node(i) {
     case 38: return { type: "ThisExpression", start, end };
     case 39: { const p = str(f1, f2), fl = str(f3, f4); let v = null; try { v = new RegExp(p, fl); } catch {} return { type: "Literal", start, end, value: v, raw: "/" + p + "/" + fl, regex: { pattern: p, flags: fl.split("").sort().join("") } }; }
     case 40: return { type: "TemplateLiteral", start, end, quasis: nodeArr(f1, f0), expressions: nodeArr(f2, f3) };
-    case 41: { const r = _src.slice(start, end).replace(/\r\n?/g, "\n"); return { type: "TemplateElement", start, end, value: { raw: r, cooked: (flags & 2) ? null : str(f1, f2) }, tail: !!(flags & 1) }; }
+    case 41: { const raw = _src.slice(start, end).replace(/\r\n?/g, "\n"); const tl = !!(flags & 1); const s = _isTs ? start - 1 : start; const e = _isTs ? (tl ? end + 1 : end + 2) : end; return { type: "TemplateElement", start: s, end: e, value: { raw, cooked: (flags & 2) ? null : str(f1, f2) }, tail: tl }; }
     case 42: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 43: return { type: "PrivateIdentifier", start, end, name: str(f1, f2) };
     case 44: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
     case 45: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
     case 46: { const r = { type: "Identifier", start, end, name: str(f1, f2) }; if (_isTs) { r.decorators = []; r.optional = false; r.typeAnnotation = null; } return r; }
-    case 47: return { type: "ExpressionStatement", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 47: { const r = { type: "ExpressionStatement", start, end, expression: node(f1) }; if (_isTs) r.directive = null; return r; }
     case 48: return { type: "IfStatement", start, end, test: f1 !== NULL ? node(f1) : null, consequent: f2 !== NULL ? node(f2) : null, alternate: f3 !== NULL ? node(f3) : null };
     case 49: return { type: "SwitchStatement", start, end, discriminant: f1 !== NULL ? node(f1) : null, cases: nodeArr(f2, f0) };
     case 50: return { type: "SwitchCase", start, end, test: f1 !== NULL ? node(f1) : null, consequent: nodeArr(f2, f0) };
@@ -111,9 +111,9 @@ function node(i) {
     case 68: return { type: "ExpressionStatement", start, end, expression: node(f1), directive: str(f2, f3) };
     case 69: { const r = { type: "AssignmentPattern", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.decorators = nodeArr(f3, f0); r.typeAnnotation = f4 !== NULL ? node(f4) : null; r.optional = !!(flags & 1); } return r; }
     case 70: { const r = { type: "RestElement", start, end, argument: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.decorators = nodeArr(f2, f0); r.typeAnnotation = f3 !== NULL ? node(f3) : null; r.optional = !!(flags & 1); r.value = null; } return r; }
-    case 71: { const el = nodeArrHoles(f1, f0); if (f2 !== NULL) el.push(node(f2)); const r = { type: "ArrayPattern", start, end, elements: el }; if (_isTs) { r.decorators = nodeArr(f3, f4); if (flags & 1) r.optional = true; r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
-    case 72: { const pr = nodeArr(f1, f0); if (f2 !== NULL) pr.push(node(f2)); const r = { type: "ObjectPattern", start, end, properties: pr }; if (_isTs) { r.decorators = nodeArr(f3, f4); if (flags & 1) r.optional = true; r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
-    case 73: return { type: "Property", start, end, kind: "init", key: node(f1), value: node(f2), method: false, shorthand: !!(flags & 1), computed: !!(flags & 2) };
+    case 71: { const el = nodeArrHoles(f1, f0); if (f2 !== NULL) el.push(node(f2)); const r = { type: "ArrayPattern", start, end, elements: el }; if (_isTs) { r.decorators = nodeArr(f3, f4); r.optional = !!(flags & 1); r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
+    case 72: { const pr = nodeArr(f1, f0); if (f2 !== NULL) pr.push(node(f2)); const r = { type: "ObjectPattern", start, end, properties: pr }; if (_isTs) { r.decorators = nodeArr(f3, f4); r.optional = !!(flags & 1); r.typeAnnotation = f5 !== NULL ? node(f5) : null; } return r; }
+    case 73: { const r = { type: "Property", start, end, kind: "init", key: node(f1), value: node(f2), method: false, shorthand: !!(flags & 1), computed: !!(flags & 2) }; if (_isTs) r.optional = false; return r; }
     case 74: return { type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & 2) ? str(f2, f3) : null, body: nodeArr(f1, f0) };
     case 75: return { type: "ImportExpression", start, end, source: f1 !== NULL ? node(f1) : null, options: f2 !== NULL ? node(f2) : null, phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null };
     case 76: { const r = { type: "ImportDeclaration", start, end, specifiers: nodeArr(f1, f0), source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f4), phase: (flags & 1) ? ["source", "defer"][(flags >> 1) & 1] : null }; if (_isTs) { r.importKind = IMPORT_EXPORT_KINDS[(flags >> 2) & 1]; } return r; }
@@ -122,7 +122,7 @@ function node(i) {
     case 79: return { type: "ImportNamespaceSpecifier", start, end, local: f1 !== NULL ? node(f1) : null };
     case 80: return { type: "ImportAttribute", start, end, key: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
     case 81: { const r = { type: "ExportNamedDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null, specifiers: nodeArr(f2, f0), source: f3 !== NULL ? node(f3) : null, attributes: nodeArr(f4, f5) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
-    case 82: return { type: "ExportDefaultDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null };
+    case 82: { const r = { type: "ExportDefaultDeclaration", start, end, declaration: f1 !== NULL ? node(f1) : null }; if (_isTs) { r.exportKind = "value"; } return r; }
     case 83: { const r = { type: "ExportAllDeclaration", start, end, exported: f1 !== NULL ? node(f1) : null, source: f2 !== NULL ? node(f2) : null, attributes: nodeArr(f3, f0) }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 84: { const r = { type: "ExportSpecifier", start, end, local: f1 !== NULL ? node(f1) : null, exported: f2 !== NULL ? node(f2) : null }; if (_isTs) { r.exportKind = IMPORT_EXPORT_KINDS[flags & 1]; } return r; }
     case 85: return { type: "TSAnyKeyword", start, end };
@@ -146,7 +146,7 @@ function node(i) {
     case 103: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
     case 104: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
     case 105: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
-    case 106: return { type: "JSXOpeningFragment", start, end, attributes: [], selfClosing: false };
+    case 106: { const r = { type: "JSXOpeningFragment", start, end }; if (!_isTs) { r.attributes = []; r.selfClosing = false; } return r; }
     case 107: return { type: "JSXClosingFragment", start, end };
     case 108: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
     case 109: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };

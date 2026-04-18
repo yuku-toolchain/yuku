@@ -60,7 +60,13 @@ pub const Parser = struct {
     allow_return_outside_function: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
+
     current_token: Token,
+    /// end position of the most recently consumed token. useful for span
+    /// computations when a closing delimiter has been eaten but the parent
+    /// node's span must stop there (not at the next token, which may lie
+    /// past whitespace or newlines).
+    prev_token_end: u32 = 0,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -274,11 +280,13 @@ pub const Parser = struct {
     /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
+        self.prev_token_end = self.current_token.span.end;
         self.current_token = try self.nextToken() orelse return null;
     }
 
     /// advance without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
+        self.prev_token_end = self.current_token.span.end;
         self.current_token = try self.nextToken() orelse return null;
     }
 
