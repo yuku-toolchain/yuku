@@ -1,3 +1,3 @@
-function nice(cool: string): number {
+function nice(cool) {
   return 10;
 }

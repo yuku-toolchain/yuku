@@ -119,6 +119,16 @@ pub const VERSION: u32 = 2;
 pub const HEADER_SIZE: u32 = 40;
 pub const NODE_SIZE: u32 = 48;
 pub const COMMENT_SIZE: u32 = 20;
+/// byte offsets within a PackedNode, derived from the struct.
+pub const NODE_FLAGS_OFFSET: u8 = @offsetOf(PackedNode, "flags");
+pub const NODE_FIELD0_OFFSET: u8 = @offsetOf(PackedNode, "field0");
+/// u32 indices (byte offset / 4) within a PackedNode.
+pub const NODE_HEADER_U32S: u8 = @offsetOf(PackedNode, "field1") / 4;
+pub const NODE_SPAN_START_U32: u8 = @offsetOf(PackedNode, "span_start") / 4;
+pub const NODE_SPAN_END_U32: u8 = @offsetOf(PackedNode, "span_end") / 4;
+/// `flags` (u32 index 9 in the header) bit positions.
+pub const FLAG_ASCII: u32 = 1;
+pub const FLAG_TS: u32 = 2;
 
 const PackedNode = extern struct {
     tag: u8,
@@ -269,8 +279,8 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     const comment_count: u32 = @intCast(tree.comments.len);
     const diag_count: u32 = @intCast(tree.diagnostics.items.len);
     const program_index: u32 = @intFromEnum(tree.program);
-    var flags: u32 = if (isAsciiOnly(tree.source)) 1 else 0;
-    if (tree.isTs()) flags |= 2;
+    var flags: u32 = if (isAsciiOnly(tree.source)) FLAG_ASCII else 0;
+    if (tree.isTs()) flags |= FLAG_TS;
 
     var pos: usize = 0;
 

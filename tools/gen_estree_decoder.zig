@@ -24,35 +24,7 @@ fn generate(w: *Writer) !void {
         \\
     );
     try writeLookupTables(w);
-    try w.writeAll(
-        \\const _td = new TextDecoder("utf-8", { ignoreBOM: true });
-        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, _isTs, str;
-        \\function _poolDecode(s, e) {
-        \\  const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
-        \\  let hasEd = false;
-        \\  for (let i = a; i < b; i++) if (_u8[i] === 0xED) { hasEd = true; break; }
-        \\  if (!hasEd) return _td.decode(_u8.subarray(a, b));
-        \\  let r = "";
-        \\  for (let i = a; i < b; ) {
-        \\    const c = _u8[i];
-        \\    if (c < 0x80) { r += String.fromCharCode(c); i++; }
-        \\    else if (c < 0xE0) { r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F)); i += 2; }
-        \\    else if (c < 0xF0) { r += String.fromCharCode(((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)); i += 3; }
-        \\    else { r += String.fromCodePoint(((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) | ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)); i += 4; }
-        \\  }
-        \\  return r;
-        \\}
-        \\function node(i) {
-        \\  const o = _nodesOff + i * 48;
-        \\  const tag = _u8[o];
-        \\  const flags = _u8[o + 2] | (_u8[o + 3] << 8);
-        \\  const f0 = _u8[o + 4] | (_u8[o + 5] << 8);
-        \\  const b = o >> 2;
-        \\  const f1 = _u32[b + 2], f2 = _u32[b + 3], f3 = _u32[b + 4], f4 = _u32[b + 5], f5 = _u32[b + 6], f6 = _u32[b + 7], f7 = _u32[b + 8], f8 = _u32[b + 9];
-        \\  const start = _p(_u32[b + 10]), end = _p(_u32[b + 11]);
-        \\  switch (tag) {
-        \\
-    );
+    try writeRuntime(w);
     try writeNodeCases(w);
     try w.writeAll(
         \\  }
@@ -62,6 +34,57 @@ fn generate(w: *Writer) !void {
     try writeHelpers(w);
     try writeDecodeFunction(w);
     try w.writeAll("export { decode };\n");
+}
+
+/// emits the fixed JS runtime: `_poolDecode` and the `node(i)` switch prelude.
+/// all PackedNode layout values are substituted from `transfer.zig` so the
+/// decoder stays in sync with the binary format automatically.
+fn writeRuntime(w: *Writer) !void {
+    try w.print(
+        \\const _td = new TextDecoder("utf-8", {{ ignoreBOM: true }});
+        \\let _u8, _u32, _src, _srcLen, _nodesOff, _extraBase, _spOff, _p, _isTs, str;
+        \\function _poolDecode(s, e) {{
+        \\  const a = _spOff + s - _srcLen, b = _spOff + e - _srcLen;
+        \\  let hasEd = false;
+        \\  for (let i = a; i < b; i++) if (_u8[i] === 0xED) {{ hasEd = true; break; }}
+        \\  if (!hasEd) return _td.decode(_u8.subarray(a, b));
+        \\  let r = "";
+        \\  for (let i = a; i < b; ) {{
+        \\    const c = _u8[i];
+        \\    if (c < 0x80) {{ r += String.fromCharCode(c); i++; }}
+        \\    else if (c < 0xE0) {{ r += String.fromCharCode(((c & 0x1F) << 6) | (_u8[i+1] & 0x3F)); i += 2; }}
+        \\    else if (c < 0xF0) {{ r += String.fromCharCode(((c & 0x0F) << 12) | ((_u8[i+1] & 0x3F) << 6) | (_u8[i+2] & 0x3F)); i += 3; }}
+        \\    else {{ r += String.fromCodePoint(((c & 0x07) << 18) | ((_u8[i+1] & 0x3F) << 12) | ((_u8[i+2] & 0x3F) << 6) | (_u8[i+3] & 0x3F)); i += 4; }}
+        \\  }}
+        \\  return r;
+        \\}}
+        \\function node(i) {{
+        \\  const o = _nodesOff + i * {[size]d};
+        \\  const tag = _u8[o];
+        \\  const flags = _u8[o + {[fl]d}] | (_u8[o + {[fl1]d}] << 8);
+        \\  const f0 = _u8[o + {[f0]d}] | (_u8[o + {[f01]d}] << 8);
+        \\  const b = o >> 2;
+        \\  const f1 = _u32[b + {[d0]d}], f2 = _u32[b + {[d1]d}], f3 = _u32[b + {[d2]d}], f4 = _u32[b + {[d3]d}], f5 = _u32[b + {[d4]d}], f6 = _u32[b + {[d5]d}], f7 = _u32[b + {[d6]d}], f8 = _u32[b + {[d7]d}];
+        \\  const start = _p(_u32[b + {[ss]d}]), end = _p(_u32[b + {[se]d}]);
+        \\  switch (tag) {{
+        \\
+    , .{
+        .size = rt.NODE_SIZE,
+        .fl = rt.NODE_FLAGS_OFFSET,
+        .fl1 = rt.NODE_FLAGS_OFFSET + 1,
+        .f0 = rt.NODE_FIELD0_OFFSET,
+        .f01 = rt.NODE_FIELD0_OFFSET + 1,
+        .d0 = rt.NODE_HEADER_U32S,
+        .d1 = rt.NODE_HEADER_U32S + 1,
+        .d2 = rt.NODE_HEADER_U32S + 2,
+        .d3 = rt.NODE_HEADER_U32S + 3,
+        .d4 = rt.NODE_HEADER_U32S + 4,
+        .d5 = rt.NODE_HEADER_U32S + 5,
+        .d6 = rt.NODE_HEADER_U32S + 6,
+        .d7 = rt.NODE_HEADER_U32S + 7,
+        .ss = rt.NODE_SPAN_START_U32,
+        .se = rt.NODE_SPAN_END_U32,
+    });
 }
 
 // lookup tables
@@ -119,10 +142,8 @@ fn writeNodeCases(w: *Writer) !void {
 
 fn writeGenericCase(w: *Writer, comptime name: []const u8, comptime tag: usize, comptime T: type) !void {
     const etype = comptime estreeType(name);
-    const has_ts = comptime hasAnyTsField(name, T);
-    const has_defaults = comptime needsIdentifierDefaults(name);
-    const consts = comptime tsConstantDefaults(name);
-    if (!has_ts and !has_defaults and consts.len == 0) {
+    const has_ts = comptime hasAnyTsField(name, T) or tsExtrasOf(name).len > 0;
+    if (!has_ts) {
         try w.print("    case {d}: return {{ type: \"{s}\", start, end", .{ tag, etype });
         try writeStructFields(w, name, T, .all);
         try w.writeAll(" };\n");
@@ -132,9 +153,7 @@ fn writeGenericCase(w: *Writer, comptime name: []const u8, comptime tag: usize, 
     try writeStructFields(w, name, T, .non_ts);
     try w.writeAll(" }; if (_isTs) { ");
     try writeStructFields(w, name, T, .ts_only);
-    if (has_defaults) try w.writeAll("r.decorators = []; r.optional = false; r.typeAnnotation = null; ");
-    if (consts.len > 0) try w.writeAll(consts);
-    if (comptime std.mem.eql(u8, name, "binding_rest_element")) try w.writeAll("r.value = null; ");
+    try writeTsExtras(w, name);
     try w.writeAll("} return r; }\n");
 }
 
@@ -192,17 +211,16 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
     }
 }
 
-// special cases: nodes whose ESTree shape doesn't reduce to a struct -> object
+// special cases, nodes whose ESTree shape doesn't reduce to a struct -> object
 // mapping. each branch emits a single JS `case N: ...` line.
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter",     "formal_parameters", "function",            "arrow_function_expression",
-        "program",              "directive",         "string_literal",      "numeric_literal",
-        "bigint_literal",       "boolean_literal",   "null_literal",        "regexp_literal",
-        "template_element",     "class",             "property_definition", "unary_expression",
-        "binding_property",     "array_pattern",     "object_pattern",      "jsx_text",
-        "expression_statement",
+        "formal_parameter", "formal_parameters", "function",            "arrow_function_expression",
+        "program",          "directive",         "string_literal",      "numeric_literal",
+        "bigint_literal",   "boolean_literal",   "null_literal",        "regexp_literal",
+        "template_element", "class",             "property_definition", "unary_expression",
+        "binding_property", "array_pattern",     "object_pattern",      "jsx_text",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -326,9 +344,12 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     } else if (comptime eql(u8, name, "binding_property")) {
         const sk = comptime slotOf(ast.BindingProperty, "key");
         const sv = comptime slotOf(ast.BindingProperty, "value");
-        try emit(w,
-            \\    case {d}: {{ const r = {{ type: "Property", start, end, kind: "init", key: node(f{d}), value: node(f{d}), method: false, shorthand: !!(flags & {d}), computed: !!(flags & {d}) }}; if (_isTs) r.optional = false; return r; }}
+        try w.print(
+            \\    case {d}: {{ const r = {{ type: "Property", start, end, kind: "init", key: node(f{d}), value: node(f{d}), method: false, shorthand: !!(flags & {d}), computed: !!(flags & {d}) }};
         , .{ tag, sk, sv, comptime flagMask(ast.BindingProperty, "shorthand"), comptime flagMask(ast.BindingProperty, "computed") });
+        try w.writeAll(" if (_isTs) { ");
+        try writeTsExtras(w, "binding_property");
+        try w.writeAll("} return r; }\n");
     } else if (comptime eql(u8, name, "array_pattern")) {
         const se = comptime slotOf(ast.ArrayPattern, "elements");
         const sr = comptime slotOf(ast.ArrayPattern, "rest");
@@ -350,19 +371,10 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: {{ const t = str(f{d}, f{d}); return {{ type: "JSXText", start, end, value: t, raw: t }}; }}
         , .{ tag, sv, sv + 1 });
-    } else if (comptime eql(u8, name, "expression_statement")) {
-        const se = comptime slotOf(ast.ExpressionStatement, "expression");
-        try emit(w,
-            \\    case {d}: {{ const r = {{ type: "ExpressionStatement", start, end, expression: node(f{d}) }}; if (_isTs) r.directive = null; return r; }}
-        , .{ tag, se });
     }
 }
 
 // helpers and decode function
-
-/// u32 words the packed node header occupies before data slots begin.
-/// tag + pad + flags(u16) + field0(u16) + pad(u16) = 8 bytes = 2 u32 words.
-const NODE_HEADER_U32S = 2;
 
 fn writeHelpers(w: *Writer) !void {
     try w.print(
@@ -377,23 +389,26 @@ fn writeHelpers(w: *Writer) !void {
         \\  return r;
         \\}}
         \\function fnParams(idx) {{
-        \\  const po = _nodesOff + idx * 48;
-        \\  const len = _u8[po + 4] | (_u8[po + 5] << 8);
+        \\  const po = _nodesOff + idx * {[size]d};
+        \\  const len = _u8[po + {[f0]d}] | (_u8[po + {[f01]d}] << 8);
         \\  const pb = po >> 2;
-        \\  const iStart = _u32[pb + {d}], rest = _u32[pb + {d}];
+        \\  const iStart = _u32[pb + {[items]d}], rest = _u32[pb + {[rest]d}];
         \\  const p = [];
         \\  for (let j = 0; j < len; j++) {{
         \\    const fi = _u32[_extraBase + iStart + j];
-        \\    p.push(node(_u32[(_nodesOff + fi * 48 >> 2) + {d}]));
+        \\    p.push(node(_u32[(_nodesOff + fi * {[size]d} >> 2) + {[pat]d}]));
         \\  }}
         \\  if (rest !== NULL) p.push(node(rest));
         \\  return p;
         \\}}
         \\
     , .{
-        comptime u32IndexOf(ast.FormalParameters, "items"),
-        comptime u32IndexOf(ast.FormalParameters, "rest"),
-        comptime u32IndexOf(ast.FormalParameter, "pattern"),
+        .size = rt.NODE_SIZE,
+        .f0 = rt.NODE_FIELD0_OFFSET,
+        .f01 = rt.NODE_FIELD0_OFFSET + 1,
+        .items = comptime u32IndexOf(ast.FormalParameters, "items"),
+        .rest = comptime u32IndexOf(ast.FormalParameters, "rest"),
+        .pat = comptime u32IndexOf(ast.FormalParameter, "pattern"),
     });
 }
 
@@ -424,8 +439,8 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  _srcLen = _u32[5];
         \\  const nodeCount = _u32[2], extraCount = _u32[3], spLen = _u32[4];
         \\  const commentCount = _u32[6], diagCount = _u32[7], progIdx = _u32[8];
-        \\  _isTs = !!(_u32[9] & 2);
-        \\  const pm = (_u32[9] & 1) ? null : buildPosMap(source, _srcLen);
+        \\  _isTs = !!(_u32[9] & {[ts]d});
+        \\  const pm = (_u32[9] & {[ascii]d}) ? null : buildPosMap(source, _srcLen);
         \\  if (pm) {{
         \\    _p = function(v) {{ return pm[v]; }};
         \\    str = function(s, e) {{ if (s === e) return ""; if (s < _srcLen) return _src.slice(pm[s], pm[e]); return _poolDecode(s, e); }};
@@ -433,15 +448,15 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\    _p = function(v) {{ return v; }};
         \\    str = function(s, e) {{ if (s === e) return ""; if (s < _srcLen) return _src.slice(s, e); return _poolDecode(s, e); }};
         \\  }}
-        \\  _nodesOff = {d};
-        \\  const eOff = _nodesOff + nodeCount * 48;
+        \\  _nodesOff = {[hdr]d};
+        \\  const eOff = _nodesOff + nodeCount * {[size]d};
         \\  _extraBase = eOff >> 2;
         \\  _spOff = eOff + extraCount * 4;
-        \\  const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;
+        \\  const cOff = _spOff + spLen, dOff = cOff + commentCount * {[csize]d};
         \\  const dv = new DataView(buffer);
         \\  const comments = new Array(commentCount);
         \\  for (let j = 0; j < commentCount; j++) {{
-        \\    const o = cOff + j * 20;
+        \\    const o = cOff + j * {[csize]d};
         \\    comments[j] = {{ type: COMMENT_TYPES[_u8[o]], value: str(dv.getUint32(o + 12, true), dv.getUint32(o + 16, true)), start: _p(dv.getUint32(o + 4, true)), end: _p(dv.getUint32(o + 8, true)) }};
         \\  }}
         \\  const diagnostics = new Array(diagCount);
@@ -471,7 +486,13 @@ fn writeDecodeFunction(w: *Writer) !void {
         \\  return {{ program, comments, diagnostics }};
         \\}}
         \\
-    , .{rt.HEADER_SIZE});
+    , .{
+        .ts = rt.FLAG_TS,
+        .ascii = rt.FLAG_ASCII,
+        .hdr = rt.HEADER_SIZE,
+        .size = rt.NODE_SIZE,
+        .csize = rt.COMMENT_SIZE,
+    });
 }
 
 // per-node metadata
@@ -516,20 +537,41 @@ fn hasAnyTsField(comptime tag: []const u8, comptime T: type) bool {
     return false;
 }
 
-/// identifier-like nodes get decorators/optional/typeAnnotation defaulted in
-/// TS mode; the underlying Zig struct carries no such fields.
-fn needsIdentifierDefaults(comptime name: []const u8) bool {
-    const eql = std.mem.eql;
-    return eql(u8, name, "identifier_reference") or eql(u8, name, "identifier_name") or eql(u8, name, "label_identifier");
+/// TS-ESTree-only constant fields with no Zig AST counterpart. emitted
+/// alongside any struct-backed TS fields inside the `if (_isTs) { ... }`
+/// branch. values are raw JS expressions (e.g. `"null"`, `"false"`, `"[]"`).
+const Extra = struct { field: []const u8, value: []const u8 };
+
+const IDENT_EXTRAS = [_]Extra{
+    .{ .field = "decorators", .value = "[]" },
+    .{ .field = "optional", .value = "false" },
+    .{ .field = "typeAnnotation", .value = "null" },
+};
+
+const TS_EXTRAS = [_]struct { node: []const u8, extras: []const Extra }{
+    // identifier-like nodes have no backing decorators/optional/typeAnnotation.
+    .{ .node = "identifier_reference", .extras = &IDENT_EXTRAS },
+    .{ .node = "identifier_name", .extras = &IDENT_EXTRAS },
+    .{ .node = "label_identifier", .extras = &IDENT_EXTRAS },
+    // `optional` is always false on properties, no syntax sets it to true.
+    .{ .node = "binding_property", .extras = &.{.{ .field = "optional", .value = "false" }} },
+    .{ .node = "object_property", .extras = &.{.{ .field = "optional", .value = "false" }} },
+    .{ .node = "expression_statement", .extras = &.{.{ .field = "directive", .value = "null" }} },
+    .{ .node = "binding_rest_element", .extras = &.{.{ .field = "value", .value = "null" }} },
+    .{ .node = "export_default_declaration", .extras = &.{.{ .field = "exportKind", .value = "\"value\"" }} },
+};
+
+fn tsExtrasOf(comptime name: []const u8) []const Extra {
+    inline for (TS_EXTRAS) |e| {
+        if (comptime std.mem.eql(u8, e.node, name)) return e.extras;
+    }
+    return &.{};
 }
 
-/// extra TS-only JS appended for nodes that carry ESTree-only constants with
-/// no Zig counterpart. empty string = nothing to append.
-fn tsConstantDefaults(comptime name: []const u8) []const u8 {
-    const eql = std.mem.eql;
-    if (eql(u8, name, "object_property")) return "r.optional = false; ";
-    if (eql(u8, name, "export_default_declaration")) return "r.exportKind = \"value\"; ";
-    return "";
+fn writeTsExtras(w: *Writer, comptime name: []const u8) !void {
+    inline for (comptime tsExtrasOf(name)) |e| {
+        try w.print("r.{s} = {s}; ", .{ e.field, e.value });
+    }
 }
 
 fn estreeType(comptime name: []const u8) []const u8 {
@@ -580,7 +622,7 @@ fn slotOf(comptime T: type, comptime field: []const u8) u32 {
 
 /// raw u32 index (already includes the header offset) — use in `_u32[pb + N]`.
 fn u32IndexOf(comptime T: type, comptime field: []const u8) u32 {
-    return rt.u32SlotForField(T, fieldIdx(T, field)) + NODE_HEADER_U32S;
+    return rt.u32SlotForField(T, fieldIdx(T, field)) + rt.NODE_HEADER_U32S;
 }
 
 fn flagBit(comptime T: type, comptime field: []const u8) u32 {
