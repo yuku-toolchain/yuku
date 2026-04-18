@@ -10,7 +10,7 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected a type",
-            .{ .help = "todo" },
+            .{},
         );
         return null;
     };
