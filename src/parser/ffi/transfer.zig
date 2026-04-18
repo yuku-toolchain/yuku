@@ -160,7 +160,7 @@ pub const NODE_SPAN_END_U32: u8 = @offsetOf(PackedNode, "span_end") / 4;
 // per node. used by `validateAllNodeLayouts` to reject AST structs that
 // don't fit. both values track the struct layout automatically.
 pub const NODE_DATA_SLOTS: u8 = NODE_SPAN_START_U32 - NODE_HEADER_U32S;
-pub const NODE_FLAG_BITS: u8 = @bitSizeOf(fieldType(PackedNode, "flags"));
+pub const NODE_FLAG_BITS: u8 = @bitSizeOf(@FieldType(PackedNode, "flags"));
 
 // `CommentEntry` byte offsets, for the decoder
 pub const COMMENT_START_OFFSET: u8 = @offsetOf(CommentEntry, "start");
@@ -226,16 +226,7 @@ pub fn isFirstRange(comptime T: type, comptime target: usize) bool {
 
 /// ceil(log2(N)) where N is the number of enum variants.
 pub fn enumBitWidth(comptime E: type) u8 {
-    const n = @typeInfo(E).@"enum".fields.len;
-    comptime {
-        var bits: u8 = 0;
-        var max: usize = 1;
-        while (max < n) {
-            bits += 1;
-            max *= 2;
-        }
-        return bits;
-    }
+    return std.math.log2_int_ceil(usize, @typeInfo(E).@"enum".fields.len);
 }
 
 pub fn isEnumType(comptime T: type) bool {
@@ -258,14 +249,6 @@ pub fn totalFlagBits(comptime T: type) u8 {
         for (0..std.meta.fields(T).len) |i| total += flagBitCount(T, i);
         return total;
     }
-}
-
-/// looks up a field's type by name.
-fn fieldType(comptime T: type, comptime name: []const u8) type {
-    for (@typeInfo(T).@"struct".fields) |f| {
-        if (std.mem.eql(u8, f.name, name)) return f.type;
-    }
-    @compileError("field '" ++ name ++ "' not found in " ++ @typeName(T));
 }
 
 fn validateAllNodeLayouts() void {
@@ -456,14 +439,12 @@ fn packPayload(n: *PackedNode, payload: anytype) void {
     }
 }
 
-const FlagShift = std.math.Log2Int(@TypeOf(@as(PackedNode, undefined).flags));
-
 inline fn setFlagBit(n: *PackedNode, comptime bit: u8) void {
-    n.flags |= @as(u16, 1) << @as(FlagShift, @intCast(bit));
+    n.flags |= @as(@FieldType(PackedNode, "flags"), 1) << @intCast(bit);
 }
 
 inline fn setFlagBits(n: *PackedNode, comptime bit: u8, val: anytype) void {
-    n.flags |= @as(u16, @intCast(val)) << @as(FlagShift, @intCast(bit));
+    n.flags |= @as(@FieldType(PackedNode, "flags"), @intCast(val)) << @intCast(bit);
 }
 
 inline fn setSlot(n: *PackedNode, comptime slot: u8, val: u32) void {

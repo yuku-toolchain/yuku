@@ -621,9 +621,8 @@ fn emit(w: *Writer, comptime fmt: []const u8, args: anytype) !void {
     try w.writeByte('\n');
 }
 
-fn fieldIdx(comptime T: type, comptime name: []const u8) usize {
-    for (std.meta.fields(T), 0..) |f, i| if (std.mem.eql(u8, f.name, name)) return i;
-    @compileError("field '" ++ name ++ "' not found");
+fn fieldIdx(comptime T: type, comptime name: []const u8) comptime_int {
+    return std.meta.fieldIndex(T, name) orelse @compileError("field '" ++ name ++ "' not found in " ++ @typeName(T));
 }
 
 /// u32 slot number to use as `f{N}` in generated JS. slot 0 is the header's
