@@ -183,7 +183,7 @@ pub const TokenTag = enum(u32) {
     accessor = 129 | Mask.IsIdentifierLike, // "accessor"
     constructor = 130 | Mask.IsIdentifierLike, // "constructor"
 
-    // typescript contextual keywords
+    // ts contextual keywords
     declare = 131 | Mask.IsKeyword | Mask.IsIdentifierLike, // "declare"
     type = 132 | Mask.IsKeyword | Mask.IsIdentifierLike, // "type"
     abstract = 133 | Mask.IsKeyword | Mask.IsIdentifierLike, // "abstract"
@@ -201,7 +201,7 @@ pub const TokenTag = enum(u32) {
     module = 145 | Mask.IsKeyword | Mask.IsIdentifierLike, // "module"
     require = 146 | Mask.IsKeyword | Mask.IsIdentifierLike, // "require"
 
-    // typescript primitive type keywords
+    // ts primitive type keywords
     any = 147 | Mask.IsKeyword | Mask.IsIdentifierLike, // "any"
     bigint = 148 | Mask.IsKeyword | Mask.IsIdentifierLike, // "bigint"
     boolean = 149 | Mask.IsKeyword | Mask.IsIdentifierLike, // "boolean"

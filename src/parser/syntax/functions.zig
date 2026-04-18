@@ -106,7 +106,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
     )) return null;
 
-    // typescript return type, `function f(): Type { ... }`
+    // ts return type, `function f(): Type { ... }`
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
 

@@ -223,7 +223,7 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
-    // typescript arrow return type: `(a): Type => ...`
+    // ts arrow return type, `(a): Type => ...`
     // only valid when an arrow follows, consumed before the `=>` check.
     var return_type: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
@@ -302,7 +302,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
-    // typescript arrow return type: `async (a): Type => ...`
+    // ts arrow return type, `async (a): Type => ...`
     // only valid when an arrow follows, consumed before the `=>` check.
     var return_type: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
