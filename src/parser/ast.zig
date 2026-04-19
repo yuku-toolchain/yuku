@@ -2303,6 +2303,14 @@ pub const TSTypeReference = struct {
 /// A dotted type name like `A.B.C`. Left associative, so `A.B.C` is parsed as
 /// `(A.B).C` with the outer `TSQualifiedName` holding the inner one as `left`.
 ///
+/// Used for the type name of a `TSTypeReference`, the operand of a
+/// `TSTypeQuery`, and the qualifier of a `TSImportType`. The leaf identifier on
+/// the left differs by use site: a type reference or type query uses
+/// `IdentifierReference` (or `ThisExpression`) at the leaf because it points at
+/// an in scope binding, while an import type qualifier uses `IdentifierName`
+/// because it is a property access on the imported module type rather than a
+/// binding reference.
+///
 /// ## Example
 /// ```ts
 /// let x: Tools.Pos;
@@ -2311,7 +2319,7 @@ pub const TSTypeReference = struct {
 /// //           ^^^ right (IdentifierName)
 /// ```
 pub const TSQualifiedName = struct {
-    /// `IdentifierReference`, `TSQualifiedName`, or `ThisExpression`
+    /// `IdentifierReference`, `IdentifierName`, `TSQualifiedName`, or `ThisExpression`
     left: NodeIndex,
     /// `IdentifierName`
     right: NodeIndex,
@@ -2328,10 +2336,49 @@ pub const TSQualifiedName = struct {
 /// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (expr_name is a TSQualifiedName)
 /// let z: typeof Err<number>;
 /// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (type_arguments is a TSTypeParameterInstantiation)
+/// let w: typeof import("foo").Bar;
+/// //     ^^^^^^^^^^^^^^^^^^^^^^^^ TSTypeQuery (expr_name is a TSImportType)
 /// ```
 pub const TSTypeQuery = struct {
     /// `IdentifierReference`, `TSQualifiedName`, or `TSImportType`
     expr_name: NodeIndex,
+    /// `TSTypeParameterInstantiation` or `.null` when absent
+    type_arguments: NodeIndex = .null,
+};
+
+/// A reference to a named type imported from a module path, written
+/// `import("module").Foo<T>` in type position. The `import("...")` head names
+/// the module, an optional dotted `qualifier` selects a specific type from the
+/// module namespace, and an optional `<T, U>` instantiates a generic type.
+///
+/// Also serves as the `expr_name` of a `TSTypeQuery` when written
+/// `typeof import("module").Foo`. The same `TSImportType` shape covers both
+/// uses; whether the result is a value type or a type query is determined by
+/// the enclosing `typeof` keyword (which produces a `TSTypeQuery` wrapper).
+///
+/// ## Example
+/// ```ts
+/// type A = import("./mod");
+/// //       ^^^^^^^^^^^^^^^ TSImportType (qualifier = null, type_arguments = .null)
+/// type B = import("./mod").Foo;
+/// //       ^^^^^^^^^^^^^^^^^^^ TSImportType (qualifier is an IdentifierName)
+/// type C = import("./mod").Foo.Bar;
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^ TSImportType (qualifier is a TSQualifiedName)
+/// type D = import("./mod").Foo<number>;
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSImportType (type_arguments is a TSTypeParameterInstantiation)
+/// type E = import("./mod", { with: { type: "json" } });
+/// //                        ^^^^^^^^^^^^^^^^^^^^^^^^ options (ObjectExpression)
+/// ```
+pub const TSImportType = struct {
+    /// the `StringLiteral` naming the imported module
+    source: NodeIndex,
+    /// the second argument to `import(...)`, an `ObjectExpression` (the
+    /// import attributes object), or `.null` when absent
+    options: NodeIndex = .null,
+    /// `IdentifierName` for a single segment qualifier, a `TSQualifiedName`
+    /// chain whose leaves are all `IdentifierName`s for a dotted qualifier, or
+    /// `.null` when there is no qualifier
+    qualifier: NodeIndex = .null,
     /// `TSTypeParameterInstantiation` or `.null` when absent
     type_arguments: NodeIndex = .null,
 };
@@ -3273,6 +3320,7 @@ pub const NodeData = union(enum) {
     ts_type_reference: TSTypeReference,
     ts_qualified_name: TSQualifiedName,
     ts_type_query: TSTypeQuery,
+    ts_import_type: TSImportType,
     ts_type_parameter: TSTypeParameter,
     ts_type_parameter_declaration: TSTypeParameterDeclaration,
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,

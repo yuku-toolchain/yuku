@@ -254,6 +254,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .infer => return parseInferType(parser),
             .template_head => return parseTemplateLiteralType(parser),
             .typeof => return parseTypeQuery(parser),
+            .import => return parseImportType(parser),
             else => {},
         }
     }
@@ -1187,21 +1188,30 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// typeof x   typeof x.y   typeof Err<T>
-/// ^^^^^^^^   ^^^^^^^^^^   ^^^^^^^^^^^^^
+/// typeof x   typeof x.y   typeof Err<T>   typeof import("m").Foo
+/// ^^^^^^^^   ^^^^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^
 ///
 /// the `typeof` type operator is distinct from the unary `typeof` expression.
-/// it takes a dotted entity name, optionally applied to type arguments, and
-/// yields the static type of that binding path.
+/// it takes a dotted entity name (or a `TSImportType`), optionally applied to
+/// type arguments, and yields the static type of that binding path.
 fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .typeof);
 
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'typeof'
 
-    const expr_name = try parseEntityName(parser) orelse return null;
+    const expr_name = if (parser.current_token.tag == .import)
+        try parseImportType(parser) orelse return null
+    else
+        try parseEntityName(parser) orelse return null;
 
-    const type_arguments = try parseTypeArguments(parser);
+    // `import("m").Foo<T>` already absorbs its own type arguments inside
+    // `parseImportType`. only fall through to a top level `<T>` when the
+    // `expr_name` is an entity name.
+    const type_arguments = if (parser.tree.getData(expr_name) == .ts_import_type)
+        .null
+    else
+        try parseTypeArguments(parser);
 
     const end = if (type_arguments != .null)
         parser.tree.getSpan(type_arguments).end
@@ -1215,6 +1225,122 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
         } },
         .{ .start = start, .end = end },
     );
+}
+
+/// import("module")    import("module").Foo.Bar<T>    import("m", { with: ... })
+/// ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^
+///
+/// the `typeof import(...)` form is parsed by `parseTypeQuery`, which
+/// dispatches here on the `import` keyword and wraps the returned
+/// `TSImportType` as the `expr_name` of the surrounding `TSTypeQuery`. for
+/// that reason this function only handles the bare `import(...)` head, not
+/// the `typeof` prefix.
+fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .import);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume 'import'
+
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' after 'import' in an import type",
+        "An import type is written 'import(\"module\").Foo'",
+    )) return null;
+
+    const source = try literals.parseStringLiteral(parser) orelse return null;
+
+    var options: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .comma) {
+        try parser.advance() orelse return null; // consume ','
+        if (parser.current_token.tag != .right_paren) {
+            options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+            if (parser.current_token.tag == .comma) {
+                try parser.advance() orelse return null; // trailing comma after options
+            }
+        }
+    }
+
+    if (!try parser.expect(
+        .right_paren,
+        "Expected ')' to close an import type",
+        "An import type's argument list must end with ')'",
+    )) return null;
+
+    var qualifier: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null; // consume '.'
+        qualifier = try parseImportTypeQualifier(parser) orelse return null;
+    }
+
+    const type_arguments = try parseTypeArguments(parser);
+
+    const end = if (type_arguments != .null)
+        parser.tree.getSpan(type_arguments).end
+    else if (qualifier != .null)
+        parser.tree.getSpan(qualifier).end
+    else
+        parser.prev_token_end;
+
+    return try parser.tree.createNode(
+        .{ .ts_import_type = .{
+            .source = source,
+            .options = options,
+            .qualifier = qualifier,
+            .type_arguments = type_arguments,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// the dotted name that follows `import("m").` in an import type. structurally
+/// the same as `parseEntityName` but every segment is encoded as
+/// `IdentifierName` (these are property accesses on the imported module type,
+/// not references to bindings in scope).
+fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
+    const first_token = parser.current_token;
+    if (!first_token.tag.isIdentifierLike()) {
+        try parser.reportExpected(
+            first_token.span,
+            "Expected an identifier after '.' in an import type",
+            .{ .help = "An import type qualifier is written 'import(\"m\").Foo' or 'import(\"m\").Foo.Bar'" },
+        );
+        return null;
+    }
+
+    const start = first_token.span.start;
+
+    var name = try parser.tree.createNode(.{
+        .identifier_name = .{ .name = try parser.identifierName(first_token) },
+    }, first_token.span);
+
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+
+    while (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null; // consume '.'
+
+        const right_token = parser.current_token;
+        if (!right_token.tag.isIdentifierLike()) {
+            try parser.reportExpected(
+                right_token.span,
+                "Expected an identifier after '.' in an import type qualifier",
+                .{ .help = "Each '.' in an import type qualifier must be followed by an identifier" },
+            );
+            return null;
+        }
+
+        const right = try parser.tree.createNode(.{
+            .identifier_name = .{ .name = try parser.identifierName(right_token) },
+        }, right_token.span);
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
+
+        name = try parser.tree.createNode(
+            .{ .ts_qualified_name = .{ .left = name, .right = right } },
+            .{ .start = start, .end = right_token.span.end },
+        );
+    }
+
+    return name;
 }
 
 /// parses a dotted entity name `A.B.C` starting from an identifier-like head.
