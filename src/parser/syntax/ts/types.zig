@@ -9,7 +9,7 @@ const functions = @import("../functions.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
-        return try parseFunctionOrConstructorType(parser, true);
+        return try parseFunctionOrConstructorType(parser);
     }
 
     return try parseConditionalType(parser) orelse {
@@ -23,9 +23,14 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// parseType variant that refuses to start a bare conditional, so the
-/// enclosing conditional's `?` and `:` survive for its own pattern.
-/// used in the extends slot and for function/constructor return types
-/// inherited from it.
+/// enclosing conditional's `?` and `:` survive for its own pattern. used
+/// only for the extends slot of a conditional type.
+///
+/// a function or constructor type dispatched from here still parses its
+/// own return type with the full grammar (matching TypeScript compiler's
+/// `parseReturnType`, which unconditionally clears the
+/// `DisallowConditionalTypes` flag). only the immediate extends operand
+/// is restricted.
 ///
 /// example:
 ///
@@ -37,7 +42,7 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
 /// `extends` / `?` / `:` stays in the stream for the caller to consume.
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
-        return try parseFunctionOrConstructorType(parser, false);
+        return try parseFunctionOrConstructorType(parser);
     }
 
     return try parseUnionType(parser) orelse {
@@ -52,13 +57,6 @@ fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
 
 /// T extends U ? X : Y
 /// ^^^^^^^^^^^^^^^^^^^
-///
-/// lowest precedence type operator. the check type is parsed with union
-/// precedence, the extends type with no-conditional precedence (bare
-/// conditional types are disallowed on the right of `extends` without
-/// parentheses, but function and constructor types are allowed), and the
-/// true and false branches use the full type grammar so they nest
-/// right-associatively on the false side.
 fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     const check_type = try parseUnionType(parser) orelse return null;
 
@@ -520,14 +518,7 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
 
 /// (a: T) => R       new (x: T) => R       abstract new (x: T) => R
 /// ^^^^^^^^^^^       ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^
-///
-/// `allow_conditional_return_type` controls whether the return type of this
-/// function or constructor type may itself be a bare conditional, mirroring
-/// the top level `parseType` vs `parseTypeNoConditional` distinction. when
-/// the function type sits in an extends position, its return type also
-/// inherits the no-conditional restriction so that an enclosing conditional
-/// can close around it.
-fn parseFunctionOrConstructorType(parser: *Parser, allow_conditional_return_type: bool) Error!?ast.NodeIndex {
+fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     var is_abstract = false;
@@ -570,10 +561,7 @@ fn parseFunctionOrConstructorType(parser: *Parser, allow_conditional_return_type
     const arrow_start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume '=>'
 
-    const return_type_inner = if (allow_conditional_return_type)
-        try parseType(parser) orelse return null
-    else
-        try parseTypeNoConditional(parser) orelse return null;
+    const return_type_inner = try parseType(parser) orelse return null;
 
     const return_type_end = parser.tree.getSpan(return_type_inner).end;
 
