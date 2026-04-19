@@ -171,6 +171,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .minus,
             .plus,
             => return parseLiteralType(parser),
+            .left_paren => return parseParenthesizedType(parser),
             else => {},
         }
     }
@@ -250,6 +251,34 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.tree.createNode(
         .{ .ts_literal_type = .{ .literal = literal } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// (A | B)   (Foo)
+/// ^^^^^^^   ^^^^^
+fn parseParenthesizedType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_paren);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume '('
+
+    const inner = try parseType(parser) orelse return null;
+
+    if (parser.current_token.tag != .right_paren) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ')' to close a parenthesized type",
+            .{ .help = "Each '(' in a type must be matched by a ')'" },
+        );
+        return null;
+    }
+
+    const end = parser.current_token.span.end;
+    try parser.advance() orelse return null; // consume ')'
+
+    return try parser.tree.createNode(
+        .{ .ts_parenthesized_type = .{ .type_annotation = inner } },
         .{ .start = start, .end = end },
     );
 }

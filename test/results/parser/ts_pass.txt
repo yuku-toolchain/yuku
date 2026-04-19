@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2239/8399 (26.66%)
-Failed:       6160
-AST mismatch: 7/2246
+Passed:       2245/8399 (26.73%)
+Failed:       6154
+AST mismatch: 7/2252
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -75,12 +75,14 @@ error: Unexpected token '!' in expression
 ✓ test/parser/suite/ts/pass/0074b968687c77e3.ts
 ✓ test/parser/suite/ts/pass/007bc34ae91500ae.ts
 ✗ test/parser/suite/ts/pass/00822c50261d068b.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | var foo:(a:{():number; (i:number):number; })=>number; foo = function(this: void, a:string){return 5};
-   |         ^
+   |           ^
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/0087d229be08bbfa.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Int'
@@ -2181,11 +2183,11 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/0930870a0e3c208d.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  1 | // @target: es2015
  2 | var n1: () => boolean = function () { }; // expect an error here
-   |         ^
+   |          ^
  3 | var n2: () => boolean = function ():boolean { }; // expect an error here
    |
 
@@ -2224,13 +2226,15 @@ error: Expected ';' after class field, but found 'temp'
 
 ✓ test/parser/suite/ts/pass/0948e5e54d39528d.ts
 ✗ test/parser/suite/ts/pass/09497387474638ab.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  4 | // @alwaysStrict: true, false
  5 | var v1: (i: number, ...arguments) => void; // no error - no code gen
-   |         ^
+   |           ^
  6 | var v12: (arguments: number, ...restParameters) => void; // no error - no code gen
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/094bc0b23ead86bc.ts
 ✗ test/parser/suite/ts/pass/094ca5973846b5fe.ts
@@ -3515,11 +3519,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/0e36aa908007ba46.ts
 ✗ test/parser/suite/ts/pass/0e3bd9b2f899a5d4.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 18 | 
 19 | function foo(inputFunc: () => void) { }
-   |                         ^
+   |                          ^
 20 | foo(() => {
    |
 
@@ -4537,13 +4541,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/11544a540555bdd9.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function foo(bar:(b:string)=>void);
-   |                  ^
+   |                    ^
  4 | function foo(bar:(a:number)=>void);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/1156c471f0d6a72d.ts
 ✗ test/parser/suite/ts/pass/11586f0e399761c0.module.ts
@@ -4831,11 +4837,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1270537f28b756ce.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 28 | }
 29 | const assignability1: () => AsyncIterableIterator<number> = async function * () {
-   |                       ^
+   |                        ^
 30 |     yield 1;
    |
 
@@ -5420,11 +5426,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/14f7f6a5caffb8e2.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  3 | 
  4 | function onlyErrorsWhenTestingNonNullableFunctionType(required: () => boolean, optional?: () => boolean) {
-   |                                                                 ^
+   |                                                                  ^
  5 |     if (required) { // error
    |
 
@@ -5438,11 +5444,11 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/150a5762db129f87.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 18 | 
 19 | function foo(inputFunc: () => void) { }
-   |                         ^
+   |                          ^
 20 | foo(() => {
    |
 
@@ -6857,11 +6863,11 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/1a7ac789faa8e26f.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | class A {
  3 |     a(completed: () => any): void;
-   |                  ^
+   |                   ^
  4 | }
    |
 
@@ -8007,13 +8013,15 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/1ee32c8eca504e01.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  3 | class C {
  4 |     x1(a: number, callback: (x: 'hi') => number); // error
-   |                             ^
+   |                               ^
  5 |     x1(a: number, callback: (x: any) => number) {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/1f0177994d1270f3.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -8388,13 +8396,15 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/207e4701e7afa68a.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | var fra1: (v:any)=>string = function() { return function (v:string) {return v;}; }() // should work
-   |           ^
+   |             ^
  3 | var fra2: (v:any)=>number = function() { return function () { return 0; } }() // should work
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/20824a7b99e85b4f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'List'
@@ -8922,13 +8932,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/22b51daa16fc8b9b.ts
 ✓ test/parser/suite/ts/pass/22b62c0f539baacf.ts
 ✗ test/parser/suite/ts/pass/22ba549baf2293c5.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
 15 | // Contextually type the default arg with the type annotation
 16 | var f3 = function (a: (s: string) => any = (s) => <number>s) { };
-   |                       ^
+   |                         ^
 17 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/22bbb61b19d225d1.ts
 error: Expected '{' to start class body, but found '<'
@@ -9613,11 +9625,11 @@ error: Expected ';' after class field, but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/24f7fff3143e83e1.ts
-error: Expected a type, but found '('
+error: Expected a type, but found '...'
    |
  1 | // @target: es2015
  2 | var x: (...y: string[]) => void = function (.../*3*/y) { 
-   |        ^
+   |         ^^^
  3 |     var t = y; 
    |
 
@@ -11149,15 +11161,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/2ae69851dec71463.ts
 ✓ test/parser/suite/ts/pass/2ae80aa041c07650.ts
-✗ test/parser/suite/ts/pass/2aed9c0160560cc3.ts
-error: Expected a type, but found '('
-   |
- 1 | //@target: ES6
- 2 | function foo(...s: (symbol | number)[]) { }
-   |                    ^
- 3 | class SymbolIterator {
-   |
-
+✓ test/parser/suite/ts/pass/2aed9c0160560cc3.ts
 ✗ test/parser/suite/ts/pass/2af2c5751f2c284f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Errors'
    |
@@ -11707,11 +11711,11 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/2d2ebc4e814d2a15.ts
-error: Expected a type, but found '('
+error: Expected a type, but found 'function'
    |
  2 | let a: any;
  3 | const c = true ? (a) : (function() {});
-   |                        ^
+   |                         ^^^^^^^^
  4 | const d = true ? (a) : ((function() {}));
    |
 
@@ -11896,13 +11900,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/2db4180699ca5b5f.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  7 | 
  8 | function execAny(callback:(val:any)=>any) { return callback(0) }
-   |                           ^
+   |                               ^
  9 | execAny(function () {}); // should work
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/2dcc4a4f77258d1e.ts
 error: Expected ';' after class field, but found 'x'
@@ -13022,11 +13028,11 @@ error: Expected ';' after class field, but found '_a'
 
 
 ✗ test/parser/suite/ts/pass/31ce2b738df7ff7b.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  3 | function f(): any { }
  4 | var f2: () => any = () => { };
-   |         ^
+   |          ^
  5 | var f3 = (): any => { };
    |
 
@@ -13195,15 +13201,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/322c3584f1696007.ts
-error: Expected a type, but found '('
-   |
- 8 |     let code: 0 | 1 | 2 = 0;
- 9 |     const otherCodes: (0 | 1 | 2)[] = [2, 0, 1, 0, 2, 2, 2, 0, 1, 0, 2, 1, 1, 0, 2, 1];
-   |                       ^
-10 |     for (const code2 of otherCodes) {
-   |
-
+✓ test/parser/suite/ts/pass/322c3584f1696007.ts
 ✓ test/parser/suite/ts/pass/3238632bb41768e1.ts
 ✗ test/parser/suite/ts/pass/323d283afd286640.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IFoo'
@@ -13382,11 +13380,11 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/32b350e69031fb5a.ts
 ✗ test/parser/suite/ts/pass/32b766f783c7717a.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | class Base {
  3 |     constructor(func: ()=>Base) {
-   |                       ^
+   |                        ^
  4 |     }
    |
 
@@ -14096,13 +14094,15 @@ error: Expected a type, but found '['
    |
 
 ✗ test/parser/suite/ts/pass/3547a8f3f46d1071.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | function rebase(fn: (base: any, ...args: any[]) => any): (...args: any[]) => any {
-   |                     ^
+   |                          ^
  3 |     return function(this: any, ...args: any[]) {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/3549d0e8540395a8.ts
 error: Expected ';' after class field, but found ':'
@@ -14140,11 +14140,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/356fe830d668e75c.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 13 | /** variable with function type comment*/
 14 | var fooVar: () => void;
-   |             ^
+   |              ^
 15 | foo(50);
    |
 
@@ -14458,13 +14458,15 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/36eeebdd339892bd.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | //@target: ES6
  2 | function* g(): IterableIterator<(x: string) => number> {
-   |                                 ^
+   |                                   ^
  3 |     yield * {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/36ef22359306063a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I1'
@@ -14570,13 +14572,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/37572ebbbdac62f2.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | 
  3 | let getX: (a: A) => number;
-   |           ^
+   |             ^
  4 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/37606e436022b989.ts
 ✗ test/parser/suite/ts/pass/3764b795a14d116e.ts
@@ -14854,11 +14858,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3835c045c639a8bb.ts
 ✓ test/parser/suite/ts/pass/383dc34f8d496650.module.ts
 ✗ test/parser/suite/ts/pass/385e77ba67b13549.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 44 | 
 45 | function f4(cond: () => boolean) {
-   |                   ^
+   |                    ^
 46 |     let x: string | number = 0;
    |
 
@@ -15710,13 +15714,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/3bcafb601c065479.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | function foo(f: (x: string) => string) {
-   |                 ^
+   |                   ^
  3 |     return f("");
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/3bd09cc9e668c16b.ts
 ✓ test/parser/suite/ts/pass/3bd78aeea64eb0c0.ts
@@ -16033,13 +16039,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/3d0cfe3aa80dab15.ts
 ✗ test/parser/suite/ts/pass/3d16863fd4c6d852.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  4 | 
  5 | function* g3(): Generator<Generator<(x: string) => number>> {
-   |                                     ^
+   |                                       ^
  6 |     yield function* () {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/3d1a5251d8d15458.ts
 error: Expected a type, but found '{'
@@ -16992,13 +17000,15 @@ error: Expected a type, but found '['
    |
 
 ✗ test/parser/suite/ts/pass/409c04ff75b183ef.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | //@target: ES6
  2 | function* g(): IterableIterator<(x: string) => number, (x: string) => number> {
-   |                                 ^
+   |                                   ^
  3 |     yield x => x.length;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/409ebb7e7851c753.ts
 ✗ test/parser/suite/ts/pass/40a4b49bcc76bba8.ts
@@ -18945,13 +18955,15 @@ error: Expected ';' after class field, but found 'constructor'
 
 
 ✗ test/parser/suite/ts/pass/47b2f0724ca129e8.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | //@target: ES6
  2 | function* g(): IterableIterator<(x: string) => number> {
-   |                                 ^
+   |                                   ^
  3 |     yield * function* () {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/47b8c0c3ab7f5cdf.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '__test1__'
@@ -19055,11 +19067,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/48288ac0b2e3a6a1.ts
 ✗ test/parser/suite/ts/pass/482d5a1b9c6c5914.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 13 | /** variable with function type comment*/
 14 | var fooVar: () => void;
-   |             ^
+   |              ^
 15 | foo(50);
    |
 
@@ -20120,13 +20132,15 @@ error: Expected ';' after for-loop init, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/4c2c2b51e2962f0f.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
 20 | // error: `this` is `window`, but is still of type `any`
 21 | let f4: (b: number) => number = b => this.c + b;
-   |         ^
+   |           ^
 22 | let f5 = () => () => this;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/4c37b0b4f16790f5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Robot'
@@ -20495,11 +20509,11 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/4daf4546b946e339.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  1 | // @target: es2015
  2 | function f1(c1: Function, c2: () => object,  callable: typeof c1 | typeof c2) {
-   |                               ^
+   |                                ^
  3 |     const a = c1();
    |
 
@@ -20960,11 +20974,11 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/4f0d431bd8a8e6b8.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  4 | 
  5 | var x: () => string[];
-   |        ^
+   |         ^
  6 | var r = x[1];
    |
 
@@ -21765,11 +21779,11 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/5244b45e41faf555.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  6 | var ANY2: any[] = ["", ""];
  7 | var obj: () => {}
-   |          ^
+   |           ^
  8 | var obj1 = { x: "", y: () => { }};
    |
 
@@ -22204,13 +22218,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/5429b041380c8d5f.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  4 | 
  5 | let x: (a: string) => string;
-   |        ^
+   |          ^
  6 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/543a1da0cacfa899.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -23884,13 +23900,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/5a6d108c453fc3cb.ts
 ✗ test/parser/suite/ts/pass/5a80cec0ea5b46ac.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ','
    |
  2 | // @strict: false
  3 | function foo(arg1, arg2, callback:(v1,v2,v3) => void):void {
-   |                                   ^
+   |                                      ^
  4 |                 return callback(arg1, arg2, arg2);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/5a83bd9a11d7b4af.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -25066,12 +25084,14 @@ error: Expected a type, but found '['
    |
 
 ✗ test/parser/suite/ts/pass/5f2b1f1ceb1f59b9.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | var foo:(a:{():number; (i:number):number; })=>number; foo = function(a){return 5};
-   |         ^
+   |           ^
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/5f4214189b870c35.ts
 error: Expected '{' to start class body, but found '<'
@@ -25133,13 +25153,15 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/5f60360e063ef8a1.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '='
     |
-122 |             )
-123 |             : (
-    |               ^
 124 |             // do not change value
+125 |             y = x && x.toString() // number | boolean | string
+    |               ^
+126 |             );
     |
+    = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/5f62688ece018569.ts
 ✗ test/parser/suite/ts/pass/5f6448a966d36933.ts
@@ -25177,11 +25199,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/5fa2adefaf23a8eb.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  3 | var strOrBool: string | boolean;
  4 | var strOrFunc: string | (() => void);
-   |                         ^
+   |                           ^
  5 | var numOrBool: number | boolean
    |
 
@@ -26228,11 +26250,11 @@ error: Expected 'from' after import clause, but found '='
 
 
 ✗ test/parser/suite/ts/pass/63ddea19903d52ee.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  3 | 
  4 | function onlyErrorsWhenTestingNonNullableFunctionType(required: () => boolean, optional?: () => boolean) {
-   |                                                                 ^
+   |                                                                  ^
  5 |     // error
    |
 
@@ -26489,13 +26511,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/64c3520900e57778.module.ts
 ✓ test/parser/suite/ts/pass/64c47479bec0a76e.ts
 ✗ test/parser/suite/ts/pass/64e2d6df66b02a21.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  3 | 
  4 | let x: (a: string) => string;
-   |        ^
+   |          ^
  5 | let y = true;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/64e4dcaee86500a4.ts
 error: Expected a type, but found '{'
@@ -27558,13 +27582,15 @@ error: Duplicate export of 'default'
 
 ✓ test/parser/suite/ts/pass/695865ed06d9cfda.ts
 ✗ test/parser/suite/ts/pass/6966b5316760269b.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  4 | 
  5 | let x: (a: string) => string;
-   |        ^
+   |          ^
  6 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/69707d59d7d1c3d6.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'StateConfig'
@@ -29447,13 +29473,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/7049b7934839d326.ts
 ✓ test/parser/suite/ts/pass/705391485a41b29e.ts
 ✗ test/parser/suite/ts/pass/705bcdf84a637f8e.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | //@target: ES6
  2 | function* g2(): Iterator<Iterable<(x: string) => number>> {
-   |                                   ^
+   |                                     ^
  3 |     yield function* () {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/70760f8534116f31.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'n'
@@ -29611,13 +29639,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/70d4afe19598cc15.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | function f(callback: (arg: string, arg2: string) => void): void;
-   |                      ^
+   |                          ^
  3 | function f(callback: (arg: number) => void): void;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/70dfe59a76f17094.ts
 ✗ test/parser/suite/ts/pass/70e4079f8b2557a3.ts
@@ -29873,12 +29903,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/71d07d0e83de6cd1.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  3 | 
  4 | var f: (x: 'hi') => number = (x: 'hi') => { return 1; };
-   |        ^
+   |          ^
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/71dd8ec5b9d16c79.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -30451,12 +30483,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/73f670961873a6e8.ts
 ✗ test/parser/suite/ts/pass/73f689acb0db0888.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | var foo:(a:number)=>number = function(a){return a};
-   |         ^
+   |           ^
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/73f85b3e36ec6de9.ts
 ✗ test/parser/suite/ts/pass/73f9942368760312.ts
@@ -30526,13 +30560,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/741471e89539f21f.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function callb(lam: (l: number) => void );
-   |                     ^
+   |                       ^
  4 | function callb(lam: (n: string) => void );
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/7417accf2413af78.module.ts
 error: Expected declaration after 'export', but found 'namespace'
@@ -31874,11 +31910,11 @@ error: Expected ')' after method parameters, but found 'x'
    |
 
 ✗ test/parser/suite/ts/pass/7876b7a2932d39a8.ts
-error: Expected a type, but found '('
+error: Expected a type, but found '...'
    |
  5 | function f1(...args) { }
  6 | function f2(x: (...args) => void) { }
-   |                ^
+   |                 ^^^
  7 | function f3(x: { (...args): void }) { }
    |
 
@@ -32231,13 +32267,15 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/7a02d38908d31078.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function x3(a: number, cb: (x: number) => number);
-   |                            ^
+   |                              ^
  4 | function x3(a: string, cb: (x: number) => number);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/7a0e03fee2f7798f.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Action'
@@ -32903,11 +32941,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7c1d6ccb93efdf62.ts
-error: Expected a type, but found '('
+error: Expected a type, but found '{'
    |
 19 | 
 20 | function foo4(): ({x: number}) {
-   |                  ^
+   |                   ^
 21 |     return {x: 123};
    |
 
@@ -34106,13 +34144,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8095520dca131191.ts
 ✓ test/parser/suite/ts/pass/80963311c75f2a96.ts
 ✗ test/parser/suite/ts/pass/8096b5996a9646b7.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | var fu: (s: string) => string = function (s) { return s.toLowerCase() };
-   |         ^
+   |           ^
  3 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/809c96542e2e2bc4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IBuffer'
@@ -35309,13 +35349,15 @@ error: Expected ';' after class field, but found 'secret'
 
 
 ✗ test/parser/suite/ts/pass/85a9e74bf485fc8f.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function x1(a: number, cb: (x: 'hi') => number);
-   |                            ^
+   |                              ^
  4 | function x1(a: number, cb: (x: 'bye') => number);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/85abcae61bf82b0b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '__test1__'
@@ -35745,13 +35787,15 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/8759cb8ef5c5d99e.ts
-error: Expected a type, but found '('
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 1 | // @target: es2015
- 2 | const foo: (number | string)[] = ['aaa'];
-   |            ^
  3 | 
+ 4 | const isString = (x: unknown): x is string => typeof x === 'string';
+   |                    ^
+ 5 | 
    |
+   = help: Add a comma between elements or close with ')'.
+
 
 ✗ test/parser/suite/ts/pass/875bf0d06dd779bc.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -35788,11 +35832,11 @@ error: Expected ';' after class field, but found 'constructor'
 
 
 ✗ test/parser/suite/ts/pass/87692cc4b106c15c.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | function foo():any{return ""}; 
  3 | function bar():()=>any{return foo}; 
-   |                ^
+   |                 ^
  4 | var x = bar();
    |
 
@@ -36344,13 +36388,15 @@ error: Unexpected token '!' in expression
 
 
 ✗ test/parser/suite/ts/pass/890d75b7d4d0b8cd.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  4 | 
  5 | let x: (a: string) => string;
-   |        ^
+   |          ^
  6 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/890e3876b7e7d4d7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'F'
@@ -36482,22 +36528,26 @@ error: Expected ';' after class field, but found 'foo'
 
 
 ✗ test/parser/suite/ts/pass/89de9b461cce0949.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '?'
    |
  3 | 
  4 | function caller(arg: (n?: number) => void) { }
-   |                      ^
+   |                        ^
  5 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/89e21439ccbaa00b.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | var x: (a: number) => void = true ? (a) => a.toExponential() : (b) => b.toFixed();
-   |        ^
+   |          ^
  4 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/89f2c58edc63ace5.ts
 ✗ test/parser/suite/ts/pass/8a03b91c9e1410e2.ts
@@ -36861,13 +36911,15 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '='
    |
 44 |         // do not change value
 45 |         : ((y = x) && x.toString()))); // number | boolean | string
-   |           ^
+   |               ^
 46 | }
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/8b0853d37670ce97.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -38251,22 +38303,24 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8fef808714515f19.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 29 | }
 30 | var fnr2: () => any = fnReturn2();
-   |           ^
+   |            ^
 31 | 
    |
 
 ✗ test/parser/suite/ts/pass/8ff2b1d2989bf4bb.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  3 | 
  4 | var x: (a: any) => void = function <T>(x: T) {
-   |        ^
+   |          ^
  5 |     return null;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/8ff3b68a1dda87ca.ts
 ✓ test/parser/suite/ts/pass/900cb38f537a41a5.ts
@@ -39155,15 +39209,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/937a0c38e0968297.ts
-✗ test/parser/suite/ts/pass/937e52a4da6586f5.ts
-error: Expected a type, but found '('
-   |
-18 |     var b = ["hello", ...a, true];
-19 |     var b: (string | number | boolean)[];
-   |            ^
-20 | }
-   |
-
+✓ test/parser/suite/ts/pass/937e52a4da6586f5.ts
 ✗ test/parser/suite/ts/pass/937ed206cce7003b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Promise'
    |
@@ -39693,13 +39739,15 @@ error: Expected ';' after class field, but found ':'
 ✓ test/parser/suite/ts/pass/961b0db1679875f9.ts
 ✓ test/parser/suite/ts/pass/961f17e4742f61a9.ts
 ✗ test/parser/suite/ts/pass/96208a9e681dedef.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '?'
    |
  2 | // @strict: false
  3 | function x2(callback: (x?: number) => number);
-   |                       ^
+   |                         ^
  4 | function x2(callback: (x: string) => number);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/96278edc6cad1d00.ts
 ✗ test/parser/suite/ts/pass/962ec873943977e7.ts
@@ -39886,11 +39934,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/968ebbe4e51facca.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  3 | 
  4 | function doSomething(cb: () => void) {
-   |                          ^
+   |                           ^
  5 |     cb();
    |
 
@@ -39929,11 +39977,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/96bee13d733a6e8b.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | class C {
  3 |     constructor(x: () => void) { }
-   |                    ^
+   |                     ^
  4 | }
    |
 
@@ -40174,15 +40222,7 @@ error: 'enum' is reserved and cannot be used as an identifier
  7 |     X = Infinity
    |
 
-✗ test/parser/suite/ts/pass/9752e17d5f19d20d.ts
-error: Expected a type, but found '('
-   |
- 7 | 
- 8 | function test2(x: (number | string) | number) {
-   |                   ^
- 9 |     if (x instanceof Object) {
-   |
-
+✓ test/parser/suite/ts/pass/9752e17d5f19d20d.ts
 ✗ test/parser/suite/ts/pass/9755d6ddb4a8cf2b.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -40522,13 +40562,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/98ab66ddbeaa522b.ts
 ✗ test/parser/suite/ts/pass/98b7f4df74da9ac4.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function x2(a: number, cb: (x: 'hi') => number);
-   |                            ^
+   |                              ^
  4 | function x2(a: number, cb: (x: 'bye') => number);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/98b9c98fa16facf5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'State'
@@ -40687,15 +40729,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/990786e79273f5e3.ts
 ✓ test/parser/suite/ts/pass/9911b0cc507ad228.ts
 ✓ test/parser/suite/ts/pass/99171c7d552663fb.ts
-✗ test/parser/suite/ts/pass/99182157d6f9e8e2.ts
-error: Expected a type, but found '('
-   |
-17 |     var b = ["hello", ...a, true];
-18 |     var b: (string | number | boolean)[];
-   |            ^
-19 | }
-   |
-
+✓ test/parser/suite/ts/pass/99182157d6f9e8e2.ts
 ✓ test/parser/suite/ts/pass/99249829c69aa198.ts
 ✗ test/parser/suite/ts/pass/99277c8f5ae93f84.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -41645,13 +41679,15 @@ error: Expected ';' after class field, but found 'Blah'
 
 
 ✗ test/parser/suite/ts/pass/9c521a6a3ad45c70.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  9 | 
 10 | var a0: (n: number, s: string) => number
-   |         ^
+   |           ^
 11 | var a1: typeof a0 | ((n: number, s: string) => string);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/9c56dc4333487cc7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -42410,11 +42446,11 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/9f2bce562f0bedd5.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | var j;
  3 | var f: () => any;
-   |        ^
+   |         ^
  4 | <any>( /* Preserve */ j = f());
    |
 
@@ -42688,13 +42724,15 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/a03d58f969a0dd2d.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | var v1: (_i: number, ...restParameters) => void; // no error - no code gen
-   |         ^
+   |            ^
  4 | var v2: {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/a042ac10db0c37d8.ts
 ✗ test/parser/suite/ts/pass/a043f6281565b881.ts
@@ -43157,13 +43195,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a232a5b11d20e2c9.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  3 | 
  4 | let x: (a: string) => string;
-   |        ^
+   |          ^
  5 | let y = true;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/a2404e0b864076f3.ts
 ✗ test/parser/suite/ts/pass/a24ab2eab613cbc2.module.ts
@@ -44091,13 +44131,15 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/a57a56dbb9c708cd.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '='
    |
  2 | function foo(q: string, b: number) {
  3 |     return true ? (q ? true : false) : (b = q.length, function() { });
-   |                                        ^
+   |                                           ^
  4 | };
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/a58b099d85149235.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -44881,13 +44923,15 @@ error: Expected ';' after for-loop init, but found 'of'
    |
 
 ✗ test/parser/suite/ts/pass/a8f944ab7a197e7d.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  4 | class C {
  5 |     set x(v: (a: string) => string) {
-   |              ^
+   |                ^
  6 |     }
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/a8fd1727d73b68d0.ts
 ✗ test/parser/suite/ts/pass/a90a1e9f60ebee4f.ts
@@ -45887,11 +45931,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/ac5ad96972c4699e.ts
 ✗ test/parser/suite/ts/pass/ac698ff28ad1411f.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  3 | //@noImplicitAny: true
  4 | var foo: () => [any] = function bar() {
-   |          ^
+   |           ^
  5 |     let intermediate = bar();
    |
 
@@ -46145,12 +46189,14 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/adeb515b85b43b32.module.tsx
 ✓ test/parser/suite/ts/pass/adfa61e1e3152b88.ts
 ✗ test/parser/suite/ts/pass/ae04b6f2c0172802.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | var foo:(a:number)=>number = function(a){return a}; foo = function(b){return b};
-   |         ^
+   |           ^
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/ae06e08febe2068d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IComparable'
@@ -47474,11 +47520,11 @@ error: Expected ';' after class field, but found 'x'
 
 ✓ test/parser/suite/ts/pass/b3249983f249b6c9.ts
 ✗ test/parser/suite/ts/pass/b32ed8286e06aee6.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | class A {
  3 |     constructor(f: () => string) {
-   |                    ^
+   |                     ^
  4 |     }
    |
 
@@ -47582,13 +47628,15 @@ error: Expected a type, but found '{'
 
 ✓ test/parser/suite/ts/pass/b393a7cfb6ec2ccd.ts
 ✗ test/parser/suite/ts/pass/b3a1475d1506d208.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
- 3 | var a: string;
- 4 | var a: (string);
-   |        ^
- 5 | var a: ((string) | string | (((string))));
+ 7 | 
+ 8 | var b: (x: string) => string;
+   |          ^
+ 9 | var b: ((x: (string)) => (string));
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/b3b036db33de3e5e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -47856,15 +47904,7 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/b4680ba60a4402f6.ts
-error: Expected a type, but found '('
-   |
- 1 | //@target: ES6
- 2 | function foo(...s: (symbol | string)[]) { }
-   |                    ^
- 3 | class SymbolIterator {
-   |
-
+✓ test/parser/suite/ts/pass/b4680ba60a4402f6.ts
 ✓ test/parser/suite/ts/pass/b4713d0eb654fffc.ts
 ✗ test/parser/suite/ts/pass/b4715a885d67e26c.ts
 error: Expected ';' after class field, but found ':'
@@ -47889,13 +47929,15 @@ error: 'enum' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/b47b86c7ae5ff0ed.ts
 ✓ test/parser/suite/ts/pass/b485720f2cc56603.ts
 ✗ test/parser/suite/ts/pass/b486edad44e4d76a.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '?'
    |
  2 | // @strict: false
  3 | function x3(callback: (x?: 'hi') => number);
-   |                       ^
+   |                         ^
  4 | function x3(callback: (x: string) => number);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/b492768e35a1cf1d.ts
 ✗ test/parser/suite/ts/pass/b49bb71fd164c9b4.ts
@@ -48179,12 +48221,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/b5db8fe8b1a0b28c.ts
 ✗ test/parser/suite/ts/pass/b5e8b520198d7e08.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | //@target: ES6
  2 | var iter: Iterable<(x: string) => number> = [s => s.length];
-   |                    ^
+   |                      ^
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/b5eafc0a32618fc8.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Action'
@@ -48916,11 +48960,11 @@ error: Expected ';' after class field, but found 'a'
 
 
 ✗ test/parser/suite/ts/pass/b80db1dbe0f6b12e.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
  2 | //@target: ES6
  3 | function* g2(): Iterator<() => Iterable<(x: string) => number>> {
-   |                          ^
+   |                           ^
  4 |     yield function* () {
    |
 
@@ -51731,13 +51775,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/c1eeb64a42528ead.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  7 | 
  8 | var a: (a: string) => string;
-   |        ^
+   |          ^
  9 | 
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/c1fb3ef863086776.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'public'
@@ -51797,12 +51843,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c20f5f331b348bea.ts
-error: Expected a type, but found '('
+error: Expected a type, but found 'typeof'
    |
-13 | var z : string | number | boolean;
-14 | var z : (string | number) | boolean;
-   |         ^
-15 | var z : string | (number | boolean);
+17 | var BC : number | boolean;
+18 | var z1: typeof AB | boolean;
+   |         ^^^^^^
+19 | var z1: string | typeof BC;
    |
 
 ✓ test/parser/suite/ts/pass/c217d4582c2f9fd6.ts
@@ -52010,13 +52056,15 @@ error: Expected declaration after 'export', but found 'declare'
 
 ✓ test/parser/suite/ts/pass/c2e89bff7b0ae68e.ts
 ✗ test/parser/suite/ts/pass/c2fbcd5ed264798e.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function foo(b: (item: number) => boolean) { }
-   |                 ^
+   |                      ^
  4 | foo(a => a); // can not convert (number)=>bool to (number)=>number
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/c30393641b687509.module.ts
 error: Expected declaration after 'export', but found 'namespace'
@@ -52132,11 +52180,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c3400050122518b7.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 16 | 
 17 | const f20: () => undefined = () => {
-   |            ^
+   |             ^
 18 |     // Ok, contextual type for implicit return is undefined
    |
 
@@ -52931,11 +52979,11 @@ error: Expected a type, but found '{'
    |
 
 ✗ test/parser/suite/ts/pass/c6a5b9b8e2abd4b3.ts
-error: Expected a type, but found '('
+error: Expected a type, but found '...'
    |
  1 | // @target: es2015
  2 | function delegate(instance: any, method: (...args: any[]) => any, data?: any): (...args: any[]) => any {
-   |                                          ^
+   |                                           ^^^
  3 |     return function () { };
    |
 
@@ -54303,13 +54351,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/cbd56edc072c2197.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | function foo(x: (s: string) => void) { }
-   |                 ^
+   |                   ^
  3 |  
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/cbdad7d96c46a77c.ts
 ✗ test/parser/suite/ts/pass/cbe8264c26c5c745.ts
@@ -55083,13 +55133,15 @@ error: Unexpected token '@' in binding pattern
 
 ✓ test/parser/suite/ts/pass/cebc2ad1cd336049.module.ts
 ✗ test/parser/suite/ts/pass/cec0ecc1e0019278.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | 
  3 | let getX: (c: C) => number;
-   |           ^
+   |             ^
  4 | class C {
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/cec2755537e147ae.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Kind'
@@ -56147,11 +56199,11 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/d28767f633006094.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
 13 | }
 14 | const assignability1: () => AsyncIterableIterator<number> = async function * () {
-   |                       ^
+   |                        ^
 15 |     yield "a";
    |
 
@@ -56561,13 +56613,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d3c5ede931a0fc75.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  3 | 
  4 | let x: (a: string) => string;
-   |        ^
+   |          ^
  5 | let y = true;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/d3d0544049614691.ts
 ✓ test/parser/suite/ts/pass/d3e80cb829714a28.ts
@@ -56907,13 +56961,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/d514764c1a18ba1c.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  8 | 
  9 | const f1: (a: string, b: number) => void = function self(a, b?) {
-   |           ^
+   |             ^
 10 |   acceptNum(b); // error
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/d5285dc6a947004b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -57748,13 +57804,15 @@ error: Expected ';' after class field, but found ':'
 ✓ test/parser/suite/ts/pass/d92c9e3639d47417.ts
 ✓ test/parser/suite/ts/pass/d943d25cabc51367.ts
 ✗ test/parser/suite/ts/pass/d95db639e0eefed5.ts
-error: Expected a type, but found '('
+error: Expected ')' to close parameter list, but found '=>'
    |
  2 | // @strict: false
  3 | function takesCallback(callback: (n) =>any) {
-   |                                  ^
+   |                                      ^^
  4 | 
    |
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+
 
 ✗ test/parser/suite/ts/pass/d95e2880d78f6ec6.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
@@ -58265,12 +58323,12 @@ error: Expected '(' for method definition, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/dafce8eae1ae2924.ts
-error: Expected a type, but found '('
+error: Expected a type, but found ')'
    |
- 6 | 
- 7 | var arrayOfUnions: (string | number)[];
-   |                    ^
- 8 | var arrayOfUnions: Array<string | number>;
+ 9 | 
+10 | var unionOfFunctionType: (() => string) | (() => number);
+   |                            ^
+11 | var unionOfFunctionType: { (): string } | { (): number };
    |
 
 ✗ test/parser/suite/ts/pass/db011bc94dd74410.ts
@@ -58690,13 +58748,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/dce3a06232932cdb.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | function foo(callback: (x: string) => void) {
-   |                        ^
+   |                          ^
  3 |     callback("hello");   
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/dce3c10560f63290.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
@@ -60799,13 +60859,15 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/e451d1772617e17a.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  1 | // @target: es2015
  2 | function takesCallback(fn: (a: number) => void) {
-   |                            ^
+   |                              ^
  3 |   // ...
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/e453916f3ddd5019.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Constructor'
@@ -61302,11 +61364,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e679efd9d850a1c6.ts
-error: Expected a type, but found '('
+error: Expected a type, but found '<'
    |
  1 | // @target: es2015
  2 | let a: (<T>() => T extends `${'a' & { a: 1 }}` ? 1 : 2) = null!;
-   |        ^
+   |         ^
  3 | let b: (<T>() => T extends `${'a' & { a: 1 }}` ? 1 : 2) = null!;
    |
 
@@ -61849,13 +61911,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/e89f8d56719636b7.ts
 ✓ test/parser/suite/ts/pass/e8a1566274cd217f.ts
 ✗ test/parser/suite/ts/pass/e8a3321396843537.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function callb(lam: (l: number) => void);
-   |                     ^
+   |                       ^
  4 | function callb(lam: (n: string) => void);
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/e8a521115d1a6797.ts
 error: Expected '{' to start function body, but found ';'
@@ -62390,13 +62454,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/eaa115513878ac6a.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found ':'
    |
  2 | // @strict: false
  3 | function foo(bar:number):(b:string)=>void;
-   |                          ^
+   |                            ^
  4 | function foo(bar:string):(a:number)=>void;
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/eac60d15b2b7d53e.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -66983,13 +67049,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/fb8784b15e6c0b15.ts
-error: Expected a type, but found '('
+error: Expected ')' to close a parenthesized type, but found '='
    |
 43 |         // do not change value
 44 |         : ((y = x) && x.toString()))); // x is boolean
-   |           ^
+   |               ^
 45 | }
    |
+   = help: Each '(' in a type must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/fb980c25bb822423.ts
 ✓ test/parser/suite/ts/pass/fb9b6610e9ee6382.ts

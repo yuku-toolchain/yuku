@@ -104,7 +104,7 @@ pub const Parser = struct {
         try self.parseInner();
 
         if (!self.preserve_parens) {
-            stripParenthesizedExpressions(&self.tree);
+            stripParenthesizedNodes(&self.tree);
         }
 
         return self.tree;
@@ -385,16 +385,23 @@ pub const Parser = struct {
         return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    fn stripParenthesizedExpressions(tree: *ast.Tree) void {
+    fn stripParenthesizedNodes(tree: *ast.Tree) void {
         const datas = tree.nodes.items(.data);
         const spans = tree.nodes.items(.span);
         for (0..datas.len) |i| {
-            if (datas[i] != .parenthesized_expression) continue;
+            var inner: u32 = switch (datas[i]) {
+                .parenthesized_expression => |p| @intFromEnum(p.expression),
+                .ts_parenthesized_type => |p| @intFromEnum(p.type_annotation),
+                else => continue,
+            };
 
-            // resolve to the innermost non-paren expression
-            var inner = @intFromEnum(datas[i].parenthesized_expression.expression);
-            while (datas[inner] == .parenthesized_expression) {
-                inner = @intFromEnum(datas[inner].parenthesized_expression.expression);
+            // resolve to the innermost non-paren node
+            while (true) {
+                switch (datas[inner]) {
+                    .parenthesized_expression => |p| inner = @intFromEnum(p.expression),
+                    .ts_parenthesized_type => |p| inner = @intFromEnum(p.type_annotation),
+                    else => break,
+                }
             }
 
             datas[i] = datas[inner];

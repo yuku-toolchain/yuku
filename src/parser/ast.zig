@@ -2321,6 +2321,24 @@ pub const TSNumberKeyword = struct {};
 /// ```
 pub const TSObjectKeyword = struct {};
 
+/// A parenthesized type. Wraps any type in parentheses for grouping and
+/// precedence control, letting the inner type bind looser than any
+/// surrounding postfix operators.
+///
+/// The span includes the opening and closing parentheses.
+///
+/// ## Example
+/// ```ts
+/// type A = (string | number)[];
+/// //       ^^^^^^^^^^^^^^^^^ TSParenthesizedType
+/// type B = (() => void) | null;
+/// //       ^^^^^^^^^^^^ TSParenthesizedType
+/// ```
+pub const TSParenthesizedType = struct {
+    /// the inner type wrapped by the parentheses
+    type_annotation: NodeIndex,
+};
+
 /// The `string` primitive type.
 ///
 /// ## Example
@@ -2771,6 +2789,7 @@ pub const NodeData = union(enum) {
     ts_null_keyword: TSNullKeyword,
     ts_number_keyword: TSNumberKeyword,
     ts_object_keyword: TSObjectKeyword,
+    ts_parenthesized_type: TSParenthesizedType,
     ts_qualified_name: TSQualifiedName,
     ts_string_keyword: TSStringKeyword,
     ts_symbol_keyword: TSSymbolKeyword,

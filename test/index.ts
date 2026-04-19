@@ -1,10 +1,8 @@
-let a: string | number;
-let b: string & number;
-let c: string | number | boolean;
-let d: A & B & C;
-let e: A | B & C;
-let f: A & B | C;
-let g: A & B | C & D;
-let h: Array<string | number>;
-let i: Map<A | B, C & D>;
-let j: (A | B)[];
+let a: (string);
+let b: (A | B);
+let c: (A | B)[];
+let d: (A & B) | C;
+let e: ((A | B) & C)[];
+let f: (Foo.Bar);
+let g: ((Promise<number>));
+let h: (typeof globalThis)["globalThis"];
