@@ -22,11 +22,19 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-/// a parseType variant that refuses to consume a trailing `extends ... ? ... :
-/// ...` conditional. used for the `extends` operand of a conditional type
-/// and for the return type of a function/constructor type that itself sits
-/// in an extends position, so an enclosing conditional can close around the
-/// inner type.
+/// parseType variant that refuses to start a bare conditional, so the
+/// enclosing conditional's `?` and `:` survive for its own pattern.
+/// used in the extends slot and for function/constructor return types
+/// inherited from it.
+///
+/// example:
+///
+///   type R = T extends () => A ? X : Y;
+///   //                 ^^^^^^^^            extends slot (function type)
+///   //                         ^^^^^^^     left for the outer `? X : Y`
+///
+/// parseUnionType stops one level below conditional, so any trailing
+/// `extends` / `?` / `:` stays in the stream for the caller to consume.
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
         return try parseFunctionOrConstructorType(parser, false);
