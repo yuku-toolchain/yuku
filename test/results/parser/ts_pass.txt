@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2283/8399 (27.18%)
-Failed:       6116
-AST mismatch: 7/2290
+Passed:       2284/8399 (27.19%)
+Failed:       6115
+AST mismatch: 7/2291
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -3017,15 +3017,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/0c030760a76c4fc4.ts
-error: Expected a type, but found '`:${'
-   |
- 1 | // @target: es2015
- 2 | const s1: `:${string}:` = ":"; // should error
-   |           ^^^^
- 3 | const s2: `:${string}:` = "::"; // ok
-   |
-
+✓ test/parser/suite/ts/pass/0c030760a76c4fc4.ts
 ✗ test/parser/suite/ts/pass/0c0b1e3c55bcb619.module.ts
 error: Expected declaration after 'export', but found 'interface'
    |

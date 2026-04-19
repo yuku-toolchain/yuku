@@ -2409,6 +2409,38 @@ pub const TSLiteralType = struct {
     literal: NodeIndex,
 };
 
+/// A template literal used in type position with one or more interpolations.
+///
+/// Parallels the expression-level `TemplateLiteral` but with types filling the
+/// interpolation slots instead of expressions. `quasis` holds the static text
+/// spans as `TemplateElement` nodes and always has exactly `types.len + 1`
+/// elements. The final quasi is marked `tail = true`.
+///
+/// A template literal with no interpolations is still parsed as a
+/// `TSLiteralType` wrapping a `TemplateLiteral`, not as a
+/// `TSTemplateLiteralType`.
+///
+/// The span covers the opening and closing backticks.
+///
+/// ## Example
+/// ```ts
+/// type Greeting<N extends string> = `Hello, ${N}!`;
+/// //                                 ^^^^^^^^^^^^^ TSTemplateLiteralType
+/// //                                 ^^^^^^^^      quasis[0] ("Hello, ")
+/// //                                         ^     types[0]  (N)
+/// //                                          ^^   quasis[1] ("!", tail)
+/// type Dot<T extends string, U extends string> = `${T}.${U}`;
+/// //                                              ^^^^^^^^^ TSTemplateLiteralType
+/// //                                              quasis: ["", ".", ""]
+/// //                                              types:  [T, U]
+/// ```
+pub const TSTemplateLiteralType = struct {
+    /// the static text spans; always `types.len + 1` elements
+    quasis: IndexRange,
+    /// the interpolated types, one per `${...}` slot
+    types: IndexRange,
+};
+
 // ts: postfix types
 
 /// An array type. Applies the postfix `[]` suffix to an element type.
@@ -2996,6 +3028,7 @@ pub const NodeData = union(enum) {
     ts_type_parameter_declaration: TSTypeParameterDeclaration,
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,
     ts_literal_type: TSLiteralType,
+    ts_template_literal_type: TSTemplateLiteralType,
     ts_array_type: TSArrayType,
     ts_indexed_access_type: TSIndexedAccessType,
     ts_tuple_type: TSTupleType,

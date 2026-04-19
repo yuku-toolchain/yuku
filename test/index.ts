@@ -1,11 +1,1 @@
-let b: T extends [infer H, ...any[]] ? H : never;
-let c: T extends [infer H extends string, ...any[]] ? H : never;
-let d: keys extends infer key extends keyof obj ? key : never;
-let e: V extends infer T extends number | string ? T : never;
-let f: T extends infer U[] ? U : never;
-let g: T extends (infer A) ? A : never;
-let h: T extends infer U & V ? U : never;
-let i: T extends [infer H extends readonly K[], ...any[]] ? H : never;
-let j: T extends infer U ? U : never;
-let k: Array<infer X>;
-let m: T extends infer U extends V[] ? U : never;
+const s1: `:${string}:` = ":";

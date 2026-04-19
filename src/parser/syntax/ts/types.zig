@@ -1,5 +1,6 @@
 const std = @import("std");
 const ast = @import("../../ast.zig");
+const lexer = @import("../../lexer.zig");
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
@@ -33,27 +34,19 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     const extends_type = try parseUnionType(parser) orelse return null;
 
-    if (parser.current_token.tag != .question) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected '?' in a conditional type",
-            .{ .help = "A conditional type is written 'T extends U ? X : Y'" },
-        );
-        return null;
-    }
-    try parser.advance() orelse return null; // consume '?'
+    if (!try parser.expect(
+        .question,
+        "Expected '?' in a conditional type",
+        "A conditional type is written 'T extends U ? X : Y'",
+    )) return null;
 
     const true_type = try parseType(parser) orelse return null;
 
-    if (parser.current_token.tag != .colon) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected ':' in a conditional type",
-            .{ .help = "A conditional type is written 'T extends U ? X : Y'" },
-        );
-        return null;
-    }
-    try parser.advance() orelse return null; // consume ':'
+    if (!try parser.expect(
+        .colon,
+        "Expected ':' in a conditional type",
+        "A conditional type is written 'T extends U ? X : Y'",
+    )) return null;
 
     const false_type = try parseType(parser) orelse return null;
 
@@ -171,21 +164,15 @@ fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
 
         const index = try parseType(parser) orelse return null;
 
-        if (parser.current_token.tag != .right_bracket) {
-            try parser.reportExpected(
-                parser.current_token.span,
-                "Expected ']' to close an indexed access type",
-                .{ .help = "Each '[' in a type must be matched by a ']'" },
-            );
-            return null;
-        }
-
-        const end = parser.current_token.span.end;
-        try parser.advance() orelse return null; // consume ']'
+        if (!try parser.expect(
+            .right_bracket,
+            "Expected ']' to close an indexed access type",
+            "Each '[' in a type must be matched by a ']'",
+        )) return null;
 
         ty = try parser.tree.createNode(
             .{ .ts_indexed_access_type = .{ .object_type = ty, .index_type = index } },
-            .{ .start = start, .end = end },
+            .{ .start = start, .end = parser.prev_token_end },
         );
     }
 
@@ -230,6 +217,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .left_bracket => return parseTupleType(parser),
             .keyof, .unique, .readonly => return parseTypeOperator(parser),
             .infer => return parseInferType(parser),
+            .template_head => return parseTemplateLiteralType(parser),
             else => {},
         }
     }
@@ -313,6 +301,79 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
+/// `Hello, ${World}!`
+/// ^^^^^^^^^^^^^^^^^^
+///
+/// template literal with one or more interpolations in type position.
+/// the no-substitution case stays in `parseLiteralType` and produces a
+/// `TSLiteralType` wrapping a `TemplateLiteral`.
+fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .template_head);
+
+    const start = parser.current_token.span.start;
+
+    const quasis_checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(quasis_checkpoint);
+    const types_checkpoint = parser.scratch_b.begin();
+    defer parser.scratch_b.reset(types_checkpoint);
+
+    const head = parser.current_token;
+    try parser.scratch_a.append(
+        parser.allocator(),
+        try literals.addTemplateElement(parser, head, false, false),
+    );
+    try parser.advance() orelse return null;
+
+    var end = head.span.end;
+
+    while (true) {
+        const ty = try parseType(parser) orelse return null;
+        try parser.scratch_b.append(parser.allocator(), ty);
+
+        // the expression slot closes with a `}` which was lexed as a plain
+        // right brace. re-scan it as a template continuation so the lexer
+        // treats the following text as template characters rather than source.
+        if (parser.current_token.tag != .right_brace) {
+            try parser.reportExpected(
+                parser.current_token.span,
+                "Expected '}' to close template type interpolation",
+                .{ .help = "Template type interpolations must be closed with '}'" },
+            );
+            return null;
+        }
+
+        const right_brace = parser.current_token;
+        const template_token = parser.lexer.reScanTemplateContinuation(right_brace.span.start) catch |e| {
+            try parser.report(
+                right_brace.span,
+                lexer.getLexicalErrorMessage(e),
+                .{ .help = lexer.getLexicalErrorHelp(e) },
+            );
+            return null;
+        };
+
+        const is_tail = template_token.tag == .template_tail;
+
+        try parser.scratch_a.append(
+            parser.allocator(),
+            try literals.addTemplateElement(parser, template_token, is_tail, false),
+        );
+
+        end = template_token.span.end;
+        try parser.advanceWithRescannedToken(template_token) orelse return null;
+
+        if (is_tail) break;
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_template_literal_type = .{
+            .quasis = try parser.createExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
+            .types = try parser.createExtraFromScratch(&parser.scratch_b, types_checkpoint),
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
 /// keyof T   unique symbol   readonly T[]
 /// ^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^
 ///
@@ -391,21 +452,15 @@ fn parseParenthesizedType(parser: *Parser) Error!?ast.NodeIndex {
 
     const inner = try parseType(parser) orelse return null;
 
-    if (parser.current_token.tag != .right_paren) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected ')' to close a parenthesized type",
-            .{ .help = "Each '(' in a type must be matched by a ')'" },
-        );
-        return null;
-    }
-
-    const end = parser.current_token.span.end;
-    try parser.advance() orelse return null; // consume ')'
+    if (!try parser.expect(
+        .right_paren,
+        "Expected ')' to close a parenthesized type",
+        "Each '(' in a type must be matched by a ')'",
+    )) return null;
 
     return try parser.tree.createNode(
         .{ .ts_parenthesized_type = .{ .type_annotation = inner } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = parser.prev_token_end },
     );
 }
 
@@ -431,23 +486,17 @@ fn parseTupleType(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    if (parser.current_token.tag != .right_bracket) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected ']' to close a tuple type",
-            .{ .help = "Each '[' in a tuple type must be matched by a ']'" },
-        );
-        return null;
-    }
-
-    const end = parser.current_token.span.end;
-    try parser.advance() orelse return null; // consume ']'
+    if (!try parser.expect(
+        .right_bracket,
+        "Expected ']' to close a tuple type",
+        "Each '[' in a tuple type must be matched by a ']'",
+    )) return null;
 
     const element_types = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 
     return try parser.tree.createNode(
         .{ .ts_tuple_type = .{ .element_types = element_types } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = parser.prev_token_end },
     );
 }
 
@@ -520,15 +569,7 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume '?'
     }
 
-    if (parser.current_token.tag != .colon) {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected ':' after named tuple element label",
-            .{},
-        );
-        return null;
-    }
-    try parser.advance() orelse return null; // consume ':'
+    if (!try parser.expect(.colon, "Expected ':' after named tuple element label", null)) return null;
 
     const element_type = try parseType(parser) orelse return null;
     const end = parser.tree.getSpan(element_type).end;
