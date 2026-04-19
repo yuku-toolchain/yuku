@@ -172,6 +172,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .plus,
             => return parseLiteralType(parser),
             .left_paren => return parseParenthesizedType(parser),
+            .left_bracket => return parseTupleType(parser),
             else => {},
         }
     }
@@ -279,6 +280,140 @@ fn parseParenthesizedType(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.tree.createNode(
         .{ .ts_parenthesized_type = .{ .type_annotation = inner } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// [A, B?, ...C]   [label: T, rest?: U]
+/// ^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^
+fn parseTupleType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_bracket);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume '['
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (parser.current_token.tag != .right_bracket and parser.current_token.tag != .eof) {
+        const element = try parseTupleElement(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), element);
+
+        if (parser.current_token.tag == .comma) {
+            try parser.advance() orelse return null;
+        } else {
+            break;
+        }
+    }
+
+    if (parser.current_token.tag != .right_bracket) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ']' to close a tuple type",
+            .{ .help = "Each '[' in a tuple type must be matched by a ']'" },
+        );
+        return null;
+    }
+
+    const end = parser.current_token.span.end;
+    try parser.advance() orelse return null; // consume ']'
+
+    const element_types = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+
+    return try parser.tree.createNode(
+        .{ .ts_tuple_type = .{ .element_types = element_types } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// one element of a tuple. handles the leading `...` (rest) and the
+/// `label:` / `label?:` named forms, then falls back to a plain type with
+/// an optional trailing `?` suffix
+fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .spread) {
+        const start = parser.current_token.span.start;
+        try parser.advance() orelse return null; // consume '...'
+        const inner = try parseTupleElementBody(parser) orelse return null;
+        const end = parser.tree.getSpan(inner).end;
+        return try parser.tree.createNode(
+            .{ .ts_rest_type = .{ .type_annotation = inner } },
+            .{ .start = start, .end = end },
+        );
+    }
+
+    return parseTupleElementBody(parser);
+}
+
+/// a tuple element without the `...` prefix. dispatches to the named form
+/// when the next token reveals a `label:` or `label?:` pattern, otherwise
+/// parses a plain type and wraps it in `TSOptionalType` if a trailing `?`
+/// is present
+fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (try isNamedTupleElement(parser)) {
+        return parseNamedTupleMember(parser);
+    }
+
+    const ty = try parseType(parser) orelse return null;
+
+    if (parser.current_token.tag == .question) {
+        const start = parser.tree.getSpan(ty).start;
+        const end = parser.current_token.span.end;
+        try parser.advance() orelse return null; // consume '?'
+        return try parser.tree.createNode(
+            .{ .ts_optional_type = .{ .type_annotation = ty } },
+            .{ .start = start, .end = end },
+        );
+    }
+
+    return ty;
+}
+
+/// peeks past the current identifier to see if the next token is `:` or
+/// `?:`
+fn isNamedTupleElement(parser: *Parser) Error!bool {
+    if (!parser.current_token.tag.isIdentifierLike()) return false;
+
+    const t1 = try parser.lookAheadAt(1) orelse return false;
+
+    if (t1.tag == .colon) return true;
+    if (t1.tag != .question) return false;
+
+    const t2 = try parser.lookAheadAt(2) orelse return false;
+    return t2.tag == .colon;
+}
+
+/// label: Type     label?: Type
+/// ^^^^^^^^^^^     ^^^^^^^^^^^^
+fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    const label = try literals.parseIdentifierName(parser) orelse return null;
+
+    var is_optional = false;
+    if (parser.current_token.tag == .question) {
+        is_optional = true;
+        try parser.advance() orelse return null; // consume '?'
+    }
+
+    if (parser.current_token.tag != .colon) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ':' after named tuple element label",
+            .{},
+        );
+        return null;
+    }
+    try parser.advance() orelse return null; // consume ':'
+
+    const element_type = try parseType(parser) orelse return null;
+    const end = parser.tree.getSpan(element_type).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_named_tuple_member = .{
+            .label = label,
+            .element_type = element_type,
+            .optional = is_optional,
+        } },
         .{ .start = start, .end = end },
     );
 }

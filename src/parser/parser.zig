@@ -314,7 +314,19 @@ pub const Parser = struct {
         if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
     }
 
-    pub fn lookAhead(self: *Parser) Error!?Token {
+    /// peeks the token immediately after `current_token` without advancing.
+    /// returns `null` if the lexer cannot produce another token (for example
+    /// after a lexical error).
+    pub inline fn lookAhead(self: *Parser) Error!?Token {
+        return self.lookAheadAt(1);
+    }
+
+    /// peeks the token `offset` positions after `current_token` without
+    /// advancing. `offset = 1` is the immediately following token, `offset = 2`
+    /// the one after that, and so on.
+    pub fn lookAheadAt(self: *Parser, offset: usize) Error!?Token {
+        std.debug.assert(offset >= 1);
+
         const prev_state = self.lexer.state;
         const prev_cursor = self.lexer.cursor;
         const prev_comments_len = self.lexer.comments.items.len;
@@ -325,7 +337,11 @@ pub const Parser = struct {
             self.lexer.comments.shrinkRetainingCapacity(prev_comments_len);
         }
 
-        return try self.nextToken();
+        var token: ?Token = null;
+        for (0..offset) |_| {
+            token = try self.nextToken() orelse return null;
+        }
+        return token;
     }
 
     /// sets current token from a re-scanned token and advances to the next token.
