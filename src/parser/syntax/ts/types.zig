@@ -318,7 +318,7 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 /// prefix type operator. binds tighter than union and intersection but
 /// looser than the postfix `[]` and `T[K]` operators, so `readonly A[]`
 /// parses as `readonly (A[])` and `keyof A | B` parses as `(keyof A) | B`.
-/// operators nest recursively on the right: `readonly keyof T` wraps a
+/// operators nest recursively on the right, `readonly keyof T` wraps a
 /// `TSTypeOperator` inside another `TSTypeOperator`, driven by the dispatch
 /// in `parsePrimaryType`.
 fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
