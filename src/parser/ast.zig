@@ -297,6 +297,239 @@ pub const IndexRange = struct {
     pub const empty: IndexRange = .{ .start = 0, .len = 0 };
 };
 
+/// The `super` keyword used as an expression head.
+///
+/// ## Example
+/// ```js
+/// foo(super);
+/// //  ^^^^^ Super
+/// ```
+pub const Super = struct {};
+
+/// The `null` literal.
+///
+/// ## Example
+/// ```js
+/// const x = null;
+/// //        ^^^^ NullLiteral
+/// ```
+pub const NullLiteral = struct {};
+
+/// The `this` keyword used as an expression.
+///
+/// ## Example
+/// ```js
+/// const x = this;
+/// //        ^^^^ ThisExpression
+/// ```
+pub const ThisExpression = struct {};
+
+/// The `debugger;` statement. Suspends execution when a debugger is attached.
+pub const DebuggerStatement = struct {};
+
+/// A standalone `;` used as a statement.
+pub const EmptyStatement = struct {};
+
+/// A decorator applied to a class or class member.
+///
+/// ## Example
+/// ```js
+/// class C { @foo bar() {} }
+/// //         ^^^ expression (of the decorator `@foo`)
+/// ```
+pub const Decorator = struct {
+    expression: NodeIndex,
+};
+
+/// Class form.
+///
+/// ## Example
+/// ```js
+/// class Foo {}          // class_declaration
+/// const x = class {};   //           class_expression
+/// ```
+pub const ClassType = enum {
+    class_declaration,
+    class_expression,
+};
+
+/// A class declaration or expression.
+///
+/// ## Example
+/// ```ts
+/// class Foo<T> extends Base<T> implements I {}
+/// //    ^^^ id
+/// //       ^^^ type_parameters
+/// //                   ^^^^ super_class
+/// //                       ^^^ super_type_arguments
+/// //                                      ^ implements[0]
+/// //                                        ^^ body
+/// ```
+/// Column-0 modifiers: `@dec class` populates `decorators`; `abstract class`
+/// sets `abstract = true`; `declare class` sets `declare = true`.
+pub const Class = struct {
+    type: ClassType,
+    decorators: IndexRange,
+    /// `.null` for anonymous class expressions
+    id: NodeIndex,
+    /// `.null` when the class has no `extends` clause
+    super_class: NodeIndex,
+    body: NodeIndex,
+    /// ts: `.null` when the class has no `<T, U>` parameters
+    type_parameters: NodeIndex = .null,
+    /// ts: `.null` when `extends` has no `<T>` arguments
+    super_type_arguments: NodeIndex = .null,
+    /// ts: empty when the class has no `implements` clause
+    implements: IndexRange = .empty,
+    /// ts: true for `abstract class`
+    abstract: bool = false,
+    /// ts: true for `declare class`
+    declare: bool = false,
+};
+
+/// The `{ ... }` body of a class, holding its members.
+///
+/// ## Example
+/// ```js
+/// class C {
+///   a;
+///   b() {}
+///   static {}
+/// }
+/// // body: [a, b, static block]
+/// ```
+pub const ClassBody = struct {
+    body: IndexRange,
+};
+
+/// Kind of a class method definition.
+///
+/// ## Example
+/// ```js
+/// class C {
+///   constructor() {}   // constructor
+///   method() {}        // method
+///   get prop() {}      // get
+///   set prop(v) {}     // set
+/// }
+/// ```
+pub const MethodDefinitionKind = enum {
+    constructor,
+    method,
+    get,
+    set,
+
+    pub fn toString(self: MethodDefinitionKind) []const u8 {
+        return switch (self) {
+            .constructor => "constructor",
+            .method => "method",
+            .get => "get",
+            .set => "set",
+        };
+    }
+};
+
+/// Accessibility modifier on a TypeScript class member.
+///
+/// `.none` means no modifier was written (distinct from `public`, which
+/// was written explicitly).
+pub const Accessibility = enum {
+    none,
+    public,
+    private,
+    protected,
+
+    pub fn toString(self: Accessibility) []const u8 {
+        return switch (self) {
+            .none => "",
+            .public => "public",
+            .private => "private",
+            .protected => "protected",
+        };
+    }
+};
+
+/// A method, getter, setter, or constructor in a class body.
+///
+/// ## Example
+/// ```ts
+/// class C { public override foo?(): void {} }
+/// //        ^^^^^^ accessibility
+/// //               ^^^^^^^^ override
+/// //                        ^^^ key
+/// //                           ^ optional
+/// //                            ^^^^^^^^^^^ value (a Function)
+/// ```
+/// `decorators` comes from `@dec` preceding the method; `static ...`, `*` and
+/// `async` modifiers live on the member head and appear on the inner `Function`.
+pub const MethodDefinition = struct {
+    decorators: IndexRange,
+    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
+    key: NodeIndex,
+    /// a `Function` node
+    value: NodeIndex,
+    kind: MethodDefinitionKind,
+    computed: bool,
+    static: bool,
+    /// ts: true for the `override` modifier
+    override: bool = false,
+    /// ts: true for optional method (`foo?()`)
+    optional: bool = false,
+    /// ts: `.none` when no modifier was written
+    accessibility: Accessibility = .none,
+};
+
+/// A class field or auto-accessor declaration.
+///
+/// ## Example
+/// ```ts
+/// class C { public readonly foo!: number = 0 }
+/// //        ^^^^^^ accessibility
+/// //               ^^^^^^^^ readonly
+/// //                        ^^^ key
+/// //                           ^ definite
+/// //                            ^^^^^^^^ type_annotation
+/// //                                       ^ value
+/// ```
+/// `decorators` comes from `@dec` preceding the field; `declare`, `override`,
+/// and `static` live on the member head; `accessor foo` sets `accessor = true`.
+pub const PropertyDefinition = struct {
+    decorators: IndexRange,
+    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
+    key: NodeIndex,
+    /// initializer, `.null` when absent
+    value: NodeIndex,
+    computed: bool,
+    static: bool,
+    /// true for `accessor x;` auto-accessor fields
+    accessor: bool,
+    /// ts: `.null` when the field has no annotation
+    type_annotation: NodeIndex = .null,
+    /// ts: true for the `declare` modifier
+    declare: bool = false,
+    /// ts: true for the `override` modifier
+    override: bool = false,
+    /// ts: true for optional property (`foo?: T`)
+    optional: bool = false,
+    /// ts: true for definite assignment assertion (`foo!: T`)
+    definite: bool = false,
+    /// ts: true for the `readonly` modifier
+    readonly: bool = false,
+    /// ts: `.none` when no modifier was written
+    accessibility: Accessibility = .none,
+};
+
+/// A `static { ... }` block inside a class body.
+///
+/// ## Example
+/// ```js
+/// class C { static { init(); } }
+/// //                 ^^^^^^^ body
+/// ```
+pub const StaticBlock = struct {
+    body: IndexRange,
+};
+
 /// Binary operators.
 ///
 /// ## Example
@@ -393,6 +626,21 @@ pub const BinaryOperator = enum {
     }
 };
 
+/// Binary expression with a non-logical operator.
+///
+/// ## Example
+/// ```js
+/// r = a + b
+/// //  ^ left
+/// //    ^ operator
+/// //      ^ right
+/// ```
+pub const BinaryExpression = struct {
+    left: NodeIndex,
+    right: NodeIndex,
+    operator: BinaryOperator,
+};
+
 /// Logical operators.
 ///
 /// ## Example
@@ -426,6 +674,36 @@ pub const LogicalOperator = enum {
     pub fn toString(self: LogicalOperator) []const u8 {
         return self.toToken().toString().?;
     }
+};
+
+/// Short-circuiting logical expression.
+///
+/// ## Example
+/// ```js
+/// r = a && b
+/// //  ^ left
+/// //    ^^ operator
+/// //       ^ right
+/// ```
+pub const LogicalExpression = struct {
+    left: NodeIndex,
+    right: NodeIndex,
+    operator: LogicalOperator,
+};
+
+/// Ternary expression.
+///
+/// ## Example
+/// ```js
+/// r = a ? b : c
+/// //  ^ test
+/// //      ^ consequent
+/// //          ^ alternate
+/// ```
+pub const ConditionalExpression = struct {
+    @"test": NodeIndex,
+    consequent: NodeIndex,
+    alternate: NodeIndex,
 };
 
 /// Unary operators.
@@ -477,6 +755,19 @@ pub const UnaryOperator = enum {
     }
 };
 
+/// Unary prefix expression.
+///
+/// ## Example
+/// ```js
+/// typeof foo
+/// //     ^^^ argument
+/// ```
+/// `operator` is one of `-`, `+`, `!`, `~`, `typeof`, `void`, `delete`.
+pub const UnaryExpression = struct {
+    argument: NodeIndex,
+    operator: UnaryOperator,
+};
+
 /// Update operators.
 ///
 /// ## Example
@@ -506,6 +797,20 @@ pub const UpdateOperator = enum {
     pub fn toString(self: UpdateOperator) []const u8 {
         return self.toToken().toString().?;
     }
+};
+
+/// `++` or `--` applied to an assignable target.
+///
+/// ## Example
+/// ```js
+/// ++x    // prefix = true
+/// x--    // prefix = false
+/// ```
+pub const UpdateExpression = struct {
+    /// an `IdentifierReference` or `MemberExpression`
+    argument: NodeIndex,
+    operator: UpdateOperator,
+    prefix: bool,
 };
 
 /// Assignment operators.
@@ -583,6 +888,24 @@ pub const AssignmentOperator = enum {
     }
 };
 
+/// Assignment expression.
+///
+/// ## Example
+/// ```js
+/// x += 1
+/// //^^ operator
+/// //   ^ right
+/// ```
+/// `left` is the assignment target (here `x`); it can also be an `ArrayPattern`
+/// or `ObjectPattern` for destructuring assignment.
+pub const AssignmentExpression = struct {
+    /// an assignment target: `IdentifierReference`, `MemberExpression`,
+    /// `ArrayPattern`, or `ObjectPattern`
+    left: NodeIndex,
+    right: NodeIndex,
+    operator: AssignmentOperator,
+};
+
 /// Variable declaration kind.
 ///
 /// ## Example
@@ -609,346 +932,6 @@ pub const VariableKind = enum {
             .using => "using",
         };
     }
-};
-
-/// Object property kind.
-///
-/// ## Example
-/// ```js
-/// { a: 1,          // init
-///   get b() {},    // get
-///   set b(v) {} }  // set
-/// ```
-pub const PropertyKind = enum {
-    init,
-    get,
-    set,
-
-    pub fn toString(self: PropertyKind) []const u8 {
-        return switch (self) {
-            .init => "init",
-            .get => "get",
-            .set => "set",
-        };
-    }
-};
-
-/// Class form.
-///
-/// ## Example
-/// ```js
-/// class Foo {}          // class_declaration
-/// const x = class {};   //           class_expression
-/// ```
-pub const ClassType = enum {
-    class_declaration,
-    class_expression,
-};
-
-/// Kind of a class method definition.
-///
-/// ## Example
-/// ```js
-/// class C {
-///   constructor() {}   // constructor
-///   method() {}        // method
-///   get prop() {}      // get
-///   set prop(v) {}     // set
-/// }
-/// ```
-pub const MethodDefinitionKind = enum {
-    constructor,
-    method,
-    get,
-    set,
-
-    pub fn toString(self: MethodDefinitionKind) []const u8 {
-        return switch (self) {
-            .constructor => "constructor",
-            .method => "method",
-            .get => "get",
-            .set => "set",
-        };
-    }
-};
-
-/// The `super` keyword used as an expression head.
-///
-/// ## Example
-/// ```js
-/// foo(super);
-/// //  ^^^^^ Super
-/// ```
-pub const Super = struct {};
-
-/// The `null` literal.
-///
-/// ## Example
-/// ```js
-/// const x = null;
-/// //        ^^^^ NullLiteral
-/// ```
-pub const NullLiteral = struct {};
-
-/// The `this` keyword used as an expression.
-///
-/// ## Example
-/// ```js
-/// const x = this;
-/// //        ^^^^ ThisExpression
-/// ```
-pub const ThisExpression = struct {};
-
-/// The `debugger;` statement. Suspends execution when a debugger is attached.
-pub const DebuggerStatement = struct {};
-
-/// A standalone `;` used as a statement.
-pub const EmptyStatement = struct {};
-
-/// A decorator applied to a class or class member.
-///
-/// ## Example
-/// ```js
-/// class C { @foo bar() {} }
-/// //         ^^^ expression (of the decorator `@foo`)
-/// ```
-pub const Decorator = struct {
-    expression: NodeIndex,
-};
-
-/// A class declaration or expression.
-///
-/// ## Example
-/// ```ts
-/// class Foo<T> extends Base<T> implements I {}
-/// //    ^^^ id
-/// //       ^^^ type_parameters
-/// //                   ^^^^ super_class
-/// //                       ^^^ super_type_arguments
-/// //                                      ^ implements[0]
-/// //                                        ^^ body
-/// ```
-/// Column-0 modifiers: `@dec class` populates `decorators`; `abstract class`
-/// sets `abstract = true`; `declare class` sets `declare = true`.
-pub const Class = struct {
-    type: ClassType,
-    decorators: IndexRange,
-    /// `.null` for anonymous class expressions
-    id: NodeIndex,
-    /// `.null` when the class has no `extends` clause
-    super_class: NodeIndex,
-    body: NodeIndex,
-    /// ts: `.null` when the class has no `<T, U>` parameters
-    type_parameters: NodeIndex = .null,
-    /// ts: `.null` when `extends` has no `<T>` arguments
-    super_type_arguments: NodeIndex = .null,
-    /// ts: empty when the class has no `implements` clause
-    implements: IndexRange = .empty,
-    /// ts: true for `abstract class`
-    abstract: bool = false,
-    /// ts: true for `declare class`
-    declare: bool = false,
-};
-
-/// The `{ ... }` body of a class, holding its members.
-///
-/// ## Example
-/// ```js
-/// class C {
-///   a;
-///   b() {}
-///   static {}
-/// }
-/// // body: [a, b, static block]
-/// ```
-pub const ClassBody = struct {
-    body: IndexRange,
-};
-
-/// A method, getter, setter, or constructor in a class body.
-///
-/// ## Example
-/// ```ts
-/// class C { public override foo?(): void {} }
-/// //        ^^^^^^ accessibility
-/// //               ^^^^^^^^ override
-/// //                        ^^^ key
-/// //                           ^ optional
-/// //                            ^^^^^^^^^^^ value (a Function)
-/// ```
-/// `decorators` comes from `@dec` preceding the method; `static ...`, `*` and
-/// `async` modifiers live on the member head and appear on the inner `Function`.
-pub const MethodDefinition = struct {
-    decorators: IndexRange,
-    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
-    key: NodeIndex,
-    /// a `Function` node
-    value: NodeIndex,
-    kind: MethodDefinitionKind,
-    computed: bool,
-    static: bool,
-    /// ts: true for the `override` modifier
-    override: bool = false,
-    /// ts: true for optional method (`foo?()`)
-    optional: bool = false,
-    /// ts: `.none` when no modifier was written
-    accessibility: Accessibility = .none,
-};
-
-/// A class field or auto-accessor declaration.
-///
-/// ## Example
-/// ```ts
-/// class C { public readonly foo!: number = 0 }
-/// //        ^^^^^^ accessibility
-/// //               ^^^^^^^^ readonly
-/// //                        ^^^ key
-/// //                           ^ definite
-/// //                            ^^^^^^^^ type_annotation
-/// //                                       ^ value
-/// ```
-/// `decorators` comes from `@dec` preceding the field; `declare`, `override`,
-/// and `static` live on the member head; `accessor foo` sets `accessor = true`.
-pub const PropertyDefinition = struct {
-    decorators: IndexRange,
-    /// `IdentifierName`, `PrivateIdentifier`, or an expression when `computed`
-    key: NodeIndex,
-    /// initializer, `.null` when absent
-    value: NodeIndex,
-    computed: bool,
-    static: bool,
-    /// true for `accessor x;` auto-accessor fields
-    accessor: bool,
-    /// ts: `.null` when the field has no annotation
-    type_annotation: NodeIndex = .null,
-    /// ts: true for the `declare` modifier
-    declare: bool = false,
-    /// ts: true for the `override` modifier
-    override: bool = false,
-    /// ts: true for optional property (`foo?: T`)
-    optional: bool = false,
-    /// ts: true for definite assignment assertion (`foo!: T`)
-    definite: bool = false,
-    /// ts: true for the `readonly` modifier
-    readonly: bool = false,
-    /// ts: `.none` when no modifier was written
-    accessibility: Accessibility = .none,
-};
-
-/// A `static { ... }` block inside a class body.
-///
-/// ## Example
-/// ```js
-/// class C { static { init(); } }
-/// //                 ^^^^^^^ body
-/// ```
-pub const StaticBlock = struct {
-    body: IndexRange,
-};
-
-/// Which grammar production the parameter list came from.
-///
-/// Constrains which binding forms are legal and whether duplicates are
-/// allowed in strict mode.
-pub const FormalParameterKind = enum {
-    /// plain `function` parameter list
-    formal_parameters,
-    /// parameters of a generator, async, arrow, method, or setter
-    unique_formal_parameters,
-    /// arrow function parameter list
-    arrow_formal_parameters,
-    /// parameters of a TypeScript type signature
-    signature,
-};
-
-/// Binary expression with a non-logical operator.
-///
-/// ## Example
-/// ```js
-/// r = a + b
-/// //  ^ left
-/// //    ^ operator
-/// //      ^ right
-/// ```
-pub const BinaryExpression = struct {
-    left: NodeIndex,
-    right: NodeIndex,
-    operator: BinaryOperator,
-};
-
-/// Short-circuiting logical expression.
-///
-/// ## Example
-/// ```js
-/// r = a && b
-/// //  ^ left
-/// //    ^^ operator
-/// //       ^ right
-/// ```
-pub const LogicalExpression = struct {
-    left: NodeIndex,
-    right: NodeIndex,
-    operator: LogicalOperator,
-};
-
-/// Ternary expression.
-///
-/// ## Example
-/// ```js
-/// r = a ? b : c
-/// //  ^ test
-/// //      ^ consequent
-/// //          ^ alternate
-/// ```
-pub const ConditionalExpression = struct {
-    @"test": NodeIndex,
-    consequent: NodeIndex,
-    alternate: NodeIndex,
-};
-
-/// Unary prefix expression.
-///
-/// ## Example
-/// ```js
-/// typeof foo
-/// //     ^^^ argument
-/// ```
-/// `operator` is one of `-`, `+`, `!`, `~`, `typeof`, `void`, `delete`.
-pub const UnaryExpression = struct {
-    argument: NodeIndex,
-    operator: UnaryOperator,
-};
-
-/// `++` or `--` applied to an assignable target.
-///
-/// ## Example
-/// ```js
-/// ++x    // prefix = true
-/// x--    // prefix = false
-/// ```
-pub const UpdateExpression = struct {
-    /// an `IdentifierReference` or `MemberExpression`
-    argument: NodeIndex,
-    operator: UpdateOperator,
-    prefix: bool,
-};
-
-/// Assignment expression.
-///
-/// ## Example
-/// ```js
-/// x += 1
-/// //^^ operator
-/// //   ^ right
-/// ```
-/// `left` is the assignment target (here `x`); it can also be an `ArrayPattern`
-/// or `ObjectPattern` for destructuring assignment.
-pub const AssignmentExpression = struct {
-    /// an assignment target: `IdentifierReference`, `MemberExpression`,
-    /// `ArrayPattern`, or `ObjectPattern`
-    left: NodeIndex,
-    right: NodeIndex,
-    operator: AssignmentOperator,
 };
 
 /// A `var`, `let`, `const`, `using`, or `await using` declaration.
@@ -1587,6 +1570,28 @@ pub const SpreadElement = struct {
     argument: NodeIndex,
 };
 
+/// Object property kind.
+///
+/// ## Example
+/// ```js
+/// { a: 1,          // init
+///   get b() {},    // get
+///   set b(v) {} }  // set
+/// ```
+pub const PropertyKind = enum {
+    init,
+    get,
+    set,
+
+    pub fn toString(self: PropertyKind) []const u8 {
+        return switch (self) {
+            .init => "init",
+            .get => "get",
+            .set => "set",
+        };
+    }
+};
+
 /// A property in an object literal.
 ///
 /// ## Example
@@ -1710,6 +1715,21 @@ pub const FunctionBody = struct {
 /// ```
 pub const BlockStatement = struct {
     body: IndexRange,
+};
+
+/// Which grammar production the parameter list came from.
+///
+/// Constrains which binding forms are legal and whether duplicates are
+/// allowed in strict mode.
+pub const FormalParameterKind = enum {
+    /// plain `function` parameter list
+    formal_parameters,
+    /// parameters of a generator, async, arrow, method, or setter
+    unique_formal_parameters,
+    /// arrow function parameter list
+    arrow_formal_parameters,
+    /// parameters of a TypeScript type signature
+    signature,
 };
 
 /// The parameter list of a function.
@@ -1927,45 +1947,6 @@ pub const ImportOrExportKind = enum {
     }
 };
 
-/// Accessibility modifier on a TypeScript class member.
-///
-/// `.none` means no modifier was written (distinct from `public`, which
-/// was written explicitly).
-pub const Accessibility = enum {
-    none,
-    public,
-    private,
-    protected,
-
-    pub fn toString(self: Accessibility) []const u8 {
-        return switch (self) {
-            .none => "",
-            .public => "public",
-            .private => "private",
-            .protected => "protected",
-        };
-    }
-};
-
-/// The prefix operator used by `TSTypeOperator`.
-///
-/// `keyof` produces the union of property keys of the operand, `unique` marks
-/// a unique symbol type (only meaningful before `symbol`), and `readonly`
-/// applies to tuple and array types to make their elements immutable.
-pub const TSTypeOperatorKind = enum {
-    keyof,
-    unique,
-    readonly,
-
-    pub fn toString(self: TSTypeOperatorKind) []const u8 {
-        return switch (self) {
-            .keyof => "keyof",
-            .unique => "unique",
-            .readonly => "readonly",
-        };
-    }
-};
-
 /// Stage 3 import phase modifier.
 ///
 /// ## Example
@@ -2145,27 +2126,7 @@ pub const ExportSpecifier = struct {
     export_kind: ImportOrExportKind = .value,
 };
 
-/// TypeScript `export = expr` (CommonJS-style ambient export).
-///
-/// ## Example
-/// ```ts
-/// export = MyNamespace;
-/// //       ^^^^^^^^^^^ expression
-/// ```
-pub const TSExportAssignment = struct {
-    expression: NodeIndex,
-};
-
-/// TypeScript `export as namespace Name` (UMD ambient namespace export).
-///
-/// ## Example
-/// ```ts
-/// export as namespace MyLib;
-/// //                  ^^^^^ id
-/// ```
-pub const TSNamespaceExportDeclaration = struct {
-    id: NodeIndex,
-};
+// ts: annotation wrapper
 
 /// A `: Type` annotation wrapper.
 ///
@@ -2182,6 +2143,8 @@ pub const TSTypeAnnotation = struct {
     type_annotation: NodeIndex,
 };
 
+// ts: primitive keyword types
+
 /// The `any` primitive type. Disables all type checking for the annotated value.
 ///
 /// ## Example
@@ -2191,23 +2154,70 @@ pub const TSTypeAnnotation = struct {
 /// ```
 pub const TSAnyKeyword = struct {};
 
-/// An array type. Applies the postfix `[]` suffix to an element type.
-///
-/// Stacks naturally: `T[][]` is a `TSArrayType` whose `element_type` is another
-/// `TSArrayType`.
+/// The `unknown` primitive type. The type-safe counterpart of `any`.
 ///
 /// ## Example
 /// ```ts
-/// let xs: number[];
-/// //      ^^^^^^^^ TSArrayType
-/// //      ^^^^^^ element_type (TSNumberKeyword)
-/// let ys: string[][];
-/// //      ^^^^^^^^^^ TSArrayType (element_type is another TSArrayType)
+/// let x: unknown;
+/// //     ^^^^^^^ TSUnknownKeyword
 /// ```
-pub const TSArrayType = struct {
-    /// the inner type that `[]` is applied to
-    element_type: NodeIndex,
-};
+pub const TSUnknownKeyword = struct {};
+
+/// The `never` primitive type. Represents values that never occur (for example
+/// the return type of a function that always throws).
+///
+/// ## Example
+/// ```ts
+/// function fail(): never { throw new Error(); }
+/// //               ^^^^^ TSNeverKeyword
+/// ```
+pub const TSNeverKeyword = struct {};
+
+/// The `void` keyword used in type position. Typically the return type of a
+/// function that returns no meaningful value.
+///
+/// ## Example
+/// ```ts
+/// function log(): void {}
+/// //              ^^^^ TSVoidKeyword
+/// ```
+pub const TSVoidKeyword = struct {};
+
+/// The `null` keyword used in type position.
+///
+/// ## Example
+/// ```ts
+/// let x: string | null;
+/// //              ^^^^ TSNullKeyword
+/// ```
+pub const TSNullKeyword = struct {};
+
+/// The `undefined` keyword used in type position.
+///
+/// ## Example
+/// ```ts
+/// let x: string | undefined;
+/// //              ^^^^^^^^^ TSUndefinedKeyword
+/// ```
+pub const TSUndefinedKeyword = struct {};
+
+/// The `string` primitive type.
+///
+/// ## Example
+/// ```ts
+/// let x: string;
+/// //     ^^^^^^ TSStringKeyword
+/// ```
+pub const TSStringKeyword = struct {};
+
+/// The `number` primitive type.
+///
+/// ## Example
+/// ```ts
+/// let x: number;
+/// //     ^^^^^^ TSNumberKeyword
+/// ```
+pub const TSNumberKeyword = struct {};
 
 /// The `bigint` primitive type. Integer values of arbitrary precision.
 ///
@@ -2227,70 +2237,23 @@ pub const TSBigIntKeyword = struct {};
 /// ```
 pub const TSBooleanKeyword = struct {};
 
-/// A conditional type. Selects between two branches based on whether
-/// `check_type` is assignable to `extends_type`.
+/// The `symbol` primitive type.
 ///
 /// ## Example
 /// ```ts
-/// type IsString<T> = T extends string ? "yes" : "no";
-/// //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSConditionalType
-/// //                 ^ check_type
-/// //                           ^^^^^^ extends_type
-/// //                                    ^^^^^ true_type
-/// //                                            ^^^^ false_type
+/// let x: symbol;
+/// //     ^^^^^^ TSSymbolKeyword
 /// ```
-pub const TSConditionalType = struct {
-    /// the type on the left of `extends`
-    check_type: NodeIndex,
-    /// the type on the right of `extends` that `check_type` is tested against
-    extends_type: NodeIndex,
-    /// the type selected when `check_type` is assignable to `extends_type`
-    true_type: NodeIndex,
-    /// the type selected when `check_type` is not assignable to `extends_type`
-    false_type: NodeIndex,
-};
+pub const TSSymbolKeyword = struct {};
 
-/// An indexed access type. Looks up the type of the property named by
-/// `index_type` on `object_type`, mirroring expression-level member access
-/// but in type position.
-///
-/// Stacks naturally: `T[K][L]` is a `TSIndexedAccessType` whose `object_type`
-/// is another `TSIndexedAccessType`.
+/// The `object` primitive type. Any non-primitive value.
 ///
 /// ## Example
 /// ```ts
-/// type A = Person["age"];
-/// //       ^^^^^^^^^^^^^ TSIndexedAccessType
-/// //       ^^^^^^ object_type
-/// //              ^^^^^ index_type (TSLiteralType)
-/// type B = T[K];
-/// //       ^^^^ TSIndexedAccessType
+/// let x: object;
+/// //     ^^^^^^ TSObjectKeyword
 /// ```
-pub const TSIndexedAccessType = struct {
-    /// the type being indexed into
-    object_type: NodeIndex,
-    /// the type used as the index key
-    index_type: NodeIndex,
-};
-
-/// An intersection type. Combines two or more types with `&`, representing a
-/// value that satisfies every constituent simultaneously.
-///
-/// Binds tighter than `TSUnionType`, so `A | B & C` parses as `A | (B & C)`.
-/// A leading `&` before the first operand is allowed and is preserved in the
-/// span: `type A = & X` yields a single-operand `TSIntersectionType` whose
-/// span starts at the leading `&` rather than at the first operand.
-///
-/// ## Example
-/// ```ts
-/// type A = Named & Aged;
-/// //       ^^^^^^^^^^^^ TSIntersectionType
-/// type B = { name: string } & { age: number } & Serializable;
-/// ```
-pub const TSIntersectionType = struct {
-    /// the constituent types in source order
-    types: IndexRange,
-};
+pub const TSObjectKeyword = struct {};
 
 /// The `intrinsic` keyword. Marks a type as built into the TypeScript compiler
 /// (for example `Uppercase<T>` and other string-manipulation utilities).
@@ -2302,168 +2265,6 @@ pub const TSIntersectionType = struct {
 /// ```
 pub const TSIntrinsicKeyword = struct {};
 
-/// A literal value used in type position. Wraps a string, numeric, bigint,
-/// boolean, or no-substitution template literal directly, or a `UnaryExpression`
-/// when the literal is preceded by a `-` or `+` sign (for example `-1`).
-///
-/// Template literals that contain interpolations use `TSTemplateLiteralType`
-/// rather than `TSLiteralType`. The `null` keyword uses `TSNullKeyword`.
-///
-/// ## Example
-/// ```ts
-/// type A = "hello";
-/// //       ^^^^^^^ TSLiteralType
-/// type B = 42;
-/// //       ^^ TSLiteralType
-/// type C = true;
-/// //       ^^^^ TSLiteralType
-/// type D = -1;
-/// //       ^^ TSLiteralType (literal is a UnaryExpression)
-/// ```
-pub const TSLiteralType = struct {
-    /// `StringLiteral`, `NumericLiteral`, `BigIntLiteral`, `BooleanLiteral`,
-    /// `TemplateLiteral`, or `UnaryExpression` wrapping one of the numeric kinds
-    literal: NodeIndex,
-};
-
-/// A labeled element inside a tuple type. Carries a name that appears only as
-/// documentation in TypeScript (it has no runtime effect) alongside the element
-/// type. The whole member may be marked optional with a trailing `?` on the
-/// label; the `?` modifies the tuple slot itself rather than wrapping the inner
-/// type in a `TSOptionalType`.
-///
-/// When preceded by `...` the member is wrapped in a `TSRestType` whose inner
-/// is this `TSNamedTupleMember`, matching TypeScript's spec shape for named
-/// rest elements like `[...selectors: S]`.
-///
-/// ## Example
-/// ```ts
-/// type Pair = [first: string, second?: number];
-/// //           ^^^^^^^^^^^^^^ TSNamedTupleMember (optional = false)
-/// //                          ^^^^^^^^^^^^^^^^ TSNamedTupleMember (optional = true)
-/// type R = [...rest: number[]];
-/// //        ^^^^^^^^^^^^^^^^^ TSRestType wrapping TSNamedTupleMember
-/// ```
-pub const TSNamedTupleMember = struct {
-    /// `IdentifierName` labeling the element
-    label: NodeIndex,
-    /// the `TSType` of the element
-    element_type: NodeIndex,
-    /// true when the label is followed by `?`
-    optional: bool = false,
-};
-
-/// The `never` primitive type. Represents values that never occur (for example
-/// the return type of a function that always throws).
-///
-/// ## Example
-/// ```ts
-/// function fail(): never { throw new Error(); }
-/// //               ^^^^^ TSNeverKeyword
-/// ```
-pub const TSNeverKeyword = struct {};
-
-/// The `null` keyword used in type position.
-///
-/// ## Example
-/// ```ts
-/// let x: string | null;
-/// //              ^^^^ TSNullKeyword
-/// ```
-pub const TSNullKeyword = struct {};
-
-/// The `number` primitive type.
-///
-/// ## Example
-/// ```ts
-/// let x: number;
-/// //     ^^^^^^ TSNumberKeyword
-/// ```
-pub const TSNumberKeyword = struct {};
-
-/// The `object` primitive type. Any non-primitive value.
-///
-/// ## Example
-/// ```ts
-/// let x: object;
-/// //     ^^^^^^ TSObjectKeyword
-/// ```
-pub const TSObjectKeyword = struct {};
-
-/// An optional element inside a tuple type. Parsed as a `Type?` suffix on an
-/// unnamed tuple element; the `?` marks the slot as optional without changing
-/// the element's underlying type.
-///
-/// Only valid as a direct tuple element. An optional marker on a named tuple
-/// element (`label?: Type`) is captured on `TSNamedTupleMember.optional`
-/// rather than producing a `TSOptionalType`.
-///
-/// ## Example
-/// ```ts
-/// type T = [number, string?];
-/// //                ^^^^^^^ TSOptionalType
-/// //                ^^^^^^ type_annotation (TSStringKeyword)
-/// ```
-pub const TSOptionalType = struct {
-    /// the inner `TSType` that is made optional
-    type_annotation: NodeIndex,
-};
-
-/// A parenthesized type. Wraps any type in parentheses for grouping and
-/// precedence control, letting the inner type bind looser than any
-/// surrounding postfix operators.
-///
-/// The span includes the opening and closing parentheses.
-///
-/// ## Example
-/// ```ts
-/// type A = (string | number)[];
-/// //       ^^^^^^^^^^^^^^^^^ TSParenthesizedType
-/// type B = (() => void) | null;
-/// //       ^^^^^^^^^^^^ TSParenthesizedType
-/// ```
-pub const TSParenthesizedType = struct {
-    /// the inner type wrapped by the parentheses
-    type_annotation: NodeIndex,
-};
-
-/// A rest element inside a tuple type. Marks the trailing slot as consuming
-/// zero or more elements whose type is the inner annotation.
-///
-/// The inner may be any `TSType` (typically an array or tuple type) or a
-/// `TSNamedTupleMember` for named rest elements like `[...rest: T[]]`.
-///
-/// ## Example
-/// ```ts
-/// type T = [number, ...string[]];
-/// //                ^^^^^^^^^^^ TSRestType
-/// //                   ^^^^^^^^ type_annotation (TSArrayType)
-/// type U = [...rest: number[]];
-/// //        ^^^^^^^^^^^^^^^^^ TSRestType wrapping TSNamedTupleMember
-/// ```
-pub const TSRestType = struct {
-    /// the inner type consumed by `...`
-    type_annotation: NodeIndex,
-};
-
-/// The `string` primitive type.
-///
-/// ## Example
-/// ```ts
-/// let x: string;
-/// //     ^^^^^^ TSStringKeyword
-/// ```
-pub const TSStringKeyword = struct {};
-
-/// The `symbol` primitive type.
-///
-/// ## Example
-/// ```ts
-/// let x: symbol;
-/// //     ^^^^^^ TSSymbolKeyword
-/// ```
-pub const TSSymbolKeyword = struct {};
-
 /// The polymorphic `this` type. Refers to the type of the enclosing class or
 /// interface at the usage site.
 ///
@@ -2474,102 +2275,7 @@ pub const TSSymbolKeyword = struct {};
 /// ```
 pub const TSThisType = struct {};
 
-/// A tuple type. A fixed length sequence of positional or named elements
-/// whose types can differ from slot to slot. Elements may be marked optional
-/// with `?` and the trailing element may be a rest element with `...`.
-///
-/// Each entry in `element_types` is one of:
-/// - a plain `TSType` for a positional element
-/// - a `TSOptionalType` for `Type?` in positional form
-/// - a `TSRestType` for `...Type` in positional form, optionally wrapping a
-///   `TSNamedTupleMember`
-/// - a `TSNamedTupleMember` for `label: Type` or `label?: Type`
-///
-/// The span covers the opening `[` through the closing `]`.
-///
-/// ## Example
-/// ```ts
-/// type T = [string, number?, ...boolean[]];
-/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTupleType
-/// type P = [first: string, second: number];
-/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTupleType with TSNamedTupleMember entries
-/// ```
-pub const TSTupleType = struct {
-    /// the tuple's elements in source order
-    element_types: IndexRange,
-};
-
-/// A prefix type operator. Wraps an inner type with `keyof`, `unique`, or
-/// `readonly`.
-///
-/// The span starts at the operator keyword and extends to the end of the
-/// inner type.
-///
-/// ## Example
-/// ```ts
-/// type Keys = keyof Person;
-/// //          ^^^^^^^^^^^^ TSTypeOperator (operator = keyof)
-/// let id: unique symbol;
-/// //      ^^^^^^^^^^^^^ TSTypeOperator (operator = unique)
-/// type R = readonly number[];
-/// //       ^^^^^^^^^^^^^^^^^ TSTypeOperator (operator = readonly)
-/// ```
-pub const TSTypeOperator = struct {
-    /// the prefix operator applied to the inner type
-    operator: TSTypeOperatorKind,
-    /// the type the operator is applied to
-    type_annotation: NodeIndex,
-};
-
-/// The `undefined` keyword used in type position.
-///
-/// ## Example
-/// ```ts
-/// let x: string | undefined;
-/// //              ^^^^^^^^^ TSUndefinedKeyword
-/// ```
-pub const TSUndefinedKeyword = struct {};
-
-/// A union type. Combines two or more types with `|`, representing a value
-/// that is any one of the constituents.
-///
-/// Binds looser than `TSIntersectionType`, so `A & B | C` parses as
-/// `(A & B) | C`. A leading `|` before the first operand is allowed and is
-/// preserved in the span: `type A = | string` yields a single-operand
-/// `TSUnionType` whose span starts at the leading `|` rather than at the
-/// first operand.
-///
-/// ## Example
-/// ```ts
-/// type A = string | number | boolean;
-/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^ TSUnionType
-/// type B =
-///     | { kind: "ok" }
-///     | { kind: "err"; message: string };
-/// ```
-pub const TSUnionType = struct {
-    /// the constituent types in source order
-    types: IndexRange,
-};
-
-/// The `unknown` primitive type. The type-safe counterpart of `any`.
-///
-/// ## Example
-/// ```ts
-/// let x: unknown;
-/// //     ^^^^^^^ TSUnknownKeyword
-/// ```
-pub const TSUnknownKeyword = struct {};
-
-/// The `void` keyword used in type position. Typically the return type of a
-/// function that returns no meaningful value.
-///
-/// ## Example
-/// ```ts
-/// function log(): void {}
-/// //              ^^^^ TSVoidKeyword
-/// ```
-pub const TSVoidKeyword = struct {};
+// ts: named references
 
 /// A reference to a named type, optionally applied to type arguments.
 ///
@@ -2611,20 +2317,7 @@ pub const TSQualifiedName = struct {
     right: NodeIndex,
 };
 
-/// The `<T, U>` type argument list applied to a type reference, call site,
-/// `new` expression, tagged template, JSX opening element, or instantiation
-/// expression. Holds the arguments in source order.
-///
-/// ## Example
-/// ```ts
-/// let x: Promise<number, string>;
-/// //            ^^^^^^^^^^^^^^^^ TSTypeParameterInstantiation
-/// //             ^^^^^^  ^^^^^^ params
-/// ```
-pub const TSTypeParameterInstantiation = struct {
-    /// the `TSType` arguments in source order
-    params: IndexRange,
-};
+// ts: type parameters
 
 /// A single `<T>` type parameter introduced by a generic declaration. Carries
 /// the parameter name along with the optional `extends` constraint, optional
@@ -2673,6 +2366,335 @@ pub const TSTypeParameter = struct {
 pub const TSTypeParameterDeclaration = struct {
     /// the `TSTypeParameter` entries in source order
     params: IndexRange,
+};
+
+/// The `<T, U>` type argument list applied to a type reference, call site,
+/// `new` expression, tagged template, JSX opening element, or instantiation
+/// expression. Holds the arguments in source order.
+///
+/// ## Example
+/// ```ts
+/// let x: Promise<number, string>;
+/// //            ^^^^^^^^^^^^^^^^ TSTypeParameterInstantiation
+/// //             ^^^^^^  ^^^^^^ params
+/// ```
+pub const TSTypeParameterInstantiation = struct {
+    /// the `TSType` arguments in source order
+    params: IndexRange,
+};
+
+// ts: literal in type position
+
+/// A literal value used in type position. Wraps a string, numeric, bigint,
+/// boolean, or no-substitution template literal directly, or a `UnaryExpression`
+/// when the literal is preceded by a `-` or `+` sign (for example `-1`).
+///
+/// Template literals that contain interpolations use `TSTemplateLiteralType`
+/// rather than `TSLiteralType`. The `null` keyword uses `TSNullKeyword`.
+///
+/// ## Example
+/// ```ts
+/// type A = "hello";
+/// //       ^^^^^^^ TSLiteralType
+/// type B = 42;
+/// //       ^^ TSLiteralType
+/// type C = true;
+/// //       ^^^^ TSLiteralType
+/// type D = -1;
+/// //       ^^ TSLiteralType (literal is a UnaryExpression)
+/// ```
+pub const TSLiteralType = struct {
+    /// `StringLiteral`, `NumericLiteral`, `BigIntLiteral`, `BooleanLiteral`,
+    /// `TemplateLiteral`, or `UnaryExpression` wrapping one of the numeric kinds
+    literal: NodeIndex,
+};
+
+// ts: postfix types
+
+/// An array type. Applies the postfix `[]` suffix to an element type.
+///
+/// Stacks naturally: `T[][]` is a `TSArrayType` whose `element_type` is another
+/// `TSArrayType`.
+///
+/// ## Example
+/// ```ts
+/// let xs: number[];
+/// //      ^^^^^^^^ TSArrayType
+/// //      ^^^^^^ element_type (TSNumberKeyword)
+/// let ys: string[][];
+/// //      ^^^^^^^^^^ TSArrayType (element_type is another TSArrayType)
+/// ```
+pub const TSArrayType = struct {
+    /// the inner type that `[]` is applied to
+    element_type: NodeIndex,
+};
+
+/// An indexed access type. Looks up the type of the property named by
+/// `index_type` on `object_type`, mirroring expression-level member access
+/// but in type position.
+///
+/// Stacks naturally: `T[K][L]` is a `TSIndexedAccessType` whose `object_type`
+/// is another `TSIndexedAccessType`.
+///
+/// ## Example
+/// ```ts
+/// type A = Person["age"];
+/// //       ^^^^^^^^^^^^^ TSIndexedAccessType
+/// //       ^^^^^^ object_type
+/// //              ^^^^^ index_type (TSLiteralType)
+/// type B = T[K];
+/// //       ^^^^ TSIndexedAccessType
+/// ```
+pub const TSIndexedAccessType = struct {
+    /// the type being indexed into
+    object_type: NodeIndex,
+    /// the type used as the index key
+    index_type: NodeIndex,
+};
+
+// ts: tuple types
+
+/// A tuple type. A fixed length sequence of positional or named elements
+/// whose types can differ from slot to slot. Elements may be marked optional
+/// with `?` and the trailing element may be a rest element with `...`.
+///
+/// Each entry in `element_types` is one of:
+/// - a plain `TSType` for a positional element
+/// - a `TSOptionalType` for `Type?` in positional form
+/// - a `TSRestType` for `...Type` in positional form, optionally wrapping a
+///   `TSNamedTupleMember`
+/// - a `TSNamedTupleMember` for `label: Type` or `label?: Type`
+///
+/// The span covers the opening `[` through the closing `]`.
+///
+/// ## Example
+/// ```ts
+/// type T = [string, number?, ...boolean[]];
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTupleType
+/// type P = [first: string, second: number];
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTupleType with TSNamedTupleMember entries
+/// ```
+pub const TSTupleType = struct {
+    /// the tuple's elements in source order
+    element_types: IndexRange,
+};
+
+/// A labeled element inside a tuple type. Carries a name that appears only as
+/// documentation in TypeScript (it has no runtime effect) alongside the element
+/// type. The whole member may be marked optional with a trailing `?` on the
+/// label; the `?` modifies the tuple slot itself rather than wrapping the inner
+/// type in a `TSOptionalType`.
+///
+/// When preceded by `...` the member is wrapped in a `TSRestType` whose inner
+/// is this `TSNamedTupleMember`, matching TypeScript's spec shape for named
+/// rest elements like `[...selectors: S]`.
+///
+/// ## Example
+/// ```ts
+/// type Pair = [first: string, second?: number];
+/// //           ^^^^^^^^^^^^^^ TSNamedTupleMember (optional = false)
+/// //                          ^^^^^^^^^^^^^^^^ TSNamedTupleMember (optional = true)
+/// type R = [...rest: number[]];
+/// //        ^^^^^^^^^^^^^^^^^ TSRestType wrapping TSNamedTupleMember
+/// ```
+pub const TSNamedTupleMember = struct {
+    /// `IdentifierName` labeling the element
+    label: NodeIndex,
+    /// the `TSType` of the element
+    element_type: NodeIndex,
+    /// true when the label is followed by `?`
+    optional: bool = false,
+};
+
+/// An optional element inside a tuple type. Parsed as a `Type?` suffix on an
+/// unnamed tuple element; the `?` marks the slot as optional without changing
+/// the element's underlying type.
+///
+/// Only valid as a direct tuple element. An optional marker on a named tuple
+/// element (`label?: Type`) is captured on `TSNamedTupleMember.optional`
+/// rather than producing a `TSOptionalType`.
+///
+/// ## Example
+/// ```ts
+/// type T = [number, string?];
+/// //                ^^^^^^^ TSOptionalType
+/// //                ^^^^^^ type_annotation (TSStringKeyword)
+/// ```
+pub const TSOptionalType = struct {
+    /// the inner `TSType` that is made optional
+    type_annotation: NodeIndex,
+};
+
+/// A rest element inside a tuple type. Marks the trailing slot as consuming
+/// zero or more elements whose type is the inner annotation.
+///
+/// The inner may be any `TSType` (typically an array or tuple type) or a
+/// `TSNamedTupleMember` for named rest elements like `[...rest: T[]]`.
+///
+/// ## Example
+/// ```ts
+/// type T = [number, ...string[]];
+/// //                ^^^^^^^^^^^ TSRestType
+/// //                   ^^^^^^^^ type_annotation (TSArrayType)
+/// type U = [...rest: number[]];
+/// //        ^^^^^^^^^^^^^^^^^ TSRestType wrapping TSNamedTupleMember
+/// ```
+pub const TSRestType = struct {
+    /// the inner type consumed by `...`
+    type_annotation: NodeIndex,
+};
+
+// ts: compound types
+
+/// A union type. Combines two or more types with `|`, representing a value
+/// that is any one of the constituents.
+///
+/// Binds looser than `TSIntersectionType`, so `A & B | C` parses as
+/// `(A & B) | C`. A leading `|` before the first operand is allowed and is
+/// preserved in the span: `type A = | string` yields a single-operand
+/// `TSUnionType` whose span starts at the leading `|` rather than at the
+/// first operand.
+///
+/// ## Example
+/// ```ts
+/// type A = string | number | boolean;
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^ TSUnionType
+/// type B =
+///     | { kind: "ok" }
+///     | { kind: "err"; message: string };
+/// ```
+pub const TSUnionType = struct {
+    /// the constituent types in source order
+    types: IndexRange,
+};
+
+/// An intersection type. Combines two or more types with `&`, representing a
+/// value that satisfies every constituent simultaneously.
+///
+/// Binds tighter than `TSUnionType`, so `A | B & C` parses as `A | (B & C)`.
+/// A leading `&` before the first operand is allowed and is preserved in the
+/// span: `type A = & X` yields a single-operand `TSIntersectionType` whose
+/// span starts at the leading `&` rather than at the first operand.
+///
+/// ## Example
+/// ```ts
+/// type A = Named & Aged;
+/// //       ^^^^^^^^^^^^ TSIntersectionType
+/// type B = { name: string } & { age: number } & Serializable;
+/// ```
+pub const TSIntersectionType = struct {
+    /// the constituent types in source order
+    types: IndexRange,
+};
+
+/// A conditional type. Selects between two branches based on whether
+/// `check_type` is assignable to `extends_type`.
+///
+/// ## Example
+/// ```ts
+/// type IsString<T> = T extends string ? "yes" : "no";
+/// //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSConditionalType
+/// //                 ^ check_type
+/// //                           ^^^^^^ extends_type
+/// //                                    ^^^^^ true_type
+/// //                                            ^^^^ false_type
+/// ```
+pub const TSConditionalType = struct {
+    /// the type on the left of `extends`
+    check_type: NodeIndex,
+    /// the type on the right of `extends` that `check_type` is tested against
+    extends_type: NodeIndex,
+    /// the type selected when `check_type` is assignable to `extends_type`
+    true_type: NodeIndex,
+    /// the type selected when `check_type` is not assignable to `extends_type`
+    false_type: NodeIndex,
+};
+
+// ts: prefix operator type
+
+/// The prefix operator used by `TSTypeOperator`.
+///
+/// `keyof` produces the union of property keys of the operand, `unique` marks
+/// a unique symbol type (only meaningful before `symbol`), and `readonly`
+/// applies to tuple and array types to make their elements immutable.
+pub const TSTypeOperatorKind = enum {
+    keyof,
+    unique,
+    readonly,
+
+    pub fn toString(self: TSTypeOperatorKind) []const u8 {
+        return switch (self) {
+            .keyof => "keyof",
+            .unique => "unique",
+            .readonly => "readonly",
+        };
+    }
+};
+
+/// A prefix type operator. Wraps an inner type with `keyof`, `unique`, or
+/// `readonly`.
+///
+/// The span starts at the operator keyword and extends to the end of the
+/// inner type.
+///
+/// ## Example
+/// ```ts
+/// type Keys = keyof Person;
+/// //          ^^^^^^^^^^^^ TSTypeOperator (operator = keyof)
+/// let id: unique symbol;
+/// //      ^^^^^^^^^^^^^ TSTypeOperator (operator = unique)
+/// type R = readonly number[];
+/// //       ^^^^^^^^^^^^^^^^^ TSTypeOperator (operator = readonly)
+/// ```
+pub const TSTypeOperator = struct {
+    /// the prefix operator applied to the inner type
+    operator: TSTypeOperatorKind,
+    /// the type the operator is applied to
+    type_annotation: NodeIndex,
+};
+
+// ts: grouping
+
+/// A parenthesized type. Wraps any type in parentheses for grouping and
+/// precedence control, letting the inner type bind looser than any
+/// surrounding postfix operators.
+///
+/// The span includes the opening and closing parentheses.
+///
+/// ## Example
+/// ```ts
+/// type A = (string | number)[];
+/// //       ^^^^^^^^^^^^^^^^^ TSParenthesizedType
+/// type B = (() => void) | null;
+/// //       ^^^^^^^^^^^^ TSParenthesizedType
+/// ```
+pub const TSParenthesizedType = struct {
+    /// the inner type wrapped by the parentheses
+    type_annotation: NodeIndex,
+};
+
+// ts: module-level
+
+/// TypeScript `export = expr` (CommonJS-style ambient export).
+///
+/// ## Example
+/// ```ts
+/// export = MyNamespace;
+/// //       ^^^^^^^^^^^ expression
+/// ```
+pub const TSExportAssignment = struct {
+    expression: NodeIndex,
+};
+
+/// TypeScript `export as namespace Name` (UMD ambient namespace export).
+///
+/// ## Example
+/// ```ts
+/// export as namespace MyLib;
+/// //                  ^^^^^ id
+/// ```
+pub const TSNamespaceExportDeclaration = struct {
+    id: NodeIndex,
 };
 
 /// A JSX element, possibly self-closing.
@@ -2929,40 +2951,40 @@ pub const NodeData = union(enum) {
     export_specifier: ExportSpecifier,
 
     // typescript
+    ts_type_annotation: TSTypeAnnotation,
     ts_any_keyword: TSAnyKeyword,
-    ts_array_type: TSArrayType,
+    ts_unknown_keyword: TSUnknownKeyword,
+    ts_never_keyword: TSNeverKeyword,
+    ts_void_keyword: TSVoidKeyword,
+    ts_null_keyword: TSNullKeyword,
+    ts_undefined_keyword: TSUndefinedKeyword,
+    ts_string_keyword: TSStringKeyword,
+    ts_number_keyword: TSNumberKeyword,
     ts_bigint_keyword: TSBigIntKeyword,
     ts_boolean_keyword: TSBooleanKeyword,
-    ts_conditional_type: TSConditionalType,
-    ts_export_assignment: TSExportAssignment,
-    ts_indexed_access_type: TSIndexedAccessType,
-    ts_intersection_type: TSIntersectionType,
-    ts_intrinsic_keyword: TSIntrinsicKeyword,
-    ts_literal_type: TSLiteralType,
-    ts_named_tuple_member: TSNamedTupleMember,
-    ts_namespace_export_declaration: TSNamespaceExportDeclaration,
-    ts_never_keyword: TSNeverKeyword,
-    ts_null_keyword: TSNullKeyword,
-    ts_number_keyword: TSNumberKeyword,
-    ts_object_keyword: TSObjectKeyword,
-    ts_optional_type: TSOptionalType,
-    ts_parenthesized_type: TSParenthesizedType,
-    ts_qualified_name: TSQualifiedName,
-    ts_rest_type: TSRestType,
-    ts_string_keyword: TSStringKeyword,
     ts_symbol_keyword: TSSymbolKeyword,
+    ts_object_keyword: TSObjectKeyword,
+    ts_intrinsic_keyword: TSIntrinsicKeyword,
     ts_this_type: TSThisType,
-    ts_tuple_type: TSTupleType,
-    ts_type_annotation: TSTypeAnnotation,
-    ts_type_operator: TSTypeOperator,
+    ts_type_reference: TSTypeReference,
+    ts_qualified_name: TSQualifiedName,
     ts_type_parameter: TSTypeParameter,
     ts_type_parameter_declaration: TSTypeParameterDeclaration,
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,
-    ts_type_reference: TSTypeReference,
-    ts_undefined_keyword: TSUndefinedKeyword,
+    ts_literal_type: TSLiteralType,
+    ts_array_type: TSArrayType,
+    ts_indexed_access_type: TSIndexedAccessType,
+    ts_tuple_type: TSTupleType,
+    ts_named_tuple_member: TSNamedTupleMember,
+    ts_optional_type: TSOptionalType,
+    ts_rest_type: TSRestType,
     ts_union_type: TSUnionType,
-    ts_unknown_keyword: TSUnknownKeyword,
-    ts_void_keyword: TSVoidKeyword,
+    ts_intersection_type: TSIntersectionType,
+    ts_conditional_type: TSConditionalType,
+    ts_type_operator: TSTypeOperator,
+    ts_parenthesized_type: TSParenthesizedType,
+    ts_export_assignment: TSExportAssignment,
+    ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 
     // jsx
     jsx_element: JSXElement,
