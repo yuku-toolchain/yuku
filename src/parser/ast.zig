@@ -2208,6 +2208,29 @@ pub const TSBigIntKeyword = struct {};
 /// ```
 pub const TSBooleanKeyword = struct {};
 
+/// A conditional type. Selects between two branches based on whether
+/// `check_type` is assignable to `extends_type`.
+///
+/// ## Example
+/// ```ts
+/// type IsString<T> = T extends string ? "yes" : "no";
+/// //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSConditionalType
+/// //                 ^ check_type
+/// //                           ^^^^^^ extends_type
+/// //                                    ^^^^^ true_type
+/// //                                            ^^^^ false_type
+/// ```
+pub const TSConditionalType = struct {
+    /// the type on the left of `extends`
+    check_type: NodeIndex,
+    /// the type on the right of `extends` that `check_type` is tested against
+    extends_type: NodeIndex,
+    /// the type selected when `check_type` is assignable to `extends_type`
+    true_type: NodeIndex,
+    /// the type selected when `check_type` is not assignable to `extends_type`
+    false_type: NodeIndex,
+};
+
 /// An indexed access type. Looks up the type of the property named by
 /// `index_type` on `object_type`, mirroring expression-level member access
 /// but in type position.
@@ -2869,6 +2892,7 @@ pub const NodeData = union(enum) {
     ts_array_type: TSArrayType,
     ts_bigint_keyword: TSBigIntKeyword,
     ts_boolean_keyword: TSBooleanKeyword,
+    ts_conditional_type: TSConditionalType,
     ts_export_assignment: TSExportAssignment,
     ts_indexed_access_type: TSIndexedAccessType,
     ts_intersection_type: TSIntersectionType,

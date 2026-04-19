@@ -6,7 +6,7 @@ const TokenTag = @import("../../token.zig").TokenTag;
 const literals = @import("../literals.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
-    return try parseUnionType(parser) orelse {
+    return try parseConditionalType(parser) orelse {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected a type",
@@ -14,6 +14,61 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
         );
         return null;
     };
+}
+
+/// T extends U ? X : Y
+/// ^^^^^^^^^^^^^^^^^^^
+///
+/// lowest precedence type operator. the check type is parsed with union
+/// precedence, the extends type with union precedence (conditional types
+/// are disallowed on the right of `extends` without parentheses), the
+/// true and false branches use the full type grammar so they nest
+/// right-associatively on the false side.
+fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
+    const check_type = try parseUnionType(parser) orelse return null;
+
+    if (parser.current_token.tag != .extends) return check_type;
+
+    try parser.advance() orelse return null; // consume 'extends'
+
+    const extends_type = try parseUnionType(parser) orelse return null;
+
+    if (parser.current_token.tag != .question) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '?' in a conditional type",
+            .{ .help = "A conditional type is written 'T extends U ? X : Y'" },
+        );
+        return null;
+    }
+    try parser.advance() orelse return null; // consume '?'
+
+    const true_type = try parseType(parser) orelse return null;
+
+    if (parser.current_token.tag != .colon) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ':' in a conditional type",
+            .{ .help = "A conditional type is written 'T extends U ? X : Y'" },
+        );
+        return null;
+    }
+    try parser.advance() orelse return null; // consume ':'
+
+    const false_type = try parseType(parser) orelse return null;
+
+    const start = parser.tree.getSpan(check_type).start;
+    const end = parser.tree.getSpan(false_type).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_conditional_type = .{
+            .check_type = check_type,
+            .extends_type = extends_type,
+            .true_type = true_type,
+            .false_type = false_type,
+        } },
+        .{ .start = start, .end = end },
+    );
 }
 
 /// | A | B | C
