@@ -2775,6 +2775,162 @@ pub const TSConstructorType = struct {
     abstract: bool = false,
 };
 
+// ts: object-type literal and signatures
+
+/// An anonymous object type. Holds a list of signatures (properties, methods,
+/// index signatures, call signatures, construct signatures) in source order.
+///
+/// ## Example
+/// ```ts
+/// type Point = { x: number; y: number };
+/// //           ^^^^^^^^^^^^^^^^^^^^^^^^ TSTypeLiteral
+/// type Callable = { (x: number): string; length: number };
+/// //              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSTypeLiteral
+/// ```
+pub const TSTypeLiteral = struct {
+    /// the signatures in source order
+    members: IndexRange,
+};
+
+/// A property declaration inside a type literal or interface body. Written as
+/// `key: Type`, with optional `readonly` and `?` modifiers. A missing type
+/// annotation is allowed and decodes to `typeAnnotation: null`.
+///
+/// ## Example
+/// ```ts
+/// type T = { readonly x?: number };
+/// //         ^^^^^^^^^^^^^^^^^^^^ TSPropertySignature (readonly, optional)
+/// //                    ^          key
+/// //                      ^^^^^^^^ type_annotation
+/// ```
+pub const TSPropertySignature = struct {
+    /// `IdentifierName`, `StringLiteral`, `NumericLiteral`, `PrivateIdentifier`,
+    /// or any expression when `computed = true`
+    key: NodeIndex,
+    /// `TSTypeAnnotation` or `.null` when absent
+    type_annotation: NodeIndex = .null,
+    /// true when the key is written inside `[...]`
+    computed: bool = false,
+    /// true when a `?` follows the key
+    optional: bool = false,
+    /// true when preceded by the `readonly` modifier
+    readonly: bool = false,
+};
+
+/// The kind of a method signature. Accessors use `get` or `set`; all other
+/// method signatures use `method`.
+pub const TSMethodSignatureKind = enum(u2) {
+    method,
+    get,
+    set,
+
+    pub fn toString(self: TSMethodSignatureKind) []const u8 {
+        return switch (self) {
+            .method => "method",
+            .get => "get",
+            .set => "set",
+        };
+    }
+};
+
+/// A method, getter, or setter declaration inside a type literal or interface
+/// body. Carries the key, an optional generic parameter list, the parameter
+/// list, and an optional return type.
+///
+/// Getters accept no parameters and may declare a return type. Setters accept
+/// exactly one parameter and carry no return type (`returnType` is `.null`).
+///
+/// ## Example
+/// ```ts
+/// type T = {
+///   add(a: number, b: number): number;
+/// //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSMethodSignature (kind = method)
+///   get size(): number;
+/// //^^^^^^^^^^^^^^^^^^ TSMethodSignature (kind = get)
+///   set name(v: string);
+/// //^^^^^^^^^^^^^^^^^^^ TSMethodSignature (kind = set, return_type = .null)
+///   optional?<T>(x: T): T;
+/// //^^^^^^^^^^^^^^^^^^^^^ TSMethodSignature (optional = true, type_parameters set)
+/// };
+/// ```
+pub const TSMethodSignature = struct {
+    /// `IdentifierName`, `StringLiteral`, `NumericLiteral`, `PrivateIdentifier`,
+    /// or any expression when `computed = true`
+    key: NodeIndex,
+    /// `TSTypeParameterDeclaration` or `.null` when absent
+    type_parameters: NodeIndex = .null,
+    /// the parameter list as a `FormalParameters` node
+    params: NodeIndex,
+    /// `TSTypeAnnotation` or `.null` when absent (setters always have `.null`)
+    return_type: NodeIndex = .null,
+    /// method, getter, or setter
+    kind: TSMethodSignatureKind = .method,
+    /// true when the key is written inside `[...]`
+    computed: bool = false,
+    /// true when a `?` follows the key
+    optional: bool = false,
+};
+
+/// A bare call signature inside a type literal or interface body. Written as
+/// `(params): ReturnType`. Distinct from `TSFunctionType`, which is used as a
+/// standalone type; call signatures are members of an enclosing object type.
+///
+/// ## Example
+/// ```ts
+/// type Callable = { <T>(x: T): T };
+/// //                ^^^^^^^^^^^^^ TSCallSignatureDeclaration
+/// ```
+pub const TSCallSignatureDeclaration = struct {
+    /// `TSTypeParameterDeclaration` or `.null` when absent
+    type_parameters: NodeIndex = .null,
+    /// the parameter list as a `FormalParameters` node
+    params: NodeIndex,
+    /// `TSTypeAnnotation` or `.null` when absent
+    return_type: NodeIndex = .null,
+};
+
+/// A bare construct signature inside a type literal or interface body. Written
+/// as `new (params): ReturnType`. Distinct from `TSConstructorType`, which is
+/// used as a standalone type.
+///
+/// ## Example
+/// ```ts
+/// type Ctor = { new <T>(x: T): T };
+/// //            ^^^^^^^^^^^^^^^^^ TSConstructSignatureDeclaration
+/// ```
+pub const TSConstructSignatureDeclaration = struct {
+    /// `TSTypeParameterDeclaration` or `.null` when absent
+    type_parameters: NodeIndex = .null,
+    /// the parameter list as a `FormalParameters` node
+    params: NodeIndex,
+    /// `TSTypeAnnotation` or `.null` when absent
+    return_type: NodeIndex = .null,
+};
+
+/// An index signature inside a type literal, interface body, or class body.
+/// Written as `[name: KeyType]: ValueType`, optionally preceded by
+/// `readonly`. The parameter list is a small array of identifier-like bindings
+/// carrying a type annotation; almost always one entry.
+///
+/// ## Example
+/// ```ts
+/// type Dict = { [k: string]: number };
+/// //            ^^^^^^^^^^^^^^^^^^^^ TSIndexSignature
+/// //             ^^^^^^^^^ parameters (one binding: k with string annotation)
+/// //                         ^^^^^^^ type_annotation (number)
+/// type ReadOnly = { readonly [i: number]: string };
+/// //                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSIndexSignature (readonly)
+/// ```
+pub const TSIndexSignature = struct {
+    /// the parameter bindings in source order. each entry is a
+    /// `BindingIdentifier` that carries its own type annotation.
+    parameters: IndexRange,
+    /// `TSTypeAnnotation` for the value type
+    type_annotation: NodeIndex,
+    /// true when preceded by the `readonly` modifier
+    readonly: bool = false,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3089,6 +3245,12 @@ pub const NodeData = union(enum) {
     ts_parenthesized_type: TSParenthesizedType,
     ts_function_type: TSFunctionType,
     ts_constructor_type: TSConstructorType,
+    ts_type_literal: TSTypeLiteral,
+    ts_property_signature: TSPropertySignature,
+    ts_method_signature: TSMethodSignature,
+    ts_call_signature_declaration: TSCallSignatureDeclaration,
+    ts_construct_signature_declaration: TSConstructSignatureDeclaration,
+    ts_index_signature: TSIndexSignature,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

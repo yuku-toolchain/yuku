@@ -196,6 +196,7 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
     try writeArrayRaw(w, "TS_TYPE_OPERATORS", &.{ "\"keyof\"", "\"unique\"", "\"readonly\"" });
+    try writeArrayRaw(w, "TS_METHOD_SIGNATURE_KINDS", &.{ "\"method\"", "\"get\"", "\"set\"" });
 }
 
 fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
@@ -308,12 +309,13 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter", "formal_parameters",   "function",            "arrow_function_expression",
-        "program",          "directive",           "string_literal",      "numeric_literal",
-        "bigint_literal",   "boolean_literal",     "null_literal",        "regexp_literal",
-        "template_element", "class",               "property_definition", "unary_expression",
-        "binding_property", "array_pattern",       "object_pattern",      "jsx_text",
-        "ts_function_type", "ts_constructor_type",
+        "formal_parameter",             "formal_parameters",              "function",                         "arrow_function_expression",
+        "program",                      "directive",                      "string_literal",                   "numeric_literal",
+        "bigint_literal",               "boolean_literal",                "null_literal",                     "regexp_literal",
+        "template_element",             "class",                          "property_definition",              "unary_expression",
+        "binding_property",             "array_pattern",                  "object_pattern",                   "jsx_text",
+        "ts_function_type",             "ts_constructor_type",            "ts_method_signature",
+        "ts_call_signature_declaration", "ts_construct_signature_declaration",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -479,6 +481,32 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: return {{ type: "TSConstructorType", start, end, abstract: !!(flags & {d}), typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
         , .{ tag, ba, stp, stp, sp, sp, srt, srt });
+    } else if (comptime eql(u8, name, "ts_method_signature")) {
+        const sk = comptime slotOf(ast.TSMethodSignature, "key");
+        const stp = comptime slotOf(ast.TSMethodSignature, "type_parameters");
+        const sp = comptime slotOf(ast.TSMethodSignature, "params");
+        const srt = comptime slotOf(ast.TSMethodSignature, "return_type");
+        const kbit = comptime rt.flagBitForField(ast.TSMethodSignature, fieldIdx(ast.TSMethodSignature, "kind"));
+        const kmask = comptime enumMask(ast.TSMethodSignatureKind);
+        const bc = comptime flagMask(ast.TSMethodSignature, "computed");
+        const bo = comptime flagMask(ast.TSMethodSignature, "optional");
+        try emit(w,
+            \\    case {d}: return {{ type: "TSMethodSignature", start, end, key: node(f{d}), computed: !!(flags & {d}), optional: !!(flags & {d}), kind: TS_METHOD_SIGNATURE_KINDS[(flags >> {d}) & {d}], typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null, accessibility: null, readonly: false, static: false }};
+        , .{ tag, sk, bc, bo, kbit, kmask, stp, stp, sp, sp, srt, srt });
+    } else if (comptime eql(u8, name, "ts_call_signature_declaration")) {
+        const stp = comptime slotOf(ast.TSCallSignatureDeclaration, "type_parameters");
+        const sp = comptime slotOf(ast.TSCallSignatureDeclaration, "params");
+        const srt = comptime slotOf(ast.TSCallSignatureDeclaration, "return_type");
+        try emit(w,
+            \\    case {d}: return {{ type: "TSCallSignatureDeclaration", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+        , .{ tag, stp, stp, sp, sp, srt, srt });
+    } else if (comptime eql(u8, name, "ts_construct_signature_declaration")) {
+        const stp = comptime slotOf(ast.TSConstructSignatureDeclaration, "type_parameters");
+        const sp = comptime slotOf(ast.TSConstructSignatureDeclaration, "params");
+        const srt = comptime slotOf(ast.TSConstructSignatureDeclaration, "return_type");
+        try emit(w,
+            \\    case {d}: return {{ type: "TSConstructSignatureDeclaration", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+        , .{ tag, stp, stp, sp, sp, srt, srt });
     }
 }
 
@@ -591,6 +619,15 @@ const TS_EXTRAS = [_]struct { node: []const u8, extras: []const Extra }{
     .{ .node = "expression_statement", .extras = &.{.{ .field = "directive", .value = "null" }} },
     .{ .node = "binding_rest_element", .extras = &.{.{ .field = "value", .value = "null" }} },
     .{ .node = "export_default_declaration", .extras = &.{.{ .field = "exportKind", .value = "\"value\"" }} },
+    // ts signature nodes carry constant estree fields with no backing zig storage.
+    .{ .node = "ts_property_signature", .extras = &.{
+        .{ .field = "accessibility", .value = "null" },
+        .{ .field = "static", .value = "false" },
+    } },
+    .{ .node = "ts_index_signature", .extras = &.{
+        .{ .field = "static", .value = "false" },
+        .{ .field = "accessibility", .value = "null" },
+    } },
 };
 
 fn tsExtrasOf(comptime name: []const u8) []const Extra {
@@ -686,6 +723,7 @@ fn enumTable(comptime E: type) []const u8 {
     if (E == ast.ImportOrExportKind) return "IMPORT_EXPORT_KINDS";
     if (E == ast.Accessibility) return "ACCESSIBILITY";
     if (E == ast.TSTypeOperatorKind) return "TS_TYPE_OPERATORS";
+    if (E == ast.TSMethodSignatureKind) return "TS_METHOD_SIGNATURE_KINDS";
     @compileError("no lookup table for enum");
 }
 
