@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2474/8399 (29.46%)
-Failed:       5925
-AST mismatch: 7/2481
+Passed:       2477/8399 (29.49%)
+Failed:       5922
+AST mismatch: 7/2484
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -1443,15 +1443,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/063141ff1384af23.ts
-error: Expected '{' to start function body, but found 'is'
+error: Expected a type, but found '?'
    |
  3 | 
  4 | function f1(a: string): a is ?string {
-   |                           ^^
+   |                              ^
  5 |     return true;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✗ test/parser/suite/ts/pass/063308f7b7463dee.ts
 error: Expected '{' to start function body, but found ';'
@@ -9310,17 +9308,7 @@ error: 'enum' is reserved and cannot be used as an identifier
  5 | 
    |
 
-✗ test/parser/suite/ts/pass/24c7986cc8963601.ts
-error: Expected ')' after function arguments, but found 'is'
-   |
- 2 | [true, true, false, null]
- 3 |     .filter((thing): thing is boolean => thing !== null)
-   |            ~ Opened here
- 4 |     .map(thing => thing.toString());
-   |
-   = help: Function calls must end with ')'. Check for missing commas or unclosed parentheses.
-
-
+✓ test/parser/suite/ts/pass/24c7986cc8963601.ts
 ✗ test/parser/suite/ts/pass/24d093474506a285.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -10301,14 +10289,14 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/2894b3a78ee39406.ts
 ✓ test/parser/suite/ts/pass/2898e217314ee819.ts
 ✗ test/parser/suite/ts/pass/289a2bf13e287fad.ts
-error: Expected '{' to start function body, but found 'is'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
- 4 | // test fix for #18112, type guard predicates should narrow returned element
- 5 | function isNumber(x: any): x is number {
-   |                              ^^
- 6 |   return typeof x === "number";
+11 | 
+12 | const readonlyArrayOfStringsNumbersAndBooleans = arrayOfStringsNumbersAndBooleans as ReadonlyArray<string | number | boolean>;
+   |                                                                                   ^^
+13 | const readonlyFoundNumber: number | undefined = readonlyArrayOfStringsNumbersAndBooleans.find(isNumber);
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/28ad807046defc13.ts
@@ -36792,14 +36780,14 @@ error: 'enum' is reserved and cannot be used as a binding identifier
    |
 
 ✗ test/parser/suite/ts/pass/8e383f86bff36815.module.ts
-error: Expected '{' to start function body, but found 'is'
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | 
- 6 | export function assertIsElement(node: Node | null): node is Element {
-   |                                                          ^^
- 7 |     let nodeType = node === null ? null : node.nodeType;
+10 |   
+11 | export function assertNodeTagName<
+   |                                  ^
+12 |     T extends keyof ElementTagNameMap,
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/8e3987aa381cfee7.ts
@@ -37488,17 +37476,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/907a3d40a9d1d891.ts
-error: Expected '{' to start function body, but found 'is'
-   |
- 1 | // @target: es2015
- 2 | function addProp2(x: any): x is { a: string; a: string; } {
-   |                              ^^
- 3 |     return true;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/907a3d40a9d1d891.ts
 ✗ test/parser/suite/ts/pass/908092dab46148b0.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -42944,14 +42922,14 @@ error: Expected ';' after class field, but found 'p'
 
 
 ✗ test/parser/suite/ts/pass/a53688298d172b09.ts
-error: Expected '{' to start function body, but found 'condition'
+error: Expected ';' after class field, but found 'map'
    |
- 6 | 
- 7 | function assert(condition: unknown): asserts condition {
-   |                                              ^^^^^^^^^
- 8 |     if (!condition) {
+13 | class MyClass {
+14 |     private map = {
+   |             ^^^
+15 |         my_key: 'example_value'
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/a53ab07e9c0adc14.ts
@@ -43720,11 +43698,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts
-error: Expected '{' to start function body, but found 'is'
+error: Expected '{' to start function body, but found '!'
    |
  3 | 
  4 | function f1(a: string): a is string! {
-   |                           ^^
+   |                                    ^
  5 |     return true;
    |
    = help: Function bodies must be enclosed in braces: function name() { ... }
@@ -44664,14 +44642,14 @@ error: 'enum' is reserved and cannot be used as an identifier
 
 ✓ test/parser/suite/ts/pass/abc96695a647cb62.ts
 ✗ test/parser/suite/ts/pass/abcd9331c1af3b94.ts
-error: Expected '{' to start function body, but found 'is'
+error: Expected '{' to start class body, but found '<'
    |
- 9 | 
-10 | function isZero(x: number): x is 0 {
-   |                               ^^
-11 |   return x === 0;
+33 | 
+34 | class GoodIterator extends Iterator<number> {
+   |                                    ^
+35 |   next() {
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✗ test/parser/suite/ts/pass/abcf0ff9a2be5282.ts
@@ -45030,17 +45008,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/add26ac395dcad12.module.ts
-error: Expected '{' to start function body, but found 'is'
-   |
- 4 | 
- 5 | export function f(x: any): x is number {
-   |                              ^^
- 6 |     return typeof x === "number";
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/add26ac395dcad12.module.ts
 ✗ test/parser/suite/ts/pass/ade303b2805e8d3f.ts
 error: Expected ']' after computed property key, but found ':'
    |

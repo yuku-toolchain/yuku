@@ -111,7 +111,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     var return_type_end: u32 = params_end;
 
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        const annotation = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
         return_type = annotation;
         return_type_end = parser.tree.getSpan(annotation).end;
     }

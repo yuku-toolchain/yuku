@@ -2775,6 +2775,33 @@ pub const TSConstructorType = struct {
     abstract: bool = false,
 };
 
+// ts: type predicate (return-type position only)
+
+/// A TypeScript type predicate. Appears only in a function's return-type
+/// position and narrows the type of a parameter (or `this`) in the call site's
+/// control-flow analysis.
+///
+/// ## Example
+/// ```ts
+/// function isString(x: unknown): x is string { ... }
+/// //                             ^^^^^^^^^^^ TSTypePredicate
+/// function assertNumber(x: unknown): asserts x is number { ... }
+/// //                                 ^^^^^^^^^^^^^^^^^^^ TSTypePredicate (asserts = true)
+/// function assert(c: boolean): asserts c { ... }
+/// //                           ^^^^^^^^^ TSTypePredicate (asserts = true, type_annotation = null)
+/// ```
+pub const TSTypePredicate = struct {
+    /// the parameter being narrowed. an `IdentifierName` for a named parameter,
+    /// or a `TSThisType` for the implicit `this` parameter
+    parameter_name: NodeIndex,
+    /// a `TSTypeAnnotation` wrapping the narrowed type, with the wrapper's
+    /// span equal to the inner type's span. `.null` for a bare `asserts x`
+    /// predicate that carries no `is Type` clause
+    type_annotation: NodeIndex = .null,
+    /// true when the predicate is introduced by the `asserts` keyword
+    asserts: bool = false,
+};
+
 // ts: object-type literal and signatures
 
 /// An anonymous object type. Holds a list of signatures (properties, methods,
@@ -3245,6 +3272,7 @@ pub const NodeData = union(enum) {
     ts_parenthesized_type: TSParenthesizedType,
     ts_function_type: TSFunctionType,
     ts_constructor_type: TSConstructorType,
+    ts_type_predicate: TSTypePredicate,
     ts_type_literal: TSTypeLiteral,
     ts_property_signature: TSPropertySignature,
     ts_method_signature: TSMethodSignature,

@@ -473,7 +473,7 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
 /// references `isStartOfFunctionTypeOrConstructorType` and
 /// `nextIsUnambiguouslyStartOfFunctionType` in the typescript-go
 /// parser:
-/// https://github.com/microsoft/typescript-go/blob/1de8d68230f8759af6fb71d9cf0f9c37d2c65507/internal/parser/parser.go#L3768
+/// https://github.com/microsoft/typescript-go/blob/1de8d68230f8759af6fb71d9cf0f9c37d2c65507/internal/parser/parser.go#L3810
 fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
 
@@ -564,7 +564,7 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     const arrow_start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume '=>'
 
-    const return_type_inner = try parseType(parser) orelse return null;
+    const return_type_inner = try parseTypeOrTypePredicate(parser) orelse return null;
 
     const return_type_end = parser.tree.getSpan(return_type_inner).end;
 
@@ -749,7 +749,7 @@ fn parseCallSignature(parser: *Parser) Error!?ast.NodeIndex {
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
     if (parser.current_token.tag == .colon) {
-        return_type = try parseTypeAnnotation(parser) orelse return null;
+        return_type = try parseReturnTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(return_type).end;
     }
 
@@ -777,7 +777,7 @@ fn parseConstructSignature(parser: *Parser) Error!?ast.NodeIndex {
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
     if (parser.current_token.tag == .colon) {
-        return_type = try parseTypeAnnotation(parser) orelse return null;
+        return_type = try parseReturnTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(return_type).end;
     }
 
@@ -959,7 +959,7 @@ fn parseMethodSignatureBody(
     var return_type: ast.NodeIndex = .null;
     var end = parser.prev_token_end;
     if (parser.current_token.tag == .colon) {
-        return_type = try parseTypeAnnotation(parser) orelse return null;
+        return_type = try parseReturnTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(return_type).end;
     }
 
@@ -1409,6 +1409,155 @@ pub fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(
         .{ .ts_type_annotation = .{ .type_annotation = type_node } },
         .{ .start = start, .end = parser.tree.getSpan(type_node).end },
+    );
+}
+
+/// function f(x): x is T { ... }   function f(x): asserts x is T { ... }
+///                ^^^^^^                            ^^^^^^^^^^^^^^
+///
+/// wraps either a plain type or a `TSTypePredicate` in a `TSTypeAnnotation`
+/// starting at `:`. mirrors `parseTypeOrTypePredicate` in the typescript-go
+/// parser, which is dispatched from `parseReturnType` whenever a function
+/// signature wants a return type:
+/// https://github.com/microsoft/typescript-go/blob/main/internal/parser/parser.go
+pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .colon);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume ':'
+
+    const inner = try parseTypeOrTypePredicate(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_annotation = .{ .type_annotation = inner } },
+        .{ .start = start, .end = parser.tree.getSpan(inner).end },
+    );
+}
+
+/// parses either a regular type or a `TSTypePredicate`. a predicate is
+/// produced when the current position matches one of:
+///
+///   asserts Identifier            bare asserts narrowing (no `is`)
+///   asserts Identifier is Type    asserts narrowing to a concrete type
+///   asserts this is Type          asserts narrowing of `this`
+///   Identifier is Type            classic type guard
+///   this is Type                  `this` type guard
+///
+/// `asserts` and `is` are contextual, so a following `is`/identifier must sit
+/// on the same source line for the predicate to be recognized. anything else
+/// (including `asserts` used as a bare type reference) falls through to the
+/// regular type grammar.
+pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+    if (try isAssertsPredicateStart(parser)) {
+        return parseAssertsTypePredicate(parser);
+    }
+
+    if (try isTypePredicatePrefix(parser)) {
+        return parseSimpleTypePredicate(parser);
+    }
+
+    return parseType(parser);
+}
+
+/// `asserts` is a predicate marker only when the next token is an
+/// identifier-like token or `this`, on the same line. everything else leaves
+/// `asserts` as a bare type reference.
+fn isAssertsPredicateStart(parser: *Parser) Error!bool {
+    if (parser.current_token.tag != .asserts) return false;
+    if (parser.current_token.isEscaped()) return false;
+
+    const next = (try parser.peekAhead()) orelse return false;
+    if (next.hasLineTerminatorBefore()) return false;
+
+    return next.tag == .this or next.tag.isIdentifierLike();
+}
+
+/// a predicate's identifier-or-this prefix is followed by `is` on the same
+/// line. the `is` keyword must not be escaped.
+fn isTypePredicatePrefix(parser: *Parser) Error!bool {
+    const current = parser.current_token;
+    if (current.isEscaped()) return false;
+    if (current.tag != .this and !current.tag.isIdentifierLike()) return false;
+
+    const next = (try parser.peekAhead()) orelse return false;
+    if (next.tag != .@"is") return false;
+    if (next.isEscaped()) return false;
+    if (next.hasLineTerminatorBefore()) return false;
+
+    return true;
+}
+
+/// asserts x   asserts x is T   asserts this is T
+/// ^^^^^^^^^   ^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^
+fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .asserts);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume 'asserts'
+
+    const parameter_name = try parseTypePredicateName(parser) orelse return null;
+    var end = parser.tree.getSpan(parameter_name).end;
+
+    var type_annotation: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .@"is" and !parser.current_token.isEscaped()) {
+        try parser.advance() orelse return null; // consume 'is'
+        type_annotation = try parseTypePredicateTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(type_annotation).end;
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_type_predicate = .{
+            .parameter_name = parameter_name,
+            .type_annotation = type_annotation,
+            .asserts = true,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// x is T   this is T
+/// ^^^^^^   ^^^^^^^^^
+fn parseSimpleTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
+    const parameter_name = try parseTypePredicateName(parser) orelse return null;
+    const start = parser.tree.getSpan(parameter_name).start;
+
+    std.debug.assert(parser.current_token.tag == .@"is");
+    try parser.advance() orelse return null; // consume 'is'
+
+    const type_annotation = try parseTypePredicateTypeAnnotation(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_predicate = .{
+            .parameter_name = parameter_name,
+            .type_annotation = type_annotation,
+        } },
+        .{ .start = start, .end = parser.tree.getSpan(type_annotation).end },
+    );
+}
+
+/// the parameter name of a type predicate. either an `IdentifierName` for a
+/// real parameter or a `TSThisType` for the implicit `this` receiver.
+fn parseTypePredicateName(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+
+    if (token.tag == .this) {
+        try parser.advance() orelse return null;
+        return try parser.tree.createNode(.{ .ts_this_type = .{} }, token.span);
+    }
+
+    return literals.parseIdentifierName(parser);
+}
+
+/// the type narrowed by a predicate is wrapped in its own `TSTypeAnnotation`,
+/// but unlike the outer return-type wrapper this one starts at the type, not
+/// at a leading token.
+fn parseTypePredicateTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
+    const type_node = try parseType(parser) orelse return null;
+    const span = parser.tree.getSpan(type_node);
+
+    return try parser.tree.createNode(
+        .{ .ts_type_annotation = .{ .type_annotation = type_node } },
+        span,
     );
 }
 

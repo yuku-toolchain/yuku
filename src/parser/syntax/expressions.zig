@@ -227,7 +227,7 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
     // only valid when an arrow follows, consumed before the `=>` check.
     var return_type: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        return_type = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
     }
 
     // [no LineTerminator here] => ConciseBody
@@ -306,7 +306,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
     // only valid when an arrow follows, consumed before the `=>` check.
     var return_type: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        return_type = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
     }
 
     // [no LineTerminator here] => ConciseBody
