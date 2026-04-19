@@ -292,9 +292,6 @@ pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
     );
 }
 
-/// parses a single `TSTypeParameter`. handles leading `const`, `in`, and `out`
-/// modifier keywords, followed by the binding identifier name, an optional
-/// `extends` constraint, and an optional `=` default.
 fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
     var is_const = false;
     var is_in = false;
