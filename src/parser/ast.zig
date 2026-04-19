@@ -2348,6 +2348,55 @@ pub const TSTypeParameterInstantiation = struct {
     params: IndexRange,
 };
 
+/// A single `<T>` type parameter introduced by a generic declaration. Carries
+/// the parameter name along with the optional `extends` constraint, optional
+/// default type, and the three variance / invariance modifier keywords.
+///
+/// The span starts at the first modifier keyword when present, otherwise at
+/// the name, and ends at the default (if present), the constraint (if
+/// present), or the name.
+///
+/// ## Example
+/// ```ts
+/// type Foo<T extends Bar = Baz> = T;
+/// //       ^^^^^^^^^^^^^^^^^^^ TSTypeParameter
+/// //       ^                   name
+/// //                 ^^^       constraint
+/// //                       ^^^ default
+/// type Rec<in out K, const T> = ...;
+/// //       ^^^^^^^^^          in = true, out = true
+/// //                 ^^^^^^^  const = true
+/// ```
+pub const TSTypeParameter = struct {
+    /// `BindingIdentifier` naming the parameter
+    name: NodeIndex,
+    /// `TSType` bound introduced by `extends`, or `.null` when absent
+    constraint: NodeIndex = .null,
+    /// default `TSType` introduced by `=`, or `.null` when absent
+    default: NodeIndex = .null,
+    /// `in` variance modifier keyword was present
+    in: bool = false,
+    /// `out` variance modifier keyword was present
+    out: bool = false,
+    /// `const` modifier keyword was present
+    @"const": bool = false,
+};
+
+/// The `<T, U>` type parameter list introduced by a generic declaration
+/// (type alias, interface, class, function, method, constructor, mapped
+/// type, and so on). Holds the parameters in source order.
+///
+/// ## Example
+/// ```ts
+/// type Pair<A, B extends A> = [A, B];
+/// //       ^^^^^^^^^^^^^^^^ TSTypeParameterDeclaration
+/// //        ^  ^^^^^^^^^^^  params
+/// ```
+pub const TSTypeParameterDeclaration = struct {
+    /// the `TSTypeParameter` entries in source order
+    params: IndexRange,
+};
+
 /// A JSX element, possibly self-closing.
 ///
 /// ## Example
@@ -2617,6 +2666,8 @@ pub const NodeData = union(enum) {
     ts_symbol_keyword: TSSymbolKeyword,
     ts_this_type: TSThisType,
     ts_type_annotation: TSTypeAnnotation,
+    ts_type_parameter: TSTypeParameter,
+    ts_type_parameter_declaration: TSTypeParameterDeclaration,
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,
     ts_type_reference: TSTypeReference,
     ts_undefined_keyword: TSUndefinedKeyword,

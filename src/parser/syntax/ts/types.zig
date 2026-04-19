@@ -3,6 +3,7 @@ const ast = @import("../../ast.zig");
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
+const literals = @import("../literals.zig");
 
 /// Parses a `TSType`. The entry point for any type position.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
@@ -183,6 +184,131 @@ pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
 
     return try parser.tree.createNode(
         .{ .ts_type_parameter_instantiation = .{ .params = params } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// parses a `<T, U, ...>` type parameter list into a `TSTypeParameterDeclaration`.
+/// returns `.null` when the current token is not `<`. each parameter is a
+/// `TSTypeParameter` with optional `const`/`in`/`out` modifier keywords, an
+/// optional `extends` constraint, and an optional `=` default.
+pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
+    if (parser.current_token.tag != .less_than) return .null;
+
+    const start = parser.current_token.span.start;
+
+    try parser.advance() orelse return .null; // consume '<'
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (parser.current_token.tag != .greater_than and parser.current_token.tag != .eof) {
+        const param = try parseTypeParameter(parser) orelse return .null;
+        try parser.scratch_a.append(parser.allocator(), param);
+
+        if (parser.current_token.tag == .comma) {
+            try parser.advance() orelse return .null;
+        } else {
+            break;
+        }
+    }
+
+    // closes the type parameter list. a compound `>`-starting token (`>>`,
+    // `>>>`, `>=`, `>>=`, `>>>=`) is re-scanned as a leading `>` so the
+    // remainder stays in the token stream for the enclosing context.
+    const end: u32 = switch (parser.current_token.tag) {
+        .greater_than => blk: {
+            const e = parser.current_token.span.end;
+            try parser.advance() orelse return .null;
+            break :blk e;
+        },
+        .right_shift, .unsigned_right_shift, .greater_than_equal, .right_shift_assign, .unsigned_right_shift_assign => blk: {
+            const gt = parser.lexer.reScanGreaterThan(parser.current_token.span.start);
+            try parser.advanceWithRescannedToken(gt) orelse return .null;
+            break :blk gt.span.end;
+        },
+        else => {
+            try parser.reportExpected(
+                parser.current_token.span,
+                "Expected '>' to close a type parameter list",
+                .{ .help = "Each '<' in a type must be matched by a '>'" },
+            );
+            return .null;
+        },
+    };
+
+    const params = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+
+    return try parser.tree.createNode(
+        .{ .ts_type_parameter_declaration = .{ .params = params } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// parses a single `TSTypeParameter`. handles leading `const`, `in`, and `out`
+/// modifier keywords, followed by the binding identifier name, an optional
+/// `extends` constraint, and an optional `=` default.
+fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
+    var is_const = false;
+    var is_in = false;
+    var is_out = false;
+    var start: u32 = parser.current_token.span.start;
+    var start_set = false;
+
+    // modifier keywords are contextual. treat the current token as a modifier
+    // only when the next token is an identifier-like token, so the modifier
+    // word itself can still appear as a parameter name (e.g. `<out>`).
+    while (true) {
+        const tag = parser.current_token.tag;
+        if (tag != .in and tag != .out and tag != .@"const") break;
+
+        const next = (try parser.lookAhead()) orelse break;
+        if (!next.tag.isIdentifierLike()) break;
+
+        switch (tag) {
+            .@"const" => is_const = true,
+            .in => is_in = true,
+            .out => is_out = true,
+            else => unreachable,
+        }
+
+        if (!start_set) {
+            start = parser.current_token.span.start;
+            start_set = true;
+        }
+
+        try parser.advance() orelse return null;
+    }
+
+    const name_token = parser.current_token;
+    const name = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!start_set) start = name_token.span.start;
+    var end = name_token.span.end;
+
+    var constraint: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .extends) {
+        try parser.advance() orelse return null;
+        constraint = try parseType(parser) orelse return null;
+        end = parser.tree.getSpan(constraint).end;
+    }
+
+    var default: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .assign) {
+        try parser.advance() orelse return null;
+        default = try parseType(parser) orelse return null;
+        end = parser.tree.getSpan(default).end;
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_type_parameter = .{
+            .name = name,
+            .constraint = constraint,
+            .default = default,
+            .in = is_in,
+            .out = is_out,
+            .@"const" = is_const,
+        } },
         .{ .start = start, .end = end },
     );
 }
