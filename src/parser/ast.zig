@@ -2172,6 +2172,24 @@ pub const TSTypeAnnotation = struct {
 /// ```
 pub const TSAnyKeyword = struct {};
 
+/// An array type. Applies the postfix `[]` suffix to an element type.
+///
+/// Stacks naturally: `T[][]` is a `TSArrayType` whose `element_type` is another
+/// `TSArrayType`.
+///
+/// ## Example
+/// ```ts
+/// let xs: number[];
+/// //      ^^^^^^^^ TSArrayType
+/// //      ^^^^^^ element_type (TSNumberKeyword)
+/// let ys: string[][];
+/// //      ^^^^^^^^^^ TSArrayType (element_type is another TSArrayType)
+/// ```
+pub const TSArrayType = struct {
+    /// the inner type that `[]` is applied to
+    element_type: NodeIndex,
+};
+
 /// The `bigint` primitive type. Integer values of arbitrary precision.
 ///
 /// ## Example
@@ -2189,6 +2207,29 @@ pub const TSBigIntKeyword = struct {};
 /// //     ^^^^^^^ TSBooleanKeyword
 /// ```
 pub const TSBooleanKeyword = struct {};
+
+/// An indexed access type. Looks up the type of the property named by
+/// `index_type` on `object_type`, mirroring expression-level member access
+/// but in type position.
+///
+/// Stacks naturally: `T[K][L]` is a `TSIndexedAccessType` whose `object_type`
+/// is another `TSIndexedAccessType`.
+///
+/// ## Example
+/// ```ts
+/// type A = Person["age"];
+/// //       ^^^^^^^^^^^^^ TSIndexedAccessType
+/// //       ^^^^^^ object_type
+/// //              ^^^^^ index_type (TSLiteralType)
+/// type B = T[K];
+/// //       ^^^^ TSIndexedAccessType
+/// ```
+pub const TSIndexedAccessType = struct {
+    /// the type being indexed into
+    object_type: NodeIndex,
+    /// the type used as the index key
+    index_type: NodeIndex,
+};
 
 /// The `intrinsic` keyword. Marks a type as built into the TypeScript compiler
 /// (for example `Uppercase<T>` and other string-manipulation utilities).
@@ -2676,9 +2717,11 @@ pub const NodeData = union(enum) {
 
     // typescript
     ts_any_keyword: TSAnyKeyword,
+    ts_array_type: TSArrayType,
     ts_bigint_keyword: TSBigIntKeyword,
     ts_boolean_keyword: TSBooleanKeyword,
     ts_export_assignment: TSExportAssignment,
+    ts_indexed_access_type: TSIndexedAccessType,
     ts_intrinsic_keyword: TSIntrinsicKeyword,
     ts_literal_type: TSLiteralType,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,

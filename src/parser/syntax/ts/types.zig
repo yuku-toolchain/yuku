@@ -7,7 +7,7 @@ const literals = @import("../literals.zig");
 
 /// Parses a `TSType`. The entry point for any type position.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
-    const ty = try parsePrimaryType(parser) orelse {
+    const ty = try parsePostfixType(parser) orelse {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected a type",
@@ -15,6 +15,51 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
         );
         return null;
     };
+
+    return ty;
+}
+
+/// parses a primary type followed by any postfix operators. the `[` suffix
+/// produces either a `TSArrayType` (when followed immediately by `]`) or a
+/// `TSIndexedAccessType` (when followed by an index type then `]`). multiple
+/// postfix operators stack, so `T[][]` becomes `TSArrayType(TSArrayType(T))`
+/// and `T[K][L]` becomes `TSIndexedAccessType(TSIndexedAccessType(T, K), L)`.
+fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
+    var ty = try parsePrimaryType(parser) orelse return null;
+
+    while (parser.current_token.tag == .left_bracket) {
+        const start = parser.tree.getSpan(ty).start;
+        try parser.advance() orelse return null; // consume '['
+
+        if (parser.current_token.tag == .right_bracket) {
+            const end = parser.current_token.span.end;
+            try parser.advance() orelse return null; // consume ']'
+            ty = try parser.tree.createNode(
+                .{ .ts_array_type = .{ .element_type = ty } },
+                .{ .start = start, .end = end },
+            );
+            continue;
+        }
+
+        const index = try parseType(parser) orelse return null;
+
+        if (parser.current_token.tag != .right_bracket) {
+            try parser.reportExpected(
+                parser.current_token.span,
+                "Expected ']' to close an indexed access type",
+                .{ .help = "Each '[' in a type must be matched by a ']'" },
+            );
+            return null;
+        }
+
+        const end = parser.current_token.span.end;
+        try parser.advance() orelse return null; // consume ']'
+
+        ty = try parser.tree.createNode(
+            .{ .ts_indexed_access_type = .{ .object_type = ty, .index_type = index } },
+            .{ .start = start, .end = end },
+        );
+    }
 
     return ty;
 }
