@@ -38,6 +38,8 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .using => parseUsingOrExpression(parser),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
+        .type => parseTypeAliasOrExpression(parser),
+        .declare => parseDeclareOrExpression(parser),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
@@ -172,6 +174,28 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
         .left_paren, .dot => parseExpressionStatement(parser),
         else => modules.parseImportDeclaration(parser),
     };
+}
+
+/// `type Foo = T` alias declaration, or fall through to expression statement
+/// when `type` is used as an identifier reference or the language is not
+/// TypeScript.
+fn parseTypeAliasOrExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const is_alias = (try ts_statements.isTypeAliasStart(parser)) orelse return null;
+    if (is_alias) return ts_statements.parseTypeAliasDeclaration(parser, false, 0);
+    return parseExpressionOrLabeledStatementOrDirective(parser);
+}
+
+/// `declare type Foo = T` alias declaration, or fall through to expression
+/// statement when `declare` is used as an identifier reference or the full
+/// `declare type <name>` prefix is not present on the same source line.
+fn parseDeclareOrExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const is_alias = (try ts_statements.isDeclareTypeAliasStart(parser)) orelse return null;
+    if (is_alias) {
+        const start = parser.current_token.span.start;
+        try parser.advance() orelse return null; // consume 'declare'
+        return ts_statements.parseTypeAliasDeclaration(parser, true, start);
+    }
+    return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
 /// `async function` declaration, or fall through to expression statement.

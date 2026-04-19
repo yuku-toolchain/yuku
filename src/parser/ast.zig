@@ -3077,6 +3077,33 @@ pub const TSIndexSignature = struct {
     readonly: bool = false,
 };
 
+// ts: declarations
+
+/// A TypeScript `type` alias declaration. Binds an identifier to a type,
+/// optionally parameterized by one or more type parameters, and optionally
+/// prefixed by the `declare` modifier for ambient contexts.
+///
+/// ## Example
+/// ```ts
+/// type Maybe<T> = T | null | undefined;
+/// //   ^^^^^ id (BindingIdentifier)
+/// //        ^^^ type_parameters (TSTypeParameterDeclaration)
+/// //              ^^^^^^^^^^^^^^^^^^^^ type_annotation (TSType)
+/// declare type Id = number;
+/// // ^^^^^^^ declare = true
+/// ```
+pub const TSTypeAliasDeclaration = struct {
+    /// the alias name, a `BindingIdentifier`
+    id: NodeIndex,
+    /// `TSTypeParameterDeclaration` or `.null` when the alias has no `<T>` list
+    type_parameters: NodeIndex = .null,
+    /// the aliased type, stored as a bare `TSType` without a wrapping
+    /// `TSTypeAnnotation` node
+    type_annotation: NodeIndex,
+    /// true when preceded by the `declare` modifier
+    declare: bool = false,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3401,6 +3428,7 @@ pub const NodeData = union(enum) {
     ts_call_signature_declaration: TSCallSignatureDeclaration,
     ts_construct_signature_declaration: TSConstructSignatureDeclaration,
     ts_index_signature: TSIndexSignature,
+    ts_type_alias_declaration: TSTypeAliasDeclaration,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 
