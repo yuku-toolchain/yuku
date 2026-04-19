@@ -39,6 +39,18 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .unknown,
             .void,
             => return parseTypeKeyword(parser),
+            .true,
+            .false,
+            .string_literal,
+            .numeric_literal,
+            .hex_literal,
+            .octal_literal,
+            .binary_literal,
+            .bigint_literal,
+            .no_substitution_template,
+            .minus,
+            .plus,
+            => return parseLiteralType(parser),
             else => {},
         }
     }
@@ -50,8 +62,6 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-/// parses a primitive type keyword (`any`, `string`, `void`, `null`, `this`,
-/// ...) into its corresponding `TSKeyword` node.
 inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
 
@@ -78,10 +88,50 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(data, token.span);
 }
 
+fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+    const start = token.span.start;
+
+    const literal: ast.NodeIndex = switch (token.tag) {
+        .true, .false => try literals.parseBooleanLiteral(parser) orelse return null,
+        .string_literal => try literals.parseStringLiteral(parser) orelse return null,
+        .numeric_literal,
+        .hex_literal,
+        .octal_literal,
+        .binary_literal,
+        .bigint_literal,
+        => try literals.parseNumericLiteral(parser) orelse return null,
+        .no_substitution_template => try literals.parseNoSubstitutionTemplate(parser, false) orelse return null,
+        .minus, .plus => blk: {
+            const next = (try parser.lookAhead()) orelse return null;
+            if (!next.tag.isNumericLiteral()) return null;
+
+            try parser.advance() orelse return null; // consume '-' or '+'
+
+            const arg = try literals.parseNumericLiteral(parser) orelse return null;
+            const arg_end = parser.tree.getSpan(arg).end;
+
+            break :blk try parser.tree.createNode(
+                .{ .unary_expression = .{
+                    .argument = arg,
+                    .operator = if (token.tag == .minus) .negate else .positive,
+                } },
+                .{ .start = start, .end = arg_end },
+            );
+        },
+        else => unreachable,
+    };
+
+    const end = parser.tree.getSpan(literal).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_literal_type = .{ .literal = literal } },
+        .{ .start = start, .end = end },
+    );
+}
+
 /// parses a `TSTypeReference`: an identifier, an optional dotted tail forming a
-/// `TSQualifiedName`, and an optional `<T, U>` type argument list. the caller
-/// must have already verified via `parsePrimaryType`'s dispatch that the
-/// leading token is identifier-like and not unconditionally reserved.
+/// `TSQualifiedName`, and an optional `<T, U>` type argument list.
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     const first_token = parser.current_token;
     const start = first_token.span.start;
@@ -189,9 +239,6 @@ pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
 }
 
 /// parses a `<T, U, ...>` type parameter list into a `TSTypeParameterDeclaration`.
-/// returns `.null` when the current token is not `<`. each parameter is a
-/// `TSTypeParameter` with optional `const`/`in`/`out` modifier keywords, an
-/// optional `extends` constraint, and an optional `=` default.
 pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .less_than) return .null;
 

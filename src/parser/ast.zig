@@ -2200,6 +2200,30 @@ pub const TSBooleanKeyword = struct {};
 /// ```
 pub const TSIntrinsicKeyword = struct {};
 
+/// A literal value used in type position. Wraps a string, numeric, bigint,
+/// boolean, or no-substitution template literal directly, or a `UnaryExpression`
+/// when the literal is preceded by a `-` or `+` sign (for example `-1`).
+///
+/// Template literals that contain interpolations use `TSTemplateLiteralType`
+/// rather than `TSLiteralType`. The `null` keyword uses `TSNullKeyword`.
+///
+/// ## Example
+/// ```ts
+/// type A = "hello";
+/// //       ^^^^^^^ TSLiteralType
+/// type B = 42;
+/// //       ^^ TSLiteralType
+/// type C = true;
+/// //       ^^^^ TSLiteralType
+/// type D = -1;
+/// //       ^^ TSLiteralType (literal is a UnaryExpression)
+/// ```
+pub const TSLiteralType = struct {
+    /// `StringLiteral`, `NumericLiteral`, `BigIntLiteral`, `BooleanLiteral`,
+    /// `TemplateLiteral`, or `UnaryExpression` wrapping one of the numeric kinds
+    literal: NodeIndex,
+};
+
 /// The `never` primitive type. Represents values that never occur (for example
 /// the return type of a function that always throws).
 ///
@@ -2656,6 +2680,7 @@ pub const NodeData = union(enum) {
     ts_boolean_keyword: TSBooleanKeyword,
     ts_export_assignment: TSExportAssignment,
     ts_intrinsic_keyword: TSIntrinsicKeyword,
+    ts_literal_type: TSLiteralType,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
     ts_never_keyword: TSNeverKeyword,
     ts_null_keyword: TSNullKeyword,
