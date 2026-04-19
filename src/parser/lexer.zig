@@ -334,6 +334,15 @@ pub const Lexer = struct {
         return error.NonTerminatedTemplateLiteral;
     }
 
+    /// splits a compound right-angle-bracket token (`>>`, `>>>`, `>=`, `>>=`,
+    /// `>>>=`) into a leading `>` token. used by the typescript type parser to
+    /// close nested type argument lists like `Foo<Bar<T>>` where the source
+    /// `>>` must be read as two separate `>` closes.
+    pub fn reScanGreaterThan(self: *Lexer, token_start: u32) Token {
+        self.rewindTo(token_start + 1);
+        return self.createToken(.greater_than, token_start, token_start + 1);
+    }
+
     /// scans JSX text content between '<' and '{' in JSX children.
     /// called by the parser when parsing JSX element children.
     pub fn reScanJsxText(self: *Lexer, initial_cursor: u32) Token {
@@ -877,16 +886,21 @@ pub const Lexer = struct {
                     },
                     'n' => if (lexeme[0] == 'i') return .in,
                     'o' => if (lexeme[0] == 'd') return .do,
-                    's' => if (lexeme[0] == 'a') return .as,
+                    's' => {
+                        if (lexeme[0] == 'a') return .as;
+                        if (lexeme[0] == 'i') return .@"is";
+                    },
                     else => {},
                 }
             },
             3 => {
                 switch (lexeme[0]) {
+                    'a' => if (lexeme[1] == 'n' and lexeme[2] == 'y') return .any,
                     'f' => if (lexeme[1] == 'o' and lexeme[2] == 'r') return .@"for",
                     'g' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .get,
                     'l' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .let,
                     'n' => if (lexeme[1] == 'e' and lexeme[2] == 'w') return .new,
+                    'o' => if (lexeme[1] == 'u' and lexeme[2] == 't') return .out,
                     's' => if (lexeme[1] == 'e' and lexeme[2] == 't') return .set,
                     't' => if (lexeme[1] == 'r' and lexeme[2] == 'y') return .@"try",
                     'v' => if (lexeme[1] == 'a' and lexeme[2] == 'r') return .@"var",
@@ -902,6 +916,7 @@ pub const Lexer = struct {
                     'o' => if (lexeme[0] == 'v' and lexeme[2] == 'i' and lexeme[3] == 'd') return .void,
                     'i' => if (lexeme[0] == 'w' and lexeme[2] == 't' and lexeme[3] == 'h') return .with,
                     'u' => if (lexeme[0] == 'n' and lexeme[2] == 'l' and lexeme[3] == 'l') return .null_literal,
+                    'y' => if (lexeme[0] == 't' and lexeme[2] == 'p' and lexeme[3] == 'e') return .type,
                     'r' => {
                         if (lexeme[0] == 't' and lexeme[2] == 'u' and lexeme[3] == 'e') return .true;
                         if (lexeme[0] == 'f' and lexeme[2] == 'o' and lexeme[3] == 'm') return .from;
@@ -931,6 +946,12 @@ pub const Lexer = struct {
                         return .@"defer",
                     'f' => if (lexeme[1] == 'a' and lexeme[2] == 'l' and lexeme[3] == 's' and lexeme[4] == 'e')
                         return .false,
+                    'i' => if (lexeme[1] == 'n' and lexeme[2] == 'f' and lexeme[3] == 'e' and lexeme[4] == 'r')
+                        return .infer,
+                    'k' => if (lexeme[1] == 'e' and lexeme[2] == 'y' and lexeme[3] == 'o' and lexeme[4] == 'f')
+                        return .keyof,
+                    'n' => if (lexeme[1] == 'e' and lexeme[2] == 'v' and lexeme[3] == 'e' and lexeme[4] == 'r')
+                        return .never,
                     's' => if (lexeme[1] == 'u' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'r')
                         return .super,
                     't' => if (lexeme[1] == 'h' and lexeme[2] == 'r' and lexeme[3] == 'o' and lexeme[4] == 'w')
@@ -948,17 +969,31 @@ pub const Lexer = struct {
                 switch (lexeme[0]) {
                     'a' => if (lexeme[1] == 's' and lexeme[2] == 's' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 't')
                         return .assert,
+                    'b' => if (lexeme[1] == 'i' and lexeme[2] == 'g' and lexeme[3] == 'i' and lexeme[4] == 'n' and lexeme[5] == 't')
+                        return .bigint,
                     'd' => if (lexeme[1] == 'e' and lexeme[2] == 'l' and lexeme[3] == 'e' and lexeme[4] == 't' and lexeme[5] == 'e')
                         return .delete,
                     'e' => if (lexeme[1] == 'x' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
                         return .@"export",
+                    'g' => if (lexeme[1] == 'l' and lexeme[2] == 'o' and lexeme[3] == 'b' and lexeme[4] == 'a' and lexeme[5] == 'l')
+                        return .global,
                     'i' => if (lexeme[1] == 'm' and lexeme[2] == 'p' and lexeme[3] == 'o' and lexeme[4] == 'r' and lexeme[5] == 't')
                         return .import,
+                    'm' => if (lexeme[1] == 'o' and lexeme[2] == 'd' and lexeme[3] == 'u' and lexeme[4] == 'l' and lexeme[5] == 'e')
+                        return .module,
+                    'n' => if (lexeme[1] == 'u' and lexeme[2] == 'm' and lexeme[3] == 'b' and lexeme[4] == 'e' and lexeme[5] == 'r')
+                        return .number,
+                    'o' => if (lexeme[1] == 'b' and lexeme[2] == 'j' and lexeme[3] == 'e' and lexeme[4] == 'c' and lexeme[5] == 't')
+                        return .object,
                     'p' => if (lexeme[1] == 'u' and lexeme[2] == 'b' and lexeme[3] == 'l' and lexeme[4] == 'i' and lexeme[5] == 'c')
                         return .public,
                     'r' => if (lexeme[1] == 'e' and lexeme[2] == 't' and lexeme[3] == 'u' and lexeme[4] == 'r' and lexeme[5] == 'n')
                         return .@"return",
                     's' => {
+                        if (lexeme[1] == 't' and lexeme[2] == 'r' and lexeme[3] == 'i' and lexeme[4] == 'n' and lexeme[5] == 'g')
+                            return .string;
+                        if (lexeme[1] == 'y' and lexeme[2] == 'm' and lexeme[3] == 'b' and lexeme[4] == 'o' and lexeme[5] == 'l')
+                            return .symbol;
                         if (lexeme[1] == 'w' and lexeme[2] == 'i' and lexeme[3] == 't' and lexeme[4] == 'c' and lexeme[5] == 'h')
                             return .@"switch";
                         if (lexeme[1] == 't' and lexeme[2] == 'a' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'c')
@@ -968,11 +1003,15 @@ pub const Lexer = struct {
                     },
                     't' => if (lexeme[1] == 'y' and lexeme[2] == 'p' and lexeme[3] == 'e' and lexeme[4] == 'o' and lexeme[5] == 'f')
                         return .typeof,
+                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'i' and lexeme[3] == 'q' and lexeme[4] == 'u' and lexeme[5] == 'e')
+                        return .unique,
                     else => {},
                 }
             },
             7 => {
                 switch (lexeme[0]) {
+                    'a' => if (lexeme[1] == 's' and lexeme[2] == 's' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 't' and lexeme[6] == 's') return .asserts,
+                    'b' => if (lexeme[1] == 'o' and lexeme[2] == 'o' and lexeme[3] == 'l' and lexeme[4] == 'e' and lexeme[5] == 'a' and lexeme[6] == 'n') return .boolean,
                     'd' => {
                         if (lexeme[1] == 'e') {
                             if (lexeme[2] == 'f' and lexeme[3] == 'a' and lexeme[4] == 'u' and lexeme[5] == 'l' and lexeme[6] == 't') return .default;
@@ -985,23 +1024,35 @@ pub const Lexer = struct {
                         if (lexeme[1] == 'r' and lexeme[2] == 'i' and lexeme[3] == 'v' and lexeme[4] == 'a' and lexeme[5] == 't' and lexeme[6] == 'e') return .private;
                         if (lexeme[1] == 'a' and lexeme[2] == 'c' and lexeme[3] == 'k' and lexeme[4] == 'a' and lexeme[5] == 'g' and lexeme[6] == 'e') return .package;
                     },
+                    'r' => if (lexeme[1] == 'e' and lexeme[2] == 'q' and lexeme[3] == 'u' and lexeme[4] == 'i' and lexeme[5] == 'r' and lexeme[6] == 'e') return .require,
+                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'k' and lexeme[3] == 'n' and lexeme[4] == 'o' and lexeme[5] == 'w' and lexeme[6] == 'n') return .unknown,
                     else => {},
                 }
             },
             8 => {
                 switch (lexeme[0]) {
-                    'a' => if (lexeme[1] == 'c' and lexeme[2] == 'c' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 's' and lexeme[6] == 'o' and lexeme[7] == 'r') return .accessor,
+                    'a' => {
+                        if (lexeme[1] == 'c' and lexeme[2] == 'c' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 's' and lexeme[6] == 'o' and lexeme[7] == 'r') return .accessor;
+                        if (lexeme[1] == 'b' and lexeme[2] == 's' and lexeme[3] == 't' and lexeme[4] == 'r' and lexeme[5] == 'a' and lexeme[6] == 'c' and lexeme[7] == 't') return .abstract;
+                    },
                     'c' => if (lexeme[1] == 'o' and lexeme[2] == 'n' and lexeme[3] == 't' and lexeme[4] == 'i' and lexeme[5] == 'n' and lexeme[6] == 'u' and lexeme[7] == 'e') return .@"continue",
                     'd' => if (lexeme[1] == 'e' and lexeme[2] == 'b' and lexeme[3] == 'u' and lexeme[4] == 'g' and lexeme[5] == 'g' and lexeme[6] == 'e' and lexeme[7] == 'r') return .debugger,
                     'f' => if (lexeme[1] == 'u' and lexeme[2] == 'n' and lexeme[3] == 'c' and lexeme[4] == 't' and lexeme[5] == 'i' and lexeme[6] == 'o' and lexeme[7] == 'n') return .function,
+                    'o' => if (lexeme[1] == 'v' and lexeme[2] == 'e' and lexeme[3] == 'r' and lexeme[4] == 'r' and lexeme[5] == 'i' and lexeme[6] == 'd' and lexeme[7] == 'e') return .override,
+                    'r' => if (lexeme[1] == 'e' and lexeme[2] == 'a' and lexeme[3] == 'd' and lexeme[4] == 'o' and lexeme[5] == 'n' and lexeme[6] == 'l' and lexeme[7] == 'y') return .readonly,
                     else => {},
                 }
             },
             9 => {
                 switch (lexeme[0]) {
-                    'i' => if (lexeme[1] == 'n' and lexeme[2] == 't' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 'f' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .interface,
+                    'i' => {
+                        if (lexeme[1] == 'n' and lexeme[2] == 't' and lexeme[3] == 'e' and lexeme[4] == 'r' and lexeme[5] == 'f' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .interface;
+                        if (lexeme[1] == 'n' and lexeme[2] == 't' and lexeme[3] == 'r' and lexeme[4] == 'i' and lexeme[5] == 'n' and lexeme[6] == 's' and lexeme[7] == 'i' and lexeme[8] == 'c') return .intrinsic;
+                    },
                     'n' => if (lexeme[1] == 'a' and lexeme[2] == 'm' and lexeme[3] == 'e' and lexeme[4] == 's' and lexeme[5] == 'p' and lexeme[6] == 'a' and lexeme[7] == 'c' and lexeme[8] == 'e') return .namespace,
                     'p' => if (lexeme[1] == 'r' and lexeme[2] == 'o' and lexeme[3] == 't' and lexeme[4] == 'e' and lexeme[5] == 'c' and lexeme[6] == 't' and lexeme[7] == 'e' and lexeme[8] == 'd') return .protected,
+                    's' => if (lexeme[1] == 'a' and lexeme[2] == 't' and lexeme[3] == 'i' and lexeme[4] == 's' and lexeme[5] == 'f' and lexeme[6] == 'i' and lexeme[7] == 'e' and lexeme[8] == 's') return .satisfies,
+                    'u' => if (lexeme[1] == 'n' and lexeme[2] == 'd' and lexeme[3] == 'e' and lexeme[4] == 'f' and lexeme[5] == 'i' and lexeme[6] == 'n' and lexeme[7] == 'e' and lexeme[8] == 'd') return .@"undefined",
                     else => {},
                 }
             },

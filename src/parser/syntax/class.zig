@@ -513,7 +513,9 @@ fn parsePropertyDefinition(
     }
 
     var value: ast.NodeIndex = .null;
-    var end = parser.tree.getSpan(key).end;
+    // for computed keys `[expr]`, `prev_token_end` is the `]` position; for
+    // non-computed keys it is the key token's own end. both are correct.
+    var end = parser.prev_token_end;
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null; // consume '='

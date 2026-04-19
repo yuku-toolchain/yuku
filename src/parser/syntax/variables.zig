@@ -5,6 +5,7 @@ const Precedence = @import("../token.zig").Precedence;
 const Token = @import("../token.zig").Token;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
+const ts_types = @import("ts/types.zig");
 const std = @import("std");
 
 pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_param: ?u32) Error!?ast.NodeIndex {
@@ -80,8 +81,16 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.getSpan(id);
 
-    var init: ast.NodeIndex = .null;
+    // `let x: Type = ...`
+    // annotation attaches to the inner binding pattern (`id`).
     var end = id_span.end;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        ts_types.applyTypeAnnotationToPattern(parser, id, annotation);
+        end = parser.tree.getSpan(annotation).end;
+    }
+
+    var init: ast.NodeIndex = .null;
 
     const is_using = kind == .using or kind == .await_using;
     const is_destructuring = patterns.isDestructuringPattern(parser, id);
@@ -135,7 +144,7 @@ fn canTokenStartLexicalBinding(token: Token) bool {
 pub fn isLetIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .let);
 
-    const next = try parser.lookAhead() orelse return null;
+    const next = try parser.peekAhead() orelse return null;
 
     // 'let' followed by a semicolon should be parsed as an identifier, not a declaration.
     if (next.tag == .semicolon) {
@@ -157,7 +166,7 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
 pub fn isUsingIdentifier(parser: *Parser) Error!?bool {
     std.debug.assert(parser.current_token.tag == .using);
 
-    const next = try parser.lookAhead() orelse return null;
+    const next = try parser.peekAhead() orelse return null;
 
     // if next token starts a BindingList and ASI cannot insert a semicolon,
     // treat `using` as the contextual keyword (declaration form).

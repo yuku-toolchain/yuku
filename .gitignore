@@ -12,3 +12,4 @@ profiler/files
 zig-pkg
 yuku-parser.*
 .node
+typescript

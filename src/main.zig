@@ -2,27 +2,35 @@ const std = @import("std");
 const parser = @import("parser");
 
 pub fn main(init: std.process.Init) !void {
-    const file_path = "test/index.js";
+    const file_path = "test/index.ts";
 
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, file_path, init.arena.allocator(), std.Io.Limit.limited(10 * 1024 * 1024));
 
     const io = init.io;
     const n: i96 = 100;
 
-    const parse_ns = try bench(io, source, false, n);
-    const total_ns = try bench(io, source, true, n);
-    const semantic_ns = total_ns - parse_ns;
+    const parse_ns = try bench(io, source, .parse_only, n);
+    const semantic_ns = try bench(io, source, .with_semantic, n);
+    const resolve_ns = try bench(io, source, .with_resolve, n);
 
-    printMs("Parse   ", parse_ns);
-    printMs("Semantic", semantic_ns);
-    printMs("Total   ", total_ns);
+    printMs("Parse      ", parse_ns);
+    printMs("Semantic   ", semantic_ns - parse_ns);
+    printMs("resolveAll ", resolve_ns - semantic_ns);
+    printMs("Total      ", resolve_ns);
 }
 
-fn bench(io: std.Io, source: []const u8, with_semantic: bool, n: i96) !i96 {
+const BenchMode = enum { parse_only, with_semantic, with_resolve };
+
+fn bench(io: std.Io, source: []const u8, mode: BenchMode, n: i96) !i96 {
     const start = std.Io.Clock.awake.now(io);
     for (0..@intCast(n)) |_| {
-        var tree = try parser.parse(std.heap.page_allocator, source, .{});
-        if (with_semantic) _ = try parser.semantic.analyze(&tree);
+        var tree = try parser.parse(std.heap.page_allocator, source, .{ .lang = .ts });
+
+        if (mode != .parse_only) {
+            var result = try parser.semantic.analyze(&tree);
+            if (mode == .with_resolve)
+                try result.symbol_table.resolveAll(tree.allocator(), result.scope_tree);
+        }
         tree.deinit();
     }
     return @divTrunc(start.durationTo(std.Io.Clock.awake.now(io)).nanoseconds, n);

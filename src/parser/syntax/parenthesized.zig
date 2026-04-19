@@ -194,7 +194,7 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
 }
 
 /// convert cover to ArrowFunctionExpression parameters and body.
-pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async: bool, arrow_start: u32, return_type: ast.NodeIndex) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume =>
 
     const saved_await_is_keyword = parser.context.await_is_keyword;
@@ -218,6 +218,7 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
             .async = is_async,
             .params = params,
             .body = body_result.body,
+            .return_type = return_type,
         } },
         .{ .start = arrow_start, .end = parser.tree.getSpan(body_result.body).end },
     );

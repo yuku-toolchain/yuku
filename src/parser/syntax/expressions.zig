@@ -22,6 +22,7 @@ const parenthesized = @import("parenthesized.zig");
 const patterns = @import("patterns.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
+const ts_types = @import("ts/types.zig");
 
 const ParseExpressionOpts = struct {
     /// whether we are parsing this expression in a cover context.
@@ -222,9 +223,16 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
+    // ts arrow return type, `(a): Type => ...`
+    // only valid when an arrow follows, consumed before the `=>` check.
+    var return_type: ast.NodeIndex = .null;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
+    }
+
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
-        return parenthesized.coverToArrowFunction(parser, cover, false, start);
+        return parenthesized.coverToArrowFunction(parser, cover, false, start, return_type);
     }
 
     // not an arrow function - convert to parenthesized expression
@@ -267,7 +275,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag.isIdentifierLike() and !parser.current_token.hasLineTerminatorBefore()) {
-        const after_id_token = try parser.lookAhead() orelse return null;
+        const after_id_token = try parser.peekAhead() orelse return null;
 
         if (after_id_token.tag == .arrow and !after_id_token.hasLineTerminatorBefore()) {
             // now we know 'async' is a keyword, so report if it was escaped
@@ -294,13 +302,20 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
+    // ts arrow return type, `async (a): Type => ...`
+    // only valid when an arrow follows, consumed before the `=>` check.
+    var return_type: ast.NodeIndex = .null;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
+    }
+
     // [no LineTerminator here] => ConciseBody
     // async (...) => ...
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
         // now we know 'async' is a keyword, now report if it is escaped
         if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
 
-        return parenthesized.coverToArrowFunction(parser, cover, true, start);
+        return parenthesized.coverToArrowFunction(parser, cover, true, start, return_type);
     }
 
     // async(...)

@@ -1,46 +1,11 @@
 import { parse } from "yuku-parser";
 
-const source = await Bun.file("test/index.js").text();
+const source = await Bun.file("test/index.ts").text();
 
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
-parse(source);
+console.time('parse')
+const result = parse(source, {
+  lang: "ts"
+});
+console.timeEnd('parse')
 
-console.time("parse");
-parse(source);
-console.timeEnd("parse");
+console.log(JSON.stringify(result, null, 2))

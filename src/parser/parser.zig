@@ -60,7 +60,13 @@ pub const Parser = struct {
     allow_return_outside_function: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
+
     current_token: Token,
+    /// end position of the most recently consumed token. useful for span
+    /// computations when a closing delimiter has been eaten but the parent
+    /// node's span must stop there (not at the next token, which may lie
+    /// past whitespace or newlines).
+    prev_token_end: u32 = 0,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -98,7 +104,7 @@ pub const Parser = struct {
         try self.parseInner();
 
         if (!self.preserve_parens) {
-            stripParenthesizedExpressions(&self.tree);
+            stripParenthesizedNodes(&self.tree);
         }
 
         return self.tree;
@@ -274,11 +280,13 @@ pub const Parser = struct {
     /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
+        self.prev_token_end = self.current_token.span.end;
         self.current_token = try self.nextToken() orelse return null;
     }
 
     /// advance without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
+        self.prev_token_end = self.current_token.span.end;
         self.current_token = try self.nextToken() orelse return null;
     }
 
@@ -306,7 +314,20 @@ pub const Parser = struct {
         if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
     }
 
-    pub fn lookAhead(self: *Parser) Error!?Token {
+    /// peeks the token immediately after `current_token` without advancing.
+    /// returns `null` if the lexer cannot produce another token (for example
+    /// after a lexical error).
+    pub inline fn peekAhead(self: *Parser) Error!?Token {
+        return (try self.peekAheadN(1))[0];
+    }
+
+    /// peeks the next `n` tokens after `current_token` in a single forward
+    /// scan, returning them by position. index `0` is the immediately
+    /// following token, index `1` the one after that, and so on. slots past
+    /// the end of the token stream are `null`.
+    pub fn peekAheadN(self: *Parser, comptime n: usize) Error![n]?Token {
+        comptime std.debug.assert(n >= 1);
+
         const prev_state = self.lexer.state;
         const prev_cursor = self.lexer.cursor;
         const prev_comments_len = self.lexer.comments.items.len;
@@ -317,7 +338,11 @@ pub const Parser = struct {
             self.lexer.comments.shrinkRetainingCapacity(prev_comments_len);
         }
 
-        return try self.nextToken();
+        var tokens: [n]?Token = @splat(null);
+        inline for (0..n) |i| {
+            tokens[i] = try self.nextToken() orelse break;
+        }
+        return tokens;
     }
 
     /// sets current token from a re-scanned token and advances to the next token.
@@ -377,16 +402,23 @@ pub const Parser = struct {
         return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    fn stripParenthesizedExpressions(tree: *ast.Tree) void {
+    fn stripParenthesizedNodes(tree: *ast.Tree) void {
         const datas = tree.nodes.items(.data);
         const spans = tree.nodes.items(.span);
         for (0..datas.len) |i| {
-            if (datas[i] != .parenthesized_expression) continue;
+            var inner: u32 = switch (datas[i]) {
+                .parenthesized_expression => |p| @intFromEnum(p.expression),
+                .ts_parenthesized_type => |p| @intFromEnum(p.type_annotation),
+                else => continue,
+            };
 
-            // resolve to the innermost non-paren expression
-            var inner = @intFromEnum(datas[i].parenthesized_expression.expression);
-            while (datas[inner] == .parenthesized_expression) {
-                inner = @intFromEnum(datas[inner].parenthesized_expression.expression);
+            // resolve to the innermost non-paren node
+            while (true) {
+                switch (datas[inner]) {
+                    .parenthesized_expression => |p| inner = @intFromEnum(p.expression),
+                    .ts_parenthesized_type => |p| inner = @intFromEnum(p.type_annotation),
+                    else => break,
+                }
             }
 
             datas[i] = datas[inner];
