@@ -2231,6 +2231,25 @@ pub const TSIndexedAccessType = struct {
     index_type: NodeIndex,
 };
 
+/// An intersection type. Combines two or more types with `&`, representing a
+/// value that satisfies every constituent simultaneously.
+///
+/// Binds tighter than `TSUnionType`, so `A | B & C` parses as `A | (B & C)`.
+/// A leading `&` before the first operand is allowed and is preserved in the
+/// span: `type A = & X` yields a single-operand `TSIntersectionType` whose
+/// span starts at the leading `&` rather than at the first operand.
+///
+/// ## Example
+/// ```ts
+/// type A = Named & Aged;
+/// //       ^^^^^^^^^^^^ TSIntersectionType
+/// type B = { name: string } & { age: number } & Serializable;
+/// ```
+pub const TSIntersectionType = struct {
+    /// the constituent types in source order
+    types: IndexRange,
+};
+
 /// The `intrinsic` keyword. Marks a type as built into the TypeScript compiler
 /// (for example `Uppercase<T>` and other string-manipulation utilities).
 ///
@@ -2338,6 +2357,28 @@ pub const TSThisType = struct {};
 /// //              ^^^^^^^^^ TSUndefinedKeyword
 /// ```
 pub const TSUndefinedKeyword = struct {};
+
+/// A union type. Combines two or more types with `|`, representing a value
+/// that is any one of the constituents.
+///
+/// Binds looser than `TSIntersectionType`, so `A & B | C` parses as
+/// `(A & B) | C`. A leading `|` before the first operand is allowed and is
+/// preserved in the span: `type A = | string` yields a single-operand
+/// `TSUnionType` whose span starts at the leading `|` rather than at the
+/// first operand.
+///
+/// ## Example
+/// ```ts
+/// type A = string | number | boolean;
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^ TSUnionType
+/// type B =
+///     | { kind: "ok" }
+///     | { kind: "err"; message: string };
+/// ```
+pub const TSUnionType = struct {
+    /// the constituent types in source order
+    types: IndexRange,
+};
 
 /// The `unknown` primitive type. The type-safe counterpart of `any`.
 ///
@@ -2722,6 +2763,7 @@ pub const NodeData = union(enum) {
     ts_boolean_keyword: TSBooleanKeyword,
     ts_export_assignment: TSExportAssignment,
     ts_indexed_access_type: TSIndexedAccessType,
+    ts_intersection_type: TSIntersectionType,
     ts_intrinsic_keyword: TSIntrinsicKeyword,
     ts_literal_type: TSLiteralType,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
@@ -2739,6 +2781,7 @@ pub const NodeData = union(enum) {
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,
     ts_type_reference: TSTypeReference,
     ts_undefined_keyword: TSUndefinedKeyword,
+    ts_union_type: TSUnionType,
     ts_unknown_keyword: TSUnknownKeyword,
     ts_void_keyword: TSVoidKeyword,
 

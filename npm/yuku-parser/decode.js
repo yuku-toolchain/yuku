@@ -188,40 +188,42 @@ function decode(buffer, source) {
     case 88: return { type: "TSBooleanKeyword", start, end };
     case 89: return { type: "TSExportAssignment", start, end, expression: f1 !== NULL ? node(f1) : null };
     case 90: return { type: "TSIndexedAccessType", start, end, objectType: f1 !== NULL ? node(f1) : null, indexType: f2 !== NULL ? node(f2) : null };
-    case 91: return { type: "TSIntrinsicKeyword", start, end };
-    case 92: return { type: "TSLiteralType", start, end, literal: f1 !== NULL ? node(f1) : null };
-    case 93: return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null };
-    case 94: return { type: "TSNeverKeyword", start, end };
-    case 95: return { type: "TSNullKeyword", start, end };
-    case 96: return { type: "TSNumberKeyword", start, end };
-    case 97: return { type: "TSObjectKeyword", start, end };
-    case 98: return { type: "TSQualifiedName", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null };
-    case 99: return { type: "TSStringKeyword", start, end };
-    case 100: return { type: "TSSymbolKeyword", start, end };
-    case 101: return { type: "TSThisType", start, end };
-    case 102: return { type: "TSTypeAnnotation", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
-    case 103: return { type: "TSTypeParameter", start, end, name: f1 !== NULL ? node(f1) : null, constraint: f2 !== NULL ? node(f2) : null, default: f3 !== NULL ? node(f3) : null, in: !!(flags & 1), out: !!(flags & 2), const: !!(flags & 4) };
-    case 104: return { type: "TSTypeParameterDeclaration", start, end, params: nodeArr(f1, f0) };
-    case 105: return { type: "TSTypeParameterInstantiation", start, end, params: nodeArr(f1, f0) };
-    case 106: return { type: "TSTypeReference", start, end, typeName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
-    case 107: return { type: "TSUndefinedKeyword", start, end };
-    case 108: return { type: "TSUnknownKeyword", start, end };
-    case 109: return { type: "TSVoidKeyword", start, end };
-    case 110: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
-    case 111: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
-    case 112: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
-    case 113: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
-    case 114: return { type: "JSXOpeningFragment", start, end };
-    case 115: return { type: "JSXClosingFragment", start, end };
-    case 116: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
-    case 117: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };
-    case 118: return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
-    case 119: return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
-    case 120: return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 121: return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 122: return { type: "JSXEmptyExpression", start, end };
-    case 123: { const t = str(f1, f2); return { type: "JSXText", start, end, value: t, raw: t }; }
-    case 124: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 91: return { type: "TSIntersectionType", start, end, types: nodeArr(f1, f0) };
+    case 92: return { type: "TSIntrinsicKeyword", start, end };
+    case 93: return { type: "TSLiteralType", start, end, literal: f1 !== NULL ? node(f1) : null };
+    case 94: return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null };
+    case 95: return { type: "TSNeverKeyword", start, end };
+    case 96: return { type: "TSNullKeyword", start, end };
+    case 97: return { type: "TSNumberKeyword", start, end };
+    case 98: return { type: "TSObjectKeyword", start, end };
+    case 99: return { type: "TSQualifiedName", start, end, left: f1 !== NULL ? node(f1) : null, right: f2 !== NULL ? node(f2) : null };
+    case 100: return { type: "TSStringKeyword", start, end };
+    case 101: return { type: "TSSymbolKeyword", start, end };
+    case 102: return { type: "TSThisType", start, end };
+    case 103: return { type: "TSTypeAnnotation", start, end, typeAnnotation: f1 !== NULL ? node(f1) : null };
+    case 104: return { type: "TSTypeParameter", start, end, name: f1 !== NULL ? node(f1) : null, constraint: f2 !== NULL ? node(f2) : null, default: f3 !== NULL ? node(f3) : null, in: !!(flags & 1), out: !!(flags & 2), const: !!(flags & 4) };
+    case 105: return { type: "TSTypeParameterDeclaration", start, end, params: nodeArr(f1, f0) };
+    case 106: return { type: "TSTypeParameterInstantiation", start, end, params: nodeArr(f1, f0) };
+    case 107: return { type: "TSTypeReference", start, end, typeName: f1 !== NULL ? node(f1) : null, typeArguments: f2 !== NULL ? node(f2) : null };
+    case 108: return { type: "TSUndefinedKeyword", start, end };
+    case 109: return { type: "TSUnionType", start, end, types: nodeArr(f1, f0) };
+    case 110: return { type: "TSUnknownKeyword", start, end };
+    case 111: return { type: "TSVoidKeyword", start, end };
+    case 112: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
+    case 113: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
+    case 114: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
+    case 115: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
+    case 116: return { type: "JSXOpeningFragment", start, end };
+    case 117: return { type: "JSXClosingFragment", start, end };
+    case 118: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
+    case 119: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };
+    case 120: return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
+    case 121: return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
+    case 122: return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null };
+    case 123: return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 124: return { type: "JSXEmptyExpression", start, end };
+    case 125: { const t = str(f1, f2); return { type: "JSXText", start, end, value: t, raw: t }; }
+    case 126: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
   const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;

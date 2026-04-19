@@ -7,7 +7,7 @@ const literals = @import("../literals.zig");
 
 /// Parses a `TSType`. The entry point for any type position.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
-    return try parsePostfixType(parser) orelse {
+    return try parseUnionType(parser) orelse {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected a type",
@@ -15,6 +15,81 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
         );
         return null;
     };
+}
+
+fn parseUnionType(parser: *Parser) Error!?ast.NodeIndex {
+    const leading_start: ?u32 = if (parser.current_token.tag == .bitwise_or)
+        parser.current_token.span.start
+    else
+        null;
+
+    if (leading_start != null) {
+        try parser.advance() orelse return null; // consume leading '|'
+    }
+
+    const first = try parseIntersectionType(parser) orelse return null;
+
+    if (leading_start == null and parser.current_token.tag != .bitwise_or) {
+        return first;
+    }
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    try parser.scratch_a.append(parser.allocator(), first);
+
+    var last = first;
+    while (parser.current_token.tag == .bitwise_or) {
+        try parser.advance() orelse return null; // consume '|'
+        last = try parseIntersectionType(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), last);
+    }
+
+    const types = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+    const start = leading_start orelse parser.tree.getSpan(first).start;
+    const end = parser.tree.getSpan(last).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_union_type = .{ .types = types } },
+        .{ .start = start, .end = end },
+    );
+}
+
+fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
+    const leading_start: ?u32 = if (parser.current_token.tag == .bitwise_and)
+        parser.current_token.span.start
+    else
+        null;
+    if (leading_start != null) {
+        try parser.advance() orelse return null; // consume leading '&'
+    }
+
+    const first = try parsePostfixType(parser) orelse return null;
+
+    if (leading_start == null and parser.current_token.tag != .bitwise_and) {
+        return first;
+    }
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    try parser.scratch_a.append(parser.allocator(), first);
+
+    var last = first;
+    while (parser.current_token.tag == .bitwise_and) {
+        try parser.advance() orelse return null; // consume '&'
+        last = try parsePostfixType(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), last);
+    }
+
+    const types = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+    const start = leading_start orelse parser.tree.getSpan(first).start;
+    const end = parser.tree.getSpan(last).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_intersection_type = .{ .types = types } },
+        .{ .start = start, .end = end },
+    );
 }
 
 fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {

@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2184/8399 (26.00%)
-Failed:       6215
-AST mismatch: 7/2191
+Passed:       2239/8399 (26.66%)
+Failed:       6160
+AST mismatch: 7/2246
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -61,14 +61,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/0055a2dc7350791d.ts
 ✓ test/parser/suite/ts/pass/005a9ae52cfb152c.ts
 ✗ test/parser/suite/ts/pass/0061d5753822ba80.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Unexpected token '!' in expression
    |
-13 | 
-14 |     let a1: string[] | undefined = [];
-   |                      ^
-15 | 
+16 |     while (true) {
+17 |         let a2 = foo(a1!);
+   |                        ^
+18 |         a1 = await bar(a2);
    |
-   = help: Try inserting a semicolon here
+   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
 
 
 ✓ test/parser/suite/ts/pass/006aa972606cd565.ts
@@ -166,14 +166,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/00dfee63d07eb847.ts
-error: 'const' declarations must be initialized
+error: Unexpected token '<'
    |
  5 | function f() {
  6 |     const x: string | null = <any>{};
-   |           ^
+   |                              ^
  7 |     if (x !== null) {
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Expected an expression
 
 
 ✓ test/parser/suite/ts/pass/00e1f867debfcd15.ts
@@ -338,15 +338,13 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/01bf3ec0d9166319.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a type, but found '['
    |
- 4 | function f1() {
- 5 |     let x: string | number = 1;
-   |                   ^
- 6 |     x;
+11 | function f2() {
+12 |     let [x]: [string | number] = [1];
+   |              ^
+13 |     x;
    |
-   = help: Try inserting a semicolon here
-
 
 ✗ test/parser/suite/ts/pass/01c130e3ee5d0320.module.ts
 error: Expected ')' after if condition, but found 'as'
@@ -1231,12 +1229,12 @@ error: Expected ';' after class field, but found 'm1'
 
 ✓ test/parser/suite/ts/pass/058257ef193e21ed.ts
 ✗ test/parser/suite/ts/pass/05864d8af0ea833d.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Window'
    |
-17 | 
-18 |     let foo: string | undefined = "";
-   |                     ^
-19 |     const {
+48 | {
+49 |     interface Window {
+   |               ^^^^^^
+50 |         window: Window;
    |
    = help: Try inserting a semicolon here
 
@@ -1542,17 +1540,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/068c5fa9a41941ac.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | var arr: string[] | number[];
-   |                   ^
- 3 | arr.splice(1, 1);
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/068c5fa9a41941ac.ts
 ✓ test/parser/suite/ts/pass/068c91620945f45d.ts
 ✓ test/parser/suite/ts/pass/0697a279ceedc4f5.ts
 ✗ test/parser/suite/ts/pass/0699d19fecf89c4a.ts
@@ -3440,15 +3428,13 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/0db029facdb669a8.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '&'
+error: Expected a type, but found '{'
    |
- 2 | // @declaration: true
- 3 | var a: object & string = ""; // error
-   |               ^
  4 | var b: object | string = ""; // ok
+ 5 | var c: object & {} = 123; // error
+   |                 ^
+ 6 | a = b; // error
    |
-   = help: Try inserting a semicolon here
-
 
 ✗ test/parser/suite/ts/pass/0dc78e021382aac8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -4116,15 +4102,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/101e15b2b8d5bc06.ts
-error: Expected ')' to close parameter list, but found '&'
+error: Expected a type, but found '{'
    |
  6 | 
  7 | function f10(obj: A & { x: string } | B) {
-   |                     ^
+   |                       ^
  8 |     if (obj instanceof Object) {
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/1028e105dfe0d9bc.module.ts
 error: Duplicate export of 'default'
@@ -6539,17 +6523,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/18e14e9af940963d.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 1 | // @target: es2015
- 2 | function f(x: string | Promise<string>) {
-   |                      ^
- 3 |     x.toLowerCase();
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/18e14e9af940963d.ts
 ✗ test/parser/suite/ts/pass/18e4a08fa7f50fd9.ts
 error: Expected ';' after class field, but found 'foo'
    |
@@ -7692,14 +7666,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/1d654891deba2df8.ts
 ✗ test/parser/suite/ts/pass/1d655d3b013881af.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Basic'
    |
-31 | 
-32 | function assertObjectOrNull(x: object | null) {
-   |                                       ^
-33 |     return x;
+51 | 
+52 | type Basic = number | boolean | string | symbol | object | Function | undefined;
+   |      ^^^^^
+53 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/1d6806a8f07ef061.ts
@@ -7970,14 +7944,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1eaf648a91398765.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | var unionNumberString: number | string;
-   |                               ^
- 3 | class C { }
+63 | // type parameters
+64 | function foo<T, U>(t: T, u: U) {
+   |             ^
+65 |     t = u; // error
    |
-   = help: Try inserting a semicolon here
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/1eb9ebb1f8cfb6ba.ts
@@ -8098,17 +8072,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/1f428013f7e330f0.ts
-error: Expected '{' to start function body, but found '|'
-   |
- 4 | 
- 5 | function f1(x: number): number | Promise<number> {
-   |                                ^
- 6 |   return Promise.resolve(x);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1f428013f7e330f0.ts
 ✗ test/parser/suite/ts/pass/1f52377a7094d379.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'MyModule'
    |
@@ -8457,14 +8421,14 @@ error: Expected ';' after class field, but found 'foo'
 ✓ test/parser/suite/ts/pass/2091be051a2a4507.ts
 ✓ test/parser/suite/ts/pass/2098dc2f612b2645.ts
 ✗ test/parser/suite/ts/pass/209c7e05e03830d5.module.ts
-error: Expected '{' to start function body, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
-20 | 
-21 | function f4(b: boolean): string | undefined {  // Error
-   |                                 ^
-22 |     if (b) return undefined;
+41 | function f12(b: boolean) {
+42 |     if (b) return undefined as any;
+   |                             ^^
+43 | }
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/209cc3618a802181.module.ts
@@ -10712,12 +10676,12 @@ error: 'enum' is reserved and cannot be used as an identifier
 
 ✓ test/parser/suite/ts/pass/28e324f3683569ef.ts
 ✗ test/parser/suite/ts/pass/28e7234d4d462347.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'm1'
    |
- 6 | var num: number;
- 7 | var strOrNum: string | number;
-   |                      ^
- 8 | var var1: string | number;
+ 9 | // Inside module
+10 | namespace m1 {
+   |           ^^
+11 |     // global vars in function declaration
    |
    = help: Try inserting a semicolon here
 
@@ -11426,17 +11390,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/2bcc3a9479d2fc6d.ts
-error: Expected '{' to start function body, but found '|'
-   |
-11 | 
-12 | function isMissingReturnExpression3(): number|void {
-   |                                              ^
-13 |     return;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/2bcc3a9479d2fc6d.ts
 ✗ test/parser/suite/ts/pass/2bcee057cc16cf93.module.ts
 error: Expected 'from' after import clause, but found '='
    |
@@ -11448,17 +11402,7 @@ error: Expected 'from' after import clause, but found '='
    = help: Import statements require 'from' followed by a module specifier: import x from 'module'
 
 
-✗ test/parser/suite/ts/pass/2bd2981aad9f0788.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
-36 | 
-37 | function f5(x: number, y: 1 | 2) {
-   |                             ^
-38 |     if (x === 0 || x === y) {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/2bd2981aad9f0788.ts
 ✓ test/parser/suite/ts/pass/2bd41dc75225dfe5.ts
 ✗ test/parser/suite/ts/pass/2be3287f7cdf1773.ts
 error: Expected ';' after class field, but found ':'
@@ -11493,14 +11437,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/2bf39346f905c625.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ',' or ']' in array, but found 'as'
    |
- 5 | {
  6 |     let a: 0 | 1 = 0;
-   |              ^
  7 |     const [{ [(a = 1)]: b } = [9, a] as const] = [];
+   |                                      ^^
+ 8 |     const bb: 0 = b;
    |
-   = help: Try inserting a semicolon here
+   = help: Add a comma between elements or close the array with ']'.
 
 
 ✓ test/parser/suite/ts/pass/2bfef297a985b276.ts
@@ -11564,15 +11508,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/2c47c832032cc89c.ts
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 6 | // https://github.com/microsoft/TypeScript/issues/36295
- 7 | const a = (): string | undefined => undefined;
-   |           ^^
- 8 | ((b = a() ?? "d") => { var a; })();
-   |
-
+✓ test/parser/suite/ts/pass/2c47c832032cc89c.ts
 ✗ test/parser/suite/ts/pass/2c59f4724f3bb3a6.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -12054,17 +11990,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/2dee771216d8b98b.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 3 | // type of the guarded variable.
- 4 | function foo(x: number | string) {
-   |                        ^
- 5 |     function f() {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/2dee771216d8b98b.ts
 ✗ test/parser/suite/ts/pass/2e01999294371d8b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Base'
    |
@@ -12456,17 +12382,7 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/ts/pass/2f7ba975a3180e77.ts
-✗ test/parser/suite/ts/pass/2f7cbae9db3765ae.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 3 | 
- 4 | let x: string | undefined;
-   |               ^
- 5 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/2f7cbae9db3765ae.ts
 ✗ test/parser/suite/ts/pass/2f82d0687a8686cd.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Thing'
    |
@@ -12868,17 +12784,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/30f1ef269741417d.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es5, es2015
- 2 | var p1: number | string;
-   |                ^
- 3 | var p2: number | number[];
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/30f1ef269741417d.ts
 ✓ test/parser/suite/ts/pass/30fc1ca1ed772579.ts
 ✗ test/parser/suite/ts/pass/30ff3a5baf51da50.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -13290,15 +13196,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/322c3584f1696007.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a type, but found '('
    |
- 7 | function f1() {
  8 |     let code: 0 | 1 | 2 = 0;
-   |                 ^
  9 |     const otherCodes: (0 | 1 | 2)[] = [2, 0, 1, 0, 2, 2, 2, 0, 1, 0, 2, 1, 1, 0, 2, 1];
+   |                       ^
+10 |     for (const code2 of otherCodes) {
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/ts/pass/3238632bb41768e1.ts
 ✗ test/parser/suite/ts/pass/323d283afd286640.ts
@@ -13488,14 +13392,14 @@ error: Expected a type, but found '('
 
 ✓ test/parser/suite/ts/pass/32bd664d1484ff1f.ts
 ✗ test/parser/suite/ts/pass/32bd8e9d53d5180c.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ';' after class field, but found 'foo'
    |
- 3 | // @emitDecoratorMetadata: true
- 4 | function PropDeco(target: Object, propKey: string | symbol) { }
-   |                                                   ^
- 5 | 
+ 7 |     @PropDeco
+ 8 |     public foo: "foo" | "bar";
+   |            ^^^
+ 9 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/32c29a8c3f0fa509.ts
@@ -14950,15 +14854,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3835c045c639a8bb.ts
 ✓ test/parser/suite/ts/pass/383dc34f8d496650.module.ts
 ✗ test/parser/suite/ts/pass/385e77ba67b13549.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '('
    |
- 8 | 
- 9 | function f1(x: string | number) {
-   |                       ^
-10 |     x = "abc";
+44 | 
+45 | function f4(cond: () => boolean) {
+   |                   ^
+46 |     let x: string | number = 0;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/385eee735619105f.ts
 error: Expected '{' to start class body, but found '<'
@@ -15196,17 +15098,7 @@ error: Unexpected token '<'
    = help: Expected an expression
 
 
-✗ test/parser/suite/ts/pass/39d801c86f318fcf.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 1 | // @target: es2015
- 2 | function distinguish(thing: string | number | Date) {
-   |                                    ^
- 3 |     if (thing instanceof Object) {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/39d801c86f318fcf.ts
 ✓ test/parser/suite/ts/pass/39d8340ced81a371.ts
 ✗ test/parser/suite/ts/pass/39dc0c583bf3a752.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -15547,14 +15439,14 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/3b1ac9f7db199ddb.ts
 ✗ test/parser/suite/ts/pass/3b1fca444499f624.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 3 | 
- 4 | function test1(a: number | string) {
-   |                          ^
  5 |   if (typeof a === "number") {
+ 6 |     const fn = (arg: typeof a) => true;
+   |                    ^
+ 7 |     return fn;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/3b201f11ebd81de8.tsx
@@ -16093,17 +15985,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/3cbf584f44d54860.ts
-✗ test/parser/suite/ts/pass/3cca85bffac95d2c.module.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 7 | var num: number;
- 8 | var var1: string | number;
-   |                  ^
- 9 | if (typeof var1 === "string") {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/3cca85bffac95d2c.module.ts
 ✗ test/parser/suite/ts/pass/3cd421d8482b3e41.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'C1'
    |
@@ -16115,17 +15997,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/3ce43586c957a732.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 3 | // they are union types with identical sets of constituent types, or
- 4 | var strOrNum: string | boolean;
-   |                      ^
- 5 | var strOrNum: boolean | string;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/3ce43586c957a732.ts
 ✗ test/parser/suite/ts/pass/3ce81636d03d13e3.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -16794,17 +16666,7 @@ error: Expected a type, but found '{'
  6 |     switch (x.a) {
    |
 
-✗ test/parser/suite/ts/pass/3f58dc5ea9a41e01.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var union: string[] | number[];
-   |                     ^
- 3 | for (var v of union) { }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/3f58dc5ea9a41e01.ts
 ✗ test/parser/suite/ts/pass/3f5d6ba3539d590a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -17286,17 +17148,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/40f47e7d38e1031b.ts
 ✓ test/parser/suite/ts/pass/4104e10e0e244002.ts
 ✓ test/parser/suite/ts/pass/4107a9a1fafe9241.ts
-✗ test/parser/suite/ts/pass/411bf852808241c7.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | let x: string | number | boolean;
-   |               ^
- 3 | let cond: boolean;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/411bf852808241c7.ts
 ✗ test/parser/suite/ts/pass/411d05f3cd83fc2f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -17979,17 +17831,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/437b17f2d2fa398f.ts
-✗ test/parser/suite/ts/pass/439bccc961714ff0.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
-37 | 
-38 | function foo5(bar: "a" | "b"): number {
-   |                        ^
-39 |     switch(bar) {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/439bccc961714ff0.ts
 ✓ test/parser/suite/ts/pass/439ce6c9f9b39ce5.module.ts
 ✗ test/parser/suite/ts/pass/439e19bc12006654.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
@@ -20246,27 +20088,25 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/4be6d21b53858e70.ts
 ✓ test/parser/suite/ts/pass/4bfdd55fd302a18b.ts
 ✗ test/parser/suite/ts/pass/4c0536799efeda51.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 3 | function a() {
- 4 |     let x: string | number;
-   |                   ^
- 5 |     x = "";
+88 | }
+89 | declare function len(s: string | number): number;
+   |         ^^^^^^^^
+90 | function h2() {
    |
    = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/4c07ad2bb691a076.ts
 ✗ test/parser/suite/ts/pass/4c22e5c692f18594.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '{'
    |
- 6 | 
- 7 | function test1(arg: string | undefined) {
-   |                            ^
- 8 |   if (!arg) throw new Error();
+39 |   foo:
+40 |     | { kind: "a"; prop: string }
+   |       ^
+41 |     | { kind: "b"; prop: number }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/ts/pass/4c2557c5eb111a93.ts
 ✓ test/parser/suite/ts/pass/4c25e01d12f072da.ts
@@ -21307,17 +21147,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/4fbb6946b81eb80b.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 3 | function a() {
- 4 |     let x: string | number;
-   |                   ^
- 5 |     x = "";
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/4fbb6946b81eb80b.ts
 ✗ test/parser/suite/ts/pass/4fbe0b328fa8af31.ts
 error: 'await using' is not allowed at the top level of a script
    |
@@ -21570,14 +21400,14 @@ error: 'enum' is reserved and cannot be used as an identifier
 
 ✓ test/parser/suite/ts/pass/50a7cfc4636a8fc0.ts
 ✗ test/parser/suite/ts/pass/50b1b3433d8472da.module.ts
-error: 'const' declarations must be initialized
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
-16 |     const c1 = cond ? "foo" : "bar";  // widening "foo" | widening "bar"
-17 |     const c2: "foo" | "bar" = c1;  // "foo" | "bar"
-   |           ^^
-18 |     const c3 = cond ? c1 : c2;  // "foo" | "bar"
+56 |     let v2 = c2;
+57 |     const c3 = "foo" as "foo";
+   |                      ^^
+58 |     let v3 = c3;
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/50b8c365d2b499e5.ts
@@ -21757,17 +21587,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/515d371036ff3538.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 6 | function ff() {
- 7 |     let x: string | undefined;
-   |                   ^
- 8 |     while (true) {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/515d371036ff3538.ts
 ✗ test/parser/suite/ts/pass/516462210848f46a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -21912,17 +21732,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5210eb7331d37445.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es6
- 2 | var p1: number | string;
-   |                ^
- 3 | var p2: number | number[];
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/5210eb7331d37445.ts
 ✓ test/parser/suite/ts/pass/521e34471daa0866.ts
 ✗ test/parser/suite/ts/pass/522c1d8469e31adf.ts
 error: Expected a type, but found '<'
@@ -22708,12 +22518,12 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/556dd6f33fe1a315.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ')' to close parameter list, but found 'as'
    |
-12 | function f2(
-13 |   a: number | string | undefined,
-   |             ^
-14 |   required: unknown = (() => {
+31 |   a: number | string | undefined = 1,
+32 |   { [(a = "")]: b } = {} as any
+   |                          ^^
+33 | ) {
    |
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
@@ -23104,17 +22914,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/569f317e99bba334.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 4 | function f1() {
- 5 |     var a: boolean | number | string;
-   |                    ^
- 6 |     if (typeof a !== 'boolean') {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/569f317e99bba334.ts
 ✗ test/parser/suite/ts/pass/56a67b45254d890d.module.ts
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -24141,15 +23941,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/5ab8d50da40f5fa3.module.ts
 ✓ test/parser/suite/ts/pass/5acaaef0bd85f8af.ts
-✗ test/parser/suite/ts/pass/5acee4da26b81218.ts
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 6 | // https://github.com/microsoft/TypeScript/issues/36295
- 7 | const a = (): string | undefined => undefined;
-   |           ^^
- 8 | (({ [a() ?? "d"]: c = "" }) => { var a; })();
-   |
-
+✓ test/parser/suite/ts/pass/5acee4da26b81218.ts
 ✓ test/parser/suite/ts/pass/5ad4a46d04f7b49b.ts
 ✓ test/parser/suite/ts/pass/5adb5c2e263b627f.ts
 ✗ test/parser/suite/ts/pass/5addd3d2f4d8709f.ts
@@ -25341,15 +25133,13 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/5f60360e063ef8a1.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 5 | // the type of a variable or parameter is narrowed by any type guard in the 'if' condition when false.
- 6 | function foo(x: number | string) {
-   |                        ^
- 7 |     if (typeof x === "string") {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
+error: Expected a type, but found '('
+    |
+122 |             )
+123 |             : (
+    |               ^
+124 |             // do not change value
+    |
 
 ✓ test/parser/suite/ts/pass/5f62688ece018569.ts
 ✗ test/parser/suite/ts/pass/5f6448a966d36933.ts
@@ -25387,15 +25177,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/5fa2adefaf23a8eb.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a type, but found '('
    |
- 1 | // @target: es2015
- 2 | var strOrNum: string | number;
-   |                      ^
  3 | var strOrBool: string | boolean;
+ 4 | var strOrFunc: string | (() => void);
+   |                         ^
+ 5 | var numOrBool: number | boolean
    |
-   = help: Try inserting a semicolon here
-
 
 ✗ test/parser/suite/ts/pass/5fa975e241c729d5.module.ts
 error: Expected declaration after 'export', but found 'enum'
@@ -26502,17 +26290,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/6411f2ae8f2f3ec0.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 2 | let cond: boolean;
- 3 | function a(x: string | number) {
-   |                      ^
- 4 |     for (x = undefined; typeof x !== "number"; x = undefined) {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/6411f2ae8f2f3ec0.ts
 ✗ test/parser/suite/ts/pass/64121ac9fff3b26e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -26818,14 +26596,14 @@ error: Expected ')' after method parameters, but found 'x'
    |
 
 ✗ test/parser/suite/ts/pass/654e065878163941.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 3 | 
- 4 | function foo(x: number | string | boolean) {
-   |                        ^
- 5 |     return typeof x === "string"
+36 |         ? x
+37 |         : ((a: number | boolean) => {
+   |              ^
+38 |             var b = x; // new scope - number | boolean
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/6551ce39354a701d.ts
@@ -28647,17 +28425,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/6ca63f50595cc5cb.ts
-✗ test/parser/suite/ts/pass/6cb226236ad0dd37.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | let stringOrNumber: string | number;
-   |                            ^
- 3 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/6cb226236ad0dd37.ts
 ✗ test/parser/suite/ts/pass/6cb5121d394b62da.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'ObjType'
    |
@@ -29352,17 +29120,7 @@ error: Expected ';' after for-loop init, but found ':'
  7 | for (var x = 2; ;) { }
    |
 
-✗ test/parser/suite/ts/pass/6f54cb35d9fb8d05.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 7 | var num: number;
- 8 | var strOrNum: string | number;
-   |                      ^
- 9 | var var1: string | number;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/6f54cb35d9fb8d05.ts
 ✓ test/parser/suite/ts/pass/6f56eacc61e38ce0.ts
 ✗ test/parser/suite/ts/pass/6f59a5dd59d61daa.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'AliasOptional'
@@ -30667,17 +30425,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/73e1407c136d4283.ts
-error: 'const' declarations must be initialized
-   |
- 2 | // @strictNullChecks: true
- 3 | const x: Object | string = { x: 0 };
-   |       ^
- 4 | const y: Object | undefined = { x: 0 };
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/73e1407c136d4283.ts
 ✓ test/parser/suite/ts/pass/73e1c8a634df98a1.ts
 ✗ test/parser/suite/ts/pass/73f003b72b15d570.ts
 error: Expected ';' after class field, but found '*'
@@ -31239,17 +30987,7 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
 19 | 
    |
 
-✗ test/parser/suite/ts/pass/75c1500d8a1d1f82.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | let x: string | number | boolean | RegExp | Function;
-   |               ^
- 3 | let obj: any;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/75c1500d8a1d1f82.ts
 ✗ test/parser/suite/ts/pass/75c6ac03c031582d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'CallSignature'
    |
@@ -31426,15 +31164,13 @@ error: Expected ')' after method parameters, but found 'a'
    |
 
 ✗ test/parser/suite/ts/pass/765441ad39f393dc.ts
-error: Expected ')' to close parameter list, but found '|'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 5 | 
- 6 | function f1(x: 1 | 2): string {
-   |                  ^
- 7 |     if (!!true) {
+38 | 
+39 | enum E { A, B }
+   | ^^^^
+40 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts
 error: Expected '{' to start function body, but found 'export'
@@ -31805,14 +31541,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/7760fc7c795bfa70.ts
 ✗ test/parser/suite/ts/pass/7762f5496f7babcf.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Unexpected token '<'
    |
  6 | let two: 2 = 2;
  7 | let oneOrTwo: 1 | 2 = <1 | 2>1;
-   |                 ^
+   |                       ^
  8 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Expected an expression
 
 
 ✗ test/parser/suite/ts/pass/776dbd86919ae51f.ts
@@ -32413,28 +32149,8 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/79abf1256341c1da.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
-22 | {
-23 |   let iNext: string | number = "";
-   |                     ^
-24 |   for (
-   |
-   = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/79b345f941699dd6.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
-48 | 
-49 | function test5(a: boolean | void) {
-   |                           ^
-50 |     if (typeof a !== "undefined") {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/79abf1256341c1da.ts
+✓ test/parser/suite/ts/pass/79b345f941699dd6.ts
 ✗ test/parser/suite/ts/pass/79b34807952f1506.ts
 error: Expected ';' after class field, but found 'x'
    |
@@ -34286,17 +34002,7 @@ error: Expected ';' after class field, but found '?'
 
 
 ✓ test/parser/suite/ts/pass/80501198b5902ab6.ts
-✗ test/parser/suite/ts/pass/8057c288ea6b92f0.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 8 | 
- 9 | let a: A | null = null;
-   |          ^
-10 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/8057c288ea6b92f0.ts
 ✓ test/parser/suite/ts/pass/805d12c9fc2051b5.ts
 ✓ test/parser/suite/ts/pass/805e7d096c6afb53.ts
 ✗ test/parser/suite/ts/pass/8067686818574509.module.ts
@@ -34384,17 +34090,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/808ab643ad1fdbe0.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 4 | var num: number;
- 5 | var strOrNum: string | number;
-   |                      ^
- 6 | var strOrNumOrBool: string | number | boolean;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/808ab643ad1fdbe0.ts
 ✓ test/parser/suite/ts/pass/808c3d7d48aa5e13.ts
 ✗ test/parser/suite/ts/pass/8093c97ac0565a1f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
@@ -34730,15 +34426,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/81edc1ea54e944ef.ts
-error: Expected ')' after method parameters, but found '|'
-   |
-18 | 
-19 |     constructor(test: number | undefined) {
-   |                              ^
-20 |         this.#test = test;
-   |
-
+✓ test/parser/suite/ts/pass/81edc1ea54e944ef.ts
 ✗ test/parser/suite/ts/pass/81ef742b26ffb5b7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'DerivedTable'
    |
@@ -35415,17 +35103,7 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
  7 | }
    |
 
-✗ test/parser/suite/ts/pass/84d344795ce1a4c3.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 6 | var num: number;
- 7 | var var1: string | number;
-   |                  ^
- 8 | if (typeof var1 === "string") {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/84d344795ce1a4c3.ts
 ✓ test/parser/suite/ts/pass/84d55e795a0dce65.ts
 ✓ test/parser/suite/ts/pass/84d76782eb06ebda.ts
 ✓ test/parser/suite/ts/pass/84d8756725e867eb.ts
@@ -36054,17 +35732,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/87499f198f3afe19.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 5 | undefined();
- 6 | let f: null | undefined;
-   |             ^
- 7 | f();
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/87499f198f3afe19.ts
 ✗ test/parser/suite/ts/pass/874d37fd2dfa47f7.ts
 error: Expected ')' to close parameter list, but found '?'
    |
@@ -36814,15 +36482,13 @@ error: Expected ';' after class field, but found 'foo'
 
 
 ✗ test/parser/suite/ts/pass/89de9b461cce0949.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '('
    |
- 1 | // @target: es2015
- 2 | function callee(n: number | undefined, m: string) { }
-   |                           ^
  3 | 
+ 4 | function caller(arg: (n?: number) => void) { }
+   |                      ^
+ 5 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/89e21439ccbaa00b.ts
 error: Expected a type, but found '('
@@ -37195,15 +36861,13 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '('
    |
- 4 | // provided the right operand contains no assignments to the variable or parameter.
- 5 | function foo(x: number | string) {
-   |                        ^
- 6 |     return typeof x !== "string" || x.length === 10; // string
+44 |         // do not change value
+45 |         : ((y = x) && x.toString()))); // number | boolean | string
+   |           ^
+46 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/8b0853d37670ce97.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -37340,17 +37004,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/8b76f2b952250ed1.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | var maybeArray: number | number[];
-   |                        ^
- 3 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/8b76f2b952250ed1.ts
 ✗ test/parser/suite/ts/pass/8b96f28aaa41338a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'NonGeneric'
    |
@@ -37595,17 +37249,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/8cb7c34fa9fb5f91.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | let strOrBool: string|boolean;
-   |                      ^
- 3 | if ((typeof strOrBool === 'boolean' && !strOrBool) || typeof strOrBool === 'string') {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/8cb7c34fa9fb5f91.ts
 ✗ test/parser/suite/ts/pass/8cc31b87c4da71a7.ts
 error: Unexpected token '!' in expression
    |
@@ -37892,17 +37536,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/8dd1f53dd993ccc0.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 2 | let cond: boolean;
- 3 | function a(x: string | number) {
-   |                      ^
- 4 |     while (typeof x === "string") {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/8dd1f53dd993ccc0.ts
 ✗ test/parser/suite/ts/pass/8dd8fbf654e270f5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -37958,15 +37592,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/8e0ad389a45468b0.ts
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 5 | // https://github.com/microsoft/TypeScript/issues/36295
- 6 | const a = (): string | undefined => undefined;
-   |           ^^
- 7 | ((b = a() ?? "d") => {})();
-   |
-
+✓ test/parser/suite/ts/pass/8e0ad389a45468b0.ts
 ✗ test/parser/suite/ts/pass/8e0ce6584775abf5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -38043,14 +37669,14 @@ error: 'enum' is reserved and cannot be used as a binding identifier
    |
 
 ✗ test/parser/suite/ts/pass/8e383f86bff36815.module.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected '{' to start function body, but found 'is'
    |
  5 | 
  6 | export function assertIsElement(node: Node | null): node is Element {
-   |                                            ^
+   |                                                          ^^
  7 |     let nodeType = node === null ? null : node.nodeType;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/8e3987aa381cfee7.ts
@@ -38432,14 +38058,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8f2d309f6e18686d.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ',' or ')' in parenthesized expression, but found 'as'
    |
-11 | 
-12 | function bar (id: 'a' | 'b') {
-   |                       ^
-13 |   return {
+47 |       b: ""
+48 |   } as Record<string, number | string>)[id]
+   |     ^^
+49 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/8f3120947f3cd21e.module.tsx
@@ -38466,15 +38092,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/8f38ff87e4c79e9f.ts
 ✗ test/parser/suite/ts/pass/8f3bdcd776aff805.module.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '{'
    |
- 7 | 
- 8 | export function main(a: string[] | undefined) {
-   |                                  ^
- 9 |   const z = a ? { a } : { b: ["there"] };
+15 |   const zWorkAround:
+16 |     | { a: string[]; b?: undefined }
+   |       ^
+17 |     | { b: string[]; a?: undefined } = z;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/8f3cd1fb1be922f9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
@@ -39671,12 +39295,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/9434e80f3aed71ae.ts
 ✗ test/parser/suite/ts/pass/944058b7f9f6378c.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
- 1 | // @target: es2015
- 2 | let fooOrBar: "foo" | "bar";
-   |                     ^
  3 | 
+ 4 | let a = "foo" as "bar";
+   |               ^^
+ 5 | let b = "bar" as "foo";
    |
    = help: Try inserting a semicolon here
 
@@ -39702,14 +39326,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/9460118fa11b7bdc.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected '(' to start parameter list, but found '<'
    |
-11 | function test1() {
-12 |     let x: number | undefined;
-   |                   ^
-13 |     while (cond) {
+36 | 
+37 | function mapUntilCant<a, b>(
+   |                      ^
+38 |     values: a[],
    |
-   = help: Try inserting a semicolon here
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/946f0bba3a247276.ts
@@ -40551,15 +40175,13 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/9752e17d5f19d20d.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '('
    |
- 1 | // @target: es2015
- 2 | function test1(x: number | string) {
-   |                          ^
- 3 |     if (x instanceof Object) {
+ 7 | 
+ 8 | function test2(x: (number | string) | number) {
+   |                   ^
+ 9 |     if (x instanceof Object) {
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/9755d6ddb4a8cf2b.ts
 error: Expected ';' after class field, but found ':'
@@ -40619,12 +40241,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/97a619cb05f7a280.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'AOrArrA'
    |
- 1 | // @target: es2015
- 2 | let x: string | number | boolean | RegExp;
-   |               ^
- 3 | 
+32 | 
+33 | type AOrArrA<T> = T | T[];
+   |      ^^^^^^^
+34 | const arr: AOrArrA<{x?: "ok"}> = [{ x: "ok" }]; // weak type
    |
    = help: Try inserting a semicolon here
 
@@ -40909,14 +40531,14 @@ error: Expected a type, but found '('
    |
 
 ✗ test/parser/suite/ts/pass/98b9c98fa16facf5.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 7 | function f1() {
- 8 |     let a: number | null = null;
-   |                   ^
- 9 |     try {
-   |
-   = help: Try inserting a semicolon here
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'State'
+    |
+265 | 
+266 | type State = { tag: "one" } | { tag: "two" } | { tag: "three" };
+    |      ^^^^^
+267 | 
+    |
+    = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/98ba96ccc4bdf46f.ts
@@ -41536,17 +41158,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/9a832547714d19af.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '&'
-   |
- 2 | 
- 3 | var strAndNum: string & number;
-   |                       ^
- 4 | var numAndBool: number & boolean;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/9a832547714d19af.ts
 ✗ test/parser/suite/ts/pass/9a981b494a595c76.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I2'
    |
@@ -42223,15 +41835,13 @@ error: Expected a type, but found '<'
    |
 
 ✗ test/parser/suite/ts/pass/9d61978bd15631ff.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '{'
    |
- 6 | 
- 7 | function f10(x: string | number) {
-   |                        ^
- 8 |     const isString = typeof x === "string";
+51 | 
+52 | function f15(obj: { readonly x: string | number }) {
+   |                   ^
+53 |     const isString = typeof obj.x === 'string';
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✗ test/parser/suite/ts/pass/9d66da719d5da0f5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -43501,17 +43111,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/a20918c1af62054f.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 3 | 
- 4 | function foo1(results: number[] | undefined, results1: number[] | undefined) {
-   |                                 ^
- 5 |     (results ||= (results1 ||= [])).push(100);
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/a20918c1af62054f.ts
 ✗ test/parser/suite/ts/pass/a20a305ebe83a7e1.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -44121,17 +43721,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/a474d4436afa4485.module.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 8 | 
- 9 | export let x1: string | number;
-   |                       ^
-10 | x1 = "abc";
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/a474d4436afa4485.module.ts
 ✗ test/parser/suite/ts/pass/a4755715db2c2098.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm'
    |
@@ -44862,17 +44452,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/a6ddd64cdd41aeb2.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 3 | // Narrow a union of primitive types
- 4 | let var1: string | number | boolean | any[] | symbol | bigint;
-   |                  ^
- 5 | if (var1.constructor === String) {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/a6ddd64cdd41aeb2.ts
 ✗ test/parser/suite/ts/pass/a6e1df79c027160b.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -45579,14 +45159,14 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/a9cf26e5c87486c0.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 6 | var num: number;
- 7 | var var1: string | number;
-   |                  ^
- 8 | // Inside function declaration
+64 |     // variables in function expressions
+65 |     var r = ((param1: string | number) => {
+   |                     ^
+66 |         // global vars in function declaration
    |
-   = help: Try inserting a semicolon here
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/a9dc1530171d5902.module.ts
@@ -48715,17 +48295,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/b60e030ab00fd5b8.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 2 | // Union of primitives, number, arrays, and C1
- 3 | let var1: number | "hello" | "world" | true | false | number[] | string[];
-   |                  ^
- 4 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/b60e030ab00fd5b8.ts
 ✗ test/parser/suite/ts/pass/b60e845122e12a5b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -49313,13 +48883,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b7f703c0148884a9.ts
-error: Expected ')' after method parameters, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
-19 | 
-20 |   constructor(test: number | undefined) {
-   |                            ^
-21 |     this.test = test;
+45 | 
+46 | declare var n: number;
+   |         ^^^
+47 | class Example4 {
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/b80155dd13abfb27.module.tsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'stringType1'
@@ -51110,17 +50682,7 @@ error: Expected declaration after 'export', but found 'abstract'
 
 
 ✓ test/parser/suite/ts/pass/be6f9b744c9be9dd.ts
-✗ test/parser/suite/ts/pass/be7fa31b1129c2cf.tsx
-error: Expected a semicolon or an implicit semicolon after a statement, but found '&'
-   |
- 5 | class C { c; }
- 6 | let intersected: A & C;
-   |                    ^
- 7 | let element = <div { ...intersected } />;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/be7fa31b1129c2cf.tsx
 ✗ test/parser/suite/ts/pass/be838ca459e995bb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IAnimal'
    |
@@ -52200,14 +51762,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c200ed365fc34f1c.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected '(' to start parameter list, but found '<'
    |
-34 | 
-35 | function move1(direction: "up" | "down") {
-   |                                ^
-36 |     switch (direction) {
+50 | 
+51 | function check<T>(x: T | undefined) {
+   |               ^
+52 |     return x || error("Undefined value");
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/c2019e89e89333c0.ts
@@ -52221,17 +51783,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/c203fd9aa416cc6e.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | var x: string|number;
-   |              ^
- 3 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/c203fd9aa416cc6e.ts
 ✓ test/parser/suite/ts/pass/c20ec1072d239345.ts
 ✗ test/parser/suite/ts/pass/c20edda306a6d2b4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -52245,15 +51797,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c20f5f331b348bea.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a type, but found '('
    |
- 5 | var x: C;
- 6 | var x : C | D;
-   |           ^
- 7 | 
+13 | var z : string | number | boolean;
+14 | var z : (string | number) | boolean;
+   |         ^
+15 | var z : string | (number | boolean);
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/ts/pass/c217d4582c2f9fd6.ts
 ✓ test/parser/suite/ts/pass/c223772d14e46764.ts
@@ -52582,15 +52132,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c3400050122518b7.ts
-error: Expected '{' to start function body, but found '|'
+error: Expected a type, but found '('
    |
- 8 | 
- 9 | function f11(): undefined | number {
-   |                           ^
-10 |     // Error, return type isn't just undefined
+16 | 
+17 | const f20: () => undefined = () => {
+   |            ^
+18 |     // Ok, contextual type for implicit return is undefined
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✓ test/parser/suite/ts/pass/c34c275d748e5c91.ts
 ✗ test/parser/suite/ts/pass/c34c3c83e6a3fa95.ts
@@ -53552,12 +53100,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c72c7f0228947562.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
-10 | function f1() {
-11 |     let x: string | number | boolean;
-   |                   ^
-12 |     x = "";
+29 | 
+30 | declare function foo(x: string): number;
+   |         ^^^^^^^^
+31 | declare function foo(x: number): string;
    |
    = help: Try inserting a semicolon here
 
@@ -53916,14 +53464,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/c868578f235cd5f3.ts
 ✗ test/parser/suite/ts/pass/c86ed725f9f24e14.module.ts
-error: 'const' declarations must be initialized
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 4 | 
  5 | const x: 0 | 1 = Math.random()? 0: 1;
-   |       ^
  6 | declare function assert(n: number): asserts n is 1;
+   |         ^^^^^^^^
+ 7 | assert(x);
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/c87dbc652accbab8.ts
@@ -54421,14 +53969,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/ca262ac4d519aab1.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ';' after class field, but found 'get'
    |
- 7 | var num: number;
- 8 | var strOrNum: string | number;
-   |                      ^
- 9 | var var1: string | number;
+34 |     // Inside private accessor getter
+35 |     private get pp1() {
+   |             ^^^
+36 |         // global vars in function declaration
    |
-   = help: Try inserting a semicolon here
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/ca28fbb5734aea42.ts
@@ -55795,17 +55343,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/cff9db1ca36406a0.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var union: string | number[];
-   |                   ^
- 3 | for (var v of union) { }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/cff9db1ca36406a0.ts
 ✗ test/parser/suite/ts/pass/cffcb9522f43ecc1.ts
 error: 'enum' is reserved and cannot be used as an identifier
    |
@@ -56109,14 +55647,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d0cf98d4a230d978.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected '(' to start parameter list, but found '<'
    |
- 6 | 
- 7 | function run(a: Cat | Dog) {
-   |                     ^
- 8 |     a.run();
+10 | 
+11 | function f<T extends Cat | Dog>(a: T) {
+   |           ^
+12 |     a.run();
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/d0d83b4ebea2f12d.ts
@@ -56574,17 +56112,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/d27bad2f2a948cb3.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var union: string | string[];
-   |                   ^
- 3 | for (const v of union) { }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/d27bad2f2a948cb3.ts
 ✗ test/parser/suite/ts/pass/d280823a7f492f12.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -56858,17 +56386,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/d32b3f838355a3ad.ts
-✗ test/parser/suite/ts/pass/d3339136ddfd4dc9.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 1 | // @target: es2015
- 2 | function f(x: string | number | boolean) {
-   |                      ^
- 3 |     let y: string | number | boolean = false;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/d3339136ddfd4dc9.ts
 ✗ test/parser/suite/ts/pass/d33fcb6620b2539f.ts
 error: Expected a type, but found '{'
    |
@@ -57174,17 +56692,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/d46fdd89eba02a8c.ts
-✗ test/parser/suite/ts/pass/d470a654b7683d2a.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 3 | 
- 4 | function foo1(results: number[] | undefined, results1: number[] | undefined) {
-   |                                 ^
- 5 |     (results ||= results1 ||= []).push(100);
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/d470a654b7683d2a.ts
 ✓ test/parser/suite/ts/pass/d479f8f9e97ef36f.ts
 ✗ test/parser/suite/ts/pass/d47aee7960ee2655.ts
 error: Expected '{' to start class body, but found '<'
@@ -57254,15 +56762,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/d4b4234bf6096f42.ts
-✗ test/parser/suite/ts/pass/d4bedc9a1993b57e.ts
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 5 | // https://github.com/microsoft/TypeScript/issues/36295
- 6 | const a = (): string | undefined => undefined;
-   |           ^^
- 7 | (({ [a() ?? "d"]: c = "" }) => {})();
-   |
-
+✓ test/parser/suite/ts/pass/d4bedc9a1993b57e.ts
 ✓ test/parser/suite/ts/pass/d4c0237d6896fc8c.ts
 ✗ test/parser/suite/ts/pass/d4c10b678dba3ed9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -57458,14 +56958,14 @@ error: Expected a type, but found '{'
    |
 
 ✗ test/parser/suite/ts/pass/d554e92de0aec433.module.ts
-error: 'const' declarations must be initialized
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I1'
    |
- 3 | 
- 4 | const Foo: C1 & C2 =
-   |       ^^^
- 5 |     class {
+ 9 | 
+10 | interface I1 {
+   |           ^^
+11 |     m1(): void;
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/d558f34b4d3b56ef.ts
@@ -58432,14 +57932,14 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✗ test/parser/suite/ts/pass/da19e7690271b1c2.module.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected declaration after 'export', but found 'interface'
    |
- 1 | // @target: es2015
- 2 | let x: string | number | boolean;
-   |               ^
- 3 | let cond: boolean;
+11 | 
+12 | export interface NodeList {
+   |        ^^^^^^^^^
+13 |     length: number;
    |
-   = help: Try inserting a semicolon here
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✗ test/parser/suite/ts/pass/da20148c21ef28dd.ts
@@ -58540,14 +58040,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/da56184c4e02d83c.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected '(' to start parameter list, but found '<'
    |
- 3 | 
- 4 | let x: string | number | boolean | RegExp;
-   |               ^
- 5 | let cond: boolean;
+39 | }
+40 | function c<T>(data: string | T): T {
+   |           ^
+41 |     if (typeof data === 'string') {
    |
-   = help: Try inserting a semicolon here
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/da78835e6c0ab0a5.ts
@@ -58765,15 +58265,13 @@ error: Expected '(' for method definition, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/dafce8eae1ae2924.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a type, but found '('
    |
- 3 | 
- 4 | var simpleUnion: string | number;
-   |                         ^
- 5 | var unionOfUnion: string | number | boolean;
+ 6 | 
+ 7 | var arrayOfUnions: (string | number)[];
+   |                    ^
+ 8 | var arrayOfUnions: Array<string | number>;
    |
-   = help: Try inserting a semicolon here
-
 
 ✗ test/parser/suite/ts/pass/db011bc94dd74410.ts
 error: Expected a type, but found 'typeof'
@@ -59983,14 +59481,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/df62a1852b38ea1d.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ':' after conditional expression consequent, but found ';'
    |
- 8 | 
- 9 | function foo(x: number | string) {
-   |                        ^
-10 |     return typeof x === "string"
+16 |         ? ((x = "hello") && x) // string
+17 |         : x; // number
+   |            ^
+18 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
 
 
 ✓ test/parser/suite/ts/pass/df6e004ada655b71.ts
@@ -60290,14 +59788,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e0fc106feaafed7a.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ';' after class field, but found ':'
    |
- 5 | // @strictPropertyInitialization: false
- 6 | function PropDeco(target: Object, propKey: string | symbol) { }
-   |                                                   ^
- 7 | 
+12 |     @PropDeco
+13 |     x: "foo" | null;
+   |      ^
+14 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/e0fcf64b7f31d54c.module.ts
@@ -60643,12 +60141,12 @@ error: Cannot continue to label 'target' across function boundaries
    |
 
 ✗ test/parser/suite/ts/pass/e235d06b2207baf7.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'D'
    |
- 1 | // @target: es2015
- 2 | let x: string | boolean | number;
-   |               ^
- 3 | let obj: any;
+13 | // https://github.com/microsoft/TypeScript/issues/35484
+14 | type D = { done: true, value: 1 } | { done: false, value: 2 };
+   |      ^
+15 | declare function fn(): D;
    |
    = help: Try inserting a semicolon here
 
@@ -62440,14 +61938,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e8de2de578a39fd9.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ';' after class field, but found 'pp1'
    |
- 6 | var num: number;
- 7 | var strOrNum: string | number;
-   |                      ^
  8 | class C1 {
+ 9 |     private pp1: string | number;
+   |             ^^^
+10 |     pp2: string | number;
    |
-   = help: Try inserting a semicolon here
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/e8fe57f44fa79739.module.ts
@@ -63606,14 +63104,14 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/ed2bdc0634074e99.ts
 ✗ test/parser/suite/ts/pass/ed2ec22d1b414bb6.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected ';' after class field, but found ':'
    |
- 4 | // @strictPropertyInitialization: false
- 5 | function PropDeco(target: Object, propKey: string | symbol) { }
-   |                                                   ^
- 6 | 
+11 |     @PropDeco
+12 |     x: "foo" | A;
+   |      ^
+13 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/ed41251ce40e0f1a.ts
@@ -63755,17 +63253,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ee0e7352126ab68c.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 2 | let cond: boolean;
- 3 | function a(x: string | number | boolean) {
-   |                      ^
- 4 |     x = true;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/ee0e7352126ab68c.ts
 ✗ test/parser/suite/ts/pass/ee1405c09b6f3828.ts
 error: Expected ')' to close parameter list, but found '?'
    |
@@ -64442,15 +63930,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f0880577404584c6.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a type, but found '{'
    |
- 2 | // @target: es2015
- 3 | var numOrDate: number | Date;
-   |                       ^
- 4 | var anyVar: number;
+ 8 | 
+ 9 | var unionOfDifferentReturnType: { [a: string]: number; } | { [a: string]: Date; };
+   |                                 ^
+10 | numOrDate = unionOfDifferentReturnType["hello"]; // number | Date
    |
-   = help: Try inserting a semicolon here
-
 
 ✓ test/parser/suite/ts/pass/f08cf46d321a6560.ts
 ✗ test/parser/suite/ts/pass/f08d8f8f204815c7.ts
@@ -64996,17 +64482,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f26e0134b1d5bdba.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 1 | // @target: es2015
- 2 | function f(onethree: 1 | 3, two: 2) {
-   |                        ^
- 3 |     const t = true;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/f26e0134b1d5bdba.ts
 ✗ test/parser/suite/ts/pass/f2721342f1f1127b.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -65525,14 +65001,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f430382bb3e424f3.ts
-error: 'const' declarations must be initialized
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
  2 | const otherValue = () => true;
  3 | const value : number | string = null as any;
-   |       ^^^^^
+   |                                      ^^
  4 | 
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/f4312b945e090c1f.ts
@@ -66043,14 +65519,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f5c547dd3f96da2d.ts
-error: Expected '>' to close a type argument list, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Thing'
    |
-10 | 
-11 | function f2(obj: Record<string, string | undefined>, key: string) {
-   |                                        ^
-12 |     if (obj[key] !== undefined) {
+24 | 
+25 | type Thing = { a?: string, b?: number, c?: number };
+   |      ^^^^^
+26 | 
    |
-   = help: Each '<' in a type must be matched by a '>'
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/f5cfbb8521586701.ts
@@ -66140,12 +65616,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f6263318068eaee6.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
-12 | async function f1() {
-13 |     let x: string | number | boolean;
-   |                   ^
-14 |     x = "";
+31 | 
+32 | declare function foo(x: string): Promise<number>;
+   |         ^^^^^^^^
+33 | declare function foo(x: number): Promise<string>;
    |
    = help: Try inserting a semicolon here
 
@@ -66212,17 +65688,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/f65f891d43df7273.ts
-✗ test/parser/suite/ts/pass/f65fb0b13d53d901.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 2 | 
- 3 | var strOrNum: string | number;
-   |                      ^
- 4 | var numOrBool: number | boolean;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/f65fb0b13d53d901.ts
 ✓ test/parser/suite/ts/pass/f66b739ed8138489.ts
 ✗ test/parser/suite/ts/pass/f66ee8bbf74c0f67.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'DiscriminatorTrue'
@@ -66326,14 +65792,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f6fbb5fced206773.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ';' after class field, but found 'p1'
    |
- 6 | var num: number;
- 7 | var var1: string | number;
-   |                  ^
- 8 | class C1 {
+20 |     // Inside function declaration
+21 |     private p1(param: string | number) {
+   |             ^^
+22 |         // global vars in function declaration
    |
-   = help: Try inserting a semicolon here
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/f6feb0a89c7cfafe.module.ts
@@ -66878,17 +66344,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f8be6d5e7fcac8ec.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 2 | let obj: number[];
- 3 | let x: string | number | boolean | RegExp;
-   |               ^
- 4 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/f8be6d5e7fcac8ec.ts
 ✗ test/parser/suite/ts/pass/f8c047c3f4dac920.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I1'
    |
@@ -66901,17 +66357,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/f8cb2f85b36e328b.ts
-✗ test/parser/suite/ts/pass/f8cea0d39149401a.ts
-error: Expected ')' to close parameter list, but found '|'
-   |
- 2 | // @strictNullChecks: true
- 3 | function test(strOrNull: string | null, strOrUndefined: string | undefined) {
-   |                                 ^
- 4 |     var str: string = "original";
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/f8cea0d39149401a.ts
 ✓ test/parser/suite/ts/pass/f8cf39ac43946c9b.module.ts
 ✓ test/parser/suite/ts/pass/f8d8140df6828254.ts
 ✓ test/parser/suite/ts/pass/f8db026430c68851.ts
@@ -67300,28 +66746,18 @@ error: Expected ';' after class field, but found 'x'
 
 
 ✗ test/parser/suite/ts/pass/fab8aabafe54b2f5.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ';' after class field, but found 'p'
    |
- 5 | var num: number;
- 6 | var strOrNum: string | number;
-   |                      ^
- 7 | var strOrNumOrBool: string | number | boolean;
+ 8 | var numOrBool: number | boolean;
+ 9 | class C { private p; }
+   |                   ^
+10 | var c: C;
    |
-   = help: Try inserting a semicolon here
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/fac186e4ec9b032c.ts
-✗ test/parser/suite/ts/pass/fac374c92a5f55b0.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
-   |
- 1 | // @target: es2015
- 2 | let x: string | number | boolean;
-   |               ^
- 3 | let cond: boolean;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/fac374c92a5f55b0.ts
 ✗ test/parser/suite/ts/pass/fac69dcedc772b3d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -67547,15 +66983,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/fb8784b15e6c0b15.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a type, but found '('
    |
- 3 | // the type of a variable or parameter is narrowed by any type guard in the left operand when true.
- 4 | function foo(x: number | string) {
-   |                        ^
- 5 |     return typeof x === "string" && x.length === 10; // string
+43 |         // do not change value
+44 |         : ((y = x) && x.toString()))); // x is boolean
+   |           ^
+45 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/ts/pass/fb980c25bb822423.ts
 ✓ test/parser/suite/ts/pass/fb9b6610e9ee6382.ts
@@ -67791,14 +67225,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/fc5eec58e9ac91ef.ts
 ✗ test/parser/suite/ts/pass/fc6c916343a9d8ae.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found '|'
+error: Expected ';' after class field, but found 'p'
    |
- 5 | var num: number;
- 6 | var strOrNum: string | number;
-   |                      ^
- 7 | var strOrNumOrBool: string | number | boolean;
+ 8 | var numOrBool: number | boolean;
+ 9 | class C { private p; }
+   |                   ^
+10 | var c: C;
    |
-   = help: Try inserting a semicolon here
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/fc777ba154511ab6.ts
@@ -68018,14 +67452,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/fd78d29595a03b8b.ts
 ✗ test/parser/suite/ts/pass/fd874b9a446780b0.ts
-error: Expected ')' to close parameter list, but found '|'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'ThingWithOriginal'
    |
- 4 | 
- 5 | function foo1(results: number[] | undefined) {
-   |                                 ^
- 6 |     (results ||= []).push(100);
+22 | 
+23 | interface ThingWithOriginal {
+   |           ^^^^^^^^^^^^^^^^^
+24 |     name: string;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/fd885c7e6fce5060.ts
@@ -68600,17 +68034,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ffe4b13f6001a224.ts
-error: 'const' declarations must be initialized
-   |
- 3 | 
- 4 | const itemNumber: number | undefined = [0].findLast((item) => item === 0);
-   |       ^^^^^^^^^^
- 5 | const itemString: string | undefined = ["string"].findLast((item) => item === "string");
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/ffe4b13f6001a224.ts
 ✗ test/parser/suite/ts/pass/ffe7a44738600485.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
