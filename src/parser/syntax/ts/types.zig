@@ -229,6 +229,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
             .keyof, .unique, .readonly => return parseTypeOperator(parser),
+            .infer => return parseInferType(parser),
             else => {},
         }
     }
@@ -343,6 +344,40 @@ fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
             .type_annotation = inner,
         } },
         .{ .start = start, .end = end },
+    );
+}
+
+/// infer T   infer T extends U
+/// ^^^^^^^   ^^^^^^^^^^^^^^^^^
+fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .infer);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume 'infer'
+
+    const name_token = parser.current_token;
+    const name = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    var constraint: ast.NodeIndex = .null;
+    var param_end: u32 = name_token.span.end;
+
+    if (parser.current_token.tag == .extends) {
+        try parser.advance() orelse return null; // consume 'extends'
+        constraint = try parseUnionType(parser) orelse return null;
+        param_end = parser.tree.getSpan(constraint).end;
+    }
+
+    const type_parameter = try parser.tree.createNode(
+        .{ .ts_type_parameter = .{
+            .name = name,
+            .constraint = constraint,
+        } },
+        .{ .start = name_token.span.start, .end = param_end },
+    );
+
+    return try parser.tree.createNode(
+        .{ .ts_infer_type = .{ .type_parameter = type_parameter } },
+        .{ .start = start, .end = param_end },
     );
 }
 

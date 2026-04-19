@@ -2610,6 +2610,30 @@ pub const TSConditionalType = struct {
     false_type: NodeIndex,
 };
 
+// ts: infer in conditional types
+
+/// An `infer` type placeholder. Introduces a new type variable that captures
+/// a position inside the extends branch of a conditional type, made available
+/// in the true branch of that conditional.
+///
+/// The span starts at the `infer` keyword and ends at the name or the
+/// constraint (when present).
+///
+/// ## Example
+/// ```ts
+/// type ReturnTypeOf<V> = V extends (...args: any[]) => infer R ? R : never;
+/// //                                                   ^^^^^^^ TSInferType
+/// //                                                         ^ type_parameter (name only)
+/// type Head<T> = T extends [infer H extends string, ...any[]] ? H : never;
+/// //                        ^^^^^^^^^^^^^^^^^^^^^^ TSInferType
+/// //                              ^^^^^^^^^^^^^^^^ type_parameter (name + constraint)
+/// ```
+pub const TSInferType = struct {
+    /// the `TSTypeParameter` holding the introduced name and optional
+    /// `extends` constraint
+    type_parameter: NodeIndex,
+};
+
 // ts: prefix operator type
 
 /// The prefix operator used by `TSTypeOperator`.
@@ -2981,6 +3005,7 @@ pub const NodeData = union(enum) {
     ts_union_type: TSUnionType,
     ts_intersection_type: TSIntersectionType,
     ts_conditional_type: TSConditionalType,
+    ts_infer_type: TSInferType,
     ts_type_operator: TSTypeOperator,
     ts_parenthesized_type: TSParenthesizedType,
     ts_export_assignment: TSExportAssignment,
