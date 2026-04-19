@@ -249,7 +249,10 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             => return parseLiteralType(parser),
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
-            .left_brace => return parseTypeLiteral(parser),
+            .left_brace => return if (try isStartOfMappedType(parser))
+                parseMappedType(parser)
+            else
+                parseTypeLiteral(parser),
             .keyof, .unique, .readonly => return parseTypeOperator(parser),
             .infer => return parseInferType(parser),
             .template_head => return parseTemplateLiteralType(parser),
@@ -645,6 +648,139 @@ fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
         .{ .ts_type_literal = .{ .members = members } },
         .{ .start = start, .end = parser.prev_token_end },
     );
+}
+
+/// distinguishes a mapped type `{ [K in T]: V }` from a type literal with a
+/// computed member key `{ [expr]: T }`. mirrors `nextIsStartOfMappedType` in
+/// the typescript-go parser (https://github.com/microsoft/typescript-go/blob/1de8d68230f8759af6fb71d9cf0f9c37d2c65507/internal/parser/parser.go#L3123). the outer `{` is the current token on entry. at
+/// most five tokens of lookahead are needed (`+ readonly [ id in`).
+fn isStartOfMappedType(parser: *Parser) Error!bool {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
+    const peek = try parser.peekAheadN(5);
+
+    var i: usize = 0;
+    const first = peek[i] orelse return false;
+
+    if (first.tag == .plus or first.tag == .minus) {
+        i += 1;
+        const ro = peek[i] orelse return false;
+        if (ro.tag != .readonly) return false;
+        i += 1;
+    } else if (first.tag == .readonly) {
+        i += 1;
+    }
+
+    const bracket = peek[i] orelse return false;
+    if (bracket.tag != .left_bracket) return false;
+    i += 1;
+
+    const name = peek[i] orelse return false;
+    if (!name.tag.isIdentifierLike()) return false;
+    i += 1;
+
+    const in_tok = peek[i] orelse return false;
+    return in_tok.tag == .in;
+}
+
+/// { [K in T]: V }   { readonly [K in T]?: V }   { -readonly [K in T as U]-?: V }
+/// ^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume '{'
+
+    const readonly = try parseMappedModifier(parser, .readonly) orelse return null;
+
+    if (!try parser.expect(
+        .left_bracket,
+        "Expected '[' in a mapped type",
+        "A mapped type is written '{ [K in T]: V }'",
+    )) return null;
+
+    const key = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!try parser.expect(
+        .in,
+        "Expected 'in' after the mapped type parameter name",
+        "A mapped type iterates its key with '[K in ConstraintType]'",
+    )) return null;
+
+    const constraint = try parseType(parser) orelse return null;
+
+    var name_type: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .as) {
+        try parser.advance() orelse return null; // consume 'as'
+        name_type = try parseType(parser) orelse return null;
+    }
+
+    if (!try parser.expect(
+        .right_bracket,
+        "Expected ']' to close a mapped type parameter",
+        "A mapped type parameter must be closed with ']'",
+    )) return null;
+
+    const optional = try parseMappedModifier(parser, .question) orelse return null;
+
+    var type_annotation: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .colon) {
+        try parser.advance() orelse return null; // consume ':'
+        type_annotation = try parseType(parser) orelse return null;
+    }
+
+    // accept an optional separator before `}` (tsc allows a trailing `;`
+    // or `,` for recovery and parity with the type literal grammar).
+    if (parser.current_token.tag == .semicolon or parser.current_token.tag == .comma) {
+        try parser.advance() orelse return null;
+    }
+
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close a mapped type",
+        "Each '{' in a mapped type must be matched by a '}'",
+    )) return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_mapped_type = .{
+            .key = key,
+            .constraint = constraint,
+            .name_type = name_type,
+            .type_annotation = type_annotation,
+            .optional = optional,
+            .readonly = readonly,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+/// parses one of the two modifier slots of a mapped type. `terminator` is the
+/// keyword the modifier applies to (`readonly` before the `[`, `question`
+/// after the `]`). a bare `+` or `-` requires the matching terminator to
+/// follow on the same position.
+fn parseMappedModifier(parser: *Parser, comptime terminator: TokenTag) Error!?ast.TSMappedTypeModifier {
+    const tag = parser.current_token.tag;
+
+    if (tag == terminator) {
+        try parser.advance() orelse return null;
+        return .true;
+    }
+
+    if (tag != .plus and tag != .minus) return .none;
+
+    const sign: ast.TSMappedTypeModifier = if (tag == .plus) .plus else .minus;
+    try parser.advance() orelse return null;
+
+    if (!try parser.expect(
+        terminator,
+        if (terminator == .readonly)
+            "Expected 'readonly' after '+' or '-' in a mapped type"
+        else
+            "Expected '?' after '+' or '-' in a mapped type",
+        "Mapped type '+' and '-' modifiers can only decorate 'readonly' or '?'",
+    )) return null;
+
+    return sign;
 }
 
 /// dispatches a single type literal member. accepts:

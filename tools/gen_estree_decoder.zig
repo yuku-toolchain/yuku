@@ -197,6 +197,10 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
     try writeArrayRaw(w, "TS_TYPE_OPERATORS", &.{ "\"keyof\"", "\"unique\"", "\"readonly\"" });
     try writeArrayRaw(w, "TS_METHOD_SIGNATURE_KINDS", &.{ "\"method\"", "\"get\"", "\"set\"" });
+    // mapped type `?` modifier: absent decodes to `false`.
+    try writeArrayRaw(w, "TS_MAPPED_OPTIONAL", &.{ "false", "true", "\"+\"", "\"-\"" });
+    // mapped type `readonly` modifier: absent decodes to `null`.
+    try writeArrayRaw(w, "TS_MAPPED_READONLY", &.{ "null", "true", "\"+\"", "\"-\"" });
 }
 
 fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
@@ -316,6 +320,7 @@ fn isSpecial(comptime name: []const u8) bool {
         "binding_property",             "array_pattern",                  "object_pattern",                   "jsx_text",
         "ts_function_type",             "ts_constructor_type",            "ts_method_signature",
         "ts_call_signature_declaration", "ts_construct_signature_declaration",
+        "ts_mapped_type",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -500,6 +505,17 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: return {{ type: "TSCallSignatureDeclaration", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
         , .{ tag, stp, stp, sp, sp, srt, srt });
+    } else if (comptime eql(u8, name, "ts_mapped_type")) {
+        const sk = comptime slotOf(ast.TSMappedType, "key");
+        const sc = comptime slotOf(ast.TSMappedType, "constraint");
+        const snt = comptime slotOf(ast.TSMappedType, "name_type");
+        const sta = comptime slotOf(ast.TSMappedType, "type_annotation");
+        const bo = comptime flagBit(ast.TSMappedType, "optional");
+        const br = comptime flagBit(ast.TSMappedType, "readonly");
+        const mo = comptime enumMask(ast.TSMappedTypeModifier);
+        try emit(w,
+            \\    case {d}: return {{ type: "TSMappedType", start, end, key: node(f{d}), constraint: node(f{d}), nameType: f{d} !== NULL ? node(f{d}) : null, typeAnnotation: f{d} !== NULL ? node(f{d}) : null, optional: TS_MAPPED_OPTIONAL[(flags >> {d}) & {d}], readonly: TS_MAPPED_READONLY[(flags >> {d}) & {d}] }};
+        , .{ tag, sk, sc, snt, snt, sta, sta, bo, mo, br, mo });
     } else if (comptime eql(u8, name, "ts_construct_signature_declaration")) {
         const stp = comptime slotOf(ast.TSConstructSignatureDeclaration, "type_parameters");
         const sp = comptime slotOf(ast.TSConstructSignatureDeclaration, "params");

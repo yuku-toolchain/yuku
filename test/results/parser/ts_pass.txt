@@ -8591,14 +8591,14 @@ error: Unexpected token '<'
 
 ✓ test/parser/suite/ts/pass/220b5e9875c1c9c0.ts
 ✗ test/parser/suite/ts/pass/22104078e0f71dc3.ts
-error: Expected ']' to close a computed property key, but found 'T'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'IdMapped'
    |
-13 | 
-14 | function f3(a: <T>() => { [K in keyof T]: T[K] }, b: <U>() => { [K in keyof U]: U[K] }) {
-   |                                       ^
-15 |     a = b;
+20 | 
+21 | type IdMapped<T> = { [K in keyof T]: T[K] }
+   |      ^^^^^^^^
+22 | 
    |
-   = help: A computed property key is written '[expr]'
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/2218a43dbbef7378.ts

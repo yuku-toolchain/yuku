@@ -2885,6 +2885,59 @@ pub const TSTypeLiteral = struct {
     members: IndexRange,
 };
 
+/// The tri state `+` / `-` modifier that may decorate the `?` or `readonly`
+/// slots of a `TSMappedType`.
+///
+/// `none` means the modifier keyword is absent. `true` means it is present
+/// without a sign. `plus` and `minus` explicitly add (`+?`, `+readonly`) or
+/// remove (`-?`, `-readonly`) the modifier from the mapped property.
+pub const TSMappedTypeModifier = enum(u2) {
+    none,
+    true,
+    plus,
+    minus,
+};
+
+/// A TypeScript mapped type. Projects every key in a union to a new property
+/// type: `{ [K in Keys]: Value }`. Supports the `as` remapping clause, the
+/// `?` / `+?` / `-?` optionality modifiers, and the `readonly` / `+readonly`
+/// / `-readonly` mutability modifiers.
+///
+/// ## Example
+/// ```ts
+/// type Readonly<T> = { readonly [K in keyof T]: T[K] };
+/// //                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSMappedType
+/// //                            ^ key (BindingIdentifier)
+/// //                                  ^^^^^^^ constraint
+/// //                                              ^^^^ type_annotation
+/// type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+/// //                  ^^^^^^^^^ readonly = minus
+/// type Partial<T> = { [K in keyof T]?: T[K] };
+/// //                                ^ optional = true
+/// type Remap<T> = { [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K] };
+/// //                                ^^ name_type = template literal type
+/// ```
+pub const TSMappedType = struct {
+    /// the key type parameter. a `BindingIdentifier` that names the binding
+    /// introduced by the `in` clause (`K` in `[K in T]`). visible inside
+    /// `name_type` and `type_annotation`.
+    key: NodeIndex,
+    /// the constraint the key iterates over, to the right of `in`.
+    constraint: NodeIndex,
+    /// the optional remapping type supplied after `as`. `.null` when no `as`
+    /// clause is present.
+    name_type: NodeIndex = .null,
+    /// the value type following `:`. `.null` when the annotation is omitted
+    /// (`{ [K in T] }` is accepted by the grammar).
+    type_annotation: NodeIndex = .null,
+    /// the `?` modifier. `none` decodes to `false`; `true`, `plus`, and
+    /// `minus` decode to `true`, `"+"`, and `"-"` respectively.
+    optional: TSMappedTypeModifier = .none,
+    /// the `readonly` modifier. `none` decodes to `null`; `true`, `plus`, and
+    /// `minus` decode to `true`, `"+"`, and `"-"` respectively.
+    readonly: TSMappedTypeModifier = .none,
+};
+
 /// A property declaration inside a type literal or interface body. Written as
 /// `key: Type`, with optional `readonly` and `?` modifiers. A missing type
 /// annotation is allowed and decodes to `typeAnnotation: null`.
@@ -3342,6 +3395,7 @@ pub const NodeData = union(enum) {
     ts_constructor_type: TSConstructorType,
     ts_type_predicate: TSTypePredicate,
     ts_type_literal: TSTypeLiteral,
+    ts_mapped_type: TSMappedType,
     ts_property_signature: TSPropertySignature,
     ts_method_signature: TSMethodSignature,
     ts_call_signature_declaration: TSCallSignatureDeclaration,
