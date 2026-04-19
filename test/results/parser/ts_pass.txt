@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2477/8399 (29.49%)
-Failed:       5922
-AST mismatch: 7/2484
+Passed:       2505/8399 (29.82%)
+Failed:       5894
+AST mismatch: 7/2512
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -1090,13 +1090,15 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✗ test/parser/suite/ts/pass/04d492cd196141ac.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 6 | var c: void = x;
- 7 | var d: typeof undefined = x;
-   |        ^^^^^^
  8 | 
+ 9 | class C { foo: string; }
+   |              ^
+10 | var e: C = x;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/04dbb87625e984ea.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'module'
@@ -1830,13 +1832,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/07f6e40c660e002f.ts
 ✓ test/parser/suite/ts/pass/07fb59b79ce4b476.ts
 ✗ test/parser/suite/ts/pass/07ffde7c9ff781d8.ts
-error: Expected a type, but found 'typeof'
+error: Unexpected token '<'
    |
- 8 | // ok - used in file
- 9 | function foo2(y = function(x: typeof z) {}, z = 1) {
-   |                               ^^^^^^
-10 |     
+14 | let a;
+15 | function foo3(y = { x: <typeof z>a }, z = 1) {
+   |                        ^
+16 |     
    |
+   = help: Expected an expression
+
 
 ✗ test/parser/suite/ts/pass/080420d426449970.ts
 error: Expected ';' after class field, but found '<'
@@ -2514,13 +2518,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0a868813eabf880e.module.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 9 |     bar() {
-10 |         return function (t: typeof C1) {
-   |                             ^^^^^^
-11 |         };
+15 | export class C2 {
+16 |     C2: any // has to be the same as the class name
+   |       ^
+17 | 
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/0a881ca2c16f819a.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -2690,14 +2696,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/0b503a96da0ee5cf.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var a: { b: number; c: typeof b }; // Should give error for attempting to use type query on b.
-   |                        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/0b503a96da0ee5cf.ts
 ✗ test/parser/suite/ts/pass/0b51a4626c4dc8da.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -7055,14 +7054,7 @@ error: Expected ';' after class field, but found 'func'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/1bb5075f286f0848.ts
-error: Expected a type, but found 'typeof'
-   |
- 3 | var x = undefined = null; // error
- 4 | var y: typeof undefined = null; // ok, widened
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/1bb5075f286f0848.ts
 ✗ test/parser/suite/ts/pass/1bba58591eb8146c.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'PrivateInterface'
    |
@@ -7675,13 +7667,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1e2da2bc48b1c713.module.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 3 | var x = 1;
- 4 | export var r1: typeof x;
-   |                ^^^^^^
- 5 | var y = { foo: '' };
+ 7 | class C {
+ 8 |     foo: string;
+   |        ^
+ 9 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/1e3037086e240371.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -11116,15 +11110,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/2be59bc060adceb6.ts
-✗ test/parser/suite/ts/pass/2be5bb7b0a10ba45.ts
-error: Expected a type, but found 'typeof'
-   |
- 4 | function Test1() {
- 5 |     let x: typeof this.no = 1
-   |            ^^^^^^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/2be5bb7b0a10ba45.ts
 ✗ test/parser/suite/ts/pass/2bf00840e2fe595c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M2'
    |
@@ -11725,15 +11711,7 @@ error: 'enum' is reserved and cannot be used as an identifier
  3 |     A,
    |
 
-✗ test/parser/suite/ts/pass/2e21001f99f8767f.ts
-error: Expected a type, but found 'typeof'
-   |
- 2 | class C {
- 3 |      static g(t: typeof C.g){ }
-   |                  ^^^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/2e21001f99f8767f.ts
 ✓ test/parser/suite/ts/pass/2e2d3854ab2da4b9.ts
 ✗ test/parser/suite/ts/pass/2e2ffd4369575eef.ts
 error: 'new.target' is only valid inside functions, class field initializers, or static blocks
@@ -14800,13 +14778,15 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/39fcc7375de21c23.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 1 | // @target: es2015
- 2 | var x: typeof undefined;
-   |        ^^^^^^
- 3 | 
+11 | 
+12 | class C { foo: string }
+   |              ^
+13 | var f: C;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/3a046a56336f644e.ts
 ✗ test/parser/suite/ts/pass/3a0b95bc3078c98d.ts
@@ -16831,14 +16811,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/41671ec44a08b44d.ts
-error: Expected a type, but found 'typeof'
-   |
- 4 | let a: number;
- 5 | let b: typeof a;
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/41671ec44a08b44d.ts
 ✓ test/parser/suite/ts/pass/416de564812d9851.ts
 ✗ test/parser/suite/ts/pass/417a7b8f1fcb42e0.ts
 error: Expected ')' after method parameters, but found 'n'
@@ -17118,13 +17091,15 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/42881cf3c986cd0d.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 1 | // @target: es2015
- 2 | var x: typeof undefined;
-   |        ^^^^^^
- 3 | 
+10 | 
+11 | class C { foo: string }
+   |              ^
+12 | var b: C;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/428d100ef1326796.module.ts
 error: Expected '{' to start class body, but found '<'
@@ -17700,13 +17675,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/44abb894c41bdf78.ts
 ✗ test/parser/suite/ts/pass/44bbfe6e44903eed.ts
-error: Expected a type, but found 'typeof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
- 2 | var v = 3;
- 3 | var v2: typeof v = v;
-   |         ^^^^^^
- 4 | var v3: string = v2; // Not assignment compatible
+ 5 | 
+ 6 | interface I<T> { x: T; }
+   |           ^
+ 7 | interface J { }
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/44c96c6a3545f3bc.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
@@ -18752,13 +18729,15 @@ error: Expected ')' after method parameters, but found 'readonly'
 
 ✓ test/parser/suite/ts/pass/48790a9605b0404e.ts
 ✗ test/parser/suite/ts/pass/488099bfdec019ca.ts
-error: Expected a type, but found 'typeof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
- 2 | // The following are errors because of circular references
- 3 | var c: typeof c;
-   |        ^^^^^^
- 4 | var c: any;
+ 9 | 
+10 | interface Foo<T> { }
+   |           ^^^
+11 | var f: Array<typeof f>;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/488e97ecb429257a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
@@ -19368,15 +19347,7 @@ error: Expected ';' after class field, but found 'members'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/4aa3607d6bf041c1.module.ts
-error: Expected a type, but found 'typeof'
-   |
- 5 | }
- 6 | export var x: typeof foo;
-   |               ^^^^^^
- 7 | export var b = foo;
-   |
-
+✓ test/parser/suite/ts/pass/4aa3607d6bf041c1.module.ts
 ✗ test/parser/suite/ts/pass/4aa68991bb86c3cd.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -20055,15 +20026,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/4daf4546b946e339.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | function f1(c1: Function, c2: () => object,  callable: typeof c1 | typeof c2) {
-   |                                                        ^^^^^^
- 3 |     const a = c1();
-   |
-
+✓ test/parser/suite/ts/pass/4daf4546b946e339.ts
 ✗ test/parser/suite/ts/pass/4dafdaf9cd008101.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -22961,15 +22924,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5894e97b0bda2066.ts
-error: Expected a type, but found 'typeof'
-   |
- 4 |     static #method() { };
- 5 |     constructor(a: typeof A3, b: any) {
-   |                    ^^^^^^
- 6 |         A3.#method = () => {} // Error, not writable 
-   |
-
+✓ test/parser/suite/ts/pass/5894e97b0bda2066.ts
 ✗ test/parser/suite/ts/pass/58a671d8eb5f77e3.ts
 error: Expected ',' or ')' in parenthesized expression, but found 'satisfies'
    |
@@ -23093,13 +23048,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/59027b863b2543d3.ts
 ✗ test/parser/suite/ts/pass/590a3c9715ee7fb8.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 6 | var c: void = x;
- 7 | var d: typeof undefined = x;
-   |        ^^^^^^
  8 | 
+ 9 | class C { foo: string; }
+   |              ^
+10 | var e: C = x;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/590c38ee94eead39.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -24224,13 +24181,15 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/5e20d3f782d1f074.module.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 3 | export var x = 1;
- 4 | export var r1: typeof x;
-   |                ^^^^^^
- 5 | export var y = { foo: '' };
+ 7 | export class C {
+ 8 |     foo: string;
+   |        ^
+ 9 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/5e21a9979e0db299.module.ts
 error: Expected ';' after class field, but found 'value'
@@ -24999,14 +24958,7 @@ error: 'enum' is reserved and cannot be used as an identifier
 
 ✓ test/parser/suite/ts/pass/612fe079606cbf56.ts
 ✓ test/parser/suite/ts/pass/6130ed687ef9ecb0.ts
-✗ test/parser/suite/ts/pass/6149c9c077fc7f6d.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var v: typeof A
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/6149c9c077fc7f6d.ts
 ✓ test/parser/suite/ts/pass/61594a47b05ef4dc.ts
 ✗ test/parser/suite/ts/pass/61753843a23a29aa.ts
 error: Expected ')' to close parameter list, but found '?'
@@ -25710,12 +25662,12 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/64342b5471feebc2.ts
-error: Expected a type, but found 'typeof'
+error: 'this' is reserved and cannot be used as a binding identifier
    |
- 7 |     constructor() {
- 8 |         var copy: typeof this.data = {};
-   |                   ^^^^^^
- 9 |     }
+30 | 
+31 | function Test3(this: { no: number }) {
+   |                ^^^^
+32 |     let x: typeof this.no = 1;
    |
 
 ✗ test/parser/suite/ts/pass/6436538daec7a2c6.ts
@@ -25855,12 +25807,12 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/64a741039642db03.ts
-error: Expected a type, but found 'typeof'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 1 | // @target: es2015
- 2 | var x: typeof undefined;
-   |        ^^^^^^
  3 | 
+ 4 | enum E { A }
+   | ^^^^
+ 5 | E = x;
    |
 
 ✗ test/parser/suite/ts/pass/64aa34817db3c635.ts
@@ -26867,13 +26819,15 @@ error: Unexpected token '<'
 ✓ test/parser/suite/ts/pass/690227bf5aa3795f.ts
 ✓ test/parser/suite/ts/pass/690239280dec0603.ts
 ✗ test/parser/suite/ts/pass/6913c2c6f45222fe.module.ts
-error: Expected a type, but found 'typeof'
+error: Expected '{' to start function body, but found ':'
    |
  8 |     x = 1
  9 |     a(x: typeof this.x): void {}
-   |          ^^^^^^
+   |                        ^
 10 | }
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/69168746c2201098.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -28084,12 +28038,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/6dee4998cf1f9d02.module.ts
-error: Expected a type, but found 'typeof'
+error: Private field '#prop' must be declared in an enclosing class
    |
- 8 |         console.log(A2.#prop);
- 9 |         let a: typeof A2 = A2;
-   |                ^^^^^^
-10 |         a.#prop;
+16 | 
+17 | A2.#prop; // Error
+   |    ^^^^^
+18 | 
    |
 
 ✗ test/parser/suite/ts/pass/6dee63cc27c1d7a0.ts
@@ -28140,12 +28094,12 @@ error: Expected ';' after class field, but found 'x'
 ✓ test/parser/suite/ts/pass/6e088f4e3e920644.module.ts
 ✓ test/parser/suite/ts/pass/6e10dfbc93468f2b.ts
 ✗ test/parser/suite/ts/pass/6e1a433caa8d3c93.ts
-error: Expected a type, but found 'typeof'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 1 | // @target: es2015
- 2 | var x: typeof undefined;
-   |        ^^^^^^
  3 | 
+ 4 | enum E { a, b, c }
+   | ^^^^
+ 5 | 
    |
 
 ✗ test/parser/suite/ts/pass/6e1ee2dd504b97ce.module.ts
@@ -32036,12 +31990,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7b9c42289ddade25.ts
-error: Expected a type, but found 'typeof'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 6 | 
- 7 | var e: typeof undefined = null;
-   |        ^^^^^^
- 8 | e = null; // ok
+ 9 | 
+10 | enum E { A }
+   | ^^^^
+11 | E.A = null; // error
    |
 
 ✗ test/parser/suite/ts/pass/7ba5500a60c6f3eb.ts
@@ -32510,15 +32464,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/7dacdfa439df11d6.ts
-error: Expected a type, but found 'typeof'
-   |
- 4 | 
- 5 | function f1 (a: number, b: typeof a) {
-   |                            ^^^^^^
- 6 |     return b;
-   |
-
+✓ test/parser/suite/ts/pass/7dacdfa439df11d6.ts
 ✗ test/parser/suite/ts/pass/7db1891adcf42d98.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'DeepObject'
    |
@@ -35905,14 +35851,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/8ac83689ec676f4d.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var v: typeof A;
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/8ac83689ec676f4d.ts
 ✗ test/parser/suite/ts/pass/8acc117d526f5108.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -37354,13 +37293,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8fef808714515f19.ts
-error: Expected a type, but found 'typeof'
+error: Expected '{' to start function body, but found ';'
    |
-75 | // Call argument
-76 | function fnArg1(x: typeof fnArg1, y: number) {
-   |                    ^^^^^^
-77 |     var x: (n: typeof fnArg1, m: number) => void;
+80 | 
+81 | function overload1(x: (n: string) => string): string;
+   |                                                     ^
+82 | function overload1(x: (n: number) => number): number;
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/8ff2b1d2989bf4bb.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -37624,13 +37565,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/90d9ccdd6e159a9a.ts
-error: Expected a type, but found 'typeof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 5 | 
- 6 | const fAnnotated: typeof fInferred = ({ a = 0 } = {}) => a;
-   |                   ^^^^^^
  7 | 
+ 8 | declare var t: { s: string } | undefined;
+   |         ^^^
+ 9 | const { s } = t;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/90e0561e405b8474.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 't1'
@@ -37743,14 +37686,7 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/915e6dbbe0e3b3c0.module.ts
-error: Expected a type, but found 'typeof'
-   |
- 6 | }
- 7 | export let b: typeof a;
-   |               ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/915e6dbbe0e3b3c0.module.ts
 ✓ test/parser/suite/ts/pass/9163b8bbf58608c5.ts
 ✓ test/parser/suite/ts/pass/9168e16d16ad057e.ts
 ✗ test/parser/suite/ts/pass/916ff5228fdfe34d.ts
@@ -37888,12 +37824,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/91ec464f8ec7a19d.ts
-error: Expected a type, but found 'typeof'
+error: 'enum' is reserved and cannot be used as an identifier
    |
- 6 | var c: void = x;
- 7 | var d: typeof undefined = x;
-   |        ^^^^^^
  8 | 
+ 9 | enum E { A }
+   | ^^^^
+10 | var e: E = x;
    |
 
 ✗ test/parser/suite/ts/pass/91eeaffd3f288a41.ts
@@ -37951,13 +37887,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/92378b3404aa5bb5.ts
-error: Expected a type, but found 'typeof'
+error: Expected ';' after class field, but found ':'
    |
- 6 | var c: number = x;
- 7 | var d: typeof undefined = x;
-   |        ^^^^^^
  8 | 
+ 9 | class C { foo: string; }
+   |              ^
+10 | var e: C = x;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/92392a78cd5579e9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -38061,15 +37999,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/928f875737f03545.ts
-error: Expected a type, but found 'typeof'
-   |
- 4 | var x = 1;
- 5 | var xs: typeof x[];  // Not an error.  This is equivalent to Array<typeof x>
-   |         ^^^^^^
- 6 | var xs2: typeof Array;
-   |
-
+✓ test/parser/suite/ts/pass/928f875737f03545.ts
 ✗ test/parser/suite/ts/pass/9296a05ea775d6ce.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Outer'
    |
@@ -40550,15 +40480,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/9c133f5cceadae27.module.ts
-error: Expected a type, but found 'typeof'
-   |
- 4 | 
- 5 | var before: typeof func = func();
-   |             ^^^^^^
- 6 | 
-   |
-
+✓ test/parser/suite/ts/pass/9c133f5cceadae27.module.ts
 ✓ test/parser/suite/ts/pass/9c145e86e6ba1109.ts
 ✗ test/parser/suite/ts/pass/9c191275c43c79ee.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'ts'
@@ -40618,15 +40540,7 @@ error: Expected ';' after class field, but found 'Blah'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/9c521a6a3ad45c70.ts
-error: Expected a type, but found 'typeof'
-   |
-10 | var a0: (n: number, s: string) => number
-11 | var a1: typeof a0 | ((n: number, s: string) => string);
-   |         ^^^^^^
-12 | a1 = (foo, bar) => { return true; }  // Error
-   |
-
+✓ test/parser/suite/ts/pass/9c521a6a3ad45c70.ts
 ✗ test/parser/suite/ts/pass/9c56dc4333487cc7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -40916,12 +40830,12 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/9dcb28b1934012bc.ts
-error: Expected a type, but found 'typeof'
+error: 'enum' is reserved and cannot be used as an identifier
    |
-23 | 
-24 | var e2: typeof undefined;
-   |         ^^^^^^
-25 | x = e2;
+26 | 
+27 | enum E {
+   | ^^^^
+28 |     A
    |
 
 ✗ test/parser/suite/ts/pass/9dd33386e72705c9.ts
@@ -43082,15 +42996,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/a5bbee33debc7d9d.ts
-error: Expected a type, but found 'typeof'
-   |
- 7 |     yield 0;
- 8 |     var v: typeof yield;
-   |            ^^^^^^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/a5bbee33debc7d9d.ts
 ✗ test/parser/suite/ts/pass/a5cde727c4d276bf.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'MyComponentProps'
    |
@@ -44459,15 +44365,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ab41e7791852cc6b.ts
-error: Expected a type, but found 'typeof'
-   |
- 3 | 
- 4 | var x: typeof undefined;
-   |        ^^^^^^
- 5 | var x: any; // shouldn't be an error since type is the same as the first declaration
-   |
-
+✓ test/parser/suite/ts/pass/ab41e7791852cc6b.ts
 ✗ test/parser/suite/ts/pass/ab5a49546ae9e23e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -44522,15 +44420,7 @@ error: Expected ')' after method parameters, but found 'p'
  9 |         console.log('hi');
    |
 
-✗ test/parser/suite/ts/pass/ab890e6aad9f485d.ts
-error: Expected a type, but found 'typeof'
-   |
-22 |     }
-23 |     static test(_a: typeof A) {
-   |                     ^^^^^^
-24 |         [_a.#field] = [2];
-   |
-
+✓ test/parser/suite/ts/pass/ab890e6aad9f485d.ts
 ✗ test/parser/suite/ts/pass/ab899218311a685f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
@@ -44755,14 +44645,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/ac301af716e0ada5.ts
-✗ test/parser/suite/ts/pass/ac3531063fe2a43c.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var v: typeof A[]
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/ac3531063fe2a43c.ts
 ✗ test/parser/suite/ts/pass/ac375a0163d54380.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
    |
@@ -45647,13 +45530,15 @@ error: Expected ';' after for-loop init, but found ')'
    |
 
 ✗ test/parser/suite/ts/pass/b0c4350754816deb.ts
-error: Expected a type, but found 'typeof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
- 4 | // Error expected
- 5 | var a: typeof a;
-   |        ^^^^^^
- 6 | 
+34 | 
+35 | interface A {
+   |           ^
+36 |     s: string;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/b0ce813691846eae.ts
 ✗ test/parser/suite/ts/pass/b0d43c056d581af6.ts
@@ -46432,15 +46317,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/b38a8860753e1fdd.ts
 ✓ test/parser/suite/ts/pass/b393a7cfb6ec2ccd.ts
-✗ test/parser/suite/ts/pass/b3a1475d1506d208.ts
-error: Expected a type, but found 'typeof'
-   |
-20 | 
-21 | var e: typeof a[];
-   |        ^^^^^^
-22 | var e: (typeof a)[];
-   |
-
+✓ test/parser/suite/ts/pass/b3a1475d1506d208.ts
 ✗ test/parser/suite/ts/pass/b3b036db33de3e5e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -47507,13 +47384,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b765cc494186c1f9.ts
-error: Expected a type, but found 'typeof'
+error: Unexpected token '<'
    |
- 7 | 
- 8 | var u: typeof undefined;
-   |        ^^^^^^
- 9 | var r0b = true ? u : null;
+32 | 
+33 | var r8 = true ? <T>(x: T) => { return x } : null;
+   |                 ^
+34 | var r8b = true ? null : <T>(x: T) => { return x }; // type parameters not identical across declarations
    |
+   = help: Expected an expression
+
 
 ✗ test/parser/suite/ts/pass/b76be91aa5a8d72b.ts
 error: Expected ';' after class field, but found ':'
@@ -48876,14 +48755,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/bc5c93d0236a3aa0.ts
-✗ test/parser/suite/ts/pass/bc69270cd901c9e3.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var v: typeof A<B>
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/bc69270cd901c9e3.ts
 ✗ test/parser/suite/ts/pass/bc7ac383a81fc3f1.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -48962,15 +48834,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/bcb515d1a028103f.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var s: typeof A[];
-   |        ^^^^^^
- 3 | 
-   |
-
+✓ test/parser/suite/ts/pass/bcb515d1a028103f.ts
 ✓ test/parser/suite/ts/pass/bcb557a9774f9af6.ts
 ✗ test/parser/suite/ts/pass/bcbd231a6b4ac924.module.tsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'React18ReactFragment'
@@ -50534,15 +50398,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/c20f5f331b348bea.ts
-error: Expected a type, but found 'typeof'
-   |
-17 | var BC : number | boolean;
-18 | var z1: typeof AB | boolean;
-   |         ^^^^^^
-19 | var z1: string | typeof BC;
-   |
-
+✓ test/parser/suite/ts/pass/c20f5f331b348bea.ts
 ✓ test/parser/suite/ts/pass/c217d4582c2f9fd6.ts
 ✓ test/parser/suite/ts/pass/c223772d14e46764.ts
 ✗ test/parser/suite/ts/pass/c2254ec2676f1543.ts
@@ -52097,13 +51953,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c8281334d973761f.ts
-error: Expected a type, but found 'typeof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
- 1 | // @target: es2015
- 2 | function fn(): typeof fn { return 1; }
-   |                ^^^^^^
- 3 | 
+14 | 
+15 | interface I<T> { }
+   |           ^
+16 | function f3(): I<typeof f3> { return f3; }
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/c82d6a1191f20050.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'c'
@@ -56846,15 +56704,7 @@ error: Expected '(' for method definition, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/dafce8eae1ae2924.ts
-✗ test/parser/suite/ts/pass/db011bc94dd74410.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var x: typeof undefined;
-   |        ^^^^^^
- 3 | x = undefined;
-   |
-
+✓ test/parser/suite/ts/pass/db011bc94dd74410.ts
 ✗ test/parser/suite/ts/pass/db09d250bbb5c5c7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'I'
    |
@@ -57223,14 +57073,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/dc88b913893dd408.ts
 ✓ test/parser/suite/ts/pass/dc8bd5c0dd26bd8a.ts
 ✓ test/parser/suite/ts/pass/dc91740ad62832aa.ts
-✗ test/parser/suite/ts/pass/dc9ee333094ed87b.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var v: typeof A.B
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/dc9ee333094ed87b.ts
 ✓ test/parser/suite/ts/pass/dcbb127af4186795.ts
 ✗ test/parser/suite/ts/pass/dcbd2dd08cdbfbbd.ts
 error: Expected ';' after class field, but found 'function1'
@@ -59066,15 +58909,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e3631d4eba3c775e.ts
-error: Expected a type, but found 'typeof'
-   |
-15 | 
-16 | var x: typeof undefined = 3;
-   |        ^^^^^^
-17 | x = 3;
-   |
-
+✓ test/parser/suite/ts/pass/e3631d4eba3c775e.ts
 ✗ test/parser/suite/ts/pass/e367f79da74f6e84.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -59540,13 +59375,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e50d781dc9780ecc.ts
-error: Expected a type, but found 'typeof'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'maker'
    |
- 5 | 
- 6 | function maker (value: string): typeof maker.Bar {
-   |                                 ^^^^^^
- 7 |     return maker.Bar;
+ 9 | 
+10 | namespace maker {
+   |           ^^^^^
+11 |     export class Bar extends Foo {}
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/e50f14746d7406e5.ts
 error: 'enum' is reserved and cannot be used as an identifier
@@ -64414,13 +64251,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/f7583e9c630aaf58.ts
-error: Expected a type, but found 'typeof'
+error: Expected '{' to start function body, but found ';'
    |
  4 | 
  5 | function f(n: typeof f): string;
-   |               ^^^^^^
+   |                                ^
  6 | function f(n: typeof g): string;
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/f7657411ccefc129.ts
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -65311,14 +65150,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/fb08a63e7ea68928.ts
-✗ test/parser/suite/ts/pass/fb10a3cf93e0e382.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | var v: typeof A.B;
-   |        ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/fb10a3cf93e0e382.ts
 ✗ test/parser/suite/ts/pass/fb35c6d1fc6a54c9.ts
 error: Expected ';' after class field, but found 'constructor'
    |
@@ -65458,15 +65290,7 @@ error: Expected ']' after computed property key, but found ':'
  9 | }
    |
 
-✗ test/parser/suite/ts/pass/fba9a71160c95c6a.ts
-error: Expected a type, but found 'typeof'
-   |
- 1 | // @target: es2015
- 2 | function bar(): typeof b {
-   |                 ^^^^^^
- 3 |     var b = 1;
-   |
-
+✓ test/parser/suite/ts/pass/fba9a71160c95c6a.ts
 ✗ test/parser/suite/ts/pass/fbbc6d4326763b5f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |

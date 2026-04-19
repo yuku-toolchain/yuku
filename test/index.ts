@@ -1,17 +1,6 @@
-function isString(x: unknown): x is string {
-  return typeof x === "string";
-}
-
-function assertString(x: unknown): asserts x is string {
-  if (typeof x !== "string") throw new TypeError();
-}
-
-function assert(x: unknown): asserts x {
-  if (!x) throw new Error();
-}
-
-function isStr(string: unknown): string is string {
-  return typeof string === "string";
-}
-
-let justAsserts: asserts;
+let a: typeof x;
+let b: typeof x.y;
+let c: typeof this;
+let d: typeof this.foo;
+let e: typeof this.foo.bar;
+let f: typeof Err<number>;

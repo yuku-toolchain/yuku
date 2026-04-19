@@ -2317,6 +2317,25 @@ pub const TSQualifiedName = struct {
     right: NodeIndex,
 };
 
+/// The `typeof` type operator applied to a value reference. Extracts the type
+/// of an existing binding (or a dotted member path) at the usage site.
+///
+/// ## Example
+/// ```ts
+/// let x: typeof console;
+/// //     ^^^^^^^^^^^^^^ TSTypeQuery (expr_name is an IdentifierReference)
+/// let y: typeof console.log;
+/// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (expr_name is a TSQualifiedName)
+/// let z: typeof Err<number>;
+/// //     ^^^^^^^^^^^^^^^^^^ TSTypeQuery (type_arguments is a TSTypeParameterInstantiation)
+/// ```
+pub const TSTypeQuery = struct {
+    /// `IdentifierReference`, `TSQualifiedName`, or `TSImportType`
+    expr_name: NodeIndex,
+    /// `TSTypeParameterInstantiation` or `.null` when absent
+    type_arguments: NodeIndex = .null,
+};
+
 // ts: type parameters
 
 /// A single `<T>` type parameter introduced by a generic declaration. Carries
@@ -3253,6 +3272,7 @@ pub const NodeData = union(enum) {
     ts_this_type: TSThisType,
     ts_type_reference: TSTypeReference,
     ts_qualified_name: TSQualifiedName,
+    ts_type_query: TSTypeQuery,
     ts_type_parameter: TSTypeParameter,
     ts_type_parameter_declaration: TSTypeParameterDeclaration,
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,

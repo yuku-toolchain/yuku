@@ -253,6 +253,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .keyof, .unique, .readonly => return parseTypeOperator(parser),
             .infer => return parseInferType(parser),
             .template_head => return parseTemplateLiteralType(parser),
+            .typeof => return parseTypeQuery(parser),
             else => {},
         }
     }
@@ -597,9 +598,6 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
 
 /// { x: T; foo(): U; [k: string]: V }
 /// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///
-/// mirrors `parseObjectTypeMembers` in the typescript-go parser:
-/// https://github.com/microsoft/typescript-go/blob/main/internal/parser/parser.go
 fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
@@ -1169,39 +1167,9 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
 /// Foo.Bar.Baz<T, U>
 /// ^^^^^^^^^^^^^^^^^
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
-    const first_token = parser.current_token;
-    const start = first_token.span.start;
+    const start = parser.current_token.span.start;
 
-    var type_name = try parser.tree.createNode(.{
-        .identifier_reference = .{ .name = try parser.identifierName(first_token) },
-    }, first_token.span);
-
-    try parser.advanceWithoutEscapeCheck() orelse return null;
-
-    while (parser.current_token.tag == .dot) {
-        try parser.advance() orelse return null; // consume '.'
-
-        const right_token = parser.current_token;
-        if (!right_token.tag.isIdentifierLike()) {
-            try parser.reportExpected(
-                right_token.span,
-                "Expected an identifier after '.'",
-                .{ .help = "A qualified type name must end with an identifier" },
-            );
-            return null;
-        }
-
-        const right = try parser.tree.createNode(.{
-            .identifier_name = .{ .name = try parser.identifierName(right_token) },
-        }, right_token.span);
-
-        try parser.advanceWithoutEscapeCheck() orelse return null;
-
-        type_name = try parser.tree.createNode(
-            .{ .ts_qualified_name = .{ .left = type_name, .right = right } },
-            .{ .start = start, .end = right_token.span.end },
-        );
-    }
+    const type_name = try parseEntityName(parser) orelse return null;
 
     const type_arguments = try parseTypeArguments(parser);
 
@@ -1217,6 +1185,92 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
         } },
         .{ .start = start, .end = end },
     );
+}
+
+/// typeof x   typeof x.y   typeof Err<T>
+/// ^^^^^^^^   ^^^^^^^^^^   ^^^^^^^^^^^^^
+///
+/// the `typeof` type operator is distinct from the unary `typeof` expression.
+/// it takes a dotted entity name, optionally applied to type arguments, and
+/// yields the static type of that binding path.
+fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .typeof);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume 'typeof'
+
+    const expr_name = try parseEntityName(parser) orelse return null;
+
+    const type_arguments = try parseTypeArguments(parser);
+
+    const end = if (type_arguments != .null)
+        parser.tree.getSpan(type_arguments).end
+    else
+        parser.tree.getSpan(expr_name).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_query = .{
+            .expr_name = expr_name,
+            .type_arguments = type_arguments,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// parses a dotted entity name `A.B.C` starting from an identifier-like head.
+/// produces a single `IdentifierReference` (or `ThisExpression` for a `this`
+/// head) for an unqualified name, or a left-associative chain of
+/// `TSQualifiedName` nodes for a dotted path. the right side of each dot is
+/// an `IdentifierName` so reserved words and contextual keywords are accepted
+/// as tail segments.
+fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
+    const first_token = parser.current_token;
+    if (!first_token.tag.isIdentifierLike()) {
+        try parser.reportExpected(
+            first_token.span,
+            "Expected an identifier",
+            .{ .help = "An entity name must start with an identifier" },
+        );
+        return null;
+    }
+
+    const start = first_token.span.start;
+
+    var name = if (first_token.tag == .this)
+        try parser.tree.createNode(.{ .this_expression = .{} }, first_token.span)
+    else
+        try parser.tree.createNode(.{
+            .identifier_reference = .{ .name = try parser.identifierName(first_token) },
+        }, first_token.span);
+
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+
+    while (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null; // consume '.'
+
+        const right_token = parser.current_token;
+        if (!right_token.tag.isIdentifierLike()) {
+            try parser.reportExpected(
+                right_token.span,
+                "Expected an identifier after '.'",
+                .{ .help = "A qualified entity name must end with an identifier" },
+            );
+            return null;
+        }
+
+        const right = try parser.tree.createNode(.{
+            .identifier_name = .{ .name = try parser.identifierName(right_token) },
+        }, right_token.span);
+
+        try parser.advanceWithoutEscapeCheck() orelse return null;
+
+        name = try parser.tree.createNode(
+            .{ .ts_qualified_name = .{ .left = name, .right = right } },
+            .{ .start = start, .end = right_token.span.end },
+        );
+    }
+
+    return name;
 }
 
 /// Foo<T, U, V>
@@ -1416,10 +1470,7 @@ pub fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
 ///                ^^^^^^                            ^^^^^^^^^^^^^^
 ///
 /// wraps either a plain type or a `TSTypePredicate` in a `TSTypeAnnotation`
-/// starting at `:`. mirrors `parseTypeOrTypePredicate` in the typescript-go
-/// parser, which is dispatched from `parseReturnType` whenever a function
-/// signature wants a return type:
-/// https://github.com/microsoft/typescript-go/blob/main/internal/parser/parser.go
+/// starting at `:`.
 pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
 
