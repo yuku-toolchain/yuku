@@ -7,7 +7,7 @@ const literals = @import("../literals.zig");
 
 /// Parses a `TSType`. The entry point for any type position.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
-    const ty = try parsePostfixType(parser) orelse {
+    return try parsePostfixType(parser) orelse {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected a type",
@@ -15,15 +15,8 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
         );
         return null;
     };
-
-    return ty;
 }
 
-/// parses a primary type followed by any postfix operators. the `[` suffix
-/// produces either a `TSArrayType` (when followed immediately by `]`) or a
-/// `TSIndexedAccessType` (when followed by an index type then `]`). multiple
-/// postfix operators stack, so `T[][]` becomes `TSArrayType(TSArrayType(T))`
-/// and `T[K][L]` becomes `TSIndexedAccessType(TSIndexedAccessType(T, K), L)`.
 fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
     var ty = try parsePrimaryType(parser) orelse return null;
 
