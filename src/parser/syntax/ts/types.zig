@@ -228,6 +228,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             => return parseLiteralType(parser),
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
+            .keyof, .unique, .readonly => return parseTypeOperator(parser),
             else => {},
         }
     }
@@ -307,6 +308,40 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 
     return try parser.tree.createNode(
         .{ .ts_literal_type = .{ .literal = literal } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// keyof T   unique symbol   readonly T[]
+/// ^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^
+///
+/// prefix type operator. binds tighter than union and intersection but
+/// looser than the postfix `[]` and `T[K]` operators, so `readonly A[]`
+/// parses as `readonly (A[])` and `keyof A | B` parses as `(keyof A) | B`.
+/// operators nest recursively on the right: `readonly keyof T` wraps a
+/// `TSTypeOperator` inside another `TSTypeOperator`, driven by the dispatch
+/// in `parsePrimaryType`.
+fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+    const start = token.span.start;
+
+    const operator: ast.TSTypeOperatorKind = switch (token.tag) {
+        .keyof => .keyof,
+        .unique => .unique,
+        .readonly => .readonly,
+        else => unreachable,
+    };
+
+    try parser.advance() orelse return null; // consume the operator keyword
+
+    const inner = try parsePostfixType(parser) orelse return null;
+    const end = parser.tree.getSpan(inner).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_operator = .{
+            .operator = operator,
+            .type_annotation = inner,
+        } },
         .{ .start = start, .end = end },
     );
 }

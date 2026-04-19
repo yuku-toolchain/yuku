@@ -1947,6 +1947,25 @@ pub const Accessibility = enum {
     }
 };
 
+/// The prefix operator used by `TSTypeOperator`.
+///
+/// `keyof` produces the union of property keys of the operand, `unique` marks
+/// a unique symbol type (only meaningful before `symbol`), and `readonly`
+/// applies to tuple and array types to make their elements immutable.
+pub const TSTypeOperatorKind = enum {
+    keyof,
+    unique,
+    readonly,
+
+    pub fn toString(self: TSTypeOperatorKind) []const u8 {
+        return switch (self) {
+            .keyof => "keyof",
+            .unique => "unique",
+            .readonly => "readonly",
+        };
+    }
+};
+
 /// Stage 3 import phase modifier.
 ///
 /// ## Example
@@ -2480,6 +2499,28 @@ pub const TSTupleType = struct {
     element_types: IndexRange,
 };
 
+/// A prefix type operator. Wraps an inner type with `keyof`, `unique`, or
+/// `readonly`.
+///
+/// The span starts at the operator keyword and extends to the end of the
+/// inner type.
+///
+/// ## Example
+/// ```ts
+/// type Keys = keyof Person;
+/// //          ^^^^^^^^^^^^ TSTypeOperator (operator = keyof)
+/// let id: unique symbol;
+/// //      ^^^^^^^^^^^^^ TSTypeOperator (operator = unique)
+/// type R = readonly number[];
+/// //       ^^^^^^^^^^^^^^^^^ TSTypeOperator (operator = readonly)
+/// ```
+pub const TSTypeOperator = struct {
+    /// the prefix operator applied to the inner type
+    operator: TSTypeOperatorKind,
+    /// the type the operator is applied to
+    type_annotation: NodeIndex,
+};
+
 /// The `undefined` keyword used in type position.
 ///
 /// ## Example
@@ -2913,6 +2954,7 @@ pub const NodeData = union(enum) {
     ts_this_type: TSThisType,
     ts_tuple_type: TSTupleType,
     ts_type_annotation: TSTypeAnnotation,
+    ts_type_operator: TSTypeOperator,
     ts_type_parameter: TSTypeParameter,
     ts_type_parameter_declaration: TSTypeParameterDeclaration,
     ts_type_parameter_instantiation: TSTypeParameterInstantiation,

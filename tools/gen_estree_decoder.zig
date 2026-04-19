@@ -195,6 +195,7 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArray(w, "SEVERITY", &.{ "error", "warning", "hint", "info" });
     try writeArrayRaw(w, "IMPORT_EXPORT_KINDS", &.{ "\"value\"", "\"type\"" });
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
+    try writeArrayRaw(w, "TS_TYPE_OPERATORS", &.{ "\"keyof\"", "\"unique\"", "\"readonly\"" });
 }
 
 fn writeArray(w: *Writer, name: []const u8, items: []const []const u8) !void {
@@ -668,6 +669,7 @@ fn enumTable(comptime E: type) []const u8 {
     if (E == ast.ClassType) return "CLASS_TYPES";
     if (E == ast.ImportOrExportKind) return "IMPORT_EXPORT_KINDS";
     if (E == ast.Accessibility) return "ACCESSIBILITY";
+    if (E == ast.TSTypeOperatorKind) return "TS_TYPE_OPERATORS";
     @compileError("no lookup table for enum");
 }
 

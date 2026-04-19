@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       2278/8399 (27.12%)
-Failed:       6121
-AST mismatch: 7/2285
+Passed:       2283/8399 (27.18%)
+Failed:       6116
+AST mismatch: 7/2290
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'IDLMemberTypes'
@@ -7941,17 +7941,7 @@ error: 'enum' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/ts/pass/1ebbc74e4d682dd2.ts
-✗ test/parser/suite/ts/pass/1ec28531b3524bcd.ts
-error: Expected ']' to close an indexed access type, but found ','
-   |
- 9 | 
-10 | const frozenArray2: readonly [string, number][] = Object.freeze([['a', 1], ['b', 2], ['c', 3]]);
-   |                                     ^
-11 | const o5 = Object.fromEntries(frozenArray2);
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/1ec28531b3524bcd.ts
 ✗ test/parser/suite/ts/pass/1ed457ac9ed7e263.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Constructable'
    |
@@ -19034,14 +19024,14 @@ error: Cannot break to label 'target' across function boundaries
    |
 
 ✗ test/parser/suite/ts/pass/48367c8bdf6f1ad9.ts
-error: 'const' declarations must be initialized
+error: Expected ',' or ')' in parenthesized expression, but found 'as'
    |
- 8 | 
- 9 | const dates: readonly Date[] = [new Date(), new Date()];
-   |       ^^^^^
-10 | str = dates.toLocaleString(); // OK
+16 | str = mixed.toLocaleString('de', { style: 'currency', currency: 'EUR' }); // OK
+17 | str = (mixed as ReadonlyArray<number | Date>).toLocaleString('de', { currency: 'EUR', style: 'currency', timeZone: 'UTC' }); // OK
+   |              ^^
+18 | 
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/4838a987793853f2.ts
@@ -24099,17 +24089,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5bb4fdff62b8ac7d.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
-   |
-13 | // `keyof A` should not include '#foo*'
-14 | let k: keyof A = "bar"; // OK
-   |              ^
-15 | k = "baz"; // OK
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/5bb4fdff62b8ac7d.ts
 ✗ test/parser/suite/ts/pass/5bbecec50afb8473.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm'
    |
@@ -25688,17 +25668,7 @@ error: 'enum' is reserved and cannot be used as an identifier
  8 |     A = `${BAR}`,
    |
 
-✗ test/parser/suite/ts/pass/61e8bc07d6810f50.ts
-error: Expected ')' to close parameter list, but found 'number'
-   |
- 3 | 
- 4 | function narrow(x: readonly number[] | number): readonly number[] {
-   |                             ^^^^^^
- 5 |     if (x instanceof Array) {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/61e8bc07d6810f50.ts
 ✗ test/parser/suite/ts/pass/61eb5df2350adb21.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -26849,17 +26819,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/669f9976f5f2fa01.ts
-error: Expected ')' to close parameter list, but found 'string'
-   |
-10 | 
-11 | function f1(...args: readonly string[]) {
-   |                               ^^^^^^
-12 |     f0(...args);  // Error
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/669f9976f5f2fa01.ts
 ✗ test/parser/suite/ts/pass/66a0f1f8ae896077.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -30269,17 +30229,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/73a4200b07a1e037.ts
-error: 'const' declarations must be initialized
-   |
- 8 | 
- 9 | const dates: readonly Date[] = [new Date(), new Date()];
-   |       ^^^^^
-10 | str = dates.toLocaleString(); // OK
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/73a4200b07a1e037.ts
 ✗ test/parser/suite/ts/pass/73b167ae19bb71d4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Validation'
    |
@@ -30675,14 +30625,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7513b89173bf28cd.ts
-error: 'const' declarations must be initialized
+error: Expected ',' or ')' in parenthesized expression, but found 'as'
    |
- 8 | 
- 9 | const dates: readonly Date[] = [new Date(), new Date()];
-   |       ^^^^^
-10 | str = dates.toLocaleString(); // OK
+17 | str = mixed.toLocaleString('de', { style: 'currency', currency: 'EUR' }); // OK
+18 | str = (mixed as ReadonlyArray<number | Date>).toLocaleString('de', { currency: 'EUR', style: 'currency', timeZone: 'UTC' }); // OK
+   |              ^^
+19 | 
    |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/75142913f21adcd6.ts
