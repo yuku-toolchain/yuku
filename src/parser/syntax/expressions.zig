@@ -275,7 +275,7 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag.isIdentifierLike() and !parser.current_token.hasLineTerminatorBefore()) {
-        const after_id_token = try parser.lookAhead() orelse return null;
+        const after_id_token = try parser.peekAhead() orelse return null;
 
         if (after_id_token.tag == .arrow and !after_id_token.hasLineTerminatorBefore()) {
             // now we know 'async' is a keyword, so report if it was escaped

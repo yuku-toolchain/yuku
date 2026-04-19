@@ -317,15 +317,16 @@ pub const Parser = struct {
     /// peeks the token immediately after `current_token` without advancing.
     /// returns `null` if the lexer cannot produce another token (for example
     /// after a lexical error).
-    pub inline fn lookAhead(self: *Parser) Error!?Token {
-        return self.lookAheadAt(1);
+    pub inline fn peekAhead(self: *Parser) Error!?Token {
+        return (try self.peekAheadN(1))[0];
     }
 
-    /// peeks the token `offset` positions after `current_token` without
-    /// advancing. `offset = 1` is the immediately following token, `offset = 2`
-    /// the one after that, and so on.
-    pub fn lookAheadAt(self: *Parser, offset: usize) Error!?Token {
-        std.debug.assert(offset >= 1);
+    /// peeks the next `n` tokens after `current_token` in a single forward
+    /// scan, returning them by position. index `0` is the immediately
+    /// following token, index `1` the one after that, and so on. slots past
+    /// the end of the token stream are `null`.
+    pub fn peekAheadN(self: *Parser, comptime n: usize) Error![n]?Token {
+        comptime std.debug.assert(n >= 1);
 
         const prev_state = self.lexer.state;
         const prev_cursor = self.lexer.cursor;
@@ -337,11 +338,11 @@ pub const Parser = struct {
             self.lexer.comments.shrinkRetainingCapacity(prev_comments_len);
         }
 
-        var token: ?Token = null;
-        for (0..offset) |_| {
-            token = try self.nextToken() orelse return null;
+        var tokens: [n]?Token = @splat(null);
+        inline for (0..n) |i| {
+            tokens[i] = try self.nextToken() orelse break;
         }
-        return token;
+        return tokens;
     }
 
     /// sets current token from a re-scanned token and advances to the next token.

@@ -308,11 +308,12 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter", "formal_parameters", "function",            "arrow_function_expression",
-        "program",          "directive",         "string_literal",      "numeric_literal",
-        "bigint_literal",   "boolean_literal",   "null_literal",        "regexp_literal",
-        "template_element", "class",             "property_definition", "unary_expression",
-        "binding_property", "array_pattern",     "object_pattern",      "jsx_text",
+        "formal_parameter", "formal_parameters",   "function",            "arrow_function_expression",
+        "program",          "directive",           "string_literal",      "numeric_literal",
+        "bigint_literal",   "boolean_literal",     "null_literal",        "regexp_literal",
+        "template_element", "class",               "property_definition", "unary_expression",
+        "binding_property", "array_pattern",       "object_pattern",      "jsx_text",
+        "ts_function_type", "ts_constructor_type",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -463,6 +464,21 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: {{ const t = str(f{d}, f{d}); return {{ type: "JSXText", start, end, value: t, raw: t }}; }}
         , .{ tag, sv, sv + 1 });
+    } else if (comptime eql(u8, name, "ts_function_type")) {
+        const stp = comptime slotOf(ast.TSFunctionType, "type_parameters");
+        const sp = comptime slotOf(ast.TSFunctionType, "params");
+        const srt = comptime slotOf(ast.TSFunctionType, "return_type");
+        try emit(w,
+            \\    case {d}: return {{ type: "TSFunctionType", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+        , .{ tag, stp, stp, sp, sp, srt, srt });
+    } else if (comptime eql(u8, name, "ts_constructor_type")) {
+        const stp = comptime slotOf(ast.TSConstructorType, "type_parameters");
+        const sp = comptime slotOf(ast.TSConstructorType, "params");
+        const srt = comptime slotOf(ast.TSConstructorType, "return_type");
+        const ba = comptime flagMask(ast.TSConstructorType, "abstract");
+        try emit(w,
+            \\    case {d}: return {{ type: "TSConstructorType", start, end, abstract: !!(flags & {d}), typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
+        , .{ tag, ba, stp, stp, sp, sp, srt, srt });
     }
 }
 

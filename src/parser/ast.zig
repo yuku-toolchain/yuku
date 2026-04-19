@@ -2729,6 +2729,52 @@ pub const TSParenthesizedType = struct {
     type_annotation: NodeIndex,
 };
 
+// ts: function and constructor types
+
+/// A TypeScript function type. Describes a callable signature in type
+/// position, written with `=>` between the parameter list and the return
+/// type. Function types may carry generic parameters: `<T>(x: T) => T`.
+///
+/// ## Example
+/// ```ts
+/// type F = (x: number) => string;
+/// //       ^^^^^^^^^^^^^^^^^^^^^ TSFunctionType
+/// type G = <T>(x: T) => T;
+/// //       ^^^^^^^^^^^^^^ TSFunctionType with type_parameters
+/// ```
+pub const TSFunctionType = struct {
+    /// the generic `<...>` declaration, or `.null` when absent
+    type_parameters: NodeIndex = .null,
+    /// the parameter list as a `FormalParameters` node
+    params: NodeIndex,
+    /// a `TSTypeAnnotation` wrapping the return type, with its span starting
+    /// at the `=>` token
+    return_type: NodeIndex,
+};
+
+/// A TypeScript constructor type. Describes a signature that is invoked
+/// with `new`, optionally marked `abstract` to forbid direct instantiation
+/// of the referenced class.
+///
+/// ## Example
+/// ```ts
+/// type C = new (x: number) => Foo;
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^ TSConstructorType
+/// type A = abstract new <T>(x: T) => T;
+/// //       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSConstructorType (abstract = true)
+/// ```
+pub const TSConstructorType = struct {
+    /// the generic `<...>` declaration, or `.null` when absent
+    type_parameters: NodeIndex = .null,
+    /// the parameter list as a `FormalParameters` node
+    params: NodeIndex,
+    /// a `TSTypeAnnotation` wrapping the return type, with its span starting
+    /// at the `=>` token
+    return_type: NodeIndex,
+    /// true when the constructor is preceded by `abstract`
+    abstract: bool = false,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3041,6 +3087,8 @@ pub const NodeData = union(enum) {
     ts_infer_type: TSInferType,
     ts_type_operator: TSTypeOperator,
     ts_parenthesized_type: TSParenthesizedType,
+    ts_function_type: TSFunctionType,
+    ts_constructor_type: TSConstructorType,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

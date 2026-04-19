@@ -24,7 +24,7 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
 
     var phase: ?ast.ImportPhase = null;
 
-    const next = try parser.lookAhead() orelse return null;
+    const next = try parser.peekAhead() orelse return null;
 
     // import source X from "X"
     if (parser.current_token.tag == .source and next.tag.isIdentifierLike() and next.tag != .from) {

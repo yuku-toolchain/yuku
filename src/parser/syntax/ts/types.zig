@@ -5,9 +5,34 @@ const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
 const literals = @import("../literals.zig");
+const functions = @import("../functions.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
+    if (try isStartOfFunctionOrConstructorType(parser)) {
+        return try parseFunctionOrConstructorType(parser, true);
+    }
+
     return try parseConditionalType(parser) orelse {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected a type",
+            .{},
+        );
+        return null;
+    };
+}
+
+/// a parseType variant that refuses to consume a trailing `extends ... ? ... :
+/// ...` conditional. used for the `extends` operand of a conditional type
+/// and for the return type of a function/constructor type that itself sits
+/// in an extends position, so an enclosing conditional can close around the
+/// inner type.
+fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
+    if (try isStartOfFunctionOrConstructorType(parser)) {
+        return try parseFunctionOrConstructorType(parser, false);
+    }
+
+    return try parseUnionType(parser) orelse {
         try parser.reportExpected(
             parser.current_token.span,
             "Expected a type",
@@ -21,8 +46,9 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
 /// ^^^^^^^^^^^^^^^^^^^
 ///
 /// lowest precedence type operator. the check type is parsed with union
-/// precedence, the extends type with union precedence (conditional types
-/// are disallowed on the right of `extends` without parentheses), the
+/// precedence, the extends type with no-conditional precedence (bare
+/// conditional types are disallowed on the right of `extends` without
+/// parentheses, but function and constructor types are allowed), and the
 /// true and false branches use the full type grammar so they nest
 /// right-associatively on the false side.
 fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
@@ -32,7 +58,7 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume 'extends'
 
-    const extends_type = try parseUnionType(parser) orelse return null;
+    const extends_type = try parseTypeNoConditional(parser) orelse return null;
 
     if (!try parser.expect(
         .question,
@@ -274,7 +300,7 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
         => try literals.parseNumericLiteral(parser) orelse return null,
         .no_substitution_template => try literals.parseNoSubstitutionTemplate(parser, false) orelse return null,
         .minus, .plus => blk: {
-            const next = (try parser.lookAhead()) orelse return null;
+            const next = (try parser.peekAhead()) orelse return null;
             if (!next.tag.isNumericLiteral()) return null;
 
             try parser.advance() orelse return null; // consume '-' or '+'
@@ -376,13 +402,6 @@ fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
 
 /// keyof T   unique symbol   readonly T[]
 /// ^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^
-///
-/// prefix type operator. binds tighter than union and intersection but
-/// looser than the postfix `[]` and `T[K]` operators, so `readonly A[]`
-/// parses as `readonly (A[])` and `keyof A | B` parses as `(keyof A) | B`.
-/// operators nest recursively on the right, `readonly keyof T` wraps a
-/// `TSTypeOperator` inside another `TSTypeOperator`, driven by the dispatch
-/// in `parsePrimaryType`.
 fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     const start = token.span.start;
@@ -439,6 +458,141 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(
         .{ .ts_infer_type = .{ .type_parameter = type_parameter } },
         .{ .start = start, .end = param_end },
+    );
+}
+
+/// references `isStartOfFunctionTypeOrConstructorType` and
+/// `nextIsUnambiguouslyStartOfFunctionType` in the typescript-go
+/// parser:
+/// https://github.com/microsoft/typescript-go/blob/1de8d68230f8759af6fb71d9cf0f9c37d2c65507/internal/parser/parser.go#L3768
+fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
+    const tag = parser.current_token.tag;
+
+    if (tag == .new) return true;
+
+    if (tag == .abstract) {
+        const next = (try parser.peekAhead()) orelse return false;
+        return next.tag == .new;
+    }
+
+    if (tag == .less_than) return true;
+
+    if (tag != .left_paren) return false;
+
+    const peek = try parser.peekAheadN(3);
+
+    const t1 = peek[0] orelse return false;
+
+    switch (t1.tag) {
+        .right_paren => {
+            const t2 = peek[1] orelse return false;
+            return t2.tag == .arrow;
+        },
+        .spread => return true,
+        .this => {
+            const t2 = peek[1] orelse return false;
+            return t2.tag == .colon;
+        },
+        else => {},
+    }
+
+    if (!t1.tag.isIdentifierLike()) return false;
+
+    const t2 = peek[1] orelse return false;
+
+    return switch (t2.tag) {
+        .colon, .question, .comma, .assign => true,
+        .right_paren => blk: {
+            const t3 = peek[2] orelse break :blk false;
+            break :blk t3.tag == .arrow;
+        },
+        else => false,
+    };
+}
+
+/// (a: T) => R       new (x: T) => R       abstract new (x: T) => R
+/// ^^^^^^^^^^^       ^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^
+///
+/// `allow_conditional_return_type` controls whether the return type of this
+/// function or constructor type may itself be a bare conditional, mirroring
+/// the top level `parseType` vs `parseTypeNoConditional` distinction. when
+/// the function type sits in an extends position, its return type also
+/// inherits the no-conditional restriction so that an enclosing conditional
+/// can close around it.
+fn parseFunctionOrConstructorType(parser: *Parser, allow_conditional_return_type: bool) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    var is_abstract = false;
+    if (parser.current_token.tag == .abstract) {
+        is_abstract = true;
+        try parser.advance() orelse return null; // consume 'abstract'
+    }
+
+    var is_constructor = false;
+    if (parser.current_token.tag == .new) {
+        is_constructor = true;
+        try parser.advance() orelse return null; // consume 'new'
+    }
+
+    const type_parameters = try parseTypeParameters(parser);
+
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' to start function type parameters",
+        "A function or constructor type requires a parenthesized parameter list",
+    )) return null;
+
+    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
+
+    if (!try parser.expect(
+        .right_paren,
+        "Expected ')' to close function type parameters",
+        "Each '(' in a function type must be matched by a ')'",
+    )) return null;
+
+    if (parser.current_token.tag != .arrow) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '=>' in function type",
+            .{ .help = "A function type is written '(params) => ReturnType'" },
+        );
+        return null;
+    }
+
+    const arrow_start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume '=>'
+
+    const return_type_inner = if (allow_conditional_return_type)
+        try parseType(parser) orelse return null
+    else
+        try parseTypeNoConditional(parser) orelse return null;
+
+    const return_type_end = parser.tree.getSpan(return_type_inner).end;
+
+    const return_type = try parser.tree.createNode(
+        .{ .ts_type_annotation = .{ .type_annotation = return_type_inner } },
+        .{ .start = arrow_start, .end = return_type_end },
+    );
+
+    if (is_constructor) {
+        return try parser.tree.createNode(
+            .{ .ts_constructor_type = .{
+                .type_parameters = type_parameters,
+                .params = params,
+                .return_type = return_type,
+                .abstract = is_abstract,
+            } },
+            .{ .start = start, .end = return_type_end },
+        );
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_function_type = .{
+            .type_parameters = type_parameters,
+            .params = params,
+            .return_type = return_type,
+        } },
+        .{ .start = start, .end = return_type_end },
     );
 }
 
@@ -547,12 +701,13 @@ fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
 fn isNamedTupleElement(parser: *Parser) Error!bool {
     if (!parser.current_token.tag.isIdentifierLike()) return false;
 
-    const t1 = try parser.lookAheadAt(1) orelse return false;
+    const peek = try parser.peekAheadN(2);
+    const t1 = peek[0] orelse return false;
 
     if (t1.tag == .colon) return true;
     if (t1.tag != .question) return false;
 
-    const t2 = try parser.lookAheadAt(2) orelse return false;
+    const t2 = peek[1] orelse return false;
     return t2.tag == .colon;
 }
 
@@ -763,7 +918,7 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
         const tag = parser.current_token.tag;
         if (tag != .in and tag != .out and tag != .@"const") break;
 
-        const next = (try parser.lookAhead()) orelse break;
+        const next = (try parser.peekAhead()) orelse break;
         if (!next.tag.isIdentifierLike()) break;
 
         switch (tag) {
