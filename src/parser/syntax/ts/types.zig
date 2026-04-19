@@ -5,7 +5,6 @@ const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
 const literals = @import("../literals.zig");
 
-/// Parses a `TSType`. The entry point for any type position.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     return try parseUnionType(parser) orelse {
         try parser.reportExpected(
@@ -17,6 +16,8 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
+/// | A | B | C
+/// ^^^^^^^^^^^
 fn parseUnionType(parser: *Parser) Error!?ast.NodeIndex {
     const leading_start: ?u32 = if (parser.current_token.tag == .bitwise_or)
         parser.current_token.span.start
@@ -55,6 +56,8 @@ fn parseUnionType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
+/// & A & B & C
+/// ^^^^^^^^^^^
 fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
     const leading_start: ?u32 = if (parser.current_token.tag == .bitwise_and)
         parser.current_token.span.start
@@ -92,6 +95,8 @@ fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
+/// T[]   T[K]
+/// ^^^   ^^^^
 fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
     var ty = try parsePrimaryType(parser) orelse return null;
 
@@ -132,6 +137,8 @@ fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
     return ty;
 }
 
+/// string   42   Foo<T>
+/// ^^^^^^   ^^   ^^^^^^
 fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
 
@@ -175,6 +182,8 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
+/// string   number   void
+/// ^^^^^^   ^^^^^^   ^^^^
 inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
 
@@ -201,6 +210,8 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(data, token.span);
 }
 
+/// 42   "foo"   true   -1
+/// ^^   ^^^^^   ^^^^   ^^
 fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     const start = token.span.start;
@@ -243,8 +254,8 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// parses a `TSTypeReference`: an identifier, an optional dotted tail forming a
-/// `TSQualifiedName`, and an optional `<T, U>` type argument list.
+/// Foo.Bar.Baz<T, U>
+/// ^^^^^^^^^^^^^^^^^
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     const first_token = parser.current_token;
     const start = first_token.span.start;
@@ -296,8 +307,8 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// parses a `<T, U, ...>` type argument list into a `TSTypeParameterInstantiation`.
-/// returns `.null` when the current token is not `<`.
+/// Foo<T, U, V>
+///    ^^^^^^^^^
 pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .less_than) return .null;
 
@@ -351,7 +362,8 @@ pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     );
 }
 
-/// parses a `<T, U, ...>` type parameter list into a `TSTypeParameterDeclaration`.
+/// function f<T, U extends V>() {}
+///           ^^^^^^^^^^^^^^^^
 pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .less_than) return .null;
 
@@ -405,6 +417,8 @@ pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
     );
 }
 
+/// const in out T extends U = V
+/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
     var is_const = false;
     var is_in = false;
@@ -470,7 +484,8 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// `: Type`.
+/// let x: string
+///      ^^^^^^^^
 pub fn parseTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .colon);
 
