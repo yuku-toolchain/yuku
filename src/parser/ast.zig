@@ -2873,7 +2873,7 @@ pub const TSMethodSignature = struct {
 
 /// A bare call signature inside a type literal or interface body. Written as
 /// `(params): ReturnType`. Distinct from `TSFunctionType`, which is used as a
-/// standalone type; call signatures are members of an enclosing object type.
+/// standalone type. Call signatures are members of an enclosing object type.
 ///
 /// ## Example
 /// ```ts
@@ -2910,7 +2910,7 @@ pub const TSConstructSignatureDeclaration = struct {
 /// An index signature inside a type literal, interface body, or class body.
 /// Written as `[name: KeyType]: ValueType`, optionally preceded by
 /// `readonly`. The parameter list is a small array of identifier-like bindings
-/// carrying a type annotation; almost always one entry.
+/// carrying a type annotation. Almost always one entry.
 ///
 /// ## Example
 /// ```ts

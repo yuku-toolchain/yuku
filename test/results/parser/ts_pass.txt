@@ -25328,14 +25328,14 @@ error: Expected ';' after class field, but found 'bar'
 
 ✓ test/parser/suite/ts/pass/628a693b838f2080.ts
 ✗ test/parser/suite/ts/pass/628c3ba4f0efd025.ts
-error: Expected ')' to close method signature parameters, but found '?'
+error: Expected ')' to close signature parameters, but found '?'
    |
  3 | 
  4 | function f1(x: { f(): void }, y: { f(x?: string): void }) {
    |                                       ^
  5 |     let z = !!true ? x : y;  // { f(x?: string): void }
    |
-   = help: Each '(' in a method signature must be matched by a ')'
+   = help: Each '(' in a signature must be matched by a ')'
 
 
 ✗ test/parser/suite/ts/pass/628fe7d176c0f82f.ts

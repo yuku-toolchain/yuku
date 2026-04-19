@@ -250,15 +250,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
             .left_brace => return parseTypeLiteral(parser),
-            .keyof, .unique => return parseTypeOperator(parser),
-            .readonly => {
-                // `readonly` is a type operator in most positions (`readonly T[]`).
-                // at the start of a type literal member it is a modifier, but the
-                // dispatch to `parseTypeLiteral` is resolved one level up before
-                // calling `parsePrimaryType` on a member. as a standalone type the
-                // operator reading is always correct.
-                return parseTypeOperator(parser);
-            },
+            .keyof, .unique, .readonly => return parseTypeOperator(parser),
             .infer => return parseInferType(parser),
             .template_head => return parseTemplateLiteralType(parser),
             else => {},
@@ -606,9 +598,8 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
 /// { x: T; foo(): U; [k: string]: V }
 /// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ///
-/// references `parseObjectTypeMembers` and `parseTypeMember` in the
-/// typescript-go parser:
-/// https://github.com/microsoft/typescript-go/blob/1de8d68230f8759af6fb71d9cf0f9c37d2c65507/internal/parser/parser.go
+/// mirrors `parseObjectTypeMembers` in the typescript-go parser:
+/// https://github.com/microsoft/typescript-go/blob/main/internal/parser/parser.go
 fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
@@ -622,10 +613,11 @@ fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
         const member = try parseTypeMember(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), member);
 
-        // members are separated by `;`, `,`, or an automatic newline. when a
-        // `;` or `,` follows, it is folded into the member's span (TSC
-        // includes the terminator in the member range). a bare newline is
-        // accepted without adjusting the span.
+        // members are separated by `;`, `,`, or an automatic semicolon
+        // (newline before the next token). when a `;` or `,` follows, it is
+        // folded into the member's span (TSC folds the terminator into the
+        // member range so the snapshot span includes it). a bare newline is
+        // accepted as a separator without adjusting the span.
         const sep = parser.current_token.tag;
         if (sep == .semicolon or sep == .comma) {
             const sep_end = parser.current_token.span.end;
@@ -658,26 +650,21 @@ fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
 /// dispatches a single type literal member. accepts:
 ///
-/// - call signatures      `(x: T): R`
-/// - call signatures      `<T>(x: T): R`
+/// - call signatures      `(x: T): R`   `<T>(x: T): R`
 /// - construct signatures `new (x: T): R`
-/// - index signatures     `[k: string]: V` or `readonly [k: string]: V`
-/// - property signatures  `key: T`, `readonly key?: T`
-/// - method signatures    `key(x: T): R`, `get key(): R`, `set key(v: T)`
+/// - index signatures     `[k: string]: V`   `readonly [k: string]: V`
+/// - property signatures  `key: T`   `readonly key?: T`
+/// - method signatures    `key(x: T): R`   `key?<T>(): R`   `get k(): T`   `set k(v: T)`
 fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
-    // call signature with no generics: starts with '('
-    if (tag == .left_paren) return parseCallSignature(parser);
+    // call signature. `(...)` or `<...>` at the start of a member can only
+    // be a bare call signature in this grammar.
+    if (tag == .left_paren or tag == .less_than) return parseCallSignature(parser);
 
-    // call signature with generics: starts with '<'
-    if (tag == .less_than) return parseCallSignature(parser);
-
-    // construct signature: `new` followed by '(', '<', or anything (treated
-    // as a construct signature by default). if the next token is an
-    // identifier-like and then `:`, it would be a property named `new`,
-    // but TSC treats `new` as the construct signature keyword in member
-    // position.
+    // construct signature. `new` followed by `(` or `<` is unambiguously a
+    // construct signature. a bare `new` followed by anything else is
+    // treated as a property named "new".
     if (tag == .new) {
         const next = (try parser.peekAhead()) orelse return null;
         if (next.tag == .left_paren or next.tag == .less_than) {
@@ -685,13 +672,13 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // `readonly` modifier. applies to property signatures and index
-    // signatures. treat as a modifier only when followed by a property-key
-    // start or a `[` (for an index signature). otherwise it is the property
-    // name itself.
+    // `readonly` modifier. treated as a modifier when followed on the same
+    // line by a token that starts a property or index signature. mirrors
+    // `canFollowModifier` in the typescript-go parser. otherwise `readonly`
+    // is the property name itself.
     if (tag == .readonly) {
         const next = (try parser.peekAhead()) orelse return null;
-        if (isPropertyKeyStart(next.tag) or next.tag == .left_bracket) {
+        if (!next.hasLineTerminatorBefore() and canFollowReadonlyModifier(next.tag)) {
             const readonly_start = parser.current_token.span.start;
             try parser.advance() orelse return null; // consume 'readonly'
             if (parser.current_token.tag == .left_bracket and try isIndexSignatureStart(parser)) {
@@ -701,20 +688,21 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // index signature without `readonly`: `[k: T]: V`. must be distinguished
-    // from a computed property key `[expr]: T`.
+    // index signature `[k: T]: V`. distinguished from a computed property
+    // key `[expr]: T` by `[ id :` or `[ id ,` lookahead.
     if (tag == .left_bracket and try isIndexSignatureStart(parser)) {
         const start = parser.current_token.span.start;
         return parseIndexSignature(parser, start, false);
     }
 
-    // property or method signature with no modifier.
+    // property or method signature, no modifier.
     const start = parser.current_token.span.start;
     return parsePropertyOrMethodSignature(parser, start, false);
 }
 
 /// distinguishes an index signature `[k: T]: V` from a computed property key
-/// `[expr]: T`. peeks for an `identifier-like` token followed by `:` or `,`.
+/// `[expr]: T`. peeks for an identifier-like token followed by `:` or `,`,
+/// matching `nextIsUnambiguouslyIndexSignature` in the typescript-go parser.
 fn isIndexSignatureStart(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .left_bracket);
 
@@ -727,11 +715,27 @@ fn isIndexSignatureStart(parser: *Parser) Error!bool {
     return t2.tag == .colon or t2.tag == .comma;
 }
 
-inline fn isPropertyKeyStart(tag: TokenTag) bool {
+/// tokens that may start a property name: identifier-like, string literal,
+/// numeric literal, or `[` for a computed key. used to decide whether
+/// `get`/`set` is an accessor keyword or the property name itself. mirrors
+/// `canFollowGetOrSetKeyword` in the typescript-go parser.
+inline fn canFollowAccessorKeyword(tag: TokenTag) bool {
     return tag == .left_bracket or
         tag.isIdentifierLike() or
         tag == .string_literal or
         tag.isNumericLiteral();
+}
+
+/// superset of `canFollowAccessorKeyword` that adds tokens that can also
+/// follow the `readonly` modifier. `{`, `*`, and `...` are syntactically
+/// accepted (and then rejected downstream) to match TSC's `canFollowModifier`
+/// behavior, so that speculative parses reach the same error position TSC
+/// does.
+inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
+    return canFollowAccessorKeyword(tag) or
+        tag == .left_brace or
+        tag == .star or
+        tag == .spread;
 }
 
 /// (params): R    <T>(params): R
@@ -740,27 +744,14 @@ fn parseCallSignature(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const type_parameters = try parseTypeParameters(parser);
+    const params = try parseSignatureParameters(parser) orelse return null;
 
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' to start call signature parameters",
-        "A call signature is written '(params): ReturnType'",
-    )) return null;
-
-    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
-
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close call signature parameters",
-        "Each '(' in a call signature must be matched by a ')'",
-    )) return null;
-
-    const return_type = try parseSignatureReturnType(parser);
-
-    const end = if (return_type != .null)
-        parser.tree.getSpan(return_type).end
-    else
-        parser.prev_token_end;
+    var return_type: ast.NodeIndex = .null;
+    var end = parser.prev_token_end;
+    if (parser.current_token.tag == .colon) {
+        return_type = try parseTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(return_type).end;
+    }
 
     return try parser.tree.createNode(
         .{ .ts_call_signature_declaration = .{
@@ -781,27 +772,14 @@ fn parseConstructSignature(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'new'
 
     const type_parameters = try parseTypeParameters(parser);
+    const params = try parseSignatureParameters(parser) orelse return null;
 
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' to start construct signature parameters",
-        "A construct signature is written 'new (params): ReturnType'",
-    )) return null;
-
-    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
-
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close construct signature parameters",
-        "Each '(' in a construct signature must be matched by a ')'",
-    )) return null;
-
-    const return_type = try parseSignatureReturnType(parser);
-
-    const end = if (return_type != .null)
-        parser.tree.getSpan(return_type).end
-    else
-        parser.prev_token_end;
+    var return_type: ast.NodeIndex = .null;
+    var end = parser.prev_token_end;
+    if (parser.current_token.tag == .colon) {
+        return_type = try parseTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(return_type).end;
+    }
 
     return try parser.tree.createNode(
         .{ .ts_construct_signature_declaration = .{
@@ -813,11 +791,32 @@ fn parseConstructSignature(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// [k: T]: V
-/// ^^^^^^^^^
+/// `( params )` shared by call, construct, and method signatures. expects
+/// the opening `(`, delegates to the JS formal-parameter parser in signature
+/// mode, then expects the closing `)`.
+fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' to start signature parameters",
+        "A signature parameter list must be enclosed in parentheses",
+    )) return null;
+
+    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
+
+    if (!try parser.expect(
+        .right_paren,
+        "Expected ')' to close signature parameters",
+        "Each '(' in a signature must be matched by a ')'",
+    )) return null;
+
+    return params;
+}
+
+/// [k: T]: V    readonly [k: T]: V
+/// ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
 ///
-/// `readonly` is consumed by the caller when present; `start` points at the
-/// modifier keyword start in that case, otherwise at the `[`.
+/// `readonly` is consumed by the caller when present. `start` points at
+/// the modifier keyword in that case, otherwise at the `[`.
 fn parseIndexSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     try parser.advance() orelse return null; // consume '['
@@ -863,9 +862,8 @@ fn parseIndexSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?as
     );
 }
 
-/// one entry of an index signature parameter list. a plain binding identifier
-/// with a type annotation attached. rejected without an annotation since the
-/// index signature grammar requires it.
+/// one entry of an index signature parameter list. a binding identifier
+/// carrying a type annotation.
 fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
     const name = try literals.parseBindingIdentifier(parser) orelse return null;
 
@@ -883,47 +881,54 @@ fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
     return name;
 }
 
-/// key: T    key?: T    get key(): T    set key(v: T)    key(x: T): R
-/// ^^^^^^    ^^^^^^^    ^^^^^^^^^^^^    ^^^^^^^^^^^^^    ^^^^^^^^^^^^
+/// dispatches a property, method, getter, or setter signature. the caller
+/// supplies `start` (covering any preceding modifier) and `is_readonly`.
 ///
-/// `start` and `is_readonly` are passed in so this function can be called
-/// either with the modifier already consumed or directly.
+/// grammar order follows typescript-go's `parsePropertyOrMethodSignature`:
+///
+///   1. optional `get` / `set` accessor keyword
+///   2. property key (identifier-like, string, number, or `[expr]`)
+///   3. optional `?`
+///   4. either `(params): R` body (method) or `: T` annotation (property)
 fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?ast.NodeIndex {
-    // `get` / `set` accessor signatures. recognized only when followed by
-    // another property-key start, so the name `get` or `set` itself can still
-    // be used as an ordinary property name.
-    const cur_tag = parser.current_token.tag;
-    if (cur_tag == .get or cur_tag == .set) {
+    // optional `get` / `set` accessor keyword.
+    var kind: ast.TSMethodSignatureKind = .method;
+    const head_tag = parser.current_token.tag;
+    if (head_tag == .get or head_tag == .set) {
         const next = (try parser.peekAhead()) orelse return null;
-        if (isPropertyKeyStart(next.tag)) {
-            const kind: ast.TSMethodSignatureKind = if (cur_tag == .get) .get else .set;
+        if (canFollowAccessorKeyword(next.tag)) {
+            kind = if (head_tag == .get) .get else .set;
             try parser.advance() orelse return null; // consume 'get' / 'set'
-            return parseMethodSignatureTail(parser, start, kind, false, false);
         }
     }
 
+    // property key.
     const key_result = try parsePropertyKey(parser) orelse return null;
     const key = key_result.key;
     const computed = key_result.computed;
 
+    // optional `?`. folded into the span when no further tail
+    // follows so that `{ [e]? }` covers the `?`.
     var is_optional = false;
-    var end = parser.tree.getSpan(key).end;
+    var tail_end = parser.tree.getSpan(key).end;
     if (parser.current_token.tag == .question) {
         is_optional = true;
-        end = parser.current_token.span.end;
+        tail_end = parser.current_token.span.end;
         try parser.advance() orelse return null; // consume '?'
     }
 
-    // method signature: key(...) or key<T>(...)
-    if (parser.current_token.tag == .left_paren or parser.current_token.tag == .less_than) {
-        return parseMethodSignatureBody(parser, start, key, .method, computed, is_optional);
+    // method / accessor. `(` or `<` at this point means a body.
+    // accessors always take the body path even when there is no `(`
+    // following (we still report a diagnostic inside the body parser).
+    if (kind != .method or parser.current_token.tag == .left_paren or parser.current_token.tag == .less_than) {
+        return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
     }
 
-    // property signature
+    // property. optional `: T` annotation.
     var type_annotation: ast.NodeIndex = .null;
     if (parser.current_token.tag == .colon) {
         type_annotation = try parseTypeAnnotation(parser) orelse return null;
-        end = parser.tree.getSpan(type_annotation).end;
+        tail_end = parser.tree.getSpan(type_annotation).end;
     }
 
     return try parser.tree.createNode(
@@ -934,37 +939,12 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
             .optional = is_optional,
             .readonly = is_readonly,
         } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = tail_end },
     );
 }
 
-/// tail of an accessor method signature. the `get` or `set` keyword has been
-/// consumed by the caller; the next token is the key.
-fn parseMethodSignatureTail(
-    parser: *Parser,
-    start: u32,
-    kind: ast.TSMethodSignatureKind,
-    computed_caller: bool,
-    optional_caller: bool,
-) Error!?ast.NodeIndex {
-    _ = computed_caller;
-    _ = optional_caller;
-
-    const key_result = try parsePropertyKey(parser) orelse return null;
-    const key = key_result.key;
-    const computed = key_result.computed;
-
-    var is_optional = false;
-    if (parser.current_token.tag == .question) {
-        is_optional = true;
-        try parser.advance() orelse return null;
-    }
-
-    return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
-}
-
-/// the parameter list + optional return type tail shared by method, getter,
-/// and setter signatures.
+/// `<T>(params): R` tail shared by method, getter, and setter signatures.
+/// the key, `?`, `computed`, and accessor kind have already been captured.
 fn parseMethodSignatureBody(
     parser: *Parser,
     start: u32,
@@ -974,31 +954,14 @@ fn parseMethodSignatureBody(
     is_optional: bool,
 ) Error!?ast.NodeIndex {
     const type_parameters = try parseTypeParameters(parser);
+    const params = try parseSignatureParameters(parser) orelse return null;
 
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' to start method signature parameters",
-        "A method signature is written 'name(params): ReturnType'",
-    )) return null;
-
-    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
-
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close method signature parameters",
-        "Each '(' in a method signature must be matched by a ')'",
-    )) return null;
-
-    // setters carry no return type; getters and plain methods optionally do.
-    const return_type: ast.NodeIndex = if (kind == .set)
-        .null
-    else
-        try parseSignatureReturnType(parser);
-
-    const end = if (return_type != .null)
-        parser.tree.getSpan(return_type).end
-    else
-        parser.prev_token_end;
+    var return_type: ast.NodeIndex = .null;
+    var end = parser.prev_token_end;
+    if (parser.current_token.tag == .colon) {
+        return_type = try parseTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(return_type).end;
+    }
 
     return try parser.tree.createNode(
         .{ .ts_method_signature = .{
@@ -1019,10 +982,10 @@ const PropertyKeyResult = struct {
     computed: bool,
 };
 
-/// parse a signature property key. identifier-like names decode as
-/// `IdentifierName` (property keys don't reference bindings), literals are
-/// wrapped directly, and `[expr]` produces a computed key with the raw
-/// expression inside.
+/// signature property key. identifier-like names decode as `IdentifierName`
+/// (property keys don't reference bindings), literals are wrapped directly,
+/// and `[expr]` yields a computed key carrying any assignment expression.
+/// matches `parsePropertyName` in the typescript-go parser.
 fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
     const tag = parser.current_token.tag;
 
@@ -1058,13 +1021,6 @@ fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
         .{ .help = "Signature keys must be identifiers, strings, numbers, or computed expressions [expr]." },
     );
     return null;
-}
-
-/// the `: ReturnType` tail that follows a signature parameter list. optional;
-/// returns `.null` when absent.
-fn parseSignatureReturnType(parser: *Parser) Error!ast.NodeIndex {
-    if (parser.current_token.tag != .colon) return .null;
-    return try parseTypeAnnotation(parser) orelse .null;
 }
 
 /// (A | B)   (Foo)
