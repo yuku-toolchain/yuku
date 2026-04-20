@@ -28,6 +28,7 @@ interface FileResult {
   file: string;
   passed: boolean;
   snapshotCompared: boolean;
+  reason?: string;
   source?: string;
   diagnostics?: Diagnostic[];
 }
@@ -192,8 +193,9 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
       if (snap.status === "mismatch") {
         passed = false;
         entry.passed = false;
+        entry.reason = "snapshot mismatch";
         clearProgress();
-        console.log(`\nx ${file}\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`);
+        console.log(`\nx ${file} (${entry.reason})\n${diff(snap.snapshot, parsed, { contextLines: 2 })}\n`);
       }
     }
 
@@ -203,10 +205,12 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
         suite.expect === "pass" ||
         (suite.expect === "snapshot" && !suite.allowErrors && parsed.diagnostics.length > 0)
       ) {
-        console.log(`\nx ${file}`);
+        entry.reason ??= "parse errors";
+        console.log(`\nx ${file} (${entry.reason})`);
         console.log(formatDiagnostics(content, parsed.diagnostics, file));
       } else if (suite.expect === "fail" && parsed.diagnostics.length === 0) {
-        console.log(`\nx ${file} (expected error, but parsed successfully)`);
+        entry.reason ??= "expected error, but parsed successfully";
+        console.log(`\nx ${file} (${entry.reason})`);
       }
     }
 
@@ -241,8 +245,9 @@ function writeResultFile(result: SuiteResult): string {
   lines.push("");
 
   const sorted = [...result.files].sort((a, b) => a.file.localeCompare(b.file));
-  for (const { file, passed, source, diagnostics } of sorted) {
-    lines.push(`${passed ? "✓" : "✗"} ${file}`);
+  for (const { file, passed, reason, source, diagnostics } of sorted) {
+    const suffix = !passed && reason ? ` (${reason})` : "";
+    lines.push(`${passed ? "✓" : "✗"} ${file}${suffix}`);
     if (diagnostics && diagnostics.length > 0 && source) {
       lines.push(formatDiagnostics(source, [diagnostics[0]], file, { showFilename: false }));
       lines.push("");
