@@ -975,13 +975,11 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/06be4d4082484d98.module.js
-error: Expected an identifier, but found ','
+error: Expected identifier or string literal, but found ','
    |
  1 | import {b as,} from 'a';
    |             ^
    |
-   = help: Identifiers must start with a letter, underscore (_), or dollar sign ($)
-
 
 ✓ test/parser/suite/js/fail/06c09ac4c891523b.js
 error: Unterminated string literal
@@ -9054,7 +9052,7 @@ error: Unterminated string literal
 
 
 ✓ test/parser/suite/js/fail/41bb6cfb5f18770c.js
-error: 'class' is reserved and cannot be used as a binding identifier
+error: 'class' is reserved and cannot be used as an imported binding
    |
  1 | import { a as class } from 'foo'
    |               ^^^^^
@@ -20883,7 +20881,7 @@ error: Expected declaration after 'export', but found ';'
 
 
 ✓ test/parser/suite/js/fail/98f5714a70195f28.module.js
-error: 'function' is reserved and cannot be used as a binding identifier
+error: 'function' is reserved and cannot be used as an imported binding
    |
  1 | import {a as function} from 'a';
    |              ^^^^^^^^
@@ -25406,7 +25404,7 @@ error: Invalid element in assignment pattern
 
 
 ✓ test/parser/suite/js/fail/baddfc428e73b8b8.js
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: 'enum' is reserved and cannot be used as an imported binding
    |
  1 | import { a as enum } from 'foo'
    |               ^^^^

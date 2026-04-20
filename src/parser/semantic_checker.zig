@@ -447,10 +447,16 @@ const SemanticVisit = struct {
         const exported_name = getModuleExportName(ctx.tree, spec.exported);
         try self.recordExportedName(exported_name, node_index, ctx);
 
-        // collect for unresolved check (only for local exports, not re-exports)
+        // collect for unresolved check (only for local exports, not re-exports).
+        // type-only exports refer to type bindings that live outside the value
+        // scope our checker tracks, so skip the check for both `export type { X }`
+        // (declaration level) and `export { type X }` (specifier level).
+        if (spec.export_kind == .type) return .proceed;
         if (ctx.path.parent()) |parent| {
-            if (ctx.tree.getData(parent) == .export_named_declaration and
-                ctx.tree.getData(parent).export_named_declaration.source == .null)
+            const parent_data = ctx.tree.getData(parent);
+            if (parent_data == .export_named_declaration and
+                parent_data.export_named_declaration.source == .null and
+                parent_data.export_named_declaration.export_kind != .type)
             {
                 try self.export_specifiers.append(self.allocator, .{
                     .local_name = getModuleExportName(ctx.tree, spec.local),

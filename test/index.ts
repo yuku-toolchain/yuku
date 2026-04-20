@@ -1,4 +1,5 @@
 // @target: es2015
-// @strict: false
-class Foo { }
-declare function as(...args: any[]);
+import type { A } from "m";
+import { type A, B } from "m";
+export type { A };
+export { type A } from "m";

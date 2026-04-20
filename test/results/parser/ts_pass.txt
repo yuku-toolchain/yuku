@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       4360/8261 (52.78%)
-Failed:       3901
-AST mismatch: 0/4360
+Passed:       4362/8261 (52.80%)
+Failed:       3899
+AST mismatch: 0/4362
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -1560,15 +1560,13 @@ error: Expected ';' after class field, but found 'static'
 
 ✓ test/parser/suite/ts/pass/09866ab22c085196.ts
 ✗ test/parser/suite/ts/pass/098e53087f223d35.module.ts (parse errors)
-error: Expected declaration after 'export', but found 'type'
+error: Export 'string' is not defined
    |
+ 2 | // @target: es2015
  3 | export { string };
+   |          ^^^^^^
  4 | export type { number };
-   |        ^^^^
- 5 | 
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✗ test/parser/suite/ts/pass/09a1d6c3a37de1a1.ts (parse errors)
 error: Cannot use 'export' declaration outside a module
@@ -10387,17 +10385,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/392dc3971a130dc8.module.ts (parse errors)
-error: Expected declaration after 'export', but found 'type'
-   |
- 6 | 
- 7 | export type {
-   |        ^^^^
- 8 |     RoomInterface
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/392dc3971a130dc8.module.ts
 ✓ test/parser/suite/ts/pass/39425fa99d2556cf.module.ts
 ✓ test/parser/suite/ts/pass/3945d064f506d91d.module.ts
 ✗ test/parser/suite/ts/pass/396bf3599704a2e8.ts (parse errors)
@@ -16489,13 +16477,15 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 
 ✓ test/parser/suite/ts/pass/59a4ffae3670831c.ts
 ✗ test/parser/suite/ts/pass/59a5c364b8187d15.module.ts (parse errors)
-error: Expected '}' to close export specifiers, but found 'someType'
+error: Expected declaration after 'export', but found 'type'
    |
-21 | 
-22 | export { type someType as "<A>" };
-   |               ^^^^^^^^
-23 | import { type "<A>" as typeA } from "./arbitraryModuleNamespaceIdentifiers_module";
+29 | 
+30 | export type * as "<C>" from "./arbitraryModuleNamespaceIdentifiers_module";
+   |        ^^^^
+31 | import { type "<C>" as typeC } from "./arbitraryModuleNamespaceIdentifiers_module";
    |
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
+
 
 ✗ test/parser/suite/ts/pass/59aa3167c786821c.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -32211,17 +32201,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/affad38eb623df0c.module.tsx (parse errors)
-error: Expected 'from' after import clause, but found '*'
-   |
- 5 | /// <reference path="/.lib/react16.d.ts" />
- 6 | import type * as React from 'react';
-   |             ^
- 7 | 
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/affad38eb623df0c.module.tsx
 ✓ test/parser/suite/ts/pass/b01103cfb6c3a2f2.ts
 ✗ test/parser/suite/ts/pass/b0138a84c0d377e5.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
