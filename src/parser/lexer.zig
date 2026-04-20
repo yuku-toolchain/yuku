@@ -48,7 +48,7 @@ pub const LexerMode = enum {
     jsx_tag,
 };
 
-const LexerState = struct {
+pub const LexerState = struct {
     /// metadata that should be attached to the next emitted token.
     token_flags: u8 = 0,
 };

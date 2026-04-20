@@ -4,6 +4,7 @@ const lexer = @import("../../lexer.zig");
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const TokenTag = @import("../../token.zig").TokenTag;
+const Token = @import("../../token.zig").Token;
 const Precedence = @import("../../token.zig").Precedence;
 const literals = @import("../literals.zig");
 const functions = @import("../functions.zig");
@@ -1969,4 +1970,105 @@ pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
         .{ .ts_non_null_expression = .{ .expression = left } },
         .{ .start = parser.tree.getSpan(left).start, .end = bang_end },
     );
+}
+
+/// dispatches `<` in expression position. speculatively parses the
+/// `<...>` as type arguments, on commit absorbs them into the next call
+/// or tagged template, otherwise produces a stand-alone
+/// `TSInstantiationExpression`. returns `null` when the speculative parse
+/// rewinds so `<` continues as a relational operator.
+pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeIndex) Error!?ast.NodeIndex {
+    const type_arguments = try tryParseTypeArgumentsInExpression(parser);
+    if (type_arguments == .null) return null;
+
+    switch (parser.current_token.tag) {
+        .left_paren => return try expressions.parseCallExpression(parser, callee, false, type_arguments),
+        .no_substitution_template, .template_head => return try expressions.parseTaggedTemplateExpression(parser, callee, type_arguments),
+        else => {
+            const callee_span = parser.tree.getSpan(callee);
+            const type_args_end = parser.tree.getSpan(type_arguments).end;
+            return try parser.tree.createNode(
+                .{ .ts_instantiation_expression = .{ .expression = callee, .type_arguments = type_arguments } },
+                .{ .start = callee_span.start, .end = type_args_end },
+            );
+        },
+    }
+}
+
+/// speculatively parse `<T, U, ...>` in expression position. on success
+/// commits past the closing `>` and returns the type argument list. on
+/// failure rewinds the parser completely so `<` remains as a relational
+/// operator candidate for binary expression parsing.
+pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
+    if (!parser.tree.isTs()) return .null;
+    if (parser.current_token.tag != .less_than) return .null;
+
+    const cp = parser.checkpoint();
+
+    const args = try parseTypeArguments(parser);
+    if (args == .null or !canFollowTypeArgumentsInExpression(parser.current_token)) {
+        parser.rewind(cp);
+        return .null;
+    }
+
+    return args;
+}
+
+/// decides whether a successfully parsed `<...>` in expression position
+/// was actually a type argument list or should be rewound so the `<` is
+/// treated as a relational operator.
+fn canFollowTypeArgumentsInExpression(token: Token) bool {
+    return switch (token.tag) {
+        // yes. a call, tagged template, or generic tagged template.
+        .left_paren, .no_substitution_template, .template_head => true,
+
+        // no. `<` and `>` after type args never make sense, `+`
+        // and `-` are unary operators here but tsc biases toward the
+        // relational interpretation because real code overwhelmingly reads
+        // `a < b > -c` as comparison rather than `a<T>`.
+        .less_than, .greater_than, .plus, .minus => false,
+
+        // commit when the next token cannot continue a binary
+        // expression whose left operand is the relational `a < b > ...`.
+        // that happens when there is a preceding line break, when the
+        // next token is itself a binary operator (so `a<T>` was the full
+        // left operand), or when the next token cannot start an
+        // expression at all (so there is no RHS to follow `>`).
+        else => token.hasLineTerminatorBefore() or
+            isBinaryOperatorLike(token.tag) or
+            !isStartOfExpression(token.tag),
+    };
+}
+
+fn isBinaryOperatorLike(tag: TokenTag) bool {
+    return tag.isBinaryOperator() or tag.isLogicalOperator() or
+        tag.isAssignmentOperator() or tag == .comma or tag == .question or
+        tag == .as or tag == .satisfies;
+}
+
+/// first tokens of an expression
+fn isStartOfExpression(tag: TokenTag) bool {
+    return switch (tag) {
+        .identifier,
+        .private_identifier,
+        .string_literal,
+        .no_substitution_template,
+        .template_head,
+        .regex_literal,
+        .left_paren,
+        .left_bracket,
+        .left_brace,
+        .plus,
+        .minus,
+        .logical_not,
+        .bitwise_not,
+        .increment,
+        .decrement,
+        .spread,
+        .at,
+        .slash,
+        .slash_assign,
+        => true,
+        else => tag.isIdentifierLike() or tag.isNumericLiteral(),
+    };
 }

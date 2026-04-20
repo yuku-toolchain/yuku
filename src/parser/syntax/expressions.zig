@@ -145,6 +145,14 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
         return ts_types.parseNonNullExpression(parser, left);
     }
 
+    // ts: `<` after a LeftHandSideExpression may open type arguments for a
+    // generic call `f<T>(x)`, a generic tagged template `` f<T>`x` ``, or a
+    // stand-alone instantiation expression `f<T>`. on speculative-parse
+    // failure this returns null and `<` continues as a binary operator.
+    if (parser.tree.isTs() and current.tag == .less_than) {
+        if (try ts_types.parseTypeArgumentedCallOrInstantiation(parser, left)) |node| return node;
+    }
+
     if (current.tag.isBinaryOperator()) {
         return parseBinaryExpression(parser, precedence, left);
     }
@@ -167,8 +175,8 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
         .comma => return parseSequenceExpression(parser, precedence, left),
         .dot => return parseStaticMemberExpression(parser, left, false),
         .left_bracket => return parseComputedMemberExpression(parser, left, false),
-        .left_paren => return parseCallExpression(parser, left, false),
-        .template_head, .no_substitution_template => return parseTaggedTemplateExpression(parser, left),
+        .left_paren => return parseCallExpression(parser, left, false, .null),
+        .template_head, .no_substitution_template => return parseTaggedTemplateExpression(parser, left, .null),
         .optional_chaining => return parseOptionalChain(parser, left),
         else => {},
     }
@@ -563,7 +571,7 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         callee = switch (parser.current_token.tag) {
             .dot => try parseStaticMemberExpression(parser, callee, false) orelse return null,
             .left_bracket => try parseComputedMemberExpression(parser, callee, false) orelse return null,
-            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, callee) orelse return null,
+            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, callee, .null) orelse return null,
             .optional_chaining => {
                 try parser.report(
                     parser.current_token.span,
@@ -575,6 +583,14 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
             else => break,
         };
     }
+
+    // ts: `new Foo<T>(...)` or `new Foo<T>`. speculatively parse `<T>` as
+    // type arguments. when committed they fold directly into the
+    // NewExpression.
+    const type_arguments: ast.NodeIndex = if (parser.tree.isTs())
+        try ts_types.tryParseTypeArgumentsInExpression(parser)
+    else
+        .null;
 
     // optional arguments
     var arguments = ast.IndexRange.empty;
@@ -599,10 +615,13 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume ')'
 
         break :blk arguments_end;
-    } else parser.tree.getSpan(callee).end;
+    } else if (type_arguments != .null)
+        parser.tree.getSpan(type_arguments).end
+    else
+        parser.tree.getSpan(callee).end;
 
     return try parser.tree.createNode(
-        .{ .new_expression = .{ .callee = callee, .arguments = arguments } },
+        .{ .new_expression = .{ .callee = callee, .arguments = arguments, .type_arguments = type_arguments } },
         .{ .start = start, .end = end },
     );
 }
@@ -925,8 +944,9 @@ fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, op
     }, .{ .start = parser.tree.getSpan(object_node).start, .end = end });
 }
 
-/// func(args)
-fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bool) Error!?ast.NodeIndex {
+/// func(args). `type_arguments` is `.null` for plain calls, set by the
+/// ts generic-call path when preceded by a `<T>` instantiation.
+pub fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bool, type_arguments: ast.NodeIndex) Error!?ast.NodeIndex {
     const start = parser.tree.getSpan(callee_node).start;
     const open_paren_span = parser.current_token.span;
     try parser.advance() orelse return null; // consume '('
@@ -952,6 +972,7 @@ fn parseCallExpression(parser: *Parser, callee_node: ast.NodeIndex, optional: bo
             .callee = callee_node,
             .arguments = args,
             .optional = optional,
+            .type_arguments = type_arguments,
         },
     }, .{ .start = start, .end = end });
 }
@@ -999,8 +1020,9 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
-/// tag`template`
-fn parseTaggedTemplateExpression(parser: *Parser, tag_node: ast.NodeIndex) Error!?ast.NodeIndex {
+/// tag`template`. `type_arguments` is `.null` for plain tags, set by the
+/// ts generic tagged template path when preceded by a `<T>` instantiation.
+pub fn parseTaggedTemplateExpression(parser: *Parser, tag_node: ast.NodeIndex, type_arguments: ast.NodeIndex) Error!?ast.NodeIndex {
     const start = parser.tree.getSpan(tag_node).start;
 
     const quasi = if (parser.current_token.tag == .no_substitution_template)
@@ -1016,6 +1038,7 @@ fn parseTaggedTemplateExpression(parser: *Parser, tag_node: ast.NodeIndex) Error
         .tagged_template_expression = .{
             .tag = tag_node,
             .quasi = quasi.?,
+            .type_arguments = type_arguments,
         },
     }, .{ .start = start, .end = quasi_span.end });
 }
@@ -1033,12 +1056,13 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
         switch (parser.current_token.tag) {
             .dot => expr = try parseStaticMemberExpression(parser, expr, false) orelse return null,
             .left_bracket => expr = try parseComputedMemberExpression(parser, expr, false) orelse return null,
-            .left_paren => expr = try parseCallExpression(parser, expr, false) orelse return null,
+            .left_paren => expr = try parseCallExpression(parser, expr, false, .null) orelse return null,
             .optional_chaining => {
                 try parser.advance() orelse return null;
                 expr = try parseOptionalChainElement(parser, expr, true) orelse return null;
             },
-            // `m?.[0]!` -> `ChainExpression(TSNonNullExpression(MemberExpression))`
+            // ts: `m?.[0]!` keeps `!` inside the chain so it lifts naturally
+            // under the surrounding ChainExpression.
             .logical_not => {
                 if (!parser.tree.isTs() or parser.current_token.hasLineTerminatorBefore()) break;
                 const bang_end = parser.current_token.span.end;
@@ -1047,6 +1071,16 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                     .{ .ts_non_null_expression = .{ .expression = expr } },
                     .{ .start = parser.tree.getSpan(expr).start, .end = bang_end },
                 );
+            },
+            // ts: `a?.b<T>(c)` keeps the generic call inside the chain.
+            // commits only when the type arguments are followed by `(`, so
+            // a bare instantiation `a?.b<T>` lets the chain close and the
+            // outer pratt loop builds a surviving TSInstantiationExpression.
+            .less_than => {
+                if (!parser.tree.isTs()) break;
+                const type_arguments = try ts_types.tryParseTypeArgumentsInExpression(parser);
+                if (type_arguments == .null or parser.current_token.tag != .left_paren) break;
+                expr = try parseCallExpression(parser, expr, false, type_arguments) orelse return null;
             },
             .template_head, .no_substitution_template => {
                 // tagged template in optional chain not allowed
@@ -1077,9 +1111,19 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
         return parseMemberProperty(parser, object_node, optional);
     }
 
+    // ts: `a?.<T>(args)` generic call immediately after `?.`. only valid
+    // shape is `<...>(...)`, templates and bare instantiations after `?.`
+    // are not in the grammar.
+    if (parser.tree.isTs() and tag == .less_than) {
+        const type_arguments = try ts_types.tryParseTypeArgumentsInExpression(parser);
+        if (type_arguments != .null and parser.current_token.tag == .left_paren) {
+            return parseCallExpression(parser, object_node, optional, type_arguments);
+        }
+    }
+
     return switch (tag) {
         .left_bracket => parseComputedMemberExpression(parser, object_node, optional),
-        .left_paren => parseCallExpression(parser, object_node, optional),
+        .left_paren => parseCallExpression(parser, object_node, optional, .null),
         .template_head, .no_substitution_template => {
             try parser.report(
                 parser.current_token.span,
@@ -1124,8 +1168,8 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
         expr = switch (parser.current_token.tag) {
             .dot => try parseStaticMemberExpression(parser, expr, false) orelse return null,
             .left_bracket => try parseComputedMemberExpression(parser, expr, false) orelse return null,
-            .left_paren => try parseCallExpression(parser, expr, false) orelse return null,
-            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, expr) orelse return null,
+            .left_paren => try parseCallExpression(parser, expr, false, .null) orelse return null,
+            .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, expr, .null) orelse return null,
             .optional_chaining => try parseOptionalChain(parser, expr) orelse return null,
             else => break,
         };

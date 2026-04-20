@@ -3384,6 +3384,21 @@ pub const TSNonNullExpression = struct {
     expression: NodeIndex,
 };
 
+/// TypeScript `expr<T>` instantiation expression without call parens.
+///
+/// ## Example
+/// ```ts
+/// const f = makeBox<number>;
+/// //        ^^^^^^^ expression
+/// //               ^^^^^^^^ type_arguments
+/// ```
+pub const TSInstantiationExpression = struct {
+    /// the expression being instantiated. any `LeftHandSideExpression`.
+    expression: NodeIndex,
+    /// the applied type argument list. a `TSTypeParameterInstantiation`.
+    type_arguments: NodeIndex,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3723,6 +3738,7 @@ pub const NodeData = union(enum) {
     ts_satisfies_expression: TSSatisfiesExpression,
     ts_type_assertion: TSTypeAssertion,
     ts_non_null_expression: TSNonNullExpression,
+    ts_instantiation_expression: TSInstantiationExpression,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

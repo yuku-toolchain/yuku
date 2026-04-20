@@ -240,9 +240,9 @@ pub const Parser = struct {
         self.lexer.mode = mode;
     }
 
-    pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
+    pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, scratch_checkpoint: usize) Error!ast.IndexRange {
         const start: u32 = @intCast(self.tree.extra.items.len);
-        const slice = scratch.items.items[checkpoint..scratch.items.items.len];
+        const slice = scratch.items.items[scratch_checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
@@ -320,6 +320,59 @@ pub const Parser = struct {
     /// after a lexical error).
     pub inline fn peekAhead(self: *Parser) Error!?Token {
         return (try self.peekAheadN(1))[0];
+    }
+
+    /// captures a full snapshot of parser state. pair with `rewind` to
+    /// commit or discard a speculative parse.
+    pub fn checkpoint(self: *const Parser) Checkpoint {
+        return .{
+            .lexer_cursor = self.lexer.cursor,
+            .lexer_state = self.lexer.state,
+            .lexer_mode = self.lexer.mode,
+            .lexer_comments_len = self.lexer.comments.items.len,
+            .current_token = self.current_token,
+            .prev_token_end = self.prev_token_end,
+            .nodes_len = self.tree.nodes.len,
+            .extra_len = self.tree.extra.items.len,
+            .diagnostics_len = self.diagnostics.items.len,
+            .scratch_statements_len = self.scratch_statements.items.items.len,
+            .scratch_cover_len = self.scratch_cover.items.items.len,
+            .scratch_decorators_len = self.scratch_decorators.items.items.len,
+            .scratch_a_len = self.scratch_a.items.items.len,
+            .scratch_b_len = self.scratch_b.items.items.len,
+            .context = self.context,
+            .state = self.state,
+        };
+    }
+
+    /// restores parser state captured by `checkpoint`.
+    pub fn rewind(self: *Parser, cp: Checkpoint) void {
+        self.lexer.cursor = cp.lexer_cursor;
+        self.lexer.state = cp.lexer_state;
+        self.lexer.mode = cp.lexer_mode;
+        self.lexer.comments.shrinkRetainingCapacity(cp.lexer_comments_len);
+        self.current_token = cp.current_token;
+        self.prev_token_end = cp.prev_token_end;
+        self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
+        self.tree.extra.shrinkRetainingCapacity(cp.extra_len);
+        self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
+        self.scratch_statements.items.shrinkRetainingCapacity(cp.scratch_statements_len);
+        self.scratch_cover.items.shrinkRetainingCapacity(cp.scratch_cover_len);
+        self.scratch_decorators.items.shrinkRetainingCapacity(cp.scratch_decorators_len);
+        self.scratch_a.items.shrinkRetainingCapacity(cp.scratch_a_len);
+        self.scratch_b.items.shrinkRetainingCapacity(cp.scratch_b_len);
+        self.context = cp.context;
+        self.state = cp.state;
+    }
+
+    /// runs `callback(self)` speculatively and always rewinds, returning
+    /// whatever the callback returned. use for pure grammar peeks whose
+    /// result never commits. for commit-or-rewind use `checkpoint` and
+    /// `rewind` directly.
+    pub inline fn lookahead(self: *Parser, comptime R: type, comptime callback: fn (*Parser) Error!R) Error!R {
+        const cp = self.checkpoint();
+        defer self.rewind(cp);
+        return try callback(self);
     }
 
     /// peeks the next `n` tokens after `current_token` in a single forward
@@ -530,6 +583,35 @@ pub const Parser = struct {
         try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
         try self.tree.strings.ensureCapacity(alloc, 256, 16);
     }
+};
+
+
+pub const Checkpoint = struct {
+    // lexer state
+    lexer_cursor: u32,
+    lexer_state: lexer.LexerState,
+    lexer_mode: lexer.LexerMode,
+    lexer_comments_len: usize,
+
+    // parser token stream
+    current_token: Token,
+    prev_token_end: u32,
+
+    // tree-backed append-only storage
+    nodes_len: usize,
+    extra_len: usize,
+    diagnostics_len: usize,
+
+    // scratch buffers
+    scratch_statements_len: usize,
+    scratch_cover_len: usize,
+    scratch_decorators_len: usize,
+    scratch_a_len: usize,
+    scratch_b_len: usize,
+
+    // parser flags, small structs copied by value.
+    context: ParserContext,
+    state: ParserState,
 };
 
 const ScratchBuffer = struct {

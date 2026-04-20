@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       3659/8261 (44.29%)
-Failed:       4602
-AST mismatch: 9/3668
+Passed:       3680/8261 (44.55%)
+Failed:       4581
+AST mismatch: 0/3680
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -3066,7 +3066,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/0fa66d94831eb397.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/0fa66d94831eb397.ts
 ✗ test/parser/suite/ts/pass/0fad3249ca55fd11.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -3400,17 +3400,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/10eb8b46933cd737.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
-   |
-12 | // Using ES6 collection
-13 | var m = new Map<string, number>();
-   |                               ^
-14 | m.clear();
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/10eb8b46933cd737.ts
 ✗ test/parser/suite/ts/pass/10eda8814eb42db6.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -4176,17 +4166,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/148a2188daf69c94.ts (parse errors)
-error: Destructuring declaration must have an initializer
-   |
- 2 | // @strict: false
- 3 | var s = $.extend< { workItem: any }, { workItem: any, width: string }>({ workItem: this._workItem }, {});
-   |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- 4 | 
-   |
-   = help: Add '= value' to provide the object or array to destructure from.
-
-
+✓ test/parser/suite/ts/pass/148a2188daf69c94.ts
 ✓ test/parser/suite/ts/pass/1492ca60ceee8025.ts
 ✗ test/parser/suite/ts/pass/149cdf7e3e3f3243.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -5563,13 +5543,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/1aecf64033f295fc.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
+error: Expected ';' after class field, but found ':'
    |
- 5 | var x: any;
- 6 | var a = x<number>();
-   |                  ^^
- 7 | var b = x<string>('hello');
+ 8 | 
+ 9 | class C { foo: string; }
+   |              ^
+10 | var c = x<C>(x);
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/1af25d6c34d0da49.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -6608,16 +6590,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/1fef91c216ae26d3.ts
 ✓ test/parser/suite/ts/pass/1ff4578027c8742c.ts
 ✓ test/parser/suite/ts/pass/1ff67189006b64c9.ts
-✗ test/parser/suite/ts/pass/1ffff55f9a98632b.ts (parse errors)
-error: Unexpected token 'end of file'
-   |
- 1 | // @target: es2015
- 2 | new Date<A>
-   |            ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/1ffff55f9a98632b.ts
 ✗ test/parser/suite/ts/pass/20044f25262add91.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -8763,7 +8736,7 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✓ test/parser/suite/ts/pass/2a916e9fe1af78e3.ts
-✗ test/parser/suite/ts/pass/2a93fbe6dcc3bed4.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/2a93fbe6dcc3bed4.ts
 ✓ test/parser/suite/ts/pass/2a97e64dd043a822.ts
 ✗ test/parser/suite/ts/pass/2a9c91186279613c.module.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -9002,13 +8975,15 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/2b9bb410ca24e328.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 4 | var x = function () { return; };
- 5 | var r1 = x<number>();
-   |                   ^^
- 6 | var y: any = x;
+ 8 | 
+ 9 | declare var c: Function;
+   |         ^^^
+10 | var r3 = c<number>(); // should be an error
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/2b9c28f392320e5b.ts
 ✗ test/parser/suite/ts/pass/2b9ce47f201fe83a.ts (parse errors)
@@ -9990,12 +9965,12 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/3069cff3a5e1ae3e.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
-11 | // Using ES6 collection
-12 | var m = new Map<string, number>();
-   |                               ^
-13 | m.clear();
+54 | 
+55 | declare var console: any;
+   |         ^^^
+56 | out().then(() => {
    |
    = help: Try inserting a semicolon here
 
@@ -12793,16 +12768,7 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/3d48bbe06804ab0d.ts
-✗ test/parser/suite/ts/pass/3d58cc02a4c23543.ts (parse errors)
-error: Unexpected token ']'
-   |
- 1 | // @target: es2015
- 2 | var autoToken: number[] = new Array<number[]>(1);
-   |                                            ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/3d58cc02a4c23543.ts
 ✓ test/parser/suite/ts/pass/3d5d86b23aa60438.ts
 ✓ test/parser/suite/ts/pass/3d6b16024dadf050.ts
 ✓ test/parser/suite/ts/pass/3d6b85f6564ec059.ts
@@ -13272,7 +13238,7 @@ error: Expected ';' after class field, but found '_path'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/3f74b1178c3ce9d7.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/3f74b1178c3ce9d7.ts
 ✗ test/parser/suite/ts/pass/3f7a464ced1bd3b5.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -14523,7 +14489,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/4515ce1aa8cca813.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/4515ce1aa8cca813.ts
 ✗ test/parser/suite/ts/pass/452a2f370caca9f1.module.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -14732,7 +14698,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/461121b0ddce3306.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/461121b0ddce3306.ts
 ✗ test/parser/suite/ts/pass/46186e4c55c6605f.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -15696,15 +15662,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/4a020edb9f17678c.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 3 | type T = {};
- 4 | const { promise, resolve, reject } = Promise.withResolvers<T>();
-   |                                                              ^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/4a020edb9f17678c.ts
 ✗ test/parser/suite/ts/pass/4a1cff0a12d24167.ts (parse errors)
 error: Expected ';', ',', or newline between type members, but found '='
    |
@@ -17567,7 +17525,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/533b51458255d3dc.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/533b51458255d3dc.ts
 ✓ test/parser/suite/ts/pass/535975d245aae083.ts
 ✓ test/parser/suite/ts/pass/5361107171cb3d01.ts
 ✓ test/parser/suite/ts/pass/53637677f6bf39aa.ts
@@ -17881,17 +17839,7 @@ error: Expected ';' after class field, but found 'f1'
 ✓ test/parser/suite/ts/pass/54ee06a1ca435cfd.ts
 ✓ test/parser/suite/ts/pass/54f522305e173d27.ts
 ✓ test/parser/suite/ts/pass/550639589f085c3f.ts
-✗ test/parser/suite/ts/pass/550c18ac5729f47d.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
-   |
-11 | // Using ES6 collection
-12 | var m = new Map<string, number>();
-   |                               ^
-13 | m.clear();
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/550c18ac5729f47d.ts
 ✓ test/parser/suite/ts/pass/5519c7c44c16229e.ts
 ✗ test/parser/suite/ts/pass/551bdee086b062aa.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -19421,7 +19369,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/5c4e7e3570eb17a8.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/5c4e7e3570eb17a8.ts
 ✓ test/parser/suite/ts/pass/5c54cac83e51f8d6.ts
 ✗ test/parser/suite/ts/pass/5c62da3ed63082cc.ts (parse errors)
 error: Expected ';' after class field, but found 'foo'
@@ -23905,15 +23853,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/722f2abe7965e718.ts
-✗ test/parser/suite/ts/pass/7231691bed757145.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 3 |     constructor() {
- 4 |         this.foo<string>();
-   |                         ^^
- 5 |     }
-   |
-
+✓ test/parser/suite/ts/pass/7231691bed757145.ts
 ✗ test/parser/suite/ts/pass/723907fcfc37208f.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -24050,7 +23990,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/72fd34008b398f5a.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/72fd34008b398f5a.ts
 ✓ test/parser/suite/ts/pass/7302a87d64d312b2.ts
 ✗ test/parser/suite/ts/pass/730a93f9efe4ddda.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -25024,15 +24964,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/7703375e18a5ea10.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 6 | 
- 7 | var b = new Array<string>();
-   |                          ^^
- 8 | b.concat('hello');
-   |
-
+✓ test/parser/suite/ts/pass/7703375e18a5ea10.ts
 ✗ test/parser/suite/ts/pass/77099e2804d1abe7.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -25357,12 +25289,12 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/78465a32eb0aa609.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
-11 | // Using ES6 collection
-12 | var m = new Map<string, number>();
-   |                               ^
-13 | m.clear();
+54 | 
+55 | declare var console: any;
+   |         ^^^
+56 | out().then(() => {
    |
    = help: Try inserting a semicolon here
 
@@ -26972,15 +26904,7 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/7fff70453733a21e.ts
-✗ test/parser/suite/ts/pass/80066b95de43b9f2.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 2 | // @lib: es6
- 3 | new Map<string>();
-   |                ^^
- 4 | new WeakMap<object>();
-   |
-
+✓ test/parser/suite/ts/pass/80066b95de43b9f2.ts
 ✓ test/parser/suite/ts/pass/8007f332ebd2fea1.ts
 ✗ test/parser/suite/ts/pass/8009b17118436ec9.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -31257,13 +31181,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/94ac24e30bae52bd.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
+error: Expected ';' after class field, but found ':'
    |
-15 | function f1(s: Set<string> | Set<number>) {
-16 |     s = new Set<number>();
-   |                        ^^
-17 |     s;  // Set<number>
+58 | class A {
+59 |     a: string = "";
+   |      ^
+60 |     static [Symbol.hasInstance]<T>(this: T, value: unknown): value is (
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/94b2e7c59d9d8172.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
@@ -34173,13 +34099,15 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✗ test/parser/suite/ts/pass/a2b7ddb62fdc8f8a.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
+error: Expected '(' to start parameter list, but found '<'
    |
-18 | const inputARand = getEither(inputA, inputALike);
-19 | const inputASet = new Set<A>();
-   |                             ^^
-20 | 
+35 | // even when the type is written as : Iterable<T>|ArrayLike<T>
+36 | function getEither<T> (in1: Iterable<T>, in2: ArrayLike<T>) {
+   |                   ^
+37 |   return Math.random() > 0.5 ? in1 : in2;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✓ test/parser/suite/ts/pass/a2b7e25b3caca3d3.ts
 ✗ test/parser/suite/ts/pass/a2bd78b37ef1b658.ts (parse errors)
@@ -36580,7 +36508,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/ae1a72a174d49433.ts (snapshot mismatch)
+✓ test/parser/suite/ts/pass/ae1a72a174d49433.ts
 ✓ test/parser/suite/ts/pass/ae2fabeeb4dbe6a7.ts
 ✓ test/parser/suite/ts/pass/ae41dc5d1c435c4a.module.ts
 ✗ test/parser/suite/ts/pass/ae4bdd5deaac33e8.ts (parse errors)
@@ -39587,12 +39515,12 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/bbf7afd596c3e95b.ts
 ✗ test/parser/suite/ts/pass/bbfac8e28d8d9eb5.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
-11 | // Using ES6 collection
-12 | var m = new Map<string, number>();
-   |                               ^
-13 | m.clear();
+54 | 
+55 | declare var console: any;
+   |         ^^^
+56 | out().then(() => {
    |
    = help: Try inserting a semicolon here
 
@@ -42824,15 +42752,7 @@ error: Expected ')' after method parameters, but found '?'
    |
 
 ✓ test/parser/suite/ts/pass/cb2e7516bac54a7d.ts
-✗ test/parser/suite/ts/pass/cb3c7913a2e70da4.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 2 | function test() {
- 3 |     var cats = new Array<WAWA>(); // WAWA is not a valid type
-   |                               ^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/cb3c7913a2e70da4.ts
 ✓ test/parser/suite/ts/pass/cb4681fedf13990c.ts
 ✓ test/parser/suite/ts/pass/cb471564e1471aed.ts
 ✗ test/parser/suite/ts/pass/cb51769ec29262a4.module.ts (parse errors)
@@ -44268,14 +44188,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/d23e62ce224fa5a0.ts
-✗ test/parser/suite/ts/pass/d2410fce19a2801f.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 1 | // @target: es2015
- 2 | var cats = new Array<WAWA>();
-   |                           ^^
-   |
-
+✓ test/parser/suite/ts/pass/d2410fce19a2801f.ts
 ✗ test/parser/suite/ts/pass/d241bdb6ebd75292.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -52656,15 +52569,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/fad64cdbd6d42b21.ts
 ✓ test/parser/suite/ts/pass/fad8089de33c1bfe.ts
-✗ test/parser/suite/ts/pass/fad869293cb4d561.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 8 | var y = [1, 2];
- 9 | var y = new Array<number>();
-   |                          ^^
-10 | 
-   |
-
+✓ test/parser/suite/ts/pass/fad869293cb4d561.ts
 ✓ test/parser/suite/ts/pass/fadace43f7168f86.ts
 ✗ test/parser/suite/ts/pass/fadf55b03ea3da7e.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
