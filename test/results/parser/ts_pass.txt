@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       3645/8261 (44.12%)
-Failed:       4616
-AST mismatch: 9/3654
+Passed:       3659/8261 (44.29%)
+Failed:       4602
+AST mismatch: 9/3668
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -40,17 +40,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/0055a2dc7350791d.ts
 ✓ test/parser/suite/ts/pass/005a9ae52cfb152c.ts
-✗ test/parser/suite/ts/pass/0061d5753822ba80.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-16 |     while (true) {
-17 |         let a2 = foo(a1!);
-   |                        ^
-18 |         a1 = await bar(a2);
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/0061d5753822ba80.ts
 ✓ test/parser/suite/ts/pass/006aa972606cd565.ts
 ✓ test/parser/suite/ts/pass/0074b968687c77e3.ts
 ✓ test/parser/suite/ts/pass/007bc34ae91500ae.ts
@@ -5831,17 +5821,7 @@ error: Expected ';' after class field, but found 'constructor'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/1bc154cf3b1a3935.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-13 |     let n = foo[x]
-14 |     foo[x]!++
-   |           ^
-15 | }
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/1bc154cf3b1a3935.ts
 ✓ test/parser/suite/ts/pass/1bdaaf28e5affb28.ts
 ✓ test/parser/suite/ts/pass/1bde0e3be94247b5.module.ts
 ✗ test/parser/suite/ts/pass/1be6401f711d6c57.ts (parse errors)
@@ -6543,17 +6523,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/1f60d44450087058.ts
-✗ test/parser/suite/ts/pass/1f7b7784ae2398fa.module.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
- 2 | // @declaration: true
- 3 | export const thing = (null! as { [K in keyof number[] as Exclude<K, "length">]: (number[])[K] }) satisfies any;
-   |                           ^
- 4 | 
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/1f7b7784ae2398fa.module.ts
 ✓ test/parser/suite/ts/pass/1f91b856c340e1b1.ts
 ✗ test/parser/suite/ts/pass/1f93aca8be9eec31.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -10574,14 +10544,14 @@ error: Expected ';' after class field, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/3251f60f70314360.module.ts (parse errors)
-error: Unexpected token '!' in expression
+error: Expected ';' after class field, but found '?'
    |
- 8 | 
- 9 | export let vLet = null! as P
-   |                       ^
-10 | export const vConst = null! as P
+17 |     field = null! as P;
+18 |     optField? = null! as P;
+   |             ^
+19 |     readonly roFiled = null! as P;
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/32530a4db76f2007.ts (parse errors)
@@ -10609,14 +10579,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/328f922ef8b5d228.module.ts (parse errors)
-error: Unexpected token '!' in expression
+error: Expected ';' after class field, but found '?'
    |
- 8 | 
- 9 | export let vLet = <P>null!
-   |                          ^
-10 | export const vConst = <P>null!
+17 |     field = <P>null!
+18 |     optField? = <P>null!
+   |             ^
+19 |     readonly roFiled = <P>null!;
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/3298dd54bd7a756c.ts (parse errors)
@@ -10964,14 +10934,14 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/343c11f6a5f686f7.ts (parse errors)
-error: Unexpected token '!' in expression
+error: Expected '{' to start function body, but found ':'
    |
-35 | function referencedInSignartureKeyword({ function: alias }: { function: string }): typeof alias {
-36 |     return null!;
-   |                ^
-37 | }
+88 |     }
+89 |     mReturnType({ name: alias }: Named): typeof alias {
+   |                                        ^
+90 |         return null!
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/34432f6734343a09.ts (parse errors)
@@ -12009,17 +11979,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/39425fa99d2556cf.module.ts
-✗ test/parser/suite/ts/pass/3945d064f506d91d.module.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
- 4 | 
- 5 | export let a: <T>() => T extends {a?: string} ? 0 : 1 = null!;
-   |                                                             ^
- 6 | export let b: <T>() => T extends {a?: string | undefined} ? 0 : 1 = a;
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/3945d064f506d91d.module.ts
 ✗ test/parser/suite/ts/pass/396bf3599704a2e8.ts (parse errors)
 error: Expected ';' after class field, but found 's'
    |
@@ -13461,17 +13421,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/400fbba37248b5b1.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-23 |   : never;
-24 | const x: MultiKeyMap<[id1: string, id2: string], object> = null!;
-   |                                                                ^
-25 | const id1 = "abc" as string;
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/400fbba37248b5b1.ts
 ✗ test/parser/suite/ts/pass/400fca52f0dafe70.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -16535,17 +16485,7 @@ error: Expected ';' after class field, but found 'get'
 
 ✓ test/parser/suite/ts/pass/4e48b6962644051c.ts
 ✓ test/parser/suite/ts/pass/4e5707467ce0b72b.ts
-✗ test/parser/suite/ts/pass/4e6ac9aa9c62be99.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-19 | function getV(): Foo | Bar {
-20 |   return null!;
-   |              ^
-21 | }
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/4e6ac9aa9c62be99.ts
 ✗ test/parser/suite/ts/pass/4e723fc6ab372cc7.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -21563,17 +21503,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/66eb0635bbe5e257.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-16 |     last;
-17 |     last!;
-   |         ^
-18 | }
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/66eb0635bbe5e257.ts
 ✗ test/parser/suite/ts/pass/66ed12d7ed768ff0.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -25851,17 +25781,7 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/7a91ecc75cfa458f.ts
 ✓ test/parser/suite/ts/pass/7a923329bbc1637f.ts
-✗ test/parser/suite/ts/pass/7a95c4f80137e895.module.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-20 | 
-21 | export const x = (() => null! as ExpandRecursively<G>)();
-   |                             ^
-22 | 
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/7a95c4f80137e895.module.ts
 ✓ test/parser/suite/ts/pass/7aa20c5ae2873322.ts
 ✗ test/parser/suite/ts/pass/7aa75e243f4a95f7.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -27144,14 +27064,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/8078c1fd3e9fb1bc.module.ts (parse errors)
-error: Unexpected token '!' in expression
+error: Expected declaration after 'export', but found 'type'
    |
-16 | const working: WorkingType = null as unknown as WorkingType;
-17 | if (working.thing!.name !== "Correct") {
-   |                  ^
-18 |     console.log(working.thing!.message)
+41 | 
+42 | export type FixedType = {
+   |        ^^^^
+43 |     thing?:
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✗ test/parser/suite/ts/pass/8079f2b2f8a2f4df.module.ts (parse errors)
@@ -29019,16 +28939,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/89021a0f3aa35be4.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-17 | 
-18 | let foo = "foo".match(/(?<bar>foo)/)!.groups.foo;
-   |                                     ^
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/89021a0f3aa35be4.ts
 ✓ test/parser/suite/ts/pass/890d75b7d4d0b8cd.ts
 ✓ test/parser/suite/ts/pass/890e3876b7e7d4d7.ts
 ✓ test/parser/suite/ts/pass/891c86ae9d3e6f5d.ts
@@ -29421,17 +29332,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8b26af78cbc73421.ts
 ✓ test/parser/suite/ts/pass/8b2840e169d72b29.ts
 ✓ test/parser/suite/ts/pass/8b297e99ac717a21.ts
-✗ test/parser/suite/ts/pass/8b2a1d6af40c373e.ts (parse errors)
-error: Unexpected token '!' in expression
-    |
-378 |     // Shuffle to improve poem as determined empirically
-379 |     strings.unshift(strings.pop()!);
-    |                                  ^
-380 |     const format = new Intl.ListFormat("en");
-    |
-    = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/8b2a1d6af40c373e.ts
 ✓ test/parser/suite/ts/pass/8b346bee6c8577e0.ts
 ✓ test/parser/suite/ts/pass/8b37866ae4564841.module.ts
 ✗ test/parser/suite/ts/pass/8b3cc0d368e48ce7.module.ts (parse errors)
@@ -29683,17 +29584,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/8cb7c34fa9fb5f91.ts
-✗ test/parser/suite/ts/pass/8cc31b87c4da71a7.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
- 2 | const m = ''.match('');
- 3 | m! && m[0];
-   |  ^
- 4 | m?.[0]! && m[0];
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/8cc31b87c4da71a7.ts
 ✓ test/parser/suite/ts/pass/8cc58e19b00d1cbf.ts
 ✓ test/parser/suite/ts/pass/8cd2fb3dba3d5d8e.ts
 ✓ test/parser/suite/ts/pass/8cd4bbfe6c510793.ts
@@ -31186,14 +31077,14 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/93d777dd636caa72.ts
 ✗ test/parser/suite/ts/pass/93f111f4ae972cd0.module.tsx (parse errors)
-error: Unexpected token '!' in expression
+error: Expected '{' to start class body, but found '<'
    |
- 6 | function MyComp2(props: { className?: string, htmlFor?: string }) {
- 7 |     return null!;
-   |                ^
  8 | }
+ 9 | class MyComp extends React.Component<{ className?: string, htmlFor?: string }> { }
+   |                                     ^
+10 | <a class="" />;
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✗ test/parser/suite/ts/pass/93f22fb8a5319227.module.ts (parse errors)
@@ -32141,14 +32032,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/9885eda36eff39da.module.ts (parse errors)
-error: Unexpected token '!' in expression
+error: Expected ';' after class field, but found '?'
    |
- 6 | // @emitDeclarationOnly: true
- 7 | export const vNumberLiteral = null! as 1 | 1
-   |                                   ^
- 8 | export const vStringLiteral = null! as "1" | "1"
+16 |     // Can't know if references contain undefined, fall back to inference
+17 |     tsResolve? = null! as R | R;
+   |              ^
+18 |     tsResolve2? = null! as R | R | string;
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/9886d43a2fa48e84.module.ts (parse errors)
@@ -41826,17 +41717,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/c5deed5f58100f6c.ts
-✗ test/parser/suite/ts/pass/c5e6ea31e3759d53.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
-36 | xx = ([1, 2, x++], xx);
-37 | xx = (xx!, xx);
-   |         ^
-38 | xx = (xx ? 3 : 4, 10);
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/c5e6ea31e3759d53.ts
 ✗ test/parser/suite/ts/pass/c5e9d306a8bd9f0b.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -42955,14 +42836,14 @@ error: Empty parentheses are only valid as arrow function parameters
 ✓ test/parser/suite/ts/pass/cb4681fedf13990c.ts
 ✓ test/parser/suite/ts/pass/cb471564e1471aed.ts
 ✗ test/parser/suite/ts/pass/cb51769ec29262a4.module.ts (parse errors)
-error: Unexpected token '!' in expression
+error: Expected ';' after class field, but found '?'
    |
- 6 | // @emitDeclarationOnly: true
- 7 | export let vLet = null! as {} & { name: string }
-   |                       ^
- 8 | export const vConst = null! as {} & { name: string }
+15 |     field = null! as {} & { name: string };
+16 |     optField? = null! as {} & { name: string };
+   |             ^
+17 |     readonly roFiled = null! as {} & { name: string };
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/cb585b7c14374a0e.ts (parse errors)
@@ -44162,16 +44043,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/d1087a586b6eb522.ts
-✗ test/parser/suite/ts/pass/d10c383bfce17ee8.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
- 2 | // @strict: true
- 3 | let rect2: SVGRectElement = document.querySelector('.svg-rectangle')!; // Error: Element
-   |                                                                     ^
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/d10c383bfce17ee8.ts
 ✗ test/parser/suite/ts/pass/d10d698276ffbacf.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -48501,17 +48373,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e679efd9d850a1c6.ts (parse errors)
-error: Unexpected token '!' in expression
-   |
- 1 | // @target: es2015
- 2 | let a: (<T>() => T extends `${'a' & { a: 1 }}` ? 1 : 2) = null!;
-   |                                                               ^
- 3 | let b: (<T>() => T extends `${'a' & { a: 1 }}` ? 1 : 2) = null!;
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/e679efd9d850a1c6.ts
 ✗ test/parser/suite/ts/pass/e67c7aa05f093c05.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |

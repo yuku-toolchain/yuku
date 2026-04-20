@@ -1955,3 +1955,18 @@ pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!
 
     return try parser.tree.createNode(data, .{ .start = start, .end = end });
 }
+
+/// `expr!` postfix non-null assertion outside an optional chain. inside
+/// a chain, `parseOptionalChain` consumes the `!` directly so the
+/// resulting `ChainExpression` naturally encloses the `TSNonNullExpression`.
+pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .logical_not);
+
+    const bang_end = parser.current_token.span.end;
+    try parser.advance() orelse return null; // consume '!'
+
+    return try parser.tree.createNode(
+        .{ .ts_non_null_expression = .{ .expression = left } },
+        .{ .start = parser.tree.getSpan(left).start, .end = bang_end },
+    );
+}

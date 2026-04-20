@@ -1,21 +1,36 @@
-// basic type assertions
-const a = <number>value;
-const b = <string>value;
-const c = <any>{};
+// basic non-null assertion
+const a = value!;
 
-// with complex types
-const d = <Foo<T>>value;
-const e = <A | B>x;
-const f = <readonly number[]>list;
+// chained postfix
+const b = obj.prop!;
+const c = fn()!;
+const d = arr[0]!;
 
-// binds as a unary prefix, postfix operators bind to the expression
-const g = <Foo>obj.prop;
-const h = <Foo>fn();
-const i = <Foo>arr[0];
+// stacked
+const e = x!!;
 
-// chained prefix assertions
-const j = <A><B>value;
+// `!` lifts inside chain expression for `?.`
+const f = obj?.prop!;
+const g = obj?.[0]!;
+const h = obj?.fn()!;
 
-// nested inside other expressions
-const k = (<number>x) + 1;
-const l = foo(<number>x);
+// chain continues after `!` -- one ChainExpression covering the whole thing
+const f1 = obj?.x!.y;
+const f2 = obj?.x!.y!.z;
+
+// member / call / computed bind tighter on the result of `!`
+const i = x!.prop;
+const j = x!();
+const k = x![0];
+
+// composes with as / satisfies / type assertion
+const l = null! as Foo;
+const m = value! satisfies Bar;
+const n = <Foo>x!;
+
+// before `++`
+function f1() { x!++; }
+
+// asi: `x\n!y` is two statements
+const x = 1
+!true

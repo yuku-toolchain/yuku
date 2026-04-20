@@ -3372,6 +3372,18 @@ pub const TSTypeAssertion = struct {
     expression: NodeIndex,
 };
 
+/// TypeScript `expr!` postfix non-null assertion.
+///
+/// ## Example
+/// ```ts
+/// const n = value!;
+/// //        ^^^^^ expression
+/// ```
+pub const TSNonNullExpression = struct {
+    /// the expression being asserted as non null.
+    expression: NodeIndex,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3710,6 +3722,7 @@ pub const NodeData = union(enum) {
     ts_as_expression: TSAsExpression,
     ts_satisfies_expression: TSSatisfiesExpression,
     ts_type_assertion: TSTypeAssertion,
+    ts_non_null_expression: TSNonNullExpression,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

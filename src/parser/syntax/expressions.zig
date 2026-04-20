@@ -59,10 +59,13 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
         if((current_token.tag == .increment or current_token.tag == .decrement) and current_token.hasLineTerminatorBefore()) break;
 
         // `as` and `satisfies` carry relational precedence so the pratt loop
-        // dispatches them like `instanceof`. outside ts they are plain
-        // identifiers, so a preceding line terminator triggers asi and
-        // `foo\nas\nbar` stays three statements.
+        // dispatches them like `instanceof`.
         if ((current_token.tag == .as or current_token.tag == .satisfies) and !parser.tree.isTs() and current_token.hasLineTerminatorBefore()) break;
+
+        // ts `expr!` postfix non-null assertion is `[no LineTerminator here] !`,
+        // so `x\n!y` stays two statements via ASI instead of folding into
+        // `(x!)(y)`.
+        if (current_token.tag == .logical_not and parser.tree.isTs() and current_token.hasLineTerminatorBefore()) break;
 
         left = try parseInfix(parser, current_precedence, left) orelse return null;
     }
@@ -136,6 +139,10 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
 
     if (parser.tree.isTs() and (current.tag == .as or current.tag == .satisfies)) {
         return ts_types.parseAsOrSatisfiesExpression(parser, left);
+    }
+
+    if (parser.tree.isTs() and current.tag == .logical_not and !current.hasLineTerminatorBefore()) {
+        return ts_types.parseNonNullExpression(parser, left);
     }
 
     if (current.tag.isBinaryOperator()) {
@@ -794,6 +801,9 @@ pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
     return switch (parser.tree.getData(index)) {
         .identifier_reference, .binding_identifier => true,
         .member_expression => |m| !m.optional, // optional chaining is not a valid assignment target
+        // ts `expr!` is a left hand side expression, so `x!++` and `x! = v`
+        // are well formed when their inner operand is a valid target.
+        .ts_non_null_expression => |n| isSimpleAssignmentTarget(parser, n.expression),
         else => false,
     };
 }
@@ -1027,6 +1037,16 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
             .optional_chaining => {
                 try parser.advance() orelse return null;
                 expr = try parseOptionalChainElement(parser, expr, true) orelse return null;
+            },
+            // `m?.[0]!` -> `ChainExpression(TSNonNullExpression(MemberExpression))`
+            .logical_not => {
+                if (!parser.tree.isTs() or parser.current_token.hasLineTerminatorBefore()) break;
+                const bang_end = parser.current_token.span.end;
+                try parser.advance() orelse return null;
+                expr = try parser.tree.createNode(
+                    .{ .ts_non_null_expression = .{ .expression = expr } },
+                    .{ .start = parser.tree.getSpan(expr).start, .end = bang_end },
+                );
             },
             .template_head, .no_substitution_template => {
                 // tagged template in optional chain not allowed
