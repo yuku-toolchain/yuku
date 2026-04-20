@@ -8,33 +8,68 @@ const expressions = @import("../expressions.zig");
 const literals = @import("../literals.zig");
 const ts_types = @import("types.zig");
 
-pub fn isTypeAliasStart(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.tag == .type);
+/// modifier keywords eaten by `parseTsDeclaration` before dispatching to
+/// the matching declaration parser. `is_const` is only meaningful on enums.
+pub const Modifiers = struct {
+    declare: bool = false,
+    is_const: bool = false,
+};
+
+pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     if (!parser.tree.isTs()) return false;
 
-    const next = (try parser.peekAhead()) orelse return null;
-    return next.tag.isIdentifierLike() and !next.hasLineTerminatorBefore();
+    const peek = try parser.peekAheadN(3);
+    var cur = parser.current_token;
+    var idx: usize = 0;
+
+    // skip 'declare' modifier
+    if (cur.tag == .declare) {
+        cur = peek[idx] orelse return null;
+        if (cur.hasLineTerminatorBefore()) return false;
+        idx += 1;
+    }
+
+    // skip 'const' modifier (only meaningful immediately before 'enum')
+    if (cur.tag == .@"const") {
+        const next = peek[idx] orelse return null;
+        if (next.tag != .@"enum" or next.hasLineTerminatorBefore()) return false;
+        cur = next;
+        idx += 1;
+    }
+
+    switch (cur.tag) {
+        .type, .interface, .@"enum" => {},
+        else => return false,
+    }
+
+    const name = peek[idx] orelse return null;
+    return name.tag.isIdentifierLike() and !name.hasLineTerminatorBefore();
 }
 
-pub fn isDeclareTypeAliasStart(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.tag == .declare);
-    if (!parser.tree.isTs()) return false;
+pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    var mods: Modifiers = .{};
 
-    const ahead = try parser.peekAheadN(2);
-    const type_token = ahead[0] orelse return null;
-    const name_token = ahead[1] orelse return null;
+    if (parser.current_token.tag == .declare) {
+        mods.declare = true;
+        try parser.advance() orelse return null;
+    }
+    if (parser.current_token.tag == .@"const") {
+        mods.is_const = true;
+        try parser.advance() orelse return null;
+    }
 
-    return type_token.tag == .type and !type_token.hasLineTerminatorBefore() and
-        name_token.tag.isIdentifierLike() and !name_token.hasLineTerminatorBefore();
+    return switch (parser.current_token.tag) {
+        .type => parseTypeAliasDeclaration(parser, mods, start),
+        .interface => parseInterfaceDeclaration(parser, mods, start),
+        .@"enum" => parseEnumDeclaration(parser, mods, start),
+        else => unreachable,
+    };
 }
 
-/// `type Foo<T> = Bar<T>;`   `declare type Foo<T> = Bar<T>;`
-/// when `is_declare` is true, `decl_start` is the span start of the `declare`
-/// keyword and the caller has already consumed it.
-pub fn parseTypeAliasDeclaration(parser: *Parser, is_declare: bool, decl_start: u32) Error!?ast.NodeIndex {
+/// `type Foo<T> = Bar<T>;` or the `declare`-prefixed ambient form.
+pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .type);
-
-    const start = if (is_declare) decl_start else parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'type'
 
     const id = try literals.parseBindingIdentifier(parser) orelse return null;
@@ -47,7 +82,6 @@ pub fn parseTypeAliasDeclaration(parser: *Parser, is_declare: bool, decl_start: 
     )) return null;
 
     const type_annotation = try ts_types.parseType(parser) orelse return null;
-
     const end = try parser.eatSemicolon(parser.tree.getSpan(type_annotation).end) orelse return null;
 
     return try parser.tree.createNode(
@@ -55,44 +89,16 @@ pub fn parseTypeAliasDeclaration(parser: *Parser, is_declare: bool, decl_start: 
             .id = id,
             .type_parameters = type_parameters,
             .type_annotation = type_annotation,
-            .declare = is_declare,
+            .declare = mods.declare,
         } },
         .{ .start = start, .end = end },
     );
 }
 
-/// `interface Foo { }` at the current token, requires the interface name
-/// to be identifier-like and on the same source line.
-pub fn isInterfaceStart(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.tag == .interface);
-    if (!parser.tree.isTs()) return false;
-
-    const next = (try parser.peekAhead()) orelse return null;
-    return next.tag.isIdentifierLike() and !next.hasLineTerminatorBefore();
-}
-
-/// `declare interface Foo { }` at the current token. requires `declare` to
-/// be followed by `interface <name>` all on the same source line.
-pub fn isDeclareInterfaceStart(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.tag == .declare);
-    if (!parser.tree.isTs()) return false;
-
-    const ahead = try parser.peekAheadN(2);
-    const interface_token = ahead[0] orelse return null;
-    const name_token = ahead[1] orelse return null;
-
-    return interface_token.tag == .interface and !interface_token.hasLineTerminatorBefore() and
-        name_token.tag.isIdentifierLike() and !name_token.hasLineTerminatorBefore();
-}
-
 /// `interface Foo<T> extends Bar, Baz<U> { ... }` or the `declare`-prefixed
 /// ambient form.
-/// when `is_declare` is true, `decl_start` is the span start of `declare` and
-/// the caller has already consumed it.
-pub fn parseInterfaceDeclaration(parser: *Parser, is_declare: bool, decl_start: u32) Error!?ast.NodeIndex {
+pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .interface);
-
-    const start = if (is_declare) decl_start else parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'interface'
 
     const id = try literals.parseBindingIdentifier(parser) orelse return null;
@@ -106,7 +112,7 @@ pub fn parseInterfaceDeclaration(parser: *Parser, is_declare: bool, decl_start: 
             .type_parameters = type_parameters,
             .extends = extends,
             .body = body,
-            .declare = is_declare,
+            .declare = mods.declare,
         } },
         .{ .start = start, .end = parser.prev_token_end },
     );
@@ -180,68 +186,10 @@ fn parseInterfaceHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     return expression;
 }
 
-/// `enum Foo { ... }` at the current token, requires the enum name to be
-/// identifier-like and on the same source line.
-pub fn isEnumStart(parser: *Parser) Error!?bool {
+/// `enum Foo { A, B = 1 }`, `const enum ...`, `declare enum ...`, or
+/// `declare const enum ...`.
+pub fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .@"enum");
-    if (!parser.tree.isTs()) return false;
-
-    const next = (try parser.peekAhead()) orelse return null;
-    return next.tag.isIdentifierLike() and !next.hasLineTerminatorBefore();
-}
-
-/// `const enum Foo { ... }` at the current token. requires `const` to be
-/// followed by `enum <name>` all on the same source line.
-pub fn isConstEnumStart(parser: *Parser) Error!?bool {
-    std.debug.assert(parser.current_token.tag == .@"const");
-    if (!parser.tree.isTs()) return false;
-
-    const ahead = try parser.peekAheadN(2);
-    const enum_token = ahead[0] orelse return null;
-    const name_token = ahead[1] orelse return null;
-
-    return enum_token.tag == .@"enum" and !enum_token.hasLineTerminatorBefore() and
-        name_token.tag.isIdentifierLike() and !name_token.hasLineTerminatorBefore();
-}
-
-/// `declare enum Foo { ... }` or `declare const enum Foo { ... }` at the
-/// current token. requires `declare` to be followed by `enum <name>` or
-/// `const enum <name>` all on the same source line. when the result is true.
-pub fn isDeclareEnumStart(parser: *Parser, out_is_const: *bool) Error!?bool {
-    std.debug.assert(parser.current_token.tag == .declare);
-    if (!parser.tree.isTs()) return false;
-
-    const ahead = try parser.peekAheadN(3);
-    const second = ahead[0] orelse return null;
-    if (second.hasLineTerminatorBefore()) return false;
-
-    if (second.tag == .@"enum") {
-        const name_token = ahead[1] orelse return null;
-        if (!name_token.tag.isIdentifierLike() or name_token.hasLineTerminatorBefore()) return false;
-        out_is_const.* = false;
-        return true;
-    }
-
-    if (second.tag == .@"const") {
-        const enum_token = ahead[1] orelse return null;
-        if (enum_token.tag != .@"enum" or enum_token.hasLineTerminatorBefore()) return false;
-        const name_token = ahead[2] orelse return null;
-        if (!name_token.tag.isIdentifierLike() or name_token.hasLineTerminatorBefore()) return false;
-        out_is_const.* = true;
-        return true;
-    }
-
-    return false;
-}
-
-/// `enum Foo { A, B = 1 }`, `const enum Foo { ... }`, `declare enum Foo { ... }`,
-/// or `declare const enum Foo { ... }`. when `is_declare` or `is_const` is true,
-/// the caller has already consumed the matching modifier keywords, `decl_start`
-/// is the span start of the leading modifier.
-pub fn parseEnumDeclaration(parser: *Parser, is_declare: bool, is_const: bool, decl_start: u32) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .@"enum");
-
-    const start = if (is_declare or is_const) decl_start else parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'enum'
 
     const id = try literals.parseBindingIdentifier(parser) orelse return null;
@@ -251,8 +199,8 @@ pub fn parseEnumDeclaration(parser: *Parser, is_declare: bool, is_const: bool, d
         .{ .ts_enum_declaration = .{
             .id = id,
             .body = body,
-            .is_const = is_const,
-            .declare = is_declare,
+            .is_const = mods.is_const,
+            .declare = mods.declare,
         } },
         .{ .start = start, .end = parser.prev_token_end },
     );

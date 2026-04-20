@@ -39,10 +39,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .using => parseUsingOrExpression(parser),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
-        .type => parseTypeAliasOrExpression(parser),
-        .interface => parseInterfaceOrExpression(parser),
-        .@"enum" => parseEnumOrExpression(parser),
-        .declare => parseDeclareOrExpression(parser),
+        .type, .interface, .@"enum", .declare => parseTsDeclarationOrExpression(parser),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
@@ -179,54 +176,16 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-fn parseTypeAliasOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const is_alias = (try ts_statements.isTypeAliasStart(parser)) orelse return null;
-    if (is_alias) return ts_statements.parseTypeAliasDeclaration(parser, false, 0);
-    return parseExpressionOrLabeledStatementOrDirective(parser);
-}
-
-fn parseInterfaceOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const is_interface = (try ts_statements.isInterfaceStart(parser)) orelse return null;
-    if (is_interface) return ts_statements.parseInterfaceDeclaration(parser, false, 0);
-    return parseExpressionOrLabeledStatementOrDirective(parser);
-}
-
-fn parseEnumOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const is_enum = (try ts_statements.isEnumStart(parser)) orelse return null;
-    if (is_enum) return ts_statements.parseEnumDeclaration(parser, false, false, 0);
+fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
+    if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
+        return ts_statements.parseTsDeclaration(parser);
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
 fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
-    if ((try ts_statements.isConstEnumStart(parser)) orelse return null) {
-        const start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'const'
-        return ts_statements.parseEnumDeclaration(parser, false, true, start);
-    }
+    if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
+        return ts_statements.parseTsDeclaration(parser);
     return variables.parseVariableDeclaration(parser, false, null);
-}
-
-fn parseDeclareOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    if ((try ts_statements.isDeclareTypeAliasStart(parser)) orelse return null) {
-        const start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'declare'
-        return ts_statements.parseTypeAliasDeclaration(parser, true, start);
-    }
-    if ((try ts_statements.isDeclareInterfaceStart(parser)) orelse return null) {
-        const start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'declare'
-        return ts_statements.parseInterfaceDeclaration(parser, true, start);
-    }
-    {
-        var is_const = false;
-        if ((try ts_statements.isDeclareEnumStart(parser, &is_const)) orelse return null) {
-            const start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume 'declare'
-            if (is_const) try parser.advance() orelse return null; // consume 'const'
-            return ts_statements.parseEnumDeclaration(parser, true, is_const, start);
-        }
-    }
-    return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
 /// `async function` declaration, or fall through to expression statement.
