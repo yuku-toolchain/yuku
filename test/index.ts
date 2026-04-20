@@ -1,10 +1,21 @@
-const a = value as number;
-const b = value satisfies Foo;
-const c = value as X as Y;
-const d = [1, 2] as const;
-const e = { a: 1 } as const;
-const f = (x as number) + 1;
-const g = foo(x as T);
-const h = (obj as Foo).bar;
-const i = (fn as Callable)();
-foo(x as number, y satisfies Bar);
+// basic type assertions
+const a = <number>value;
+const b = <string>value;
+const c = <any>{};
+
+// with complex types
+const d = <Foo<T>>value;
+const e = <A | B>x;
+const f = <readonly number[]>list;
+
+// binds as a unary prefix, postfix operators bind to the expression
+const g = <Foo>obj.prop;
+const h = <Foo>fn();
+const i = <Foo>arr[0];
+
+// chained prefix assertions
+const j = <A><B>value;
+
+// nested inside other expressions
+const k = (<number>x) + 1;
+const l = foo(<number>x);

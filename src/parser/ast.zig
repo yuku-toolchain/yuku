@@ -3357,6 +3357,21 @@ pub const TSSatisfiesExpression = struct {
     type_annotation: NodeIndex,
 };
 
+/// TypeScript `<Type>expr` prefix type assertion.
+///
+/// ## Example
+/// ```ts
+/// const n = <number>value;
+/// //         ^^^^^^ type_annotation
+/// //                ^^^^^ expression
+/// ```
+pub const TSTypeAssertion = struct {
+    /// the target type. any `TSType` node.
+    type_annotation: NodeIndex,
+    /// the expression being asserted.
+    expression: NodeIndex,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3694,6 +3709,7 @@ pub const NodeData = union(enum) {
     ts_parameter_property: TSParameterProperty,
     ts_as_expression: TSAsExpression,
     ts_satisfies_expression: TSSatisfiesExpression,
+    ts_type_assertion: TSTypeAssertion,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

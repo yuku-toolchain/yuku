@@ -122,6 +122,12 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return jsx.parseJsxExpression(parser);
     }
 
+    // ts `<Type>expr` prefix assertion. only in `.ts` / `.dts`, never in
+    // `.tsx` where `<` starts a jsx element instead.
+    if (tag == .less_than and parser.tree.isTs() and !parser.tree.isJsx()) {
+        return ts_types.parseTypeAssertion(parser);
+    }
+
     return parsePrimaryExpression(parser, opts);
 }
 

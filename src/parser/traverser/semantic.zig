@@ -36,7 +36,6 @@ pub const Ctx = struct {
     /// entirely so type-only identifiers never enter the js scope maps.
     pub fn shouldWalk(_: *const Ctx, data: ast.NodeData) bool {
         return switch (data) {
-            .ts_export_assignment, .ts_parameter_property, .ts_as_expression, .ts_satisfies_expression => true,
             inline else => |_, tag| comptime !std.mem.startsWith(u8, @tagName(tag), "ts_"),
         };
     }

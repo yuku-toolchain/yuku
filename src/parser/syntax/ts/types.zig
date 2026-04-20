@@ -1908,6 +1908,34 @@ pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, ann
     }
 }
 
+/// `<Type>expr` prefix type assertion. the right operand is a unary
+/// expression so any infix operator at or below unary precedence in the
+/// pratt loop stays outside the assertion.
+pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
+
+    const start = parser.current_token.span.start;
+
+    try parser.advance() orelse return null; // consume '<'
+
+    const type_node = try parseType(parser) orelse return null;
+
+    if (!try parser.expect(
+        .greater_than,
+        "Expected '>' to close a type assertion",
+        "A type assertion is written '<Type>expression'",
+    )) return null;
+
+    const expr = try expressions.parseExpression(parser, Precedence.Unary, .{}) orelse return null;
+
+    const end = parser.tree.getSpan(expr).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_assertion = .{ .type_annotation = type_node, .expression = expr } },
+        .{ .start = start, .end = end },
+    );
+}
+
 /// `expr as Type` or `expr satisfies Type`
 pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const keyword_tag = parser.current_token.tag;

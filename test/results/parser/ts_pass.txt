@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       3559/8261 (43.08%)
-Failed:       4702
-AST mismatch: 9/3568
+Passed:       3645/8261 (44.12%)
+Failed:       4616
+AST mismatch: 9/3654
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -135,29 +135,9 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/00dfee63d07eb847.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | function f() {
- 6 |     const x: string | null = <any>{};
-   |                              ^
- 7 |     if (x !== null) {
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/00dfee63d07eb847.ts
 ✓ test/parser/suite/ts/pass/00e1f867debfcd15.ts
-✗ test/parser/suite/ts/pass/00fc2c18464d5566.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 |     [a]: 1,
-14 |     [<any>true]: 0,
-   |      ^
-15 |     [`hello bye`]: 0,
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/00fc2c18464d5566.ts
 ✗ test/parser/suite/ts/pass/0102bcae7caf60dd.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -648,17 +628,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/0376fd3b5a8af7db.ts (parse errors)
-error: Unexpected token '<'
-   |
- 7 |     }
- 8 |     return <[any, any, any]>result;
-   |            ^
- 9 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/0376fd3b5a8af7db.ts
 ✗ test/parser/suite/ts/pass/03868ca5b0d382cf.ts (parse errors)
 error: Expected ')' to close signature parameters, but found '?'
    |
@@ -1472,17 +1442,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/07f6e40c660e002f.ts
 ✓ test/parser/suite/ts/pass/07fb59b79ce4b476.ts
-✗ test/parser/suite/ts/pass/07ffde7c9ff781d8.ts (parse errors)
-error: Unexpected token '<'
-   |
-14 | let a;
-15 | function foo3(y = { x: <typeof z>a }, z = 1) {
-   |                        ^
-16 |     
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/07ffde7c9ff781d8.ts
 ✗ test/parser/suite/ts/pass/080420d426449970.ts (parse errors)
 error: Expected ';' after class field, but found '<'
    |
@@ -1553,14 +1513,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/085a84b0aae62f30.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found '='
    |
  7 | 
  8 | export const test1 = <T = Record<string, never>>(schema: {
-   |                      ^
+   |                         ^
  9 |     [K in keyof Required<T>]: T[K];
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✗ test/parser/suite/ts/pass/085d3ebc47e3d2d9.module.ts (parse errors)
@@ -1610,14 +1570,14 @@ error: Expected ';' after class field, but found 'static'
 
 ✓ test/parser/suite/ts/pass/0884bc9afd415202.ts
 ✗ test/parser/suite/ts/pass/088d67c643d7611b.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
  5 | 
  6 | const getType = <P extends Params>(params: P) => {
-   |                 ^
+   |                                  ^
  7 |     const {
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/088da18f7fbfed3f.ts (parse errors)
@@ -1955,14 +1915,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/0a3ac241d9599486.ts
 ✗ test/parser/suite/ts/pass/0a3b3f3af5297757.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
 19 | 
 20 | const Printable = <T extends Constructor<Base>>(superClass: T): Constructor<Printable> & { message: string } & T =>
-   |                   ^
+   |                                               ^
 21 |     class extends superClass {
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/0a3e5459dd24cee1.ts
@@ -2712,14 +2672,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/0d93b541a31043ad.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  3 | var dot: <T, S>(f: (_: T) => S) => <U>(g: (_: U) => T) => (_: U) => S;
  4 | dot = <T, S>(f: (_: T) => S) => <U>(g: (_: U) => T): (r:U) => S => (x) => f(g(x));
-   |       ^
+   |         ^
  5 | var id: <T>(x:T) => T;
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✗ test/parser/suite/ts/pass/0d9d4e784ffb62cd.ts (parse errors)
@@ -5101,14 +5061,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/188e68cbe3a85c47.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
 12 | 
 13 | const myFirstFunction = <T extends FirstInterface | SecondInterface>(param1: T) => {
-   |                         ^
+   |                                                                    ^
 14 |     const newParam: T & { otherProperty: number } = Object.assign(param1, { otherProperty: 3 })
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/1892c6239f9cfd76.ts (parse errors)
@@ -5177,17 +5137,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/18c084b52219594c.ts (parse errors)
-error: Unexpected token '<'
-   |
-41 | var a: { Foo?: Base; };
-42 | var b = { Foo: <Derived>null };
-   |                ^
-43 | var r = true ? a : b;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/18c084b52219594c.ts
 ✗ test/parser/suite/ts/pass/18c6c473ad1939ab.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -5429,14 +5379,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/19dba5022f3d025e.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
  6 | 
  7 | const createScopedActionType = <S extends string>(scope: S) => <T extends string>(type: T) => `${scope}/${type}` as `${S}/${T}`;
-   |                                ^
+   |                                                 ^
  8 | const createActionInMyScope = createScopedActionType("MyScope");  // <T extends string>(type: T) => `MyScope/${T}`
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/19e0fa86bd8f4eed.ts
@@ -5745,14 +5695,14 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/1b49edd171c7067b.ts
 ✗ test/parser/suite/ts/pass/1b4ac236aabe8b6e.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
  3 | 
  4 | const Mixin1 = <C extends Constructor>(Base: C) => class extends Base { private _fooPrivate: {}; }
-   |                ^
+   |                                      ^
  5 | 
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/1b5963dd2b62d65e.ts (parse errors)
@@ -6326,16 +6276,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/1dbdbe69c3f01395.ts (parse errors)
-error: Unexpected token '<'
-   |
- 9 | 
-10 | <Foo>{ a: undefined };
-   | ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/1dbdbe69c3f01395.ts
 ✗ test/parser/suite/ts/pass/1dc63c5e9f4bf6ed.ts (parse errors)
 error: Expected ';' after class field, but found 'foo'
    |
@@ -6985,17 +6926,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/20f96ebbb4a82f6c.ts
-✗ test/parser/suite/ts/pass/21018cb1d5cbc160.ts (parse errors)
-error: Unexpected token '<'
-   |
- 9 |     }
-10 |     return <[any, any, any]>result;
-   |            ^
-11 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/21018cb1d5cbc160.ts
 ✗ test/parser/suite/ts/pass/21142c8833a4a796.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
    |
@@ -7018,17 +6949,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/213874255ee47dcd.ts
 ✓ test/parser/suite/ts/pass/2146136496b938db.ts
 ✓ test/parser/suite/ts/pass/2147efbe261ca30d.ts
-✗ test/parser/suite/ts/pass/215decb76cdb19be.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | 
- 4 | let x = <[]>[];
-   |         ^
- 5 | let y = x[0];
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/215decb76cdb19be.ts
 ✗ test/parser/suite/ts/pass/2161d19d5017b837.ts (parse errors)
 error: Expected ';' after class field, but found 'a'
    |
@@ -7253,17 +7174,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/22b2d849227eb962.ts
 ✓ test/parser/suite/ts/pass/22b51daa16fc8b9b.ts
 ✓ test/parser/suite/ts/pass/22b62c0f539baacf.ts
-✗ test/parser/suite/ts/pass/22ba549baf2293c5.ts (parse errors)
-error: Unexpected token '<'
-   |
-15 | // Contextually type the default arg with the type annotation
-16 | var f3 = function (a: (s: string) => any = (s) => <number>s) { };
-   |                                                   ^
-17 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/22ba549baf2293c5.ts
 ✗ test/parser/suite/ts/pass/22bbb61b19d225d1.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -7717,17 +7628,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/247fcb3a8249e5d3.ts
-✗ test/parser/suite/ts/pass/248ee0cf3f979ea3.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | function method() {
- 3 |     var dictionary = <{ [index: string]: string; }>{};
-   |                      ^
- 4 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/248ee0cf3f979ea3.ts
 ✗ test/parser/suite/ts/pass/24923d7f50fa6820.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -8480,17 +8381,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/2840c0f3dcb2238a.ts (parse errors)
-error: Unexpected token '<'
-   |
-33 | var z1 = emptyObj[hi];
-34 | var z2 = (<any>emptyObj)[hi];
-   |           ^
-35 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/2840c0f3dcb2238a.ts
 ✓ test/parser/suite/ts/pass/2844843bf8f86dec.ts
 ✓ test/parser/suite/ts/pass/2846727f13a33ee5.ts
 ✓ test/parser/suite/ts/pass/284ad15fced5d422.ts
@@ -8518,17 +8409,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/287a24136777b437.ts
-✗ test/parser/suite/ts/pass/287aee8bd82c0800.ts (parse errors)
-error: Unexpected token '<'
-   |
- 9 | (foo.m as any)?.();
-10 | (<any>foo.m)?.();
-   |  ^
-11 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/287aee8bd82c0800.ts
 ✓ test/parser/suite/ts/pass/287b6d7763069aa8.ts
 ✓ test/parser/suite/ts/pass/287f2976ad07835c.ts
 ✗ test/parser/suite/ts/pass/288145ec3a590b27.ts (parse errors)
@@ -8599,17 +8480,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/28b34ab52a909a76.ts
-✗ test/parser/suite/ts/pass/28c6562e1fa6d09e.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | 
- 3 | var x = <() => number>null;
-   |         ^
- 4 | var y = <{(): number; }>null;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/28c6562e1fa6d09e.ts
 ✗ test/parser/suite/ts/pass/28c7fad93de551bd.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -9385,17 +9256,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/2cacc223289f0bf1.ts (parse errors)
-error: Unexpected token '<'
-   |
- 4 |       , outerr = new Harness.Compiler.WriterAggregator()
- 5 |       , compiler = <TypeScript.TypeScriptCompiler>new TypeScript.TypeScriptCompiler(outerr)
-   |                    ^
- 6 |       , code;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/2cacc223289f0bf1.ts
 ✓ test/parser/suite/ts/pass/2caed62411afc0e5.ts
 ✗ test/parser/suite/ts/pass/2cb6fcfcf1099469.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -9664,27 +9525,8 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/2de22f2e228175e5.module.ts
-✗ test/parser/suite/ts/pass/2de2c001b685b797.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | var b = "foo" !== ("bar" as "foo");
- 6 | var c = "foo" == (<number>"bar");
-   |                   ^
- 7 | var d = "foo" === ("bar" as EnhancedString);
-   |
-   = help: Expected an expression
-
-
-✗ test/parser/suite/ts/pass/2de9e3f403d5a1f2.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var v = a => <any>{}
-   |              ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/2de2c001b685b797.ts
+✓ test/parser/suite/ts/pass/2de9e3f403d5a1f2.ts
 ✓ test/parser/suite/ts/pass/2deac57f2a7e7f51.ts
 ✓ test/parser/suite/ts/pass/2dee771216d8b98b.ts
 ✗ test/parser/suite/ts/pass/2e01999294371d8b.ts (parse errors)
@@ -9977,17 +9819,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/2f90d08d5b5cdb24.ts (parse errors)
-error: Unexpected token '<'
-   |
-14 |     set [a](v) { }
-15 |     static get [<any>true]() { return 0; }
-   |                 ^
-16 |     set [`hello bye`](v) { }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/2f90d08d5b5cdb24.ts
 ✗ test/parser/suite/ts/pass/2f924decdc9a5119.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -10720,14 +10552,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/324b538fe241cd3c.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found ','
    |
 10 | 
 11 | const f = <A extends string, B extends string, R>(x: { [K in A]: Field<B, R> }): R => ({} as any);
-   |           ^
+   |                            ^
 12 | const r1 = f(v);
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/32507e88841d8993.ts (parse errors)
@@ -10777,14 +10609,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/328f922ef8b5d228.module.ts (parse errors)
-error: Unexpected token '<'
+error: Unexpected token '!' in expression
    |
  8 | 
  9 | export let vLet = <P>null!
-   |                   ^
+   |                          ^
 10 | export const vConst = <P>null!
    |
-   = help: Expected an expression
+   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
 
 
 ✗ test/parser/suite/ts/pass/3298dd54bd7a756c.ts (parse errors)
@@ -11508,15 +11340,13 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/35dfd99d88d8d9ec.module.ts
 ✗ test/parser/suite/ts/pass/35e0b773d6a6da03.ts (parse errors)
-error: Unexpected token '<'
+error: Empty parentheses are only valid as arrow function parameters
    |
  1 | // @target: es2015
  2 | const fn = <T>(): (() => T) => null as any;
-   |            ^
+   |               ^^
  3 | 
    |
-   = help: Expected an expression
-
 
 ✗ test/parser/suite/ts/pass/35e21ec70f3da7b0.ts (parse errors)
 error: Expected ';' after class field, but found ':'
@@ -11605,14 +11435,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/3678a34d9460895f.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
 10 | var y: (x: string) => string;
 11 | var y2: { <T>(x: T): T; } = <T>(x: T) => x
-   |                             ^
+   |                                  ^
 12 | 
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/367a6ecbcabfdc55.ts (parse errors)
@@ -12131,17 +11961,7 @@ error: Expected ';' after class field, but found 'B'
 
 ✓ test/parser/suite/ts/pass/38f2d1699cd7bd96.ts
 ✓ test/parser/suite/ts/pass/38fc4ea685cf2cfc.module.ts
-✗ test/parser/suite/ts/pass/38fe18a678e2b972.ts (parse errors)
-error: Unexpected token '<'
-   |
-11 | 
-12 | s = <S>t;
-   |     ^
-13 | s = t as S;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/38fe18a678e2b972.ts
 ✓ test/parser/suite/ts/pass/39077274b90e219d.ts
 ✓ test/parser/suite/ts/pass/390ad7ccb6c1cda6.ts
 ✗ test/parser/suite/ts/pass/390bc7e231707252.module.ts (parse errors)
@@ -12225,17 +12045,7 @@ error: Expected ';' after class field, but found 'check'
 ✓ test/parser/suite/ts/pass/397f54659bd8a7e4.ts
 ✓ test/parser/suite/ts/pass/39b1bcbba6b1132c.module.ts
 ✓ test/parser/suite/ts/pass/39c3d8708ca0c247.ts
-✗ test/parser/suite/ts/pass/39ca60429bfcd9db.ts (parse errors)
-error: Unexpected token '<'
-   |
- 4 | 
- 5 | (<A>{}).toString();
-   |  ^
- 6 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/39ca60429bfcd9db.ts
 ✓ test/parser/suite/ts/pass/39d801c86f318fcf.ts
 ✓ test/parser/suite/ts/pass/39d8340ced81a371.ts
 ✗ test/parser/suite/ts/pass/39dc0c583bf3a752.ts (parse errors)
@@ -12298,14 +12108,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/3a0d3c34b6bccab4.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ';' after class field, but found 'get'
    |
- 3 | var x = function () {
- 4 |     return <any>0;  // this should not be an error
-   |            ^
- 5 | }
+13 |     foo = undefined;  // this should be an error
+14 |     public get tempVar() {
+   |            ^^^
+15 |         return <any>0;  // this should not be an error
    |
-   = help: Expected an expression
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/3a0e45519904869b.ts (parse errors)
@@ -12683,17 +12493,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/3b98622030a5ad49.ts (parse errors)
-error: Unexpected token '<'
-   |
- 9 |     }
-10 |     return <[any, any, any]>result;
-   |            ^
-11 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/3b98622030a5ad49.ts
 ✗ test/parser/suite/ts/pass/3b98da5d9c20b4ca.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -12880,14 +12680,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/3c70f31d4b79a6e1.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  2 | type Foo<K> = K extends unknown ? { a: number } : unknown
  3 | const createDefaultExample = <K,>(x: K): Foo<K> & { x: K; } => {
-   |                              ^
+   |                                ^
  4 |   return { a: 1, x: x }; // okay in TS 4.7.4, error in TS 4.8.2
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✗ test/parser/suite/ts/pass/3c7f9683b8aa7ef9.ts (parse errors)
@@ -13422,17 +13222,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/3ef9c1f4cc8df545.ts
-✗ test/parser/suite/ts/pass/3efa6d47daa2cb47.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var a = () => <Error>{ name: "foo", message: "bar" };      
-   |               ^
- 3 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/3efa6d47daa2cb47.ts
 ✗ test/parser/suite/ts/pass/3f015840dca0db8d.module.ts (parse errors)
 error: 'yield' is reserved in strict mode and cannot be used as an identifier
    |
@@ -13573,14 +13363,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3faa405a2644dc81.ts
 ✓ test/parser/suite/ts/pass/3fac4bf7ae547b01.ts
 ✗ test/parser/suite/ts/pass/3fad6167d94fdf97.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
  3 | function recursive() {
  4 |     let x = <T>(subkey: T) => recursive();
-   |             ^
+   |                       ^
  5 |     return x as typeof x & { p };
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/3fb31a82e4c73d9a.module.ts
@@ -13803,16 +13593,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/40c5a5bae1858c78.tsx
-✗ test/parser/suite/ts/pass/40c77f77dd4a0f7a.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{():number; (i:number):number; }> function(){return 1;};
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/40c77f77dd4a0f7a.ts
 ✗ test/parser/suite/ts/pass/40cb4158befe2eb6.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -14405,14 +14186,14 @@ error: Duplicate export of 'default'
    |
 
 ✗ test/parser/suite/ts/pass/435cf26cb52b4903.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found '='
    |
 21 | 
 22 | const foo = <A = {}>() => (x: Out & A) => null
-   |             ^
+   |                ^
 23 | 
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✓ test/parser/suite/ts/pass/435ecad7017854ee.ts
@@ -14830,14 +14611,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/45659b2abfa61f16.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
  9 | 
 10 | const mkLeft = <E>(e: E): Either<E, never> => ({ tag: 'Left', e });
-   |                ^
+   |                     ^
 11 | const mkRight = <A>(a: A): Either<never, A> => ({ tag: 'Right', a });
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/4566710250929889.ts (parse errors)
@@ -15219,17 +15000,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/46e78ddec2815afe.ts
-✗ test/parser/suite/ts/pass/46f2aea03d1cb10d.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | async function f() {
- 3 |     <number> await 0;
-   |     ^
- 4 |     typeof await 0;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/46f2aea03d1cb10d.ts
 ✓ test/parser/suite/ts/pass/46f572f0981e1cec.ts
 ✓ test/parser/suite/ts/pass/46fdbe2ccae3cdf6.ts
 ✗ test/parser/suite/ts/pass/470c58f3927f69e8.ts (parse errors)
@@ -15839,14 +15610,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/4999dd178e65cd03.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
 10 | 
 11 | const removeF = <TX>({ f, ...rest }: TestGeneric<TX>) => {
-   |                 ^
+   |                                    ^
 12 |   return rest
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/49a016fb0f418cba.ts (parse errors)
@@ -16786,17 +16557,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/4e7b551aa42e91d8.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 |     a: "foo" as "foo",
- 4 |     b: <"foo">"foo",
-   |        ^
- 5 |     c: "foo"
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/4e7b551aa42e91d8.ts
 ✗ test/parser/suite/ts/pass/4e7d254130f5729b.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -16831,14 +16592,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4e842638a2709975.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ';' after class field, but found ':'
    |
-20 | 
-21 | const ab: AB = <AB>{};
-   |                ^
-22 | 
+30 | 
+31 | class Square { kind: "square"; }
+   |                    ^
+32 | class Circle { kind: "circle"; }
    |
-   = help: Expected an expression
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/4e930b6c57b0dfef.ts
@@ -17301,16 +17062,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/5061c5c348127a8d.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{ id: number;}> ({id:4});
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/5061c5c348127a8d.ts
 ✗ test/parser/suite/ts/pass/506b64bed1a9b8c0.ts (parse errors)
 error: Expected '{' to start class body, but found 'implements'
    |
@@ -17371,25 +17123,25 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/50a7cfc4636a8fc0.ts
 ✗ test/parser/suite/ts/pass/50b1b3433d8472da.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
-58 |     let v3 = c3;
-59 |     const c4 = <"foo">"foo";
-   |                ^
-60 |     let v4 = c4;
+62 | 
+63 | declare function widening<T>(x: T): T;
+   |         ^^^^^^^^
+64 | declare function nonWidening<T extends string | number | symbol>(x: T): T;
    |
-   = help: Expected an expression
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/50b8c365d2b499e5.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
 13 | 
 14 | const Printable = <T extends Constructor<Base>>(superClass: T) => class extends superClass {
-   |                   ^
+   |                                               ^
 15 |     static message = "hello";
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/50c0bdd039e4678a.ts
@@ -17632,14 +17384,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/5210eb7331d37445.ts
 ✓ test/parser/suite/ts/pass/521e34471daa0866.ts
 ✗ test/parser/suite/ts/pass/522c1d8469e31adf.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  7 | 
  8 |     = <T, S>(f: (_: T) => S) =>
-   |       ^
+   |         ^
  9 |         <U>(g: (_: U) => T) =>
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✓ test/parser/suite/ts/pass/52300ced9388a5a8.ts
@@ -18188,17 +17940,7 @@ error: Expected ';' after class field, but found 'f1'
 
 ✓ test/parser/suite/ts/pass/54ee06a1ca435cfd.ts
 ✓ test/parser/suite/ts/pass/54f522305e173d27.ts
-✗ test/parser/suite/ts/pass/550639589f085c3f.ts (parse errors)
-error: Unexpected token '<'
-   |
-14 |     set [a](v) { }
-15 |     static get [<any>true]() { return 0; }
-   |                 ^
-16 |     set [`hello bye`](v) { }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/550639589f085c3f.ts
 ✗ test/parser/suite/ts/pass/550c18ac5729f47d.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found '>'
    |
@@ -18352,14 +18094,14 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/55bde1b2bc5ace0b.ts
 ✗ test/parser/suite/ts/pass/55c7105dce58210e.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
  2 | var x = {
  3 |     a: < <T>(x: T) => T > ((x: any) => 1),
-   |        ^
+   |                              ^
  4 |     b: <T>(x: T) => { x }
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/55c8078a85da0cbd.module.ts (parse errors)
@@ -18798,14 +18540,14 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    |
 
 ✗ test/parser/suite/ts/pass/576c4d2ddf2cee8a.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-13 | 
 14 | export const createService = <T>(
-   |                              ^
 15 |     ServiceCtr: ExtendedService<T> & Service<T>
+   |               ^
+16 | ) => {
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/577922190073cf34.ts
@@ -19171,14 +18913,14 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/5938347a550032d5.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
  8 | 
  9 | <T>(x: T) => { throw x; }
-   | ^
+   |      ^
 10 | 
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/593cd0447b77bac2.ts (parse errors)
@@ -19563,14 +19305,14 @@ error: Expected ';' after class field, but found 'a'
 
 
 ✗ test/parser/suite/ts/pass/5b61e8f54edb8e39.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 2 | // @strict: false
  3 | var r = < <T>(x: T) => T > ((x) => { return null; }); // bug was 'could not find dotted symbol T' on x's annotation in the type assertion instead of no error
-   |         ^
  4 | var s = < <T>(x: T) => T > ((x: any) => { return null; }); // no error
+   |                               ^
+ 5 | 
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/5b7346bde24d3e44.module.ts
@@ -19670,17 +19412,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/5bfa924554402b4a.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 |     [a]: 1,
-14 |     [<any>true]: 0,
-   |      ^
-15 |     [`hello bye`]: 0,
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/5bfa924554402b4a.ts
 ✓ test/parser/suite/ts/pass/5c07fbec166a95c5.ts
 ✓ test/parser/suite/ts/pass/5c1788645c3a78d6.ts
 ✓ test/parser/suite/ts/pass/5c22bd1fbf89f3da.tsx
@@ -21356,16 +21088,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/645318e9af4fb58f.ts
 ✓ test/parser/suite/ts/pass/64543aae548157d3.module.ts
 ✓ test/parser/suite/ts/pass/6455c52dc88f4bef.ts
-✗ test/parser/suite/ts/pass/6457d52b3291f0c1.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = <any>new Foo;
-   |             ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/6457d52b3291f0c1.ts
 ✗ test/parser/suite/ts/pass/645adb94397961b4.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -21895,17 +21618,7 @@ error: Expected '{' to start class body, but found 'implements'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/67115a9277b6f2fd.ts (parse errors)
-error: Unexpected token '<'
-   |
-18 | 
-19 | var a = <I1 & I3>z;
-   |         ^
-20 | var b = <I3>z;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/67115a9277b6f2fd.ts
 ✓ test/parser/suite/ts/pass/6717069c7009c7cf.ts
 ✓ test/parser/suite/ts/pass/6737cbdd2d285153.ts
 ✗ test/parser/suite/ts/pass/67439cfbc4e146ab.ts (parse errors)
@@ -21933,16 +21646,7 @@ error: Expected ';' after class field, but found ':'
 ✓ test/parser/suite/ts/pass/674e1bafe18da3a5.ts
 ✓ test/parser/suite/ts/pass/674e4bf078d9bda9.module.ts
 ✓ test/parser/suite/ts/pass/674e9964fc9f7350.ts
-✗ test/parser/suite/ts/pass/675a540f0e86155b.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{ id: number; }[]>[{ foo: "s" }, {  }];
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/675a540f0e86155b.ts
 ✗ test/parser/suite/ts/pass/675fe0090bb0f47e.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -22260,17 +21964,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/68cf93f392abbc9e.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | var x = function () { }
- 3 | (<any>window).foo;
-   |  ^
- 4 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/68cf93f392abbc9e.ts
 ✓ test/parser/suite/ts/pass/68d1b9d14a44d48a.ts
 ✗ test/parser/suite/ts/pass/68d779370f0fd167.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -22295,16 +21989,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/69011fb442c66a4f.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = <any>foo();
-   |             ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/69011fb442c66a4f.ts
 ✓ test/parser/suite/ts/pass/690227bf5aa3795f.ts
 ✓ test/parser/suite/ts/pass/690239280dec0603.ts
 ✗ test/parser/suite/ts/pass/6913c2c6f45222fe.module.ts (parse errors)
@@ -22823,16 +22508,7 @@ error: Expected ';' after class field, but found 'priv'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/6b5547cc3a16b875.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo:{id:number;}[] = [<{id:number;}>({})];
-   |                           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/6b5547cc3a16b875.ts
 ✓ test/parser/suite/ts/pass/6b5ac3ec75d9c2e0.ts
 ✗ test/parser/suite/ts/pass/6b6d905a68b15c98.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -22844,16 +22520,7 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✓ test/parser/suite/ts/pass/6b7c5532a4ffa606.module.ts
-✗ test/parser/suite/ts/pass/6b879eba5780fba2.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{ (): number; }> function() { return "err"; };
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/6b879eba5780fba2.ts
 ✓ test/parser/suite/ts/pass/6b88805ffb174be1.ts
 ✗ test/parser/suite/ts/pass/6b8e0774048a17c6.ts (parse errors)
 error: Expected ';' after class field, but found 'type'
@@ -23287,14 +22954,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/6d9f471f79c97fde.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
 10 | const satisfies =
 11 |   <TWide,>() =>
-   |   ^
+   |         ^
 12 |   <TNarrow extends TWide>(narrow: Narrow<TNarrow>) =>
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✓ test/parser/suite/ts/pass/6da54cf2bd8bf662.ts
@@ -23870,14 +23537,14 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/702f195db0f72fde.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 2 | // @strict: true
  3 | const fn1 = <Params>(
-   |             ^
  4 |     params: Pick<Params, Exclude<keyof Params, never>>,
+   |           ^
+ 5 | ): Params => params;
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/7032640538a992fb.ts (parse errors)
@@ -24075,16 +23742,7 @@ error: Expected ';' after class field, but found 'greeter'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/70fe75c930ebc598.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{ (): number; }> function(a) { return a };
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/70fe75c930ebc598.ts
 ✗ test/parser/suite/ts/pass/7102bebbd88013df.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -24145,16 +23803,7 @@ error: Expected ';' after class field, but found 'm'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/71797d4a616aee1a.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | function foo(param:{id:number;}){}; foo(<{id:number;}>({}));
-   |                                         ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/71797d4a616aee1a.ts
 ✗ test/parser/suite/ts/pass/7179d0c42412d8ba.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -24179,17 +23828,7 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/71a9d49d71b52c19.ts
 ✓ test/parser/suite/ts/pass/71b04169ba08b852.ts
-✗ test/parser/suite/ts/pass/71b418b1170e0b7e.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 |     [a]() { }
-14 |     static [<any>true]() { }
-   |             ^
-15 |     [`hello bye`]() { }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/71b418b1170e0b7e.ts
 ✓ test/parser/suite/ts/pass/71bb8f0725df8c3d.ts
 ✗ test/parser/suite/ts/pass/71bfb3a66129d814.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -25038,14 +24677,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/757714a89742035f.ts (parse errors)
-error: Unexpected token '<'
+error: Unexpected '=>'
    |
  5 | var f2 = (x) => x;
  6 | var f3 = <T>(x) => x;
-   |          ^
+   |          ^^^^^^
  7 | 
    |
-   = help: Expected an expression
+   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
 
 
 ✗ test/parser/suite/ts/pass/75800bee91aa3ad6.ts (parse errors)
@@ -25556,17 +25195,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/7757cf0d49468937.ts
 ✓ test/parser/suite/ts/pass/775dd8530bd861fb.ts
 ✓ test/parser/suite/ts/pass/7760fc7c795bfa70.ts
-✗ test/parser/suite/ts/pass/7762f5496f7babcf.ts (parse errors)
-error: Unexpected token '<'
-   |
- 6 | let two: 2 = 2;
- 7 | let oneOrTwo: 1 | 2 = <1 | 2>1;
-   |                       ^
- 8 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/7762f5496f7babcf.ts
 ✓ test/parser/suite/ts/pass/776dbd86919ae51f.ts
 ✗ test/parser/suite/ts/pass/777734215a8870dc.module.ts (parse errors)
 error: 'const' declarations must be initialized
@@ -26081,17 +25710,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/79fd18b772860ccb.tsx
-✗ test/parser/suite/ts/pass/7a028bbbd80cbc61.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | var a = +1;
- 4 | var b = +(<any>"");
-   |           ^
- 5 | enum E { some, thing };
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/7a028bbbd80cbc61.ts
 ✗ test/parser/suite/ts/pass/7a02d38908d31078.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -26302,14 +25921,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/7abf15585e9b54a2.ts
 ✓ test/parser/suite/ts/pass/7ac0a06261695efc.ts
 ✗ test/parser/suite/ts/pass/7ac5c6ea2637a567.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
 24 |     case M.fn(1):
 25 |     case <T>(x: number) => '':
-   |          ^
+   |               ^
 26 |     case (<T>(x: number) => '')(2):
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/7ac9527e42f8130c.ts
@@ -26515,14 +26134,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/7b7f7f752217fe8c.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
  1 | // @target: es2015
  2 | const validHasKey = <T extends object>(
-   |                     ^
+   |                                      ^
  3 |   thing: T,
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/7b82984ba6d8f434.ts
@@ -27595,16 +27214,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/80a14e11d7570bfd.ts (parse errors)
-error: Unexpected token '<'
-   |
- 6 | }    
- 7 | var directChildrenMap = <IDirectChildrenMap>{}; 
-   |                         ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/80a14e11d7570bfd.ts
 ✗ test/parser/suite/ts/pass/80a37ffa84a6becd.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -27938,14 +27548,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/829b40ee9f253c5e.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  6 | 
  7 | const createTransform = <I, O>(tr: (from: I) => O) => tr;
-   |                         ^
+   |                           ^
  8 | 
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✗ test/parser/suite/ts/pass/829ddf487f4c34f3.ts (parse errors)
@@ -28222,17 +27832,7 @@ error: Expected ';' after class field, but found 'a'
 ✓ test/parser/suite/ts/pass/83c2f6f942647dfd.ts
 ✓ test/parser/suite/ts/pass/83cbccd706f776fa.ts
 ✓ test/parser/suite/ts/pass/83ce5abec5ebc823.ts
-✗ test/parser/suite/ts/pass/83d767bffe29458a.ts (parse errors)
-error: Unexpected token '<'
-   |
-15 | function bar(): J {
-16 |     return <[number, number, number]>[1, 2, 3];
-   |            ^
-17 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/83d767bffe29458a.ts
 ✗ test/parser/suite/ts/pass/83d7688badab9498.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -28376,14 +27976,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/84a00a2d07cc503f.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
  6 | 
  7 | const flowtypes = <A>(b: B) => {
-   |                   ^
+   |                        ^
  8 |   type Combined = A & B
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/84b6cfc585d4e016.ts
@@ -28768,17 +28368,7 @@ error: Expected ';' after class field, but found 'message'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/867e263ad49f5704.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 |             var obj = {};
- 3 |             Object.defineProperty(obj, "accProperty", <PropertyDescriptor>({
-   |                                                       ^
- 4 |                 get: function () {
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/867e263ad49f5704.ts
 ✓ test/parser/suite/ts/pass/867e7297eae04fc7.ts
 ✓ test/parser/suite/ts/pass/86811adae823d781.ts
 ✓ test/parser/suite/ts/pass/868d0bf0c30637b7.ts
@@ -29035,17 +28625,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/879543d217c1d18d.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | 
- 4 | (<number>temp) ** 3;
-   |  ^
- 5 | (<number>--temp) ** 3;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/879543d217c1d18d.ts
 ✗ test/parser/suite/ts/pass/879cdfe8ce1e8c82.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -29418,14 +28998,14 @@ error: Expected 'from' after import clause, but found '='
 
 
 ✗ test/parser/suite/ts/pass/88f8f9fd95e78aa4.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
  5 | 
  6 | const f = <F extends (...args: any[]) => <G>(x: G) => void>(_: F): F => _;
-   |           ^
+   |                                                           ^
  7 | 
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/88fd8b895939e99a.ts (parse errors)
@@ -29704,14 +29284,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/8aa06f645b990a80.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ';' after class field, but found 'A'
    |
- 3 | function A() {
- 4 |     return <any>"";
+12 | class C {
+13 |     public A() {
    |            ^
- 5 | }
+14 |         return <any>"";
    |
-   = help: Expected an expression
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/8aa65cdbeb6d4dc0.module.ts
@@ -29865,16 +29445,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/8b49e6e3e7d9528c.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = <any><any>new Foo;
-   |             ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/8b49e6e3e7d9528c.ts
 ✓ test/parser/suite/ts/pass/8b4a6fc167489a41.ts
 ✓ test/parser/suite/ts/pass/8b504a1edde9e255.ts
 ✗ test/parser/suite/ts/pass/8b5aa3645ef66395.ts (parse errors)
@@ -30947,14 +30518,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/9071b0a2e667b002.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
 16 |     var r = foo4(a);
 17 |     var r2 = foo4(<T>(x: T) => x);
-   |                   ^
+   |                        ^
 18 |     var r4 = foo4(x => x);    
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/908092dab46148b0.ts (parse errors)
@@ -31466,17 +31037,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/92f9c9a0e0ebf6b5.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es6
- 2 | var a = () => <Error>{ name: "foo", message: "bar" };      
-   |               ^
- 3 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/92f9c9a0e0ebf6b5.ts
 ✗ test/parser/suite/ts/pass/931079e3a0f2be77.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -32531,17 +32092,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/982257bec246936f.ts (parse errors)
-error: Unexpected token '<'
-   |
-37 | 
-38 | (<Function>xa[1].foo)(...[1, 2, "abc"]);
-   |  ^
-39 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/982257bec246936f.ts
 ✗ test/parser/suite/ts/pass/9851a1916b5f5dc5.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -32752,14 +32303,14 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/993f67271cad8661.ts
 ✓ test/parser/suite/ts/pass/9946cdde53e65320.ts
 ✗ test/parser/suite/ts/pass/99485fd3172b7ac4.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '(' to start parameter list, but found '<'
    |
-16 | e2 = E.A;
-17 | e = <void>null;
-   |     ^
-18 | e = {};
+20 | 
+21 | function f<T>(a: T) {
+   |           ^
+22 |     e = a;
    |
-   = help: Expected an expression
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/9948ba9f3dbf2762.ts
@@ -32787,16 +32338,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/99562d88ab5b408c.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | // @target: es6
- 3 | var v = a => <any>{}
-   |              ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/99562d88ab5b408c.ts
 ✗ test/parser/suite/ts/pass/99582800717d1f13.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -33797,16 +33339,7 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/9e1f3d202908651f.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo: {id:number;} = <{id:number;}>({ }); foo = {id: 5};
-   |                         ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/9e1f3d202908651f.ts
 ✓ test/parser/suite/ts/pass/9e2d28de257d32ea.ts
 ✓ test/parser/suite/ts/pass/9e2e00727cc49826.ts
 ✓ test/parser/suite/ts/pass/9e2f1528d16c95ed.ts
@@ -34076,17 +33609,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/9f2bce562f0bedd5.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | var f: () => any;
- 4 | <any>( /* Preserve */ j = f());
-   | ^
- 5 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/9f2bce562f0bedd5.ts
 ✗ test/parser/suite/ts/pass/9f2d847ddd0fff7f.ts (parse errors)
 error: Expected ';' after class field, but found 'x'
    |
@@ -35796,17 +35319,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/a7416e3cfa56d40b.ts
-✗ test/parser/suite/ts/pass/a7467753f62d75db.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | var x = 1;
- 3 | var y = <asdf>x;
-   |         ^
- 4 |  
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/a7467753f62d75db.ts
 ✓ test/parser/suite/ts/pass/a746bc7436be1feb.ts
 ✓ test/parser/suite/ts/pass/a74f472145eea297.ts
 ✗ test/parser/suite/ts/pass/a757efaabc302784.ts (parse errors)
@@ -35822,17 +35335,7 @@ error: Expected ';' after class field, but found 'eek'
 
 ✓ test/parser/suite/ts/pass/a75c2ec5a0f9df42.ts
 ✓ test/parser/suite/ts/pass/a762da0aca7634b4.ts
-✗ test/parser/suite/ts/pass/a770463aff9faf4d.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 | 
-14 | var arr = (<any>Array).prototype;
-   |            ^
-15 | arr.collect = function (fn) {
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/a770463aff9faf4d.ts
 ✗ test/parser/suite/ts/pass/a774b689c45b0682.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -36510,13 +36013,13 @@ error: Expected ';' after class field, but found 'foo'
 
 
 ✗ test/parser/suite/ts/pass/aa7c2bf6d9b50527.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
  3 | // @declaration: true
  4 | export const f = (<T>(arg: {[K in keyof T]: T[K] | string}) => arg)({'0': 0}); // Original prop uses string syntax
-   |                   ^
+   |                          ^
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/aa8133beb633c5e1.ts (parse errors)
@@ -36835,26 +36338,24 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/abd2c56c0bb4805e.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
 20 | 
 21 | const post = <PATH extends PostPath>(
-   |              ^
+   |                                    ^
 22 |     path: PATH,
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/abd3451a93473890.ts (parse errors)
-error: Unexpected token '<'
+error: Deleting a variable in strict mode is not allowed
    |
+ 6 |     static [() => { }]() { }
+ 7 |     get [delete id]() { }
+   |          ^^^^^^^^^
  8 |     set [[0, 1]](v) { }
- 9 |     static get [<String>""]() { }
-   |                 ^
-10 |     static set [id.toString()](v) { }
    |
-   = help: Expected an expression
-
 
 ✓ test/parser/suite/ts/pass/abd877817991855f.ts
 ✗ test/parser/suite/ts/pass/abe2149d24b9244d.ts (parse errors)
@@ -37025,17 +36526,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ad2276d39c894013.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | var x = function f() {
- 6 |     <f>f;
-   |     ^
- 7 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/ad2276d39c894013.ts
 ✗ test/parser/suite/ts/pass/ad29f0809a1515a6.module.tsx (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -37094,16 +36585,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/ad8e92217de10a53.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var x = `abc${ <any>(10 + 10) }def`;
-   |                ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/ad8e92217de10a53.ts
 ✓ test/parser/suite/ts/pass/ad9cb91df0a33e2f.ts
 ✗ test/parser/suite/ts/pass/ad9cfe3d912e50a1.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -37363,15 +36845,13 @@ error: Expected ';' after class field, but found 'x'
 
 
 ✗ test/parser/suite/ts/pass/af60cec5ca84720e.ts (parse errors)
-error: Unexpected token '<'
+error: Deleting a variable in strict mode is not allowed
    |
+ 6 |     static [() => { }]() { }
+ 7 |     get [delete id]() { }
+   |          ^^^^^^^^^
  8 |     set [[0, 1]](v) { }
- 9 |     static get [<String>""]() { }
-   |                 ^
-10 |     static set [id.toString()](v) { }
    |
-   = help: Expected an expression
-
 
 ✗ test/parser/suite/ts/pass/af7c31eb798b9b3a.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -37387,16 +36867,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/af85b1b8641ec186.ts
 ✓ test/parser/suite/ts/pass/af96d4faea8b7ad8.ts
 ✓ test/parser/suite/ts/pass/af97b77fbff61867.ts
-✗ test/parser/suite/ts/pass/af987f3db044b9cd.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var v = a => <any><any>{}
-   |              ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/af987f3db044b9cd.ts
 ✗ test/parser/suite/ts/pass/af9bf30f573e4cd9.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -38692,14 +38163,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b52707ab284a842c.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 9 | }
-10 | var x = <number>undefined;
-   |         ^
-11 | 
+27 | var fn = function (s: string) { return 42; }
+28 | var fn = (s: string) => 3;
+   |            ^
+29 | var fn: (s: string) => number;
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/b52ae98e8fb7d8da.ts
@@ -38791,14 +38262,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/b5cc13ed4e14eb8f.ts
 ✗ test/parser/suite/ts/pass/b5cc725192f755e6.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  9 | 
 10 | const toThenable = <Result, Input>(fn: (input: Input) => Result | Thenable<Result>) =>
-   |                    ^
+   |                           ^
 11 |     (input: Input): Thenable<Result> => {
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✓ test/parser/suite/ts/pass/b5db8fe8b1a0b28c.ts
@@ -39207,14 +38678,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b765cc494186c1f9.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
 32 | 
 33 | var r8 = true ? <T>(x: T) => { return x } : null;
-   |                 ^
+   |                      ^
 34 | var r8b = true ? null : <T>(x: T) => { return x }; // type parameters not identical across declarations
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/b76be91aa5a8d72b.ts (parse errors)
@@ -39346,17 +38817,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/b7ee01919fa23143.ts (parse errors)
-error: Unexpected token '<'
-   |
- 6 | x > 0;
- 7 | x > <number>0;
-   |     ^
- 8 | x > <BrandedNum>0;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/b7ee01919fa23143.ts
 ✗ test/parser/suite/ts/pass/b7f703c0148884a9.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -39501,16 +38962,7 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/b8b90b4e256d1072.ts
 ✓ test/parser/suite/ts/pass/b8b9c06a6c9caa38.ts
-✗ test/parser/suite/ts/pass/b8ba9a15dead0f43.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: ES6
- 2 | var x = `abc${ <any>(10 + 10) }def`;
-   |                ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/b8ba9a15dead0f43.ts
 ✗ test/parser/suite/ts/pass/b8bc291c3dc74cb4.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -41004,14 +40456,14 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/bf8af4833290a428.ts
 ✓ test/parser/suite/ts/pass/bf9a9b582b8f02f8.ts
 ✗ test/parser/suite/ts/pass/bf9b5f371a4c3854.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found '='
    |
  2 | const fn1 = () => ({
  3 |     test: <T = undefined>(value: T): T => value,
-   |           ^
+   |              ^
  4 |     extraValue: () => {},
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✗ test/parser/suite/ts/pass/bf9cc58a8e0fb3ac.ts (parse errors)
@@ -41090,17 +40542,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/bfbaeadcae2dfd53.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | function f() {
- 6 |     <arguments>arguments;
-   |     ^
- 7 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/bfbaeadcae2dfd53.ts
 ✗ test/parser/suite/ts/pass/bfc1bb9d9053b460.ts (parse errors)
 error: Expected ';' after class field, but found 'f'
    |
@@ -41135,17 +40577,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/bfd9636a544b2f13.ts
-✗ test/parser/suite/ts/pass/bfe1ff9217a82015.ts (parse errors)
-error: Unexpected token '<'
-   |
- 7 |     }
- 8 |     return <[any, any, any]>result;
-   |            ^
- 9 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/bfe1ff9217a82015.ts
 ✗ test/parser/suite/ts/pass/bfee258fa0da16f4.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -41507,16 +40939,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/c160152bd8276c4d.ts
 ✓ test/parser/suite/ts/pass/c16a5bd8e15acfa5.ts
-✗ test/parser/suite/ts/pass/c1779274bacbf364.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | interface Foo { }
- 3 | var xx = <Foo> new Object();
-   |          ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/c1779274bacbf364.ts
 ✗ test/parser/suite/ts/pass/c179de6a64c122b8.ts (parse errors)
 error: Expected ')' after catch parameter, but found ':'
    |
@@ -41795,14 +41218,14 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
    |
 
 ✗ test/parser/suite/ts/pass/c2a559b01ac7896d.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '{' to start class body, but found '<'
    |
-10 | 
-11 | var z = <asdf>x; // should be an error
-   |         ^
 12 | 
+13 | class C<T> {
+   |        ^
+14 |     foo: asdf;
    |
-   = help: Expected an expression
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✗ test/parser/suite/ts/pass/c2a9465cc4a47566.ts (parse errors)
@@ -41956,16 +41379,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/c34c275d748e5c91.ts
-✗ test/parser/suite/ts/pass/c34c3c83e6a3fa95.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var x = <any>`abc${ 123 }def`;
-   |         ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/c34c3c83e6a3fa95.ts
 ✓ test/parser/suite/ts/pass/c354550307a432a1.ts
 ✗ test/parser/suite/ts/pass/c3555792da263f35.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
@@ -42577,14 +41991,14 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/c6aac4100fcccff2.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  5 | 
  6 | export const foo = <T,>(x: T) => {
-   |                    ^
+   |                      ^
  7 |     const inner = <T,>(y: T) => [x, y] as const;
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✓ test/parser/suite/ts/pass/c6aacb2559043307.ts
@@ -42638,14 +42052,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/c70d48ea04648848.ts (parse errors)
-error: Unexpected token '<'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
- 3 | var x : any = 0;
- 4 | var z = <number> x;
-   |         ^
- 5 | var y = x + z;
+14 | 
+15 | declare class Point
+   |         ^^^^^
+16 | {
    |
-   = help: Expected an expression
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/c727e38abf873ad2.ts (parse errors)
@@ -42788,14 +42202,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/c792ec75af14d385.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '{' to start function body, but found ';'
    |
-18 | m1.health = 0;
-19 | console.log((<any>m5.isAlive).toString());
-   |              ^
-20 | 
+51 | class OverloadedMonster {
+52 |     constructor(name: string);
+   |                              ^
+53 |     constructor(public name: string, public health?: number) {
    |
-   = help: Expected an expression
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/c792ed389c4dd5a4.ts (parse errors)
@@ -43280,14 +42694,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/c9ec2993dcec296b.ts
 ✗ test/parser/suite/ts/pass/c9f5efdb479a6e56.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
  7 | 
  8 | const WithLocation = <T extends Constructor<Point>>(Base: T) => class extends Base {
-   |                      ^
+   |                                                   ^
  9 |   getLocation(): [number, number] {
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/c9f71e0cc686b6a6.ts (parse errors)
@@ -43703,16 +43117,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/cc24ba72fe22343f.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = <any>(foo());
-   |             ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/cc24ba72fe22343f.ts
 ✗ test/parser/suite/ts/pass/cc2ad06f94ad8dcd.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -43792,17 +43197,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/cc665a489551790f.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | function f() {
- 6 |     <f>f;
-   |     ^
- 7 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/cc665a489551790f.ts
 ✓ test/parser/suite/ts/pass/cc6f397e44c9f615.ts
 ✓ test/parser/suite/ts/pass/cc7049a89eb08132.ts
 ✗ test/parser/suite/ts/pass/cc727dfdd7608959.ts (parse errors)
@@ -43906,14 +43301,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/ccd3fd543889d07c.ts
 ✗ test/parser/suite/ts/pass/ccd68cc1bc38e162.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | interface Y { 'i am a very certain type': Y }
  6 | var y: Y = <Y>undefined;
-   |            ^
  7 | function destructure<a, r>(
+   |                     ^
+ 8 |     something: a | Y,
    |
-   = help: Expected an expression
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/ccd6d7d996473bc4.ts
@@ -43966,14 +43361,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/cd2a771d9ac94789.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found ','
    |
  1 | // @target: es2015
  2 | const createCacheReducer = <N extends string, QR>(
-   |                            ^
+   |                                             ^
  3 |     queries: Cache<N, QR>["queries"],
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/cd34f2c76f6ad6e8.ts
@@ -44444,17 +43839,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/cf91b4d842fb54c9.ts
 ✓ test/parser/suite/ts/pass/cf9a5faeb7913c0e.ts
 ✓ test/parser/suite/ts/pass/cf9d3a5470bb365d.ts
-✗ test/parser/suite/ts/pass/cfa47aa54aee646b.ts (parse errors)
-error: Unexpected token '<'
-   |
-20 | var r1 = (new C()).foo;
-21 | var r2 = (<I>null).foo;
-   |           ^
-22 | var r3 = a.foo;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/cfa47aa54aee646b.ts
 ✓ test/parser/suite/ts/pass/cfae2904425c1157.ts
 ✗ test/parser/suite/ts/pass/cfef64f9613ec682.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -44883,14 +44268,14 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/d190f00e1de28b94.ts
 ✗ test/parser/suite/ts/pass/d1a8fc2809a0d619.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found ','
    |
- 9 | 
 10 | const fn = <
-   |            ^
 11 |   A extends ObjA,
+   |                 ^
+12 |   B extends ObjB = ObjB
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✗ test/parser/suite/ts/pass/d1a9eb5dcbc0a9ba.module.ts (parse errors)
@@ -44916,16 +44301,7 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✓ test/parser/suite/ts/pass/d1ae963dc31ee54a.ts
-✗ test/parser/suite/ts/pass/d1ba0f2d7533a0c2.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | var b = "foo" !== ("bar" as string);
- 4 | var c = "foo" == (<any>"bar");
-   |                   ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/d1ba0f2d7533a0c2.ts
 ✗ test/parser/suite/ts/pass/d1ca9a48454cc948.ts (parse errors)
 error: Expected ';' after class field, but found '['
    |
@@ -45053,14 +44429,14 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/d2659df1001d6642.ts
 ✗ test/parser/suite/ts/pass/d26c77332fee6dd4.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '>' to close a type assertion, but found ','
    |
  6 | 
  7 | var a = <A,>(x: A) => x;
-   |         ^
+   |           ^
  8 | function a2<A,>(x: A) { return x }
    |
-   = help: Expected an expression
+   = help: A type assertion is written '<Type>expression'
 
 
 ✗ test/parser/suite/ts/pass/d26d955527c274d1.ts (parse errors)
@@ -45867,16 +45243,7 @@ error: Expected '{' to start class body, but found 'implements'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/d6373e65efc8da47.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = (<any>foo());
-   |              ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/d6373e65efc8da47.ts
 ✗ test/parser/suite/ts/pass/d6424bb20f39ebf1.module.ts (parse errors)
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
    |
@@ -46899,14 +46266,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/db91688b90befb41.module.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found '>'
    |
- 9 | 
-10 | export const createClient = <
-   |                             ^
-11 |   D extends
+13 |     | Record<string, new (...args: any[]) => Client> // or map of classes
+14 | >(
+   | ^
+15 |   clientDef: D
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/db9623394b10e2d3.ts
@@ -47513,17 +46880,7 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✓ test/parser/suite/ts/pass/dea86ac8d7f4aaf6.ts
-✗ test/parser/suite/ts/pass/deb3cf76a0df9c82.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | // has type { foo: string }[], which is not assignable to { id: number }[].
- 4 | <{ id: number; }[]>[{ foo: "s" }];
-   | ^
- 5 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/deb3cf76a0df9c82.ts
 ✓ test/parser/suite/ts/pass/debbf72223435010.ts
 ✓ test/parser/suite/ts/pass/debd7d28b937723c.ts
 ✗ test/parser/suite/ts/pass/debe2d8d6f9fd414.ts (parse errors)
@@ -47584,17 +46941,7 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/defbdbff8f21e921.ts
 ✓ test/parser/suite/ts/pass/df0043273c2a0d0f.ts
-✗ test/parser/suite/ts/pass/df00ca52a6e44771.ts (parse errors)
-error: Unexpected token '<'
-   |
-33 | var z1 = emptyObj[hi];
-34 | var z2 = (<any>emptyObj)[hi];
-   |           ^
-35 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/df00ca52a6e44771.ts
 ✗ test/parser/suite/ts/pass/df0aa3e8144ba009.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -47745,17 +47092,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 
 ✓ test/parser/suite/ts/pass/df92af8cac68d1c6.ts
-✗ test/parser/suite/ts/pass/df93fcb572d81fac.ts (parse errors)
-error: Unexpected token '<'
-   |
-31 | 
-32 | (<Function>xa[1].foo)(...[1, 2, "abc"]);
-   |  ^
-33 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/df93fcb572d81fac.ts
 ✗ test/parser/suite/ts/pass/df9c8b7da26cad9d.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -47958,16 +47295,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/e0eb9d51c30372ac.ts
 ✓ test/parser/suite/ts/pass/e0f1afec5ae10dad.ts
 ✓ test/parser/suite/ts/pass/e0f225305d5ef3d3.ts
-✗ test/parser/suite/ts/pass/e0f373b403f2425e.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: ES6
- 2 | var x = <any>`abc${ 123 }def`;
-   |         ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/e0f373b403f2425e.ts
 ✗ test/parser/suite/ts/pass/e0f863ddb34641ce.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -48449,14 +47777,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/e31a183b4911185f.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ';' after class field, but found 'x'
    |
- 6 | 
- 7 | var s: ISomething = <ISomething>({ });
-   |                     ^
- 8 | 
+17 | class C1 {
+18 |     public x: string;
+   |            ^
+19 | }
    |
-   = help: Expected an expression
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/e31e1d5b6fcd2680.ts (parse errors)
@@ -48909,16 +48237,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e4d3004aec0e5297.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = <any>0;
-   |             ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/e4d3004aec0e5297.ts
 ✗ test/parser/suite/ts/pass/e4f6165868150239.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -49479,17 +48798,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/e841ecf577ff6299.ts
 ✓ test/parser/suite/ts/pass/e84216ccbe3e9308.ts
 ✓ test/parser/suite/ts/pass/e85ac13f4833c222.ts
-✗ test/parser/suite/ts/pass/e8608ec6b15db9e3.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 |     [a]() { },
-14 |     [<any>true]() { },
-   |      ^
-15 |     [`hello bye`]() { },
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/e8608ec6b15db9e3.ts
 ✗ test/parser/suite/ts/pass/e860f6c16ff79467.ts (parse errors)
 error: Expected ';' after class field, but found '?'
    |
@@ -49550,16 +48859,7 @@ error: Expected ';' after class field, but found 'baseProp'
 ✓ test/parser/suite/ts/pass/e880e3bf3604f5b8.module.tsx
 ✓ test/parser/suite/ts/pass/e88432d0ff1e5834.ts
 ✓ test/parser/suite/ts/pass/e889c6aa2a34ed11.module.tsx
-✗ test/parser/suite/ts/pass/e891da70ab97745e.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | //@target: ES5, ES2015
- 2 | var { x } = <any><any>foo();
-   |             ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/e891da70ab97745e.ts
 ✗ test/parser/suite/ts/pass/e892a747be2a86a4.ts (parse errors)
 error: Expected ';' after class field, but found 'll'
    |
@@ -49984,17 +49284,7 @@ error: Expected ']' after computed property key, but found ':'
  4 | }
    |
 
-✗ test/parser/suite/ts/pass/ea7d7d3b88ffe82a.ts (parse errors)
-error: Unexpected token '<'
-   |
-14 | 
-15 | var a = <number | I2>z;
-   |         ^
-16 | var b = <number>z;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/ea7d7d3b88ffe82a.ts
 ✗ test/parser/suite/ts/pass/ea818e3bdef9e5d5.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
    |
@@ -50164,14 +49454,14 @@ error: Expected ';' after class field, but found 'prop'
 
 
 ✗ test/parser/suite/ts/pass/eb210183c322cc83.ts (parse errors)
-error: Unexpected token '<'
+error: Expected 'from' after import clause, but found '='
    |
- 5 |     var y = x + asdf;
- 6 |     var z = <asdf>x; // should be an error
-   |             ^
- 7 |     if (asdf) {
+29 |     }
+30 |     import c = N;
+   |              ^
+31 |     import d = asdf;
    |
-   = help: Expected an expression
+   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
 
 
 ✗ test/parser/suite/ts/pass/eb224201dad4c005.module.ts (parse errors)
@@ -50708,16 +49998,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/edb99e0525bc7783.ts
 ✓ test/parser/suite/ts/pass/edcf2125a062a539.ts
 ✓ test/parser/suite/ts/pass/edd0396f161e2650.ts
-✗ test/parser/suite/ts/pass/edd4fdbe2cf2d0e0.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{ id: number; }[]>[{ id: 4 }, <{ id: number; }>({  })];
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/edd4fdbe2cf2d0e0.ts
 ✓ test/parser/suite/ts/pass/eddb583645f80a1a.ts
 ✓ test/parser/suite/ts/pass/ee0720d6a0d68f01.ts
 ✓ test/parser/suite/ts/pass/ee0780dc360cb222.ts
@@ -50802,17 +50083,7 @@ error: Expected ';' after class field, but found 'myMethod'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/ee6340addb6b23bf.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 |     [a]() { },
-14 |     [<any>true]() { },
-   |      ^
-15 |     [`hello bye`]() { },
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/ee6340addb6b23bf.ts
 ✗ test/parser/suite/ts/pass/ee6605b0f812bfce.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -51066,17 +50337,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/ef6a520936b0bd19.ts
 ✓ test/parser/suite/ts/pass/ef70bfc53c4a8cc1.tsx
 ✓ test/parser/suite/ts/pass/ef7b87330262384b.ts
-✗ test/parser/suite/ts/pass/ef946d888eb34088.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | let [a2 = undefined, b2 = undefined, c2 = undefined] = [1, 2, 3]; // no error
- 6 | let [a3 = <any>undefined, b3 = <any>null, c3 = <any>undefined] = [1, 2, 3]; // no error
-   |           ^
- 7 | let [a4] = [<any>undefined], [b4] = [<any>null], c4 = <any>undefined, d4 = <any>null; // no error
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/ef946d888eb34088.ts
 ✗ test/parser/suite/ts/pass/efa74c41553d7cb2.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -51123,17 +50384,7 @@ error: Expected ';' after class field, but found 'foo'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/efc3c18b6945d484.ts (parse errors)
-error: Unexpected token '<'
-   |
-14 |     set [a](v) { },
-15 |     get [<any>true]() { return 0; },
-   |          ^
-16 |     set [`hello bye`](v) { },
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/efc3c18b6945d484.ts
 ✓ test/parser/suite/ts/pass/efe346c2fa432efb.ts
 ✓ test/parser/suite/ts/pass/eff014c18151d515.ts
 ✗ test/parser/suite/ts/pass/eff3bddad8a9e5bf.ts (parse errors)
@@ -52404,14 +51655,14 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/f53c6609b8d14ada.ts
 ✗ test/parser/suite/ts/pass/f53d2425ebe21f8d.ts (parse errors)
-error: Unexpected token '<'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
 27 | 
 28 | for (var x in (<T>(x: T) => x)) { }
-   |                ^
+   |                     ^
 29 | for (var x in function (x: string, y: number) { return x + y }) { }
    |
-   = help: Expected an expression
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/f5403f644eb393ad.ts (parse errors)
@@ -52425,24 +51676,15 @@ error: Expected declaration after 'export', but found 'enum'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/f5458599492ec800.ts (parse errors)
-error: Unexpected token '<'
-   |
- 2 | // @target: es6
- 3 | var v = a => <any><any>{}
-   |              ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/f5458599492ec800.ts
 ✗ test/parser/suite/ts/pass/f54a5f4fe6023787.ts (parse errors)
-error: Unexpected token '<'
+error: Expected '?' in a conditional type, but found ','
    |
  2 | // @declaration: true
  3 | const f = <TFirstArgs extends any[], TLastArg>(...args: [...TFirstArgs, TLastArg]): void => {};
-   |           ^
+   |                                    ^
    |
-   = help: Expected an expression
+   = help: A conditional type is written 'T extends U ? X : Y'
 
 
 ✓ test/parser/suite/ts/pass/f54d7088ca4e270f.ts
@@ -52660,17 +51902,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/f62e085d9f587914.module.ts
 ✓ test/parser/suite/ts/pass/f62ee27bb5c04021.ts
-✗ test/parser/suite/ts/pass/f637f82bdf935ee1.ts (parse errors)
-error: Unexpected token '<'
-   |
- 3 | // Null can be converted to anything except Void
- 4 | var n = <number>(null);
-   |         ^
- 5 | var s = <string>(null);
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/f637f82bdf935ee1.ts
 ✗ test/parser/suite/ts/pass/f63c62533a077955.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -52737,17 +51969,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/f6b9bda12fe53bde.ts (parse errors)
-error: Unexpected token '<'
-   |
-11 | // Expr type not assignable to target type
-12 | (<IFoo>{ a: null });
-   |  ^
-13 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/f6b9bda12fe53bde.ts
 ✓ test/parser/suite/ts/pass/f6c09bbbf930945f.ts
 ✓ test/parser/suite/ts/pass/f6c89ab9d2350625.ts
 ✓ test/parser/suite/ts/pass/f6d2ca373624ecb6.ts
@@ -53347,17 +52569,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/f96ab2ba9046d05e.ts
-✗ test/parser/suite/ts/pass/f96f26787f39165c.ts (parse errors)
-error: Unexpected token '<'
-   |
-13 |     [a]() { }
-14 |     static [<any>true]() { }
-   |             ^
-15 |     [`hello bye`]() { }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/f96f26787f39165c.ts
 ✗ test/parser/suite/ts/pass/f972413ce7ab8cda.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -53509,17 +52721,7 @@ error: Expected ';' after class field, but found 'method'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/fa8492fe33da6e6f.ts (parse errors)
-error: Unexpected token '<'
-   |
-14 |     set [a](v) { },
-15 |     get [<any>true]() { return 0; },
-   |          ^
-16 |     set [`hello bye`](v) { },
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/fa8492fe33da6e6f.ts
 ✓ test/parser/suite/ts/pass/fa86c362f9be8375.ts
 ✓ test/parser/suite/ts/pass/fa8ca9fa44f44c66.ts
 ✗ test/parser/suite/ts/pass/fa93bfb02667ce48.ts (parse errors)
@@ -53920,17 +53122,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/fc2ecaa06e87a2ee.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | 
- 6 | Object.defineProperty({}, "0", <PropertyDescriptor>({
-   |                                ^
- 7 |           get: getFunc,
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/fc2ecaa06e87a2ee.ts
 ✓ test/parser/suite/ts/pass/fc38fb7a6d5e1d29.ts
 ✗ test/parser/suite/ts/pass/fc467f545275769c.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -54048,16 +53240,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/fccf8f5e05778ef0.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{ id: number;}> {id:4, name: "as"};
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/fccf8f5e05778ef0.ts
 ✗ test/parser/suite/ts/pass/fcd5e437d8cd6452.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -54069,17 +53252,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/fce0e5565fe0bb18.ts (parse errors)
-error: Unexpected token '<'
-   |
- 5 | var x = function f() {
- 6 |     <arguments>arguments;
-   |     ^
- 7 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/fce0e5565fe0bb18.ts
 ✗ test/parser/suite/ts/pass/fce6078d707e5f4f.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -54405,16 +53578,7 @@ error: Expected ';' after class field, but found 'B'
 
 
 ✓ test/parser/suite/ts/pass/fe82426ddbfbfe1f.ts
-✗ test/parser/suite/ts/pass/fe8c1780de8d49be.ts (parse errors)
-error: Unexpected token '<'
-   |
- 1 | // @target: es2015
- 2 | var foo = <{():number; (i:number):number; }> (function(){return "err";});
-   |           ^
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/fe8c1780de8d49be.ts
 ✓ test/parser/suite/ts/pass/fe8dac6313abdabc.ts
 ✓ test/parser/suite/ts/pass/fe903c779a2faab8.ts
 ✗ test/parser/suite/ts/pass/fe9a8e0b78a3319f.ts (parse errors)
