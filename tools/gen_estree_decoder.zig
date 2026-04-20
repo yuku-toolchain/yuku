@@ -678,6 +678,9 @@ fn estreeType(comptime name: []const u8) []const u8 {
 
 fn estreeField(comptime tag: []const u8, comptime field: []const u8) []const u8 {
     if (comptime std.mem.eql(u8, tag, "variable_declaration") and std.mem.eql(u8, field, "declarators")) return "declarations";
+    // `const` is a zig keyword, so the TSEnumDeclaration field is named
+    // `is_const` in the ast. estree renders it as the bare `const` key.
+    if (comptime std.mem.eql(u8, tag, "ts_enum_declaration") and std.mem.eql(u8, field, "is_const")) return "const";
     return snakeConvert(field, false);
 }
 

@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       3022/8261 (36.58%)
-Failed:       5239
-AST mismatch: 9/3031
+Passed:       3160/8261 (38.25%)
+Failed:       5101
+AST mismatch: 9/3169
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 error: Expected ',' or ')' in parenthesized expression, but found 'as'
@@ -476,15 +476,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/02597eca7b6b7260.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | 
- 3 | enum K {
-   | ^^^^
- 4 |     a = "a",
-   |
-
+✓ test/parser/suite/ts/pass/02597eca7b6b7260.ts
 ✗ test/parser/suite/ts/pass/02628cc29efca456.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -653,17 +645,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/032e45d2e6b42843.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |  e = -0xA
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/032e45d2e6b42843.ts
 ✓ test/parser/suite/ts/pass/033198cfac50c62c.ts
 ✗ test/parser/suite/ts/pass/0333ebfe888508b5.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -965,15 +947,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/04c3de5ccb6e6f3b.ts
-✗ test/parser/suite/ts/pass/04cd5e457a83c325.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     "__foo" = 1,
-   |
-
+✓ test/parser/suite/ts/pass/04cd5e457a83c325.ts
 ✗ test/parser/suite/ts/pass/04d492cd196141ac.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -1311,13 +1285,15 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/064d5a52d7f2c9b5.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 2 | // @strict: false
- 3 | enum E { e1, e2 }
-   | ^^^^
  4 | interface I8 { [x: string]: number[]; }
+ 5 | class A { foo: number; }
+   |              ^
+ 6 | class A2<T> { foo: T; }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/0657bfe53e955201.module.ts
 error: Expected declaration after 'export', but found 'namespace'
@@ -1392,17 +1368,7 @@ error: Expected ']' after computed property key, but found ':'
 10 | }
    |
 
-✗ test/parser/suite/ts/pass/06d46a4a9911b5cc.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 4 | 
- 5 | declare enum E {
-   |         ^^^^
- 6 |     a, // E.a
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/06d46a4a9911b5cc.ts
 ✗ test/parser/suite/ts/pass/06f60ed545e9bd2c.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -1415,15 +1381,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/06fbea5fd70573b6.ts
-✗ test/parser/suite/ts/pass/070244cfd7985f16.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |   'gold \u2730'
-   |
-
+✓ test/parser/suite/ts/pass/070244cfd7985f16.ts
 ✗ test/parser/suite/ts/pass/070cf46024d5100f.ts
 error: Expected ';' after class field, but found 'x'
    |
@@ -1891,17 +1849,7 @@ error: Expected ';' after class field, but found 'function1'
 
 ✓ test/parser/suite/ts/pass/091aaeceb8cce44a.ts
 ✓ test/parser/suite/ts/pass/0925d76d3c442dbc.ts
-✗ test/parser/suite/ts/pass/092837663d103155.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |  e = 3.3 // Decimal
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/092837663d103155.ts
 ✗ test/parser/suite/ts/pass/092b102c77a8cc7d.module.ts
 error: Expected ';' after class field, but found 'B'
    |
@@ -2115,13 +2063,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0a0e7b08fb197db3.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | enum Colors {
-   | ^^^^
- 3 |     Red,
+11 | // Now with generics
+12 | function fill<B extends Colors>(f: B) {
+   |              ^
+13 |     f.Green; // error
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/0a0ec648dea73e38.ts
 error: Expected '{' to start function body, but found ':'
@@ -2759,13 +2709,15 @@ error: Duplicate export of 'default'
    |
 
 ✗ test/parser/suite/ts/pass/0cb1b3df33ce7aef.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Others'
    |
- 3 | 
- 4 | enum E { A }
-   | ^^^^
- 5 | enum F { B }
+16 | 
+17 | namespace Others {
+   |           ^^^^^^
+18 |     var a: any = e; // ok
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/0cbdc0687d3ac48d.ts
 error: Expected ';' after class field, but found ':'
@@ -3027,24 +2979,28 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0de1f000b634c530.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'ModuleEnum'
    |
- 1 | // @target: es2015
- 2 | enum TopLevelEnum {
-   | ^^^^
- 3 |     ThisWasAllowedButShouldNotBe = this // Should not be allowed
+ 5 | 
+ 6 | namespace ModuleEnum {
+   |           ^^^^^^^^^^
+ 7 |     enum EnumInModule {
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/0df4d6788c6cea45.ts
 ✓ test/parser/suite/ts/pass/0dfe629e682b20c5.ts
 ✗ test/parser/suite/ts/pass/0e0aa7239aee95b1.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 2 | // string can add every type, and result string cannot be assigned to below types
- 3 | enum E { a, b, c }
-   | ^^^^
  4 | 
+ 5 | declare var x1: boolean;
+   |         ^^^
+ 6 | x1 += '';
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/0e1ad1030ab41e5b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -3137,15 +3093,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/0e7863284f4efe55.ts
 ✓ test/parser/suite/ts/pass/0e934a2a88063acb.ts
-✗ test/parser/suite/ts/pass/0e95324afb81983a.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Kind {
-   | ^^^^
- 3 |     A,
-   |
-
+✓ test/parser/suite/ts/pass/0e95324afb81983a.ts
 ✗ test/parser/suite/ts/pass/0ea07ac71d7bad77.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -3251,15 +3199,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/0eefbea413f501a7.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
- 3 | 
-   |
-
+✓ test/parser/suite/ts/pass/0eefbea413f501a7.ts
 ✗ test/parser/suite/ts/pass/0ef30b5778b4e439.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'satisfies'
    |
@@ -3414,17 +3354,7 @@ error: Expected '{' to start class body, but found 'implements'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/0f978dfc4113f393.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |  e = 0xA
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/0f978dfc4113f393.ts
 ✗ test/parser/suite/ts/pass/0f983e258903e59a.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -3756,23 +3686,17 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/1087b2c8f6ac4b71.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 |     return E.A
- 6 |     enum E { A }
-   |     ^^^^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/1087b2c8f6ac4b71.ts
 ✗ test/parser/suite/ts/pass/108ddc462142c660.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
-73 | 
-74 | enum Types { Str = 1, Num = 2 }
-   | ^^^^
-75 | 
-   |
+error: Expected ',' or ')' in parenthesized expression, but found ':'
+    |
+105 | 
+106 | const f = (_a: string, _b: string): void => {};
+    |              ^
+107 | 
+    |
+    = help: Add a comma between elements or close with ')'.
+
 
 ✗ test/parser/suite/ts/pass/10932cdd649dd36f.ts
 error: Expected ']' to close an indexed access type, but found ':'
@@ -4016,13 +3940,15 @@ error: Expected ')' to close signature parameters, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/1172f7df2252dbe0.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
- 1 | // @target: es2015
- 2 | enum ABC { A, B }
-   | ^^^^
- 3 | 
+31 | // :(
+32 | declare let a: Gen2<ABC.A>;
+   |         ^^^
+33 | declare let b: Gen2<ABC.B>;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/1174b8722a07525d.ts
 ✗ test/parser/suite/ts/pass/117a80d0a6385eaf.ts
@@ -4757,15 +4683,7 @@ error: Expected ')' to close parameter list, but found '?'
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
-✗ test/parser/suite/ts/pass/14f9112d7a5e0f99.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 4 | 
- 5 | enum ENUM { };
-   | ^^^^
- 6 | enum ENUM1 { A, B, "" };
-   |
-
+✓ test/parser/suite/ts/pass/14f9112d7a5e0f99.ts
 ✓ test/parser/suite/ts/pass/150a5762db129f87.ts
 ✗ test/parser/suite/ts/pass/1513939fe2ec8d5d.ts
 error: Expected ';' after class field, but found 'x'
@@ -5457,13 +5375,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/17c7be43482bbeb6.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found '!'
    |
- 6 | 
- 7 | enum E { A }
-   | ^^^^
- 8 | x = E;
+10 | 
+11 | class C { foo!: string }
+   |              ^
+12 | declare var a: C;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/17cc6498b42df97d.ts
 error: Expected '{' to start class body, but found 'implements'
@@ -5746,15 +5666,7 @@ error: Expected declaration after 'export', but found 'abstract'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/191cbdb34d3daf07.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es5, es2015
- 2 | enum E {
-   | ^^^^
- 3 |     member
-   |
-
+✓ test/parser/suite/ts/pass/191cbdb34d3daf07.ts
 ✓ test/parser/suite/ts/pass/192d3890535d1daf.ts
 ✗ test/parser/suite/ts/pass/1931ba63d8bb8fc4.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -5831,15 +5743,7 @@ error: Expected ')' after method parameters, but found 'foo'
 14 |     quim = this.baz // should error
    |
 
-✗ test/parser/suite/ts/pass/1987276a4bf27b72.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum E {
-   | ^^^^
- 5 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/1987276a4bf27b72.ts
 ✗ test/parser/suite/ts/pass/198aece208614502.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -5909,15 +5813,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/19d3a6c40826d77a.ts
-✗ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 6 | var c: number = x;
- 7 | enum E { A };
-   | ^^^^
- 8 | var d: E = x;
-   |
-
+✓ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
 ✗ test/parser/suite/ts/pass/19d9761c28ff2511.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -5955,15 +5851,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/1a42d55a28785b71.ts
 ✓ test/parser/suite/ts/pass/1a4f8969ce197d0d.ts
-✗ test/parser/suite/ts/pass/1a53bfc79e597ed4.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {}
-   | ^^^^
- 3 | enum V {}
-   |
-
+✓ test/parser/suite/ts/pass/1a53bfc79e597ed4.ts
 ✗ test/parser/suite/ts/pass/1a59dcfe370f0748.module.tsx
 error: Expected '{' to start class body, but found '<'
    |
@@ -6185,24 +6073,18 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/1b1327b5dc1d5386.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 3 | 
- 4 | const enum E {
-   |       ^^^^
- 5 |     S1 = "foo",
+11 | 
+12 | declare var someNumber: number
+   |         ^^^
+13 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/1b1f5aa1a23c431a.ts
-✗ test/parser/suite/ts/pass/1b24ad6fc307d395.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
-10 | const CONST = 9000 % 2;
-11 | const enum D {
-   |       ^^^^
-12 |     d = 10,
-   |
-
+✓ test/parser/suite/ts/pass/1b24ad6fc307d395.ts
 ✗ test/parser/suite/ts/pass/1b2fef73582850d3.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -6432,15 +6314,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/1bf8168968be60cc.ts
-✗ test/parser/suite/ts/pass/1c04ed7e92759b47.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     E0,
-   |
-
+✓ test/parser/suite/ts/pass/1c04ed7e92759b47.ts
 ✓ test/parser/suite/ts/pass/1c05d508b436a7a6.ts
 ✓ test/parser/suite/ts/pass/1c1a054f8576fa77.ts
 ✓ test/parser/suite/ts/pass/1c1af026be803d04.ts
@@ -6513,13 +6387,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/1c688d40f741045a.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 4 | 
- 5 | enum E { Val, Val2 }
-   | ^^^^
  6 | 
+ 7 | declare function test1<const T>(create: () => T): T;
+   |         ^^^^^^^^
+ 8 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/1c6f5aac0aa53df8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -6966,15 +6842,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/1e37b7d9bd37379a.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |    "fo'o",
-   |
-
+✓ test/parser/suite/ts/pass/1e37b7d9bd37379a.ts
 ✗ test/parser/suite/ts/pass/1e401403bfa6bb03.ts
 error: Expected ';' after class field, but found 'static'
    |
@@ -7033,13 +6901,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/1eb9ebb1f8cfb6ba.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b }
-   | ^^^^
  3 | 
+ 4 | declare var a: any;
+   |         ^^^
+ 5 | declare var b: void;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/1ebbc74e4d682dd2.ts
 ✓ test/parser/suite/ts/pass/1ec28531b3524bcd.ts
@@ -7066,13 +6936,15 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/1edc5170bb42b5da.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b }
-   | ^^^^
  3 | 
+ 4 | declare var a: any;
+   |         ^^^
+ 5 | declare var b: void;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/1ee32c8eca504e01.ts
 error: Expected '{' to start function body, but found ';'
@@ -7410,15 +7282,7 @@ error: Expected ')' to close function type parameters, but found '?'
    = help: Each '(' in a function type must be matched by a ')'
 
 
-✗ test/parser/suite/ts/pass/207d0875b0c4cc50.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum E {
-   | ^^^^
- 5 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/207d0875b0c4cc50.ts
 ✓ test/parser/suite/ts/pass/207e4701e7afa68a.ts
 ✓ test/parser/suite/ts/pass/20824a7b99e85b4f.ts
 ✗ test/parser/suite/ts/pass/20859ac8e35ac668.ts
@@ -8443,25 +8307,9 @@ error: Expected ';' after class field, but found 'B'
 
 
 ✓ test/parser/suite/ts/pass/24bc66388774277c.ts
-✗ test/parser/suite/ts/pass/24bdb3ba3f2ea20f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum User { A, B }
-   | ^^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/24bdb3ba3f2ea20f.ts
 ✓ test/parser/suite/ts/pass/24c7986cc8963601.ts
-✗ test/parser/suite/ts/pass/24d093474506a285.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
-25 | 
-26 | enum E { A, B }
-   | ^^^^
-27 | var entries5 = Object.entries(E);                   // [string, any][]
-   |
-
+✓ test/parser/suite/ts/pass/24d093474506a285.ts
 ✗ test/parser/suite/ts/pass/24d1171e9bf81b6e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'NotOptional'
    |
@@ -8700,15 +8548,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/25ca6209a5b18ee7.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/25ca6209a5b18ee7.ts
 ✗ test/parser/suite/ts/pass/25ca95dab02c4b66.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -8956,13 +8796,15 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/27185400e3098ea4.module.ts
 ✗ test/parser/suite/ts/pass/2724ffaa3588111f.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 3 | // an enum type
- 4 | enum E { a, b, c }
-   | ^^^^
  5 | 
+ 6 | declare var a: any;
+   |         ^^^
+ 7 | declare var b: boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/272d2f70994a33d4.ts
 error: Expected '{' to start class body, but found '<'
@@ -8996,15 +8838,7 @@ error: Expected '{' to start function body, but found 'export'
 
 
 ✓ test/parser/suite/ts/pass/273707cff5c289c0.module.ts
-✗ test/parser/suite/ts/pass/27394d67257c09d7.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Bar {
-   | ^^^^
- 3 |     interface,
-   |
-
+✓ test/parser/suite/ts/pass/27394d67257c09d7.ts
 ✗ test/parser/suite/ts/pass/2750cde7c3ebc69a.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -9115,15 +8949,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/27bddc394f39c933.ts
-✗ test/parser/suite/ts/pass/27cafddde836d42d.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // Fixes #16887
- 3 | enum Strs {
-   | ^^^^
- 4 |     A = 'a',
-   |
-
+✓ test/parser/suite/ts/pass/27cafddde836d42d.ts
 ✗ test/parser/suite/ts/pass/27cc6992b69cc1a8.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -9253,13 +9079,15 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/2840c0f3dcb2238a.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Unexpected token '<'
    |
- 4 | 
- 5 | enum MyEmusEnum {
-   | ^^^^
- 6 |     emu
+33 | var z1 = emptyObj[hi];
+34 | var z2 = (<any>emptyObj)[hi];
+   |           ^
+35 | 
    |
+   = help: Expected an expression
+
 
 ✗ test/parser/suite/ts/pass/2844843bf8f86dec.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Generic'
@@ -9472,13 +9300,15 @@ error: Expected ';' after for-loop init, but found ':'
 
 ✓ test/parser/suite/ts/pass/28d222f2e05a9af0.module.ts
 ✗ test/parser/suite/ts/pass/28e29b09c474fc86.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b }
-   | ^^^^
  3 | 
+ 4 | declare var a: any;
+   |         ^^^
+ 5 | declare var b: void;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/28e324f3683569ef.ts
 ✗ test/parser/suite/ts/pass/28e7234d4d462347.ts
@@ -9603,13 +9433,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/2963ba93c44034ae.ts
 ✓ test/parser/suite/ts/pass/296f24d39fdb8dbc.ts
 ✗ test/parser/suite/ts/pass/2984b2d687f3e6db.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 3 | 
- 4 | const enum Choice { Unknown = "", Yes = "yes", No = "no" };
-   |       ^^^^
- 5 | 
+35 | 
+36 | declare function g(x: Choice.Yes): string;
+   |         ^^^^^^^^
+37 | declare function g(x: Choice.No): boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/298b45d20d7f24ab.ts
 ✗ test/parser/suite/ts/pass/298c5639bdf084a4.ts
@@ -9697,17 +9529,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/2a06642f9ff227aa.ts
 ✓ test/parser/suite/ts/pass/2a147fb7933cfd64.ts
-✗ test/parser/suite/ts/pass/2a220b87ad57a09f.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 |     declare enum E1 {
-   |             ^^^^
- 3 |         y = 4.23
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/2a220b87ad57a09f.ts
 ✓ test/parser/suite/ts/pass/2a2d49893364394c.ts
 ✗ test/parser/suite/ts/pass/2a34767d7050e1ce.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -10214,15 +10036,7 @@ error: Expected ')' to close signature parameters, but found '?'
 
 
 ✓ test/parser/suite/ts/pass/2c47c832032cc89c.ts
-✗ test/parser/suite/ts/pass/2c59f4724f3bb3a6.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 | 
- 6 | enum ENUM { };
-   | ^^^^
- 7 | enum ENUM1 { A, B, "" };
-   |
-
+✓ test/parser/suite/ts/pass/2c59f4724f3bb3a6.ts
 ✓ test/parser/suite/ts/pass/2c6514c2a3497400.ts
 ✓ test/parser/suite/ts/pass/2c73ee568086877c.ts
 ✗ test/parser/suite/ts/pass/2c7dc4fe7a454b73.module.ts
@@ -10649,13 +10463,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/2e1cb6d9fa6adb46.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A,
+ 6 | 
+ 7 | declare var n: number;
+   |         ^^^
+ 8 | declare var a: any;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/2e21001f99f8767f.ts
 ✓ test/parser/suite/ts/pass/2e2d3854ab2da4b9.ts
@@ -10892,13 +10708,15 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/2f07f10a2128623f.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 6 | 
- 7 | enum E1 { ONE, TWO, THREE }
-   | ^^^^
- 8 | declare enum E2 { ONE, TWO, THREE }
+26 | 
+27 | declare function val(): number;
+   |         ^^^^^^^^
+28 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/2f1f1c6a26374593.ts
 error: Expected '{' to start function body, but found 'constructor'
@@ -11230,15 +11048,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/307b74e917dfcbef.ts
 ✓ test/parser/suite/ts/pass/309acd53029c80e1.ts
-✗ test/parser/suite/ts/pass/309ecfaefa57fed8.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/309ecfaefa57fed8.ts
 ✗ test/parser/suite/ts/pass/30a9b491813eccfc.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -13008,15 +12818,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/37e4436172f6c235.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | const enum Choice { Unknown, Yes, No };
-   |       ^^^^
- 3 | 
-   |
-
+✓ test/parser/suite/ts/pass/37e4436172f6c235.ts
 ✗ test/parser/suite/ts/pass/37ede12df0f1a6ad.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
    |
@@ -13371,15 +13173,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/39dc97346fb905ad.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 6 | 
- 7 | enum Type { A, B, C }
-   | ^^^^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/39dc97346fb905ad.ts
 ✓ test/parser/suite/ts/pass/39e7243468cd6f47.ts
 ✗ test/parser/suite/ts/pass/39e924bd47cc4e05.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -13528,15 +13322,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/3a80c7d58b7c57b6.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 | 
- 6 | enum Meat {
-   | ^^^^
- 7 |     Sausage,
-   |
-
+✓ test/parser/suite/ts/pass/3a80c7d58b7c57b6.ts
 ✗ test/parser/suite/ts/pass/3a9989fc8e61f47b.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -13730,15 +13516,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/3b4d5a000d3efd74.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | // Enum without initializers have first member = 0 and successive members = N + 1
- 4 | enum E1 {
-   | ^^^^
- 5 |     A,
-   |
-
+✓ test/parser/suite/ts/pass/3b4d5a000d3efd74.ts
 ✓ test/parser/suite/ts/pass/3b62387aae84ef13.ts
 ✗ test/parser/suite/ts/pass/3b75c0e953f6f8f5.ts
 error: Expected ';' after class field, but found ':'
@@ -14597,15 +14375,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/3ece15af4aba4baa.ts
-✗ test/parser/suite/ts/pass/3ee422fd49b6d19d.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es6
- 2 | enum E1 { x }
-   | ^^^^
- 3 | enum E2 { x }
-   |
-
+✓ test/parser/suite/ts/pass/3ee422fd49b6d19d.ts
 ✓ test/parser/suite/ts/pass/3eef13d410f8bcab.ts
 ✗ test/parser/suite/ts/pass/3ef240f74d6f7692.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -15124,15 +14894,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/4121174fec904482.ts
 ✓ test/parser/suite/ts/pass/4141f0ea19f93567.ts
-✗ test/parser/suite/ts/pass/4149501f6994637f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum A {
-   | ^^^^
- 3 |     NaN = 1
-   |
-
+✓ test/parser/suite/ts/pass/4149501f6994637f.ts
 ✗ test/parser/suite/ts/pass/414c011209a6202d.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -15676,15 +15438,7 @@ error: Unexpected token '<'
    = help: Expected an expression
 
 
-✗ test/parser/suite/ts/pass/435ecad7017854ee.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 3 | 
- 4 | const enum E {
-   |       ^^^^
- 5 |     A = 1,
-   |
-
+✓ test/parser/suite/ts/pass/435ecad7017854ee.ts
 ✓ test/parser/suite/ts/pass/4364fbea7db51ea0.ts
 ✗ test/parser/suite/ts/pass/436c02ef51deec3a.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -15889,15 +15643,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/44398791b472e625.ts
 ✓ test/parser/suite/ts/pass/4439adc403524ae9.ts
 ✓ test/parser/suite/ts/pass/443a9fd1f84d8706.ts
-✗ test/parser/suite/ts/pass/443f347823c14899.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | // other options are very close
- 4 | enum U8 {
-   | ^^^^
- 5 |     BIT_0 = 1 << 0,
-   |
-
+✓ test/parser/suite/ts/pass/443f347823c14899.ts
 ✗ test/parser/suite/ts/pass/44450effa2469ad4.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -15998,15 +15744,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/44c96c6a3545f3bc.ts
-✗ test/parser/suite/ts/pass/44caad35124ce74c.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     e1,
-   |
-
+✓ test/parser/suite/ts/pass/44caad35124ce74c.ts
 ✓ test/parser/suite/ts/pass/44cbafbd5fa860d6.ts
 ✗ test/parser/suite/ts/pass/44ceba7ba6c6b020.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -16258,15 +15996,7 @@ error: Expected ')' after method parameters, but found 'x'
 10 | }
    |
 
-✗ test/parser/suite/ts/pass/45cb11707cd091f8.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 4 | // Literal enum type
- 5 | enum E1 {
-   | ^^^^
- 6 |     a = 1,
-   |
-
+✓ test/parser/suite/ts/pass/45cb11707cd091f8.ts
 ✓ test/parser/suite/ts/pass/45d0841cba075228.module.ts
 ✗ test/parser/suite/ts/pass/45dc57c359a1e4dc.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -16304,13 +16034,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/45faf31bb87c4848.ts
 ✗ test/parser/suite/ts/pass/460ece813281278d.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | 
- 6 | enum Enum { A, B, C }
-   | ^^^^
- 7 | 
+11 | 
+12 | function foo<T extends Enum>(x: Interface<T>) { }
+   |             ^
+13 | 
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/461121b0ddce3306.ts
 ✗ test/parser/suite/ts/pass/46186e4c55c6605f.ts
@@ -16806,15 +16538,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/47e58cdcef546877.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum Bar {
-   | ^^^^
- 5 |     interface,
-   |
-
+✓ test/parser/suite/ts/pass/47e58cdcef546877.module.ts
 ✗ test/parser/suite/ts/pass/47ea6191407214de.ts
 error: Expected ';' after class field, but found 'a'
    |
@@ -17273,13 +16997,15 @@ error: Expected ')' to close signature parameters, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/49cbc82901fa1f45.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 3 | // an enum type
- 4 | enum E { a, b, c }
-   | ^^^^
  5 | 
+ 6 | declare var a: any;
+   |         ^^^
+ 7 | declare var b: boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/49de9623206ed82a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Test1'
@@ -17434,15 +17160,7 @@ error: Expected ')' after method parameters, but found 'y'
    |
 
 ✓ test/parser/suite/ts/pass/4a78875ce9e16d1c.ts
-✗ test/parser/suite/ts/pass/4a7de41ad03273d1.ts
-error: 'enum' is reserved and cannot be used as an identifier
-    |
-210 | 
-211 | enum E {
-    | ^^^^
-212 |     abstract,
-    |
-
+✓ test/parser/suite/ts/pass/4a7de41ad03273d1.ts
 ✗ test/parser/suite/ts/pass/4a8d51db37175e4b.ts
 error: Identifier 'b' has already been declared
    |
@@ -17544,13 +17262,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4b4e87d37c5d4f56.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
- 1 | // @target: es2015
- 2 | enum Foo {
-   | ^^^^
- 3 |     "__a" = 1,
+ 7 | }
+ 8 | namespace Foo {
+   |           ^^^
+ 9 |     export function ___call(): number {
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/4b54ce49cb342cea.ts
 ✗ test/parser/suite/ts/pass/4b58932db0513618.ts
@@ -17795,13 +17515,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4c504b7a2fd4d71c.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ')' to close parameter list, but found '?'
    |
- 1 | // @target: es2015
- 2 | enum MyEnum {
-   | ^^^^
- 3 |   A,
+27 | 
+28 | export function fn3(optionalEnum?: MyEnum) {
+   |                                 ^
+29 |   return optionalEnum ?? MyEnum.A;
    |
+   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+
 
 ✓ test/parser/suite/ts/pass/4c547a1ecc1a4c48.ts
 ✗ test/parser/suite/ts/pass/4c5904e670e311bf.ts
@@ -17955,13 +17677,15 @@ error: Expected ';' after class field, but found 'foo'
 
 
 ✗ test/parser/suite/ts/pass/4d10874b0f3cd175.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
    |
- 4 | 
- 5 | enum E {
-   | ^^^^
- 6 |     Red, Green, Blue
+ 9 | function f() {
+10 |     var a!: any;
+   |          ^
+11 |     var n=3;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/4d2a7c798b01624e.ts
 error: Expected ')' to close parameter list, but found '?'
@@ -18009,15 +17733,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/4d5b8c1521bdb66c.ts
-✗ test/parser/suite/ts/pass/4d85c34e00391b61.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 3 | if (1)
- 4 |     const enum A {}
-   |           ^^^^
- 5 | else
-   |
-
+✓ test/parser/suite/ts/pass/4d85c34e00391b61.ts
 ✗ test/parser/suite/ts/pass/4d9503e47c5c32e2.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -18430,15 +18146,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/4eee9d106aac8655.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum e1 {
-   | ^^^^
- 5 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/4eee9d106aac8655.ts
 ✗ test/parser/suite/ts/pass/4ef38b8fe8441b44.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -18570,13 +18278,15 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/4f711d6594393b4f.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Namespace'
    |
- 8 | 
- 9 | enum Enum {
-   | ^^^^
-10 |     A
+16 | 
+17 | namespace Namespace {
+   |           ^^^^^^^^^
+18 |     export let A = 0
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/4f7684c0190d8ac1.ts
 error: Expected '{' to start class body, but found '<'
@@ -18760,15 +18470,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/504e837d83c41359.ts
 ✓ test/parser/suite/ts/pass/5055f75f00ec737a.ts
-✗ test/parser/suite/ts/pass/505624de71e63f53.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 2 | if (1)
- 3 |     const enum A { }
-   |           ^^^^
- 4 | else if (2)
-   |
-
+✓ test/parser/suite/ts/pass/505624de71e63f53.ts
 ✓ test/parser/suite/ts/pass/5059c104cd0d7d7b.module.ts
 ✓ test/parser/suite/ts/pass/505bf547cfde3f45.ts
 ✗ test/parser/suite/ts/pass/505e51a7bb640836.ts
@@ -18840,13 +18542,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/5093580c117ee589.ts
 ✓ test/parser/suite/ts/pass/5098d73ed558c508.ts
 ✗ test/parser/suite/ts/pass/509b6325ba4af164.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
  3 | 
+ 4 | declare var a: any;
+   |         ^^^
+ 5 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/50a7cfc4636a8fc0.ts
 ✗ test/parser/suite/ts/pass/50b1b3433d8472da.module.ts
@@ -18902,15 +18606,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/50f9c25c69cf87b9.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum foo {
-   | ^^^^
- 3 |   b = 1,
-   |
-
+✓ test/parser/suite/ts/pass/50f9c25c69cf87b9.ts
 ✗ test/parser/suite/ts/pass/50ff20f08f1d5944.ts
 error: Expected ')' to close parameter list, but found '?'
    |
@@ -19001,15 +18697,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/5155b75684808f05.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | //@target: ES6
- 2 | enum E { }
-   | ^^^^
- 3 | var x: symbol | E;
-   |
-
+✓ test/parser/suite/ts/pass/5155b75684808f05.ts
 ✓ test/parser/suite/ts/pass/515856522396dc6d.ts
 ✓ test/parser/suite/ts/pass/515af30ecb782276.ts
 ✗ test/parser/suite/ts/pass/515c23b7827df60e.module.ts
@@ -19106,15 +18794,7 @@ error: Expected ')' after method parameters, but found 'z'
    |
 
 ✓ test/parser/suite/ts/pass/51bc75bc49c750c7.ts
-✗ test/parser/suite/ts/pass/51cea12c57f593e8.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 2 | // @removeComments: true
- 3 | const enum Foo {
-   |       ^^^^
- 4 |     X = 100,
-   |
-
+✓ test/parser/suite/ts/pass/51cea12c57f593e8.ts
 ✗ test/parser/suite/ts/pass/51da5b7b2d920c69.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -19405,15 +19085,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/533b51458255d3dc.ts
-✗ test/parser/suite/ts/pass/535975d245aae083.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 7 | 
- 8 | enum Hello {
-   | ^^^^
- 9 |     World
-   |
-
+✓ test/parser/suite/ts/pass/535975d245aae083.ts
 ✓ test/parser/suite/ts/pass/5361107171cb3d01.ts
 ✓ test/parser/suite/ts/pass/53637677f6bf39aa.ts
 ✗ test/parser/suite/ts/pass/536b4e2779e84236.ts
@@ -19634,13 +19306,15 @@ error: Expected ';' after class field, but found 'a'
 ✓ test/parser/suite/ts/pass/546202b5be45197e.ts
 ✓ test/parser/suite/ts/pass/54621e6272629fb2.ts
 ✗ test/parser/suite/ts/pass/54691bce191fe4ae.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
  3 | 
+ 4 | function foo<T>(t: T) {
+   |             ^
+ 5 |     var foo_r1 = t < null;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/5469a696689b6922.ts
 error: Expected ';' after class field, but found '<'
@@ -19729,15 +19403,7 @@ error: Expected ';' after class field, but found 'f1'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/54ee06a1ca435cfd.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum TShirtSize {
-   | ^^^^
- 3 |    Small,
-   |
-
+✓ test/parser/suite/ts/pass/54ee06a1ca435cfd.ts
 ✗ test/parser/suite/ts/pass/54f522305e173d27.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'module'
    |
@@ -20216,17 +19882,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/56cbfd8fd36811b3.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |  e = 3
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/56cbfd8fd36811b3.ts
 ✓ test/parser/suite/ts/pass/56d217602897bdd3.ts
 ✗ test/parser/suite/ts/pass/56d4a512d86ed210.ts
 error: Use of undefined label 'target'
@@ -20248,15 +19904,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/56e1ed5b479617c8.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
-58 | 
-59 | enum One {
-   | ^^^^
-60 |     A = 1 << 1, // ok
-   |
-
+✓ test/parser/suite/ts/pass/56e1ed5b479617c8.ts
 ✗ test/parser/suite/ts/pass/56f78be8161ca497.ts
 error: Expected ')' after method parameters, but found 'z'
    |
@@ -20350,15 +19998,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/574fa157f32dc5a6.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E { x }
-   | ^^^^
- 3 | var x1 = null + null;
-   |
-
+✓ test/parser/suite/ts/pass/574fa157f32dc5a6.ts
 ✗ test/parser/suite/ts/pass/57525da7bafafe2b.module.ts
 error: Expected '{' to start function body, but found ':'
    |
@@ -21394,13 +21034,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/5c37ccb22e30ea35.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 4 | 
- 5 | enum E {
-   | ^^^^
- 6 |     a,
+ 9 | 
+10 | declare var a: any;
+   |         ^^^
+11 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/5c3e63b88ea89ebe.ts
 ✗ test/parser/suite/ts/pass/5c4c2d83fb87819e.ts
@@ -21969,15 +21611,7 @@ error: Expected ';' after class field, but found 'v'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/5ea7709de4234881.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @declaration: true
- 3 | enum T1 {
-   | ^^^^
- 4 |     a = `1`
-   |
-
+✓ test/parser/suite/ts/pass/5ea7709de4234881.ts
 ✗ test/parser/suite/ts/pass/5eb7fafc498657bd.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -22215,15 +21849,7 @@ error: Expected '{' to start class body, but found 'implements'
 ✓ test/parser/suite/ts/pass/5ffca47d25fda001.ts
 ✓ test/parser/suite/ts/pass/60092f82a50dcb40.ts
 ✓ test/parser/suite/ts/pass/600cca1a3d2cfa83.ts
-✗ test/parser/suite/ts/pass/600dc3c315b33031.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 |     return E.A
- 6 |     enum E { A }
-   |     ^^^^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/600dc3c315b33031.ts
 ✗ test/parser/suite/ts/pass/6010f867dd4822bf.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -22498,13 +22124,15 @@ error: Expected ';' after class field, but found 'B'
 
 
 ✗ test/parser/suite/ts/pass/612ef891bcebd0fd.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '{' to start class body, but found '<'
    |
- 2 | // repro from #22093
- 3 | enum A { one = "one", two = "two" };
-   | ^^^^
- 4 | enum B { foo = "foo", bar = "bar" };
+ 8 | 
+ 9 | class List<T>
+   |           ^
+10 | {
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/612fe079606cbf56.ts
 ✓ test/parser/suite/ts/pass/6130ed687ef9ecb0.ts
@@ -22533,23 +22161,17 @@ error: Duplicate export of 'default'
    |
 
 ✗ test/parser/suite/ts/pass/618ae869d8084357.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | const enum En { A, B, C, D }
-   |       ^^^^
  3 | 
+ 4 | function assert<T>(x: T) {
+   |                ^
+ 5 |     return x;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
-✗ test/parser/suite/ts/pass/61922ccdbcb29d9c.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | const enum E {
-   |       ^^^^
- 3 |     A = ~1,
-   |
 
+✓ test/parser/suite/ts/pass/61922ccdbcb29d9c.ts
 ✗ test/parser/suite/ts/pass/6195e801efc358a1.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -22618,15 +22240,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/61d37a78762ffab0.ts
 ✓ test/parser/suite/ts/pass/61d3b04405e16994.ts
 ✓ test/parser/suite/ts/pass/61de59f78cdb2f82.ts
-✗ test/parser/suite/ts/pass/61e60351bff4f4a3.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 6 | 
- 7 | enum Foo {
-   | ^^^^
- 8 |     A = `${BAR}`,
-   |
-
+✓ test/parser/suite/ts/pass/61e60351bff4f4a3.ts
 ✓ test/parser/suite/ts/pass/61e8bc07d6810f50.ts
 ✗ test/parser/suite/ts/pass/61eb5df2350adb21.ts
 error: Expected '{' to start function body, but found ';'
@@ -23005,13 +22619,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/63c153da6cf37751.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'W'
    |
- 1 | // @target: es2015
- 2 | enum W {
-   | ^^^^
- 3 | 
+ 7 | 
+ 8 | namespace W {
+   |           ^
+ 9 |     export class D { }
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/63c8909c01faf9a1.ts
 ✗ test/parser/suite/ts/pass/63d1019e299c7996.ts
@@ -23092,17 +22708,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/6411ee491c1bc47f.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |  e = -3 // Negative
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/6411ee491c1bc47f.ts
 ✓ test/parser/suite/ts/pass/6411f2ae8f2f3ec0.ts
 ✗ test/parser/suite/ts/pass/64121ac9fff3b26e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -23172,15 +22778,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/645318e9af4fb58f.ts
-✗ test/parser/suite/ts/pass/64543aae548157d3.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | // @declaration: true
- 4 | enum AgeGroups { "0-17" , "18-22" , "23-27" , "28-34" , "35-44" , "45-59" , "60-150" }
-   | ^^^^
- 5 | export const SpotifyAgeGroupEnum = { ...AgeGroups };
-   |
-
+✓ test/parser/suite/ts/pass/64543aae548157d3.module.ts
 ✓ test/parser/suite/ts/pass/6455c52dc88f4bef.ts
 ✗ test/parser/suite/ts/pass/6457d52b3291f0c1.ts
 error: Unexpected token '<'
@@ -23218,13 +22816,15 @@ error: Expected ';' after class field, but found ':'
 ✓ test/parser/suite/ts/pass/648e8a1b461e726b.ts
 ✓ test/parser/suite/ts/pass/64955b7cdee2b555.ts
 ✗ test/parser/suite/ts/pass/649871b7e2b3b132.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 3 | function f1() {
- 4 |     enum E {
-   |     ^^^^
- 5 |         A, B, C
+ 7 |     class C {
+ 8 |         x: E;
+   |          ^
+ 9 |     }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/64a3b5dd639d59b3.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -23238,13 +22838,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/64a741039642db03.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 3 | 
- 4 | enum E { A }
-   | ^^^^
- 5 | E = x;
+ 7 | 
+ 8 | class C { foo: string }
+   |              ^
+ 9 | var f: C;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/64aa34817db3c635.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'TypeScript2'
@@ -23556,13 +23158,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/66254884eec406e1.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
- 3 | 
- 4 | enum E {
-   | ^^^^
- 5 |     A = "A",
+ 8 | 
+ 9 | declare const m: { [K in E]: string | null };
+   |         ^^^^^
+10 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/662cb579b4904aa9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
@@ -24346,13 +23950,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/69e633b852bdcb68.ts
 ✗ test/parser/suite/ts/pass/69ed29365fdc0da7.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ',' or '}' in object, but found 'as'
    |
- 4 | 
- 5 | enum AutomationMode {
-   | ^^^^
- 6 |     NONE = "",
+35 |             },
+36 |         } as UserSettings,
+   |           ^^
+37 |     }
    |
+   = help: Add a comma between properties or close the object with '}'.
+
 
 ✗ test/parser/suite/ts/pass/69ee7bea2fca1862.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -24569,15 +24175,7 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/6a9bcae823dfec65.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @strict: true
- 3 | enum Nums {
-   | ^^^^
- 4 |     Zero = 0,
-   |
-
+✓ test/parser/suite/ts/pass/6a9bcae823dfec65.ts
 ✗ test/parser/suite/ts/pass/6aa09bae769ae611.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -24778,13 +24376,15 @@ error: Unexpected token '<'
 
 ✓ test/parser/suite/ts/pass/6b88805ffb174be1.ts
 ✗ test/parser/suite/ts/pass/6b8e0774048a17c6.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found 'type'
    |
- 2 | // @declaration: true
- 3 | enum E {
-   | ^^^^
- 4 |     A = 'a',
+ 8 | class C {
+ 9 |     readonly type = E.A;
+   |              ^^^^
+10 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/6ba640b127628646.ts
 ✓ test/parser/suite/ts/pass/6bab59e5f6630186.ts
@@ -24816,15 +24416,7 @@ error: Expected ';' after class field, but found 'x'
 ✓ test/parser/suite/ts/pass/6bc84ceaf1bdac6e.module.ts
 ✓ test/parser/suite/ts/pass/6bc9e36d1ad07ce4.ts
 ✓ test/parser/suite/ts/pass/6be6063515de74b9.ts
-✗ test/parser/suite/ts/pass/6be83cf45de83ff2.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A = A,
-   |
-
+✓ test/parser/suite/ts/pass/6be83cf45de83ff2.ts
 ✗ test/parser/suite/ts/pass/6bfcfecedda536e9.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -25335,13 +24927,15 @@ error: Expected ';' after class field, but found 'x'
 ✓ test/parser/suite/ts/pass/6e088f4e3e920644.module.ts
 ✓ test/parser/suite/ts/pass/6e10dfbc93468f2b.ts
 ✗ test/parser/suite/ts/pass/6e1a433caa8d3c93.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 3 | 
- 4 | enum E { a, b, c }
-   | ^^^^
  5 | 
+ 6 | function foo<T>(t: T) {
+   |             ^
+ 7 |     var foo_r1 = t < x;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/6e1ee2dd504b97ce.module.ts
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -25658,15 +25252,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/6f85d598db1247a4.ts
-✗ test/parser/suite/ts/pass/6f9068f1a29362fc.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | var array = [{ x: "", y: true }]
- 4 | enum E { x }
-   | ^^^^
- 5 | for ({x, y = E.x} of array) {
-   |
-
+✓ test/parser/suite/ts/pass/6f9068f1a29362fc.ts
 ✗ test/parser/suite/ts/pass/6f95f52f160be343.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -25681,13 +25267,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/6f9a090aea1f3a2e.ts
 ✓ test/parser/suite/ts/pass/6fa096b0009c654b.ts
 ✗ test/parser/suite/ts/pass/6fac05bff09942d7.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 7 | 
- 8 | enum E { a, b, c }
-   | ^^^^
- 9 | 
+10 | var a1: any;
+11 | declare var a2: boolean;
+   |         ^^^
+12 | declare var a3: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/6faf9b484ed6d325.module.ts
 ✓ test/parser/suite/ts/pass/6fb189365b8457c3.ts
@@ -25739,15 +25327,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/6fdeab5fd2c29189.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // Constant members allow negatives, but not decimals. Also hex literals are allowed
- 3 | enum E1 {
-   | ^^^^
- 4 |     a = 1,
-   |
-
+✓ test/parser/suite/ts/pass/6fdeab5fd2c29189.ts
 ✗ test/parser/suite/ts/pass/6fe4d756ba7cf2a1.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -25961,13 +25541,15 @@ error: 'this' is reserved and cannot be used as a binding identifier
    |
 
 ✗ test/parser/suite/ts/pass/70a60ab6f88cef74.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
  3 | 
+ 4 | declare var a: number;
+   |         ^^^
+ 5 | declare var b: boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/70a7f964d6079fdc.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -26614,15 +26196,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/738cd5031a0421f6.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 2 | 
- 3 | const enum numbers {
-   |       ^^^^
- 4 |     zero,
-   |
-
+✓ test/parser/suite/ts/pass/738cd5031a0421f6.ts
 ✗ test/parser/suite/ts/pass/73973ebcee27459a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
@@ -26900,25 +26474,9 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/746a1a71e1d83d60.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 4 | 
- 5 | const enum E {
-   |       ^^^^
- 6 |   a = "a",
-   |
-
+✓ test/parser/suite/ts/pass/746a1a71e1d83d60.ts
 ✓ test/parser/suite/ts/pass/747db59ff4057b33.ts
-✗ test/parser/suite/ts/pass/749627d48764dbfb.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ActionType {
-   | ^^^^
- 5 |     Foo,
-   |
-
+✓ test/parser/suite/ts/pass/749627d48764dbfb.ts
 ✗ test/parser/suite/ts/pass/74a03c90197b1382.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
    |
@@ -26979,13 +26537,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/74e627babc0adb5e.ts
 ✗ test/parser/suite/ts/pass/74ff42f95874814d.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 4 | 
- 5 | enum E {
-   | ^^^^
- 6 |     a,
+ 9 | 
+10 | declare var a: any;
+   |         ^^^
+11 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/750704c9dfd1ae47.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -27055,13 +26615,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7518839e54a95139.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
- 8 | 
- 9 | enum NumericEnum1 { A, B, C }
-   | ^^^^
-10 | enum NumericEnum2 { A = 0, B = 1 , C = 2 }
+12 | 
+13 | declare const strMap: { [s: string]: boolean };
+   |         ^^^^^
+14 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/75190ea0138a5ea8.ts
 ✗ test/parser/suite/ts/pass/752a61be784f59fa.ts
@@ -27419,13 +26981,15 @@ error: Expected ')' after method parameters, but found 'a'
    |
 
 ✗ test/parser/suite/ts/pass/765441ad39f393dc.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
-38 | 
-39 | enum E { A, B }
-   | ^^^^
-40 | 
-   |
+error: Expected ',' or ')' in parenthesized expression, but found ':'
+    |
+133 | 
+134 | const doSomethingWithLevel = (level: Level) => {
+    |                                    ^
+135 |   let next: Level;
+    |
+    = help: Add a comma between elements or close with ')'.
+
 
 ✗ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts
 error: Expected '{' to start function body, but found 'export'
@@ -27473,13 +27037,15 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/7676293932d701db.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 3 | 
- 4 | const enum Choice { Unknown, Yes, No };
-   |       ^^^^
- 5 | 
+49 | 
+50 | declare function g(x: Choice.Yes): string;
+   |         ^^^^^^^^
+51 | declare function g(x: Choice.No): boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/76840702a712fc06.ts
 ✗ test/parser/suite/ts/pass/7687707d60cd0f54.ts
@@ -27933,26 +27499,8 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/780a95af32fdabe4.ts
 ✓ test/parser/suite/ts/pass/78105d936ae2d296.ts
-✗ test/parser/suite/ts/pass/781792f0f84fbde6.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @strict: false
- 3 | enum E {
-   | ^^^^
- 4 |     A = 1,
-   |
-
-✗ test/parser/suite/ts/pass/781f15a12a048fc9.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |     a = 10,
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/781792f0f84fbde6.ts
+✓ test/parser/suite/ts/pass/781f15a12a048fc9.ts
 ✗ test/parser/suite/ts/pass/7820a9ebb9e94c1f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -28295,13 +27843,15 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/79e37247db5bef4f.ts
 ✓ test/parser/suite/ts/pass/79ed4cbcf410ec1b.ts
 ✗ test/parser/suite/ts/pass/79f16eb1eac89add.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | interface I { }
- 6 | enum E { }
-   | ^^^^
- 7 | type T = { };
+12 | 
+13 | function f<U>() {
+   |           ^
+14 |     class C { }
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/79fd18b772860ccb.tsx
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
@@ -28699,15 +28249,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/7b188267705f0683.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/7b188267705f0683.ts
 ✗ test/parser/suite/ts/pass/7b1f09ee036c407e.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -28841,13 +28383,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/7b9c42289ddade25.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 9 | 
-10 | enum E { A }
-   | ^^^^
-11 | E.A = null; // error
+12 | 
+13 | class C { foo: string }
+   |              ^
+14 | var f: C;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/7ba5500a60c6f3eb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
@@ -29998,15 +29542,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/80c42a6f89f32fe9.ts
-✗ test/parser/suite/ts/pass/80d59ed18ce3ce95.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ENUM1 { A, B, "" };
-   | ^^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/80d59ed18ce3ce95.ts
 ✗ test/parser/suite/ts/pass/80d6a5fc976157d5.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Editor'
    |
@@ -30052,15 +29588,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/80e35cee3d8c8c7a.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum days {
-   | ^^^^
- 5 |     monday,
-   |
-
+✓ test/parser/suite/ts/pass/80e35cee3d8c8c7a.ts
 ✗ test/parser/suite/ts/pass/80e6c46868c05f64.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -30303,17 +29831,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/8272241a817496ac.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 | }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/8272241a817496ac.ts
 ✗ test/parser/suite/ts/pass/829219fcef156a36.ts
 error: Expected ')' after method parameters, but found 'x'
    |
@@ -30902,15 +30420,7 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
  4 | var { x: public } = { x: 1 };
    |
 
-✗ test/parser/suite/ts/pass/8558a9f51bd7e915.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E { A, B }
-   | ^^^^
- 3 | let n: number;
-   |
-
+✓ test/parser/suite/ts/pass/8558a9f51bd7e915.ts
 ✗ test/parser/suite/ts/pass/855ec5f319406140.ts
 error: Expected ';' after class field, but found ':'
    |
@@ -31249,17 +30759,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/86b5a76ba45f05ec.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 1 | // @target: es2015
- 2 | declare enum E {
-   |         ^^^^
- 3 |   A = 1
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/86b5a76ba45f05ec.ts
 ✗ test/parser/suite/ts/pass/86b8c36f2e9f0d96.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -31326,15 +30826,7 @@ error: Expected ';' after class field, but found 'p'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/870d0eb9df588f83.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum A { 
-   | ^^^^
- 3 |     X = "".length, 
-   |
-
+✓ test/parser/suite/ts/pass/870d0eb9df588f83.ts
 ✗ test/parser/suite/ts/pass/870fdd42cafb4a26.ts
 error: Use of undefined label 'target'
    |
@@ -31661,13 +31153,15 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/881204e0792e6594.ts
 ✓ test/parser/suite/ts/pass/881e9832fba76452.ts
 ✗ test/parser/suite/ts/pass/8829dd61b3d456ab.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b }
-   | ^^^^
  3 | 
+ 4 | declare var a: void;
+   |         ^^^
+ 5 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/88371a927309214f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -31973,13 +31467,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/89b0709751a18c68.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
    |
- 1 | // @target: es2015
- 2 | enum E1 {
-   | ^^^^
- 3 |     a,
+31 | 
+32 | const foo3 = { a: E1.a } as const
+   |                          ^^
+33 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/89b0b82b8082b40c.module.ts
 error: Expected '{' to start class body, but found '<'
@@ -32275,24 +31771,8 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/8acfd0fac65506a3.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | const enum Choice { Unknown = "", Yes = "yes", No = "no" };
-   |       ^^^^
- 3 | 
-   |
-
-✗ test/parser/suite/ts/pass/8ad7f0d14895f6ee.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum e {
-   | ^^^^
- 5 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/8acfd0fac65506a3.ts
+✓ test/parser/suite/ts/pass/8ad7f0d14895f6ee.ts
 ✓ test/parser/suite/ts/pass/8aef84d223069cc9.module.ts
 ✗ test/parser/suite/ts/pass/8afcd8565410d931.ts
 error: Expected '{' to start function body, but found ';'
@@ -32317,13 +31797,15 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/8b02e6f07b8de3fc.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'enumdule'
    |
- 1 | // @target: es2015
- 2 | enum enumdule {
-   | ^^^^
- 3 |     Red, Blue
+ 5 | 
+ 6 | namespace enumdule {
+   |           ^^^^^^^^
+ 7 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
 error: Expected '=>' in function type, but found '&&'
@@ -32507,15 +31989,7 @@ error: Expected '(' for getter/setter definition, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/8bab682af663c3d0.ts
-✗ test/parser/suite/ts/pass/8bba3c34356ca2c2.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     a = -5, b, c
-   |
-
+✓ test/parser/suite/ts/pass/8bba3c34356ca2c2.ts
 ✗ test/parser/suite/ts/pass/8bc7b5aee8aeb7fd.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
    |
@@ -32851,15 +32325,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/8d73f821d5599b70.ts
-✗ test/parser/suite/ts/pass/8d7b6641bc03ff8f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 6 | 
- 7 | enum AnimalType {
-   | ^^^^
- 8 |   cat = "cat",
-   |
-
+✓ test/parser/suite/ts/pass/8d7b6641bc03ff8f.ts
 ✓ test/parser/suite/ts/pass/8d8534e4eb3f4146.ts
 ✓ test/parser/suite/ts/pass/8d8a217ab35537d5.ts
 ✗ test/parser/suite/ts/pass/8d8c7a276990eb0d.ts
@@ -32895,15 +32361,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/8d9dd33059dd7e9e.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | const s = "s";
- 4 | enum E1 { A = "ENUM_KEY" }
-   | ^^^^
- 5 | enum E2 { B }
-   |
-
+✓ test/parser/suite/ts/pass/8d9dd33059dd7e9e.ts
 ✗ test/parser/suite/ts/pass/8daa90b19c8ebdfc.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
    |
@@ -33677,23 +33135,17 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/906668872932b32e.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Bool { false }
-   | ^^^^
- 3 | const x: Bool.false = Bool.false;
-   |
-
+✓ test/parser/suite/ts/pass/906668872932b32e.ts
 ✗ test/parser/suite/ts/pass/90718fdb25e511da.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
    |
-53 | 
-54 | const enum EnumTypeNode {
-   |       ^^^^
-55 |     Pattern = "Pattern",
+74 | 
+75 | let n!: NodeA
+   |      ^
+76 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/9071b0a2e667b002.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'NonGenericParameter'
@@ -33798,13 +33250,15 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/90b31043acc432b0.ts
 ✗ test/parser/suite/ts/pass/90b6226566241ada.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
-39 | // infer from literal enums
-40 | const enum StringLiteralEnum { Zero = "0", True = "true", False = "false", Undefined = "undefined", Null = "null" }
-   |       ^^^^
-41 | type TStringLiteralEnum0 = "0" extends `${infer T extends StringLiteralEnum}` ? T : never; // StringLiteralEnum.Zero
-   |
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
+    |
+285 | 
+286 | declare const p: Point;
+    |         ^^^^^
+287 | p.getIndex(0); // ok, 0 is a valid index
+    |
+    = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/90bce07e363edab3.ts
 ✓ test/parser/suite/ts/pass/90bf8f199fa3559b.ts
@@ -33936,15 +33390,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/917498eab618163a.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E { a, b }
-   | ^^^^
- 3 | enum F { c, d }
-   |
-
+✓ test/parser/suite/ts/pass/917498eab618163a.ts
 ✓ test/parser/suite/ts/pass/917ff264616e98d0.module.ts
 ✗ test/parser/suite/ts/pass/91883733123cba74.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'x'
@@ -34050,13 +33496,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/91ec464f8ec7a19d.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 8 | 
- 9 | enum E { A }
-   | ^^^^
-10 | var e: E = x;
+11 | 
+12 | class C { foo: string }
+   |              ^
+13 | var f: C = x;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/91eeaffd3f288a41.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -34070,13 +33518,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/91f4141af738e71f.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A, B, C
+ 9 | }
+10 | declare let n: number;
+   |         ^^^
+11 | let e: E = n; // ok because it's too inconvenient otherwise
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/91fee8ff90c09a28.ts
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -34707,15 +34157,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/95558c7b040cac62.module.ts
-✗ test/parser/suite/ts/pass/9565defc3e653107.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 2 | // @removeComments: false
- 3 | const enum Foo {
-   |       ^^^^
- 4 |     X = 100,
-   |
-
+✓ test/parser/suite/ts/pass/9565defc3e653107.ts
 ✗ test/parser/suite/ts/pass/957a4d1b692759fb.ts
 error: Expected '{' to start function body, but found ';'
    |
@@ -34964,13 +34406,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/96795b115654904c.ts
 ✗ test/parser/suite/ts/pass/968408d31d0003e2.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 3 | class Foo {}
- 4 | enum E { a }
-   | ^^^^
- 5 | 
+ 9 | // the left operand is required to be of type Any, the String primitive type, or the Number primitive type
+10 | declare var a1: boolean;
+   |         ^^^
+11 | declare var a2: void;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/9685679e566101bd.ts
 ✗ test/parser/suite/ts/pass/9685e4a876c0bd6d.ts
@@ -35144,15 +34588,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/97113830734aa150.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | const enum E { A }
-   |       ^^^^
- 3 | var x = E["B"]
-   |
-
+✓ test/parser/suite/ts/pass/97113830734aa150.ts
 ✓ test/parser/suite/ts/pass/971f109affcbca51.ts
 ✓ test/parser/suite/ts/pass/9721ea95eb47aa27.ts
 ✗ test/parser/suite/ts/pass/97337b7d12660104.ts
@@ -35198,15 +34634,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/9750e9f3ed53fd62.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 |   let Infinity = {};
- 6 |   enum En {
-   |   ^^^^
- 7 |     X = Infinity
-   |
-
+✓ test/parser/suite/ts/pass/9750e9f3ed53fd62.ts
 ✓ test/parser/suite/ts/pass/9752e17d5f19d20d.ts
 ✗ test/parser/suite/ts/pass/9755d6ddb4a8cf2b.ts
 error: Expected ';' after class field, but found ':'
@@ -35634,23 +35062,17 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/993f67271cad8661.ts
 ✓ test/parser/suite/ts/pass/9946cdde53e65320.ts
 ✗ test/parser/suite/ts/pass/99485fd3172b7ac4.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Unexpected token '<'
    |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A,
+16 | e2 = E.A;
+17 | e = <void>null;
+   |     ^
+18 | e = {};
    |
+   = help: Expected an expression
 
-✗ test/parser/suite/ts/pass/9948ba9f3dbf2762.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Foo {
-   | ^^^^
- 3 |     a = 1
-   |
 
+✓ test/parser/suite/ts/pass/9948ba9f3dbf2762.ts
 ✓ test/parser/suite/ts/pass/9949b7424537ef71.ts
 ✓ test/parser/suite/ts/pass/994bf5080982acce.module.ts
 ✗ test/parser/suite/ts/pass/994c7165849e4812.ts
@@ -36194,15 +35616,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/9b8c9fe7e896ec3f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |    A = 1
-   |
-
+✓ test/parser/suite/ts/pass/9b8c9fe7e896ec3f.ts
 ✓ test/parser/suite/ts/pass/9b8df69d51213b24.ts
 ✗ test/parser/suite/ts/pass/9ba219868ca5aa4f.ts
 error: Expected ';' after class field, but found '_bar'
@@ -36692,13 +36106,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/9dcb28b1934012bc.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
-26 | 
-27 | enum E {
-   | ^^^^
-28 |     A
+42 | class C {
+43 |     bar: string;
+   |        ^
+44 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/9dd33386e72705c9.ts
 ✗ test/parser/suite/ts/pass/9dd635b662a0e097.ts
@@ -37098,15 +36514,7 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/9f307764aa1cb59f.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 6 | 
- 7 | const enum Bebra {}
-   |       ^^^^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/9f307764aa1cb59f.ts
 ✓ test/parser/suite/ts/pass/9f33b9394ba9d356.ts
 ✓ test/parser/suite/ts/pass/9f3605678d6bbf73.ts
 ✓ test/parser/suite/ts/pass/9f379ea8082b2451.ts
@@ -37122,23 +36530,17 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/9f51bc1766be8f67.ts
-error: 'enum' is reserved and cannot be used as an identifier
-    |
-156 |     let a = (() => Enum.Yes)();
-157 |     enum Enum {
-    |     ^^^^
-158 |         No = 0,
-    |
-
+✓ test/parser/suite/ts/pass/9f51bc1766be8f67.ts
 ✗ test/parser/suite/ts/pass/9f6afb8cd061ec2c.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 2 | // @strict: false
- 3 | const enum E { A, B, C }
-   |       ^^^^
  4 | 
+ 5 | function foo<T extends number>(x: T) {
+   |             ^
+ 6 |     var y: number = x;  // Ok
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/9f6dccbf229c5b1d.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -37380,13 +36782,15 @@ error: Expected ')' after function arguments, but found 'as'
 
 
 ✗ test/parser/suite/ts/pass/a07aed3fb8240149.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
- 1 | // @target: es2015
- 2 | enum Foo {
-   | ^^^^
- 3 |     b
+ 8 | 
+ 9 | namespace Foo {
+   |           ^^^
+10 |     export var x = b
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/a07ba19f1fd720be.ts
 error: Expected ';' after class field, but found ':'
@@ -37447,13 +36851,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a0a9c2a589655be1.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 1 | // @target: es2015
- 2 | const enum Choice { Unknown, Yes, No };
-   |       ^^^^
- 3 | 
+47 | 
+48 | declare function g(x: Choice.Yes): string;
+   |         ^^^^^^^^
+49 | declare function g(x: Choice.No): boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/a0b6e57e37e9b233.ts
 error: Expected '{' to start function body, but found ';'
@@ -37541,15 +36947,7 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✓ test/parser/suite/ts/pass/a1372240e0745019.ts
-✗ test/parser/suite/ts/pass/a1536c579acfa61c.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Enum { None = 0 }
-   | ^^^^
- 3 | var enumType: Enum = Enum.None;
-   |
-
+✓ test/parser/suite/ts/pass/a1536c579acfa61c.ts
 ✓ test/parser/suite/ts/pass/a1580d2e7c68996a.ts
 ✓ test/parser/suite/ts/pass/a15c38ef0ee14e46.ts
 ✗ test/parser/suite/ts/pass/a15e123af4f4fa82.module.ts
@@ -38074,15 +37472,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/a3c079ca52e80441.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ENUM { };
-   | ^^^^
- 5 | enum ENUM1 { A, B, "" };
-   |
-
+✓ test/parser/suite/ts/pass/a3c079ca52e80441.ts
 ✗ test/parser/suite/ts/pass/a3c63f3d275394c8.ts
 error: Expected ',' or ')' in parenthesized expression, but found 'as'
    |
@@ -38216,15 +37606,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/a431d9fd96d96b8f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum T1 {
-   | ^^^^
- 3 |     a = `1`
-   |
-
+✓ test/parser/suite/ts/pass/a431d9fd96d96b8f.ts
 ✓ test/parser/suite/ts/pass/a431da4935922f5d.module.ts
 ✗ test/parser/suite/ts/pass/a44b387db0f18dee.ts
 error: Expected ';' after class field, but found 'constructor'
@@ -38542,13 +37924,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/a54dde2bbb2095f9.ts
 ✗ test/parser/suite/ts/pass/a55763d84ae1f45a.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 3 | 
- 4 | enum E { a, b, c }
-   | ^^^^
  5 | 
+ 6 | declare var a: any;
+   |         ^^^
+ 7 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/a5582500eb03b33f.ts
 error: Expected ')' after method parameters, but found 'x'
@@ -38780,15 +38164,7 @@ error: Expected a type, but found '"AB\r\nC"'
    |
 
 ✓ test/parser/suite/ts/pass/a650c295ffb62e7b.ts
-✗ test/parser/suite/ts/pass/a651494cf82bc0df.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 2 | // @preserveConstEnums: true
- 3 | const enum E {
-   |       ^^^^
- 4 |     Value = 1, Value2 = Value
-   |
-
+✓ test/parser/suite/ts/pass/a651494cf82bc0df.ts
 ✗ test/parser/suite/ts/pass/a6519178024969d7.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -38800,15 +38176,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/a65f3ef90e66fc51.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |   Foo = 1,
-   |
-
+✓ test/parser/suite/ts/pass/a65f3ef90e66fc51.ts
 ✗ test/parser/suite/ts/pass/a66a409af1b78169.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm'
    |
@@ -38898,13 +38266,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a6cc919dc27a2a51.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 5 | 
- 6 | enum E { a, b, c }
-   | ^^^^
- 7 | 
+ 8 | var a1: any;
+ 9 | declare var a2: boolean;
+   |         ^^^
+10 | declare var a3: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/a6dc61a71e8a9f31.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -39134,13 +38504,15 @@ error: Expected ')' after method parameters, but found 'x'
    |
 
 ✗ test/parser/suite/ts/pass/a83936e39ba4edc5.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
-14 | 
-15 | enum E {
-   | ^^^^
-16 |     A
+23 | class C {
+24 |     foo: string;
+   |        ^
+25 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/a83a6d1cc679059a.ts
 error: Expected ';' after class field, but found '<'
@@ -39529,13 +38901,15 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/a9ca0fa21d52a672.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
- 2 | // @noImplicitAny: true
- 3 | enum E {
-   | ^^^^
- 4 |     A = "a",
+14 | 
+15 | declare const item: Item;
+   |         ^^^^^
+16 | declare const e: E;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/a9cf26e5c87486c0.ts
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -39850,15 +39224,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/aafab9e6cdee3705.ts
 ✓ test/parser/suite/ts/pass/ab0e56aad839057d.ts
-✗ test/parser/suite/ts/pass/ab11586c27c65ff6.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |   A
-   |
-
+✓ test/parser/suite/ts/pass/ab11586c27c65ff6.ts
 ✗ test/parser/suite/ts/pass/ab15cdcc87f9147a.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -40038,15 +39404,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/abba6e1c64f246c5.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum string { }
-   | ^^^^
- 3 | enum number { }
-   |
-
+✓ test/parser/suite/ts/pass/abba6e1c64f246c5.ts
 ✓ test/parser/suite/ts/pass/abc96695a647cb62.ts
 ✗ test/parser/suite/ts/pass/abcd9331c1af3b94.ts
 error: Expected '{' to start class body, but found '<'
@@ -40513,15 +39871,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ae84fe678e58d57a.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | const v2: ConstColor = ConstColor.Green;
- 4 | enum Color { Red, Green, Blue }
-   | ^^^^
- 5 | const enum ConstColor { Red, Green, Blue }
-   |
-
+✓ test/parser/suite/ts/pass/ae84fe678e58d57a.ts
 ✗ test/parser/suite/ts/pass/ae8cc0d4df0b618f.module.ts
 error: Expected ';' after class field, but found 'static'
    |
@@ -40557,15 +39907,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/aee66b63f2862974.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 6 | }
- 7 | enum package { }
-   | ^^^^
- 8 | enum foo {
-   |
-
+✓ test/parser/suite/ts/pass/aee66b63f2862974.module.ts
 ✓ test/parser/suite/ts/pass/aeecc2cae933fedb.ts
 ✗ test/parser/suite/ts/pass/aef46a1a1215fb98.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -40894,17 +40236,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/b077e2146881d8c1.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 3 | 
- 4 | declare enum E {
-   |         ^^^^
- 5 |     a = 10,
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/b077e2146881d8c1.ts
 ✓ test/parser/suite/ts/pass/b083953e7bb929be.ts
 ✗ test/parser/suite/ts/pass/b08c4318df497cfa.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
@@ -41569,15 +40901,7 @@ error: Expected ';' after class field, but found 'f'
 
 
 ✓ test/parser/suite/ts/pass/b2f1e52a30e712f1.ts
-✗ test/parser/suite/ts/pass/b2ffb14d01b9676e.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum E {
-   | ^^^^
- 5 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/b2ffb14d01b9676e.ts
 ✗ test/parser/suite/ts/pass/b3072a5407286487.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -41890,15 +41214,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/b4537e43e567f7be.ts
-✗ test/parser/suite/ts/pass/b45656e0077ccf9b.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum T1 {
-   | ^^^^
- 3 |     a = "1",
-   |
-
+✓ test/parser/suite/ts/pass/b45656e0077ccf9b.ts
 ✗ test/parser/suite/ts/pass/b465a9c02d77ae6c.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -41943,15 +41259,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/b472a9bc5ea4fcde.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |   A
-   |
-
+✓ test/parser/suite/ts/pass/b472a9bc5ea4fcde.ts
 ✓ test/parser/suite/ts/pass/b47b86c7ae5ff0ed.ts
 ✓ test/parser/suite/ts/pass/b485720f2cc56603.ts
 ✗ test/parser/suite/ts/pass/b486edad44e4d76a.ts
@@ -42203,17 +41511,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/b5f1701ea46ace07.ts
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'enum'
-   |
- 2 | // Must be integer literals.
- 3 | declare enum E {
-   |         ^^^^
- 4 |     a = 1e3, // ok
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/b5f1701ea46ace07.ts
 ✓ test/parser/suite/ts/pass/b5f43f435778755b.ts
 ✗ test/parser/suite/ts/pass/b5f78857ba3ffd5a.module.ts
 error: Expected ';' after class field, but found 'foo'
@@ -42900,15 +42198,7 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/b86d2010e2de38fc.ts
-✗ test/parser/suite/ts/pass/b875a0bf165e8957.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @strict: false
- 3 | enum Foo {
-   | ^^^^
- 4 |   a = 2,
-   |
-
+✓ test/parser/suite/ts/pass/b875a0bf165e8957.ts
 ✓ test/parser/suite/ts/pass/b87b22269be992df.ts
 ✓ test/parser/suite/ts/pass/b890625dc568bf7a.ts
 ✗ test/parser/suite/ts/pass/b89369481a9ebc02.ts
@@ -43071,15 +42361,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 
 ✓ test/parser/suite/ts/pass/b9158cc56ec42619.ts
-✗ test/parser/suite/ts/pass/b91ec6427e3b189f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |   "A", "B", "C"
-   |
-
+✓ test/parser/suite/ts/pass/b91ec6427e3b189f.ts
 ✗ test/parser/suite/ts/pass/b91f54139cb1a853.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -43181,13 +42463,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/b99319ea8f272d93.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 2 | // type parameter type is not a valid operand of addition operator
- 3 | enum E { a, b }
-   | ^^^^
  4 | 
+ 5 | function foo<T, U>(t: T, u: U) {
+   |             ^
+ 6 |     let a!: any;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/b99fddc5d01bc117.ts
 error: Expected ';' after class field, but found ':'
@@ -43383,15 +42667,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/ba2087ac1df3d25f.ts
 ✓ test/parser/suite/ts/pass/ba27d7458e32089f.ts
-✗ test/parser/suite/ts/pass/ba2a3ae45479733a.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 7 | 
- 8 | const enum G {
-   |       ^^^^
- 9 |     A = 1,
-   |
-
+✓ test/parser/suite/ts/pass/ba2a3ae45479733a.ts
 ✓ test/parser/suite/ts/pass/ba3340221339502e.ts
 ✓ test/parser/suite/ts/pass/ba419161c6b0966b.ts
 ✗ test/parser/suite/ts/pass/ba45702ac42abb16.ts
@@ -43679,15 +42955,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/bb662598932b694a.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 3 | 
- 4 | const enum E { A, B, C, D, E, F }
-   |       ^^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/bb662598932b694a.ts
 ✗ test/parser/suite/ts/pass/bb66e1ed54495d20.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'container'
    |
@@ -43994,15 +43262,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/bce018ea8a304331.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A = 1,
-   |
-
+✓ test/parser/suite/ts/pass/bce018ea8a304331.ts
 ✓ test/parser/suite/ts/pass/bcf0a8588395e0ef.ts
 ✓ test/parser/suite/ts/pass/bcf434893390c7dd.ts
 ✗ test/parser/suite/ts/pass/bcf45da3e105cb7d.ts
@@ -44518,15 +43778,7 @@ error: Expected ']' after computed property key, but found ':'
 10 | }
    |
 
-✗ test/parser/suite/ts/pass/bf38ac02583d81a3.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | "use strict";
- 3 | enum E {
-   | ^^^^
- 4 |     static
-   |
-
+✓ test/parser/suite/ts/pass/bf38ac02583d81a3.module.ts
 ✗ test/parser/suite/ts/pass/bf3a956dc1783015.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -44538,15 +43790,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/bf45e9cb0e90b7a7.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |    'fo"o',
-   |
-
+✓ test/parser/suite/ts/pass/bf45e9cb0e90b7a7.ts
 ✗ test/parser/suite/ts/pass/bf4dedf9917d1bcb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -44571,13 +43815,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/bf658abe0b80e070.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
- 3 | 
- 4 | enum E { A, B }
-   | ^^^^
  5 | 
+ 6 | declare const m: { [K in E]: string | null };
+   |         ^^^^^
+ 7 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/bf689e662f086742.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
@@ -44966,13 +44212,15 @@ error: Expected ';' after class field, but found 'constructor'
 
 
 ✗ test/parser/suite/ts/pass/c090954e3331a017.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 3 | 
- 4 | enum E { a, b, c }
-   | ^^^^
  5 | 
+ 6 | function foo<T>(t: T) {
+   |             ^
+ 7 |     var foo_r1 = t < x;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✓ test/parser/suite/ts/pass/c092a36f2610a1c4.ts
 ✓ test/parser/suite/ts/pass/c0a9fe2d0e1b74d9.module.ts
@@ -45748,15 +44996,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/c39d9e3df0d9a8d3.ts
-✗ test/parser/suite/ts/pass/c39da5dc2060f374.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ENUM { A, B, C };
-   | ^^^^
- 5 | enum ENUM1 { };
-   |
-
+✓ test/parser/suite/ts/pass/c39da5dc2060f374.ts
 ✗ test/parser/suite/ts/pass/c3af8e5af8e23b33.ts
 error: Expected ')' to close signature parameters, but found '?'
    |
@@ -45768,15 +45008,7 @@ error: Expected ')' to close signature parameters, but found '?'
    = help: Each '(' in a signature must be matched by a ')'
 
 
-✗ test/parser/suite/ts/pass/c3b5b632f82874cf.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @strict: false
- 3 | enum _this { // Error
-   | ^^^^
- 4 |     _thisVal1,
-   |
-
+✓ test/parser/suite/ts/pass/c3b5b632f82874cf.ts
 ✗ test/parser/suite/ts/pass/c3d3110c34d7fcbf.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -46006,13 +45238,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c526f0a6600e5a6d.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 4 | 
- 5 | enum E { A }
-   | ^^^^
- 6 | interface I {
+58 | 
+59 | class A { foo: number; }
+   |              ^
+60 | interface I10 {
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/c52d50365b0fc975.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -46149,15 +45383,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/c58cf2e0b408c1bb.ts
-✗ test/parser/suite/ts/pass/c5a741bad4c3f267.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @strict: false
- 3 | enum TokenType { One, Two };
-   | ^^^^
- 4 | 
-   |
-
+✓ test/parser/suite/ts/pass/c5a741bad4c3f267.ts
 ✗ test/parser/suite/ts/pass/c5ab2566a558f86f.module.ts
 error: Expected declaration after 'export', but found 'declare'
    |
@@ -46250,13 +45476,15 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✗ test/parser/suite/ts/pass/c5feae6c8c039573.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | enum E { v1, v2 };
-   | ^^^^
  3 | 
+ 4 | function f<T extends { b: string }>(p1: T, p2: T[]) {
+   |           ^
+ 5 |     var t!: T;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/c617b6b16c8643c7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'namespace'
@@ -46387,15 +45615,7 @@ error: Unexpected token '<'
    = help: Expected an expression
 
 
-✗ test/parser/suite/ts/pass/c6aacb2559043307.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E { A }
-   | ^^^^
- 3 | var n: number;
-   |
-
+✓ test/parser/suite/ts/pass/c6aacb2559043307.ts
 ✓ test/parser/suite/ts/pass/c6aeaffc05837950.ts
 ✓ test/parser/suite/ts/pass/c6b314cc9c7eaec3.ts
 ✓ test/parser/suite/ts/pass/c6b9650c54bbb485.ts
@@ -46478,13 +45698,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c7288a96d6f69237.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'A4'
    |
- 5 | while (true) { }
- 6 | const enum E { X }
-   |       ^^^^
  7 | 
+ 8 | namespace A4 {
+   |           ^^
+ 9 |     while (true);
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/c72b4172161760d8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -46521,13 +45743,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/c73fe33f805d551d.ts
 ✗ test/parser/suite/ts/pass/c748c9de163ff394.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found 'c1'
    |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A, B, C
+75 |     x8 = E.A;
+76 |     readonly c1 = 1;
+   |              ^^
+77 |     readonly c2 = -123;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/c74a8010def858b0.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -46747,13 +45971,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c83539bc5bfa444a.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 4 | 
- 5 | enum E {
-   | ^^^^
- 6 |     a,
+ 9 | 
+10 | declare var a: any;
+   |         ^^^
+11 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/c8533fe99ef038cf.ts
 ✗ test/parser/suite/ts/pass/c856d81b24a5ff12.ts
@@ -47116,13 +46342,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/c9e3d842a1b0d0e2.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 3 | 
- 4 | enum E { a, b, c }
-   | ^^^^
  5 | 
+ 6 | declare var a: any;
+   |         ^^^
+ 7 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/c9e94e8de457aff9.ts
 error: Expected ']' after computed property key, but found ':'
@@ -47438,13 +46666,15 @@ error: Unexpected token '!' in expression
 
 
 ✗ test/parser/suite/ts/pass/cb585b7c14374a0e.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 1 | // @target: es2015
- 2 | const enum Choice { Unknown = "", Yes = "yes", No = "no" };
-   |       ^^^^
- 3 | 
+33 | 
+34 | declare function g(x: Choice.Yes): string;
+   |         ^^^^^^^^
+35 | declare function g(x: Choice.No): boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/cb5c2d07dd5c08da.ts
 ✓ test/parser/suite/ts/pass/cb6239d0ead37561.ts
@@ -47492,15 +46722,7 @@ error: 'this' is reserved and cannot be used as a binding identifier
  4 |     data: string;
    |
 
-✗ test/parser/suite/ts/pass/cba29376eaa93f79.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E1 {
-   | ^^^^
- 3 |     // illegal case
-   |
-
+✓ test/parser/suite/ts/pass/cba29376eaa93f79.ts
 ✗ test/parser/suite/ts/pass/cbb0d2cdae8d6151.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -47663,13 +46885,15 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/cc4452acdf38ccf2.ts
 ✓ test/parser/suite/ts/pass/cc4f8f7c07365537.ts
 ✗ test/parser/suite/ts/pass/cc56f467eecff94f.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | enum E { v1, v2 };
-   | ^^^^
  3 | 
+ 4 | function f<T extends { b: string }>(p1: T, p2: T[]) {
+   |           ^
+ 5 |     var t!: T;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/cc5a16dbe3b57352.ts
 error: Expected '{' to start class body, but found '<'
@@ -47829,15 +47053,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/cd0463086aa812e5.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | const enum TestType { foo, bar }
-   |       ^^^^
- 3 | type TestTypeStr = keyof typeof TestType;
-   |
-
+✓ test/parser/suite/ts/pass/cd0463086aa812e5.ts
 ✓ test/parser/suite/ts/pass/cd073d163eb5c022.ts
 ✓ test/parser/suite/ts/pass/cd0f9cb6eeb9db19.ts
 ✓ test/parser/suite/ts/pass/cd12ce1441704d5b.ts
@@ -47875,15 +47091,7 @@ error: Unexpected token '<'
 
 
 ✓ test/parser/suite/ts/pass/cd34f2c76f6ad6e8.ts
-✗ test/parser/suite/ts/pass/cd3584d3d80913ec.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @strict: false
- 3 | enum MyEnumType {
-   | ^^^^
- 4 |     foo, bar
-   |
-
+✓ test/parser/suite/ts/pass/cd3584d3d80913ec.ts
 ✗ test/parser/suite/ts/pass/cd35e630c826f91f.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Test'
    |
@@ -48274,15 +47482,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/ced8f769628ddfa5.module.ts
-✗ test/parser/suite/ts/pass/cee1484adf1c5817.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A = 1,
-   |
-
+✓ test/parser/suite/ts/pass/cee1484adf1c5817.ts
 ✓ test/parser/suite/ts/pass/cee50dc248f0558a.ts
 ✗ test/parser/suite/ts/pass/ceeb80d973e43649.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -48434,13 +47634,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/cff9db1ca36406a0.ts
 ✗ test/parser/suite/ts/pass/cffcb9522f43ecc1.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '{' to start function body, but found ';'
    |
- 2 | // @strict: false
- 3 | enum A { }
-   | ^^^^
- 4 | enum B { }
+ 5 |     
+ 6 | function foo(a: A);
+   |                   ^
+ 7 | function foo(b: B);
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/d000b49b1d09e64e.ts
 ✗ test/parser/suite/ts/pass/d001c87b24cec290.ts
@@ -48587,15 +47789,7 @@ error: Expected ';' after class field, but found 'p'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/d0663133627e710f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 7 | 
- 8 | enum E1 { one }
-   | ^^^^
- 9 | 
-   |
-
+✓ test/parser/suite/ts/pass/d0663133627e710f.ts
 ✗ test/parser/suite/ts/pass/d07964aa90e21000.module.ts
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -48804,15 +47998,7 @@ error: Expected ';' after class field, but found 'foo'
 ✓ test/parser/suite/ts/pass/d1505f8178cc3373.ts
 ✓ test/parser/suite/ts/pass/d158dfa59a453797.ts
 ✓ test/parser/suite/ts/pass/d160a71d418c1366.ts
-✗ test/parser/suite/ts/pass/d1656bdc46cd807d.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 7 | 
- 8 | const enum E {
-   |       ^^^^
- 9 |     a = 10,
-   |
-
+✓ test/parser/suite/ts/pass/d1656bdc46cd807d.ts
 ✓ test/parser/suite/ts/pass/d1690f3df42d385d.ts
 ✗ test/parser/suite/ts/pass/d17e990b52e7c3ed.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -49211,15 +48397,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/d2d68cbe07caf20f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum A {
-   | ^^^^
- 3 |     "-Infinity" = 1
-   |
-
+✓ test/parser/suite/ts/pass/d2d68cbe07caf20f.ts
 ✗ test/parser/suite/ts/pass/d2d9e18a49b96fd7.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -49524,13 +48702,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/d42cfbc64484dda8.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ',' or '}' in object, but found 'as'
    |
- 3 | 
- 4 | enum TerrestrialAnimalTypes {
-   | ^^^^
- 5 |   CAT = "cat",
+35 |   ],
+36 |   dog: [] as never[]
+   |           ^^
+37 | };
    |
+   = help: Add a comma between properties or close the object with '}'.
+
 
 ✗ test/parser/suite/ts/pass/d444cedc492e0951.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -49642,15 +48822,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/d4d8e302aeff7409.ts
-✗ test/parser/suite/ts/pass/d4dae83d8ebc74ea.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Color {
-   | ^^^^
- 3 |     Color,
-   |
-
+✓ test/parser/suite/ts/pass/d4dae83d8ebc74ea.ts
 ✗ test/parser/suite/ts/pass/d4e1fb1924763838.ts
 error: Expected ';' after class field, but found 'm1'
    |
@@ -49697,15 +48869,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/d5005cc72220ab94.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum E {
-   | ^^^^
- 5 |     a,
-   |
-
+✓ test/parser/suite/ts/pass/d5005cc72220ab94.ts
 ✗ test/parser/suite/ts/pass/d501b83b445bcedd.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -50486,13 +49650,15 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/d98dfad7e5f22c64.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected ';' after class field, but found ':'
    |
- 2 | // @strict: false
- 3 | enum e {
-   | ^^^^
- 4 |     e1,
+68 | 
+69 | class A { foo: number; }
+   |              ^
+70 | interface I10 {
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/d996541bbcae7c17.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -50518,13 +49684,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/d99a88e51ca2d39c.module.ts
 ✗ test/parser/suite/ts/pass/d9a8d825d0764e18.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 4 | 
- 5 | enum E {
-   | ^^^^
- 6 |     a,
+ 9 | 
+10 | declare var a: any;
+   |         ^^^
+11 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/d9b7caff7c424d20.ts
 ✗ test/parser/suite/ts/pass/d9bd55eec87b20fb.ts
@@ -50643,15 +49811,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/da431917642b5138.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum A {
-   | ^^^^
- 3 |     Infinity = 1
-   |
-
+✓ test/parser/suite/ts/pass/da431917642b5138.ts
 ✗ test/parser/suite/ts/pass/da44a3eccc231a34.module.ts
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -50708,15 +49868,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/da797281c357f205.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 |     return E.A
- 4 |     enum E { A }
-   |     ^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/da797281c357f205.ts
 ✓ test/parser/suite/ts/pass/da7d96c37c5b019f.ts
 ✗ test/parser/suite/ts/pass/da7e86d9624d48d5.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -51118,15 +50270,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/dbf4a7e22f8a164f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum Test {
-   | ^^^^
- 3 |     A,
-   |
-
+✓ test/parser/suite/ts/pass/dbf4a7e22f8a164f.ts
 ✓ test/parser/suite/ts/pass/dbf9136820dfe980.ts
 ✓ test/parser/suite/ts/pass/dbfe0b36b185a9f1.ts
 ✓ test/parser/suite/ts/pass/dc0c5eddab6f192e.ts
@@ -51165,15 +50309,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/dc5c75111a7e010d.module.ts
-✗ test/parser/suite/ts/pass/dc62edf063bb42ca.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 | 
- 6 | enum ENUM1 { A, B, "" };
-   | ^^^^
- 7 | 
-   |
-
+✓ test/parser/suite/ts/pass/dc62edf063bb42ca.ts
 ✓ test/parser/suite/ts/pass/dc6616209605866f.ts
 ✗ test/parser/suite/ts/pass/dc6a13bb2890d9f8.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -51352,13 +50488,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/dd2ae0d55df46424.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '{' to start class body, but found '<'
    |
- 5 | 
- 6 | enum E { red, blue }
-   | ^^^^
- 7 | 
+15 | 
+16 | class Class<T> {
+   |            ^
+17 |     foo() { }
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/dd3698b6ff950944.ts
 ✗ test/parser/suite/ts/pass/dd3b9e5ddf87ecca.ts
@@ -51791,13 +50929,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/df0043273c2a0d0f.ts
 ✗ test/parser/suite/ts/pass/df00ca52a6e44771.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Unexpected token '<'
    |
- 3 | 
- 4 | enum MyEmusEnum {
-   | ^^^^
- 5 |     emu
+33 | var z1 = emptyObj[hi];
+34 | var z2 = (<any>emptyObj)[hi];
+   |           ^
+35 | 
    |
+   = help: Expected an expression
+
 
 ✗ test/parser/suite/ts/pass/df0aa3e8144ba009.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -52096,15 +51236,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/e03a93825ee2a6ac.ts
 ✓ test/parser/suite/ts/pass/e0485a10598c63a4.ts
-✗ test/parser/suite/ts/pass/e053c046c5464a4b.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ENUM1 { A, B, "" };
-   | ^^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/e053c046c5464a4b.ts
 ✗ test/parser/suite/ts/pass/e05515fc6e8ba1fb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm1'
    |
@@ -52689,15 +51821,7 @@ error: Expected ';' after class field, but found 'p1'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/e2a0812892553699.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
- 3 | 
-   |
-
+✓ test/parser/suite/ts/pass/e2a0812892553699.ts
 ✗ test/parser/suite/ts/pass/e2b1847b39312902.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'm1'
    |
@@ -53305,13 +52429,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/e50f14746d7406e5.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
  3 | 
+ 4 | declare var a: number;
+   |         ^^^
+ 5 | declare var b: boolean;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/e51014049edb7134.module.ts
 error: Expected declaration after 'export', but found 'interface'
@@ -53350,15 +52476,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/e5281603b9c01f13.ts
 ✓ test/parser/suite/ts/pass/e5313f2476aa6fb3.ts
 ✓ test/parser/suite/ts/pass/e54aeddce0908303.module.ts
-✗ test/parser/suite/ts/pass/e551acc824b2a447.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es6
- 2 | enum E {
-   | ^^^^
- 3 |     member
-   |
-
+✓ test/parser/suite/ts/pass/e551acc824b2a447.ts
 ✗ test/parser/suite/ts/pass/e56355e3cb9a78cf.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found '__test1__'
    |
@@ -53382,15 +52500,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/e564f0c1f0bc2376.ts
-✗ test/parser/suite/ts/pass/e56e912427cdb00a.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | var array = [{ x: "", y: true }]
- 4 | enum E { x }
-   | ^^^^
- 5 | for ({x, y: y = E.x} of array) {
-   |
-
+✓ test/parser/suite/ts/pass/e56e912427cdb00a.ts
 ✗ test/parser/suite/ts/pass/e5759586e57275fd.ts
 error: Expected '{' to start class body, but found 'implements'
    |
@@ -53508,15 +52618,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e60ef7a7dcc277db.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ENUM { };
-   | ^^^^
- 5 | enum ENUM1 { A, B, "" };
-   |
-
+✓ test/parser/suite/ts/pass/e60ef7a7dcc277db.ts
 ✗ test/parser/suite/ts/pass/e612db867d68cc52.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -53540,15 +52642,7 @@ error: Expected ';' after class field, but found 'a'
 
 
 ✓ test/parser/suite/ts/pass/e61fb2b3991eef3b.ts
-✗ test/parser/suite/ts/pass/e63265a823f54df9.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
-   |
- 7 | 
- 8 | const enum G {
-   |       ^^^^
- 9 |     A = 1,
-   |
-
+✓ test/parser/suite/ts/pass/e63265a823f54df9.ts
 ✗ test/parser/suite/ts/pass/e63d44bfb40a48ef.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -53664,15 +52758,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/e6adb3da64b3137f.ts
 ✓ test/parser/suite/ts/pass/e6b2661e726db374.ts
 ✓ test/parser/suite/ts/pass/e6b7d99dd88f25f2.ts
-✗ test/parser/suite/ts/pass/e6ceaceba1b00c11.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
-10 | 
-11 | enum E01 {
-   | ^^^^
-12 |     A
-   |
-
+✓ test/parser/suite/ts/pass/e6ceaceba1b00c11.ts
 ✓ test/parser/suite/ts/pass/e6cee21de47325f3.ts
 ✓ test/parser/suite/ts/pass/e6d06efa2f96c1af.ts
 ✓ test/parser/suite/ts/pass/e6d545d35b244b3a.ts
@@ -54880,15 +53966,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ec3d3a914108b460.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum E {
-   | ^^^^
- 3 |     A
-   |
-
+✓ test/parser/suite/ts/pass/ec3d3a914108b460.ts
 ✗ test/parser/suite/ts/pass/ec4c05188ad1698a.module.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -54978,15 +54056,7 @@ error: Expected '{' to start class body, but found 'implements'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/ec8ba5429c1a1a45.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es5, es2015
- 2 | enum E1 { x }
-   | ^^^^
- 3 | enum E2 { x }
-   |
-
+✓ test/parser/suite/ts/pass/ec8ba5429c1a1a45.ts
 ✗ test/parser/suite/ts/pass/ec8e76aec00f433b.module.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -55626,13 +54696,15 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/efa74c41553d7cb2.module.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'N'
    |
-16 | }
-17 | enum E { A = 0, B = E.A }
-   | ^^^^
-18 | interface I { x: I };
+19 | type T = { x: T };
+20 | namespace N { N; }
+   |           ^
+21 | 
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/efad9ae455371981.ts
 error: Expected ';' after class field, but found ':'
@@ -56151,13 +55223,15 @@ error: Expected ')' to close signature parameters, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/f1e50288c4ef4c5e.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
- 3 | 
+11 | 
+12 | function foo<T, U>(t: T, u: U) {
+   |             ^
+13 |     var r1 = t < u;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/f1e6b748c8b17999.ts
 error: Expected '{' to start class body, but found '<'
@@ -56184,13 +55258,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f213dbaa3c521ba9.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Baz'
    |
-18 | 
-19 |     enum EnumA { Value }
-   |     ^^^^
-20 |     const enum EnumB { Value }
+88 | 
+89 |     namespace Baz { export const value = 1234 }
+   |               ^^^
+90 | }
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/f217a30027cc37ce.ts
 error: Expected ']' to close an indexed access type, but found ':'
@@ -56414,15 +55490,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f2c149f32614503d.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 |     return E.A
- 6 |     enum E { A }
-   |     ^^^^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/f2c149f32614503d.ts
 ✗ test/parser/suite/ts/pass/f2c1f4adc92185eb.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -56563,15 +55631,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/f346460d29713930.ts
 ✓ test/parser/suite/ts/pass/f350816a0c4a5498.ts
 ✓ test/parser/suite/ts/pass/f351f525c3d6b426.ts
-✗ test/parser/suite/ts/pass/f35def17d2986676.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 1 | // @target: es2015
- 2 | enum A { foo, bar }
-   | ^^^^
- 3 | A = undefined;  // invalid LHS
-   |
-
+✓ test/parser/suite/ts/pass/f35def17d2986676.ts
 ✓ test/parser/suite/ts/pass/f3661154d0ec2cb0.ts
 ✗ test/parser/suite/ts/pass/f367ddbb178f737b.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'M'
@@ -56776,15 +55836,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f4312b945e090c1f.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 3 | 
- 4 | enum ENUM { };
-   | ^^^^
- 5 | enum ENUM1 { A, B, "" };
-   |
-
+✓ test/parser/suite/ts/pass/f4312b945e090c1f.ts
 ✗ test/parser/suite/ts/pass/f4324e9e69e18f32.ts
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -57146,13 +56198,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f569df7490b847d8.ts
-error: 'enum' is reserved and cannot be used as an identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 1 | // @target: es2015
- 2 | enum E { a, b, c }
-   | ^^^^
  3 | 
+ 4 | declare var a: any;
+   |         ^^^
+ 5 | declare var b: number;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/f56dd20c3ab1fac2.ts
 error: Expected '(' to start parameter list, but found '<'
@@ -58135,13 +57189,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/f9b47291d912c372.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
- 1 | // @target: es2015
- 2 | const enum Enum1 {
-   |       ^^^^
- 3 |    A0 = 100,
+50 | 
+51 | namespace A {
+   |           ^
+52 |     export namespace B {
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/f9bbe9c960c9945f.ts
 error: Expected ';' after class field, but found 'c'
@@ -58271,15 +57327,7 @@ error: Unexpected token '<'
 
 
 ✓ test/parser/suite/ts/pass/fa86c362f9be8375.ts
-✗ test/parser/suite/ts/pass/fa8ca9fa44f44c66.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 5 | /** Enum of colors*/
- 6 | enum Colors {
-   | ^^^^
- 7 |     /** Fancy name for 'blue'*/
-   |
-
+✓ test/parser/suite/ts/pass/fa8ca9fa44f44c66.ts
 ✗ test/parser/suite/ts/pass/fa93bfb02667ce48.ts
 error: Expected '{' to start class body, but found '<'
    |
@@ -58485,13 +57533,15 @@ error: Expected ';' after class field, but found 'set'
 
 
 ✗ test/parser/suite/ts/pass/fb62786bd33ab8af.ts
-error: 'enum' is reserved and cannot be used as a binding identifier
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
- 3 | 
- 4 | const enum SyntaxKind {
-   |       ^^^^
- 5 |     Modifier,
+15 | 
+16 | declare function isModifier(node: Node): node is Modifier;
+   |         ^^^^^^^^
+17 | declare function isDecorator(node: Node): node is Decorator;
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/fb655abc09c1d17a.ts
 error: Expected '{' to start class body, but found '<'
@@ -58504,15 +57554,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/fb688dd3ed6dd196.ts
-error: 'enum' is reserved and cannot be used as an identifier
-   |
- 2 | // @declaration: true
- 3 | enum T1 {
-   | ^^^^
- 4 |     a = "1",
-   |
-
+✓ test/parser/suite/ts/pass/fb688dd3ed6dd196.ts
 ✗ test/parser/suite/ts/pass/fb6c29f3bd517451.ts
 error: Expected '{' to start function body, but found ';'
    |

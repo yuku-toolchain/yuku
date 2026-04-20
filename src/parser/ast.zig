@@ -3166,6 +3166,67 @@ pub const TSInterfaceHeritage = struct {
     type_arguments: NodeIndex = .null,
 };
 
+/// A TypeScript `enum` declaration. Creates a named runtime binding that also
+/// acts as a type. May be prefixed by `const` (enum whose members are inlined
+/// at use sites) and/or `declare` (ambient declaration, no emitted runtime).
+///
+/// ## Example
+/// ```ts
+/// enum Color { Red, Green = 2, Blue }
+/// //   ^^^^^ id
+/// //         ^^^^^^^^^^^^^^^^^^^^^^^^ body (TSEnumBody)
+/// const enum Flags { A = 1, B = 2 }
+/// // ^^^^^ is_const = true
+/// declare enum Ambient { X, Y }
+/// // ^^^^^^^ declare = true
+/// ```
+pub const TSEnumDeclaration = struct {
+    /// the enum name, a `BindingIdentifier`
+    id: NodeIndex,
+    /// the `TSEnumBody` holding the member list
+    body: NodeIndex,
+    /// true when preceded by the `const` modifier
+    is_const: bool = false,
+    /// true when preceded by the `declare` modifier
+    declare: bool = false,
+};
+
+/// The body of an enum declaration. Holds the members in source order,
+/// delimited by commas (trailing comma permitted).
+///
+/// ## Example
+/// ```ts
+/// enum Foo { A, B = 1, C }
+/// //       ^^^^^^^^^^^^^^ TSEnumBody
+/// ```
+pub const TSEnumBody = struct {
+    /// the enum members in source order
+    members: IndexRange,
+};
+
+/// A single member in an enum body. The name is an identifier, a string
+/// literal, or a template literal (with or without a computed `[...]`
+/// wrapper). The value is an optional initializer expression.
+///
+/// ## Example
+/// ```ts
+/// enum E {
+///     A,        // id = Identifier "A",    initializer = null
+///     B = 1,    // id = Identifier "B",    initializer = NumericLiteral 1
+///     "s" = 2,  // id = StringLiteral "s", initializer = NumericLiteral 2
+/// }
+/// ```
+pub const TSEnumMember = struct {
+    /// the member name. one of `IdentifierName`, `StringLiteral`, or
+    /// `TemplateLiteral`. when the source used the computed `[...]` form,
+    /// `computed` is true.
+    id: NodeIndex,
+    /// the `= expr` value for this member, or `.null` when absent
+    initializer: NodeIndex = .null,
+    /// true when the source wrote the name as a computed key `[...]`
+    computed: bool = false,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3494,6 +3555,9 @@ pub const NodeData = union(enum) {
     ts_interface_declaration: TSInterfaceDeclaration,
     ts_interface_body: TSInterfaceBody,
     ts_interface_heritage: TSInterfaceHeritage,
+    ts_enum_declaration: TSEnumDeclaration,
+    ts_enum_body: TSEnumBody,
+    ts_enum_member: TSEnumMember,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

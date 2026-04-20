@@ -1,45 +1,71 @@
-// simple interface
-interface Foo {
-  a: number;
-  b: string;
+// plain enum, bare members
+enum Color {
+  Red,
+  Green,
+  Blue,
 }
 
-// generic interface
-interface Bar<T> {
-  value: T;
+// enum with initializers
+enum Direction {
+  Up = 1,
+  Down = 2,
+  Left = 3,
+  Right = 4,
 }
 
-// single extends, no type args
-interface I2 extends I1 {
-  x: number;
+// enum with string initializers
+enum Status {
+  Active = "active",
+  Inactive = "inactive",
 }
 
-// multiple extends with type args
-interface I3<T> extends A<T>, B<T> {
-  c: T;
+// enum with string-literal member names
+enum AgeGroups {
+  "0-17",
+  "18-22",
+  "23-27",
 }
 
-// dotted extends (MemberExpression)
-interface I4 extends Ns.Base {}
-
-// deep dotted extends with type args
-interface I5<T> extends Outer.Inner.Thing<T> {}
-
-// interface with mixed signatures
-interface Signatures {
-  prop: number;
-  method(): void;
-  (x: string): boolean;
-  new (x: number): Signatures;
-  [key: string]: any;
-  readonly ro: number;
-  opt?: string;
+// trailing comma
+enum TrailingComma {
+  A,
+  B,
 }
 
-// declare interface
-declare interface Ambient {
-  x: number;
+// no trailing comma
+enum NoTrailing {
+  A,
+  B
 }
 
-// extends with generics closing with >>
-interface Nested<T> extends Outer<Inner<T>> {}
+// empty enum
+enum Empty {}
+
+// const enum
+const enum Flags {
+  A = 1,
+  B = 2,
+  C = A | B,
+}
+
+// declare enum
+declare enum Ambient {
+  X,
+  Y,
+  Z,
+}
+
+// declare const enum
+declare const enum AmbientConst {
+  One = 1,
+  Two = 2,
+}
+
+// function with enum inside
+function wrap() {
+  enum Inner {
+    a,
+    b = 5,
+  }
+  return Inner;
+}
