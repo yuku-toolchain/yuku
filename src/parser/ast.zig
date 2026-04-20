@@ -3296,6 +3296,35 @@ pub const TSGlobalDeclaration = struct {
     declare: bool = false,
 };
 
+// ts: parameter properties (class constructor shorthand)
+
+/// A TypeScript parameter property, a constructor parameter that carries an
+/// accessibility, `readonly`, or `override` modifier and therefore implicitly
+/// declares a class field of the same name and initial value.
+///
+/// ## Example
+/// ```ts
+/// class C {
+///   constructor(
+///     public x: number,        // accessibility "public"
+///     readonly y: string,      // readonly
+///     protected override z: T, // accessibility "protected", override
+///   ) {}
+/// }
+/// ```
+pub const TSParameterProperty = struct {
+    /// `@dec` decorators preceding the modifier, in source order.
+    decorators: IndexRange,
+    /// a `BindingIdentifier` or `AssignmentPattern`.
+    parameter: NodeIndex,
+    /// true for the `override` modifier.
+    override: bool = false,
+    /// true for the `readonly` modifier.
+    readonly: bool = false,
+    /// `.none` when no accessibility modifier was written.
+    accessibility: Accessibility = .none,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3630,6 +3659,7 @@ pub const NodeData = union(enum) {
     ts_module_declaration: TSModuleDeclaration,
     ts_module_block: TSModuleBlock,
     ts_global_declaration: TSGlobalDeclaration,
+    ts_parameter_property: TSParameterProperty,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

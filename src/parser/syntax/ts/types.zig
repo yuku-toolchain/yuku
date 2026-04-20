@@ -549,7 +549,7 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
         "A function or constructor type requires a parenthesized parameter list",
     )) return null;
 
-    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
+    const params = try functions.parseFormalParamaters(parser, .signature, false) orelse return null;
 
     if (!try parser.expect(
         .right_paren,
@@ -946,7 +946,7 @@ fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
         "A signature parameter list must be enclosed in parentheses",
     )) return null;
 
-    const params = try functions.parseFormalParamaters(parser, .signature) orelse return null;
+    const params = try functions.parseFormalParamaters(parser, .signature, false) orelse return null;
 
     if (!try parser.expect(
         .right_paren,

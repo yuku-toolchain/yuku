@@ -34,11 +34,9 @@ pub const Ctx = struct {
     /// typescript types live in a separate namespace from javascript values
     /// and are erased at runtime. the semantic traverser skips their subtrees
     /// entirely so type-only identifiers never enter the js scope maps.
-    /// `ts_export_assignment` is the one exception, it wraps a runtime
-    /// expression that still needs reference tracking.
     pub fn shouldWalk(_: *const Ctx, data: ast.NodeData) bool {
         return switch (data) {
-            .ts_export_assignment => true,
+            .ts_export_assignment, .ts_parameter_property => true,
             inline else => |_, tag| comptime !std.mem.startsWith(u8, @tagName(tag), "ts_"),
         };
     }

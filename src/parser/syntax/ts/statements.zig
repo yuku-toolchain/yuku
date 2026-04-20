@@ -448,7 +448,7 @@ fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
         "A module body is written '{ <statements> }'",
     )) return null;
 
-    const body = try parser.parseBody(.right_brace, .other);
+    const body = try parser.parseBody(.right_brace, .module_block);
 
     const end = parser.current_token.span.end;
     if (!try parser.expect(

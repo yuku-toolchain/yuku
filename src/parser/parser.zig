@@ -161,11 +161,12 @@ pub const Parser = struct {
     const BodyKind = enum {
         program,
         function,
+        module_block,
         other,
     };
 
     pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
-        self.context.in_directive_prologue = kind == .program or kind == .function;
+        self.context.in_directive_prologue = kind == .program or kind == .function or kind == .module_block;
 
         defer self.context.in_directive_prologue = false;
 

@@ -4,7 +4,7 @@ const source = await Bun.file("test/index.ts").text();
 
 console.time('parse')
 const result = parse(source, {
-  lang: "ts",
+  lang: "tsx",
   semanticErrors: true
 });
 console.timeEnd('parse')

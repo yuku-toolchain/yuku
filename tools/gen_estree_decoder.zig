@@ -112,10 +112,7 @@ fn writeDecodeOpen(w: *Writer) !void {
         \\    const pb = po >> 2;
         \\    const iStart = _u32[pb + {[items]d}], rest = _u32[pb + {[rest]d}];
         \\    const p = [];
-        \\    for (let j = 0; j < len; j++) {{
-        \\      const fi = _u32[_extraBase + iStart + j];
-        \\      p.push(node(_u32[(_nodesOff + fi * {[size]d} >> 2) + {[pat]d}]));
-        \\    }}
+        \\    for (let j = 0; j < len; j++) p.push(node(_u32[_extraBase + iStart + j]));
         \\    if (rest !== NULL) p.push(node(rest));
         \\    return p;
         \\  }}
@@ -137,7 +134,6 @@ fn writeDecodeOpen(w: *Writer) !void {
         .f01 = rt.NODE_FIELD0_OFFSET + 1,
         .items = comptime u32IndexOf(ast.FormalParameters, "items"),
         .rest = comptime u32IndexOf(ast.FormalParameters, "rest"),
-        .pat = comptime u32IndexOf(ast.FormalParameter, "pattern"),
     });
 }
 
@@ -663,6 +659,11 @@ const TS_EXTRAS = [_]struct { node: []const u8, extras: []const Extra }{
     .{ .node = "ts_index_signature", .extras = &.{
         .{ .field = "static", .value = "false" },
         .{ .field = "accessibility", .value = "null" },
+    } },
+    // constructor parameter properties cannot be static; the field is a
+    // fixed estree convention with no backing zig storage.
+    .{ .node = "ts_parameter_property", .extras = &.{
+        .{ .field = "static", .value = "false" },
     } },
 };
 

@@ -439,7 +439,7 @@ fn parseMethodDefinition(
 
     if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
 
-    const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
+    const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters, kind == .constructor) orelse return null;
 
     const params_data = parser.tree.getData(params).formal_parameters;
 

@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       3406/8261 (41.23%)
-Failed:       4855
-AST mismatch: 9/3415
+Passed:       3454/8261 (41.81%)
+Failed:       4807
+AST mismatch: 9/3463
 
 ✗ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found 'as'
@@ -179,15 +179,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/01069b6b08e625f4.module.ts (parse errors)
-error: Expected ')' after method parameters, but found 'a'
-   |
- 4 | export class X {
- 5 |     constructor(readonly a: number) { }
-   |                          ^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/01069b6b08e625f4.module.ts
 ✓ test/parser/suite/ts/pass/0109aa73d419c097.ts
 ✓ test/parser/suite/ts/pass/01125188cd26508c.ts
 ✓ test/parser/suite/ts/pass/012173830017d20a.ts
@@ -1687,13 +1679,15 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/088da18f7fbfed3f.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ';' after class field, but found 'distance'
    |
- 4 | class Point {
  5 |     constructor(public x: number, public y: number) { }
-   |                        ^
  6 |     public distance(p: Point) {
+   |            ^^^^^^^^
+ 7 |         var dx = this.x - p.x;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/089a4759c6ecf242.ts
 ✗ test/parser/suite/ts/pass/089f32d9bfcf12c6.ts (parse errors)
@@ -2019,13 +2013,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/0a3ac241d9599486.ts
 ✗ test/parser/suite/ts/pass/0a3b3f3af5297757.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Unexpected token '<'
    |
- 6 | class Base {
- 7 |     constructor(public x: number, public y: number) {}
-   |                        ^
- 8 | }
+19 | 
+20 | const Printable = <T extends Constructor<Base>>(superClass: T): Constructor<Printable> & { message: string } & T =>
+   |                   ^
+21 |     class extends superClass {
    |
+   = help: Expected an expression
+
 
 ✓ test/parser/suite/ts/pass/0a3e5459dd24cee1.ts
 ✗ test/parser/suite/ts/pass/0a4712e08dec1dd2.ts (parse errors)
@@ -2157,15 +2153,7 @@ error: Invalid assignment target
 
 ✓ test/parser/suite/ts/pass/0aa9baecf862fee7.ts
 ✓ test/parser/suite/ts/pass/0aac95e58cbd8cf0.ts
-✗ test/parser/suite/ts/pass/0ab654e1465d02b6.ts (parse errors)
-error: Expected ')' after method parameters, but found 'stringOrUndefined'
-   |
- 6 | class A {
- 7 |     constructor(public stringOrUndefined: string | undefined) {}
-   |                        ^^^^^^^^^^^^^^^^^
- 8 | }
-   |
-
+✓ test/parser/suite/ts/pass/0ab654e1465d02b6.ts
 ✓ test/parser/suite/ts/pass/0ac91876c8bea619.ts
 ✗ test/parser/suite/ts/pass/0adc0adfe1ae1890.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -2227,15 +2215,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/0b0ee181b1e82a84.ts
-✗ test/parser/suite/ts/pass/0b14047346b5bce8.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
-36 | class Foo {
-37 |     constructor(public x = 12, public y = x) {}
-   |                        ^
-38 | }
-   |
-
+✓ test/parser/suite/ts/pass/0b14047346b5bce8.ts
 ✓ test/parser/suite/ts/pass/0b1c99bd0bcf6f63.ts
 ✓ test/parser/suite/ts/pass/0b3140379df95eba.module.ts
 ✓ test/parser/suite/ts/pass/0b37222e73b3d5c0.ts
@@ -2420,13 +2400,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/0be3e8e0868fb0f8.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p'
+error: Expected ';' after class field, but found ':'
    |
- 7 |     // @ts-ignore
- 8 |     constructor(public p: number) {
-   |                        ^
- 9 |         console.log('hi'); // should emit before super
+15 | class Test extends Base {
+16 |     prop: number;
+   |         ^
+17 |     // @ts-ignore
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/0be44cf270fc7e95.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -3432,15 +3414,7 @@ error: 'this' is reserved and cannot be used as a binding identifier
  7 |     var a, b, c, d, ab, bc, cd, da, blocks = this.blocks;
    |
 
-✗ test/parser/suite/ts/pass/10668e938f2dbe65.ts (parse errors)
-error: Expected ')' after method parameters, but found 'd'
-   |
- 4 |     class C {
- 5 |         constructor(public d: {}) { }
-   |                            ^
- 6 |     }
-   |
-
+✓ test/parser/suite/ts/pass/10668e938f2dbe65.ts
 ✗ test/parser/suite/ts/pass/1066cbb4d2e1e0b8.tsx (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -4386,13 +4360,15 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/149e25c736add938.ts (parse errors)
-error: Expected ')' after method parameters, but found 'map'
+error: 'super()' is only valid in a constructor of a derived class
    |
- 4 | class A {
- 5 |     constructor(private map: (value: number) => string) {
-   |                         ^^^
- 6 | 
+10 | class B {
+11 |     constructor() { super(value => String(value)); }
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 | }
    |
+   = help: Add an 'extends' clause to the class or remove the 'super()' call
+
 
 ✗ test/parser/suite/ts/pass/14aaf89888bcf799.ts (parse errors)
 error: Expected ';' after class field, but found 'regex'
@@ -4777,15 +4753,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/1631868ceac12d8d.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 2 | class Foo {
- 3 |     constructor(public x: number, public y: number = x) { }
-   |                        ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/1631868ceac12d8d.ts
 ✓ test/parser/suite/ts/pass/16419ca1bac47c40.ts
 ✓ test/parser/suite/ts/pass/164573554d154192.ts
 ✓ test/parser/suite/ts/pass/164882445609a2cf.ts
@@ -5467,13 +5435,15 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/19790653fe8bc121.ts
 ✗ test/parser/suite/ts/pass/197b1d6b922bc2ba.ts (parse errors)
-error: Expected ')' after method parameters, but found 'foo'
+error: Expected ';' after class field, but found 'p2'
    |
-12 |     m3 = function() { }
-13 |     constructor(public foo: string) {}
-   |                        ^^^
-14 |     quim = this.baz // should error
+46 | 
+47 |     public p2 = () => {
+   |            ^^
+48 |         return this.p1.foo;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/1987276a4bf27b72.ts
 ✗ test/parser/suite/ts/pass/198aece208614502.ts (parse errors)
@@ -6373,15 +6343,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/1d6806a8f07ef061.ts
-✗ test/parser/suite/ts/pass/1d6ae84abf928a8f.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 7 | class a {
- 8 |     constructor(public x: string, public y: number, z: B[]) { }
-   |                        ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/1d6ae84abf928a8f.ts
 ✗ test/parser/suite/ts/pass/1d6c6d094f5258a6.ts (parse errors)
 error: Expected ';' after class field, but found 'x'
    |
@@ -6890,13 +6852,15 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/2029ac9ce2b7925b.ts (parse errors)
-error: Expected ')' after method parameters, but found 'scopeChain'
+error: Expected ';' after class field, but found 'result'
    |
- 9 |     export class AssignScopeContext {
-10 |         constructor (public scopeChain: ScopeChain,
-   |                             ^^^^^^^^^^
-11 |                      public typeFlow: TypeFlow,
+50 | 
+51 |         public result: Symbol = null;
+   |                ^^^^^^
+52 | 
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/2029b28958d1e167.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -7218,15 +7182,7 @@ error: Expected ';' after class field, but found 'constructor'
 
 
 ✓ test/parser/suite/ts/pass/2176f9086fac28c6.ts
-✗ test/parser/suite/ts/pass/217fd2bd6bebcc39.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 3 | class Foo {
- 4 |     constructor(public x, y) { }
-   |                        ^
- 5 |        foo() {
-   |
-
+✓ test/parser/suite/ts/pass/217fd2bd6bebcc39.ts
 ✗ test/parser/suite/ts/pass/2184bd1c6ad3d08e.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -7253,15 +7209,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/218cb58a97113f33.ts
 ✓ test/parser/suite/ts/pass/218e02c6c2dd2ed7.ts
 ✓ test/parser/suite/ts/pass/2196a135b40c8854.ts
-✗ test/parser/suite/ts/pass/219e9cd70e902103.ts (parse errors)
-error: Expected ')' after method parameters, but found 'options'
-   |
-11 | class Sub extends Super {
-12 |  constructor(public options:Options) {
-   |                     ^^^^^^^
-13 |   super(options.value);
-   |
-
+✓ test/parser/suite/ts/pass/219e9cd70e902103.ts
 ✓ test/parser/suite/ts/pass/219f177defa3d5e9.ts
 ✗ test/parser/suite/ts/pass/21a057f6762a0de4.module.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -8222,15 +8170,7 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/25d75f1550e12ab6.ts
 ✓ test/parser/suite/ts/pass/25d9f90999afef88.ts
-✗ test/parser/suite/ts/pass/25e4aca1b8c8da11.ts (parse errors)
-error: Expected ')' after method parameters, but found 'b'
-   |
- 2 | class Base {
- 3 |     constructor(public b: Base) {
-   |                        ^
- 4 |     }
-   |
-
+✓ test/parser/suite/ts/pass/25e4aca1b8c8da11.ts
 ✗ test/parser/suite/ts/pass/25eaea701a5fc281.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -8314,15 +8254,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/26333e1c091907a8.tsx
 ✓ test/parser/suite/ts/pass/2638521365de607d.ts
 ✓ test/parser/suite/ts/pass/2638f8beae8c6b28.ts
-✗ test/parser/suite/ts/pass/26441ee617082198.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p'
-   |
- 6 | class B extends A {
- 7 |     constructor(public p: string) {
-   |                        ^
- 8 |         super()
-   |
-
+✓ test/parser/suite/ts/pass/26441ee617082198.ts
 ✓ test/parser/suite/ts/pass/26712ee4aa19ef12.ts
 ✗ test/parser/suite/ts/pass/2676f5ed1c9b6158.ts (parse errors)
 error: Expected ';' after class field, but found 'p'
@@ -8748,15 +8680,7 @@ error: Expected ',' or ')' in parenthesized expression, but found 'as'
 
 
 ✓ test/parser/suite/ts/pass/287b6d7763069aa8.ts
-✗ test/parser/suite/ts/pass/287f2976ad07835c.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
-36 | class Foo {
-37 |     constructor(public x = 12, public y = x) {}
-   |                        ^
-38 | }
-   |
-
+✓ test/parser/suite/ts/pass/287f2976ad07835c.ts
 ✗ test/parser/suite/ts/pass/288145ec3a590b27.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -9896,15 +9820,7 @@ error: Expected ';' after class field, but found 'Hello'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/2dcef96a7b736812.ts (parse errors)
-error: Expected ')' after method parameters, but found 'A'
-   |
- 6 | class Foo1 {
- 7 |   constructor(private A: string) {
-   |                       ^
- 8 |     "ngInject1";
-   |
-
+✓ test/parser/suite/ts/pass/2dcef96a7b736812.ts
 ✗ test/parser/suite/ts/pass/2dd50e8c1ecbb459.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -10075,15 +9991,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/2e89bbc83f525a2d.ts
 ✓ test/parser/suite/ts/pass/2e9a53cbadd3f567.ts
 ✓ test/parser/suite/ts/pass/2ebd4551c16cb2f0.ts
-✗ test/parser/suite/ts/pass/2ebec110a688a783.ts (parse errors)
-error: Expected ')' after method parameters, but found 'greeting'
-   |
- 6 |     class Greeter {
- 7 |         constructor(public greeting: string) {
-   |                            ^^^^^^^^
- 8 |         }
-   |
-
+✓ test/parser/suite/ts/pass/2ebec110a688a783.ts
 ✗ test/parser/suite/ts/pass/2ec0485163d80598.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -10329,13 +10237,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/2fef61dc36b12021.ts (parse errors)
-error: Expected ')' after method parameters, but found 'z'
+error: Expected ';' after class field, but found ':'
    |
- 3 | class X {
  4 |     constructor(public z) { }
-   |                        ^
  5 |     a: number;
+   |      ^
+ 6 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/2ff36757d46d631f.module.ts
 ✓ test/parser/suite/ts/pass/2ff42e7a2533163c.ts
@@ -12606,13 +12516,15 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/3a046a56336f644e.ts
 ✗ test/parser/suite/ts/pass/3a0b95bc3078c98d.ts (parse errors)
-error: Expected ')' after method parameters, but found 'map'
+error: Expected '{' to start class body, but found '<'
    |
- 4 | class A {
- 5 |     constructor(private map: (value: number) => string) {
-   |                         ^^^
- 6 | 
+ 9 | 
+10 | class B extends A<number, string> {
+   |                  ^
+11 |     constructor() { super(value => String(value)); }
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✗ test/parser/suite/ts/pass/3a0d3c34b6bccab4.ts (parse errors)
 error: Unexpected token '<'
@@ -13554,14 +13466,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/3e034f214352b6ba.ts (parse errors)
-error: Expected ')' after method parameters, but found 'n'
-   |
- 3 |  
- 4 | class base { constructor (public n: number) { } }
-   |                                  ^
-   |
-
+✓ test/parser/suite/ts/pass/3e034f214352b6ba.ts
 ✓ test/parser/suite/ts/pass/3e09bae882deae2e.ts
 ✗ test/parser/suite/ts/pass/3e0dd80d5b046aa3.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -13611,13 +13516,15 @@ error: Expected ';' after class field, but found 'foo'
 
 
 ✗ test/parser/suite/ts/pass/3e2b3a3deb1860f4.ts (parse errors)
-error: Expected ')' after method parameters, but found '_super'
+error: Expected '{' to start function body, but found ';'
    |
-11 | class b2 extends a {
-12 |     constructor(private _super: number) { // should be error
-   |                         ^^^^^^
-13 |         super();
+17 | class b3 extends a {
+18 |     constructor(_super: number); // no code gen - no error
+   |                                ^
+19 |     constructor(_super: string);// no code gen - no error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/3e35e754d49c47c3.ts
 ✗ test/parser/suite/ts/pass/3e373c841d82501c.ts (parse errors)
@@ -14132,15 +14039,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/40baffec7b66d72d.ts (parse errors)
-error: Expected ')' after method parameters, but found 'constructor'
-   |
- 2 | class Foo {
- 3 |   constructor(public constructor: string) {}
-   |                      ^^^^^^^^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/40baffec7b66d72d.ts
 ✗ test/parser/suite/ts/pass/40c2cf282a556072.module.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -14284,15 +14183,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/4165804c97bd0e36.ts
 ✓ test/parser/suite/ts/pass/41671ec44a08b44d.ts
-✗ test/parser/suite/ts/pass/417a7b8f1fcb42e0.ts (parse errors)
-error: Expected ')' after method parameters, but found 'n'
-   |
- 8 | 
- 9 | class base { constructor(public n: number) { } }
-   |                                 ^
-10 | class derived extends base { }
-   |
-
+✓ test/parser/suite/ts/pass/417a7b8f1fcb42e0.ts
 ✗ test/parser/suite/ts/pass/417cb4acd0461df3.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -15323,11 +15214,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/45ba38b18114cca7.module.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ')' after method parameters, but found '?'
    |
  8 | export class Bar {
  9 |     constructor(private x?: Array | undefined) {}
-   |                         ^
+   |                          ^
 10 | }
    |
 
@@ -15732,13 +15623,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/47885b0d35bdd9a5.ts (parse errors)
-error: Expected ')' after method parameters, but found 'publicProp'
+error: Expected '{' to start function body, but found ':'
    |
- 3 |     constructor(
- 4 |         public publicProp: string,
-   |                ^^^^^^^^^^
- 5 |         private privateProp: string,
+ 8 | 
+ 9 |     get getter(): number {
+   |                 ^
+10 |         return 1;
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/478b7985c5f05019.ts
 ✗ test/parser/suite/ts/pass/479a66ec40936dcd.module.ts (parse errors)
@@ -15989,11 +15882,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/48603e8192c09d0a.ts
 ✓ test/parser/suite/ts/pass/48703ad3443e2755.ts
 ✗ test/parser/suite/ts/pass/4877fda5f1775b90.ts (parse errors)
-error: Expected ')' after method parameters, but found 'readonly'
+error: Expected ')' after method parameters, but found '?'
    |
  4 | class Recursive1 {
  5 |     constructor(private readonly parent?: Recursive1) {}
-   |                         ^^^^^^^^
+   |                                        ^
  6 |     private depth: number = this.parent ? this.parent.depth + 1 : 0;
    |
 
@@ -16083,13 +15976,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/48e49630cbdb9b40.ts
 ✗ test/parser/suite/ts/pass/48eb3c8e9a93319e.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p1'
+error: Expected '{' to start function body, but found ';'
    |
  2 | class C1 {
  3 |     constructor(public p1:string); // ERROR
-   |                        ^^
+   |                                  ^
  4 |     constructor(private p2:number); // ERROR
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/48f8551f71118aeb.ts (parse errors)
 error: Expected ';' after class field, but found 'v'
@@ -16455,15 +16350,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/4a7561a950bf6ebb.ts (parse errors)
-error: Expected ')' after method parameters, but found 'y'
-   |
-27 | class C4 extends A {
-28 |     constructor(public y: number) {
-   |                        ^
-29 |         using x = null;
-   |
-
+✓ test/parser/suite/ts/pass/4a7561a950bf6ebb.ts
 ✓ test/parser/suite/ts/pass/4a78875ce9e16d1c.ts
 ✓ test/parser/suite/ts/pass/4a7de41ad03273d1.ts
 ✗ test/parser/suite/ts/pass/4a8d51db37175e4b.ts (parse errors)
@@ -17175,15 +17062,7 @@ error: Expected ';' after class field, but found 'get'
 
 
 ✓ test/parser/suite/ts/pass/4e48b6962644051c.ts
-✗ test/parser/suite/ts/pass/4e5707467ce0b72b.ts (parse errors)
-error: Expected ')' after method parameters, but found 'foo'
-   |
- 2 | class Bar {
- 3 |     constructor(public foo: string) { }
-   |                        ^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/4e5707467ce0b72b.ts
 ✗ test/parser/suite/ts/pass/4e6ac9aa9c62be99.ts (parse errors)
 error: Unexpected token '!' in expression
    |
@@ -17636,13 +17515,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/4fe048f1f51b3576.ts (parse errors)
-error: Expected ')' after method parameters, but found 'a'
+error: Expected ';' after class field, but found ':'
    |
- 5 |     static set x(v) { }
  6 |     constructor(public a: number, private b: number) { }
-   |                        ^
  7 |     static foo: string; 
+   |               ^
+ 8 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/4ff6a8335cfd9fac.ts
 ✗ test/parser/suite/ts/pass/500464fb3b4ca975.ts (parse errors)
@@ -17800,13 +17681,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/50b8c365d2b499e5.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Unexpected token '<'
    |
- 4 | class Base {
- 5 |     constructor(public x: number, public y: number) {}
-   |                        ^
- 6 | }
+13 | 
+14 | const Printable = <T extends Constructor<Base>>(superClass: T) => class extends superClass {
+   |                   ^
+15 |     static message = "hello";
    |
+   = help: Expected an expression
+
 
 ✓ test/parser/suite/ts/pass/50c0bdd039e4678a.ts
 ✓ test/parser/suite/ts/pass/50c9ed54c5103f36.ts
@@ -18010,13 +17893,15 @@ error: Expected ';' after class field, but found 'B'
 
 
 ✗ test/parser/suite/ts/pass/51af390b5d64c228.ts (parse errors)
-error: Expected ')' after method parameters, but found 'z'
+error: Expected ';' after class field, but found ':'
    |
- 3 | class X {
  4 |   constructor(public z) { }
-   |                      ^
  5 |   a: number;
+   |    ^
+ 6 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/51bc75bc49c750c7.ts
 ✓ test/parser/suite/ts/pass/51cea12c57f593e8.ts
@@ -18476,15 +18361,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/543fb86e41ece9b1.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 8 |     blah = 2;
- 9 |     constructor(public x: number) {
-   |                        ^
-10 |         "use strict";
-   |
-
+✓ test/parser/suite/ts/pass/543fb86e41ece9b1.ts
 ✗ test/parser/suite/ts/pass/544efe6eec1f2347.ts (parse errors)
 error: Expected 'from' after import clause, but found '='
    |
@@ -18802,15 +18679,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/55bde1b2bc5ace0b.ts (parse errors)
-error: Expected ')' after method parameters, but found 'M'
-   |
-12 |     class d {
-13 |         constructor(private M, p = x) {
-   |                             ^
-14 |         }
-   |
-
+✓ test/parser/suite/ts/pass/55bde1b2bc5ace0b.ts
 ✗ test/parser/suite/ts/pass/55c7105dce58210e.ts (parse errors)
 error: Unexpected token '<'
    |
@@ -19108,15 +18977,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/56e1ed5b479617c8.ts
-✗ test/parser/suite/ts/pass/56f78be8161ca497.ts (parse errors)
-error: Expected ')' after method parameters, but found 'z'
-   |
- 5 | 
- 6 |     constructor(public z = this, zz = this, zzz = (p = this) => this) {
-   |                        ^
- 7 |         zzz = (p = this) => this;
-   |
-
+✓ test/parser/suite/ts/pass/56f78be8161ca497.ts
 ✗ test/parser/suite/ts/pass/5701498dc0c71467.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -19278,13 +19139,15 @@ error: Unexpected token '<'
 
 ✓ test/parser/suite/ts/pass/577922190073cf34.ts
 ✗ test/parser/suite/ts/pass/577a5768bd3e9996.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ';' after class field, but found 'x'
    |
- 4 |         class C {
- 5 |             constructor(public x: number, public y: number) { }
-   |                                ^
- 6 |         }
+17 |         class C {
+18 |             public x = x;
+   |                    ^
+19 |             constructor(public y: number) { }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/577b7d84eb21ed90.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -19565,15 +19428,7 @@ error: Expected ';' after class field, but found '_t'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/58ee1b056561e4c4.module.ts (parse errors)
-error: Expected ')' after method parameters, but found 'isInternal1'
-   |
- 8 |     /** @internal */
- 9 |     public isInternal1: string,
-   |            ^^^^^^^^^^^
-10 |     /** @internal */ public isInternal2: string, /** @internal */
-   |
-
+✓ test/parser/suite/ts/pass/58ee1b056561e4c4.module.ts
 ✗ test/parser/suite/ts/pass/58f6c6814d029c75.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
@@ -19742,11 +19597,11 @@ error: Expected ';' after class field, but found 'static'
 
 ✓ test/parser/suite/ts/pass/59afc69fa63dbbb7.ts
 ✗ test/parser/suite/ts/pass/59bcdc9a229ef096.module.ts (parse errors)
-error: Expected ')' after method parameters, but found 'bar'
+error: Expected ')' after method parameters, but found '?'
    |
  5 | export class Foo {
  6 |   constructor(public bar?: string) {
-   |                      ^^^
+   |                         ^
  7 |   }
    |
 
@@ -19906,13 +19761,15 @@ error: Expected ';' after class field, but found 'func'
 ✓ test/parser/suite/ts/pass/5ad4a46d04f7b49b.ts
 ✓ test/parser/suite/ts/pass/5adb5c2e263b627f.ts
 ✗ test/parser/suite/ts/pass/5addd3d2f4d8709f.ts (parse errors)
-error: Expected ')' after method parameters, but found '_i'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
-26 | class c3 {
-27 |     constructor(public _i: number, ...restParameters) { //_i is error
-   |                        ^^
-28 |         var _i = 10; // no error
+36 | 
+37 | declare class c4 {
+   |         ^^^^^
+38 |     constructor(_i: number, ...restParameters); // No error - no code gen
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/5ae32627fc8f06d9.ts
 ✗ test/parser/suite/ts/pass/5aedf85f63551167.ts (parse errors)
@@ -20795,15 +20652,7 @@ error: Expected ')' to close parameter list, but found '?'
 
 ✓ test/parser/suite/ts/pass/5ee34d4dedfdd9cd.ts
 ✓ test/parser/suite/ts/pass/5ee8e7fdb9b65040.ts
-✗ test/parser/suite/ts/pass/5eee5c7a90fb3833.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 7 | class B extends A {
- 8 |     constructor(public x: number) {
-   |                        ^
- 9 |         "use strict";
-   |
-
+✓ test/parser/suite/ts/pass/5eee5c7a90fb3833.ts
 ✓ test/parser/suite/ts/pass/5eefbd084043ce6b.ts
 ✓ test/parser/suite/ts/pass/5eeff44ae30eef9f.ts
 ✓ test/parser/suite/ts/pass/5ef6423bf7107aa2.ts
@@ -21735,15 +21584,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/63d80c1ceaa932b7.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p'
-   |
- 2 | class Base {
- 3 |     constructor(protected p: number) { }
-   |                           ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/63d80c1ceaa932b7.ts
 ✗ test/parser/suite/ts/pass/63db74b3819feb3a.module.ts (parse errors)
 error: Expected 'from' after import clause, but found '='
    |
@@ -22030,11 +21871,11 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/653546d9de19c7fa.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ')' after method parameters, but found '?'
    |
  3 | class C {
  4 |     constructor(public x?) { }
-   |                        ^
+   |                         ^
  5 | }
    |
 
@@ -22267,13 +22108,15 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/666f50fdd1372beb.ts (parse errors)
-error: Expected ')' after method parameters, but found '_this'
+error: Expected '{' to start function body, but found ';'
    |
-11 | class Foo3 {
-12 |     constructor(private _this: number) { // Error
-   |                         ^^^^^
-13 |         var lambda = () => {
+19 | class Foo4 {
+20 |     constructor(_this: number); // No code gen - no error
+   |                               ^
+21 |     constructor(_this: string); // No code gen - no error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/667283d8106abf4f.ts
 ✓ test/parser/suite/ts/pass/667acbb91f6d3090.ts
@@ -23358,15 +23201,7 @@ error: Unexpected token '<'
    = help: Expected an expression
 
 
-✗ test/parser/suite/ts/pass/6b5ac3ec75d9c2e0.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 7 | class B extends A {
- 8 |     constructor(public x: number) {
-   |                        ^
- 9 |         "use strict";
-   |
-
+✓ test/parser/suite/ts/pass/6b5ac3ec75d9c2e0.ts
 ✗ test/parser/suite/ts/pass/6b6d905a68b15c98.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
    |
@@ -24027,13 +23862,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/6e599ddcefbbf60b.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected declaration after 'export', but found 'namespace'
    |
- 4 | export class Point {
- 5 |         constructor(public x: number, public y: number) { }
-   |                            ^
  6 |     }
+ 7 |     export namespace B {
+   |            ^^^^^^^^^
+ 8 |         export interface Id {
    |
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
+
 
 ✗ test/parser/suite/ts/pass/6e6abb783046629f.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -24388,13 +24225,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/702a4a09be9d5251.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected 'from' after import clause, but found '='
    |
- 3 |     export class Point {
- 4 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 5 |     }
+11 | namespace B {
+12 |     import a = A; //Error generates 'var <Alias> = <EntityName>;'
+   |              ^
+13 | }
    |
+   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+
 
 ✓ test/parser/suite/ts/pass/702ba49e53144249.module.ts
 ✗ test/parser/suite/ts/pass/702e11cb3030282f.module.ts (parse errors)
@@ -25850,15 +25689,7 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✓ test/parser/suite/ts/pass/764bd435046446f7.ts
-✗ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts (parse errors)
-error: Expected ')' after method parameters, but found 'a'
-   |
-11 |   
-12 |     constructor(public a: number) {
-   |                        ^
-13 |         super();
-   |
-
+✓ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts
 ✗ test/parser/suite/ts/pass/765441ad39f393dc.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
     |
@@ -25927,15 +25758,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/76840702a712fc06.ts
-✗ test/parser/suite/ts/pass/7687707d60cd0f54.ts (parse errors)
-error: Expected ')' after method parameters, but found 'used'
-   |
- 5 | class A {
- 6 |     constructor(private used: string) {
-   |                         ^^^^
- 7 |         let foge = used;
-   |
-
+✓ test/parser/suite/ts/pass/7687707d60cd0f54.ts
 ✗ test/parser/suite/ts/pass/768f5ac2aeb2391c.ts (parse errors)
 error: Expected ';' after class field, but found 'a'
    |
@@ -26444,15 +26267,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/787502fda4c30eff.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 7 | class Foo extends Base {
- 8 |     constructor(public x: number) {
-   |                        ^
- 9 |         super(this);
-   |
-
+✓ test/parser/suite/ts/pass/787502fda4c30eff.ts
 ✗ test/parser/suite/ts/pass/7876b7a2932d39a8.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -26465,15 +26280,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/787cb0c65f1440a6.module.ts
-✗ test/parser/suite/ts/pass/787efd19e6db28a3.ts (parse errors)
-error: Expected ')' after method parameters, but found 'text'
-   |
- 2 | class A {
- 3 |     constructor(public text: string) { }
-   |                        ^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/787efd19e6db28a3.ts
 ✓ test/parser/suite/ts/pass/788f0804e69bb474.ts
 ✓ test/parser/suite/ts/pass/789d9f63cbce6ea6.ts
 ✓ test/parser/suite/ts/pass/78a1251efcc479bf.ts
@@ -26505,13 +26312,15 @@ error: Expected ';' after class field, but found 'fnExpressionProtected'
 
 
 ✗ test/parser/suite/ts/pass/78d4758022537ece.ts (parse errors)
-error: Expected ')' after method parameters, but found 'a'
+error: Expected ';' after class field, but found ':'
    |
- 6 |         static set x(v) { }
  7 |         constructor(public a: number, private b: number) { }
-   |                            ^
  8 |         static foo: string; // not reflected in class type
+   |                   ^
+ 9 |     }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/78da68e56db333e3.ts
 ✗ test/parser/suite/ts/pass/78ef48d1464e425f.ts (parse errors)
@@ -26954,13 +26763,15 @@ error: Unexpected token '<'
 
 ✓ test/parser/suite/ts/pass/7ac9527e42f8130c.ts
 ✗ test/parser/suite/ts/pass/7acb7fe1006477e3.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected declaration after 'export', but found 'namespace'
    |
- 4 |     export class Point {
- 5 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 6 |     }
+ 7 | 
+ 8 |     export namespace B {
+   |            ^^^^^^^^^
+ 9 |         export var Origin: Point = new Point(0, 0);
    |
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
+
 
 ✗ test/parser/suite/ts/pass/7ad4f5e93e0c6f39.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
@@ -27029,13 +26840,15 @@ error: Expected ')' to close signature parameters, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/7afdf19d9cd92e98.ts (parse errors)
-error: Expected ')' after method parameters, but found 'flag'
+error: Expected '{' to start class body, but found '<'
    |
- 2 | class Model {
- 3 |     constructor(public flag: boolean) {}
-   |                        ^^^^
- 4 | }
+ 6 | type DiscriminatedUnion = { flag: true } | { flag: false };
+ 7 | class A<T extends DiscriminatedUnion> {
+   |        ^
+ 8 |     constructor(public model: T) { }
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✗ test/parser/suite/ts/pass/7affa64eef28de25.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -27865,15 +27678,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/7eb567f8fb2f33bf.ts (parse errors)
-error: Expected ')' after method parameters, but found 'readonly'
-   |
-11 | class Howl {
-12 |   constructor(public readonly options: HowlOptions) {}
-   |                      ^^^^^^^^
-13 |   once(name: "unlock", fn: () => void) {
-   |
-
+✓ test/parser/suite/ts/pass/7eb567f8fb2f33bf.ts
 ✗ test/parser/suite/ts/pass/7ed6faf475be2aa4.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -28585,13 +28390,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/825517d6b975ea92.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p1'
+error: Expected '{' to start function body, but found ';'
    |
  2 | class C1 {
  3 |  constructor(public p1:string); // ERROR
-   |                     ^^
+   |                               ^
  4 |  constructor(private p2:number); // ERROR
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/8265bf79b9f29ab8.ts
 ✓ test/parser/suite/ts/pass/826aa4e88b709f88.ts
@@ -28607,15 +28414,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/8272241a817496ac.ts
-✗ test/parser/suite/ts/pass/829219fcef156a36.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 4 | class A {
- 5 |     constructor(readonly x: number) {
-   |                          ^
- 6 |         this.x = 0;
-   |
-
+✓ test/parser/suite/ts/pass/829219fcef156a36.ts
 ✗ test/parser/suite/ts/pass/8294a267e70943da.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -28798,13 +28597,15 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/834deddacf3af95a.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected 'from' after import clause, but found '='
    |
- 3 |     export class Point {
- 4 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 5 |     }
+ 7 | 
+ 8 | import alias = moduleA;
+   |              ^
+ 9 | 
    |
+   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+
 
 ✗ test/parser/suite/ts/pass/83552e423c68d7d1.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -28922,13 +28723,15 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/83d7688badab9498.ts (parse errors)
-error: Expected ')' after method parameters, but found 'names'
+error: Expected '{' to start function body, but found ';'
    |
  3 |   class Customers {
  4 |     constructor(public names: string);
-   |                        ^^^^^
+   |                                      ^
  5 |   }
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/83fea183850bf2af.ts (parse errors)
 error: Expected ';' after class field, but found 'constructor'
@@ -29532,13 +29335,15 @@ error: Yield expression is not allowed in formal parameters
    |
 
 ✗ test/parser/suite/ts/pass/86bb7b2e3ad3664e.ts (parse errors)
-error: Expected ')' after method parameters, but found 'name'
+error: Expected declaration after 'export', but found 'namespace'
    |
- 3 |     export class L {
- 4 |         constructor(public name: string) { }
-   |                            ^^^^
  5 |     }
+ 6 |     export namespace L {
+   |            ^^^^^^^^^
+ 7 |         export var y = 12;
    |
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
+
 
 ✗ test/parser/suite/ts/pass/86bfbd68b6ccc7eb.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -30345,15 +30150,7 @@ error: Expected ')' to close signature parameters, but found '?'
 ✓ test/parser/suite/ts/pass/8a5dbe24a8018b73.ts
 ✓ test/parser/suite/ts/pass/8a729d1483573801.ts
 ✓ test/parser/suite/ts/pass/8a7552eac6558e0e.ts
-✗ test/parser/suite/ts/pass/8a7ea810ad857b19.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 2 | class Foo {
- 3 |     constructor(public x: number, public y: number = x) { }
-   |                        ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/8a7ea810ad857b19.ts
 ✗ test/parser/suite/ts/pass/8a7f10cd391033e3.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
    |
@@ -30523,15 +30320,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/8b02e6f07b8de3fc.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 8 |     export class Point {
- 9 |         constructor(public x: number, public y: number) { }
-   |                            ^
-10 |     }
-   |
-
+✓ test/parser/suite/ts/pass/8b02e6f07b8de3fc.ts
 ✗ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts (parse errors)
 error: Expected '=>' in function type, but found '&&'
    |
@@ -30628,13 +30417,15 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/8b623c176635e817.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ';' after class field, but found 'constructor'
    |
- 4 | class Foo {
- 5 |      constructor(public x: number) { }
-   |                         ^
- 6 | }
+ 8 | class Bar {
+ 9 |     public constructor(public x: number) { }
+   |            ^^^^^^^^^^^
+10 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/8b6e758e9676f3bb.ts
 ✗ test/parser/suite/ts/pass/8b73bae4a3536c0a.ts (parse errors)
@@ -31691,15 +31482,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/8ff3b68a1dda87ca.ts
 ✓ test/parser/suite/ts/pass/900cb38f537a41a5.ts
 ✓ test/parser/suite/ts/pass/900d44f35e692563.ts
-✗ test/parser/suite/ts/pass/900d89953b306db4.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 3 | 
- 4 |     constructor(public x: number, public y: number) {
-   |                        ^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/900d89953b306db4.ts
 ✓ test/parser/suite/ts/pass/900f6697682b475e.ts
 ✗ test/parser/suite/ts/pass/9011f8c7a61b8f76.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'as'
@@ -32755,13 +32538,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/9598f33ae9e39218.ts
 ✗ test/parser/suite/ts/pass/95b8511e81d0c9c7.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ';' after class field, but found 'toString'
    |
- 2 | class Point {
  3 |     constructor(public x: number, public y: number) { }
-   |                        ^
  4 |     public toString() {
+   |            ^^^^^^^^
+ 5 |         return "x=" + this.x + " y=" + this.y;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/95bdc01cb98ded0b.ts
 ✓ test/parser/suite/ts/pass/95c809c5c0c63f7a.ts
@@ -33745,13 +33530,15 @@ error: Expected ';' after class field, but found 'foo'
 
 ✓ test/parser/suite/ts/pass/99c092d90c7c26f7.ts
 ✗ test/parser/suite/ts/pass/99c285c730a19774.ts (parse errors)
-error: Expected ')' after method parameters, but found 'arguments'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
-31 | class c3 {
-32 |     constructor(public arguments: number, ...restParameters) { //arguments is error
-   |                        ^^^^^^^^^
-33 |         var arguments = 10; // no error
+41 | 
+42 | declare class c4 {
+   |         ^^^^^
+43 |     constructor(i: number, ...arguments); // No error - no code gen
    |
+   = help: Try inserting a semicolon here
+
 
 ✓ test/parser/suite/ts/pass/99c538d3e978b24c.ts
 ✓ test/parser/suite/ts/pass/99c952c91829b233.ts
@@ -34574,13 +34361,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/9df1f88b6f21e66d.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
    |
- 2 | class C1 {
- 3 |     constructor(public x: number) { }
-   |                        ^
  4 | }
+ 5 | declare var c1: C1;
+   |         ^^^
+ 6 | c1.x // OK
    |
+   = help: Try inserting a semicolon here
+
 
 ✗ test/parser/suite/ts/pass/9df3f714baaebbae.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'function'
@@ -35002,13 +34791,15 @@ error: Expected ';' after class field, but found 'x'
 
 
 ✗ test/parser/suite/ts/pass/9f959052fef98dfe.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected '{' to start function body, but found ':'
    |
- 2 | class Point {
- 3 |     constructor(public x: number, public y: number) { }
-   |                        ^
  4 | 
+ 5 |     static Origin(): Point { return { x: 0, y: 0 }; }
+   |                    ^
+ 6 | }
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/9f95cfbb9726d25c.ts (parse errors)
 error: Expected ';' after class field, but found ':'
@@ -36318,15 +36109,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/a5582500eb03b33f.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 4 | class C {
- 5 |     constructor(readonly x: number) {}
-   |                          ^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/a5582500eb03b33f.ts
 ✗ test/parser/suite/ts/pass/a55bb32a0f3a03a6.ts (parse errors)
 error: Expected ';' after class field, but found 'Count'
    |
@@ -36869,13 +36652,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a83794b3a463388f.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ';' after class field, but found ':'
    |
- 2 | class Point {
- 3 |     constructor(public x: number, public y: number) { }
-   |                        ^
  4 | 
+ 5 |     static Origin: Point = { x: 0, y: 0 };
+   |                  ^
+ 6 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/a83936e39ba4edc5.ts (parse errors)
 error: Expected ';' after class field, but found ':'
@@ -36923,13 +36708,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/a850ef39fab9f8c1.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected 'from' after import clause, but found '='
    |
- 3 |     export class Point {
- 4 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 5 |     }
+11 | 
+12 |     import a = A; //Error generates 'var <Alias> = <EntityName>;'
+   |              ^
+13 | }
    |
+   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+
 
 ✓ test/parser/suite/ts/pass/a85398e928ea14b6.ts
 ✓ test/parser/suite/ts/pass/a8631f33b91f2561.ts
@@ -37530,13 +37317,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✗ test/parser/suite/ts/pass/aac3c3a60056e1d0.ts (parse errors)
-error: Expected ')' after method parameters, but found 'foo'
+error: Expected ';' after class field, but found 'p2'
    |
-12 |     m3 = function() { }
-13 |     constructor(public foo: string) {}
-   |                        ^^^
-14 |     quim = this.baz // should error
+46 | 
+47 |     public p2 = () => {
+   |            ^^
+48 |         return this.p1.foo;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/aac489499affd372.ts
 ✗ test/parser/suite/ts/pass/aad8031e44d0ced7.ts (parse errors)
@@ -37637,13 +37426,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/ab6802f971eead23.ts
 ✗ test/parser/suite/ts/pass/ab72ee81fc7b3476.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p'
+error: Expected ';' after class field, but found ':'
    |
- 7 |     // @ts-ignore
- 8 |     constructor(public p: number) {
-   |                        ^
- 9 |         console.log('hi');
+15 | class Test extends Base {
+16 |     prop: number;
+   |         ^
+17 |     // @ts-ignore
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/ab890e6aad9f485d.ts
 ✗ test/parser/suite/ts/pass/ab899218311a685f.ts (parse errors)
@@ -38020,15 +37811,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/ad89fb4760f1ab9f.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 4 |     class Point {
- 5 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 6 |     }
-   |
-
+✓ test/parser/suite/ts/pass/ad89fb4760f1ab9f.ts
 ✗ test/parser/suite/ts/pass/ad8b2f3a4bfdd47d.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -40475,15 +40258,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/b8b90b4e256d1072.ts
-✗ test/parser/suite/ts/pass/b8b9c06a6c9caa38.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 2 | class C1 {
- 3 |   constructor(public x: X) {
-   |                      ^
- 4 |   }
-   |
-
+✓ test/parser/suite/ts/pass/b8b9c06a6c9caa38.ts
 ✗ test/parser/suite/ts/pass/b8ba9a15dead0f43.ts (parse errors)
 error: Unexpected token '<'
    |
@@ -41191,15 +40966,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/bb8cc2d2d24ab546.ts (parse errors)
-error: Expected ')' after method parameters, but found 'used'
-   |
- 6 | class A {
- 7 |     constructor(private used) {
-   |                         ^^^^
- 8 |         let foge = used;
-   |
-
+✓ test/parser/suite/ts/pass/bb8cc2d2d24ab546.ts
 ✗ test/parser/suite/ts/pass/bb908b4d8e2040cc.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -41456,15 +41223,7 @@ error: Expected ';' after class field, but found 'get'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/bcfa953cbae488da.ts (parse errors)
-error: Expected ')' after method parameters, but found 'p'
-   |
- 3 | class C {
- 4 |    constructor(protected p) { }
-   |                          ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/bcfa953cbae488da.ts
 ✓ test/parser/suite/ts/pass/bd054b9ca9025b4f.ts
 ✓ test/parser/suite/ts/pass/bd08c59471d71c41.ts
 ✗ test/parser/suite/ts/pass/bd17158d3b47f9da.ts (parse errors)
@@ -42759,15 +42518,7 @@ error: Expected ';' after class field, but found 'x'
 
 
 ✓ test/parser/suite/ts/pass/c231209fc28b2e35.module.ts
-✗ test/parser/suite/ts/pass/c234de4949ce751d.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 4 |     export class Point {
- 5 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 6 |     }
-   |
-
+✓ test/parser/suite/ts/pass/c234de4949ce751d.ts
 ✓ test/parser/suite/ts/pass/c240ee8d1946cc4a.ts
 ✓ test/parser/suite/ts/pass/c2430f9aecab1398.ts
 ✗ test/parser/suite/ts/pass/c246c43e04d714e5.module.ts (parse errors)
@@ -43027,15 +42778,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/c35f0a72fe386f5e.ts
 ✓ test/parser/suite/ts/pass/c360a956f3972cda.ts
-✗ test/parser/suite/ts/pass/c36444c0ba57eaf5.ts (parse errors)
-error: Expected ')' after method parameters, but found 'q'
-   |
-12 |     //super call in class constructor of derived type
-13 |     constructor(public q: number) {
-   |                        ^
-14 |         super('');
-   |
-
+✓ test/parser/suite/ts/pass/c36444c0ba57eaf5.ts
 ✓ test/parser/suite/ts/pass/c367d7cd08a054ff.ts
 ✗ test/parser/suite/ts/pass/c38b4c5ca3fa9dde.ts (parse errors)
 error: Expected ';' after class field, but found ':'
@@ -43873,13 +43616,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/c792ec75af14d385.ts (parse errors)
-error: Expected ')' after method parameters, but found 'name'
+error: Unexpected token '<'
    |
- 3 | class BasicMonster {
- 4 |     constructor(public name: string, public health: number) {
-   |                        ^^^^
- 5 | 
+18 | m1.health = 0;
+19 | console.log((<any>m5.isAlive).toString());
+   |              ^
+20 | 
    |
+   = help: Expected an expression
+
 
 ✗ test/parser/suite/ts/pass/c792ed389c4dd5a4.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -44140,15 +43885,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/c8e33745292c962f.ts
-✗ test/parser/suite/ts/pass/c909f4b2ee290259.module.ts (parse errors)
-error: Expected ')' after method parameters, but found 'a'
-   |
- 5 | export class C {
- 6 |     constructor(public a: number[] = [], b: number) {
-   |                        ^
- 7 |     }
-   |
-
+✓ test/parser/suite/ts/pass/c909f4b2ee290259.module.ts
 ✓ test/parser/suite/ts/pass/c90b11b9b0be8cd7.ts
 ✗ test/parser/suite/ts/pass/c911e117aa0c4680.ts (parse errors)
 error: Expected ';' after class field, but found 'foo'
@@ -46567,15 +46304,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/d3ae5514b8ccef52.ts (parse errors)
-error: Expected ')' after method parameters, but found 'z'
-   |
-17 | 
-18 | class D extends C { constructor(public z: number) { super(this.z) }  } // too few params
-   |                                        ^
-19 | class E extends C { constructor(public z: number) { super(0, this.z) } }
-   |
-
+✓ test/parser/suite/ts/pass/d3ae5514b8ccef52.ts
 ✗ test/parser/suite/ts/pass/d3b407f46041a93c.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -48010,11 +47739,11 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/db42c94f963aee06.ts
 ✗ test/parser/suite/ts/pass/db5749165ae78070.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected ')' after method parameters, but found '?'
    |
  2 | class C1 {
  3 |     constructor(public x?: number) { }
-   |                        ^
+   |                         ^
  4 | }
    |
 
@@ -48067,13 +47796,15 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/db7265ada4af9c30.ts
 ✗ test/parser/suite/ts/pass/db757a24b38d2edd.ts (parse errors)
-error: Expected ')' after method parameters, but found 'greeting'
+error: Expected ';' after class field, but found 'x'
    |
- 3 | class Greeter {
- 4 |     constructor(public greeting: string, ...b: string[]) {
-   |                        ^^^^^^^^
- 5 |     }
+ 8 |     }
+ 9 |     private x: string;
+   |             ^
+10 |     private x1: number = 10;
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✗ test/parser/suite/ts/pass/db7d09fcd47121cb.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'var'
@@ -48546,11 +48277,11 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/ddfe04becea6a99f.module.ts (parse errors)
-error: Expected ')' after method parameters, but found 'reuseTypeNode'
+error: Expected ')' after method parameters, but found '?'
    |
  9 |     // Type node is accurate, preserve
 10 |     public reuseTypeNode?: Map | undefined,
-   |            ^^^^^^^^^^^^^
+   |                         ^
 11 |     public reuseTypeNode2?: Exclude<MapOrUndefined, "dummy">,
    |
 
@@ -48576,15 +48307,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/de11abcaa286f62d.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 4 |     class Point {
- 5 |         constructor(public x: number, public y: number) { }
-   |                            ^
- 6 |     }
-   |
-
+✓ test/parser/suite/ts/pass/de11abcaa286f62d.ts
 ✗ test/parser/suite/ts/pass/de16c343fa4957cb.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'let'
    |
@@ -49928,15 +49651,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/e3da57c9841ddb81.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 8 |     blah = 2;
- 9 |     constructor(public x: number) {
-   |                        ^
-10 |         "use strict";
-   |
-
+✓ test/parser/suite/ts/pass/e3da57c9841ddb81.ts
 ✗ test/parser/suite/ts/pass/e3ea5320d460ebae.ts (parse errors)
 error: Expected ';' after class field, but found 'a'
    |
@@ -50644,15 +50359,7 @@ error: Expected ';' after class field, but found 'static'
 
 
 ✓ test/parser/suite/ts/pass/e78c0cdb63257c4b.ts
-✗ test/parser/suite/ts/pass/e79056dee69a8570.ts (parse errors)
-error: Expected ')' after method parameters, but found 'greeting'
-   |
- 6 |     class Greeter {
- 7 |         constructor(public greeting: string) {
-   |                            ^^^^^^^^
- 8 |         }
-   |
-
+✓ test/parser/suite/ts/pass/e79056dee69a8570.ts
 ✓ test/parser/suite/ts/pass/e795a578eebaebed.ts
 ✓ test/parser/suite/ts/pass/e7a650506f98f1d9.ts
 ✗ test/parser/suite/ts/pass/e7be71ac2b3c998b.ts (parse errors)
@@ -50823,13 +50530,15 @@ error: Unexpected token '<'
 
 
 ✗ test/parser/suite/ts/pass/e892a747be2a86a4.ts (parse errors)
-error: Expected ')' after method parameters, but found 'y'
+error: Expected ';' after class field, but found 'll'
    |
- 2 | class B {
- 3 |     constructor(public y:number) {
-   |                        ^
  4 |     }
+ 5 |     public ll:number;  // to be shadowed
+   |            ^^
+ 6 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/e8985b083f1f0b12.ts
 ✓ test/parser/suite/ts/pass/e899c45a4d6380b0.ts
@@ -52186,15 +51895,7 @@ error: Expected ';' after class field, but found 'f1'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/eee360873b342527.ts (parse errors)
-error: Expected ')' after method parameters, but found 'foo'
-   |
- 5 | 
- 6 |     constructor (private foo: string) {
-   |                          ^^^
- 7 | 
-   |
-
+✓ test/parser/suite/ts/pass/eee360873b342527.ts
 ✗ test/parser/suite/ts/pass/eee4b64e00650ec2.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'
    |
@@ -54663,15 +54364,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/f96ab2ba9046d05e.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
-   |
- 2 | class A {
- 3 |     constructor(public x: string) {
-   |                        ^
- 4 |     }
-   |
-
+✓ test/parser/suite/ts/pass/f96ab2ba9046d05e.ts
 ✗ test/parser/suite/ts/pass/f96f26787f39165c.ts (parse errors)
 error: Unexpected token '<'
    |
@@ -55903,13 +55596,15 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/ff618dd2c3952e0b.ts
 ✗ test/parser/suite/ts/pass/ff6275dceb1bea53.ts (parse errors)
-error: Expected ')' after method parameters, but found 'x'
+error: Expected declaration after 'export', but found 'namespace'
    |
- 7 |     export class Point {
- 8 |         constructor(public x: number, public y: number) { }
-   |                            ^
  9 |     }
+10 |     export namespace B {
+   |            ^^^^^^^^^
+11 |         export interface Id {
    |
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
+
 
 ✗ test/parser/suite/ts/pass/ff753e27876cb421.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'const'

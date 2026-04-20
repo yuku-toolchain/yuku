@@ -1,6 +1,7 @@
 const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
+const TokenTag = @import("../token.zig").TokenTag;
 
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
@@ -96,7 +97,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     const is_unique_formal_parameters = is_generator or opts.is_async;
 
-    const params = try parseFormalParamaters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters) orelse return null;
+    const params = try parseFormalParamaters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters, false) orelse return null;
 
     const params_end = parser.current_token.span.end; // including )
 
@@ -195,7 +196,10 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
-pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Error!?ast.NodeIndex {
+/// parses a parenthesised parameter list. `allow_parameter_properties` is
+/// set only for class constructor parameters and enables ts parameter
+/// property shorthand (`constructor(public x: T)`).
+pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, allow_parameter_properties: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end: u32 = parser.current_token.span.end;
 
@@ -223,7 +227,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
                 return null;
             }
         } else {
-            const param = try parseFormalParamater(parser) orelse break;
+            const param = try parseFormalParamater(parser, allow_parameter_properties) orelse break;
 
             end = parser.tree.getSpan(param).end;
 
@@ -242,7 +246,33 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind) Err
     } }, .{ .start = start, .end = end });
 }
 
-pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
+pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    // ts parameter property modifiers, only accepted inside class constructors.
+    var pp_accessibility: ast.Accessibility = .none;
+    var pp_readonly = false;
+    var pp_override = false;
+    var has_pp_modifier = false;
+
+    if (allow_parameter_properties and parser.tree.isTs()) {
+        while (try isParameterPropertyModifierStart(parser)) {
+            const modifier_token = parser.current_token;
+            try parser.advanceWithoutEscapeCheck() orelse return null;
+            try parser.reportIfEscapedKeyword(modifier_token);
+
+            switch (modifier_token.tag) {
+                .public => pp_accessibility = .public,
+                .private => pp_accessibility = .private,
+                .protected => pp_accessibility = .protected,
+                .readonly => pp_readonly = true,
+                .override => pp_override = true,
+                else => unreachable,
+            }
+            has_pp_modifier = true;
+        }
+    }
+
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
     // `function f(x: Type) { ... }`
@@ -255,5 +285,41 @@ pub fn parseFormalParamater(parser: *Parser) Error!?ast.NodeIndex {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
+    if (has_pp_modifier) {
+        return try parser.tree.createNode(.{ .ts_parameter_property = .{
+            .decorators = ast.IndexRange.empty,
+            .parameter = pattern,
+            .override = pp_override,
+            .readonly = pp_readonly,
+            .accessibility = pp_accessibility,
+        } }, .{ .start = start, .end = parser.tree.getSpan(pattern).end });
+    }
+
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
+}
+
+/// true when the current token is a parameter property modifier and the
+/// next token can start a binding pattern or another modifier. without
+/// the lookahead `constructor(readonly)` would incorrectly eat `readonly`
+/// as a modifier and then fail on the missing name.
+fn isParameterPropertyModifierStart(parser: *Parser) Error!bool {
+    const tag = parser.current_token.tag;
+    if (!isParameterPropertyModifierTag(tag)) return false;
+    const next = try parser.peekAhead() orelse return false;
+    if (next.hasLineTerminatorBefore()) return false;
+    return canFollowParameterPropertyModifier(next.tag);
+}
+
+inline fn isParameterPropertyModifierTag(tag: TokenTag) bool {
+    return tag == .public or tag == .private or tag == .protected or
+        tag == .readonly or tag == .override;
+}
+
+/// tokens that can legally follow a parameter property modifier.
+/// matches `canFollowModifier` in typescript-go for parameter positions.
+inline fn canFollowParameterPropertyModifier(tag: TokenTag) bool {
+    return tag.isIdentifierLike() or
+        tag == .left_bracket or
+        tag == .left_brace or
+        tag == .spread;
 }
