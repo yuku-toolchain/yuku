@@ -283,7 +283,6 @@ pub const Tree = struct {
     }
 };
 
-
 /// Index into the AST node array.
 ///
 /// `.null` marks an absent child for optional slots.
@@ -3104,6 +3103,69 @@ pub const TSTypeAliasDeclaration = struct {
     declare: bool = false,
 };
 
+/// A TypeScript `interface` declaration. Introduces a named structural type
+/// with an optional list of parent interfaces and a body of signatures. May
+/// be prefixed by the `declare` modifier for ambient contexts.
+///
+/// ## Example
+/// ```ts
+/// interface Foo<T> extends Bar, Base.Thing<T> { a: T; b(): void }
+/// //        ^^^ id
+/// //           ^^^ type_parameters
+/// //                       ^^^^^^^^^^^^^^^^^^ extends (two TSInterfaceHeritage)
+/// //                                         ^^^^^^^^^^^^^^^^^^^^^^ body (TSInterfaceBody)
+/// declare interface Id { x: number }
+/// // ^^^^^^^ declare = true
+/// ```
+pub const TSInterfaceDeclaration = struct {
+    /// the interface name, a `BindingIdentifier`
+    id: NodeIndex,
+    /// a `TSTypeParameterDeclaration` or `.null` when the interface has no
+    /// `<T>` list
+    type_parameters: NodeIndex = .null,
+    /// the list of `TSInterfaceHeritage` nodes that follow `extends`. empty
+    /// when the interface has no `extends` clause.
+    extends: IndexRange = .empty,
+    /// the `TSInterfaceBody` holding the member signatures
+    body: NodeIndex,
+    /// true when preceded by the `declare` modifier
+    declare: bool = false,
+};
+
+/// The body of an interface. Holds the signatures (property, method, call,
+/// construct, index) in source order. Shares the same signature family as
+/// `TSTypeLiteral`.
+///
+/// ## Example
+/// ```ts
+/// interface Foo { a: T; b(): void; [k: string]: U }
+/// //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TSInterfaceBody
+/// ```
+pub const TSInterfaceBody = struct {
+    /// the signatures in source order
+    body: IndexRange,
+};
+
+/// One entry in an interface's `extends` clause. The parent interface is
+/// identified by a runtime expression (an identifier path) with an optional
+/// `<T, U>` type argument list.
+///
+/// ## Example
+/// ```ts
+/// interface Foo extends Bar, Base.Thing<T> {}
+/// //                    ^^^ TSInterfaceHeritage (expression = Identifier "Bar")
+/// //                         ^^^^^^^^^^^^^^^ TSInterfaceHeritage (expression = MemberExpression, type_arguments = <T>)
+/// ```
+pub const TSInterfaceHeritage = struct {
+    /// the parent interface expression. an `IdentifierReference` or a
+    /// left-associative `MemberExpression` chain of identifier names. calls,
+    /// computed access, and optional chaining are rejected by the grammar.
+    expression: NodeIndex,
+    /// a `TSTypeParameterInstantiation` or `.null` when the heritage has no
+    /// `<T>` type arguments
+    type_arguments: NodeIndex = .null,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3429,6 +3491,9 @@ pub const NodeData = union(enum) {
     ts_construct_signature_declaration: TSConstructSignatureDeclaration,
     ts_index_signature: TSIndexSignature,
     ts_type_alias_declaration: TSTypeAliasDeclaration,
+    ts_interface_declaration: TSInterfaceDeclaration,
+    ts_interface_body: TSInterfaceBody,
+    ts_interface_heritage: TSInterfaceHeritage,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

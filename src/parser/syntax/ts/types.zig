@@ -231,7 +231,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .string,
             .symbol,
             .this,
-            .@"undefined",
+            .undefined,
             .unknown,
             .void,
             => return parseTypeKeyword(parser),
@@ -286,7 +286,7 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
         .string => .{ .ts_string_keyword = .{} },
         .symbol => .{ .ts_symbol_keyword = .{} },
         .this => .{ .ts_this_type = .{} },
-        .@"undefined" => .{ .ts_undefined_keyword = .{} },
+        .undefined => .{ .ts_undefined_keyword = .{} },
         .unknown => .{ .ts_unknown_keyword = .{} },
         .void => .{ .ts_void_keyword = .{} },
         else => unreachable,
@@ -606,6 +606,21 @@ fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     const start = parser.current_token.span.start;
+    const members = try parseObjectTypeMembers(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_literal = .{ .members = members } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+/// parses a `{ ... }` delimited list of object-type members (signatures).
+/// shared between `TSTypeLiteral` and `TSInterfaceBody`.
+/// references `parseObjectTypeMembers` in the typescript-go
+/// parser (https://github.com/microsoft/typescript-go/blob/main/internal/parser/parser.go).
+pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
     try parser.advance() orelse return null; // consume '{'
 
     const checkpoint = parser.scratch_a.begin();
@@ -629,8 +644,8 @@ fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
         } else if (sep != .right_brace and !parser.current_token.hasLineTerminatorBefore()) {
             try parser.reportExpected(
                 parser.current_token.span,
-                "Expected ';', ',', or newline between type literal members",
-                .{ .help = "Separate type literal members with ';', ',', or a newline, or close the type with '}'" },
+                "Expected ';', ',', or newline between type members",
+                .{ .help = "Separate type members with ';', ',', or a newline, or close the block with '}'" },
             );
             return null;
         }
@@ -638,16 +653,11 @@ fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!try parser.expect(
         .right_brace,
-        "Expected '}' to close a type literal",
+        "Expected '}' to close an object-type body",
         "Each '{' in a type must be matched by a '}'",
     )) return null;
 
-    const members = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
-
-    return try parser.tree.createNode(
-        .{ .ts_type_literal = .{ .members = members } },
-        .{ .start = start, .end = parser.prev_token_end },
-    );
+    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 /// distinguishes a mapped type `{ [K in T]: V }` from a type literal with a
@@ -1042,10 +1052,9 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
     const key = key_result.key;
     const computed = key_result.computed;
 
-    // optional `?`. folded into the span when no further tail
-    // follows so that `{ [e]? }` covers the `?`.
     var is_optional = false;
-    var tail_end = parser.tree.getSpan(key).end;
+    var tail_end = if (computed) parser.prev_token_end else parser.tree.getSpan(key).end;
+
     if (parser.current_token.tag == .question) {
         is_optional = true;
         tail_end = parser.current_token.span.end;
@@ -1793,7 +1802,7 @@ fn isTypePredicatePrefix(parser: *Parser) Error!bool {
     if (current.tag != .this and !current.tag.isIdentifierLike()) return false;
 
     const next = (try parser.peekAhead()) orelse return false;
-    if (next.tag != .@"is") return false;
+    if (next.tag != .is) return false;
     if (next.isEscaped()) return false;
     if (next.hasLineTerminatorBefore()) return false;
 
@@ -1812,7 +1821,7 @@ fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     var end = parser.tree.getSpan(parameter_name).end;
 
     var type_annotation: ast.NodeIndex = .null;
-    if (parser.current_token.tag == .@"is" and !parser.current_token.isEscaped()) {
+    if (parser.current_token.tag == .is and !parser.current_token.isEscaped()) {
         try parser.advance() orelse return null; // consume 'is'
         type_annotation = try parseTypePredicateTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(type_annotation).end;
@@ -1834,7 +1843,7 @@ fn parseSimpleTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     const parameter_name = try parseTypePredicateName(parser) orelse return null;
     const start = parser.tree.getSpan(parameter_name).start;
 
-    std.debug.assert(parser.current_token.tag == .@"is");
+    std.debug.assert(parser.current_token.tag == .is);
     try parser.advance() orelse return null; // consume 'is'
 
     const type_annotation = try parseTypePredicateTypeAnnotation(parser) orelse return null;

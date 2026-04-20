@@ -39,6 +39,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
         .type => parseTypeAliasOrExpression(parser),
+        .interface => parseInterfaceOrExpression(parser),
         .declare => parseDeclareOrExpression(parser),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
@@ -185,15 +186,28 @@ fn parseTypeAliasOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
-/// `declare type Foo = T` alias declaration, or fall through to expression
-/// statement when `declare` is used as an identifier reference or the full
-/// `declare type <name>` prefix is not present on the same source line.
+/// `interface Foo { ... }` declaration, or fall through to expression
+/// statement when `interface` is used as an identifier reference or the
+/// language is not TypeScript.
+fn parseInterfaceOrExpression(parser: *Parser) Error!?ast.NodeIndex {
+    const is_interface = (try ts_statements.isInterfaceStart(parser)) orelse return null;
+    if (is_interface) return ts_statements.parseInterfaceDeclaration(parser, false, 0);
+    return parseExpressionOrLabeledStatementOrDirective(parser);
+}
+
+/// `declare <decl>` dispatch. currently handles `declare type Foo = T` and
+/// `declare interface Foo { ... }`. falls through to an expression statement
+/// when no declaration form follows on the same source line.
 fn parseDeclareOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const is_alias = (try ts_statements.isDeclareTypeAliasStart(parser)) orelse return null;
-    if (is_alias) {
+    if ((try ts_statements.isDeclareTypeAliasStart(parser)) orelse return null) {
         const start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'declare'
         return ts_statements.parseTypeAliasDeclaration(parser, true, start);
+    }
+    if ((try ts_statements.isDeclareInterfaceStart(parser)) orelse return null) {
+        const start = parser.current_token.span.start;
+        try parser.advance() orelse return null; // consume 'declare'
+        return ts_statements.parseInterfaceDeclaration(parser, true, start);
     }
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
@@ -336,14 +350,11 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
             // A using declaration can appear in the following contexts:
             //  - The top level of a Module anywhere a VariableStatement is allowed, as long as it is not
             //    immediately nested inside of a `CaseClause` or `DefaultClause`.
-            if(stmt_data == .variable_declaration) {
+            if (stmt_data == .variable_declaration) {
                 const kind = stmt_data.variable_declaration.kind;
 
-                if(kind == .using or kind == .await_using) {
-                    try parser.report(
-                        parser.tree.getSpan(stmt),
-                        "Using declaration cannot appear in the bare case statement.",
-                        .{ .help = "Wrap this declaration in a block statement" });
+                if (kind == .using or kind == .await_using) {
+                    try parser.report(parser.tree.getSpan(stmt), "Using declaration cannot appear in the bare case statement.", .{ .help = "Wrap this declaration in a block statement" });
                 }
             }
 
