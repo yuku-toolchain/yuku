@@ -18,7 +18,7 @@ zig build
 
 ## Testing
 
-Run the full test suite (45,000+ files from Test262 and others) with AST matching:
+Run the full test suite (55,000+ files from Test262, Babel, TypeScript and others) with AST matching:
 
 ```bash
 bun run test

@@ -5,6 +5,10 @@ description: A fast, spec-compliant JavaScript and TypeScript parser written in 
 
 Yuku's parser turns JavaScript and TypeScript source code into an Abstract Syntax Tree (AST).
 
+:::note
+JavaScript and JSX are complete and spec-compliant. TypeScript parsing is in active development; see [progress tracking](https://github.com/yuku-toolchain/yuku/blob/main/typescript/progress-tracking.md).
+:::
+
 ## Node.js
 
 ```bash

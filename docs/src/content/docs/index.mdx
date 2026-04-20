@@ -24,7 +24,7 @@ A high-performance JavaScript/TypeScript compiler and toolchain written in Zig, 
 
 Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is designed for correctness, performance, and clarity.
 
-**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 45,000+ tests from [Test262](https://github.com/tc39/test262), Babel, etc., with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches. See the [test results](https://github.com/yuku-toolchain/yuku/tree/main/test/results).
+**Correctness first.** Yuku is 100% ECMAScript spec compliant. It passes all 55,000+ tests from [Test262](https://github.com/tc39/test262), Babel, TypeScript, etc., with full AST matching, covering every edge case in the specification. Zero failures, zero AST mismatches. See the [test results](https://github.com/yuku-toolchain/yuku/tree/main/test/results).
 
 **Fast by design.** The parser is built using data-oriented design principles and generous performance engineering.
 
@@ -36,11 +36,11 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 Yuku currently provides a 100% spec-compliant, reliable, and fast JavaScript/JSX parser ready for use in Node.js and Zig, along with a [Traverser](/parser/traverse). TypeScript parsing support is actively in development.
 
-More tooling is planned (a resolver, transpiler including `.d.ts` generation, minifier, and more), built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
+More tooling is planned (a minifier, resolver, transpiler including `.d.ts` generation, and more), built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
 
 ## Performance
 
-Yuku prioritizes correctness while delivering top-tier speed and efficiency. On the native (Zig/Rust) side, Yuku is competitive with Oxc:
+On native (Zig/Rust) parsing, Yuku is competitive with Oxc and roughly 2× faster than SWC:
 
 <div align="center" style="margin: 1.5rem 0;">
 
@@ -99,6 +99,6 @@ If you benchmark Babel and Oxc by just calling their `parse` functions, Oxc will
 
 Oxc also has an `experimentalRawTransfer` option that makes `oxc-parser` roughly 2-3x faster than the results shown above. However, it is currently experimental and comes with significant limitations: it only works in Node.js (not Bun, Deno, etc.), and it allocates gigabytes of memory upfront for a single parse, leading to out-of-memory errors and failures when parsing files in parallel.
 
-Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly: flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing all 45,000+ Test262 cases with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
+Yuku takes a different approach. Its AST is designed from the ground up to be transfer-friendly: flat, compact, and near-binary. This makes passing the AST from Zig to JavaScript fast, lightweight, and simple, without modifying the core parser. Zig's comptime makes this safe by design. There are no multi-gigabyte allocations, only the memory the source being parsed actually needs. It works reliably on any platform and is already fully validated, passing all 55,000+ Test262 cases with exact AST matching between Zig and JavaScript. This is still an early version, with further AST transfer performance improvements already planned.
 
 </details>
