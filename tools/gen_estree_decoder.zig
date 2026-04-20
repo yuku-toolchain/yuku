@@ -197,6 +197,7 @@ fn writeLookupTables(w: *Writer) !void {
     try writeArrayRaw(w, "ACCESSIBILITY", &.{ "null", "\"public\"", "\"private\"", "\"protected\"" });
     try writeArrayRaw(w, "TS_TYPE_OPERATORS", &.{ "\"keyof\"", "\"unique\"", "\"readonly\"" });
     try writeArrayRaw(w, "TS_METHOD_SIGNATURE_KINDS", &.{ "\"method\"", "\"get\"", "\"set\"" });
+    try writeArrayRaw(w, "TS_MODULE_KINDS", &.{ "\"namespace\"", "\"module\"" });
     // mapped type `?` modifier: absent decodes to `false`.
     try writeArrayRaw(w, "TS_MAPPED_OPTIONAL", &.{ "false", "true", "\"+\"", "\"-\"" });
     // mapped type `readonly` modifier: absent decodes to `null`.
@@ -319,7 +320,8 @@ fn isSpecial(comptime name: []const u8) bool {
         "template_element",                   "class",               "property_definition", "unary_expression",
         "binding_property",                   "array_pattern",       "object_pattern",      "jsx_text",
         "ts_function_type",                   "ts_constructor_type", "ts_method_signature", "ts_call_signature_declaration",
-        "ts_construct_signature_declaration", "ts_mapped_type",
+        "ts_construct_signature_declaration", "ts_mapped_type",      "ts_module_declaration",
+        "ts_global_declaration",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -522,6 +524,26 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: return {{ type: "TSConstructSignatureDeclaration", start, end, typeParameters: f{d} !== NULL ? node(f{d}) : null, params: f{d} !== NULL ? fnParams(f{d}) : [], returnType: f{d} !== NULL ? node(f{d}) : null }};
         , .{ tag, stp, stp, sp, sp, srt, srt });
+    } else if (comptime eql(u8, name, "ts_module_declaration")) {
+        const sid = comptime slotOf(ast.TSModuleDeclaration, "id");
+        const sb = comptime slotOf(ast.TSModuleDeclaration, "body");
+        const kbit = comptime flagBit(ast.TSModuleDeclaration, "kind");
+        const kmask = comptime enumMask(ast.TSModuleDeclarationKind);
+        const db = comptime flagMask(ast.TSModuleDeclaration, "declare");
+        // bodyless forms (`declare module "foo";`) omit the `body` field
+        // entirely. this matches the de-facto ESTree convention: oxc,
+        // babel, and @typescript-eslint/typescript-estree all drop the
+        // key instead of emitting `body: null`.
+        try emit(w,
+            \\    case {d}: {{ const r = {{ type: "TSModuleDeclaration", start, end, id: node(f{d}), kind: TS_MODULE_KINDS[(flags >> {d}) & {d}], declare: !!(flags & {d}), global: false }}; if (f{d} !== NULL) r.body = node(f{d}); return r; }}
+        , .{ tag, sid, kbit, kmask, db, sb, sb });
+    } else if (comptime eql(u8, name, "ts_global_declaration")) {
+        const sid = comptime slotOf(ast.TSGlobalDeclaration, "id");
+        const sb = comptime slotOf(ast.TSGlobalDeclaration, "body");
+        const db = comptime flagMask(ast.TSGlobalDeclaration, "declare");
+        try emit(w,
+            \\    case {d}: return {{ type: "TSModuleDeclaration", start, end, id: node(f{d}), body: node(f{d}), kind: "global", declare: !!(flags & {d}), global: true }};
+        , .{ tag, sid, sb, db });
     }
 }
 
@@ -742,6 +764,7 @@ fn enumTable(comptime E: type) []const u8 {
     if (E == ast.Accessibility) return "ACCESSIBILITY";
     if (E == ast.TSTypeOperatorKind) return "TS_TYPE_OPERATORS";
     if (E == ast.TSMethodSignatureKind) return "TS_METHOD_SIGNATURE_KINDS";
+    if (E == ast.TSModuleDeclarationKind) return "TS_MODULE_KINDS";
     @compileError("no lookup table for enum");
 }
 

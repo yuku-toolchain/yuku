@@ -17,6 +17,7 @@ const IMPORT_EXPORT_KINDS = ["value", "type"];
 const ACCESSIBILITY = [null, "public", "private", "protected"];
 const TS_TYPE_OPERATORS = ["keyof", "unique", "readonly"];
 const TS_METHOD_SIGNATURE_KINDS = ["method", "get", "set"];
+const TS_MODULE_KINDS = ["namespace", "module"];
 const TS_MAPPED_OPTIONAL = [false, true, "+", "-"];
 const TS_MAPPED_READONLY = [null, true, "+", "-"];
 function buildPosMap(src, byteLen) {
@@ -239,23 +240,26 @@ function decode(buffer, source) {
     case 135: return { type: "TSEnumDeclaration", start, end, id: f1 !== NULL ? node(f1) : null, body: f2 !== NULL ? node(f2) : null, const: !!(flags & 1), declare: !!(flags & 2) };
     case 136: return { type: "TSEnumBody", start, end, members: nodeArr(f1, f0) };
     case 137: return { type: "TSEnumMember", start, end, id: f1 !== NULL ? node(f1) : null, initializer: f2 !== NULL ? node(f2) : null, computed: !!(flags & 1) };
-    case 138: return { type: "TSExportAssignment", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 139: return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null };
-    case 140: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
-    case 141: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
-    case 142: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
-    case 143: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
-    case 144: return { type: "JSXOpeningFragment", start, end };
-    case 145: return { type: "JSXClosingFragment", start, end };
-    case 146: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
-    case 147: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };
-    case 148: return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
-    case 149: return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
-    case 150: return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null };
-    case 151: return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null };
-    case 152: return { type: "JSXEmptyExpression", start, end };
-    case 153: { const t = str(f1, f2); return { type: "JSXText", start, end, value: t, raw: t }; }
-    case 154: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 138: { const r = { type: "TSModuleDeclaration", start, end, id: node(f1), kind: TS_MODULE_KINDS[(flags >> 0) & 1], declare: !!(flags & 2), global: false }; if (f2 !== NULL) r.body = node(f2); return r; }
+    case 139: return { type: "TSModuleBlock", start, end, body: nodeArr(f1, f0) };
+    case 140: return { type: "TSModuleDeclaration", start, end, id: node(f1), body: node(f2), kind: "global", declare: !!(flags & 1), global: true };
+    case 141: return { type: "TSExportAssignment", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 142: return { type: "TSNamespaceExportDeclaration", start, end, id: f1 !== NULL ? node(f1) : null };
+    case 143: return { type: "JSXElement", start, end, openingElement: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingElement: f3 !== NULL ? node(f3) : null };
+    case 144: { const r = { type: "JSXOpeningElement", start, end, name: f1 !== NULL ? node(f1) : null, attributes: nodeArr(f2, f0), selfClosing: !!(flags & 1) }; if (_isTs) { r.typeArguments = f3 !== NULL ? node(f3) : null; } return r; }
+    case 145: return { type: "JSXClosingElement", start, end, name: f1 !== NULL ? node(f1) : null };
+    case 146: return { type: "JSXFragment", start, end, openingFragment: f1 !== NULL ? node(f1) : null, children: nodeArr(f2, f0), closingFragment: f3 !== NULL ? node(f3) : null };
+    case 147: return { type: "JSXOpeningFragment", start, end };
+    case 148: return { type: "JSXClosingFragment", start, end };
+    case 149: return { type: "JSXIdentifier", start, end, name: str(f1, f2) };
+    case 150: return { type: "JSXNamespacedName", start, end, namespace: f1 !== NULL ? node(f1) : null, name: f2 !== NULL ? node(f2) : null };
+    case 151: return { type: "JSXMemberExpression", start, end, object: f1 !== NULL ? node(f1) : null, property: f2 !== NULL ? node(f2) : null };
+    case 152: return { type: "JSXAttribute", start, end, name: f1 !== NULL ? node(f1) : null, value: f2 !== NULL ? node(f2) : null };
+    case 153: return { type: "JSXSpreadAttribute", start, end, argument: f1 !== NULL ? node(f1) : null };
+    case 154: return { type: "JSXExpressionContainer", start, end, expression: f1 !== NULL ? node(f1) : null };
+    case 155: return { type: "JSXEmptyExpression", start, end };
+    case 156: { const t = str(f1, f2); return { type: "JSXText", start, end, value: t, raw: t }; }
+    case 157: return { type: "JSXSpreadChild", start, end, expression: f1 !== NULL ? node(f1) : null };
     }
   }
   const cOff = _spOff + spLen, dOff = cOff + commentCount * 20;

@@ -21,12 +21,14 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     const peek = try parser.peekAheadN(3);
     var cur = parser.current_token;
     var idx: usize = 0;
+    var has_declare = false;
 
     // skip 'declare' modifier
     if (cur.tag == .declare) {
         cur = peek[idx] orelse return null;
         if (cur.hasLineTerminatorBefore()) return false;
         idx += 1;
+        has_declare = true;
     }
 
     // skip 'const' modifier (only meaningful immediately before 'enum')
@@ -38,12 +40,25 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     }
 
     switch (cur.tag) {
-        .type, .interface, .@"enum" => {},
+        .type, .interface, .@"enum", .namespace => {
+            const name = peek[idx] orelse return null;
+            return name.tag.isIdentifierLike() and !name.hasLineTerminatorBefore();
+        },
+        .module => {
+            // `module` accepts an identifier name (deprecated namespace form)
+            // or a string literal (ambient external module).
+            const name = peek[idx] orelse return null;
+            if (name.hasLineTerminatorBefore()) return false;
+            return name.tag.isIdentifierLike() or name.tag == .string_literal;
+        },
+        .global => {
+            // `global { ... }` is only a module augmentation under `declare`.
+            if (!has_declare) return false;
+            const next = peek[idx] orelse return null;
+            return next.tag == .left_brace and !next.hasLineTerminatorBefore();
+        },
         else => return false,
     }
-
-    const name = peek[idx] orelse return null;
-    return name.tag.isIdentifierLike() and !name.hasLineTerminatorBefore();
 }
 
 pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
@@ -63,6 +78,9 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         .type => parseTypeAliasDeclaration(parser, mods, start),
         .interface => parseInterfaceDeclaration(parser, mods, start),
         .@"enum" => parseEnumDeclaration(parser, mods, start),
+        .namespace => parseModuleDeclaration(parser, mods, start, .namespace),
+        .module => parseModuleDeclaration(parser, mods, start, .module),
+        .global => parseGlobalDeclaration(parser, mods, start),
         else => unreachable,
     };
 }
@@ -335,5 +353,112 @@ fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(
         .{ .ts_interface_body = .{ .body = members } },
         .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+/// `namespace Foo { ... }`, `namespace A.B.C { ... }`, `module "./mod" { ... }`,
+/// and their `declare`-prefixed ambient forms. the caller has already eaten
+/// any `declare` modifier into `mods` and captured the leading `start` offset.
+pub fn parseModuleDeclaration(
+    parser: *Parser,
+    mods: Modifiers,
+    start: u32,
+    kind: ast.TSModuleDeclarationKind,
+) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null; // consume 'namespace' or 'module'
+
+    const id: ast.NodeIndex = blk: {
+        if (kind == .module and parser.current_token.tag == .string_literal) {
+            break :blk try literals.parseStringLiteral(parser) orelse return null;
+        }
+        break :blk try parseModuleName(parser) orelse return null;
+    };
+
+    const body = try parseOptionalModuleBlock(parser) orelse return null;
+    const end = if (body == .null)
+        try parser.eatSemicolon(parser.tree.getSpan(id).end) orelse return null
+    else
+        parser.prev_token_end;
+
+    return try parser.tree.createNode(
+        .{ .ts_module_declaration = .{
+            .id = id,
+            .body = body,
+            .kind = kind,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+/// `declare global { ... }` augmentation. the caller has already eaten the
+/// `declare` modifier into `mods` and captured the leading `start` offset.
+pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .global);
+
+    const id = try literals.parseIdentifierName(parser) orelse return null;
+    const body = try parseModuleBlock(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_global_declaration = .{
+            .id = id,
+            .body = body,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+/// a `BindingIdentifier` or a left-associative `TSQualifiedName` chain formed
+/// by dotted identifier parts. `namespace A.B.C { ... }` is sugar for a single
+/// module declaration whose name is `TSQualifiedName(TSQualifiedName(A, B), C)`.
+fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
+    var name = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    while (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null; // consume '.'
+        const right = try literals.parseIdentifierName(parser) orelse return null;
+        const left_start = parser.tree.getSpan(name).start;
+        const right_end = parser.tree.getSpan(right).end;
+        name = try parser.tree.createNode(
+            .{ .ts_qualified_name = .{ .left = name, .right = right } },
+            .{ .start = left_start, .end = right_end },
+        );
+    }
+
+    return name;
+}
+
+/// an optional module body. returns `.null` when no `{` follows (forward
+/// declaration forms like `declare module "foo";`). otherwise delegates to
+/// `parseModuleBlock`.
+fn parseOptionalModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) return .null;
+    return parseModuleBlock(parser);
+}
+
+/// `{ <statements> }` body of a module, namespace, or global declaration.
+/// produces a `TSModuleBlock` whose `body` is a range of regular statements.
+fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    if (!try parser.expect(
+        .left_brace,
+        "Expected '{' to start a module body",
+        "A module body is written '{ <statements> }'",
+    )) return null;
+
+    const body = try parser.parseBody(.right_brace, .other);
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close a module body",
+        "Each '{' in a module must be matched by a '}'",
+    )) return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_module_block = .{ .body = body } },
+        .{ .start = start, .end = end },
     );
 }

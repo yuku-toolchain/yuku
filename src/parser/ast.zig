@@ -3227,6 +3227,75 @@ pub const TSEnumMember = struct {
     computed: bool = false,
 };
 
+/// The keyword used to introduce a `TSModuleDeclaration`.
+pub const TSModuleDeclarationKind = enum(u1) {
+    namespace,
+    module,
+
+    pub fn toString(self: TSModuleDeclarationKind) []const u8 {
+        return switch (self) {
+            .namespace => "namespace",
+            .module => "module",
+        };
+    }
+};
+
+/// A TypeScript `namespace` or `module` declaration.
+///
+/// ## Example
+/// ```ts
+/// namespace Foo { ... }
+/// //        ^^^ id (BindingIdentifier), kind = namespace
+/// namespace A.B.C { ... }
+/// //        ^^^^^ id (TSQualifiedName, left-associative)
+/// declare module "./mod" { ... }
+/// //             ^^^^^^^ id (StringLiteral), kind = module, declare = true
+/// ```
+pub const TSModuleDeclaration = struct {
+    /// the name. one of `BindingIdentifier`, `StringLiteral`, or `TSQualifiedName`.
+    id: NodeIndex,
+    /// the `TSModuleBlock` body, or `.null` for bodyless forward declarations
+    /// like `declare module "foo";`.
+    body: NodeIndex = .null,
+    /// which keyword introduced the declaration.
+    kind: TSModuleDeclarationKind,
+    /// true when preceded by the `declare` modifier.
+    declare: bool = false,
+};
+
+/// The body of a `namespace`, `module`, or `declare global` declaration. Holds
+/// the inner statements and declarations in source order, delimited by the
+/// enclosing `{` and `}`.
+///
+/// ## Example
+/// ```ts
+/// namespace Foo { var x = 1; class C {} }
+/// //            ^^^^^^^^^^^^^^^^^^^^^^^^^^ TSModuleBlock
+/// ```
+pub const TSModuleBlock = struct {
+    /// the inner statements in source order.
+    body: IndexRange,
+};
+
+/// A TypeScript `declare global { ... }` augmentation block.
+///
+/// ## Example
+/// ```ts
+/// declare global { interface Window { x: number } }
+/// //      ^^^^^^ id (IdentifierName "global")
+/// //             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ body (TSModuleBlock)
+/// ```
+pub const TSGlobalDeclaration = struct {
+    /// an `IdentifierName` capturing the span of the `global` keyword.
+    id: NodeIndex,
+    /// the `TSModuleBlock` holding the inner declarations.
+    body: NodeIndex,
+    /// true when preceded by the `declare` modifier. In valid TypeScript
+    /// `declare global` always has `declare = true`, a bare `global { ... }`
+    /// nested inside an ambient `declare namespace` body has `declare = false`.
+    declare: bool = false,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3558,6 +3627,9 @@ pub const NodeData = union(enum) {
     ts_enum_declaration: TSEnumDeclaration,
     ts_enum_body: TSEnumBody,
     ts_enum_member: TSEnumMember,
+    ts_module_declaration: TSModuleDeclaration,
+    ts_module_block: TSModuleBlock,
+    ts_global_declaration: TSGlobalDeclaration,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 
