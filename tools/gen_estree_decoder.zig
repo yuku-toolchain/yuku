@@ -313,14 +313,13 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter",             "formal_parameters",              "function",                         "arrow_function_expression",
-        "program",                      "directive",                      "string_literal",                   "numeric_literal",
-        "bigint_literal",               "boolean_literal",                "null_literal",                     "regexp_literal",
-        "template_element",             "class",                          "property_definition",              "unary_expression",
-        "binding_property",             "array_pattern",                  "object_pattern",                   "jsx_text",
-        "ts_function_type",             "ts_constructor_type",            "ts_method_signature",
-        "ts_call_signature_declaration", "ts_construct_signature_declaration",
-        "ts_mapped_type",
+        "formal_parameter",                   "formal_parameters",   "function",            "arrow_function_expression",
+        "program",                            "directive",           "string_literal",      "numeric_literal",
+        "bigint_literal",                     "boolean_literal",     "null_literal",        "regexp_literal",
+        "template_element",                   "class",               "property_definition", "unary_expression",
+        "binding_property",                   "array_pattern",       "object_pattern",      "jsx_text",
+        "ts_function_type",                   "ts_constructor_type", "ts_method_signature", "ts_call_signature_declaration",
+        "ts_construct_signature_declaration", "ts_mapped_type",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }

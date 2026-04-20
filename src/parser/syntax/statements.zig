@@ -177,27 +177,18 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-/// `type Foo = T` alias declaration, or fall through to expression statement
-/// when `type` is used as an identifier reference or the language is not
-/// TypeScript.
 fn parseTypeAliasOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const is_alias = (try ts_statements.isTypeAliasStart(parser)) orelse return null;
     if (is_alias) return ts_statements.parseTypeAliasDeclaration(parser, false, 0);
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
-/// `interface Foo { ... }` declaration, or fall through to expression
-/// statement when `interface` is used as an identifier reference or the
-/// language is not TypeScript.
 fn parseInterfaceOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const is_interface = (try ts_statements.isInterfaceStart(parser)) orelse return null;
     if (is_interface) return ts_statements.parseInterfaceDeclaration(parser, false, 0);
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
-/// `declare <decl>` dispatch. currently handles `declare type Foo = T` and
-/// `declare interface Foo { ... }`. falls through to an expression statement
-/// when no declaration form follows on the same source line.
 fn parseDeclareOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     if ((try ts_statements.isDeclareTypeAliasStart(parser)) orelse return null) {
         const start = parser.current_token.span.start;
