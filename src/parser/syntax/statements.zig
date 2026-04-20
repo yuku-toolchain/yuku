@@ -185,6 +185,7 @@ fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
     if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
         return ts_statements.parseTsDeclaration(parser);
+
     return variables.parseVariableDeclaration(parser, false, null);
 }
 
