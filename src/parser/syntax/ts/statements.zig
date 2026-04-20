@@ -3,9 +3,12 @@ const ast = @import("../../ast.zig");
 const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const Precedence = @import("../../token.zig").Precedence;
-const TokenTag = @import("../../token.zig").TokenTag;
+const Token = @import("../../token.zig").Token;
 const expressions = @import("../expressions.zig");
 const literals = @import("../literals.zig");
+const variables = @import("../variables.zig");
+const functions = @import("../functions.zig");
+const class = @import("../class.zig");
 const ts_types = @import("types.zig");
 
 /// modifier keywords eaten by `parseTsDeclaration` before dispatching to
@@ -31,12 +34,20 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
         has_declare = true;
     }
 
-    // skip 'const' modifier (only meaningful immediately before 'enum')
+    // `const enum`, `declare const enum`, and `declare const <binding>` all
+    // start here. skip the `const` kind keyword for the enum forms so the
+    // switch below dispatches on `enum`. plain `declare const x` short-circuits
+    // here since there is no further routing needed beyond the binding check.
     if (cur.tag == .@"const") {
         const next = peek[idx] orelse return null;
-        if (next.tag != .@"enum" or next.hasLineTerminatorBefore()) return false;
-        cur = next;
-        idx += 1;
+        if (isConstEnumHead(next)) {
+            cur = next;
+            idx += 1;
+        } else if (has_declare) {
+            return !next.hasLineTerminatorBefore() and variables.canStartBinding(next.tag);
+        } else {
+            return false;
+        }
     }
 
     switch (cur.tag) {
@@ -57,8 +68,27 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
             const next = peek[idx] orelse return null;
             return next.tag == .left_brace and !next.hasLineTerminatorBefore();
         },
+        // every ambient binding form: `declare var/let/function/class` plus
+        // the destructuring variants of `declare var/let`. the non-ambient
+        // forms are handled by the regular statement dispatch.
+        .@"var", .let, .function, .class => {
+            if (!has_declare) return false;
+            const name = peek[idx] orelse return null;
+            if (name.hasLineTerminatorBefore()) return false;
+            return switch (cur.tag) {
+                .@"var", .let => variables.canStartBinding(name.tag),
+                else => name.tag.isIdentifierLike(),
+            };
+        },
         else => return false,
     }
+}
+
+/// `const enum` and `declare const enum` share a two-token head. collapsing
+/// the check lets `isStartOfTsDeclaration` and `parseTsDeclaration` agree on
+/// the predicate without duplicating the newline rule.
+fn isConstEnumHead(after_const: Token) bool {
+    return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
 }
 
 pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
@@ -70,8 +100,11 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
     if (parser.current_token.tag == .@"const") {
-        mods.is_const = true;
-        try parser.advance() orelse return null;
+        const next = try parser.peekAhead() orelse return null;
+        if (isConstEnumHead(next)) {
+            mods.is_const = true;
+            try parser.advance() orelse return null;
+        }
     }
 
     return switch (parser.current_token.tag) {
@@ -81,6 +114,13 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         .namespace => parseModuleDeclaration(parser, mods, start, .namespace),
         .module => parseModuleDeclaration(parser, mods, start, .module),
         .global => parseGlobalDeclaration(parser, mods, start),
+        .@"var", .let, .@"const" => variables.parseVariableDeclaration(
+            parser,
+            .{ .is_declare = mods.declare },
+            start,
+        ),
+        .function => functions.parseFunction(parser, .{ .is_declare = mods.declare }, start),
+        .class => class.parseClass(parser, .{ .is_declare = mods.declare }, start),
         else => unreachable,
     };
 }

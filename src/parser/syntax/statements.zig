@@ -33,7 +33,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .await => parseAwaitUsingOrExpression(parser),
         .import => parseImportDeclarationOrExpression(parser),
         .async => parseAsyncFunctionOrExpression(parser),
-        .@"var" => variables.parseVariableDeclaration(parser, false, null),
+        .@"var" => variables.parseVariableDeclaration(parser, .{}, null),
         .@"const" => parseConstOrConstEnum(parser),
         .let => parseLet(parser),
         .using => parseUsingOrExpression(parser),
@@ -118,7 +118,7 @@ fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!is_identifier) {
         // parse as variable declaration: let x = 5;
-        return variables.parseVariableDeclaration(parser, false, null);
+        return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
     // otherwise, fall through to parse 'let' as an identifier in an expression statement.
@@ -131,7 +131,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
     if (!is_using_identifier) {
-        return variables.parseVariableDeclaration(parser, false, null);
+        return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
     return parseExpressionStatement(parser);
@@ -150,7 +150,7 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
             const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
             if (!is_using_identifier) {
-                return variables.parseVariableDeclaration(parser, true, start);
+                return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
             }
 
             return parseAwaitExpressionStatement(parser, start);
@@ -186,7 +186,7 @@ fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
     if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
         return ts_statements.parseTsDeclaration(parser);
 
-    return variables.parseVariableDeclaration(parser, false, null);
+    return variables.parseVariableDeclaration(parser, .{}, null);
 }
 
 /// `async function` declaration, or fall through to expression statement.

@@ -2,20 +2,27 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const Precedence = @import("../token.zig").Precedence;
-const Token = @import("../token.zig").Token;
+const TokenTag = @import("../token.zig").TokenTag;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
 const ts_types = @import("ts/types.zig");
 const std = @import("std");
 
-pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_param: ?u32) Error!?ast.NodeIndex {
+pub const ParseVariableDeclarationOpts = struct {
+    await_using: bool = false,
+    /// ts: sets the `declare` flag on the resulting `VariableDeclaration` node
+    /// and relaxes ambient-incompatible initializer checks.
+    is_declare: bool = false,
+};
+
+pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
-    const kind = try parseVariableKind(parser, await_using) orelse return null;
+    const kind = try parseVariableKind(parser, opts.await_using) orelse return null;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    const first_declarator = try parseVariableDeclarator(parser, kind) orelse return null;
+    const first_declarator = try parseVariableDeclarator(parser, kind, opts.is_declare) orelse return null;
 
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
@@ -24,7 +31,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
     // additional declarators: let a, b, c;
     while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
-        const declarator = try parseVariableDeclarator(parser, kind) orelse return null;
+        const declarator = try parseVariableDeclarator(parser, kind, opts.is_declare) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
         end = parser.tree.getSpan(declarator).end;
     }
@@ -51,6 +58,7 @@ pub fn parseVariableDeclaration(parser: *Parser, await_using: bool, start_from_p
             .variable_declaration = .{
                 .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
                 .kind = kind,
+                .declare = opts.is_declare,
             },
         },
         span,
@@ -76,7 +84,7 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
     };
 }
 
-fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.NodeIndex {
+fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, declare: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.getSpan(id);
@@ -109,13 +117,15 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
         end = parser.tree.getSpan(init).end;
-    } else if (is_destructuring) {
+    } else if (is_destructuring and !declare) {
         try parser.report(
             id_span,
             "Destructuring declaration must have an initializer",
             .{ .help = "Add '= value' to provide the object or array to destructure from." },
         );
-    } else if (kind == .@"const") {
+    } else if (kind == .@"const" and !declare) {
+        // skipped under `declare` since ambient const declarations omit the
+        // initializer.
         try parser.report(
             id_span,
             "'const' declarations must be initialized",
@@ -135,9 +145,10 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind) Error!?ast.N
     );
 }
 
-/// returns `true` when `token` can begin a lexical binding (identifier, `[` or `{`).
-fn canTokenStartLexicalBinding(token: Token) bool {
-    return token.tag.isIdentifierLike() or token.tag == .left_bracket or token.tag == .left_brace;
+/// returns `true` when `tag` can begin a `BindingIdentifier` or destructuring
+/// pattern, i.e. the head of a variable declarator.
+pub fn canStartBinding(tag: TokenTag) bool {
+    return tag.isIdentifierLike() or tag == .left_bracket or tag == .left_brace;
 }
 
 /// determines if 'let' should be parsed as an identifier rather than a variable declaration keyword.
@@ -153,7 +164,7 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
 
     // in single-statement contexts (eg, if/while bodies), parse `let` as an identifier
     // when the next token cannot start a lexical binding.
-    if (parser.context.in_single_statement_context and !canTokenStartLexicalBinding(next)) return true;
+    if (parser.context.in_single_statement_context and !canStartBinding(next.tag)) return true;
 
     return false;
 }

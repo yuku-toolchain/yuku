@@ -58,11 +58,9 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
         // [no LineTerminator here] --
         if((current_token.tag == .increment or current_token.tag == .decrement) and current_token.hasLineTerminatorBefore()) break;
 
-        // `as` and `satisfies` carry relational precedence so the pratt loop
-        // dispatches them like `instanceof`.
-        if ((current_token.tag == .as or current_token.tag == .satisfies) and !parser.tree.isTs() and current_token.hasLineTerminatorBefore()) break;
+        // splits `x\nas T` into two statements
+        if ((current_token.tag == .as or current_token.tag == .satisfies) and current_token.hasLineTerminatorBefore()) break;
 
-        // ts `expr!` postfix non-null assertion is `[no LineTerminator here] !`,
         // so `x\n!y` stays two statements via ASI instead of folding into
         // `(x!)(y)`.
         if (current_token.tag == .logical_not and parser.tree.isTs() and current_token.hasLineTerminatorBefore()) break;

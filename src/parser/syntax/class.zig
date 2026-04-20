@@ -18,6 +18,9 @@ pub const ParseClassOpts = struct {
     is_expression: bool = false,
     /// for export default class, allows optional name but produces ClassDeclaration
     is_default_export: bool = false,
+    /// ts: true when the declaration is prefixed with `declare`. sets the
+    /// `declare` flag on the resulting `Class` node.
+    is_declare: bool = false,
 };
 
 /// class declaration or expression
@@ -87,6 +90,7 @@ pub fn parseClassDecorated(
             .id = id,
             .super_class = super_class,
             .body = body,
+            .declare = opts.is_declare,
         },
     }, .{ .start = start, .end = body_end });
 }

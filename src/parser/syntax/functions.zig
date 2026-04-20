@@ -132,7 +132,15 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         body = try parseFunctionBody(parser) orelse .null;
     }
 
-    const end = if (body != .null) parser.tree.getSpan(body).end else return_type_end;
+    // ambient `declare function f(): T;` takes a trailing ASI semicolon,
+    // the regular declaration ends at `}` and signature-only overloads end
+    // at the return type.
+    const end = if (body != .null)
+        parser.tree.getSpan(body).end
+    else if (opts.is_declare)
+        try parser.eatSemicolon(return_type_end) orelse return null
+    else
+        return_type_end;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
