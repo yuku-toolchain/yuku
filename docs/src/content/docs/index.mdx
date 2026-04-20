@@ -9,6 +9,7 @@ head:
       }
 ---
 
+import { Image } from "astro:assets";
 import BenchmarkTable from "../../components/BenchmarkTable.astro";
 
 <div align="center">
@@ -43,7 +44,11 @@ Yuku prioritizes correctness while delivering top-tier speed and efficiency. On 
 
 <div align="center" style="margin: 1.5rem 0;">
 
-![Native benchmark chart comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png)
+<Image
+  src="https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-native/refs/heads/main/charts/typescript.png"
+  alt="Native benchmark chart comparing Yuku, Oxc, and other Zig/Rust parsers parsing typescript.js"
+  inferSize
+/>
 
 <span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">
   Parsing speed for the `typescript.js` file (7.8 MB) · macOS (ARM) | Apple M4 Pro ·
@@ -58,7 +63,11 @@ On the JavaScript side (npm), Yuku is **3-5x faster** than alternatives:
 
 <div align="center" style="margin: 1.5rem 0;">
 
-![JavaScript benchmark chart comparing Yuku, Oxc, Acorn, and other npm parsers parsing react.js](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png)
+<Image
+  src="https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/react.png"
+  alt="JavaScript benchmark chart comparing Yuku, Oxc, Acorn, and other npm parsers parsing react.js"
+  inferSize
+/>
 
 <span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">
   Parsing speed for the `react.js` file (72 KB) via npm packages · macOS (ARM) | Apple M4 Pro ·
@@ -67,7 +76,11 @@ On the JavaScript side (npm), Yuku is **3-5x faster** than alternatives:
 
 <BenchmarkTable variant="js" source="react" />
 
-![JavaScript benchmark chart comparing Yuku, Oxc, Acorn, and other npm parsers parsing typescript.js](https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png)
+<Image
+  src="https://raw.githubusercontent.com/yuku-toolchain/ecmascript-parser-benchmark-js/refs/heads/main/charts/typescript.png"
+  alt="JavaScript benchmark chart comparing Yuku, Oxc, Acorn, and other npm parsers parsing typescript.js"
+  inferSize
+/>
 
 <span style="font-size: 0.8rem; color: var(--sl-color-gray-3);">
   Parsing speed for the `typescript.js` file (7.8 MB) via npm packages · macOS (ARM) | Apple M4 Pro

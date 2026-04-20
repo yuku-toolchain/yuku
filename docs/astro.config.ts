@@ -2,6 +2,9 @@ import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
+  image: {
+    domains: ["raw.githubusercontent.com"],
+  },
   integrations: [
     starlight({
       title: "High-performance JavaScript/TypeScript compiler in Zig 🦎",
