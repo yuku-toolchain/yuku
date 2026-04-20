@@ -3325,6 +3325,38 @@ pub const TSParameterProperty = struct {
     accessibility: Accessibility = .none,
 };
 
+// ts: expressions
+
+/// TypeScript `expr as Type` postfix assertion.
+///
+/// ## Example
+/// ```ts
+/// const n = value as number;
+/// //        ^^^^^ expression
+/// //                 ^^^^^^ type_annotation
+/// ```
+pub const TSAsExpression = struct {
+    /// the expression being asserted.
+    expression: NodeIndex,
+    /// the target type. any `TSType` node.
+    type_annotation: NodeIndex,
+};
+
+/// TypeScript `expr satisfies Type` postfix check.
+///
+/// ## Example
+/// ```ts
+/// const config = { port: 3000 } satisfies Config;
+/// //             ^^^^^^^^^^^^^^ expression
+/// //                                      ^^^^^^ type_annotation
+/// ```
+pub const TSSatisfiesExpression = struct {
+    /// the expression being constrained.
+    expression: NodeIndex,
+    /// the type that `expression` must satisfy.
+    type_annotation: NodeIndex,
+};
+
 // ts: module-level
 
 /// TypeScript `export = expr` (CommonJS-style ambient export).
@@ -3660,6 +3692,8 @@ pub const NodeData = union(enum) {
     ts_module_block: TSModuleBlock,
     ts_global_declaration: TSGlobalDeclaration,
     ts_parameter_property: TSParameterProperty,
+    ts_as_expression: TSAsExpression,
+    ts_satisfies_expression: TSSatisfiesExpression,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
 

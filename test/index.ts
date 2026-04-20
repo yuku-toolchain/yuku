@@ -1,5 +1,10 @@
-class C {
-  constructor(
-    x: number,
-  ) {}
-}
+const a = value as number;
+const b = value satisfies Foo;
+const c = value as X as Y;
+const d = [1, 2] as const;
+const e = { a: 1 } as const;
+const f = (x as number) + 1;
+const g = foo(x as T);
+const h = (obj as Foo).bar;
+const i = (fn as Callable)();
+foo(x as number, y satisfies Bar);

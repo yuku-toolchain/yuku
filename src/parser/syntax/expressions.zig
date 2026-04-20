@@ -58,6 +58,12 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
         // [no LineTerminator here] --
         if((current_token.tag == .increment or current_token.tag == .decrement) and current_token.hasLineTerminatorBefore()) break;
 
+        // `as` and `satisfies` carry relational precedence so the pratt loop
+        // dispatches them like `instanceof`. outside ts they are plain
+        // identifiers, so a preceding line terminator triggers asi and
+        // `foo\nas\nbar` stays three statements.
+        if ((current_token.tag == .as or current_token.tag == .satisfies) and !parser.tree.isTs() and current_token.hasLineTerminatorBefore()) break;
+
         left = try parseInfix(parser, current_precedence, left) orelse return null;
     }
 
@@ -121,6 +127,10 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
 
 fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
     const current = parser.current_token;
+
+    if (parser.tree.isTs() and (current.tag == .as or current.tag == .satisfies)) {
+        return ts_types.parseAsOrSatisfiesExpression(parser, left);
+    }
 
     if (current.tag.isBinaryOperator()) {
         return parseBinaryExpression(parser, precedence, left);

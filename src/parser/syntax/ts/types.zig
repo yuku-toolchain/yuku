@@ -262,7 +262,9 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    if (token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) {
+    // the `const` keyword is a reserved word, but typescript allows it as a
+    // type reference for `as const` assertions.
+    if ((token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) or token.tag == .@"const") {
         return parseTypeReference(parser);
     }
 
@@ -1904,4 +1906,24 @@ pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, ann
     if (annotation_end > pattern_span.end) {
         parser.tree.replaceSpan(pattern, .{ .start = pattern_span.start, .end = annotation_end });
     }
+}
+
+/// `expr as Type` or `expr satisfies Type`
+pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    const keyword_tag = parser.current_token.tag;
+    std.debug.assert(keyword_tag == .as or keyword_tag == .satisfies);
+
+    try parser.advance() orelse return null; // consume 'as' or 'satisfies'
+
+    const type_node = try parseType(parser) orelse return null;
+
+    const start = parser.tree.getSpan(left).start;
+    const end = parser.tree.getSpan(type_node).end;
+
+    const data: ast.NodeData = if (keyword_tag == .as)
+        .{ .ts_as_expression = .{ .expression = left, .type_annotation = type_node } }
+    else
+        .{ .ts_satisfies_expression = .{ .expression = left, .type_annotation = type_node } };
+
+    return try parser.tree.createNode(data, .{ .start = start, .end = end });
 }
