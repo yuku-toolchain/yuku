@@ -3423,6 +3423,42 @@ pub const TSNamespaceExportDeclaration = struct {
     id: NodeIndex,
 };
 
+/// TypeScript `import x = <module reference>` declaration. binds the local
+/// name `id` to either an external module (`require("m")`) or an entity name
+/// path (`Foo.Bar`).
+///
+/// ## Examples
+/// ```ts
+/// import fs = require("fs");
+/// //     ^^ id       ^^^^^^^^^^^^ module_reference (TSExternalModuleReference)
+/// import alias = Foo.Bar;
+/// //     ^^^^^ id   ^^^^^^^ module_reference (TSQualifiedName)
+/// import alias = Foo;
+/// //     ^^^^^ id   ^^^ module_reference (IdentifierReference)
+/// ```
+pub const TSImportEqualsDeclaration = struct {
+    /// the local binding introduced by this declaration.
+    id: NodeIndex,
+    /// `TSExternalModuleReference`, `IdentifierReference`, or `TSQualifiedName`.
+    module_reference: NodeIndex,
+    /// ts: `.type` for `import type x = ...`, `.value` otherwise.
+    import_kind: ImportOrExportKind = .value,
+};
+
+/// TypeScript `require("module")` on the right hand side of an
+/// `import x = require("m")` declaration.
+///
+/// ## Example
+/// ```ts
+/// import x = require("./m");
+/// //         ^^^^^^^^^^^^^^^ TSExternalModuleReference
+/// //                 ^^^^^^ expression (StringLiteral)
+/// ```
+pub const TSExternalModuleReference = struct {
+    /// the `StringLiteral` naming the required module.
+    expression: NodeIndex,
+};
+
 /// A JSX element, possibly self-closing.
 ///
 /// ## Example
@@ -3741,6 +3777,8 @@ pub const NodeData = union(enum) {
     ts_instantiation_expression: TSInstantiationExpression,
     ts_export_assignment: TSExportAssignment,
     ts_namespace_export_declaration: TSNamespaceExportDeclaration,
+    ts_import_equals_declaration: TSImportEqualsDeclaration,
+    ts_external_module_reference: TSExternalModuleReference,
 
     // jsx
     jsx_element: JSXElement,

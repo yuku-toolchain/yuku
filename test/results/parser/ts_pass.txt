@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       4362/8261 (52.80%)
-Failed:       3899
-AST mismatch: 0/4362
+Passed:       4419/8261 (53.49%)
+Failed:       3842
+AST mismatch: 0/4419
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -80,14 +80,14 @@ error: Shorthand property must be an identifier
 
 
 ✗ test/parser/suite/ts/pass/00c3dcee92c3d100.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected declaration after 'export', but found 'type'
    |
- 5 | export {};
- 6 | import f1 = NonExistent;
-   |           ^
- 7 | 
+ 9 |     export const foo = 1;
+10 |     export type T = any;
+   |            ^^^^
+11 | }
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/00c613a93a9a5cb9.ts
@@ -889,15 +889,13 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✗ test/parser/suite/ts/pass/05c7a692760abe47.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Export 'n2' is not defined
    |
- 5 | import n, {x} from 'file1'
- 6 | import n2 = require('file2');
-   |           ^
- 7 | export {x}
+10 | export {n as n1}
+11 | export {n2}
+   |         ^^
+12 | export {n2 as n3}
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
 
 ✓ test/parser/suite/ts/pass/05c9175df1050052.ts
 ✓ test/parser/suite/ts/pass/05cb583eba8bab11.ts
@@ -1175,14 +1173,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/07a7813daea06868.module.tsx (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected '(' to start parameter list, but found '<'
    |
- 8 | 
- 9 | import React = require('react');
-   |              ^
-10 | 
+23 | 
+24 | declare function T<Entry extends TranslationEntry>(
+   |                   ^
+25 |     props: TProps<Entry>
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/07bff205ee0e7151.ts
@@ -1221,15 +1219,13 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/07d0f7d78df0a568.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Export 'n2' is not defined
    |
- 5 | import n, {x} from 'file1'
- 6 | import n2 = require('file2');
-   |           ^
- 7 | export {x}
+10 | export {n as n1}
+11 | export {n2}
+   |         ^^
+12 | export {n2 as n3}
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
 
 ✓ test/parser/suite/ts/pass/07d1b9e3dbcf7220.module.ts
 ✗ test/parser/suite/ts/pass/07e4335cb46b7073.ts (parse errors)
@@ -1934,14 +1930,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/0b748bf52e65afd8.module.tsx (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | /// <reference path="/.lib/react16.d.ts" />
  6 | import React = require("react");
-   |              ^
  7 | function f<P>(App: React.ComponentClass<P> | React.StatelessComponent<P>): void {
+   |           ^
+ 8 |     class C extends React.Component<P & { x: number }> {
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/0b7862a6438e775f.ts (parse errors)
@@ -3298,14 +3294,14 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/1262d95641deed14.ts
 ✗ test/parser/suite/ts/pass/1263d7a1e1ddb976.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected declaration after 'export', but found 'enum'
    |
- 2 | declare module 'timezonecomplete' {
- 3 |     import basics = require("__timezonecomplete/basics");
-   |                   ^
- 4 |     export import TimeUnit = basics.TimeUnit;
+ 7 | declare module '__timezonecomplete/basics' {
+ 8 |     export enum TimeUnit {
+   |            ^^^^
+ 9 |         Second = 0,
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/1264fbe8cea90d66.ts
@@ -3831,16 +3827,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/15a9f31939ec4496.module.ts
-✗ test/parser/suite/ts/pass/15ac3e88a72c0568.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | var f = () => this;
- 7 | import _this = a; // Error
-   |              ^
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/15ac3e88a72c0568.ts
 ✗ test/parser/suite/ts/pass/15af09ecd27cc60c.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -3968,16 +3955,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/167963b4d888c2e6.ts
 ✓ test/parser/suite/ts/pass/16811b33ef6772c7.ts
 ✓ test/parser/suite/ts/pass/1681a0f1eb986594.ts
-✗ test/parser/suite/ts/pass/16829212ea7a3f95.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | /* not copyright */
- 7 | import foo = require('./foo');
-   |            ^
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/16829212ea7a3f95.module.ts
 ✗ test/parser/suite/ts/pass/169c15eba178295d.module.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -5047,17 +5025,7 @@ error: Expected ';' after class field, but found 'getDocCommentText'
 
 
 ✓ test/parser/suite/ts/pass/1c45ea9d2183680a.ts
-✗ test/parser/suite/ts/pass/1c48852f3aa9060f.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 2 | namespace m2 {
- 3 |     import m3 = require("use_glo_M1_public");
-   |               ^
- 4 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/1c48852f3aa9060f.ts
 ✗ test/parser/suite/ts/pass/1c4c49240f53f306.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -5199,17 +5167,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/1d06aa9fd69041ca.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | 
- 7 | import m1 = require("m2")
-   |           ^
- 8 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/1d06aa9fd69041ca.module.ts
 ✓ test/parser/suite/ts/pass/1d13421c10c2d91d.ts
 ✗ test/parser/suite/ts/pass/1d1b284ed1fc5a40.ts (parse errors)
 error: Expected ';' after class field, but found 'function1'
@@ -5573,17 +5531,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/1f018927d09f69c6.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 7 | namespace c {
- 8 |     import b = a.x;
-   |              ^
- 9 |     export var bVal = b;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/1f018927d09f69c6.ts
 ✗ test/parser/suite/ts/pass/1f01bee8d3b3c4c1.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -6304,17 +6252,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/2344fd155d608214.ts
-✗ test/parser/suite/ts/pass/2355f32051b40a7c.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 7 | namespace A.M {
- 8 |     export import M = Z.M;
-   |            ^^^^^^
- 9 |     export function bar() {
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/2355f32051b40a7c.ts
 ✓ test/parser/suite/ts/pass/235e92a75ae598a0.ts
 ✗ test/parser/suite/ts/pass/236806a383d3711a.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -7502,14 +7440,14 @@ error: Expected ')' to close signature parameters, but found '?'
 
 
 ✗ test/parser/suite/ts/pass/29f9eefa5b82abcd.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected '{' to start function body, but found ';'
    |
-11 | declare module 'popsicle' {
-12 |     import alias = require('~popsicle/dist/common');
-   |                  ^
-13 |     export = alias;
+17 |     import { Request } from 'popsicle';
+18 |     function proxy(): (request: Request) => any;
+   |                                                ^
+19 |     export = proxy;
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/2a06642f9ff227aa.ts
@@ -7600,17 +7538,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 ✓ test/parser/suite/ts/pass/2ab5c870f5d46d41.ts
 ✓ test/parser/suite/ts/pass/2ab795bad581094c.ts
-✗ test/parser/suite/ts/pass/2ab8be46524a44b7.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
-11 |     }
-12 |     import E = A.C;
-   |              ^
-13 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/2ab8be46524a44b7.ts
 ✗ test/parser/suite/ts/pass/2ab8ff972e204808.ts (parse errors)
 error: Expected ';' after for-loop init, but found ':'
    |
@@ -7833,17 +7761,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/2bcc3a9479d2fc6d.ts
-✗ test/parser/suite/ts/pass/2bcee057cc16cf93.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | 
- 7 | import model = require("./greeter")
-   |              ^
- 8 | var el = document.getElementById('content');
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/2bcee057cc16cf93.module.ts
 ✓ test/parser/suite/ts/pass/2bd2981aad9f0788.ts
 ✓ test/parser/suite/ts/pass/2bd41dc75225dfe5.ts
 ✗ test/parser/suite/ts/pass/2be3287f7cdf1773.ts (parse errors)
@@ -9399,17 +9317,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/33b27674d8b77f9e.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 | }
- 6 | import exports = mOfGloalFile.c;
-   |                ^
- 7 | import require = mOfGloalFile.c;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/33b27674d8b77f9e.ts
 ✓ test/parser/suite/ts/pass/33b859d1002886f7.ts
 ✗ test/parser/suite/ts/pass/33b996ac6e7bf10c.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -10352,17 +10260,7 @@ error: Expected ';' after class field, but found 'B'
 ✓ test/parser/suite/ts/pass/38fe18a678e2b972.ts
 ✓ test/parser/suite/ts/pass/39077274b90e219d.ts
 ✓ test/parser/suite/ts/pass/390ad7ccb6c1cda6.ts
-✗ test/parser/suite/ts/pass/390bc7e231707252.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 3 | 
- 4 | import i = require("mod"); // Error;
-   |          ^
- 5 | 
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/390bc7e231707252.module.ts
 ✗ test/parser/suite/ts/pass/390c5a686d1bd9fc.ts (parse errors)
 error: Expected ';' after class field, but found 'p'
    |
@@ -10814,14 +10712,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/3baf1c0abdf95c90.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ';' after class field, but found 'foo'
    |
- 5 | 
- 6 | import x = m.m;
-   |          ^
- 7 | 
+ 8 | class C {
+ 9 |   public foo() {
+   |          ^^^
+10 |     var x = '';
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/3bb78dec723bf882.ts
@@ -11623,17 +11521,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/3fb31a82e4c73d9a.module.ts
-✗ test/parser/suite/ts/pass/3fbc5ca6a7857177.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 5 |     // Should be fine; this does not clobber any declared values.
- 6 |     export import string = mstring;
-   |            ^^^^^^
- 7 | }
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/3fbc5ca6a7857177.ts
 ✗ test/parser/suite/ts/pass/3fc21091d9adaa51.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -11966,15 +11854,12 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/41df92b474c819dd.ts
 ✓ test/parser/suite/ts/pass/41ed93761c3540a1.ts
 ✗ test/parser/suite/ts/pass/41f10158a8b17fed.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Export 'Foo' is not defined
    |
- 4 | 
  5 | import Foo = SomeNonExistingName
-   |            ^
  6 | export {Foo}
+   |         ^^^
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
 
 ✓ test/parser/suite/ts/pass/41f7fff2022a1e56.ts
 ✓ test/parser/suite/ts/pass/420753afd117e975.ts
@@ -12777,17 +12662,7 @@ error: Expected ')' after method parameters, but found '?'
 ✓ test/parser/suite/ts/pass/45d0841cba075228.module.ts
 ✓ test/parser/suite/ts/pass/45dc57c359a1e4dc.ts
 ✓ test/parser/suite/ts/pass/45dd775e0eb7f3a6.ts
-✗ test/parser/suite/ts/pass/45e6d19679900943.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 9 | 
-10 | import r1 = require("aliasedModule1");
-   |           ^
-11 | r1;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/45e6d19679900943.module.ts
 ✗ test/parser/suite/ts/pass/45f122eeca13c981.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -12837,14 +12712,14 @@ error: Expected ')' to close function type parameters, but found '?'
 
 ✓ test/parser/suite/ts/pass/464e12fa535921a8.ts
 ✗ test/parser/suite/ts/pass/46575356e26d7a4a.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ';' after class field, but found ':'
    |
- 5 | 
- 6 | import v = V;
-   |          ^
- 7 | 
+ 8 | class C {
+ 9 |     name: string;
+   |         ^
+10 | }
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/4660f4bd3308db49.ts (parse errors)
@@ -12870,17 +12745,7 @@ error: Expected ')' to close parameter list, but found '?'
 
 
 ✓ test/parser/suite/ts/pass/4664ef0bcdb16e36.ts
-✗ test/parser/suite/ts/pass/466f69ccdf9948af.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 7 | namespace a.e.f {
- 8 |       import g = b.c;
-   |                ^
- 9 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/466f69ccdf9948af.ts
 ✓ test/parser/suite/ts/pass/46702ade4840759d.ts
 ✗ test/parser/suite/ts/pass/467104d2ed9fdabe.module.ts (parse errors)
 error: 'export' declaration may only appear at the top level
@@ -15426,17 +15291,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/543f0b2ed099cfa3.ts
 ✓ test/parser/suite/ts/pass/543fb86e41ece9b1.ts
-✗ test/parser/suite/ts/pass/544efe6eec1f2347.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 |  
- 6 |     import A = B;
-   |              ^
- 7 |  
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/544efe6eec1f2347.ts
 ✗ test/parser/suite/ts/pass/5457932b867f93d1.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -15565,17 +15420,7 @@ error: Expected ';' after class field, but found 'f1'
 ✓ test/parser/suite/ts/pass/550c18ac5729f47d.ts
 ✓ test/parser/suite/ts/pass/5519c7c44c16229e.ts
 ✓ test/parser/suite/ts/pass/551bdee086b062aa.ts
-✗ test/parser/suite/ts/pass/551cd1d42be4e241.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 2 | namespace A.B.C {
- 3 |     import XYZ = X.Y.Z;
-   |                ^
- 4 |     export function ping(x: number) {
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/551cd1d42be4e241.ts
 ✓ test/parser/suite/ts/pass/5524d6826cbc5f9f.ts
 ✓ test/parser/suite/ts/pass/5529f2312688880e.ts
 ✗ test/parser/suite/ts/pass/55335586b7457924.ts (parse errors)
@@ -15788,17 +15633,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/560a75388d76228f.ts
-✗ test/parser/suite/ts/pass/5617162fa69f24fb.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 8 | namespace c {
- 9 |     import b = a.c;
-   |              ^
-10 |     export var x: b = new b();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/5617162fa69f24fb.ts
 ✓ test/parser/suite/ts/pass/5618946556f9c3b7.ts
 ✗ test/parser/suite/ts/pass/561f462faac2c07e.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -17591,17 +17426,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/6043fe48cdc19bde.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 7 | namespace m1 {
- 8 |     import x = m.c;
-   |              ^
- 9 |     export var d = new x(); // emit the type as m.c
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/6043fe48cdc19bde.ts
 ✓ test/parser/suite/ts/pass/6045233c164d70c3.ts
 ✓ test/parser/suite/ts/pass/605139337a89ab2b.ts
 ✗ test/parser/suite/ts/pass/60530f5ceeac8c33.ts (parse errors)
@@ -17944,14 +17769,14 @@ error: Class declaration requires a name
 
 
 ✗ test/parser/suite/ts/pass/61fa2a02dff0f1e5.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected '{' to start function body, but found ';'
    |
-11 | namespace c.a.b {
-12 |     import ma = a;
-   |               ^
-13 | }
+25 | 
+26 |     function f2(s: string);
+   |                           ^
+27 |     function f2(n: number);
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/620a054dfc99b104.ts
@@ -18251,14 +18076,14 @@ error: Expected ';' after class field, but found ':'
 
 ✓ test/parser/suite/ts/pass/63d80c1ceaa932b7.ts
 ✗ test/parser/suite/ts/pass/63db74b3819feb3a.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected declaration after 'export', but found 'declare'
    |
- 2 | //@module: commonjs
  3 | import a1 = require("garbage");
-   |           ^
  4 | export declare var a: {
+   |        ^^^^^^^
+ 5 |     test1: a1.connectModule;
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✗ test/parser/suite/ts/pass/63ddea19903d52ee.ts (parse errors)
@@ -18274,17 +18099,7 @@ error: Expected ')' to close parameter list, but found '?'
 
 ✓ test/parser/suite/ts/pass/63df4766d94e54cb.ts
 ✓ test/parser/suite/ts/pass/63e26292874e0163.ts
-✗ test/parser/suite/ts/pass/63ea4d680673d372.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 9 | import e, * as ns2 from 'file5';
-10 | import ns3 = require('file6');
-   |            ^
-11 | 
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/63ea4d680673d372.module.ts
 ✓ test/parser/suite/ts/pass/63f6193620b8b522.ts
 ✗ test/parser/suite/ts/pass/640b952a9dff8c03.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -18779,17 +18594,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/66d46206a7138dfe.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 6 |     }
- 7 |     export import a = x.c;
-   |            ^^^^^^
- 8 |     var b: a;
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/66d46206a7138dfe.ts
 ✓ test/parser/suite/ts/pass/66d767799924b629.ts
 ✗ test/parser/suite/ts/pass/66e1596681243083.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -19284,14 +19089,14 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/69b6bc0d8b109816.module.tsx (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ';' after class field, but found ':'
    |
- 4 | /// <reference path="/.lib/react.d.ts" />
- 5 | import React = require("react");
-   |              ^
- 6 | type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
+ 7 | class TestObject {
+ 8 |     a: string = '';
+   |      ^
+ 9 |     b: number = 1;
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/69bde82c8625a454.ts (parse errors)
@@ -19448,17 +19253,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/6a71cb6128ea1eb9.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import m1 = require("m2")
-   |           ^
- 6 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/6a71cb6128ea1eb9.module.ts
 ✓ test/parser/suite/ts/pass/6a788755f669793a.ts
 ✓ test/parser/suite/ts/pass/6a8231f4b23c1647.ts
 ✗ test/parser/suite/ts/pass/6a828a35a62420b2.ts (parse errors)
@@ -19708,14 +19503,14 @@ error: Expected ';' after class field, but found '_t'
 
 
 ✗ test/parser/suite/ts/pass/6c1cf2148024cf59.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
+error: Expected ';' after class field, but found ':'
    |
- 4 | namespace B {
- 5 |     export import a = A;
-   |            ^^^^^^
  6 |     export class D extends a.C {
+ 7 |         id: number;
+   |           ^
+ 8 |     }
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/6c36e062c3ec5732.ts
@@ -19942,17 +19737,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/6d4b71abcb9e3303.ts
 ✓ test/parser/suite/ts/pass/6d4ba41a91673e5f.ts
 ✓ test/parser/suite/ts/pass/6d4dcd1cbbb6f8db.ts
-✗ test/parser/suite/ts/pass/6d56a805d3b9fcfd.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 7 | namespace A.M {
- 8 |     import M = Z.M;
-   |              ^
- 9 |     export function bar() {
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/6d56a805d3b9fcfd.ts
 ✓ test/parser/suite/ts/pass/6d5bd1e5d8f4db4b.ts
 ✗ test/parser/suite/ts/pass/6d74e1f570067733.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -20502,17 +20287,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/70295da217dc824f.ts
-✗ test/parser/suite/ts/pass/702a4a09be9d5251.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
-11 | namespace B {
-12 |     import a = A; //Error generates 'var <Alias> = <EntityName>;'
-   |              ^
-13 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/702a4a09be9d5251.ts
 ✓ test/parser/suite/ts/pass/702ba49e53144249.module.ts
 ✗ test/parser/suite/ts/pass/702e11cb3030282f.module.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -21014,16 +20789,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/73177831275d6816.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | /* not copyright */
- 5 | import foo = require('./foo');
-   |            ^
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/73177831275d6816.module.ts
 ✗ test/parser/suite/ts/pass/731d922b0138b8f7.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -23373,26 +23139,17 @@ error: Expected ';' after class field, but found '!'
 ✓ test/parser/suite/ts/pass/7ef827e1331153df.ts
 ✓ test/parser/suite/ts/pass/7efe949203a3cea4.ts
 ✗ test/parser/suite/ts/pass/7efee12ab2e9c25c.module.tsx (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected declaration after 'export', but found 'type'
    |
-10 | 
-11 | import React = require('react');
-   |              ^
 12 | 
+13 | export type Props =
+   |        ^^^^
+14 |   | { renderNumber?: false; children: (arg: string) => void }
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/7f007371ad5795d9.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | "use strict"
- 5 | import public = require("1");
-   |               ^
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/7f007371ad5795d9.module.ts
 ✓ test/parser/suite/ts/pass/7f052bfa999b3b23.ts
 ✓ test/parser/suite/ts/pass/7f0935e3245c579d.ts
 ✗ test/parser/suite/ts/pass/7f0990e7568eb573.ts (parse errors)
@@ -24131,14 +23888,14 @@ error: Expected ';' after class field, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/834deddacf3af95a.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ';' after class field, but found ':'
    |
- 7 | 
- 8 | import alias = moduleA;
-   |              ^
- 9 | 
+14 | class clodule {
+15 |     name: string;
+   |         ^
+16 | }
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/83552e423c68d7d1.ts (parse errors)
@@ -24483,17 +24240,7 @@ error: Expected ';' after class field, but found 'banana'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/8581ff29b8de6208.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
-11 | // Cannot resolve this ext module reference
-12 | import ext = require("ext");
-   |            ^
-13 | var x = ext;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/8581ff29b8de6208.module.ts
 ✗ test/parser/suite/ts/pass/858a81e5ff4b6b63.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -25217,17 +24964,7 @@ error: Expected ';' after class field, but found 'p1'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/88f6b4698dcbd984.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 3 | 
- 4 | import i = require("mod"); // Error;
-   |          ^
- 5 | 
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/88f6b4698dcbd984.module.ts
 ✗ test/parser/suite/ts/pass/88f8f9fd95e78aa4.ts (parse errors)
 error: Expected '?' in a conditional type, but found '>'
    |
@@ -25865,17 +25602,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/8d0599875709100c.ts
 ✓ test/parser/suite/ts/pass/8d16b120f5db61e8.ts
 ✓ test/parser/suite/ts/pass/8d1983be89ff013f.ts
-✗ test/parser/suite/ts/pass/8d1a71a73f97fd5c.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | 
- 7 | import m1 = require("m2")
-   |           ^
- 8 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/8d1a71a73f97fd5c.module.ts
 ✗ test/parser/suite/ts/pass/8d1f753780e6f4b6.module.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -26714,17 +26441,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/917498eab618163a.ts
 ✓ test/parser/suite/ts/pass/917ff264616e98d0.module.ts
-✗ test/parser/suite/ts/pass/91883733123cba74.module.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 6 | }
- 7 | export import a = x.c;
-   |        ^^^^^^
- 8 | export = x;
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/91883733123cba74.module.ts
 ✗ test/parser/suite/ts/pass/91898942903455d5.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
    |
@@ -26753,17 +26470,7 @@ error: Expected ';' after class field, but found 'foo'
 ✓ test/parser/suite/ts/pass/919f5ea0e21f327c.ts
 ✓ test/parser/suite/ts/pass/91a10a635e14ccfc.ts
 ✓ test/parser/suite/ts/pass/91a74f37449c7d61.ts
-✗ test/parser/suite/ts/pass/91b844b90b9fbaa6.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 |     // Should error; imports both a type and a module, which means it conflicts with the 'string' type.
- 7 |     import string = mi_string;
-   |                   ^
- 8 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/91b844b90b9fbaa6.ts
 ✗ test/parser/suite/ts/pass/91c499ecfdbdf036.tsx (parse errors)
 error: Unexpected token '}'
    |
@@ -27039,17 +26746,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/93799353b441ee2f.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 6 |     }
- 7 |     export import a = x.c;
-   |            ^^^^^^
- 8 |     export = x;
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/93799353b441ee2f.ts
 ✓ test/parser/suite/ts/pass/937a0c38e0968297.ts
 ✓ test/parser/suite/ts/pass/937e52a4da6586f5.ts
 ✓ test/parser/suite/ts/pass/937ed206cce7003b.ts
@@ -28074,14 +27771,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/9904875f56fea8b6.ts
 ✗ test/parser/suite/ts/pass/9906613d5108239d.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ';' after class field, but found 'static'
    |
- 3 | declare module "SubModule" {
- 4 |     import MainModule = require('MainModule');
-   |                       ^
  5 |     class SubModule {
+ 6 |         public static StaticVar: number;
+   |                ^^^^^^
+ 7 |         public InstanceVar: number;
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/990786e79273f5e3.ts
@@ -29963,17 +29660,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/a34770c40241cd6d.ts
-✗ test/parser/suite/ts/pass/a34ea13570823330.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import m1 = require("m2")
-   |           ^
- 6 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/a34ea13570823330.module.ts
 ✗ test/parser/suite/ts/pass/a3683bc771c75d99.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -30290,17 +29977,7 @@ error: Expected '{' to start class body, but found 'implements'
 
 
 ✓ test/parser/suite/ts/pass/a4a41879659188f5.ts
-✗ test/parser/suite/ts/pass/a4adb25d4a3d633c.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 9 | namespace c {
-10 |     import b = a.foo;
-   |              ^
-11 |     export var bVal = b(10);
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/a4adb25d4a3d633c.ts
 ✓ test/parser/suite/ts/pass/a4b31a4ef7a8812d.ts
 ✗ test/parser/suite/ts/pass/a4bff4f80026596e.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -30897,17 +30574,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/a850ef39fab9f8c1.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
-11 | 
-12 |     import a = A; //Error generates 'var <Alias> = <EntityName>;'
-   |              ^
-13 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/a850ef39fab9f8c1.ts
 ✓ test/parser/suite/ts/pass/a85398e928ea14b6.ts
 ✓ test/parser/suite/ts/pass/a8631f33b91f2561.ts
 ✓ test/parser/suite/ts/pass/a86732ad6ecb784f.ts
@@ -34237,17 +33904,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/ba48d24bcc1dee96.ts
 ✓ test/parser/suite/ts/pass/ba4e62b1e119b618.ts
 ✓ test/parser/suite/ts/pass/ba57fa0d538cb116.ts
-✗ test/parser/suite/ts/pass/ba5b3e71d749e691.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 3 | // This import should not be elided in the emitted JS
- 4 | import a = require("foo");
-   |          ^
- 5 | const p = a satisfies bleh;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/ba5b3e71d749e691.module.ts
 ✓ test/parser/suite/ts/pass/ba5e91068b3d67f2.ts
 ✓ test/parser/suite/ts/pass/ba5ee5b48ba7c0a9.ts
 ✓ test/parser/suite/ts/pass/ba5fa06782f63644.ts
@@ -35661,17 +35318,7 @@ error: Expected ';' after class field, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/c1a33de293cfaab9.module.ts
-✗ test/parser/suite/ts/pass/c1b1101c92de56b3.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 | import {alias} from "foo";
- 6 | import cls = alias.Class;
-   |            ^
- 7 | export import cls2 = alias.Class;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/c1b1101c92de56b3.module.ts
 ✗ test/parser/suite/ts/pass/c1b94493cf6fa38b.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -36366,17 +36013,7 @@ error: Expected declaration after 'export', but found 'declare'
 
 
 ✓ test/parser/suite/ts/pass/c5b1aa508df89813.ts
-✗ test/parser/suite/ts/pass/c5b868f5b7876bd0.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import m1 = require("m2")
-   |           ^
- 6 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/c5b868f5b7876bd0.module.ts
 ✓ test/parser/suite/ts/pass/c5c26325071185b0.ts
 ✗ test/parser/suite/ts/pass/c5c6422cc59b3f05.module.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -36436,17 +36073,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/c617b6b16c8643c7.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 |     // Should error; 'test.istring' is a type, so this import conflicts with the 'string' type.
- 6 |     import string = test.istring;
-   |                   ^
- 7 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/c617b6b16c8643c7.ts
 ✓ test/parser/suite/ts/pass/c6189e72b63cd387.ts
 ✓ test/parser/suite/ts/pass/c61929bc9ab16fa8.ts
 ✓ test/parser/suite/ts/pass/c61bf8656f78f2aa.ts
@@ -36821,30 +36448,10 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/c82d6a1191f20050.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 2 | namespace c.a.b {
- 3 |     import ma = a;
-   |               ^
- 4 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/c82d6a1191f20050.ts
 ✓ test/parser/suite/ts/pass/c83539bc5bfa444a.ts
 ✓ test/parser/suite/ts/pass/c8533fe99ef038cf.ts
-✗ test/parser/suite/ts/pass/c856d81b24a5ff12.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 5 |     }
- 6 |     export import X = N;
-   |            ^^^^^^
- 7 | }
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/c856d81b24a5ff12.ts
 ✓ test/parser/suite/ts/pass/c858122477dc1750.ts
 ✗ test/parser/suite/ts/pass/c863becd22e28a13.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -37316,17 +36923,7 @@ error: Illegal continue statement
    = help: A 'continue' statement can only be used within an enclosing iteration statement
 
 
-✗ test/parser/suite/ts/pass/cb1c1de7d245952b.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 8 |     interface M { }
- 9 |     import M = Z.M;
-   |              ^
-10 |     export function bar() {
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/cb1c1de7d245952b.ts
 ✓ test/parser/suite/ts/pass/cb2017641b8f6e5e.ts
 ✗ test/parser/suite/ts/pass/cb23008ce4088956.ts (parse errors)
 error: Expected ')' after method parameters, but found '?'
@@ -38351,17 +37948,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/d0fa9bd4eb239bad.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import alias = require('foo');
-   |              ^
- 6 | import cls = alias.Class;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/d0fa9bd4eb239bad.module.ts
 ✓ test/parser/suite/ts/pass/d0fc8b6d255f5b66.ts
 ✗ test/parser/suite/ts/pass/d0fd18b1cfe9a9ef.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -39385,16 +38972,7 @@ error: 'this' is reserved and cannot be used as a binding identifier
  8 | }
    |
 
-✗ test/parser/suite/ts/pass/d670b97bd3cdaa7b.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 1 | // @target: es2015
- 2 | import TypeScript = TypeScriptServices.TypeScript;
-   |                   ^
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/d670b97bd3cdaa7b.ts
 ✗ test/parser/suite/ts/pass/d67cb7c69d299a7e.ts (parse errors)
 error: 'in' is reserved and cannot be used as a binding identifier
    |
@@ -40398,17 +39976,7 @@ error: Expected '{' to start class body, but found 'implements'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/dce8a38527aa7256.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 8 |     }
- 9 |     import R = N;
-   |              ^
-10 |     export import X = R;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/dce8a38527aa7256.ts
 ✓ test/parser/suite/ts/pass/dcef7382264b20e3.ts
 ✗ test/parser/suite/ts/pass/dcf4f75083047529.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -40943,17 +40511,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/df9fa4d9f724d72d.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | namespace Beta {
- 7 |     import p = Alpha.x;
-   |              ^
- 8 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/df9fa4d9f724d72d.ts
 ✓ test/parser/suite/ts/pass/dfa8802e03c75fbe.ts
 ✓ test/parser/suite/ts/pass/dfa98e8414d729ff.ts
 ✗ test/parser/suite/ts/pass/dfab02cb98b14eee.ts (parse errors)
@@ -41303,14 +40861,14 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/e1a988172108b4a1.ts
 ✓ test/parser/suite/ts/pass/e1b65bba491d7784.ts
 ✗ test/parser/suite/ts/pass/e1b68b3805c77864.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected declaration after 'export', but found 'namespace'
    |
- 2 | //@module: amd
- 3 | import foo = m1;
-   |            ^
  4 |  
+ 5 | export namespace m1 { }
+   |        ^^^^^^^^^
+ 6 |  
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✗ test/parser/suite/ts/pass/e1bb582ab34ae277.ts (parse errors)
@@ -41572,16 +41130,7 @@ error: Expected ']' after computed property key, but found ':'
  4 |    public v: number
    |
 
-✗ test/parser/suite/ts/pass/e3492f9ec483b021.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 | namespace M { }
- 6 | import a = M;
-   |          ^
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/e3492f9ec483b021.ts
 ✓ test/parser/suite/ts/pass/e350703c7c7f295a.ts
 ✗ test/parser/suite/ts/pass/e354a20ef248ef5c.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -41594,17 +41143,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/e3584a25ef836c92.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 3 | // @noresolve: true
- 4 | import b = require("externalModule");
-   |          ^
- 5 | declare module "m1" {
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/e3584a25ef836c92.module.ts
 ✓ test/parser/suite/ts/pass/e361bf5c93b97a64.ts
 ✓ test/parser/suite/ts/pass/e3631d4eba3c775e.ts
 ✓ test/parser/suite/ts/pass/e367f79da74f6e84.ts
@@ -41745,17 +41284,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e3f349092709b803.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 | 
- 6 | import foo = require('./foo');
-   |            ^
- 7 | 
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/e3f349092709b803.module.ts
 ✗ test/parser/suite/ts/pass/e40186d7e16623a4.module.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -42020,17 +41549,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e582b828a9bb8eeb.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import m1 = require("m2")
-   |           ^
- 6 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/e582b828a9bb8eeb.module.ts
 ✓ test/parser/suite/ts/pass/e5830e4acb613b62.ts
 ✓ test/parser/suite/ts/pass/e586c2f5315b2b61.ts
 ✓ test/parser/suite/ts/pass/e590ba033ca678c9.ts
@@ -42135,14 +41654,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/e689370c62a3b6e0.ts
 ✗ test/parser/suite/ts/pass/e68c033fd780438f.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ';' after class field, but found 'static'
    |
- 2 | declare module "OuterModule" {
- 3 |     import m2 = require("./SubModule");
-   |               ^
  4 |     class SubModule {
+ 5 |         public static StaticVar: number;
+   |                ^^^^^^
+ 6 |         public InstanceVar: number;
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/e68eb054b53affdf.ts (parse errors)
@@ -42923,17 +42442,7 @@ error: Expected ';' after class field, but found 'prop'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/eb210183c322cc83.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
-29 |     }
-30 |     import c = N;
-   |              ^
-31 |     import d = asdf;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/eb210183c322cc83.ts
 ✗ test/parser/suite/ts/pass/eb224201dad4c005.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
    |
@@ -43025,17 +42534,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/eb8e2c7f835edc67.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import m1 = require("m2")
-   |           ^
- 6 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/eb8e2c7f835edc67.module.ts
 ✗ test/parser/suite/ts/pass/eb904126d8153c52.ts (parse errors)
 error: Expected ';' after class field, but found 'instanceMethod'
    |
@@ -43162,17 +42661,7 @@ error: Expected '{' to start class body, but found 'implements'
 
 ✓ test/parser/suite/ts/pass/ec6770f4f4433925.ts
 ✓ test/parser/suite/ts/pass/ec7009723c5bb1bc.ts
-✗ test/parser/suite/ts/pass/ec73d8617afbca21.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 5 | ****************************/
- 6 | import model = require("./greeter")
-   |              ^
- 7 | var el = document.getElementById('content');
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/ec73d8617afbca21.module.ts
 ✗ test/parser/suite/ts/pass/ec74c21b4ff3e150.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -43242,17 +42731,7 @@ error: Expected ';' after class field, but found 'x'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/ecaaea9be7a8dd52.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | 
- 5 | import m1 = require("m2")
-   |           ^
- 6 | m1.f();
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/ecaaea9be7a8dd52.module.ts
 ✓ test/parser/suite/ts/pass/ecad0b1af07cf982.ts
 ✓ test/parser/suite/ts/pass/ecad6be6d41444d6.module.ts
 ✓ test/parser/suite/ts/pass/ecb69be649f0ef3c.ts
@@ -44067,17 +43546,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/f19a9bf3ec8e79ab.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 4 | namespace A {
- 5 |     import b = B;
-   |              ^
- 6 |     import c = C;
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/f19a9bf3ec8e79ab.ts
 ✓ test/parser/suite/ts/pass/f19db491e8a5e304.ts
 ✗ test/parser/suite/ts/pass/f1be9939d3edff1a.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
@@ -44244,17 +43713,7 @@ error: Expected '{' to start class body, but found 'implements'
 ✓ test/parser/suite/ts/pass/f24502e8e1486696.ts
 ✓ test/parser/suite/ts/pass/f253b08399636a97.module.ts
 ✓ test/parser/suite/ts/pass/f259b17628144d69.ts
-✗ test/parser/suite/ts/pass/f25ab828c0fcc33e.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 | 
- 7 | import ab = A.B;
-   |           ^
- 8 | 
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/f25ab828c0fcc33e.ts
 ✓ test/parser/suite/ts/pass/f25d4f06b27d37c5.ts
 ✗ test/parser/suite/ts/pass/f262441752d5b3fd.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -45108,17 +44567,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/f65fb0b13d53d901.ts
 ✓ test/parser/suite/ts/pass/f66b739ed8138489.ts
 ✓ test/parser/suite/ts/pass/f66ee8bbf74c0f67.ts
-✗ test/parser/suite/ts/pass/f6991574fc9f0dc5.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 6 |     var Foo = 1;
- 7 |     import F = Foo;
-   |              ^
- 8 | }
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/f6991574fc9f0dc5.ts
 ✓ test/parser/suite/ts/pass/f69f02727fa5e211.ts
 ✓ test/parser/suite/ts/pass/f6acace18c8c8c99.ts
 ✗ test/parser/suite/ts/pass/f6adad28945142de.ts (parse errors)
@@ -45302,14 +44751,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/f765d84969cf73b5.module.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 2 | //@module: commonjs
- 3 | import fs = require('fs');
-   |           ^
- 4 | function readdir(path: string, accept: (stat: fs.Stats, name: string) => boolean, callback: (error: Error, results: { name: string; stat: fs.Stats; }[]) => void ) {}
+10 |         readdir(covFileDir, () => {
+11 |         } , (error: Error, files: {}[]) => {
+   |                   ^
+12 |                 files.forEach((file) => {
    |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/f77260a66a73d7ac.ts (parse errors)
@@ -46068,17 +45517,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/fbe25f079c770787.ts
-✗ test/parser/suite/ts/pass/fbeba55b5055e701.ts (parse errors)
-error: Expected 'from' after import clause, but found '='
-   |
- 7 | namespace A.M {
- 8 |     import M = Z.M;
-   |              ^
- 9 |     export function bar() {
-   |
-   = help: Import statements require 'from' followed by a module specifier: import x from 'module'
-
-
+✓ test/parser/suite/ts/pass/fbeba55b5055e701.ts
 ✗ test/parser/suite/ts/pass/fbef78162e96cacf.module.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -46471,17 +45910,7 @@ error: Expected ';' after class field, but found ':'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/fdf9d8f7b8c9fa10.module.ts (parse errors)
-error: Expected declaration after 'export', but found 'import'
-   |
- 6 | }
- 7 | export import a = x.c;
-   |        ^^^^^^
- 8 | var b: a;
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/fdf9d8f7b8c9fa10.module.ts
 ✓ test/parser/suite/ts/pass/fe0474435253740a.ts
 ✗ test/parser/suite/ts/pass/fe0be9a3ae985f1c.module.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'

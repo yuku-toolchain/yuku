@@ -1,5 +1,12 @@
-// @target: es2015
-import type { A } from "m";
-import { type A, B } from "m";
-export type { A };
-export { type A } from "m";
+// import equals tests
+import fs = require("fs");
+import alias = Foo;
+import path = Foo.Bar.Baz;
+import type T = Foo.Bar;
+
+namespace M {
+    import b = a.b;
+    export import re = Foo;
+}
+
+export import exp = Lib;

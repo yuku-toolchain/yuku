@@ -47,6 +47,17 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
+    // import x = <module reference> (ts import equals). mirrors
+    // parseImportDeclarationOrImportEqualsDeclaration in microsoft/typescript-go's
+    // parser.go. the equals form takes over whenever an identifier head is
+    // followed by `=`, including the type-only `import type x = ...` shape.
+    if (parser.tree.isTs() and parser.current_token.tag.isIdentifierLike()) {
+        const after_id = try parser.peekAhead() orelse return null;
+        if (after_id.tag == .assign) {
+            return parseImportEqualsDeclaration(parser, start, import_kind);
+        }
+    }
+
     // regular import, parse import clause (specifiers)
     const specifiers = try parseImportClause(parser) orelse return null;
 
@@ -88,6 +99,86 @@ fn isTypeImportModifier(after_type: Token, after_after: ?Token) bool {
         return a2.tag == .from or a2.tag == .assign;
     }
     return true;
+}
+
+/// `import x = <module reference>`
+fn parseImportEqualsDeclaration(
+    parser: *Parser,
+    start: u32,
+    import_kind: ast.ImportOrExportKind,
+) Error!?ast.NodeIndex {
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!try parser.expect(
+        .assign,
+        "Expected '=' in import equals declaration",
+        "An import equals declaration is written 'import x = Foo.Bar' or 'import x = require(\"m\")'",
+    )) return null;
+
+    const module_reference = try parseModuleReference(parser) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.getSpan(module_reference).end) orelse return null;
+
+    return try parser.tree.createNode(.{
+        .ts_import_equals_declaration = .{
+            .id = id,
+            .module_reference = module_reference,
+            .import_kind = import_kind,
+        },
+    }, .{ .start = start, .end = end });
+}
+
+/// ModuleReference : TSExternalModuleReference or EntityName. `require("m")`
+/// is the external form, anything else is a dotted identifier chain.
+fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .require) {
+        const next = try parser.peekAhead() orelse return null;
+        if (next.tag == .left_paren) return parseExternalModuleReference(parser);
+    }
+    return parseEntityName(parser);
+}
+
+/// `require("m")` on the right hand side of an `import x = ...` declaration.
+fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume 'require'
+
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' after 'require' in import equals declaration",
+        "External module references are written 'require(\"module\")'",
+    )) return null;
+
+    const expression = try literals.parseStringLiteral(parser) orelse return null;
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(
+        .right_paren,
+        "Expected ')' to close 'require' call in import equals declaration",
+        null,
+    )) return null;
+
+    return try parser.tree.createNode(.{
+        .ts_external_module_reference = .{ .expression = expression },
+    }, .{ .start = start, .end = end });
+}
+
+/// a dotted entity name used as the right hand side of an `import x = ...`
+/// declaration
+fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
+    var name = try literals.parseIdentifier(parser) orelse return null;
+
+    while (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null; // consume '.'
+        const right = try literals.parseIdentifierName(parser) orelse return null;
+        const left_start = parser.tree.getSpan(name).start;
+        const right_end = parser.tree.getSpan(right).end;
+        name = try parser.tree.createNode(
+            .{ .ts_qualified_name = .{ .left = name, .right = right } },
+            .{ .start = left_start, .end = right_end },
+        );
+    }
+
+    return name;
 }
 
 /// side-effect import: import 'module'
@@ -627,6 +718,15 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         },
         .at => {
             declaration = try extensions.parseDecorated(parser, .{}) orelse return null;
+        },
+        // ts: `export import x = ...`
+        .import => if (parser.tree.isTs()) {
+            declaration = try parseImportDeclaration(parser) orelse return null;
+        } else {
+            try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
+                .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
+            });
+            return null;
         },
         else => {
             try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
