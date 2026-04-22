@@ -1909,6 +1909,28 @@ pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, ann
     }
 }
 
+/// sets the `optional` flag on the inner binding pattern for an optional parameter
+/// marker (`x?`, `[...]?`, `{...}?`). mutates the pattern node's data in place and
+/// extends its span out to `end` so the trailing `?` is covered.
+pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) void {
+    var data = parser.tree.getData(pattern);
+
+    switch (data) {
+        .binding_identifier => |*v| v.optional = true,
+        .object_pattern => |*v| v.optional = true,
+        .array_pattern => |*v| v.optional = true,
+        .assignment_pattern => |*v| v.optional = true,
+        else => return,
+    }
+
+    parser.tree.replaceData(pattern, data);
+
+    const pattern_span = parser.tree.getSpan(pattern);
+    if (end > pattern_span.end) {
+        parser.tree.replaceSpan(pattern, .{ .start = pattern_span.start, .end = end });
+    }
+}
+
 /// `<Type>expr` prefix type assertion. the right operand is a unary
 /// expression so any infix operator at or below unary precedence in the
 /// pratt loop stays outside the assertion.

@@ -291,6 +291,13 @@ pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) E
 
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
+    // `function f(x?: Type) { ... }` optional parameter marker.
+    if (parser.tree.isTs() and parser.current_token.tag == .question) {
+        const question_end = parser.current_token.span.end;
+        try parser.advance() orelse return null;
+        ts_types.markPatternOptional(parser, pattern, question_end);
+    }
+
     // `function f(x: Type) { ... }`
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;

@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       5388/8261 (65.22%)
-Failed:       2873
-AST mismatch: 0/5388
+Passed:       5545/8261 (67.12%)
+Failed:       2716
+AST mismatch: 0/5545
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -51,17 +51,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/00bd346b687796f6.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface Promise<T> {
- 3 |     then<U>(success?: (value: T) => U): Promise<U>;
-   |                    ^
- 4 |     then<U>(success?: (value: T) => Promise<U>): Promise<U>;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/00bd346b687796f6.ts
 ✗ test/parser/suite/ts/pass/00c14a1d0d981386.ts (parse errors)
 error: Shorthand property must be an identifier
    |
@@ -392,17 +382,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/02f19faa6e3036be.module.ts
-✗ test/parser/suite/ts/pass/02fff8d5a3757968.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 3 | // @declaration: true
- 4 | function f(addUndefined1 = "J", addUndefined2?: number) {
-   |                                              ^
- 5 |     return addUndefined1.length + (addUndefined2 || 0);
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/02fff8d5a3757968.ts
 ✓ test/parser/suite/ts/pass/0301622f0e921bec.ts
 ✓ test/parser/suite/ts/pass/030adebab641e8ba.ts
 ✓ test/parser/suite/ts/pass/030fc59012db46bc.ts
@@ -484,17 +464,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/0376fd3b5a8af7db.ts
-✗ test/parser/suite/ts/pass/03868ca5b0d382cf.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-11 |     concat(...strings: string[]): string;
-12 |     indexOf(searchString: string, position?: number): number;
-   |                                           ^
-13 |     lastIndexOf(searchString: string, position?: number): number;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/03868ca5b0d382cf.ts
 ✓ test/parser/suite/ts/pass/039b521437a1f075.ts
 ✓ test/parser/suite/ts/pass/03a6763766befa41.ts
 ✓ test/parser/suite/ts/pass/03adad11ec47c70e.ts
@@ -850,14 +820,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/072776713e5fdf6d.ts
 ✓ test/parser/suite/ts/pass/0729ba81c1cf0b9b.ts
 ✗ test/parser/suite/ts/pass/0731fd74e69db622.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | interface Promise<T> {
- 6 |     then<U>(success?: (value: T) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: any) => void): Promise<U>;
-   |                    ^
- 7 |     then<U>(success?: (value: T) => Promise<U>, error?: (error: any) => U, progress?: (progress: any) => void): Promise<U>;
+31 | declare function testFunction7P(cb: <T>(a: T) => T): Promise<string>;
+32 | declare function testFunction8<T>(x: T, cb: (a: T) => T): IPromise<T>;
+   |                               ^
+33 | declare function testFunction8P<T>(x: T, cb: (a: T) => T): Promise<T>;
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/07537ac071a1ecc1.ts (parse errors)
@@ -1122,17 +1092,7 @@ error: Expected '?' in a conditional type, but found '>'
 ✓ test/parser/suite/ts/pass/088da18f7fbfed3f.ts
 ✓ test/parser/suite/ts/pass/089a4759c6ecf242.ts
 ✓ test/parser/suite/ts/pass/089f32d9bfcf12c6.ts
-✗ test/parser/suite/ts/pass/08a616625c4f4f8d.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 7 | 
- 8 | declare function foo(arg: { x: Bar, y: Date }, item: number, items?: [number, number, number]): void;
-   |                                                                   ^
- 9 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/08a616625c4f4f8d.ts
 ✗ test/parser/suite/ts/pass/08af60d9d964fc56.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -1154,17 +1114,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/0925d76d3c442dbc.ts
 ✓ test/parser/suite/ts/pass/092837663d103155.ts
 ✓ test/parser/suite/ts/pass/092b102c77a8cc7d.module.ts
-✗ test/parser/suite/ts/pass/09300ab6efcb168e.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | function f1(s: string) { }
- 3 | function f2(s?: string) { }
-   |              ^
- 4 | function f3(...s: string[]) { }
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/09300ab6efcb168e.ts
 ✓ test/parser/suite/ts/pass/0930870a0e3c208d.ts
 ✓ test/parser/suite/ts/pass/0930a76d8da19264.ts
 ✓ test/parser/suite/ts/pass/0937a7723c537125.ts
@@ -1231,15 +1181,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/09ada812864fb29c.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 5 |    private bar(foo: string);
- 6 |    private bar(foo?: any){ return "foo" }
-   |                   ^
- 7 |    public n() {
-   |
-
+✓ test/parser/suite/ts/pass/09ada812864fb29c.ts
 ✓ test/parser/suite/ts/pass/09b72efb9e87f68e.ts
 ✓ test/parser/suite/ts/pass/09bca18b47504906.ts
 ✗ test/parser/suite/ts/pass/09c006c0a0409e11.ts (parse errors)
@@ -1383,14 +1325,14 @@ error: Expected declaration after 'export', but found 'type'
 
 ✓ test/parser/suite/ts/pass/0a83bb9248f9d0d5.ts
 ✗ test/parser/suite/ts/pass/0a84a66cc8d61a1b.module.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Expected declaration after 'export', but found 'declare'
    |
-29 | }
-30 | type Done = (err?: any) => void;
-   |                 ^
-31 | type Func = (this: Context, done: Done) => void;
+50 | 
+51 | export declare function getProcessTree(
+   |        ^^^^^^^
+52 |   rootPid: number,
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/0a868813eabf880e.module.ts
@@ -1477,17 +1419,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/0b3140379df95eba.module.ts
 ✓ test/parser/suite/ts/pass/0b37222e73b3d5c0.ts
 ✓ test/parser/suite/ts/pass/0b503a96da0ee5cf.ts
-✗ test/parser/suite/ts/pass/0b51a4626c4dc8da.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
-11 | function foo(): any {
-12 |     var a!: any;
-   |          ^
-13 |     return a;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/0b51a4626c4dc8da.ts
 ✓ test/parser/suite/ts/pass/0b51b11f3a3a5352.ts
 ✓ test/parser/suite/ts/pass/0b5220a31edd9d64.ts
 ✗ test/parser/suite/ts/pass/0b58a1d04c49e80e.ts (parse errors)
@@ -1677,17 +1609,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/0c67503c37a611bc.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a:string, b?:number){} 
-   |                         ^
- 3 | foo('foo', 1); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/0c67503c37a611bc.ts
 ✓ test/parser/suite/ts/pass/0c6e09084489f187.ts
 ✗ test/parser/suite/ts/pass/0c700becab8640b0.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -1877,17 +1799,7 @@ error: Expected '>' to close a type assertion, but found ','
    = help: A type assertion is written '<Type>expression'
 
 
-✗ test/parser/suite/ts/pass/0d9d4e784ffb62cd.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | // @declaration: true
- 3 | function foo([x,y,z]?: [string, number, boolean]) {
-   |                     ^
- 4 | }
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/0d9d4e784ffb62cd.ts
 ✓ test/parser/suite/ts/pass/0db029facdb669a8.ts
 ✓ test/parser/suite/ts/pass/0dc78e021382aac8.ts
 ✗ test/parser/suite/ts/pass/0ddc996e9d108b22.ts (parse errors)
@@ -1969,14 +1881,14 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/0ea0911cc18c9589.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '>' to close a type assertion, but found ','
    |
-35 |             (a: number): number;
-36 |             (a?: number): number;
-   |               ^
-37 |         }): number[];
+56 | 
+57 |     var r1 = foo2(<T, U>(x: T) => <U[]>null); // any
+   |                     ^
+58 |     var r1a = [(x: number) => [''], <T, U>(x: T) => <U[]>null];
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: A type assertion is written '<Type>expression'
 
 
 ✓ test/parser/suite/ts/pass/0ea9f504b0a977b2.ts
@@ -2079,14 +1991,14 @@ error: Expected declaration after 'export', but found 'enum'
 
 
 ✗ test/parser/suite/ts/pass/0f14633d6ba625fd.module.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 |     changeListeners: Function[] | null
- 6 |     observe(handler: (change: any, oldValue?: any) => void, fireImmediately?: boolean): void
-   |                                            ^
- 7 | }
+ 8 | 
+ 9 | function notifyListeners<T>(listenable: IListenable, change: T) {
+   |                         ^
+10 | }
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/0f1cde608d2dd8fc.ts
@@ -2186,17 +2098,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/0fd5860727ec3cf9.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface IPromise<T> {
- 3 |     then<TResult>(successCallback: (promiseValue: T) => TResult, errorCallback?: (reason: any) => TResult): IPromise<TResult>;
-   |                                                                               ^
- 4 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/0fd5860727ec3cf9.ts
 ✗ test/parser/suite/ts/pass/0fd6d4a184071b2b.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
     |
@@ -2401,15 +2303,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/10eda8814eb42db6.ts
 ✓ test/parser/suite/ts/pass/10f52e853d756eb4.ts
 ✓ test/parser/suite/ts/pass/10faeba4ad2d4e59.module.ts
-✗ test/parser/suite/ts/pass/10fd4065636e812a.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 3 | class C {
- 4 |   F(A?, B) { }
-   |      ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/10fd4065636e812a.ts
 ✓ test/parser/suite/ts/pass/10fe85decbdf9273.ts
 ✓ test/parser/suite/ts/pass/10fee905e8d531da.ts
 ✓ test/parser/suite/ts/pass/1102db0ba056f01e.ts
@@ -2424,17 +2318,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/11069887156cb468.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
-10 | var r2: void = i();
-11 | var r2b: (x: any, y?: any) => any = i.apply;
-   |                    ^
-12 | 
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/11069887156cb468.ts
 ✗ test/parser/suite/ts/pass/1107aa1bccc1ee60.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -2511,17 +2395,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/1163d0a89be424e0.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 6 | interface Console {
- 7 |   log(message?: any, ...optionalParams: any[]): void;
-   |              ^
- 8 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/1163d0a89be424e0.ts
 ✓ test/parser/suite/ts/pass/1172f7df2252dbe0.ts
 ✓ test/parser/suite/ts/pass/1174b8722a07525d.ts
 ✓ test/parser/suite/ts/pass/117a80d0a6385eaf.ts
@@ -2713,15 +2587,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/13456bf55e2f5173.ts
-✗ test/parser/suite/ts/pass/1347b55986e976d9.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-19 |         foo(): string;
-20 |         foo(bar?: string): string | void {
-   |                ^
-21 |             return 'hi'
-   |
-
+✓ test/parser/suite/ts/pass/1347b55986e976d9.ts
 ✗ test/parser/suite/ts/pass/134937a8ec37776a.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found '!'
    |
@@ -2762,32 +2628,12 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/1372b0833645b286.ts
 ✓ test/parser/suite/ts/pass/1374e324aa26e242.ts
 ✓ test/parser/suite/ts/pass/13774e0217294e4f.ts
-✗ test/parser/suite/ts/pass/13834488245fd0a9.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a?:string, b?:number){};
-   |               ^
- 3 | foo('foo', 1); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/13834488245fd0a9.ts
 ✓ test/parser/suite/ts/pass/138bc70e4283deb9.ts
 ✓ test/parser/suite/ts/pass/13a400e9fcb7655c.ts
 ✓ test/parser/suite/ts/pass/13c5408711b490a7.ts
 ✓ test/parser/suite/ts/pass/13cdef6c785a047b.ts
-✗ test/parser/suite/ts/pass/13f0c499a3c0e9aa.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 |     reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T,
- 4 |         initialValue?: T): T;
-   |                     ^
- 5 |     reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U,
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/13f0c499a3c0e9aa.ts
 ✗ test/parser/suite/ts/pass/13fdcf11d2753a49.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -2904,14 +2750,14 @@ error: 'super()' is only valid in a constructor of a derived class
 
 ✓ test/parser/suite/ts/pass/14aaf89888bcf799.ts
 ✗ test/parser/suite/ts/pass/14bdc77257ab7267.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
  2 | 
  3 | function foo({ x, y, z }?: { x: string; y: number; z: boolean });
-   |                         ^
+   |                                                                 ^
  4 | function foo(...rest: any[]) {
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/14bfa63e069e694a.ts
@@ -2943,17 +2789,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/14d5c33db1acdbfe.ts
 ✓ test/parser/suite/ts/pass/14d66ad70b699e90.ts
 ✓ test/parser/suite/ts/pass/14e1d17d4d261985.ts
-✗ test/parser/suite/ts/pass/14f7f6a5caffb8e2.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 3 | 
- 4 | function onlyErrorsWhenTestingNonNullableFunctionType(required: () => boolean, optional?: () => boolean) {
-   |                                                                                        ^
- 5 |     if (required) { // error
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/14f7f6a5caffb8e2.ts
 ✓ test/parser/suite/ts/pass/14f9112d7a5e0f99.ts
 ✓ test/parser/suite/ts/pass/150a5762db129f87.ts
 ✓ test/parser/suite/ts/pass/1513939fe2ec8d5d.ts
@@ -3171,14 +3007,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/16bcc250464e2288.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
  4 | 
  5 | function foo(x?: number);
-   |               ^
+   |                         ^
  6 | function foo(x?: number) { }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/16d4634d5a8cc79d.ts
@@ -3340,15 +3176,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/177462f91c0cf36a.ts
 ✓ test/parser/suite/ts/pass/17862ae8cdff0a0f.ts
-✗ test/parser/suite/ts/pass/17896e7f8d8f0461.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-12 | class E extends D {
-13 |     foo(x?: string) { } // ok to add optional parameters
-   |          ^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/17896e7f8d8f0461.ts
 ✗ test/parser/suite/ts/pass/178e9d6c27501c96.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -3400,17 +3228,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/17cc6498b42df97d.ts
-✗ test/parser/suite/ts/pass/17d8ae0c1b3cf0d2.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 5 |     (): string;
- 6 |     (a, b, c?: string): number;
-   |             ^
- 7 |     
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/17d8ae0c1b3cf0d2.ts
 ✓ test/parser/suite/ts/pass/17eda1e24e8d4892.ts
 ✓ test/parser/suite/ts/pass/17f61dc4696eb811.ts
 ✓ test/parser/suite/ts/pass/17f81d4daf8edc52.ts
@@ -3487,14 +3305,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/18ac9f30c2830fe9.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
-18 | // function without type parameters
-19 | declare function f00(a?: A): A;
-   |                       ^
-20 | // no inference
+24 | // function with a type parameter without a default
+25 | declare function f01<T>(a?: T): T;
+   |                     ^
+26 | // inference
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/18bdc19d75d0de91.ts
@@ -3524,17 +3342,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/190649b6a3d82526.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a:string, b?:string, c?:number, ...d:number[]){}
-   |                         ^
- 3 | foo('foo', 1); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/190649b6a3d82526.ts
 ✗ test/parser/suite/ts/pass/191103683eb3bcc4.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'abstract'
    |
@@ -3647,14 +3455,14 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/19d3a6c40826d77a.ts
 ✓ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
 ✗ test/parser/suite/ts/pass/19d9761c28ff2511.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-17 | declare var Moon: {
-18 |     <Data>(options?: ConstructorOptions<Data>): Instance<Data>;
-   |                   ^
-19 | };
+23 |     render() {
+24 |         const h = (x: unknown) => x;
+   |                     ^
+25 |         return h(this.get("msg"));
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/19dba5022f3d025e.module.ts (parse errors)
@@ -3851,14 +3659,14 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/1b24ad6fc307d395.ts
 ✓ test/parser/suite/ts/pass/1b2fef73582850d3.ts
 ✗ test/parser/suite/ts/pass/1b3530ea75b86dac.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
-27 | 
-28 | function withOptionalParams(a?: string) {
-   |                              ^
-29 | }
+44 | 
+45 | function overload1(n: number) : string;
+   |                                       ^
+46 | function overload1(s: string) : string;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/1b3a3a9d931c3d0f.ts
@@ -3898,17 +3706,7 @@ error: Expected '?' in a conditional type, but found '>'
 
 ✓ test/parser/suite/ts/pass/1b5963dd2b62d65e.ts
 ✓ test/parser/suite/ts/pass/1b6bc8fc4ca7f36c.ts
-✗ test/parser/suite/ts/pass/1b6e33d848a0aa78.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 7 | type PersonType = Readonly<typeof EmberObject> &
- 8 |   (new (properties?: object) => {
-   |                   ^
- 9 |     firstName: string;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/1b6e33d848a0aa78.ts
 ✗ test/parser/suite/ts/pass/1b6f76f4ab872805.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -3947,14 +3745,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/1bae045ca7fa2082.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Unexpected token '@' in binding pattern
    |
- 5 | declare function ClassDecorator2(x: number): (target: Function) => void;
- 6 | declare function PropertyDecorator1(target: Object, key: string | symbol, descriptor?: PropertyDescriptor): void;
-   |                                                                                     ^
- 7 | declare function PropertyDecorator2(x: number): (target: Object, key: string | symbol, descriptor?: PropertyDescriptor) => void;
+14 |     constructor(
+15 |       @ParameterDecorator1 
+   |       ^
+16 |       @ParameterDecorator2(20) 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
 
 
 ✗ test/parser/suite/ts/pass/1bb19c44c1f7b1c6.ts (parse errors)
@@ -4054,17 +3852,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/1c9a907c56d29cb1.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-21 | 
-22 | function f6(arg?, _arg?) {
-   |                ^
-23 | }
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/1c9a907c56d29cb1.ts
 ✓ test/parser/suite/ts/pass/1c9ca3dddba24145.ts
 ✓ test/parser/suite/ts/pass/1ca507b05cb305b7.ts
 ✓ test/parser/suite/ts/pass/1caca3e89451b18c.module.ts
@@ -4405,29 +4193,9 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/1f60d44450087058.ts
 ✓ test/parser/suite/ts/pass/1f7b7784ae2398fa.module.ts
 ✓ test/parser/suite/ts/pass/1f91b856c340e1b1.ts
-✗ test/parser/suite/ts/pass/1f93aca8be9eec31.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | declare function all(a?: number, b?: number): void;
-   |                       ^
- 3 | declare function weird(a?: number | string, b?: number | string): void;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/1f93aca8be9eec31.ts
 ✓ test/parser/suite/ts/pass/1f97480560680a34.ts
-✗ test/parser/suite/ts/pass/1f998ea266b032e7.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 6 |     p1: I1;
- 7 |     m1(p1?: string): I1;
-   |          ^
- 8 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/1f998ea266b032e7.ts
 ✓ test/parser/suite/ts/pass/1facdc960483b84d.ts
 ✗ test/parser/suite/ts/pass/1fbf900750991239.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -4528,17 +4296,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/207ad207bcc5de2d.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 3 | interface I1 {
- 4 |     const: new (options?, element?) => any;
-   |                        ^
- 5 | }
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/207ad207bcc5de2d.ts
 ✓ test/parser/suite/ts/pass/207d0875b0c4cc50.ts
 ✓ test/parser/suite/ts/pass/207e4701e7afa68a.ts
 ✓ test/parser/suite/ts/pass/20824a7b99e85b4f.ts
@@ -4546,14 +4304,14 @@ error: Expected ')' to close function type parameters, but found '?'
 ✓ test/parser/suite/ts/pass/2091be051a2a4507.ts
 ✓ test/parser/suite/ts/pass/2098dc2f612b2645.ts
 ✗ test/parser/suite/ts/pass/209c7e05e03830d5.module.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected declaration after 'export', but found 'declare'
    |
-72 |   then<TResult>(
-73 |     onfulfilled?: (value: T) => TResult | Thenable<TResult>,
-   |                ^
-74 |     onrejected?: (reason: any) => TResult | Thenable<TResult>
+81 | 
+82 | export declare function executeCommand<T = unknown>(
+   |        ^^^^^^^
+83 |   command: string,
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/209cc3618a802181.module.ts
@@ -4580,15 +4338,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/20bb372ebdc87e4a.ts
-✗ test/parser/suite/ts/pass/20bc44b6843bea78.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-56 | 
-57 |   private async bar(node: CommitFileNode | ResultsFileNode | StashFileNode | StatusFileNode, options?: {}) {
-   |                                                                                                     ^
-58 |     return Promise.resolve(undefined);
-   |
-
+✓ test/parser/suite/ts/pass/20bc44b6843bea78.ts
 ✗ test/parser/suite/ts/pass/20cbe0d5be9ad9a1.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -4610,17 +4360,7 @@ error: Expected ']' after computed property key, but found ':'
  4 |     [x: string]: Object;
    |
 
-✗ test/parser/suite/ts/pass/20e0ff09bb721e9e.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 4 | type Source = {
- 5 |     <K extends keyof WindowEventMap>(type: K, listener: (this: Window, ev: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-   |                                                                                                              ^
- 6 |   (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/20e0ff09bb721e9e.ts
 ✓ test/parser/suite/ts/pass/20eaf9aed5249ed9.ts
 ✗ test/parser/suite/ts/pass/20f05f1bde427568.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -4969,17 +4709,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/2397e8aa3d9503c9.ts
 ✓ test/parser/suite/ts/pass/23981b0efc8e9d4d.ts
-✗ test/parser/suite/ts/pass/23a9cf93074b911c.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface Utils {
- 3 |    fold<T, S>(c: Array<T>, folder?: (s: S, t: T) => T, init?: S): T;
-   |                                  ^
- 4 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/23a9cf93074b911c.ts
 ✓ test/parser/suite/ts/pass/23b3edcfa8beedba.ts
 ✗ test/parser/suite/ts/pass/23b7f31473ab0556.ts (parse errors)
 error: Expected ';' after class field, but found '<'
@@ -5118,17 +4848,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/248ee0cf3f979ea3.ts
 ✓ test/parser/suite/ts/pass/24923d7f50fa6820.ts
 ✓ test/parser/suite/ts/pass/249310716ba05e5d.ts
-✗ test/parser/suite/ts/pass/24a848d49d5d72c3.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
-85 | {
-86 |     let resp!: Nested;
-   |             ^
-87 |     const { resp: { data }, type } = resp;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/24a848d49d5d72c3.ts
 ✓ test/parser/suite/ts/pass/24b333bdc16a5ca0.ts
 ✓ test/parser/suite/ts/pass/24b66720f28147a1.ts
 ✗ test/parser/suite/ts/pass/24b81b2ae82328ae.ts (parse errors)
@@ -5232,17 +4952,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/2555be5980fe6f27.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 6 |     a2: (x: number, ...z: number[]) => number;
- 7 |     a3: (x: number, y?: string, ...z: number[]) => number;
-   |                      ^
- 8 |     a4: (x?: number, y?: string, ...z: number[]) => number;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/2555be5980fe6f27.ts
 ✗ test/parser/suite/ts/pass/2560dfd6956266ff.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -5300,17 +5010,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/25a5200d9c9aa513.ts
-✗ test/parser/suite/ts/pass/25b588f49ca74833.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-28 |                     (a: number): number;
-29 |                     (a?: number): number;
-   |                       ^
-30 |                 }): number[];
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/25b588f49ca74833.ts
 ✓ test/parser/suite/ts/pass/25b6ac0657f50d2c.module.ts
 ✓ test/parser/suite/ts/pass/25c89674d74aa92e.ts
 ✓ test/parser/suite/ts/pass/25ca3382f1e11cb9.ts
@@ -5358,12 +5058,14 @@ error: A class can only have one constructor
    |
 
 ✗ test/parser/suite/ts/pass/25ffcc97e3e18828.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: A class can only have one constructor
    |
-13 |     constructor(a:any);
-14 |     constructor(x: any, y?: any) {
-   |                          ^
-15 |         super(x);
+ 2 | class FooBase {
+ 3 |     constructor(s: string);
+   |     ~~~~~~~~~~~ first constructor defined here
+ 4 |     constructor(n: number);
+   |     ^^^^^^^^^^^
+ 5 |     constructor(x: any) {
    |
 
 ✓ test/parser/suite/ts/pass/2617f91b8f4b7383.ts
@@ -5773,15 +5475,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/28e324f3683569ef.ts
 ✓ test/parser/suite/ts/pass/28e7234d4d462347.ts
 ✓ test/parser/suite/ts/pass/28efe1e3a612c6fd.ts
-✗ test/parser/suite/ts/pass/28f0cc80b3dbf0b6.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 8 | class D extends C { 
- 9 |     constructor(public p?: number) {
-   |                         ^
-10 |         super();
-   |
-
+✓ test/parser/suite/ts/pass/28f0cc80b3dbf0b6.ts
 ✓ test/parser/suite/ts/pass/28f16a3a397f94e6.ts
 ✓ test/parser/suite/ts/pass/28f216c37d9df851.ts
 ✓ test/parser/suite/ts/pass/290321f13719338e.ts
@@ -5796,17 +5490,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/2928216d9ad7189d.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-28 |                     new (a: number): number;
-29 |                     new (a?: number): number;
-   |                           ^
-30 |                 }): number[];
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/2928216d9ad7189d.ts
 ✓ test/parser/suite/ts/pass/292b41e1820fb5e6.ts
 ✗ test/parser/suite/ts/pass/292bb43525bb9221.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -5873,17 +5557,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/29ca7aec22fbf887.ts
 ✓ test/parser/suite/ts/pass/29edaea0bb8ff934.ts
 ✓ test/parser/suite/ts/pass/29ef924e232f7dc3.ts
-✗ test/parser/suite/ts/pass/29f7f43e1f8fb2ca.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 4 |     (): string;
- 5 |     (a, b, c?: string): number;
-   |             ^
- 6 |     
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/29f7f43e1f8fb2ca.ts
 ✗ test/parser/suite/ts/pass/29f9eefa5b82abcd.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -5944,17 +5618,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/2a836dfc3a33aba0.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-17 | 
-18 | function foo(options?: { a: string, b: number }) {
-   |                     ^
-19 |     let x1 = (options || {}).a;     // Object type not widened
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/2a836dfc3a33aba0.ts
 ✓ test/parser/suite/ts/pass/2a916e9fe1af78e3.ts
 ✓ test/parser/suite/ts/pass/2a93fbe6dcc3bed4.ts
 ✓ test/parser/suite/ts/pass/2a97e64dd043a822.ts
@@ -5999,17 +5663,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/2ae69851dec71463.ts
 ✓ test/parser/suite/ts/pass/2ae80aa041c07650.ts
 ✓ test/parser/suite/ts/pass/2aed9c0160560cc3.ts
-✗ test/parser/suite/ts/pass/2af2c5751f2c284f.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-25 |                     (a: number): number;
-26 |                     (a?: number): number;
-   |                       ^
-27 |                 }): number[];
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/2af2c5751f2c284f.ts
 ✗ test/parser/suite/ts/pass/2af5479d1ecf91fd.ts (parse errors)
 error: Private field '#foo' must be declared in an enclosing class
    |
@@ -6060,17 +5714,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/2b7c6664dd340223.ts
 ✓ test/parser/suite/ts/pass/2b7e4e71def0f240.ts
 ✓ test/parser/suite/ts/pass/2b8ae4956d258fee.ts
-✗ test/parser/suite/ts/pass/2b8b221952e790b2.module.tsx (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-40 | 
-41 | function test4(options?: { a?: boolean; b?: boolean }) {
-   |                       ^
-42 |   if (options?.a === false || options.b) {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/2b8b221952e790b2.module.tsx
 ✗ test/parser/suite/ts/pass/2b93cc69f6a1b966.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -6182,17 +5826,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/2c2ebef2f85f7c41.ts
 ✓ test/parser/suite/ts/pass/2c32e5f7cb5abd32.ts
 ✓ test/parser/suite/ts/pass/2c43147b010e5353.ts
-✗ test/parser/suite/ts/pass/2c4363fdba6f9706.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface StatelessComponent<P = {}> {
- 3 |   (props: P & { children?: number }, context?: any): null;
-   |                                             ^
- 4 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/2c4363fdba6f9706.ts
 ✓ test/parser/suite/ts/pass/2c47c832032cc89c.ts
 ✓ test/parser/suite/ts/pass/2c59f4724f3bb3a6.ts
 ✓ test/parser/suite/ts/pass/2c6514c2a3497400.ts
@@ -6253,15 +5887,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/2caed62411afc0e5.ts
 ✓ test/parser/suite/ts/pass/2cb6fcfcf1099469.ts
 ✓ test/parser/suite/ts/pass/2cb79a3c45ad01b8.ts
-✗ test/parser/suite/ts/pass/2cc4454fb601573a.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 7 | class Base {
- 8 |     constructor(a?) { }
-   |                  ^
- 9 | 
-   |
-
+✓ test/parser/suite/ts/pass/2cc4454fb601573a.ts
 ✓ test/parser/suite/ts/pass/2cdafc89073a5b5b.module.tsx
 ✓ test/parser/suite/ts/pass/2ce6305bfa58e567.ts
 ✓ test/parser/suite/ts/pass/2ce9efce436105fb.ts
@@ -6470,17 +6096,7 @@ error: 'new.target' is only valid inside functions, class field initializers, or
  4 | const b = () => new.target;
    |
 
-✗ test/parser/suite/ts/pass/2e3afd4beae14763.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 5 | interface I {
- 6 |     foo? (x?);
-   |            ^
- 7 |     foo2? (x?: number): number;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/2e3afd4beae14763.ts
 ✗ test/parser/suite/ts/pass/2e3c6a0b7d60f072.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -6672,15 +6288,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/2fef61dc36b12021.ts
 ✓ test/parser/suite/ts/pass/2ff36757d46d631f.module.ts
 ✓ test/parser/suite/ts/pass/2ff42e7a2533163c.ts
-✗ test/parser/suite/ts/pass/2ffa9643dfbf9b9f.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 2 | class A {
- 3 |     public static createSelectableViewModel(initialState?: any, selectedValue?: any) {
-   |                                                         ^
- 4 |         return {
-   |
-
+✓ test/parser/suite/ts/pass/2ffa9643dfbf9b9f.ts
 ✗ test/parser/suite/ts/pass/2ffb8f474395c8c2.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -7003,14 +6611,14 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/31ca58d9889db21a.ts
 ✓ test/parser/suite/ts/pass/31ce2b738df7ff7b.ts
 ✗ test/parser/suite/ts/pass/31d1822e3d776dd4.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | interface Promise<T> {
- 6 |     then<U>(success?: (value: T) => U, error?: (error: any) => U, progress?: (progress: any) => void): Promise<U>;
-   |                    ^
- 7 |     done<U>(success?: (value: T) => any, error?: (error: any) => any, progress?: (progress: any) => void): void;
+31 | declare function testFunction7P(cb: <T>(a: T) => T): Promise<string>;
+32 | declare function testFunction8<T>(x: T, cb: (a: T) => T): IPromise<T>;
+   |                               ^
+33 | declare function testFunction8P<T>(x: T, cb: (a: T) => T): Promise<T>;
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/31d5e3dbbd0e4b4b.ts
@@ -7059,17 +6667,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/31f251a11db3c207.module.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-37 | const myStoreConnect: Connect = function(
-38 |     mapStateToProps?: any,
-   |                    ^
-39 |     mapDispatchToProps?: any,
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/31f251a11db3c207.module.ts
 ✓ test/parser/suite/ts/pass/31f30348324a8ae6.ts
 ✗ test/parser/suite/ts/pass/31f4c6a422b9ad60.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -7112,17 +6710,7 @@ error: Expected ';' after class field, but found '<'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/3240544fcb6caf15.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 3 | 
- 4 | function foo1 (f?: (a: number) => void) {
-   |                 ^
- 5 |     f ??= (a => a)
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/3240544fcb6caf15.ts
 ✓ test/parser/suite/ts/pass/32409e34bc4251fb.ts
 ✓ test/parser/suite/ts/pass/32440bdeed457ae4.ts
 ✗ test/parser/suite/ts/pass/3245c79817481300.ts (parse errors)
@@ -7266,17 +6854,7 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
  6 |         var a = () => arguments;
    |
 
-✗ test/parser/suite/ts/pass/3349572b26680fc2.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-38 | // Function signature with initializer referencing other parameter to the right
-39 | function f7(n = m, m?) {
-   |                     ^
-40 | }
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/3349572b26680fc2.ts
 ✗ test/parser/suite/ts/pass/335ebd74b4ebf3b1.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -7927,14 +7505,14 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/37f14a5b2b3f4a8f.ts
 ✗ test/parser/suite/ts/pass/37f56667a4252f84.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Unexpected token ':'
    |
- 6 |     a2: (x: number, ...z: number[]) => number;
- 7 |     a3: (x: number, y?: string, ...z: number[]) => number;
-   |                      ^
- 8 |     a4: (x?: number, y?: string, ...z: number[]) => number;
+12 |     a = () => 1; // ok, same number of required params
+13 |     a = (...args: number[]) => 1; // ok, same number of required params
+   |                 ^
+14 |     a = (...args: string[]) => 1; // error, type mismatch
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Expected an expression
 
 
 ✗ test/parser/suite/ts/pass/37f6385d08935ba3.ts (parse errors)
@@ -8004,17 +7582,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/3894321c3841cc6d.ts
-✗ test/parser/suite/ts/pass/3899d6c49dc113b2.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-36 | 
-37 | var a10: { fn(a?: Base): void };
-   |                ^
-38 | var b10: { fn(a?: Derived): void };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/3899d6c49dc113b2.ts
 ✓ test/parser/suite/ts/pass/38ac533037150523.ts
 ✓ test/parser/suite/ts/pass/38ae3cd796553347.ts
 ✓ test/parser/suite/ts/pass/38c9c40687a1fd5e.ts
@@ -8155,15 +7723,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/3a49b4370402f36d.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 2 | class C {
- 3 |    set Foo(a?: number) { }
-   |             ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/3a49b4370402f36d.ts
 ✓ test/parser/suite/ts/pass/3a4aa82e76f33bfa.module.ts
 ✗ test/parser/suite/ts/pass/3a4e9d0f811ad2b8.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -8339,17 +7899,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/3b4af7bd4ac07d46.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 6 |     raw: ParserFunc;
- 7 |     readline(delimiter?: string): ParserFunc;
-   |                       ^
- 8 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/3b4af7bd4ac07d46.ts
 ✓ test/parser/suite/ts/pass/3b4c31690d749603.ts
 ✓ test/parser/suite/ts/pass/3b4d5a000d3efd74.ts
 ✓ test/parser/suite/ts/pass/3b62387aae84ef13.ts
@@ -8410,14 +7960,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/3bd09cc9e668c16b.ts
 ✓ test/parser/suite/ts/pass/3bd78aeea64eb0c0.ts
 ✗ test/parser/suite/ts/pass/3bd7a6668b64015d.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 3 | interface MyArrayWrapper<T> {
- 4 |     constructor(initialItems?: T[]);
-   |                             ^
- 5 |     doSomething(predicate: (x: T, y: T) => string): void;
+ 7 | 
+ 8 | declare function create<T>(initialValues?: T[]): MyArrayWrapper<T>;
+   |                        ^
+ 9 | 
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/3bdc1fe416230c1e.ts (parse errors)
@@ -8578,17 +8128,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/3cf902dc74f5b263.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 4 | 
- 5 | declare function f1({ a, b }?: { a: number, b: string }): void;
-   |                             ^
- 6 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/3cf902dc74f5b263.ts
 ✓ test/parser/suite/ts/pass/3cfff9e839981845.ts
 ✓ test/parser/suite/ts/pass/3d0cfe3aa80dab15.ts
 ✓ test/parser/suite/ts/pass/3d16863fd4c6d852.ts
@@ -8743,17 +8283,7 @@ error: Expected '(' for getter/setter definition, but found '<'
    = help: Getters and setters require parentheses. Use 'get prop() {}' or 'set prop(value) {}' syntax.
 
 
-✗ test/parser/suite/ts/pass/3df0d9042149cec9.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a?:string){}
-   |               ^
- 3 | foo('foo'); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/3df0d9042149cec9.ts
 ✓ test/parser/suite/ts/pass/3df69bfbc604245e.ts
 ✓ test/parser/suite/ts/pass/3dfc7b67f7b2a4f7.ts
 ✓ test/parser/suite/ts/pass/3e034f214352b6ba.ts
@@ -8810,14 +8340,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/3e4f59684f533541.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
-15 | interface KnockoutObservableArray<T> extends KnockoutObservable<T[]> {
-16 |     indexOf(searchElement: T, fromIndex?: number): number;
-   |                                        ^
-17 |     slice(start: number, end?: number): T[];
+43 | 
+44 |     export class Validator<TValue> {
+   |                           ^
+45 |         private _subscription;
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✓ test/parser/suite/ts/pass/3e5ce7301ef3754d.ts
@@ -8837,17 +8367,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/3e95f36b6ddf9ae3.ts
-✗ test/parser/suite/ts/pass/3e96703139871c07.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 8 | 
- 9 | function f1(options?: { color?: string, width?: number }) {
-   |                    ^
-10 |     let { color, width } = options || {};
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/3e96703139871c07.ts
 ✓ test/parser/suite/ts/pass/3e9be4870c935b22.ts
 ✗ test/parser/suite/ts/pass/3e9f4be2adc7f3de.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -9344,17 +8864,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/4236e5625b12eaee.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-25 |                     new (a: number): number;
-26 |                     new (a?: number): number;
-   |                           ^
-27 |                 }): number[];
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4236e5625b12eaee.ts
 ✓ test/parser/suite/ts/pass/4246595c832e16f0.module.ts
 ✗ test/parser/suite/ts/pass/424787ac169869bd.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -9498,17 +9008,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/431ac65976f59b7f.module.tsx (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-24 | 
-25 | declare function MyTagWithOptionalNonJSXBits(props: MyProps, context: any, nonReactArg?: string): JSX.Element;
-   |                                                                                       ^
-26 | const d = <MyTagWithOptionalNonJSXBits x={2} />; // Technically OK, but probably questionable
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/431ac65976f59b7f.module.tsx
 ✓ test/parser/suite/ts/pass/43261d202c099245.ts
 ✓ test/parser/suite/ts/pass/4334cafb01ac76a5.ts
 ✓ test/parser/suite/ts/pass/433a8055f82e2c7d.ts
@@ -9961,15 +9461,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/45ba38b18114cca7.module.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 8 | export class Bar {
- 9 |     constructor(private x?: Array | undefined) {}
-   |                          ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/45ba38b18114cca7.module.ts
 ✓ test/parser/suite/ts/pass/45cb11707cd091f8.ts
 ✓ test/parser/suite/ts/pass/45d0841cba075228.module.ts
 ✓ test/parser/suite/ts/pass/45dc57c359a1e4dc.ts
@@ -10011,37 +9503,19 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/463753f052f84dc9.ts
-✗ test/parser/suite/ts/pass/4641af825cd59892.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 6 |         a: new () => T;
- 7 |         a2: new (x?: T) => T;
-   |                   ^
- 8 |         a3: new (x: T) => T;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4641af825cd59892.ts
 ✓ test/parser/suite/ts/pass/464e12fa535921a8.ts
 ✓ test/parser/suite/ts/pass/46575356e26d7a4a.ts
-✗ test/parser/suite/ts/pass/4660f4bd3308db49.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 4 |   public foo();
- 5 |   private foo(bar?:any){ }
-   |                  ^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/4660f4bd3308db49.ts
 ✗ test/parser/suite/ts/pass/4664eeed482e5df1.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 2 | // @strict: false
  3 | declare function Callbacks(flags?: string): void;
-   |                                 ^
  4 | declare function Callbacks<T>(flags?: string): void;
+   |                           ^
+ 5 | declare function Callbacks<T1, T2>(flags?: string): void;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/4664ef0bcdb16e36.ts
@@ -10083,17 +9557,7 @@ error: 'const' declarations must be initialized
    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
 
 
-✗ test/parser/suite/ts/pass/46c011c7b2269465.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 1 | // @target: es2015
- 2 | declare var f: (s: string, n?: number) => void;
-   |                             ^
- 3 | declare var g: (s: string, b?: boolean) => void;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/46c011c7b2269465.ts
 ✓ test/parser/suite/ts/pass/46c688a4424154ee.ts
 ✓ test/parser/suite/ts/pass/46cbca15048f4872.ts
 ✓ test/parser/suite/ts/pass/46ccc8bee9533569.ts
@@ -10112,17 +9576,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/46e5eff6fe259480.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-32 |         then<U>(cb: (x: T) => Promise<U>): Promise<U>;
-33 |         then<U>(cb: (x: T) => Promise<U>, error?: (error: any) => Promise<U>): Promise<U>;
-   |                                                ^
-34 |     }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/46e5eff6fe259480.ts
 ✓ test/parser/suite/ts/pass/46e78ddec2815afe.ts
 ✓ test/parser/suite/ts/pass/46f2aea03d1cb10d.ts
 ✓ test/parser/suite/ts/pass/46f572f0981e1cec.ts
@@ -10313,17 +9767,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/47e58cdcef546877.module.ts
-✗ test/parser/suite/ts/pass/47ea6191407214de.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-25 | 
-26 | declare var a5: { new (a?: Base): Base };
-   |                         ^
-27 | declare var b5: { new (a?: C): Base };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/47ea6191407214de.ts
 ✓ test/parser/suite/ts/pass/47ef67cc838c3d4d.ts
 ✓ test/parser/suite/ts/pass/480906303ca4829e.ts
 ✓ test/parser/suite/ts/pass/48163dfa30e66d28.ts
@@ -10397,28 +9841,10 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/4854905691d3f0a4.module.ts
 ✓ test/parser/suite/ts/pass/48603e8192c09d0a.ts
 ✓ test/parser/suite/ts/pass/48703ad3443e2755.ts
-✗ test/parser/suite/ts/pass/4877fda5f1775b90.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 4 | class Recursive1 {
- 5 |     constructor(private readonly parent?: Recursive1) {}
-   |                                        ^
- 6 |     private depth: number = this.parent ? this.parent.depth + 1 : 0;
-   |
-
+✓ test/parser/suite/ts/pass/4877fda5f1775b90.ts
 ✓ test/parser/suite/ts/pass/48790a9605b0404e.ts
 ✓ test/parser/suite/ts/pass/488e97ecb429257a.ts
-✗ test/parser/suite/ts/pass/4891648ed9df9379.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 7 |     new(): Mup<any, any>;
- 8 |     new<K, V>(entries?: readonly (readonly [K, V])[] | null): Mup<K, V>;
-   |                      ^
- 9 |     readonly prototype: Mup<any, any>;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4891648ed9df9379.ts
 ✓ test/parser/suite/ts/pass/489cb94b883ba2d1.module.ts
 ✓ test/parser/suite/ts/pass/48a60cf51d3fdb8c.ts
 ✓ test/parser/suite/ts/pass/48a61e41eeb37d8c.ts
@@ -10592,14 +10018,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/49bfcf8a26c1293a.ts
 ✓ test/parser/suite/ts/pass/49c392728df0cbaa.ts
 ✗ test/parser/suite/ts/pass/49c9fe7b597fd0b7.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 3 | interface Promise<T> {
- 4 |     then<U>(success?: (value: T) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: any) => void): Promise<U>;
-   |                    ^
- 5 |     then<U>(success?: (value: T) => Promise<U>, error?: (error: any) => U, progress?: (progress: any) => void): Promise<U>;
+32 | declare function testFunction7P(cb: <T>(a: T) => T): Promise<string>;
+33 | declare function testFunction8<T>(x: T, cb: (a: T) => T): IPromise<T>;
+   |                               ^
+34 | declare function testFunction8P<T>(x: T, cb: (a: T) => T): Promise<T>;
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/49cbc82901fa1f45.ts
@@ -10652,17 +10078,7 @@ error: Expected ';', ',', or newline between type members, but found '='
    = help: Separate type members with ';', ',', or a newline, or close the block with '}'
 
 
-✗ test/parser/suite/ts/pass/4a3eb6f595442a8c.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-18 | 
-19 | var a4: { new <T>(x?: T): T };
-   |                    ^
-20 | var b4: { new (x?: string): string };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4a3eb6f595442a8c.ts
 ✓ test/parser/suite/ts/pass/4a48dfcf1253bc8b.ts
 ✗ test/parser/suite/ts/pass/4a4eae99eeb87c6b.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -10770,17 +10186,7 @@ error: Expected declaration after 'export', but found 'enum'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/4b3d287547121635.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-33 | 
-34 | declare var unionWithOptionalParameter1: { new (a: string, b?: number): string; } | { new (a: string, b?: number): number; };
-   |                                                             ^
-35 | strOrNum = new unionWithOptionalParameter1('hello');
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4b3d287547121635.ts
 ✓ test/parser/suite/ts/pass/4b4e87d37c5d4f56.ts
 ✓ test/parser/suite/ts/pass/4b54ce49cb342cea.ts
 ✓ test/parser/suite/ts/pass/4b58932db0513618.ts
@@ -10796,14 +10202,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/4b5d6e3182639ec7.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected ')' to close a parenthesized type, but found '?'
    |
- 6 | 
- 7 | declare function fn1({}?: { x: string }): void;
-   |                        ^
- 8 | declare function fn2({ x }?: { x: string }): void;
+15 | 
+16 |     static field: ({}?: { x: string }) => void
+   |                      ^
+17 |     static field2: ({}?: { x: string }) => void
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Each '(' in a type must be matched by a ')'
 
 
 ✓ test/parser/suite/ts/pass/4b73e27df25b8378.ts
@@ -10888,17 +10294,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/4bfdd55fd302a18b.ts
 ✓ test/parser/suite/ts/pass/4c0536799efeda51.ts
 ✓ test/parser/suite/ts/pass/4c07ad2bb691a076.ts
-✗ test/parser/suite/ts/pass/4c22e5c692f18594.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-42 |     | { kind: "c"; prop: boolean },
-43 |   bar?: {
-   |      ^
-44 |     type: "b";
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/4c22e5c692f18594.ts
 ✓ test/parser/suite/ts/pass/4c2557c5eb111a93.ts
 ✓ test/parser/suite/ts/pass/4c25e01d12f072da.ts
 ✗ test/parser/suite/ts/pass/4c2bf5e0551231f8.ts (parse errors)
@@ -10914,17 +10310,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/4c37b0b4f16790f5.ts
 ✓ test/parser/suite/ts/pass/4c38df362dcb8c14.ts
 ✓ test/parser/suite/ts/pass/4c40d676510944ba.ts
-✗ test/parser/suite/ts/pass/4c504b7a2fd4d71c.module.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-27 | 
-28 | export function fn3(optionalEnum?: MyEnum) {
-   |                                 ^
-29 |   return optionalEnum ?? MyEnum.A;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/4c504b7a2fd4d71c.module.ts
 ✓ test/parser/suite/ts/pass/4c547a1ecc1a4c48.ts
 ✓ test/parser/suite/ts/pass/4c5904e670e311bf.ts
 ✓ test/parser/suite/ts/pass/4c5e734d8b6a5836.ts
@@ -11014,28 +10400,8 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/4d093d81529d0aee.ts
-✗ test/parser/suite/ts/pass/4d10874b0f3cd175.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
- 9 | function f() {
-10 |     var a!: any;
-   |          ^
-11 |     var n=3;
-   |
-   = help: Try inserting a semicolon here
-
-
-✗ test/parser/suite/ts/pass/4d2a7c798b01624e.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-10 | 
-11 | function sq(n?: number): number {
-   |              ^
-12 |   const r = n !== undefined && n*n || 0;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/4d10874b0f3cd175.ts
+✓ test/parser/suite/ts/pass/4d2a7c798b01624e.ts
 ✓ test/parser/suite/ts/pass/4d365620bb11b368.ts
 ✗ test/parser/suite/ts/pass/4d388a78c7f07f68.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -11193,17 +10559,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/4e7f1f875c98cb02.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 6 | interface NotNumber {
- 7 |     toString(radix?: number): string;
-   |                   ^
- 8 |     toFixed(fractionDigits?: number): string;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4e7f1f875c98cb02.ts
 ✓ test/parser/suite/ts/pass/4e805eef16f34fbc.ts
 ✓ test/parser/suite/ts/pass/4e842638a2709975.ts
 ✓ test/parser/suite/ts/pass/4e930b6c57b0dfef.ts
@@ -11595,17 +10951,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/50f2482a47964ded.ts
 ✓ test/parser/suite/ts/pass/50f9c25c69cf87b9.ts
-✗ test/parser/suite/ts/pass/50ff20f08f1d5944.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | 
- 3 | function foo({ x, y, z }?: { x: string; y: number; z: boolean }) {
-   |                         ^
- 4 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/50ff20f08f1d5944.ts
 ✓ test/parser/suite/ts/pass/51060637a6338c64.module.ts
 ✓ test/parser/suite/ts/pass/5110f3fffe686a16.ts
 ✗ test/parser/suite/ts/pass/51185382950c46a8.ts (parse errors)
@@ -11775,15 +11121,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/526b3df358f68f65.ts
-✗ test/parser/suite/ts/pass/5272a2b3e0f82eb2.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-36 |     delete(key: string): boolean { return false; }
-37 |     forEach(callbackfn: (value: number, key: string, map: Map<string, number>) => void, thisArg?: any): void { }
-   |                                                                                                ^
-38 |     get(key: string): number | undefined { return undefined; }
-   |
-
+✓ test/parser/suite/ts/pass/5272a2b3e0f82eb2.ts
 ✗ test/parser/suite/ts/pass/5281690ffdba8688.module.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -11879,17 +11217,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/52ff77dd3f1c07ed.ts
-✗ test/parser/suite/ts/pass/52ffc83e7e033617.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | // @strict: false
- 3 | declare function alert(message?: any): void;
-   |                               ^
- 4 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/52ffc83e7e033617.ts
 ✓ test/parser/suite/ts/pass/5304992a1d074494.ts
 ✓ test/parser/suite/ts/pass/5317682333edd09f.ts
 ✓ test/parser/suite/ts/pass/531ab6f8ffef847d.ts
@@ -11984,13 +11312,15 @@ error: Expected '?' in a conditional type, but found '>'
 
 
 ✗ test/parser/suite/ts/pass/53f490f8cb88be46.module.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
- 5 |     public foo();
- 6 |     private foo(bar?: any) { } // error - access modifiers do not agree
-   |                    ^
- 7 | }
+ 9 | declare function bar();
+10 | export function bar(s: string);
+   |                               ^
+11 | function bar(s?: string) { }
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/5400d3472f4ec136.ts
 ✓ test/parser/suite/ts/pass/540956b9d6fcd187.ts
@@ -12112,17 +11442,7 @@ error: Expected '>' to close a type assertion, but found ','
 ✓ test/parser/suite/ts/pass/551cd1d42be4e241.ts
 ✓ test/parser/suite/ts/pass/5524d6826cbc5f9f.ts
 ✓ test/parser/suite/ts/pass/5529f2312688880e.ts
-✗ test/parser/suite/ts/pass/55335586b7457924.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-35 |             new (a: number): number;
-36 |             new (a?: number): number;
-   |                   ^
-37 |         }): number[];
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/55335586b7457924.ts
 ✓ test/parser/suite/ts/pass/553db5308d20bd06.ts
 ✓ test/parser/suite/ts/pass/55417c7db132de62.ts
 ✓ test/parser/suite/ts/pass/554c452800fb41e6.ts
@@ -12645,17 +11965,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/5821b47c7ecc04c6.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
- 7 | function foo() {
- 8 |     var test!: I1<string>;
-   |             ^
- 9 |     test("expects boolean instead of string"); // should not error - "test" should not expect a boolean
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/5821b47c7ecc04c6.ts
 ✓ test/parser/suite/ts/pass/582d62735b702d0d.ts
 ✓ test/parser/suite/ts/pass/5833567b73c818cf.ts
 ✓ test/parser/suite/ts/pass/5852884d47ba71d3.ts
@@ -12670,17 +11980,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/586fca8111487c50.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 5 |     a: () => number;
- 6 |     a2: (x?: number) => number;
-   |           ^
- 7 |     a3: (x: number) => number;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/586fca8111487c50.ts
 ✓ test/parser/suite/ts/pass/587005dc0b1df6e6.ts
 ✓ test/parser/suite/ts/pass/587846df51477673.ts
 ✗ test/parser/suite/ts/pass/587abc59f83fe1c8.ts (parse errors)
@@ -12903,15 +12203,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/59ab64d988a2c271.ts
 ✓ test/parser/suite/ts/pass/59aca295ed409f51.ts
 ✓ test/parser/suite/ts/pass/59afc69fa63dbbb7.ts
-✗ test/parser/suite/ts/pass/59bcdc9a229ef096.module.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 5 | export class Foo {
- 6 |   constructor(public bar?: string) {
-   |                         ^
- 7 |   }
-   |
-
+✓ test/parser/suite/ts/pass/59bcdc9a229ef096.module.ts
 ✓ test/parser/suite/ts/pass/59be50c626e815e3.ts
 ✗ test/parser/suite/ts/pass/59d9b92720571e7d.ts (parse errors)
 error: Expected a type, but found 'function'
@@ -12999,15 +12291,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/5aa6f509f09054ba.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 5 | class Y extends Z {
- 6 |     public func(value?: any): void { }
-   |                      ^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/5aa6f509f09054ba.ts
 ✓ test/parser/suite/ts/pass/5aab0032135c9e5a.ts
 ✓ test/parser/suite/ts/pass/5ab8d50da40f5fa3.module.ts
 ✓ test/parser/suite/ts/pass/5acaaef0bd85f8af.ts
@@ -13057,17 +12341,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/5b1c4d7f0c6b682c.ts
 ✓ test/parser/suite/ts/pass/5b2ce5773a190e3e.module.ts
 ✓ test/parser/suite/ts/pass/5b3336bcbec10d74.module.ts
-✗ test/parser/suite/ts/pass/5b343b77ee1c1bd3.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a:string, b?:string, ...c:number[]){}
-   |                         ^
- 3 | foo('foo', 1); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/5b343b77ee1c1bd3.ts
 ✗ test/parser/suite/ts/pass/5b34f29e3a099c02.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -13459,17 +12733,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/5db2baf2d2b114fa.ts
 ✓ test/parser/suite/ts/pass/5dba561b66fae533.ts
-✗ test/parser/suite/ts/pass/5dd69480dc832d62.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-19 | 
-20 | var a3: { fn<T>(x?: T): T };
-   |                  ^
-21 | var b3: { fn(x?: string): number };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/5dd69480dc832d62.ts
 ✓ test/parser/suite/ts/pass/5de023726a6bd24a.ts
 ✗ test/parser/suite/ts/pass/5de8fe76ff101a68.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -13591,17 +12855,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/5ec21c5640beb289.ts
 ✓ test/parser/suite/ts/pass/5ed080b19f11640e.ts
-✗ test/parser/suite/ts/pass/5edf6bb2fbc3c491.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 5 | foo2(); // should be an error
- 6 | function foo3(a?:string, ...b:number[]){}
-   |                ^
- 7 | foo3(); // error but shouldn't be
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/5edf6bb2fbc3c491.ts
 ✓ test/parser/suite/ts/pass/5ee34d4dedfdd9cd.ts
 ✓ test/parser/suite/ts/pass/5ee8e7fdb9b65040.ts
 ✓ test/parser/suite/ts/pass/5eee5c7a90fb3833.ts
@@ -13769,17 +13023,7 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/60a811e03975ca50.ts
 ✓ test/parser/suite/ts/pass/60b7424b9eec0ec1.ts
-✗ test/parser/suite/ts/pass/60b7fe545bc0049c.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 | interface BulleanConstructor {
- 4 |     new(v1?: any): Bullean;
-   |           ^
- 5 |     <T>(v2?: T): v2 is T;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/60b7fe545bc0049c.ts
 ✗ test/parser/suite/ts/pass/60c3260578d0da89.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -13910,17 +13154,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/6130ed687ef9ecb0.ts
 ✓ test/parser/suite/ts/pass/6149c9c077fc7f6d.ts
 ✓ test/parser/suite/ts/pass/61594a47b05ef4dc.ts
-✗ test/parser/suite/ts/pass/61753843a23a29aa.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 3 | 
- 4 | function f1(a?: boolean): void {
-   |              ^
- 5 |     a ??= true;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/61753843a23a29aa.ts
 ✗ test/parser/suite/ts/pass/61819de3b56bf114.module.ts (parse errors)
 error: Duplicate export of 'default'
    |
@@ -14064,17 +13298,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/62843d469e4438dc.ts
 ✓ test/parser/suite/ts/pass/6287b2baf2fc2d8c.ts
 ✓ test/parser/suite/ts/pass/628a693b838f2080.ts
-✗ test/parser/suite/ts/pass/628c3ba4f0efd025.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 | 
- 4 | function f1(x: { f(): void }, y: { f(x?: string): void }) {
-   |                                       ^
- 5 |     let z = !!true ? x : y;  // { f(x?: string): void }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/628c3ba4f0efd025.ts
 ✓ test/parser/suite/ts/pass/628fe7d176c0f82f.ts
 ✓ test/parser/suite/ts/pass/62a120089d88e258.ts
 ✓ test/parser/suite/ts/pass/62cbc73db470d194.ts
@@ -14209,17 +13433,7 @@ error: Expected declaration after 'export', but found 'declare'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/63ddea19903d52ee.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 3 | 
- 4 | function onlyErrorsWhenTestingNonNullableFunctionType(required: () => boolean, optional?: () => boolean) {
-   |                                                                                        ^
- 5 |     // error
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/63ddea19903d52ee.ts
 ✓ test/parser/suite/ts/pass/63df4766d94e54cb.ts
 ✓ test/parser/suite/ts/pass/63e26292874e0163.ts
 ✓ test/parser/suite/ts/pass/63ea4d680673d372.module.ts
@@ -14392,15 +13606,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/653546d9de19c7fa.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 3 | class C {
- 4 |     constructor(public x?) { }
-   |                         ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/653546d9de19c7fa.ts
 ✗ test/parser/suite/ts/pass/654e065878163941.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -14414,17 +13620,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 ✓ test/parser/suite/ts/pass/6551ce39354a701d.ts
 ✓ test/parser/suite/ts/pass/6556ce7e08636875.ts
-✗ test/parser/suite/ts/pass/6567067669673687.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 7 | }
- 8 | function greet2(greeting: string, n = 10, x?: string, ...restParams: string[]): number {
-   |                                            ^
- 9 |     greetings++;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/6567067669673687.ts
 ✓ test/parser/suite/ts/pass/656b92fc0664c92e.ts
 ✗ test/parser/suite/ts/pass/6574ed50e947d83b.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -14670,17 +13866,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/67787a8f40fac291.ts
 ✓ test/parser/suite/ts/pass/677c2bf0ee64977d.ts
-✗ test/parser/suite/ts/pass/677d01314733de5a.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-17 | }
-18 | declare function setTimeout(expression: any, msec?: number, language?: any): number;
-   |                                                  ^
-19 | var messenger = {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/677d01314733de5a.ts
 ✗ test/parser/suite/ts/pass/678056b74ef79c98.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -15079,15 +14265,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/6a36bd87a9377f12.module.ts
 ✓ test/parser/suite/ts/pass/6a3fe0449365d6e6.ts
 ✓ test/parser/suite/ts/pass/6a4a168476cb2d89.ts
-✗ test/parser/suite/ts/pass/6a4a449b600d0971.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-25 |     c? = 2;
-26 |     constructor(public d?: number, public e = 10) {}
-   |                         ^
-27 |     f() {
-   |
-
+✓ test/parser/suite/ts/pass/6a4a449b600d0971.ts
 ✓ test/parser/suite/ts/pass/6a4c354fd50a58a0.ts
 ✓ test/parser/suite/ts/pass/6a50615db54d8478.ts
 ✓ test/parser/suite/ts/pass/6a6c07d56de9e738.ts
@@ -15156,17 +14334,7 @@ error: Expected ']' after computed property key, but found ':'
  4 |     static readonly [s: number]: 42
    |
 
-✗ test/parser/suite/ts/pass/6acb20de2c413e2e.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-10 | 
-11 | function clonePet(pet: Animal, fullCopy?: boolean) {
-   |                                        ^
-12 |     return {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/6acb20de2c413e2e.ts
 ✗ test/parser/suite/ts/pass/6ad1d0e77cc5117a.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -15289,14 +14457,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/6c52386d9d3cfdd1.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 2 | // @strict: false
  3 | declare function Callbacks(flags?: string): void;
-   |                                 ^
  4 | declare function Callbacks<T>(flags?: string): void;
+   |                           ^
+ 5 | declare function Callbacks<T1, T2>(flags?: string): void;
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/6c61fa90bc51b0c2.ts
@@ -15324,14 +14492,14 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/6c9176f53d013ccd.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
  4 | 
  5 | function foo([x, y, z] ?: [string, number, boolean]);
-   |                        ^
+   |                                                     ^
  6 | function foo(...rest: any[]) {
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/6c961004520cc480.ts
@@ -15450,17 +14618,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/6d763daa32ac2e41.ts
 ✓ test/parser/suite/ts/pass/6d797209fe546635.ts
 ✓ test/parser/suite/ts/pass/6d7f13dc4b0ba18b.ts
-✗ test/parser/suite/ts/pass/6d83e67093790a41.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface D3SvgPath {
- 3 |     (data: any, index?: number): string;
-   |                      ^
- 4 | 
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/6d83e67093790a41.ts
 ✗ test/parser/suite/ts/pass/6d871c140398331d.module.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -15809,17 +14967,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/6ffc02662b881ee4.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | 
- 3 | function foo([x,y,z]?: [string, number, boolean]) {
-   |                     ^
- 4 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/6ffc02662b881ee4.ts
 ✓ test/parser/suite/ts/pass/7005e476cfcc875c.ts
 ✗ test/parser/suite/ts/pass/7006ca7a76b37abb.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -15886,17 +15034,7 @@ error: Cannot continue to label 'target' across function boundaries
 ✓ test/parser/suite/ts/pass/70760f8534116f31.ts
 ✓ test/parser/suite/ts/pass/70802359c62e23e6.ts
 ✓ test/parser/suite/ts/pass/70824aadeaf75ea7.ts
-✗ test/parser/suite/ts/pass/70850ed6ffc928cc.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(/*c1*/ x: any, /*d1*/ y: any,/*e1*/w?: any) { }
-   |                                                  ^
- 3 | var a, b: any;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/70850ed6ffc928cc.ts
 ✓ test/parser/suite/ts/pass/709b227b01f3934b.module.ts
 ✗ test/parser/suite/ts/pass/709d8fdc13029e29.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -16002,17 +15140,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/7155cac4ad6f46a2.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
- 4 | declare function foo(template: any, val: symbol): number;
- 5 | let x!: symbol;
-   |      ^
- 6 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/7155cac4ad6f46a2.ts
 ✗ test/parser/suite/ts/pass/7158bdad21ff9b6f.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
    |
@@ -16054,15 +15182,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/71c0b3431d50d27a.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-21 | class T1 {
-22 |     m(p1?, p2?) {
-   |         ^
-23 | 
-   |
-
+✓ test/parser/suite/ts/pass/71c0b3431d50d27a.ts
 ✗ test/parser/suite/ts/pass/71c1f2e16ed59c88.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -16284,17 +15404,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/733fd2313c80f2a4.ts
-✗ test/parser/suite/ts/pass/7345d56bf440aca9.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-19 | 
-20 | var a3: { new <T>(x?: T): T };
-   |                    ^
-21 | var b3: { new (x?: string): number };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/7345d56bf440aca9.ts
 ✓ test/parser/suite/ts/pass/7355d16060317505.module.ts
 ✗ test/parser/suite/ts/pass/735c555e719ed018.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -16730,17 +15840,7 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/762929abc760a20d.ts
 ✓ test/parser/suite/ts/pass/762abd5b8ffb0cad.ts
-✗ test/parser/suite/ts/pass/762bfe865204b2df.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface Utils {
- 3 |    fold<T, S>(c?: Array<T>, folder?: (s: S, t: T) => T, init?: S): T;
-   |                ^
- 4 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/762bfe865204b2df.ts
 ✓ test/parser/suite/ts/pass/762f268628b67efd.ts
 ✗ test/parser/suite/ts/pass/762f6e87797712aa.module.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -17013,17 +16113,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/77aaa6652ca344d6.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 8 | 
- 9 | function g(t?: { a: number } | null): void {
-   |             ^
-10 |     let b = { ...t };
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/77aaa6652ca344d6.ts
 ✗ test/parser/suite/ts/pass/77b0fb456e23dbea.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -17076,15 +16166,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/77ec57362665a74f.ts
 ✓ test/parser/suite/ts/pass/77ef0f92d8e9ddf2.ts
 ✓ test/parser/suite/ts/pass/77f083be9c7e0e98.ts
-✗ test/parser/suite/ts/pass/77f0aea4a3682bc3.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-12 | class E extends D {
-13 |     public foo(x?: string) { } // ok to add optional parameters
-   |                 ^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/77f0aea4a3682bc3.ts
 ✓ test/parser/suite/ts/pass/78029eb1640669a9.ts
 ✓ test/parser/suite/ts/pass/7808cabbd2c97f2d.ts
 ✓ test/parser/suite/ts/pass/780a95af32fdabe4.ts
@@ -17144,15 +16226,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/78a1251efcc479bf.ts
 ✓ test/parser/suite/ts/pass/78a614dc709922ac.ts
 ✓ test/parser/suite/ts/pass/78b23a24e668b0db.ts
-✗ test/parser/suite/ts/pass/78ba667066e8d84a.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 9 |     class f {
-10 |         public voidIfAny(x: boolean, y?: boolean): number;
-   |                                       ^
-11 |         public voidIfAny(x: string, y?: boolean): number;
-   |
-
+✓ test/parser/suite/ts/pass/78ba667066e8d84a.ts
 ✓ test/parser/suite/ts/pass/78bf7982ec209fa2.ts
 ✓ test/parser/suite/ts/pass/78c330f88a425097.module.ts
 ✓ test/parser/suite/ts/pass/78c587fa3137fdbe.ts
@@ -17354,13 +16428,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/7a127e6ccef1887d.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 5 |     private foo(x: number, y: string);
- 6 |     private foo(x: any, y?: any) { }
-   |                          ^
- 7 | 
+22 | 
+23 | class D<T> {
+   |        ^
+24 |     private foo(x: number);
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/7a1ff8df25bb098a.ts
 ✗ test/parser/suite/ts/pass/7a228ba19dd782ea.ts (parse errors)
@@ -17532,28 +16608,8 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/7af98463a3314abc.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-12 | declare const val: ReturnVal;
-13 | function run(options: { something?(b?: string): void }) {
-   |                                     ^
-14 |     const something = options.something ?? val.something;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
-✗ test/parser/suite/ts/pass/7afd6a2317a9e5f7.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 9 |     new(): number;
-10 |     apply(a: any, b?: any): void;
-   |                    ^
-11 |     call(thisArg: number, ...argArray: number[]): any;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/7af98463a3314abc.ts
+✓ test/parser/suite/ts/pass/7afd6a2317a9e5f7.ts
 ✗ test/parser/suite/ts/pass/7afdf19d9cd92e98.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -17760,17 +16816,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/7c6cb5d1e5ca4e5c.ts
 ✓ test/parser/suite/ts/pass/7c73c2419b340d7c.ts
 ✓ test/parser/suite/ts/pass/7c7cc4e40124383e.ts
-✗ test/parser/suite/ts/pass/7c8058192e9ab52b.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-    |
-215 |     
-216 |     function indirect(kind: MyEnum, id?: number): void {
-    |                                       ^
-217 |         something({ kind, id });
-    |
-    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/7c8058192e9ab52b.ts
 ✓ test/parser/suite/ts/pass/7c88fec30bc1ea83.ts
 ✓ test/parser/suite/ts/pass/7c8f0f7f2e17a73b.ts
 ✗ test/parser/suite/ts/pass/7c9c7b8b23e9109a.ts (parse errors)
@@ -18048,13 +17094,15 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/7e5200956b15b42d.ts
 ✓ test/parser/suite/ts/pass/7e6191c5ac74f8cb.module.ts
 ✗ test/parser/suite/ts/pass/7e8ed61069773cb6.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 4 |     foo: string;
- 5 |     constructor(x?, y?: any[]); 
-   |                  ^
- 6 |     constructor() {
+ 9 | 
+10 | class D<T> {
+   |        ^
+11 |     foo: string;
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/7e9628c6849a238c.ts
 ✓ test/parser/suite/ts/pass/7ea387e6c226bb5f.ts
@@ -18219,14 +17267,14 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/80066b95de43b9f2.ts
 ✓ test/parser/suite/ts/pass/8007f332ebd2fea1.ts
 ✗ test/parser/suite/ts/pass/8009b17118436ec9.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-12 | namespace M {
-13 |     export var n!: string;
-   |                 ^
-14 | }
+24 | var ResultIsString4 = typeof { x: "", y: "" };
+25 | var ResultIsString5 = typeof { x: "", y: (s: string) => { return s; } };
+   |                                            ^
+26 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/8009c8e6c5759bef.ts
@@ -18477,17 +17525,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/81edc1ea54e944ef.ts
 ✓ test/parser/suite/ts/pass/81ef742b26ffb5b7.ts
-✗ test/parser/suite/ts/pass/81f926dedcba5569.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 1 | // @target: es2015
- 2 | type F1 = (a: string, b?: string) => void;
-   |                        ^
- 3 | type F2 = (a: string, b?: string, c?: string) => void;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/81f926dedcba5569.ts
 ✓ test/parser/suite/ts/pass/81f9ed75324881d8.ts
 ✓ test/parser/suite/ts/pass/82130d4337285415.ts
 ✓ test/parser/suite/ts/pass/82176aee550148da.ts
@@ -18613,17 +17651,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/82bf413752f50754.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a:string, b?:number, c?:string){}
-   |                         ^
- 3 | foo('foo', 1); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/82bf413752f50754.ts
 ✗ test/parser/suite/ts/pass/82ced2dba560cebc.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
    |
@@ -18869,17 +17897,7 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
 ✓ test/parser/suite/ts/pass/84d76782eb06ebda.ts
 ✓ test/parser/suite/ts/pass/84d8756725e867eb.ts
 ✓ test/parser/suite/ts/pass/84dd84d9384f4fa4.ts
-✗ test/parser/suite/ts/pass/84dd8a66aad8d3a0.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
-22 | 
-23 | function noError(variable: any, array?: any) { }
-   |                                      ^
-24 | noError(null, []);
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/84dd8a66aad8d3a0.ts
 ✓ test/parser/suite/ts/pass/84ddb6953d83571a.ts
 ✓ test/parser/suite/ts/pass/84e842521bda47e2.ts
 ✓ test/parser/suite/ts/pass/84ef506f911c7de7.ts
@@ -19091,14 +18109,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/8653f0a9fa44e487.ts
 ✓ test/parser/suite/ts/pass/865572d15af8cee1.ts
 ✗ test/parser/suite/ts/pass/86736e42f5b333a4.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '{' to start function body, but found ';'
     |
-111 | /** @param e LastParam @anotherTag*/
-112 | function multiply(a: number, b: number, c?: number, d?, e?) {
-    |                                          ^
-113 | }
+116 | */
+117 | function f1(a: number);
+    |                       ^
+118 | function f1(b: string);
     |
-    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/867ccd04aaa8ed07.ts
@@ -19218,17 +18236,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/87499f198f3afe19.ts
-✗ test/parser/suite/ts/pass/874d37fd2dfa47f7.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 4 | function f2(a, b = 0, c = 0) { }
- 5 | function f3(a, b = 0, c?) { }
-   |                        ^
- 6 | function f4(a, b = 0, ...c) { }
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/874d37fd2dfa47f7.ts
 ✗ test/parser/suite/ts/pass/8759cb8ef5c5d99e.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -19571,25 +18579,17 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/89cbe22a5f15296a.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 5 |     public foo(x: number, y: string); // error
- 6 |     private foo(x: any, y?: any) { }
-   |                          ^
- 7 | 
+31 | 
+32 | class D<T> {
+   |        ^
+33 |     private foo(x: number); 
    |
-
-✗ test/parser/suite/ts/pass/89de9b461cce0949.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 3 | 
- 4 | function caller(arg: (n?: number) => void) { }
-   |                        ^
- 5 | 
-   |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
+✓ test/parser/suite/ts/pass/89de9b461cce0949.ts
 ✓ test/parser/suite/ts/pass/89e21439ccbaa00b.ts
 ✓ test/parser/suite/ts/pass/89f2c58edc63ace5.ts
 ✗ test/parser/suite/ts/pass/8a03b91c9e1410e2.ts (parse errors)
@@ -19631,33 +18631,13 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/8a3c498d8b096f3b.ts
-✗ test/parser/suite/ts/pass/8a4e0bba0e09924e.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface ICallback {
- 3 |     (x?: string):void;
-   |       ^
- 4 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/8a4e0bba0e09924e.ts
 ✓ test/parser/suite/ts/pass/8a543ea8064a52ae.ts
 ✓ test/parser/suite/ts/pass/8a5dbe24a8018b73.ts
 ✓ test/parser/suite/ts/pass/8a729d1483573801.ts
 ✓ test/parser/suite/ts/pass/8a7552eac6558e0e.ts
 ✓ test/parser/suite/ts/pass/8a7ea810ad857b19.ts
-✗ test/parser/suite/ts/pass/8a7f10cd391033e3.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 5 | 
- 6 | declare function log(message?: any): void;
-   |                             ^
- 7 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/8a7f10cd391033e3.ts
 ✓ test/parser/suite/ts/pass/8a7f441d9a8a69e1.ts
 ✓ test/parser/suite/ts/pass/8a7f483b60535e16.ts
 ✗ test/parser/suite/ts/pass/8a7fa3ab656f54af.ts (parse errors)
@@ -20497,17 +19477,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/904a90f404f5f936.ts
 ✓ test/parser/suite/ts/pass/904caad56151f485.ts
 ✓ test/parser/suite/ts/pass/906668872932b32e.ts
-✗ test/parser/suite/ts/pass/90718fdb25e511da.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
-74 | 
-75 | let n!: NodeA
-   |      ^
-76 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/90718fdb25e511da.ts
 ✗ test/parser/suite/ts/pass/9071b0a2e667b002.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -20545,17 +19515,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/909fc2c2669af932.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-10 |         zip<U, V>(other: EventStream<U>, f: (a: T, b: U) => V): EventStream<V>;
-11 |         slidingWindow(max: number, min?: number): Property<T[]>;
-   |                                       ^
-12 |         log(): Observable<T>;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/909fc2c2669af932.ts
 ✗ test/parser/suite/ts/pass/90a1e212b859a1bd.ts (parse errors)
 error: Expected ']' to close an indexed access type, but found ':'
    |
@@ -20787,17 +19747,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/92728f3b0559676a.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-64 |             failFilter: null,
-65 |             progressFilter?: (t: TN, u: UN, v: VN, ...s: SN[]) => PromiseBase<ARP, AJP, ANP,
-   |                           ^
-66 |                 BRP, BJP, BNP,
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/92728f3b0559676a.ts
 ✗ test/parser/suite/ts/pass/927748d11d85014e.ts (parse errors)
 error: Illegal continue statement
    |
@@ -21092,14 +20042,14 @@ error: Expected ';' after class field, but found '<'
 ✓ test/parser/suite/ts/pass/94e2df39e76385f3.ts
 ✓ test/parser/suite/ts/pass/94f26eb6e5f85869.ts
 ✗ test/parser/suite/ts/pass/94feb1dd3ece5769.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
  2 | 
  3 | function foo([x, y, z] ?: [string, number, boolean]);
-   |                        ^
+   |                                                     ^
  4 | function foo(...rest: any[]) {
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/95131a2a76975fda.ts (parse errors)
@@ -21191,14 +20141,14 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/961b0db1679875f9.ts
 ✓ test/parser/suite/ts/pass/961f17e4742f61a9.ts
 ✗ test/parser/suite/ts/pass/96208a9e681dedef.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
  2 | // @strict: false
  3 | function x2(callback: (x?: number) => number);
-   |                         ^
+   |                                              ^
  4 | function x2(callback: (x: string) => number);
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/96278edc6cad1d00.ts
@@ -21613,13 +20563,15 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/98c35e11c87fa715.ts
 ✗ test/parser/suite/ts/pass/98c89057627fb64f.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected ';' after class field, but found '<'
    |
- 3 | {
  4 |     publish(event: string, data?: any): void;
-   |                                ^
  5 |     publish<T>(event: T): void {}
+   |            ^
+ 6 | }
    |
+   = help: Add a semicolon after the field declaration.
+
 
 ✓ test/parser/suite/ts/pass/98cd4d0c2cbd16fd.ts
 ✓ test/parser/suite/ts/pass/98cdc3f16ed46a03.ts
@@ -21634,17 +20586,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/98e0bbed943d42a5.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 |     new(): number;
- 4 |     apply(a: any, b?: any): void;
-   |                    ^
- 5 |     call(thisArg: number, ...argArray: number[]): any;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/98e0bbed943d42a5.ts
 ✗ test/parser/suite/ts/pass/98efdb7d0c38e97a.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -22302,15 +21244,7 @@ error: Expected declaration after 'export', but found 'enum'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/9cd05acd0d0bd74e.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 7 |     [methodName]();
- 8 |     [methodName](v?: string) { }
-   |                   ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/9cd05acd0d0bd74e.ts
 ✓ test/parser/suite/ts/pass/9d0035b97465df02.ts
 ✓ test/parser/suite/ts/pass/9d31f63823f43f2d.ts
 ✓ test/parser/suite/ts/pass/9d3ec2350eb9a97e.ts
@@ -22320,14 +21254,14 @@ error: Expected ')' after method parameters, but found '?'
 ✓ test/parser/suite/ts/pass/9d4f2265816642d6.ts
 ✓ test/parser/suite/ts/pass/9d55f94f66c88f2d.ts
 ✗ test/parser/suite/ts/pass/9d61978bd15631ff.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected ';' after class field, but found '<'
     |
-164 | 
-165 | function f28(obj?: { kind: 'foo', foo: string } | { kind: 'bar', bar: number }) {
-    |                 ^
-166 |     const isFoo = obj && obj.kind === 'foo';
+289 | class Utils {
+290 |   static isDefined<T>(value: T): value is NonNullable<T> {
+    |                   ^
+291 |     return value != null;
     |
-    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+    = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/9d66da719d5da0f5.ts
@@ -22346,29 +21280,11 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/9da8319c7bca3309.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 7 |     all<T1>(x: [IPromise<T1>]): IPromise<[T1]>;
- 8 |     when<T>(t?: T): IPromise<T>;
-   |              ^
- 9 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/9da8319c7bca3309.ts
 ✓ test/parser/suite/ts/pass/9dafd40c0eed5218.ts
 ✓ test/parser/suite/ts/pass/9db65806e32c9f9c.ts
 ✓ test/parser/suite/ts/pass/9dc04110fc2f8ab9.ts
-✗ test/parser/suite/ts/pass/9dc0ae8136d4dd25.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-15 |  
-16 |         public text(value?: string): any {
-   |                          ^
-17 |             this._templateStorage.templateSources[this._name] = value;
-   |
-
+✓ test/parser/suite/ts/pass/9dc0ae8136d4dd25.ts
 ✗ test/parser/suite/ts/pass/9dc62beacc9564d6.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -22449,17 +21365,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/9e3ef423d19ee39e.module.ts
-✗ test/parser/suite/ts/pass/9e43ef3d177442ae.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | declare function f(x?: "hi"): void;
-   |                     ^
- 3 | declare function f(x?: string): void;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/9e43ef3d177442ae.ts
 ✗ test/parser/suite/ts/pass/9e4576196f589f2f.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -22589,17 +21495,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/9f0b88539b62782d.ts
 ✓ test/parser/suite/ts/pass/9f109b152ba2363c.ts
-✗ test/parser/suite/ts/pass/9f14e8253e45a07b.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 | declare var console: {
- 4 |     log(msg?: any): void;
-   |            ^
- 5 | };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/9f14e8253e45a07b.ts
 ✗ test/parser/suite/ts/pass/9f2501df94dead93.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -22746,17 +21642,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/a046384efcbca234.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 6 |         a: () => T;
- 7 |         a2: (x?: T) => T;
-   |               ^
- 8 |         a3: (x: T) => T;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/a046384efcbca234.ts
 ✓ test/parser/suite/ts/pass/a0519925c8ff46d2.ts
 ✓ test/parser/suite/ts/pass/a05318b810d640cc.ts
 ✗ test/parser/suite/ts/pass/a064a5995ecd99c3.ts (parse errors)
@@ -22837,17 +21723,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/a0e25a202782570b.ts
 ✓ test/parser/suite/ts/pass/a0e40f572c68b088.ts
-✗ test/parser/suite/ts/pass/a0e8bbdc36fa1dfb.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
- 4 | interface I { global: string; }
- 5 | var result!: I;
-   |           ^
- 6 | var result2!: I;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/a0e8bbdc36fa1dfb.ts
 ✓ test/parser/suite/ts/pass/a0efa4a748f5460e.ts
 ✗ test/parser/suite/ts/pass/a0ff64baeb0dc967.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -23674,15 +22550,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/a71770760f94f588.ts
 ✓ test/parser/suite/ts/pass/a71faf6a9b7340a9.module.ts
 ✓ test/parser/suite/ts/pass/a72780fc757e9f78.ts
-✗ test/parser/suite/ts/pass/a72a927e80fefb25.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-15 |     private iFn();
-16 |     private iFn(n?:number, s?:string) { }
-   |                  ^
-17 |     private iAny:any;
-   |
-
+✓ test/parser/suite/ts/pass/a72a927e80fefb25.ts
 ✗ test/parser/suite/ts/pass/a72d52d8999d6bff.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -23842,14 +22710,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/a8631f33b91f2561.ts
 ✓ test/parser/suite/ts/pass/a86732ad6ecb784f.ts
 ✗ test/parser/suite/ts/pass/a8701bebf5023b1d.module.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
-21 |   fields: Fields,
-22 |   annotations?: Schema<Self>,
-   |              ^
-23 | ) => Class<OutputFrom<Fields>>;
+36 | 
+37 | export class A extends Class<A>("A")(
+   |                             ^
+38 |   { a: string },
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✗ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts (parse errors)
@@ -23971,17 +22839,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/a8fd1727d73b68d0.ts
 ✓ test/parser/suite/ts/pass/a90a1e9f60ebee4f.ts
 ✓ test/parser/suite/ts/pass/a90c055a26de7dbd.ts
-✗ test/parser/suite/ts/pass/a911d20ec7858707.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-18 | 
-19 | var a4: { fn<T>(x?: T): T };
-   |                  ^
-20 | var b4: { fn(x?: string): string };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/a911d20ec7858707.ts
 ✓ test/parser/suite/ts/pass/a91889e235f724d0.ts
 ✓ test/parser/suite/ts/pass/a92001797dc92160.ts
 ✗ test/parser/suite/ts/pass/a924f21008472aa2.ts (parse errors)
@@ -24241,38 +23099,18 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/aa88c25d9a657997.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 2 | interface Promise<T> {
- 3 |     then<U>(onFulfill?: (value: T) => U, onReject?: (reason: any) => U): Promise<U>;
+ 5 |  
+ 6 | var a = function then<U>(onFulfill?: (value: string) => U, onReject?: (reason: any) => U): Promise<U> { return null };
    |                      ^
- 4 | }
+ 7 | var b = function then<U>(onFulFill?: (value: number) => U, onReject?: (reason: any) => U): Promise<U> { return null };
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/aa89e9c40dfc5f0d.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function foo(a?:string, ...b:number[]){} 
-   |               ^
- 3 | foo('foo', 1); 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
-✗ test/parser/suite/ts/pass/aa9c11bfcfa71ea1.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
-11 | function foo(): any {
-12 |     var a!: any;
-   |          ^
-13 |     return a;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/aa89e9c40dfc5f0d.ts
+✓ test/parser/suite/ts/pass/aa9c11bfcfa71ea1.ts
 ✓ test/parser/suite/ts/pass/aaa3507f57299dc4.ts
 ✓ test/parser/suite/ts/pass/aaacb3a132e5a0ee.ts
 ✗ test/parser/suite/ts/pass/aac24408d0ef7c65.ts (parse errors)
@@ -24322,17 +23160,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/ab15cdcc87f9147a.ts
 ✓ test/parser/suite/ts/pass/ab1fc64f131f60d2.ts
 ✓ test/parser/suite/ts/pass/ab21cd21abda7341.ts
-✗ test/parser/suite/ts/pass/ab24fa50ad8671a7.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 6 | 
- 7 | function a(aboo1?: Foo) {
-   |                 ^
- 8 |     if (!aboo1) return;
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/ab24fa50ad8671a7.ts
 ✓ test/parser/suite/ts/pass/ab5a49546ae9e23e.ts
 ✓ test/parser/suite/ts/pass/ab60ae1a335de356.module.ts
 ✓ test/parser/suite/ts/pass/ab62f645c4df5c08.ts
@@ -24486,14 +23314,14 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/ac301af716e0ada5.ts
 ✓ test/parser/suite/ts/pass/ac3531063fe2a43c.ts
 ✗ test/parser/suite/ts/pass/ac375a0163d54380.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 |     interface IPromise<TResult> {
- 6 |         then<U>(success?: (value: TResult) => IPromise<U>, error?: (error: any) => IPromise<U>, progress?: (progress: any) => void): IPromise<U>;
-   |                        ^
- 7 |         then<U>(success?: (value: TResult) => IPromise<U>, error?: (error: any) => U, progress?: (progress: any) => void): IPromise<U>;
+20 | 
+21 | declare function resolve1<T>(value: T): Promise<T>;
+   |                          ^
+22 | declare function resolve2<T>(value: T): Windows.Foundation.IPromise<T>;
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/ac3d768c0aac7a35.ts (parse errors)
@@ -24703,17 +23531,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/ae1a72a174d49433.ts
 ✓ test/parser/suite/ts/pass/ae2fabeeb4dbe6a7.ts
 ✓ test/parser/suite/ts/pass/ae41dc5d1c435c4a.module.ts
-✗ test/parser/suite/ts/pass/ae4bdd5deaac33e8.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 5 |     a: new () => number;
- 6 |     a2: new (x?: number) => number;
-   |               ^
- 7 |     a3: new (x: number) => number;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/ae4bdd5deaac33e8.ts
 ✓ test/parser/suite/ts/pass/ae50c1a98bd5741d.ts
 ✓ test/parser/suite/ts/pass/ae567df47c9b4892.ts
 ✓ test/parser/suite/ts/pass/ae68d1ea78edce40.ts
@@ -24917,14 +23735,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/affad38eb623df0c.module.tsx
 ✓ test/parser/suite/ts/pass/b01103cfb6c3a2f2.ts
 ✗ test/parser/suite/ts/pass/b0138a84c0d377e5.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-12 | 
-13 | function test(required1: () => boolean, required2: () => boolean, b: boolean, optional?: () => boolean) {
-   |                                                                                       ^
-14 |     // error
+41 |     // ok
+42 |     [].forEach((f: () => void) => f && f.apply(parent, []));
+   |                  ^
+43 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/b016e71ecdceb61c.ts (parse errors)
@@ -25414,17 +24232,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/b285d84297d2d305.ts
-✗ test/parser/suite/ts/pass/b28a74370468f8bf.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-12 |     (): void;
-13 |     apply(a: any, b?: any): void;
-   |                    ^
-14 |     call(thisArg: number, ...argArray: number[]): any;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/b28a74370468f8bf.ts
 ✗ test/parser/suite/ts/pass/b2959633e3f8e8e9.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -25692,14 +24500,14 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/b47b86c7ae5ff0ed.ts
 ✓ test/parser/suite/ts/pass/b485720f2cc56603.ts
 ✗ test/parser/suite/ts/pass/b486edad44e4d76a.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Expected '{' to start function body, but found ';'
    |
  2 | // @strict: false
  3 | function x3(callback: (x?: 'hi') => number);
-   |                         ^
+   |                                            ^
  4 | function x3(callback: (x: string) => number);
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/b492768e35a1cf1d.ts
@@ -25933,15 +24741,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/b678dcc88257bc59.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 8 | class C1 implements I1 {
- 9 |     method(a = 0, b?) { }
-   |                    ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/b678dcc88257bc59.ts
 ✓ test/parser/suite/ts/pass/b67cb97cb00c18ae.ts
 ✓ test/parser/suite/ts/pass/b67f419a5cd198fa.ts
 ✗ test/parser/suite/ts/pass/b681bef8bdb98fb8.ts (parse errors)
@@ -26318,14 +25118,14 @@ error: Expected ':' after conditional expression consequent, but found ')'
 
 ✓ test/parser/suite/ts/pass/b8cdfbecad9133e2.ts
 ✗ test/parser/suite/ts/pass/b8d3c510e651086d.module.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected declaration after 'export', but found 'declare'
    |
- 5 | 
- 6 | function fail(message?: string): never {
-   |                      ^
- 7 |     throw new Error(message);
+44 | namespace Debug {
+45 |     export declare function fail(message?: string): never;
+   |            ^^^^^^^
+46 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/b8d49b5135502eba.ts
@@ -26580,12 +25380,14 @@ error: Private field '#prop' must be declared in an enclosing class
 
 ✓ test/parser/suite/ts/pass/baa07cd7b13606f8.ts
 ✗ test/parser/suite/ts/pass/baa52c3a2efdb98e.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: A class can only have one constructor
    |
-12 |     constructor(a: any);
-13 |     constructor(x: any, y?: any) { }
-   |                          ^
-14 |     bar1() { /*WScript.Echo("Yo");*/}
+ 2 | declare class FooBase {
+ 3 |     constructor(s: string);
+   |     ~~~~~~~~~~~ first constructor defined here
+ 4 |     constructor(n: number);
+   |     ^^^^^^^^^^^
+ 5 |     constructor(x: any);
    |
 
 ✓ test/parser/suite/ts/pass/bac22dcffc699a77.ts
@@ -26639,17 +25441,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/bb015bee627c9cec.ts
-✗ test/parser/suite/ts/pass/bb07b3de69727d84.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 5 |     interface Enumerable<T> {
- 6 |         OrderByDescending(keySelector?: string): OrderedEnumerable<T>;
-   |                                      ^
- 7 |         GroupBy<TKey>(keySelector: (element: T) => TKey): Enumerable<Grouping<TKey, T>>;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/bb07b3de69727d84.ts
 ✓ test/parser/suite/ts/pass/bb12ed5e9b801897.module.ts
 ✗ test/parser/suite/ts/pass/bb16a4d6203850a3.ts (parse errors)
 error: Expected ';' after class field, but found '<'
@@ -27062,17 +25854,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/be2393b512f3231d.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 4 | interface ErrorConstructor {
- 5 |   captureStackTrace(targetObject: Object, constructorOpt?: Function): void;
-   |                                                         ^
- 6 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/be2393b512f3231d.ts
 ✓ test/parser/suite/ts/pass/be37203a8518c4f6.ts
 ✗ test/parser/suite/ts/pass/be3aa8e07773c053.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
@@ -27832,14 +26614,14 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/c248a5a86e180e2e.module.ts
 ✗ test/parser/suite/ts/pass/c26035fdbe5df72f.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-36 |     z?: number;
-37 |     moveBy(dx: number, dy: number, dz?: number): void;
-   |                                      ^
-38 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
+error: Expected '(' to start parameter list, but found '<'
+    |
+123 | 
+124 | declare function makeObject<D, M>(desc: ObjectDescriptor<D, M>): D & M;
+    |                            ^
+125 | 
+    |
+    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/c261c51874f89d23.ts
@@ -27980,14 +26762,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/c32cff1cec056999.ts
 ✓ test/parser/suite/ts/pass/c32fc6e8b7e394e3.ts
 ✗ test/parser/suite/ts/pass/c3331d4d6f246006.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-13 | namespace M {
-14 |     export var n!: number;
-   |                 ^
-15 | }
+25 | var ResultIsString4 = typeof { x: 1, y: 2};
+26 | var ResultIsString5 = typeof { x: 1, y: (n: number) => { return n; } };
+   |                                           ^
+27 | 
    |
-   = help: Try inserting a semicolon here
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/c3400050122518b7.ts
@@ -28026,28 +26808,18 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/c39d9e3df0d9a8d3.ts
 ✓ test/parser/suite/ts/pass/c39da5dc2060f374.ts
-✗ test/parser/suite/ts/pass/c3af8e5af8e23b33.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 | interface Promise<T> {
- 4 |     then<A>(success?: (value: T) => Promise<A>): Promise<A>;
-   |                    ^
- 5 |     then<B>(success?: (value: T) => B): Promise<B>;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/c3af8e5af8e23b33.ts
 ✓ test/parser/suite/ts/pass/c3b5b632f82874cf.ts
 ✓ test/parser/suite/ts/pass/c3d3110c34d7fcbf.ts
 ✗ test/parser/suite/ts/pass/c3d9bf006833585a.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 4 | 
- 5 | type ComputedGetter<T> = (oldValue?: T) => T;
-   |                                   ^
- 6 | type ComputedOptions = Record<string, ComputedGetter<any>>;
+36 | 
+37 | declare function reactive<T extends object>(target: T): Ref<T>;
+   |                          ^
+38 | 
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/c3ea20338e89c5bc.ts
@@ -28424,17 +27196,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/c68749a913dceacf.ts
 ✓ test/parser/suite/ts/pass/c691aef343454620.ts
 ✓ test/parser/suite/ts/pass/c6a430f76d3146b6.ts
-✗ test/parser/suite/ts/pass/c6a5b9b8e2abd4b3.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function delegate(instance: any, method: (...args: any[]) => any, data?: any): (...args: any[]) => any {
-   |                                                                       ^
- 3 |     return function () { };
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/c6a5b9b8e2abd4b3.ts
 ✗ test/parser/suite/ts/pass/c6aac4100fcccff2.module.ts (parse errors)
 error: Expected '>' to close a type assertion, but found ','
    |
@@ -28587,11 +27349,13 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/c792ec75af14d385.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: A class can only have one constructor
    |
+51 | class OverloadedMonster {
 52 |     constructor(name: string);
+   |     ~~~~~~~~~~~ first constructor defined here
 53 |     constructor(public name: string, public health?: number) {
-   |                                                   ^
+   |     ^^^^^^^^^^^
 54 | 
    |
 
@@ -28722,14 +27486,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/c87dbc652accbab8.ts
 ✓ test/parser/suite/ts/pass/c88193e105927ffe.ts
 ✗ test/parser/suite/ts/pass/c88260bcebed0a19.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 3 | declare var console: {
- 4 |     log(message?: any, ...optionalParams: any[]): void;
-   |                ^
- 5 | };
+ 9 | 
+10 |     messageHandler = (message: string) => {
+   |                              ^
+11 |         console.log(message); // This shouldnt be error
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/c8833cd84af9304a.ts
@@ -28787,13 +27551,15 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/c909f4b2ee290259.module.ts
 ✓ test/parser/suite/ts/pass/c90b11b9b0be8cd7.ts
 ✗ test/parser/suite/ts/pass/c911e117aa0c4680.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 5 |     public foo(x: number, y: string);
- 6 |     public foo(x: any, y?: any) { }
-   |                         ^
- 7 | 
+22 | 
+23 | class D<T> {
+   |        ^
+24 |     public foo(x: number);
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✗ test/parser/suite/ts/pass/c9131afc2d9a22da.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -29027,13 +27793,15 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/cb1c1de7d245952b.ts
 ✓ test/parser/suite/ts/pass/cb2017641b8f6e5e.ts
 ✗ test/parser/suite/ts/pass/cb23008ce4088956.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 4 | class C {
- 5 |     constructor(x: number, y?: string);
-   |                             ^
- 6 |     constructor(x: number, y: string);
+11 | 
+12 | class C2<T> {
+   |         ^
+13 |     constructor(x: T, y?: string);
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/cb2e7516bac54a7d.ts
 ✓ test/parser/suite/ts/pass/cb3c7913a2e70da4.ts
@@ -30007,14 +28775,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/d1f8794b23a08230.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
+error: Unexpected token ':'
    |
- 5 |     a: () => number;
- 6 |     a2: (x?: number) => number;
-   |           ^
- 7 |     a3: (x: number) => number;
+15 |     a = () => 1 // ok, same number of required params
+16 |     a = (x?: number) => 1; // ok, same number of required params
+   |            ^
+17 |     a = (x: number) => 1; // error, too many required params
    |
-   = help: Each '(' in a function type must be matched by a ')'
+   = help: Expected an expression
 
 
 ✗ test/parser/suite/ts/pass/d1fd710f2c9584dc.module.ts (parse errors)
@@ -30477,17 +29245,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/d4dae83d8ebc74ea.ts
 ✓ test/parser/suite/ts/pass/d4e1fb1924763838.ts
 ✓ test/parser/suite/ts/pass/d4e34cc80aa0f30a.ts
-✗ test/parser/suite/ts/pass/d4eb28ec107eb4f4.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 4 | interface IPromise<T> {
- 5 |     then(successCallback: (promiseValue: T) => any, errorCallback?: (reason: any) => any): IPromise<any>;
-   |                                                                  ^
- 6 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/d4eb28ec107eb4f4.ts
 ✓ test/parser/suite/ts/pass/d4f1bed1adc37d85.ts
 ✓ test/parser/suite/ts/pass/d4fd87406472e7f5.ts
 ✗ test/parser/suite/ts/pass/d4fdb957a2e57500.ts (parse errors)
@@ -30545,17 +29303,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/d514764c1a18ba1c.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 8 | 
- 9 | const f1: (a: string, b: number) => void = function self(a, b?) {
-   |                                                              ^
-10 |   acceptNum(b); // error
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/d514764c1a18ba1c.ts
 ✓ test/parser/suite/ts/pass/d5285dc6a947004b.ts
 ✓ test/parser/suite/ts/pass/d53726c49da530bb.ts
 ✓ test/parser/suite/ts/pass/d53cc32fe5e60272.ts
@@ -30621,17 +29369,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/d5b43de105055e4b.ts
-✗ test/parser/suite/ts/pass/d5bc5cf46ef19a63.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | // @strict: false
- 3 | declare function setTimeout(expression: any, msec?: number, language?: any): number;
-   |                                                  ^
- 4 | 
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/d5bc5cf46ef19a63.ts
 ✓ test/parser/suite/ts/pass/d5df8e6d3193b9e9.ts
 ✓ test/parser/suite/ts/pass/d5e5a811db39cdb4.ts
 ✗ test/parser/suite/ts/pass/d5e60aab8fc53cf3.module.ts (parse errors)
@@ -30972,17 +29710,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/d90069081cfac33b.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-25 | 
-26 | declare var a5: { fn(a?: Base): void };
-   |                       ^
-27 | declare var b5: { fn(a?: C): void };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/d90069081cfac33b.ts
 ✓ test/parser/suite/ts/pass/d904ee22be8225b0.ts
 ✗ test/parser/suite/ts/pass/d914ad5837e60a91.ts (parse errors)
 error: Private field '#derivedProp' must be declared in an enclosing class
@@ -31060,28 +29788,18 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d9cc71f2ef5e557a.module.ts
 ✓ test/parser/suite/ts/pass/d9d10d972e39aa9a.ts
 ✓ test/parser/suite/ts/pass/d9d1a7353663ab2e.ts
-✗ test/parser/suite/ts/pass/d9d9a425a9416832.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | interface IPromise3<T> {
- 3 |     then<U>(success?: (value: T) => IPromise3<U>, error?: (error: any) => IPromise3<U>, progress?: (progress: any) => void ): IPromise3<U>;
-   |                    ^
- 4 |     then<U>(success?: (value: T) => IPromise3<U>, error?: (error: any) => U, progress?: (progress: any) => void ): IPromise3<U>;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/d9d9a425a9416832.ts
 ✓ test/parser/suite/ts/pass/d9df56edc382673d.ts
 ✓ test/parser/suite/ts/pass/d9e2d62803dbb360.ts
 ✗ test/parser/suite/ts/pass/d9ec1b5ce314cb89.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
-19 | // Ambient function with optional parameters
-20 | declare function fn5(x, y?);
-   |                          ^
-21 | declare function fn6(e?);
+24 | declare function fn9(...q: {}[]);
+25 | declare function fn10<T>(...q: T[]);
+   |                      ^
+26 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/d9f76e8a3051873e.ts
@@ -31192,17 +29910,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/da9f4a90b0b0c929.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 2 | // @strict: false
- 3 | declare function alert(message?: any): void;
-   |                               ^
- 4 | var x = {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/da9f4a90b0b0c929.ts
 ✗ test/parser/suite/ts/pass/daa5211111d445e3.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -31312,15 +30020,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/db20fae7731435f0.ts
 ✓ test/parser/suite/ts/pass/db230328d52f2f42.ts
-✗ test/parser/suite/ts/pass/db2db1774e5f251a.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 7 |     [methodName]();
- 8 |     [methodName](v?: string) { }
-   |                   ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/db2db1774e5f251a.ts
 ✗ test/parser/suite/ts/pass/db384641ee734a02.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -31344,15 +30044,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/db42c94f963aee06.ts
-✗ test/parser/suite/ts/pass/db5749165ae78070.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 2 | class C1 {
- 3 |     constructor(public x?: number) { }
-   |                         ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/db5749165ae78070.ts
 ✗ test/parser/suite/ts/pass/db5986c3dc8caa2a.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -31407,14 +30099,14 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/db9d24887e84301f.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 4 | 
- 5 | function foo(x?: number) { }
-   |               ^
  6 | var f = function foo(x?: number) { }
+ 7 | var f2 = (x: number, y?: number) => { }
+   |            ^
+ 8 | 
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/dbae7b5dd6e136c9.ts
@@ -31484,17 +30176,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/dc702952428d80d6.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 2 | // @lib: es5
- 3 | declare var console: { log(msg?: string): void; };
-   |                               ^
- 4 | var _i = "This is what I'd expect to see";
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/dc702952428d80d6.ts
 ✓ test/parser/suite/ts/pass/dc7add68f3119d73.ts
 ✓ test/parser/suite/ts/pass/dc88b913893dd408.ts
 ✓ test/parser/suite/ts/pass/dc8bd5c0dd26bd8a.ts
@@ -31536,17 +30218,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/dd0d09af097a35b2.ts
 ✓ test/parser/suite/ts/pass/dd0e5f184e3af466.module.ts
 ✓ test/parser/suite/ts/pass/dd0faba8f149cb3b.ts
-✗ test/parser/suite/ts/pass/dd1a47535918cde5.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 6 |     (): void;
- 7 |     apply(a: any, b?: any): void;
-   |                    ^
- 8 |     call(thisArg: number, ...argArray: number[]): any;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/dd1a47535918cde5.ts
 ✗ test/parser/suite/ts/pass/dd28ea040ea305e7.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -31596,17 +30268,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/dd5174c7e7438da8.ts
 ✓ test/parser/suite/ts/pass/dd5277601924fb5b.ts
 ✓ test/parser/suite/ts/pass/dd5e55e5f5eddaa2.ts
-✗ test/parser/suite/ts/pass/dd5f696583c23805.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 |     (x: number): number;
- 4 |     (x: string, y?: string): boolean;
-   |                  ^
- 5 |     (x: Date): void;
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/dd5f696583c23805.ts
 ✓ test/parser/suite/ts/pass/dd6da7cda19bf42e.ts
 ✗ test/parser/suite/ts/pass/dd7653e174eb5aab.module.ts (parse errors)
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -31672,15 +30334,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/ddfe04becea6a99f.module.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 9 |     // Type node is accurate, preserve
-10 |     public reuseTypeNode?: Map | undefined,
-   |                         ^
-11 |     public reuseTypeNode2?: Exclude<MapOrUndefined, "dummy">,
-   |
-
+✓ test/parser/suite/ts/pass/ddfe04becea6a99f.module.ts
 ✗ test/parser/suite/ts/pass/de032bb80e3472c2.module.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -31949,13 +30603,15 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/dfc17ae47cddd625.ts
 ✓ test/parser/suite/ts/pass/dfc729864c95aa71.ts
 ✗ test/parser/suite/ts/pass/dfdea8bea70c42cb.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 3 |     a = 1;
- 4 |     constructor(x: number, y?: number, z?: number);
-   |                             ^
- 5 |     constructor(x: number, y?: number);
+18 | 
+19 | class Base2<T> {
+   |            ^
+20 |     a: T;
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/dfe68cca1661a80a.ts
 ✓ test/parser/suite/ts/pass/dffc998d0e772be3.ts
@@ -32363,17 +31019,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/e28af3d320eb4b3f.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
- 5 |     a: new () => number;
- 6 |     a2: new (x?: number) => number;
-   |               ^
- 7 |     a3: new (x: number) => number;
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/e28af3d320eb4b3f.ts
 ✓ test/parser/suite/ts/pass/e296dba071927252.ts
 ✓ test/parser/suite/ts/pass/e297d10fbabf8f9e.ts
 ✗ test/parser/suite/ts/pass/e29aad28e0f30740.ts (parse errors)
@@ -32431,14 +31077,14 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/e31a183b4911185f.ts
 ✗ test/parser/suite/ts/pass/e31e1d5b6fcd2680.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
+error: Expected '(' to start parameter list, but found '<'
    |
- 3 | 
- 4 | let symbol!: symbol;
-   |           ^
- 5 | let str = "hello ";
+20 | 
+21 | function getKey<S extends StringOrSymbol>(key: S) {
+   |                ^
+22 |     return `${key} is the key`;
    |
-   = help: Try inserting a semicolon here
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✓ test/parser/suite/ts/pass/e3269ac2288af513.module.ts
@@ -33065,17 +31711,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/e8608ec6b15db9e3.ts
 ✓ test/parser/suite/ts/pass/e860f6c16ff79467.ts
 ✓ test/parser/suite/ts/pass/e8638de18098fa5a.ts
-✗ test/parser/suite/ts/pass/e863c18f72cc1af4.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
-10 | var r2b: number = new i();
-11 | var r2c: (x: any, y?: any) => any = i.apply;
-   |                    ^
-12 | 
-   |
-   = help: Each '(' in a function type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/e863c18f72cc1af4.ts
 ✗ test/parser/suite/ts/pass/e864a65573216228.ts (parse errors)
 error: 'arguments' is not allowed in class field initializers or static blocks
    |
@@ -33268,17 +31904,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/e94f94f4e6d7ca42.ts
 ✓ test/parser/suite/ts/pass/e9530a1f78322ea5.ts
-✗ test/parser/suite/ts/pass/e957a2ad75040d7c.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-33 | 
-34 | declare var unionWithOptionalParameter1: { (a: string, b?: number): string; } | { (a: string, b?: number): number; };
-   |                                                         ^
-35 | strOrNum = unionWithOptionalParameter1('hello');
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/e957a2ad75040d7c.ts
 ✗ test/parser/suite/ts/pass/e95c68d10b0a9cd2.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
    |
@@ -33451,17 +32077,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/eac865e9ce59f2e3.ts
 ✓ test/parser/suite/ts/pass/eace8d03e9940103.ts
-✗ test/parser/suite/ts/pass/ead8e28437627922.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
- 3 | interface A {
- 4 |   (this: void, b?: number): void;
-   |                 ^
- 5 | }
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/ead8e28437627922.ts
 ✗ test/parser/suite/ts/pass/eadfbc772d638035.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -33646,17 +32262,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/ebf4e8f558c41e20.ts
 ✓ test/parser/suite/ts/pass/ebf583d18a3731d2.ts
-✗ test/parser/suite/ts/pass/ec0af0a48fcf02c1.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
-14 | namespace M {
-15 |     export var n!: boolean;
-   |                 ^
-16 | }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/ec0af0a48fcf02c1.ts
 ✓ test/parser/suite/ts/pass/ec14ec510fb08eb9.ts
 ✓ test/parser/suite/ts/pass/ec24db406efca979.ts
 ✓ test/parser/suite/ts/pass/ec2de44f1c2a1c0d.ts
@@ -33859,26 +32465,8 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/ee0720d6a0d68f01.ts
 ✓ test/parser/suite/ts/pass/ee0780dc360cb222.ts
 ✓ test/parser/suite/ts/pass/ee0e7352126ab68c.ts
-✗ test/parser/suite/ts/pass/ee1405c09b6f3828.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 1 | // @target: es2015
- 2 | function f18(a?:string, ...b:number[]){}
-   |               ^
- 3 |  
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
-✗ test/parser/suite/ts/pass/ee18e528d37d03d8.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 3 | 
- 4 |     public set bar(param?:any) { }
-   |                         ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/ee1405c09b6f3828.ts
+✓ test/parser/suite/ts/pass/ee18e528d37d03d8.ts
 ✓ test/parser/suite/ts/pass/ee242a3cddd6e25d.ts
 ✓ test/parser/suite/ts/pass/ee3bfcd2476a76e4.ts
 ✓ test/parser/suite/ts/pass/ee3fcd410321144a.ts
@@ -34375,14 +32963,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/f19a9bf3ec8e79ab.ts
 ✓ test/parser/suite/ts/pass/f19db491e8a5e304.ts
 ✗ test/parser/suite/ts/pass/f1be9939d3edff1a.ts (parse errors)
-error: Expected ')' to close function type parameters, but found '?'
-   |
-56 | type T21 = ArgumentType<(x: string) => number>;  // string
-57 | type T22 = ArgumentType<(x?: string) => number>;  // string | undefined
-   |                           ^
-58 | type T23 = ArgumentType<(...args: string[]) => number>;  // string
-   |
-   = help: Each '(' in a function type must be matched by a ')'
+error: Expected '(' to start parameter list, but found '<'
+    |
+183 | 
+184 | function invoker <K extends string | number | symbol, A extends any[]> (key: K, ...args: A) {
+    |                  ^
+185 |     return <T extends Record<K, (...args: A) => any>> (obj: T): ReturnType<T[K]> => obj[key](...args)
+    |
+    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/f1c190628f288a74.ts (parse errors)
@@ -34420,14 +33008,14 @@ error: Expected declaration after 'export', but found 'type'
 
 ✓ test/parser/suite/ts/pass/f1dbecf062118686.ts
 ✗ test/parser/suite/ts/pass/f1dd6199a0d8bbec.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '(' to start parameter list, but found '<'
    |
- 6 | interface Node {
- 7 |     forEachChild<T>(cbNode: (node: Node) => T | undefined, cbNodeArray?: (nodes: NodeArray<Node>) => T | undefined): T | undefined;
-   |                                                                       ^
- 8 | }
+ 9 | 
+10 | declare function toArray<T>(value: T | T[]): T[];
+   |                         ^
+11 | declare function toArray<T>(value: T | readonly T[]): readonly T[];
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/f1e50288c4ef4c5e.ts (parse errors)
@@ -34874,15 +33462,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/f4864aa4bdac7e89.ts
-✗ test/parser/suite/ts/pass/f4a630f8551e99fb.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 5 |    static fnOverload(foo:string);
- 6 |    static fnOverload(foo?: any){ }
-   |                         ^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/f4a630f8551e99fb.ts
 ✓ test/parser/suite/ts/pass/f4b18dcca08bfac2.ts
 ✗ test/parser/suite/ts/pass/f4b36349fd7b6e9d.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -35018,15 +33598,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/f528a8861102d4c4.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-12 | class E extends D {
-13 |     foo(x: number, y?: string) { } // ok to add optional parameters
-   |                     ^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/f528a8861102d4c4.ts
 ✓ test/parser/suite/ts/pass/f535b742fdf7c0c8.ts
 ✗ test/parser/suite/ts/pass/f5390be180482999.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -35214,13 +33786,15 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/f616c4349052fd7f.ts
 ✓ test/parser/suite/ts/pass/f6179911267fbd5d.ts
 ✗ test/parser/suite/ts/pass/f6217bd21b143675.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 5 | class C {
- 6 |     constructor(x: number, y?: string);
-   |                             ^
- 7 |     constructor(x: number, y: string);
+15 | 
+16 | class C2<T> {
+   |         ^
+17 |     constructor(x: T, y?: string);
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/f6228143411ffaf2.ts
 ✓ test/parser/suite/ts/pass/f6263318068eaee6.ts
@@ -35279,14 +33853,14 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/f6ee14ed6eb29e8e.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
+error: Expected '{' to start class body, but found '<'
    |
- 5 | interface KnockoutObservableBase2<T> {
- 6 |     subscribe(callback: (newValue: T) => void, target?: any, topic?: string): KnockoutSubscription2<T>;
-   |                                                      ^
- 7 | }
+13 | }
+14 | class Validator2<TValue> {
+   |                 ^
+15 |     private _subscription: KnockoutSubscription2<TValue>;
    |
-   = help: Each '(' in a signature must be matched by a ')'
+   = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✓ test/parser/suite/ts/pass/f6fbb5fced206773.ts
@@ -35413,17 +33987,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/f77260a66a73d7ac.ts (parse errors)
-error: Expected ')' to close signature parameters, but found '?'
-   |
-30 | 
-31 | var a8: { new (a?: Base): Base };
-   |                 ^
-32 | var b8: { new (a?: Derived): Base };
-   |
-   = help: Each '(' in a signature must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/f77260a66a73d7ac.ts
 ✓ test/parser/suite/ts/pass/f792f557dae4de63.ts
 ✓ test/parser/suite/ts/pass/f7a955e9da76f31a.ts
 ✗ test/parser/suite/ts/pass/f7c3318268a1e01f.ts (parse errors)
@@ -35435,15 +33999,7 @@ error: Private field '#prop' must be declared in an enclosing class
 12 |     }
    |
 
-✗ test/parser/suite/ts/pass/f7c8dfa32fdbe7da.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 2 | class B {
- 3 |     constructor(x?: string) {}
-   |                  ^
- 4 |     x(): string { return ""; }
-   |
-
+✓ test/parser/suite/ts/pass/f7c8dfa32fdbe7da.ts
 ✗ test/parser/suite/ts/pass/f7cf44cc260e63da.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -35514,17 +34070,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/f8276e603ad65b4a.ts
 ✓ test/parser/suite/ts/pass/f830464aa387d329.ts
 ✓ test/parser/suite/ts/pass/f8326d504c2dd734.ts
-✗ test/parser/suite/ts/pass/f8331793b48095e3.module.ts (parse errors)
-error: Expected ')' to close parameter list, but found '?'
-   |
- 7 | // Angular-style Input/Output API:
- 8 | declare function Input(bindingPropertyName?: string): any;
-   |                                           ^
- 9 | class FooComponent {
-   |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
-
+✓ test/parser/suite/ts/pass/f8331793b48095e3.module.ts
 ✓ test/parser/suite/ts/pass/f83f7ecf37939c91.ts
 ✓ test/parser/suite/ts/pass/f850ee0e43ff168f.ts
 ✓ test/parser/suite/ts/pass/f857a402c7f39e2f.ts
@@ -35571,15 +34117,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/f89adcdb56eeef94.ts
-✗ test/parser/suite/ts/pass/f89c1dade7d4a1fd.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 4 | var goodObj: Object = {
- 5 |     toString(x?) {
-   |               ^
- 6 |         return "";
-   |
-
+✓ test/parser/suite/ts/pass/f89c1dade7d4a1fd.ts
 ✓ test/parser/suite/ts/pass/f89e1e85d670048c.ts
 ✗ test/parser/suite/ts/pass/f8a04b3bf4b9e749.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -36214,15 +34752,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/fda1da0d1494bd51.ts
 ✓ test/parser/suite/ts/pass/fda305ebc7439f97.ts
-✗ test/parser/suite/ts/pass/fda7a5cf6785ab0c.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
- 3 | class Base {
- 4 |     constructor(opt?) { }
-   |                    ^
- 5 |     foo(other?) { }
-   |
-
+✓ test/parser/suite/ts/pass/fda7a5cf6785ab0c.ts
 ✗ test/parser/suite/ts/pass/fda7deb6732f521c.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -36250,15 +34780,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/fdbea4204d9a1192.ts
 ✓ test/parser/suite/ts/pass/fdbef7af8bb6aeeb.ts
 ✓ test/parser/suite/ts/pass/fdc4c89506308bc2.ts
-✗ test/parser/suite/ts/pass/fdc78ee99b82cb91.ts (parse errors)
-error: Expected ')' after method parameters, but found '?'
-   |
-37 |     item: {a: string, b: number, c: object};
-38 |     constructor(input?: any) {}
-   |                      ^
-39 | }
-   |
-
+✓ test/parser/suite/ts/pass/fdc78ee99b82cb91.ts
 ✓ test/parser/suite/ts/pass/fdcf558942cd879b.ts
 ✓ test/parser/suite/ts/pass/fdd35e7f1cb31ce5.ts
 ✗ test/parser/suite/ts/pass/fddeb4bac61c24a8.ts (parse errors)

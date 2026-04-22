@@ -89,9 +89,20 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, declare: boo
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.getSpan(id);
 
+    // `let x!: T` definite assignment assertion
+    var definite = false;
+    var end = id_span.end;
+    if (parser.tree.isTs() and
+        parser.current_token.tag == .logical_not and
+        !parser.current_token.hasLineTerminatorBefore())
+    {
+        definite = true;
+        end = parser.current_token.span.end;
+        try parser.advance() orelse return null;
+    }
+
     // `let x: Type = ...`
     // annotation attaches to the inner binding pattern (`id`).
-    var end = id_span.end;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         ts_types.applyTypeAnnotationToPattern(parser, id, annotation);
@@ -140,7 +151,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, declare: boo
     }
 
     return try parser.tree.createNode(
-        .{ .variable_declarator = .{ .id = id, .init = init } },
+        .{ .variable_declarator = .{ .id = id, .init = init, .definite = definite } },
         .{ .start = start, .end = end },
     );
 }
