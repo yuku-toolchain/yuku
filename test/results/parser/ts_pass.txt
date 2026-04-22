@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       5364/8261 (64.93%)
-Failed:       2897
-AST mismatch: 0/5364
+Passed:       5388/8261 (65.22%)
+Failed:       2873
+AST mismatch: 0/5388
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -24,14 +24,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/006aa972606cd565.ts
 ✓ test/parser/suite/ts/pass/0074b968687c77e3.ts
 ✓ test/parser/suite/ts/pass/007bc34ae91500ae.ts
-✗ test/parser/suite/ts/pass/00822c50261d068b.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | var foo:(a:{():number; (i:number):number; })=>number; foo = function(this: void, a:string){return 5};
-   |                                                                      ^^^^
-   |
-
+✓ test/parser/suite/ts/pass/00822c50261d068b.ts
 ✗ test/parser/suite/ts/pass/0087d229be08bbfa.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -210,13 +203,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/01d38d790206c93e.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Parenthesized expression in assignment pattern must be a simple assignment target
    |
- 6 |     static x = () => { console.log(this, Foo) }
- 7 |     static y = function(this: unknown) { console.log(this, Foo) }
-   |                         ^^^^
- 8 | 
+13 | const oldFoo = Foo;
+14 | (Foo as any) = null;
+   |  ^^^^^^^^^^
+15 | oldFoo.x();
    |
+   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
+
 
 ✗ test/parser/suite/ts/pass/01d440bc45b8e004.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -467,13 +462,15 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/0366df19a6d46142.ts
 ✓ test/parser/suite/ts/pass/036a54a99dda42d9.ts
 ✗ test/parser/suite/ts/pass/0370f2d9ccdcab55.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-33 | type Header = { head: string, body: string, authToken: string }
-34 | function from16326(this: { header: Header }, header: Header, authToken: string): Header {
-   |                    ^^^^
-35 |     return {
-   |
+error: Expected '(' to start parameter list, but found '<'
+    |
+112 | 
+113 | function f<T, U>(t: T, u: U) {
+    |           ^
+114 |     return { ...t, ...u, id: 'id' };
+    |
+    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/0375b5cb01eb4772.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -502,13 +499,15 @@ error: Expected ')' to close signature parameters, but found '?'
 ✓ test/parser/suite/ts/pass/03a6763766befa41.ts
 ✓ test/parser/suite/ts/pass/03adad11ec47c70e.ts
 ✗ test/parser/suite/ts/pass/03ae8d90deadcab7.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Unexpected token '@' in binding pattern
    |
  5 | class C {
  6 |     method(this: C, @dec p: number) {}
-   |            ^^^^
+   |                     ^
  7 | }
    |
+   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
+
 
 ✓ test/parser/suite/ts/pass/03b19b9d944a61c5.ts
 ✓ test/parser/suite/ts/pass/03db420d2b7eb8f1.ts
@@ -2282,15 +2281,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/1061bac247650a3f.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 5 | 
- 6 | const foo = function (this: any) {
-   |                       ^^^^
- 7 |     var a, b, c, d, ab, bc, cd, da, blocks = this.blocks;
-   |
-
+✓ test/parser/suite/ts/pass/1061bac247650a3f.ts
 ✓ test/parser/suite/ts/pass/10668e938f2dbe65.ts
 ✗ test/parser/suite/ts/pass/1066cbb4d2e1e0b8.tsx (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -4620,13 +4611,15 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/20e0ff09bb721e9e.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected ')' to close signature parameters, but found '?'
    |
  4 | type Source = {
  5 |     <K extends keyof WindowEventMap>(type: K, listener: (this: Window, ev: WindowEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-   |                                                          ^^^^
+   |                                                                                                              ^
  6 |   (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
    |
+   = help: Each '(' in a signature must be matched by a ')'
+
 
 ✓ test/parser/suite/ts/pass/20eaf9aed5249ed9.ts
 ✗ test/parser/suite/ts/pass/20f05f1bde427568.ts (parse errors)
@@ -7595,15 +7588,7 @@ error: 'super' property access is only valid inside a method or class body
 
 
 ✓ test/parser/suite/ts/pass/353c10dc8d526c39.ts
-✗ test/parser/suite/ts/pass/3547a8f3f46d1071.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 2 | function rebase(fn: (base: any, ...args: any[]) => any): (...args: any[]) => any {
- 3 |     return function(this: any, ...args: any[]) {
-   |                     ^^^^
- 4 |         return fn.apply(this, [ this ].concat(args));
-   |
-
+✓ test/parser/suite/ts/pass/3547a8f3f46d1071.ts
 ✓ test/parser/suite/ts/pass/3549d0e8540395a8.ts
 ✓ test/parser/suite/ts/pass/354dffb730f2d6a4.module.ts
 ✗ test/parser/suite/ts/pass/35574737548a98b7.ts (parse errors)
@@ -7809,15 +7794,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/372533cac6e7f4cc.tsx
-✗ test/parser/suite/ts/pass/373c17dfe7aeae97.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 3 | declare function isBig(x: any): x is { big: true };
- 4 | function bigger(this: {}) {
-   |                 ^^^^
- 5 |     if (isBig(this)) {
-   |
-
+✓ test/parser/suite/ts/pass/373c17dfe7aeae97.ts
 ✗ test/parser/suite/ts/pass/373f9ee79fc1e8de.ts (parse errors)
 error: Expected ';' after class field, but found '<'
    |
@@ -7973,13 +7950,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/38071e9cac64c675.ts
 ✗ test/parser/suite/ts/pass/38139be8f58693d6.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | 
- 6 | type DataDef<Data, Props> = (this: Readonly<Props> & Instance) => Data
-   |                              ^^^^
- 7 | 
+26 | 
+27 | declare function test<Data, Props>(fn: ThisTypedOptions<Data, Props>): void;
+   |                      ^
+28 | declare function test(fn: Options): void;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✓ test/parser/suite/ts/pass/381bd8cd84427557.ts
 ✓ test/parser/suite/ts/pass/381e415b758eaf50.ts
@@ -10804,15 +10783,7 @@ error: Expected ')' to close signature parameters, but found '?'
 
 ✓ test/parser/suite/ts/pass/4b4e87d37c5d4f56.ts
 ✓ test/parser/suite/ts/pass/4b54ce49cb342cea.ts
-✗ test/parser/suite/ts/pass/4b58932db0513618.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-17 | 
-18 |   foo(this: A, a: A, b: B) {
-   |       ^^^^
-19 |     // Should have no errors in this block
-   |
-
+✓ test/parser/suite/ts/pass/4b58932db0513618.ts
 ✗ test/parser/suite/ts/pass/4b5a1b11e884dd19.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -11275,13 +11246,15 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/4ebada98c2eb7ff8.ts
 ✗ test/parser/suite/ts/pass/4ebda9250af4e7c4.module.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '{' to start class body, but found '<'
    |
-25 |   name: string;
-26 |   addOptions?: (this: {
-   |                 ^^^^
-27 |     name: string;
+38 | 
+39 | declare class Extension<Options = any> {
+   |                        ^
+40 |   _options: Options;
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✗ test/parser/suite/ts/pass/4ebf310dd0d25f97.module.ts (parse errors)
 error: 'const' declarations must be initialized
@@ -11599,13 +11572,15 @@ error: Expected '?' in a conditional type, but found '>'
 ✓ test/parser/suite/ts/pass/50c0bdd039e4678a.ts
 ✓ test/parser/suite/ts/pass/50c9ed54c5103f36.ts
 ✗ test/parser/suite/ts/pass/50cee1b94f549014.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '{' to start function body, but found ':'
    |
- 6 |     n: number;
- 7 |     explicitThis(this: this, m: number): number;
-   |                  ^^^^
- 8 | }
+30 |     },
+31 |     implicitThis(m: number): number { return m; }
+   |                            ^
+32 | };
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/50d79382d589fe4d.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -11680,13 +11655,15 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/517632b3f35bae4c.ts
 ✓ test/parser/suite/ts/pass/51763f8d40d9c028.ts
 ✗ test/parser/suite/ts/pass/517ae97b0e7a4520.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Getter must have no parameters
    |
 10 |     n: 12,
 11 |     get x(this: Foo): number { return this.n; },
-   |           ^^^^
+   |           ^^^^^^^^^
 12 |     set x(this: Foo, n: number) { this.n = n; }
    |
+   = help: Remove all parameters from the getter.
+
 
 ✗ test/parser/suite/ts/pass/517b6b50c4ca0fc7.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -12393,13 +12370,15 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/56abdb7acf4579d0.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '(' to start parameter list, but found '<'
    |
-14 | declare function invalidReturnType(): unique symbol;
-15 | declare function invalidThisType(this: unique symbol): void;
-   |                                  ^^^^
 16 | declare function invalidTypePredicate(n: any): n is unique symbol;
+17 | declare function invalidTypeParameterConstraint<T extends unique symbol>(): void;
+   |                                                ^
+18 | declare function invalidTypeParameterDefault<T = unique symbol>(): void;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/56bcf03f05f3f5b8.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -12605,13 +12584,15 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/57ca0ddd5649a343.module.ts
 ✗ test/parser/suite/ts/pass/57cc521197c3d479.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 6 |   context: Context;
- 7 |   produce(this: Context): Data;
-   |           ^^^^
- 8 |   consume(this: Context, data: Data): void;
+10 | 
+11 | declare function defineOptions<Context, Data>(
+   |                               ^
+12 |   options: Options<Context, Data>,
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✓ test/parser/suite/ts/pass/57cdf2cdbcd24606.ts
 ✓ test/parser/suite/ts/pass/57de3829af562752.ts
@@ -14154,15 +14135,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/63565aea49a70bef.ts
 ✓ test/parser/suite/ts/pass/6357d4a87b3e0a1d.ts
 ✓ test/parser/suite/ts/pass/635db01e44cbc119.ts
-✗ test/parser/suite/ts/pass/63606a4dc6601031.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-13 | }
-14 | function weird(this: Example, a = this.getNumber()) {
-   |                ^^^^
-15 |     return a;
-   |
-
+✓ test/parser/suite/ts/pass/63606a4dc6601031.ts
 ✗ test/parser/suite/ts/pass/6363b8da34587148.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -14282,25 +14255,9 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/64133390abcf96d6.ts
 ✓ test/parser/suite/ts/pass/641e67698a911839.ts
 ✓ test/parser/suite/ts/pass/642d679b8c62b71b.ts
-✗ test/parser/suite/ts/pass/64342b5471feebc2.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-30 | 
-31 | function Test3(this: { no: number }) {
-   |                ^^^^
-32 |     let x: typeof this.no = 1;
-   |
-
+✓ test/parser/suite/ts/pass/64342b5471feebc2.ts
 ✓ test/parser/suite/ts/pass/6436538daec7a2c6.ts
-✗ test/parser/suite/ts/pass/643935a068b9aff3.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-14 | 
-15 | function isFoo2(this: void, object: {}): object is Foo {
-   |                 ^^^^
-16 |     return 'foo' in object;
-   |
-
+✓ test/parser/suite/ts/pass/643935a068b9aff3.ts
 ✓ test/parser/suite/ts/pass/643ae8e8ccdeb069.ts
 ✓ test/parser/suite/ts/pass/643dada14a4d7d09.ts
 ✓ test/parser/suite/ts/pass/64491a1447a31b2f.module.ts
@@ -14384,15 +14341,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/64c47479bec0a76e.ts
 ✓ test/parser/suite/ts/pass/64e2d6df66b02a21.ts
 ✓ test/parser/suite/ts/pass/64e4dcaee86500a4.ts
-✗ test/parser/suite/ts/pass/64e9d973a59f15d2.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 9 | 
-10 | function problemFunction(this: CorrectObject | WrongObject): void {
-   |                          ^^^^
-11 |     //check type
-   |
-
+✓ test/parser/suite/ts/pass/64e9d973a59f15d2.ts
 ✓ test/parser/suite/ts/pass/64ef7c4cd9f32fd9.ts
 ✓ test/parser/suite/ts/pass/64efea95a7fcee05.tsx
 ✓ test/parser/suite/ts/pass/64fb04192479ea45.ts
@@ -15961,13 +15910,15 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/70a394c5d1887dfc.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '{' to start class body, but found '<'
    |
- 7 | }
- 8 | type IteratorFn<TData, TResult, TContext = List<TData>> = (this: TContext, item: TData, node: ListItem<TData>, list: List<TData>) => TResult;
-   |                                                            ^^^^
- 9 | type FilterFn<TData, TResult extends TData, TContext = List<TData>> = (this: TContext, item: TData, node: ListItem<TData>, list: List<TData>) => item is TResult;
+10 | 
+11 | declare class List<TData> {
+   |                   ^
+12 |     filter<TContext, TResult extends TData>(fn: FilterFn<TData, TResult, TContext>, context: TContext): List<TResult>;
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✓ test/parser/suite/ts/pass/70a60ab6f88cef74.ts
 ✗ test/parser/suite/ts/pass/70a7f964d6079fdc.ts (parse errors)
@@ -16456,15 +16407,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 ✓ test/parser/suite/ts/pass/7409d78277f9b3d6.ts
 ✓ test/parser/suite/ts/pass/740be8f54710df98.ts
-✗ test/parser/suite/ts/pass/740d02144ee87c8a.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 1 | // @target: es2015
- 2 | function f(this: { n: number }) {
-   |            ^^^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/740d02144ee87c8a.ts
 ✗ test/parser/suite/ts/pass/7410d8cad089e327.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -18267,15 +18210,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/7feafe2620292010.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-19 |     @MyMethodDecorator
-20 |     method(this: this, ...args: string[]) {}
-   |            ^^^^
-21 | }
-   |
-
+✓ test/parser/suite/ts/pass/7feafe2620292010.ts
 ✓ test/parser/suite/ts/pass/7fef60ac46ff537c.ts
 ✓ test/parser/suite/ts/pass/7ff65929279922ab.ts
 ✓ test/parser/suite/ts/pass/7ff6bcc23d0a97f1.ts
@@ -18835,15 +18770,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/83ce5abec5ebc823.ts
 ✓ test/parser/suite/ts/pass/83d767bffe29458a.ts
 ✓ test/parser/suite/ts/pass/83d7688badab9498.ts
-✗ test/parser/suite/ts/pass/83fea183850bf2af.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-18 | function foo(method: any, _context: any): any {
-19 |     return function (this: any) {
-   |                      ^^^^
-20 |         method.call(this);
-   |
-
+✓ test/parser/suite/ts/pass/83fea183850bf2af.ts
 ✗ test/parser/suite/ts/pass/8414f3844fb0ddb3.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -19364,15 +19291,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/879eb0c0006928b8.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 3 |     each<T>(
- 4 |         collection: T[], callback: (this: T, dit: T) => T
-   |                                     ^^^^
- 5 |     ): T[];
-   |
-
+✓ test/parser/suite/ts/pass/879eb0c0006928b8.ts
 ✓ test/parser/suite/ts/pass/87a99a400fc8357a.ts
 ✗ test/parser/suite/ts/pass/87aa648097dd5da5.module.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -21496,15 +21415,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/9721ea95eb47aa27.ts
 ✓ test/parser/suite/ts/pass/97337b7d12660104.ts
 ✓ test/parser/suite/ts/pass/9734f2e7a3c5f889.ts
-✗ test/parser/suite/ts/pass/97395036f099b4bb.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 8 | // #31547
- 9 | type F1 = (this: A) => void;
-   |            ^^^^
-10 | type F2 = (this: B) => void;
-   |
-
+✓ test/parser/suite/ts/pass/97395036f099b4bb.ts
 ✓ test/parser/suite/ts/pass/973a2fc23766f47a.ts
 ✗ test/parser/suite/ts/pass/973d9414df8c6b22.module.ts (parse errors)
 error: Illegal 'use strict' directive in function with non-simple parameter list
@@ -24242,15 +24153,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/aa039624cd5b4972.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-13 | 
-14 | function bindCopy(this: Foo) {
-   |                   ^^^^
-15 |   this.copy = this.protec; // Should OK
-   |
-
+✓ test/parser/suite/ts/pass/aa039624cd5b4972.ts
 ✗ test/parser/suite/ts/pass/aa04a203501862a8.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -25649,15 +25552,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/b3805ea2bf9c10d9.module.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
-18 | 
-19 | function _tcb1(this: { test: Test }) {
-   |                ^^^^
-20 |   // TS generated by Angular's Type Check block
-   |
-
+✓ test/parser/suite/ts/pass/b3805ea2bf9c10d9.module.ts
 ✓ test/parser/suite/ts/pass/b38a8860753e1fdd.ts
 ✓ test/parser/suite/ts/pass/b393a7cfb6ec2ccd.ts
 ✓ test/parser/suite/ts/pass/b3a1475d1506d208.ts
@@ -25685,15 +25580,7 @@ error: Export 'A' is not defined
 
 ✓ test/parser/suite/ts/pass/b3bce6c924b691c9.ts
 ✓ test/parser/suite/ts/pass/b3c28e04953c8b5a.ts
-✗ test/parser/suite/ts/pass/b3ce8c493bf2cf02.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 7 | interface Foo { blub: string };
- 8 | function fn(this: Foo) {}
-   |             ^^^^
- 9 | 
-   |
-
+✓ test/parser/suite/ts/pass/b3ce8c493bf2cf02.ts
 ✓ test/parser/suite/ts/pass/b3d9839ff3411514.ts
 ✓ test/parser/suite/ts/pass/b3de85807f85095a.ts
 ✓ test/parser/suite/ts/pass/b3dfdb67bffb68e7.ts
@@ -25786,15 +25673,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/b46619c22dcb4293.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 6 |     // this is a workaround for React
- 7 |     init?: (this: this) => void;
-   |             ^^^^
- 8 |     willDestroy?: (this: any) => void;
-   |
-
+✓ test/parser/suite/ts/pass/b46619c22dcb4293.ts
 ✓ test/parser/suite/ts/pass/b4679b6e25fc0ad4.ts
 ✓ test/parser/suite/ts/pass/b4680ba60a4402f6.ts
 ✓ test/parser/suite/ts/pass/b4713d0eb654fffc.ts
@@ -26553,15 +26432,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/b99fddc5d01bc117.ts
-✗ test/parser/suite/ts/pass/b9aa1547dc104dab.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 8 | 
- 9 |     public method(this: this): number {
-   |                   ^^^^
-10 |         return this.a;
-   |
-
+✓ test/parser/suite/ts/pass/b9aa1547dc104dab.ts
 ✓ test/parser/suite/ts/pass/b9b5fabb4f5dbf8e.ts
 ✗ test/parser/suite/ts/pass/b9b770fcd0f463dd.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -27598,15 +27469,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/c03b99b5a0894d2d.ts
-✗ test/parser/suite/ts/pass/c047aee8f494be29.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 6 | interface Y {
- 7 |     foo<T>(this: T, arg: keyof T): void;
-   |            ^^^^
- 8 |     a: number;
-   |
-
+✓ test/parser/suite/ts/pass/c047aee8f494be29.ts
 ✓ test/parser/suite/ts/pass/c0486a5d852371b9.ts
 ✓ test/parser/suite/ts/pass/c0505840450e5674.module.ts
 ✗ test/parser/suite/ts/pass/c051bed7d1dd726c.ts (parse errors)
@@ -28291,13 +28154,15 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/c4fab557112afbde.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Getter must have no parameters
    |
 12 |     n: 13,
 13 |     get x(this: Foo) { return this.n; },
-   |           ^^^^
+   |           ^^^^^^^^^
 14 |     set x(this: Bar, n) { this.wrong = "method"; }
    |
+   = help: Remove all parameters from the getter.
+
 
 ✗ test/parser/suite/ts/pass/c50533d3dc30e445.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -29193,15 +29058,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/cb8ba80322a7077a.module.ts
 ✓ test/parser/suite/ts/pass/cb8f280bde47e8fe.ts
-✗ test/parser/suite/ts/pass/cba15a23424be3f7.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 2 | interface Real {
- 3 |     method(this: this, n: number): void;
-   |            ^^^^
- 4 |     data: string;
-   |
-
+✓ test/parser/suite/ts/pass/cba15a23424be3f7.ts
 ✓ test/parser/suite/ts/pass/cba29376eaa93f79.ts
 ✗ test/parser/suite/ts/pass/cbb0d2cdae8d6151.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -30839,15 +30696,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/d660d32125a5f4ff.ts
-✗ test/parser/suite/ts/pass/d66ba1bb48973e38.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 6 | interface Array<T> {
- 7 |     equalsShallow<T>(this: ReadonlyArray<T>, other: ReadonlyArray<T>): boolean;
-   |                      ^^^^
- 8 | }
-   |
-
+✓ test/parser/suite/ts/pass/d66ba1bb48973e38.ts
 ✓ test/parser/suite/ts/pass/d670b97bd3cdaa7b.ts
 ✗ test/parser/suite/ts/pass/d67cb7c69d299a7e.ts (parse errors)
 error: 'in' is reserved and cannot be used as a binding identifier
@@ -32228,13 +32077,15 @@ error: Expected declaration after 'export', but found 'declare'
 
 ✓ test/parser/suite/ts/pass/e0fc106feaafed7a.ts
 ✗ test/parser/suite/ts/pass/e0fcf64b7f31d54c.module.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '{' to start class body, but found '<'
    |
- 7 |     | ((
- 8 |         this: {
-   |         ^^^^
- 9 |           name: string;
+16 | 
+17 | declare class Extension<Options = any> {
+   |                        ^
+18 |   type: string;
    |
+   = help: Class body must be enclosed in braces: class Name { ... }
+
 
 ✗ test/parser/suite/ts/pass/e1057d8401d893b1.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -32326,15 +32177,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/e16c76b2df590ee4.ts
-✗ test/parser/suite/ts/pass/e16e994a10c50387.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 3 | 
- 4 | function fnNumber(this: void): number { return 90; }
-   |                   ^^^^
- 5 | new fnNumber(); // Error
-   |
-
+✓ test/parser/suite/ts/pass/e16e994a10c50387.ts
 ✗ test/parser/suite/ts/pass/e17db171c5f228ae.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -32640,15 +32483,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/e3631d4eba3c775e.ts
 ✓ test/parser/suite/ts/pass/e367f79da74f6e84.ts
 ✓ test/parser/suite/ts/pass/e36bddd6cbbf779e.module.tsx
-✗ test/parser/suite/ts/pass/e36ede65d19acc75.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
-   |
- 8 |     n: number;
- 9 |     explicitThis(this: this, m: number): number {
-   |                  ^^^^
-10 |         return this.n + m;
-   |
-
+✓ test/parser/suite/ts/pass/e36ede65d19acc75.ts
 ✗ test/parser/suite/ts/pass/e37f4f2a5a094972.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -33529,13 +33364,15 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/ea1f83a45d7fc525.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected '(' to start parameter list, but found '<'
    |
- 5 | 
- 6 | type DataDef<Data, Props> = (this: Readonly<Props> & Instance) => Data
-   |                              ^^^^
- 7 | 
+27 | 
+28 | declare function test<Data, Props>(fn: ThisTypedOptions<Data, Props>): void;
+   |                      ^
+29 | declare function test(fn: Options): void;
    |
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
+
 
 ✗ test/parser/suite/ts/pass/ea1ffc1332c6bad0.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -33615,13 +33452,15 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/eac865e9ce59f2e3.ts
 ✓ test/parser/suite/ts/pass/eace8d03e9940103.ts
 ✗ test/parser/suite/ts/pass/ead8e28437627922.ts (parse errors)
-error: 'this' is reserved and cannot be used as a binding identifier
+error: Expected ')' to close signature parameters, but found '?'
    |
  3 | interface A {
  4 |   (this: void, b?: number): void;
-   |    ^^^^
+   |                 ^
  5 | }
    |
+   = help: Each '(' in a signature must be matched by a ')'
+
 
 ✗ test/parser/suite/ts/pass/eadfbc772d638035.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'

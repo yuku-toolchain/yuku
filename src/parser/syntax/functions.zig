@@ -257,6 +257,14 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, all
 pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
+    // `function f(this: T, ...)` and related signature forms. `this` is
+    // never a real binding, so it short-circuits the modifier, pattern,
+    // and default-value branches below. mirrors the `KindThisKeyword`
+    // arm of `parseParameterWorker` in microsoft/typescript-go's parser.go.
+    if (parser.tree.isTs() and parser.current_token.tag == .this) {
+        return try parseThisParameter(parser);
+    }
+
     // ts parameter property modifiers, only accepted inside class constructors.
     var pp_accessibility: ast.Accessibility = .none;
     var pp_readonly = false;
@@ -304,6 +312,37 @@ pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) E
     }
 
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
+}
+
+/// parses `this` or `this: Type` as a ts parameter. emitted inside the
+/// regular `FormalParameter` wrapper so signature walks, span tracking,
+/// and the decoder's `formal_parameter` unwrap rule all continue to work.
+/// the inner `TSThisParameter` renders in ESTree as an `Identifier` with
+/// `name: "this"`, matching the `@typescript-eslint/typescript-estree`
+/// convention.
+fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    var end = parser.current_token.span.end;
+
+    try parser.advance() orelse return null; // consume 'this'
+
+    var type_annotation: ast.NodeIndex = .null;
+
+    if (parser.current_token.tag == .colon) {
+        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        type_annotation = annotation;
+        end = parser.tree.getSpan(annotation).end;
+    }
+
+    const this_param = try parser.tree.createNode(
+        .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
+        .{ .start = start, .end = end },
+    );
+
+    return try parser.tree.createNode(
+        .{ .formal_parameter = .{ .pattern = this_param } },
+        .{ .start = start, .end = end },
+    );
 }
 
 /// true when the current token is a parameter property modifier and the

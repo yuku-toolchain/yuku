@@ -3369,6 +3369,28 @@ pub const TSParameterProperty = struct {
     accessibility: Accessibility = .none,
 };
 
+/// A TypeScript explicit `this` parameter. Declares the type of the `this`
+/// binding inside the function body. Not a real parameter, it contributes
+/// nothing to the call's argument positions and is erased at emit time.
+/// TypeScript requires `this` to be the first parameter when present.
+///
+/// See: [TypeScript Handbook - `this` parameters](https://www.typescriptlang.org/docs/handbook/2/functions.html#declaring-this-in-a-function)
+///
+/// ## Example
+/// ```ts
+/// function f(this: void, x: number) {}
+/// //         ^^^^^^^^^^ TSThisParameter (type_annotation = TSVoidKeyword)
+/// type Handler = (this: Element, e: Event) => void;
+/// //              ^^^^^^^^^^^^^ TSThisParameter
+/// interface I { m(this: this): void }
+/// //              ^^^^^^^^^^ TSThisParameter (type_annotation = TSThisType)
+/// ```
+pub const TSThisParameter = struct {
+    /// a `TSTypeAnnotation` wrapping the declared type of `this`, or `.null`
+    /// when the parameter is written as bare `this` with no annotation.
+    type_annotation: NodeIndex = .null,
+};
+
 /// TypeScript `expr as Type` postfix assertion.
 ///
 /// See: [TypeScript Handbook - Type Assertions](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions)
@@ -3821,6 +3843,7 @@ pub const NodeData = union(enum) {
     ts_module_block: TSModuleBlock,
     ts_global_declaration: TSGlobalDeclaration,
     ts_parameter_property: TSParameterProperty,
+    ts_this_parameter: TSThisParameter,
     ts_as_expression: TSAsExpression,
     ts_satisfies_expression: TSSatisfiesExpression,
     ts_type_assertion: TSTypeAssertion,

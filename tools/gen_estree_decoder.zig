@@ -317,7 +317,7 @@ fn isSpecial(comptime name: []const u8) bool {
         "unary_expression",              "binding_property",                   "array_pattern",       "object_pattern",
         "jsx_text",                      "ts_function_type",                   "ts_constructor_type", "ts_method_signature",
         "ts_call_signature_declaration", "ts_construct_signature_declaration", "ts_mapped_type",      "ts_module_declaration",
-        "ts_global_declaration",
+        "ts_global_declaration",         "ts_this_parameter",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -562,6 +562,14 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: return {{ type: "TSModuleDeclaration", start, end, id: node(f{d}), body: node(f{d}), kind: "global", declare: !!(flags & {d}), global: true }};
         , .{ tag, sid, sb, db });
+    } else if (comptime eql(u8, name, "ts_this_parameter")) {
+        // renders as an `Identifier` with the fixed name `this`, matching
+        // the @typescript-eslint/typescript-estree convention and the
+        // target AST reference.
+        const sta = comptime slotOf(ast.TSThisParameter, "type_annotation");
+        try emit(w,
+            \\    case {d}: return {{ type: "Identifier", start, end, decorators: [], name: "this", optional: false, typeAnnotation: f{d} !== NULL ? node(f{d}) : null }};
+        , .{ tag, sta, sta });
     }
 }
 
