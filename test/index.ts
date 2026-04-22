@@ -1,17 +1,10 @@
-// @target: es2015
-declare class Box<T> {
-    value: T;
-}
+// empty params - previously produced a broken wrapper span
+function f() {}
+const g = () => 1;
 
+// non-empty params
+function h(x: number, y: string) {}
+const i = (x: number, y: string) => x;
 
-declare const maybeBox: unknown;
-
-maybeBox instanceof Box; // OK
-
-maybeBox instanceof Box<number>; // error
-maybeBox instanceof (Box<number>); // error
-maybeBox instanceof ((Box<number>)); // error
-
-Box<number> instanceof Object; // OK
-(Box<number>) instanceof Object; // OK
-((Box<number>)) instanceof Object; // OK
+// generic arrow
+const j = <T>(x: T): T => x;

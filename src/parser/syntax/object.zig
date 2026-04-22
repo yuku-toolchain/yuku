@@ -325,7 +325,6 @@ fn parseObjectMethodProperty(
     }
 
     const func_start = parser.current_token.span.start;
-    if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
 
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters, false) orelse return null;
     const params_data = parser.tree.getData(params).formal_parameters;
@@ -353,8 +352,6 @@ fn parseObjectMethodProperty(
             return null;
         }
     }
-
-    if (!try parser.expect(.right_paren, "Expected ')' after method parameters", null)) return null;
 
     // parse body
     const body = try functions.parseFunctionBody(parser) orelse return null;

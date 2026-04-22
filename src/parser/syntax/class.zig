@@ -477,11 +477,9 @@ fn parseMethodDefinition(
     else
         .null;
 
-    if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
     try validateGetSetParams(parser, mods.kind, params);
-    const params_end = parser.current_token.span.end;
-    if (!try parser.expect(.right_paren, "Expected ')' after method parameters", null)) return null;
+    const params_end = parser.tree.getSpan(params).end;
 
     // ts return type `: T`
     var return_type: ast.NodeIndex = .null;

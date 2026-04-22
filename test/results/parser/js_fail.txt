@@ -216,7 +216,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
    |
 
 ✓ test/parser/suite/js/fail/017c61ac74003a22.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   static *method(...x = []) {
@@ -388,8 +388,6 @@ error: Expected ')' to close parameter list, but found '='
    |                      ^
  2 | });
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/025560435ed0b9a6.js
 error: Unterminated multi-line comment
@@ -410,8 +408,6 @@ error: Expected '(' to start parameter list, but found ','
  1 | function x, y() {}
    |           ^
    |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
 
 ✓ test/parser/suite/js/fail/027cf03ff8707244.js
 error: Rest element must be the last element
@@ -657,8 +653,6 @@ error: Expected ')' to close parameter list, but found '='
  1 | function x(...a = 1){}
    |                 ^
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/044104d0eca64122.js
 error: A rest element cannot have an initializer
@@ -748,7 +742,7 @@ error: Rest element must be the last element
 error: Getter must have no parameters
    |
  1 | class C { get a(param = null) {} }
-   |                 ^^^^^^^^^^^^
+   |                ^^^^^^^^^^^^^^
    |
    = help: Remove all parameters from the getter.
 
@@ -810,7 +804,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/057360e04187151a.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   static async method(...x = []) {
@@ -1508,7 +1502,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/0ac3028e7d0e3cee.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | var C = class {
  2 |   static async method(...x = []) {
@@ -3493,8 +3487,6 @@ error: Expected ')' to close parameter list, but found '='
    |                        ^
  2 | });
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/1970157183680789.js
 error: Async functions can only be declared at the top level or inside a block
@@ -3524,7 +3516,7 @@ error: Expected '{' to start class body, but found '+'
 
 
 ✓ test/parser/suite/js/fail/199f674caea558f3.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | ({
  2 |   async *method(...x = []) {
@@ -4231,8 +4223,6 @@ error: Expected ')' to close parameter list, but found '='
    |                           ^
  2 | };
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/1f1fdef8df6cb85d.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -4286,7 +4276,7 @@ error: 'switch' is reserved and cannot be used as a binding identifier
    |
 
 ✓ test/parser/suite/js/fail/1f8f1827f2946450.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   *method(...x = []) {
@@ -4458,8 +4448,6 @@ error: Expected ')' to close parameter list, but found '='
    |                  ^
  2 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/20a4d64ba7cb3aaf.js
 error: A rest element cannot have an initializer
@@ -5067,7 +5055,7 @@ error: Bad escape sequence in untagged template literal
    |
 
 ✓ test/parser/suite/js/fail/25105946b7a7ee19.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, {
  2 |   async *method(...x = []) {
@@ -5393,7 +5381,7 @@ error: Expected ')' after function arguments, but found ''''
 
 
 ✓ test/parser/suite/js/fail/272f1db117235424.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, class {
  2 |   static async *method(...x = []) {
@@ -6313,8 +6301,6 @@ error: Expected ')' to close parameter list, but found '='
  1 | function f(a, ...b = 0)
    |                    ^
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/2d22ba8e1b2213b2.js
 error: 'extends' is reserved and cannot be used as a binding identifier
@@ -6672,7 +6658,7 @@ error: Unexpected token ')'
 error: Setter must have exactly one parameter
    |
  1 | var a = { set foo(...v) {} };
-   |                   ^^^^
+   |                  ^^^^^^
    |
    = help: Setters accept exactly one argument.
 
@@ -7690,7 +7676,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/370025ee8e02bc98.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, class {
  2 |   static method(...x = []) {
@@ -9150,8 +9136,6 @@ error: Expected ')' to close parameter list, but found '='
    |                        ^
  2 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/4290190de96f13e2.js
 error: 'await using' declarations must be initialized
@@ -9496,7 +9480,7 @@ error: Expected '(' after 'while', but found ''''
 error: Getter must have no parameters
    |
  1 | class A { get prop(x) {} }
-   |                    ^
+   |                   ^^^
    |
    = help: Remove all parameters from the getter.
 
@@ -9589,7 +9573,7 @@ error: Rest parameter must be the last parameter
 error: Setter must have exactly one parameter
    |
  1 | ({ set prop() {} })
-   |             ^
+   |            ^^
    |
    = help: Setters accept exactly one argument.
 
@@ -11982,7 +11966,7 @@ error: Unexpected token '=>'
 error: Getter must have no parameters
    |
  1 | ({ get prop(x) {} })
-   |             ^
+   |            ^^^
    |
    = help: Remove all parameters from the getter.
 
@@ -12432,7 +12416,7 @@ error: 'in' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/5b556b6867f65d0a.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   async *method(...x = []) {
@@ -12767,8 +12751,6 @@ error: Expected '(' to start parameter list, but found '.'
  1 | function obj.tt() {}
    |             ^
    |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
 
 ✓ test/parser/suite/js/fail/5e18a06bfaf21b3e.js
 error: Unterminated string literal
@@ -14594,7 +14576,7 @@ error: A rest element cannot have an initializer
 
 
 ✓ test/parser/suite/js/fail/6b464e5c7b1f867f.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   static async *method(...x = []) {
@@ -16487,8 +16469,6 @@ error: Expected ')' to close parameter list, but found '='
    |                       ^
  2 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/796e4feabf0e0fef.js
 error: Destructuring declaration in for loop initializer must be initialized
@@ -16630,8 +16610,6 @@ error: Expected ')' to close parameter list, but found '='
    |                  ^
  2 | };
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/7a7d76f5277a3cf0.js
 error: Unexpected token ')'
@@ -17220,7 +17198,7 @@ error: 'import' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/js/fail/7e41232773e87597.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, class {
  2 |   async *method(...x = []) {
@@ -17480,8 +17458,6 @@ error: Expected '(' to start parameter list, but found '.'
  1 | function obj.tt.ss() {}
    |             ^
    |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
 
 ✓ test/parser/suite/js/fail/80536cd7a7d9c325.js
 error: Async functions can only be declared at the top level or inside a block
@@ -19029,7 +19005,7 @@ error: Invalid operand for increment/decrement operator
 error: Setter must have exactly one parameter
    |
  1 | ({ set prop(x, y) {} })
-   |             ^^^^
+   |            ^^^^^^
    |
    = help: Setters accept exactly one argument.
 
@@ -20338,7 +20314,7 @@ error: Unexpected token ';'
 
 
 ✓ test/parser/suite/js/fail/9473069e4f5f63db.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   method(...x = []) {
@@ -21371,7 +21347,7 @@ error: Rest element must be the last element
 error: Setter must have exactly one parameter
    |
  1 | class A { set prop() {} }
-   |                    ^
+   |                   ^^
    |
    = help: Setters accept exactly one argument.
 
@@ -23376,8 +23352,6 @@ error: Expected '(' to start parameter list, but found ','
  1 | function x,y,z(){}
    |           ^
    |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
 
 ✓ test/parser/suite/js/fail/aaa4c4245303bd6d.js
 error: Expected a semicolon or an implicit semicolon after a statement, but found '2'
@@ -23402,7 +23376,7 @@ error: Line terminator not allowed in regular expression literal
 error: Setter must have exactly one parameter
    |
  1 | class a { set foo(...v) {} };
-   |                   ^^^^
+   |                  ^^^^^^
    |
    = help: Setters accept exactly one argument.
 
@@ -24911,7 +24885,7 @@ error: Rest element must be the last element
 error: Setter must have exactly one parameter
    |
  1 | class A { set prop(x, y) {} }
-   |                    ^^^^
+   |                   ^^^^^^
    |
    = help: Setters accept exactly one argument.
 
@@ -25466,7 +25440,7 @@ error: Rest parameter must be last formal parameter
 error: Getter must have no parameters
    |
  1 | 0, class { get a(param = null) {} };
-   |                  ^^^^^^^^^^^^
+   |                 ^^^^^^^^^^^^^^
    |
    = help: Remove all parameters from the getter.
 
@@ -25632,7 +25606,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/bcb9bc6f337e2ae4.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, class {
  2 |   method(...x = []) {
@@ -26638,8 +26612,6 @@ error: Expected ')' to close parameter list, but found '='
    |                 ^
  2 | }
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/c4abd3aaf0341c44.js
 error: 'with' is reserved and cannot be used as a binding identifier
@@ -27101,7 +27073,7 @@ error: 'debugger' is reserved and cannot be used as an identifier
 error: Getter must have no parameters
    |
  1 | 0, { get a(param = null) {} };
-   |            ^^^^^^^^^^^^
+   |           ^^^^^^^^^^^^^^
    |
    = help: Remove all parameters from the getter.
 
@@ -28014,8 +27986,6 @@ error: Expected '(' to start parameter list, but found '}'
  1 | ({a:function} = 0)
    |             ^
    |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
 
 ✓ test/parser/suite/js/fail/cef008a0d7a884d6.js
 error: Unexpected token ')'
@@ -28803,7 +28773,7 @@ error: A rest element cannot have an initializer
 error: Setter must have exactly one parameter
    |
  1 | ({ set s() { } })
-   |          ^
+   |         ^^
    |
    = help: Setters accept exactly one argument.
 
@@ -29199,7 +29169,7 @@ error: Rest element must be the last element
 
 
 ✓ test/parser/suite/js/fail/d87733d47677317b.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   async method(...x = []) {
@@ -29470,8 +29440,6 @@ error: Expected ')' to close parameter list, but found '='
    |                         ^
  2 | };
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/db32fc7b80974d1c.js
 error: Unexpected token '...'
@@ -30064,7 +30032,7 @@ error: Invalid operand for increment/decrement operator
 
 
 ✓ test/parser/suite/js/fail/def64511b7219978.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, {
  2 |   *method(...x = []) {
@@ -30544,7 +30512,7 @@ error: Expected ']' after computed property key, but found '9'
    |
 
 ✓ test/parser/suite/js/fail/e20217961adaca1b.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | class C {
  2 |   static method(...x = []) {
@@ -31361,7 +31329,7 @@ error: Keywords cannot contain escape characters
 
 
 ✓ test/parser/suite/js/fail/e868d2c202939e64.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, class {
  2 |   *method(...x = []) {
@@ -31442,8 +31410,6 @@ error: Expected '(' to start parameter list, but found 'end of file'
  1 | export default function
    |                        ^
    |
-   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
-
 
 ✓ test/parser/suite/js/fail/e9332ff621c9a46e.js
 error: A rest element cannot have an initializer
@@ -31741,7 +31707,7 @@ error: 'yield' is reserved in a generator context and cannot be used as a bindin
    |
 
 ✓ test/parser/suite/js/fail/eb615333be2e7cdf.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, {
  2 |   method(...x = []) {
@@ -32067,8 +32033,6 @@ error: Expected ')' to close parameter list, but found '='
    |                   ^
  2 | };
    |
-   = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
-
 
 ✓ test/parser/suite/js/fail/edd19a6136405ec9.js
 error: Parenthesized expression in assignment pattern must be a simple assignment target
@@ -32346,7 +32310,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 
 
 ✓ test/parser/suite/js/fail/f00346f9ed581705.js
-error: Expected ')' after method parameters, but found '='
+error: Expected ')' to close parameter list, but found '='
    |
  1 | 0, class {
  2 |   static *method(...x = []) {

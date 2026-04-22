@@ -114,15 +114,12 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseAsyncFunctionOrArrow(parser, precedence);
     }
 
-    // jsx element
-    if (tag == .less_than and parser.tree.isJsx()) {
-        return jsx.parseJsxExpression(parser);
-    }
-
-    // ts `<Type>expr` prefix assertion. only in `.ts` / `.dts`, never in
-    // `.tsx` where `<` starts a jsx element instead.
-    if (tag == .less_than and parser.tree.isTs() and !parser.tree.isJsx()) {
-        return ts_types.parseTypeAssertion(parser);
+    if (tag == .less_than) {
+        if (parser.tree.isTs()) {
+            if (try ts_types.tryParseGenericArrow(parser, false, parser.current_token.span.start)) |arrow| return arrow;
+        }
+        if (parser.tree.isJsx()) return jsx.parseJsxExpression(parser);
+        if (parser.tree.isTs()) return ts_types.parseTypeAssertion(parser);
     }
 
     return parsePrimaryExpression(parser, opts);
@@ -249,7 +246,7 @@ fn parseParenthesizedOrArrowFunction(parser: *Parser, arrow_start: ?u32, precede
 
     // [no LineTerminator here] => ConciseBody
     if (parser.current_token.tag == .arrow and !parser.current_token.hasLineTerminatorBefore() and precedence <= Precedence.Assignment) {
-        return parenthesized.coverToArrowFunction(parser, cover, false, start, return_type);
+        return parenthesized.coverToArrowFunction(parser, cover, false, start, .null, return_type);
     }
 
     // not an arrow function - convert to parenthesized expression
@@ -288,6 +285,14 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
     // async (params) => ...
     if (!parser.current_token.hasLineTerminatorBefore() and parser.current_token.tag == .left_paren) {
         return parseAsyncArrowFunctionOrCall(parser, async_span, async_id, precedence, is_escaped);
+    }
+
+    // async <T>(params) => ...
+    if (parser.tree.isTs() and parser.current_token.tag == .less_than and !parser.current_token.hasLineTerminatorBefore()) {
+        if (try ts_types.tryParseGenericArrow(parser, true, async_span.start)) |arrow| {
+            if (is_escaped) try parser.reportEscapedKeyword(async_span);
+            return arrow;
+        }
     }
 
     // [no LineTerminator here] => ConciseBody
@@ -332,7 +337,7 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
         // now we know 'async' is a keyword, now report if it is escaped
         if (is_escaped_async) try parser.reportEscapedKeyword(async_span);
 
-        return parenthesized.coverToArrowFunction(parser, cover, true, start, return_type);
+        return parenthesized.coverToArrowFunction(parser, cover, true, start, .null, return_type);
     }
 
     // async(...)

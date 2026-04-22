@@ -95,23 +95,11 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     else
         .null;
 
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' to start parameter list",
-        "Function parameters must be enclosed in parentheses: function name(a, b) {}",
-    )) return null;
-
     const is_unique_formal_parameters = is_generator or opts.is_async;
 
     const params = try parseFormalParamaters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters, false) orelse return null;
 
-    const params_end = parser.current_token.span.end; // including )
-
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close parameter list",
-        "Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.",
-    )) return null;
+    const params_end = parser.tree.getSpan(params).end;
 
     // ts return type, `function f(): Type { ... }`
     var return_type: ast.NodeIndex = .null;
@@ -216,21 +204,16 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
 /// property shorthand (`constructor(public x: T)`).
 pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, allow_parameter_properties: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-    var end: u32 = parser.current_token.span.end;
+    if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;
 
     const params_checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(params_checkpoint);
 
     var rest: ast.NodeIndex = .null;
 
-    while (true) {
-        if (parser.current_token.tag == .right_paren or parser.current_token.tag == .eof) break;
-
+    while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
         if (parser.current_token.tag == .spread) {
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
-            if (rest != .null) {
-                end = parser.tree.getSpan(rest).end;
-            }
 
             if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
@@ -238,21 +221,19 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, all
                     "Rest parameter must be the last parameter",
                     .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
                 );
-
                 return null;
             }
         } else {
             const param = try parseFormalParamater(parser, allow_parameter_properties) orelse break;
-
-            end = parser.tree.getSpan(param).end;
-
             try parser.scratch_a.append(parser.allocator(), param);
         }
 
-        if (parser.current_token.tag == .comma) {
-            try parser.advance() orelse return null;
-        } else break;
+        if (parser.current_token.tag != .comma) break;
+        try parser.advance() orelse return null;
     }
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(.right_paren, "Expected ')' to close parameter list", null)) return null;
 
     return try parser.tree.createNode(.{ .formal_parameters = .{
         .items = try parser.createExtraFromScratch(&parser.scratch_a, params_checkpoint),

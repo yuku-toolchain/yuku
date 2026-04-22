@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       6502/8261 (78.71%)
-Failed:       1759
-AST mismatch: 0/6502
+Passed:       6592/8261 (79.80%)
+Failed:       1669
+AST mismatch: 0/6592
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -493,15 +493,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/059aededcebcf512.ts
 ✓ test/parser/suite/ts/pass/05a0167de714786c.ts
 ✓ test/parser/suite/ts/pass/05a935a2fc8b4f13.ts
-✗ test/parser/suite/ts/pass/05aabe5ded8f4577.module.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 5 | export class A<T = any> {
- 6 |   public readonly ShadowedButDoesNotRequireRenaming = <T>(): T => {
-   |                                                          ^^
- 7 |       return null as any
-   |
-
+✓ test/parser/suite/ts/pass/05aabe5ded8f4577.module.ts
 ✗ test/parser/suite/ts/pass/05aba553e29798c6.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -598,17 +590,7 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✓ test/parser/suite/ts/pass/06d46a4a9911b5cc.ts
-✗ test/parser/suite/ts/pass/06f60ed545e9bd2c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | var f2 = <T>(x: T): T => { return null; }
-   |               ^
- 8 | var r2 = f2(1);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/06f60ed545e9bd2c.ts
 ✓ test/parser/suite/ts/pass/06fbea5fd70573b6.ts
 ✓ test/parser/suite/ts/pass/070244cfd7985f16.ts
 ✓ test/parser/suite/ts/pass/070cf46024d5100f.ts
@@ -727,17 +709,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/0848a9de4a84da13.ts
 ✓ test/parser/suite/ts/pass/084ac14a4539cdea.ts
 ✓ test/parser/suite/ts/pass/084c5f37d6eabbad.ts
-✗ test/parser/suite/ts/pass/085a84b0aae62f30.module.ts (parse errors)
-error: Expected '>' to close a type assertion, but found '='
-   |
- 7 | 
- 8 | export const test1 = <T = Record<string, never>>(schema: {
-   |                         ^
- 9 |     [K in keyof Required<T>]: T[K];
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/085a84b0aae62f30.module.ts
 ✗ test/parser/suite/ts/pass/085d3ebc47e3d2d9.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -754,17 +726,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/087368ff2c71d226.ts
 ✓ test/parser/suite/ts/pass/087f8d2ac8cfa13c.ts
 ✓ test/parser/suite/ts/pass/0884bc9afd415202.ts
-✗ test/parser/suite/ts/pass/088d67c643d7611b.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
- 5 | 
- 6 | const getType = <P extends Params>(params: P) => {
-   |                                  ^
- 7 |     const {
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/088d67c643d7611b.ts
 ✓ test/parser/suite/ts/pass/088da18f7fbfed3f.ts
 ✓ test/parser/suite/ts/pass/089a4759c6ecf242.ts
 ✓ test/parser/suite/ts/pass/089f32d9bfcf12c6.ts
@@ -898,17 +860,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/0a2e58fa8a5b4771.ts
 ✓ test/parser/suite/ts/pass/0a39d31ba75e0a83.ts
 ✓ test/parser/suite/ts/pass/0a3ac241d9599486.ts
-✗ test/parser/suite/ts/pass/0a3b3f3af5297757.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-19 | 
-20 | const Printable = <T extends Constructor<Base>>(superClass: T): Constructor<Printable> & { message: string } & T =>
-   |                                               ^
-21 |     class extends superClass {
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/0a3b3f3af5297757.ts
 ✓ test/parser/suite/ts/pass/0a3e5459dd24cee1.ts
 ✓ test/parser/suite/ts/pass/0a4712e08dec1dd2.ts
 ✓ test/parser/suite/ts/pass/0a47a5660d494bde.ts
@@ -1324,17 +1276,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 ✓ test/parser/suite/ts/pass/0d859ca020eee6f8.ts
 ✓ test/parser/suite/ts/pass/0d85ad4c7d02e7c0.ts
-✗ test/parser/suite/ts/pass/0d93b541a31043ad.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 3 | var dot: <T, S>(f: (_: T) => S) => <U>(g: (_: U) => T) => (_: U) => S;
- 4 | dot = <T, S>(f: (_: T) => S) => <U>(g: (_: U) => T): (r:U) => S => (x) => f(g(x));
-   |         ^
- 5 | var id: <T>(x:T) => T;
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/0d93b541a31043ad.ts
 ✓ test/parser/suite/ts/pass/0d9d4e784ffb62cd.ts
 ✓ test/parser/suite/ts/pass/0db029facdb669a8.ts
 ✓ test/parser/suite/ts/pass/0dc78e021382aac8.ts
@@ -1346,15 +1288,7 @@ error: Expected '>' to close a type assertion, but found ','
 ✓ test/parser/suite/ts/pass/0e1ad1030ab41e5b.ts
 ✓ test/parser/suite/ts/pass/0e24c240ff1a252d.ts
 ✓ test/parser/suite/ts/pass/0e27cb154f9d647e.ts
-✗ test/parser/suite/ts/pass/0e2ce4f2f4c7fc23.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
-13 | 
-14 | let l = <T>() => { };
-   |            ^^
-15 | 
-   |
-
+✓ test/parser/suite/ts/pass/0e2ce4f2f4c7fc23.ts
 ✓ test/parser/suite/ts/pass/0e2f6806d904f414.ts
 ✓ test/parser/suite/ts/pass/0e36aa908007ba46.ts
 ✓ test/parser/suite/ts/pass/0e3bd9b2f899a5d4.ts
@@ -1395,14 +1329,14 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/0ea0911cc18c9589.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-56 | 
 57 |     var r1 = foo2(<T, U>(x: T) => <U[]>null); // any
-   |                     ^
 58 |     var r1a = [(x: number) => [''], <T, U>(x: T) => <U[]>null];
+   |                  ^
+59 |     var r1b = [<T, U>(x: T) => <U[]>null, (x: number) => ['']];
    |
-   = help: A type assertion is written '<Type>expression'
+   = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/0ea9f504b0a977b2.ts
@@ -1418,17 +1352,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/0eb541052994b22a.ts
-✗ test/parser/suite/ts/pass/0eb561d7b07a2de9.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-13 | 
-14 | let l = <_T, U>() => { };
-   |            ^
-15 | 
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/0eb561d7b07a2de9.ts
 ✓ test/parser/suite/ts/pass/0eb60ccabd968117.ts
 ✓ test/parser/suite/ts/pass/0eb8470f7458ea6e.ts
 ✓ test/parser/suite/ts/pass/0ebb0198b269e0a9.ts
@@ -1802,17 +1726,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/1174b8722a07525d.ts
 ✓ test/parser/suite/ts/pass/117a80d0a6385eaf.ts
 ✓ test/parser/suite/ts/pass/11807ee242980965.ts
-✗ test/parser/suite/ts/pass/11814471aeffcede.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-29 | var b = {
-30 |     foo: <T extends Date>(x: T) => {
-   |                         ^
-31 |         var a = x['getDate'](); // number
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/11814471aeffcede.ts
 ✗ test/parser/suite/ts/pass/11816f2a9b06c69e.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -1962,17 +1876,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 
 ✓ test/parser/suite/ts/pass/134c42b478e63ec5.ts
-✗ test/parser/suite/ts/pass/134c4d64435f5bc3.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | function f<T>(x: T): T { return null; }
- 3 | var r = <T>(x: T) => x;
-   |              ^
- 4 | r = f; // should be allowed
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/134c4d64435f5bc3.ts
 ✓ test/parser/suite/ts/pass/13529724969a0d7e.ts
 ✓ test/parser/suite/ts/pass/135fa184f31bd32e.ts
 ✓ test/parser/suite/ts/pass/13672f2ff814efd0.ts
@@ -2165,17 +2069,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/158697403efbbfb7.ts
-✗ test/parser/suite/ts/pass/1587e7047829de34.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-15 | 
-16 |     var r3 = foo4(<T, U>(x: T) => { var r!: U; return r }); // ok
-   |                     ^
-17 | }
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/1587e7047829de34.ts
 ✓ test/parser/suite/ts/pass/159479b4eaab1f39.ts
 ✓ test/parser/suite/ts/pass/15963d4fdbcc2629.ts
 ✓ test/parser/suite/ts/pass/1598fc3183f190cb.module.ts
@@ -2473,17 +2367,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/1878eaf2fce0d228.ts
-✗ test/parser/suite/ts/pass/188e68cbe3a85c47.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-12 | 
-13 | const myFirstFunction = <T extends FirstInterface | SecondInterface>(param1: T) => {
-   |                                                                    ^
-14 |     const newParam: T & { otherProperty: number } = Object.assign(param1, { otherProperty: 3 })
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/188e68cbe3a85c47.ts
 ✓ test/parser/suite/ts/pass/1892c6239f9cfd76.ts
 ✗ test/parser/suite/ts/pass/18940d8725231bda.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -2608,14 +2492,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✗ test/parser/suite/ts/pass/19dba5022f3d025e.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
- 6 | 
- 7 | const createScopedActionType = <S extends string>(scope: S) => <T extends string>(type: T) => `${scope}/${type}` as `${S}/${T}`;
-   |                                                 ^
- 8 | const createActionInMyScope = createScopedActionType("MyScope");  // <T extends string>(type: T) => `MyScope/${T}`
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
+error: Expected declaration after 'export', but found 'type'
+    |
+244 | 
+245 | export type Spacing =
+    |        ^^^^
+246 |     | `0`
+    |
+    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/19e0fa86bd8f4eed.ts
@@ -2775,17 +2659,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/1b49edd171c7067b.ts
-✗ test/parser/suite/ts/pass/1b4ac236aabe8b6e.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
- 3 | 
- 4 | const Mixin1 = <C extends Constructor>(Base: C) => class extends Base { private _fooPrivate: {}; }
-   |                                      ^
- 5 | 
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/1b4ac236aabe8b6e.ts
 ✓ test/parser/suite/ts/pass/1b5963dd2b62d65e.ts
 ✓ test/parser/suite/ts/pass/1b6bc8fc4ca7f36c.ts
 ✓ test/parser/suite/ts/pass/1b6e33d848a0aa78.ts
@@ -2836,15 +2710,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/1bdaaf28e5affb28.ts
 ✓ test/parser/suite/ts/pass/1bde0e3be94247b5.module.ts
 ✓ test/parser/suite/ts/pass/1be6401f711d6c57.ts
-✗ test/parser/suite/ts/pass/1bec8f3862d91022.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 4 | 
- 5 | var x = <T>() => {};
-   |            ^^
- 6 | x<number,number>();
-   |
-
+✓ test/parser/suite/ts/pass/1bec8f3862d91022.ts
 ✓ test/parser/suite/ts/pass/1bf8168968be60cc.ts
 ✓ test/parser/suite/ts/pass/1c04ed7e92759b47.ts
 ✓ test/parser/suite/ts/pass/1c05d508b436a7a6.ts
@@ -2868,17 +2734,7 @@ error: A class can only have one constructor
 10 | }
    |
 
-✗ test/parser/suite/ts/pass/1c688d40f741045a.ts (parse errors)
-error: Expected '>' to close a type assertion, but found 'ValidRoutes'
-   |
-49 | // https://github.com/microsoft/TypeScript/issues/53813
-50 | const UploadThingServerHelper = <const ValidRoutes,>(route: {
-   |                                        ^^^^^^^^^^^
-51 |   readonly [Route in keyof ValidRoutes]: {
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/1c688d40f741045a.ts
 ✓ test/parser/suite/ts/pass/1c6f5aac0aa53df8.ts
 ✗ test/parser/suite/ts/pass/1c8a3856227244e0.module.ts (parse errors)
 error: 'enum' is reserved and cannot be used as a binding identifier
@@ -2972,17 +2828,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/1d34f28bd5c15db7.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-31 | 
-32 | const ok = <F extends Target>(at: Ops<F>) => ({lr: at.lr(at.str, at.num)})
-   |                             ^
-33 | const orphaned = <F extends Target>(at: Ops<F>) => at.dict(ok(at))
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/1d34f28bd5c15db7.ts
 ✓ test/parser/suite/ts/pass/1d376b616228a05f.ts
 ✗ test/parser/suite/ts/pass/1d3d5d75833ab052.ts (parse errors)
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
@@ -4717,17 +4563,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/31609a682b925275.ts
 ✓ test/parser/suite/ts/pass/3163508e301af3ae.ts
 ✓ test/parser/suite/ts/pass/31641d5bce5d6d73.ts
-✗ test/parser/suite/ts/pass/317ca917f8a28df4.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | 
- 5 |     x = <U>(a: U) => {
-   |              ^
- 6 |         var y: T;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/317ca917f8a28df4.ts
 ✓ test/parser/suite/ts/pass/317e619c31055923.ts
 ✓ test/parser/suite/ts/pass/31835e22a7a8c323.ts
 ✓ test/parser/suite/ts/pass/3190353c85c9af55.ts
@@ -4824,17 +4660,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/324b538fe241cd3c.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-10 | 
-11 | const f = <A extends string, B extends string, R>(x: { [K in A]: Field<B, R> }): R => ({} as any);
-   |                            ^
-12 | const r1 = f(v);
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/324b538fe241cd3c.ts
 ✓ test/parser/suite/ts/pass/32507e88841d8993.ts
 ✓ test/parser/suite/ts/pass/3251f60f70314360.module.ts
 ✓ test/parser/suite/ts/pass/32530a4db76f2007.ts
@@ -4843,10 +4669,10 @@ error: Expected '?' in a conditional type, but found ','
 ✗ test/parser/suite/ts/pass/326a6994072a825c.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-23 | t = { f: () => 1 };
-24 | t = { f: <T>(x:T) => 1 };
-   |               ^
-25 | t = { f: function f() { return 1 } };
+44 | t = a3;
+45 | t = (x: string) => 1;
+   |       ^
+46 | t = function (x: string) { return ''; }
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -5188,15 +5014,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/35a8f83aa6db14c1.ts
 ✓ test/parser/suite/ts/pass/35b4f49742e0eadc.ts
 ✓ test/parser/suite/ts/pass/35dfd99d88d8d9ec.module.ts
-✗ test/parser/suite/ts/pass/35e0b773d6a6da03.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 1 | // @target: es2015
- 2 | const fn = <T>(): (() => T) => null as any;
-   |               ^^
- 3 | 
-   |
-
+✓ test/parser/suite/ts/pass/35e0b773d6a6da03.ts
 ✓ test/parser/suite/ts/pass/35e21ec70f3da7b0.ts
 ✓ test/parser/suite/ts/pass/35e4ce69a8650e53.ts
 ✓ test/parser/suite/ts/pass/35f48c23d7932973.ts
@@ -5223,17 +5041,7 @@ error: Expected declaration after 'export', but found 'abstract'
 ✓ test/parser/suite/ts/pass/366b99c5ee01e8dd.module.ts
 ✓ test/parser/suite/ts/pass/367567652a4b605f.ts
 ✓ test/parser/suite/ts/pass/36776669282a0a53.ts
-✗ test/parser/suite/ts/pass/3678a34d9460895f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | var y: (x: string) => string;
-11 | var y2: { <T>(x: T): T; } = <T>(x: T) => x
-   |                                  ^
-12 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3678a34d9460895f.ts
 ✓ test/parser/suite/ts/pass/367a6ecbcabfdc55.ts
 ✓ test/parser/suite/ts/pass/367c7aa2431fd9fe.ts
 ✓ test/parser/suite/ts/pass/3684ebb522ad9e63.module.ts
@@ -5428,17 +5236,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
     = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/385eee735619105f.ts (parse errors)
-error: Unexpected token ':'
-   |
-30 |     exhibit() {
-31 |         var funcExpr = <U>(u?: U) => { };
-   |                              ^
-32 |         var x: { (): void; };
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/385eee735619105f.ts
 ✓ test/parser/suite/ts/pass/38616cd98d512b71.ts
 ✓ test/parser/suite/ts/pass/3876c756bddc5ca5.module.ts
 ✓ test/parser/suite/ts/pass/388361eb3e31fcf1.ts
@@ -5658,15 +5456,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/3b201f11ebd81de8.tsx
-✗ test/parser/suite/ts/pass/3b22a5b46d33d0b4.module.tsx (parse errors)
-error: 'const' is reserved and cannot be used as an identifier
-   |
-11 | ): React.SFC => {
-12 |    const Component = () => <TagElement />;
-   |    ^^^^^
-13 |    return Component;
-   |
-
+✓ test/parser/suite/ts/pass/3b22a5b46d33d0b4.module.tsx
 ✓ test/parser/suite/ts/pass/3b3063e8890ed661.ts
 ✗ test/parser/suite/ts/pass/3b33dd7db445c730.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -5827,17 +5617,7 @@ error: Expected declaration after 'export', but found 'declare'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/3c70f31d4b79a6e1.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 2 | type Foo<K> = K extends unknown ? { a: number } : unknown
- 3 | const createDefaultExample = <K,>(x: K): Foo<K> & { x: K; } => {
-   |                                ^
- 4 |   return { a: 1, x: x }; // okay in TS 4.7.4, error in TS 4.8.2
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/3c70f31d4b79a6e1.ts
 ✓ test/parser/suite/ts/pass/3c7f9683b8aa7ef9.ts
 ✗ test/parser/suite/ts/pass/3c8e56e91e08504a.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -6161,17 +5941,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/3faa36f5b7050653.ts
 ✓ test/parser/suite/ts/pass/3faa405a2644dc81.ts
 ✓ test/parser/suite/ts/pass/3fac4bf7ae547b01.ts
-✗ test/parser/suite/ts/pass/3fad6167d94fdf97.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | function recursive() {
- 4 |     let x = <T>(subkey: T) => recursive();
-   |                       ^
- 5 |     return x as typeof x & { p };
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3fad6167d94fdf97.ts
 ✓ test/parser/suite/ts/pass/3fb31a82e4c73d9a.module.ts
 ✓ test/parser/suite/ts/pass/3fbc5ca6a7857177.ts
 ✓ test/parser/suite/ts/pass/3fc21091d9adaa51.ts
@@ -6756,17 +6526,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/4557c2b75ff47dd6.ts
 ✓ test/parser/suite/ts/pass/455f49b9d87c0f1c.ts
 ✓ test/parser/suite/ts/pass/4563652a33130d08.ts
-✗ test/parser/suite/ts/pass/45659b2abfa61f16.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 | 
-10 | const mkLeft = <E>(e: E): Either<E, never> => ({ tag: 'Left', e });
-   |                     ^
-11 | const mkRight = <A>(a: A): Either<never, A> => ({ tag: 'Right', a });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/45659b2abfa61f16.ts
 ✗ test/parser/suite/ts/pass/4566710250929889.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -7170,17 +6930,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/4999dd178e65cd03.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | 
-11 | const removeF = <TX>({ f, ...rest }: TestGeneric<TX>) => {
-   |                                    ^
-12 |   return rest
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/4999dd178e65cd03.ts
 ✓ test/parser/suite/ts/pass/49a016fb0f418cba.ts
 ✗ test/parser/suite/ts/pass/49a073eb88ac02e8.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -7845,17 +7595,7 @@ error: Expected declaration after 'export', but found 'type'
     = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/50b8c365d2b499e5.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-13 | 
-14 | const Printable = <T extends Constructor<Base>>(superClass: T) => class extends superClass {
-   |                                               ^
-15 |     static message = "hello";
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/50b8c365d2b499e5.ts
 ✓ test/parser/suite/ts/pass/50c0bdd039e4678a.ts
 ✓ test/parser/suite/ts/pass/50c9ed54c5103f36.ts
 ✗ test/parser/suite/ts/pass/50cee1b94f549014.ts (parse errors)
@@ -7916,7 +7656,7 @@ error: Getter must have no parameters
    |
 10 |     n: 12,
 11 |     get x(this: Foo): number { return this.n; },
-   |           ^^^^^^^^^
+   |          ^^^^^^^^^^^
 12 |     set x(this: Foo, n: number) { this.n = n; }
    |
    = help: Remove all parameters from the getter.
@@ -8141,17 +7881,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/53c1111f018c2760.ts
 ✓ test/parser/suite/ts/pass/53c40503405e480a.ts
 ✓ test/parser/suite/ts/pass/53f38ef4be30c8ee.ts
-✗ test/parser/suite/ts/pass/53f437293635ad7f.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-27 | declare const _virtualOn: (eventQrl: VirtualEvent<Keys>) => void;
-28 | export const virtualOn = <T extends string>(eventQrl: VirtualEvent<T>) => {
-   |                                           ^
-29 |     _virtualOn(eventQrl);
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/53f437293635ad7f.module.ts
 ✗ test/parser/suite/ts/pass/53f490f8cb88be46.module.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -8223,17 +7953,7 @@ error: 'super()' is only valid in a constructor of a derived class
    = help: Use an arrow function instead of a regular function to inherit the 'super' binding
 
 
-✗ test/parser/suite/ts/pass/54d8822fc997b8ba.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 6 |     public f1() {
- 7 |         return <T, X>() => {
-   |                  ^
- 8 |             var a!: X;
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/54d8822fc997b8ba.ts
 ✓ test/parser/suite/ts/pass/54ee06a1ca435cfd.ts
 ✓ test/parser/suite/ts/pass/54f522305e173d27.ts
 ✓ test/parser/suite/ts/pass/550639589f085c3f.ts
@@ -8551,17 +8271,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
    | ^^^^^^^^^
    |
 
-✗ test/parser/suite/ts/pass/576c4d2ddf2cee8a.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | export const createService = <T>(
-15 |     ServiceCtr: ExtendedService<T> & Service<T>
-   |               ^
-16 | ) => {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/576c4d2ddf2cee8a.module.ts
 ✓ test/parser/suite/ts/pass/577922190073cf34.ts
 ✓ test/parser/suite/ts/pass/577a5768bd3e9996.ts
 ✓ test/parser/suite/ts/pass/577b7d84eb21ed90.ts
@@ -8744,17 +8454,7 @@ error: Private field '#prop' must be declared in an enclosing class
 12 |     }
    |
 
-✗ test/parser/suite/ts/pass/5938347a550032d5.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | 
- 9 | <T>(x: T) => { throw x; }
-   |      ^
-10 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5938347a550032d5.ts
 ✓ test/parser/suite/ts/pass/593cd0447b77bac2.ts
 ✓ test/parser/suite/ts/pass/594a014a4a95d418.ts
 ✓ test/parser/suite/ts/pass/5951ca27e620f681.ts
@@ -8780,15 +8480,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/59aa3167c786821c.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 9 | 
-10 | const checkType_ = <T>() => <U extends T>(value: { [K in keyof U & keyof T]: U[K] }) => value;
-   |                       ^^
-11 | 
-   |
-
+✓ test/parser/suite/ts/pass/59aa3167c786821c.ts
 ✓ test/parser/suite/ts/pass/59ab64d988a2c271.ts
 ✓ test/parser/suite/ts/pass/59aca295ed409f51.ts
 ✓ test/parser/suite/ts/pass/59afc69fa63dbbb7.ts
@@ -8964,17 +8656,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/5be7d73a834513b2.ts
 ✓ test/parser/suite/ts/pass/5bf5490efce7e1b9.ts
 ✓ test/parser/suite/ts/pass/5bf5a56d4a249097.ts
-✗ test/parser/suite/ts/pass/5bf6d9878e064ece.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-33 | 
-34 | const modifier = <T extends TargetProps>(targetProps: T) => {
-   |                                        ^
-35 |     let {bar, ...rest} = targetProps;
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/5bf6d9878e064ece.ts
 ✓ test/parser/suite/ts/pass/5bfa924554402b4a.ts
 ✓ test/parser/suite/ts/pass/5c07fbec166a95c5.ts
 ✓ test/parser/suite/ts/pass/5c1788645c3a78d6.ts
@@ -9008,15 +8690,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/5c54cac83e51f8d6.ts
 ✓ test/parser/suite/ts/pass/5c62da3ed63082cc.ts
 ✓ test/parser/suite/ts/pass/5c631d5d17dcc429.tsx
-✗ test/parser/suite/ts/pass/5c6d6e3fe1282e48.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 6 |     public f1() {
- 7 |         return <T>() => {
-   |                   ^^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/5c6d6e3fe1282e48.ts
 ✓ test/parser/suite/ts/pass/5c7324f2d360a5b7.ts
 ✓ test/parser/suite/ts/pass/5c747ccab2ed0e3e.ts
 ✓ test/parser/suite/ts/pass/5c8806ca2a3566a4.ts
@@ -9377,17 +9051,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/605139337a89ab2b.ts
 ✓ test/parser/suite/ts/pass/60530f5ceeac8c33.ts
 ✓ test/parser/suite/ts/pass/605a62c6e1e77b8a.ts
-✗ test/parser/suite/ts/pass/607f3e12f2841352.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-40 | 
-41 | var f3 = <T, U extends T>(x: T, y: U) => {
-   |            ^
-42 |     function bar<V extends T, W extends U>() {
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/607f3e12f2841352.ts
 ✓ test/parser/suite/ts/pass/60882917e2ef445e.ts
 ✗ test/parser/suite/ts/pass/60a6647ac6d1b49d.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -9509,13 +9173,13 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/61922ccdbcb29d9c.ts
 ✗ test/parser/suite/ts/pass/6195e801efc358a1.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-40 | 
-41 | const inferTypeFn = <T>(generic: MyInterface<T>) => generic;
-   |                                ^
-42 | 
-   |
-   = help: Add a comma between elements or close with ')'.
+    |
+162 | function example<TParams, TDone, TMapped>(options: Opts<TParams, TDone, TMapped>) {
+163 |     return (params: TParams) => {
+    |                   ^
+164 |         const data = options.fetch(params, 123)
+    |
+    = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/619aa520e9889710.ts
@@ -9635,17 +9299,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
    = help: Add a comma between elements or close with ')'.
 
 
-✗ test/parser/suite/ts/pass/62eddab047cd3504.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-26 | var b = {
-27 |     foo: <T extends Date>(x: T): T => {
-   |                         ^
-28 |         var a = x['notHere'](); // should be string
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/62eddab047cd3504.ts
 ✓ test/parser/suite/ts/pass/6312c0989ad314dd.ts
 ✓ test/parser/suite/ts/pass/6313afa069a2b57d.ts
 ✓ test/parser/suite/ts/pass/632825f0e37cfdb3.ts
@@ -9936,14 +9590,14 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✗ test/parser/suite/ts/pass/669ef9023c7f2ad0.ts (parse errors)
-error: Expected '>' to close a type assertion, but found 'T'
-   |
-48 | 
-49 | const fx1 = <const T>(x: T) => x;
-   |                    ^
-50 | const fx2 = <const T,>(x: T) => x;
-   |
-   = help: A type assertion is written '<Type>expression'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
+    |
+110 | 
+111 | const test_55033_minimal = factory_55033_minimal((b: string) => {})
+    |                                                    ^
+112 | 
+    |
+    = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/669f9976f5f2fa01.ts
@@ -10177,15 +9831,7 @@ error: Duplicate export of 'default'
 
 ✓ test/parser/suite/ts/pass/695865ed06d9cfda.ts
 ✓ test/parser/suite/ts/pass/6966b5316760269b.ts
-✗ test/parser/suite/ts/pass/69707d59d7d1c3d6.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
-40 | 
-41 | const checkType = <T>() => <U extends T>(value: { [K in keyof U & keyof T]: U[K] }) => value;
-   |                      ^^
-42 | 
-   |
-
+✓ test/parser/suite/ts/pass/69707d59d7d1c3d6.ts
 ✓ test/parser/suite/ts/pass/6975b4bc47d77ea3.ts
 ✓ test/parser/suite/ts/pass/6980dd5c8a2b1e29.ts
 ✓ test/parser/suite/ts/pass/698a049a38888c28.ts
@@ -10413,13 +10059,13 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/6c4e9b9efe99512f.module.ts
 ✗ test/parser/suite/ts/pass/6c4f63e9786080b1.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-54 | 
-55 | var r1arg = <T>(x: T) => <T[]>null;
-   |                  ^
-56 | var r1arg2 = <T>(x: T) => <T[]>null;
-   |
-   = help: Add a comma between elements or close with ')'.
+    |
+111 | 
+112 | var r18arg = (x: <T>(a: T) => T) => <any[]>null;
+    |                ^
+113 | var r18 = foo18(r18arg);
+    |
+    = help: Add a comma between elements or close with ')'.
 
 
 ✓ test/parser/suite/ts/pass/6c52386d9d3cfdd1.ts
@@ -10558,25 +10204,15 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/6d8ceb7270a80ba3.ts
-✗ test/parser/suite/ts/pass/6d9f471f79c97fde.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-10 | const satisfies =
-11 |   <TWide,>() =>
-   |         ^
-12 |   <TNarrow extends TWide>(narrow: Narrow<TNarrow>) =>
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/6d9f471f79c97fde.ts
 ✓ test/parser/suite/ts/pass/6da54cf2bd8bf662.ts
 ✗ test/parser/suite/ts/pass/6daf7e6986fdac86.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 7 | 
- 8 | var arg = { cb: <T>(x: T) => '' };
+11 | var r2 = foo({ cb: <T>(x: T, y: T) => '' }); // error
+12 | var r3 = foo({ cb: (x: string, y: number) => '' }); // error
    |                      ^
- 9 | var r = foo(arg); // {}
+13 | 
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -10811,17 +10447,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/702a4a09be9d5251.ts
 ✓ test/parser/suite/ts/pass/702ba49e53144249.module.ts
 ✓ test/parser/suite/ts/pass/702e11cb3030282f.module.ts
-✗ test/parser/suite/ts/pass/702f195db0f72fde.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | const fn1 = <Params>(
- 4 |     params: Pick<Params, Exclude<keyof Params, never>>,
-   |           ^
- 5 | ): Params => params;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/702f195db0f72fde.ts
 ✓ test/parser/suite/ts/pass/7032640538a992fb.ts
 ✓ test/parser/suite/ts/pass/7035ab156e39fa4a.ts
 ✗ test/parser/suite/ts/pass/70425adb194f08f2.ts (parse errors)
@@ -11084,17 +10710,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/73a4200b07a1e037.ts
 ✓ test/parser/suite/ts/pass/73b167ae19bb71d4.ts
 ✓ test/parser/suite/ts/pass/73b654f4ea9d5c6d.ts
-✗ test/parser/suite/ts/pass/73ba58b1b7101fbb.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | declare function map<S, T>(f: (x: S) => T): (a: S[]) => T[];
- 3 | var e = <K>(x: string, y?: K) => x.length;
-   |              ^
- 4 | var r99 = map(e); // should be {}[] for S since a generic lambda is not inferentially typed
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/73ba58b1b7101fbb.ts
 ✓ test/parser/suite/ts/pass/73bbbe8235bc3c23.ts
 ✗ test/parser/suite/ts/pass/73d1a5b3b9f5afec.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -11216,17 +10832,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/7517860d9ca1549e.ts
-✗ test/parser/suite/ts/pass/7518839e54a95139.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-    |
- 98 | declare const myRecord2: { a: string; b: string, [key: string]: string };
- 99 | const fn1 = <Key extends keyof typeof myRecord1>(key: Key): string => myRecord1[key]; // Should OK
-    |                                                ^
-100 | const fn2 = <Key extends keyof typeof myRecord1>(key: Key): string => myRecord2[key]; // Should OK
-    |
-    = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/7518839e54a95139.ts
 ✓ test/parser/suite/ts/pass/75190ea0138a5ea8.ts
 ✓ test/parser/suite/ts/pass/752a61be784f59fa.ts
 ✗ test/parser/suite/ts/pass/752ac0a4c4f3a859.ts (parse errors)
@@ -11270,17 +10876,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/7562a86de2e80deb.ts
 ✓ test/parser/suite/ts/pass/75739a96695a6829.ts
-✗ test/parser/suite/ts/pass/757714a89742035f.ts (parse errors)
-error: Unexpected '=>'
-   |
- 5 | var f2 = (x) => x;
- 6 | var f3 = <T>(x) => x;
-   |          ^^^^^^
- 7 | 
-   |
-   = help: '=>' is only valid after a single identifier or a parenthesized parameter list
-
-
+✓ test/parser/suite/ts/pass/757714a89742035f.ts
 ✓ test/parser/suite/ts/pass/75800bee91aa3ad6.ts
 ✗ test/parser/suite/ts/pass/758bbf2647c31b8f.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -11353,17 +10949,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/7616f30ca849751e.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-50 | var b = {
-51 |     foo: <U extends A, T extends U>(x: T) => {
-   |                      ^
-52 |         // BUG 823818
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/7616f30ca849751e.ts
 ✓ test/parser/suite/ts/pass/762929abc760a20d.ts
 ✓ test/parser/suite/ts/pass/762abd5b8ffb0cad.ts
 ✓ test/parser/suite/ts/pass/762bfe865204b2df.ts
@@ -11486,17 +11072,7 @@ error: Expected declaration after 'export', but found 'declare'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/76f116d43b16412a.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-15 | 
-16 | var b = <U extends T, T extends U>() => { }
-   |                     ^
-17 | var b2 = <T extends U, U extends V, V extends T>() => { }
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/76f116d43b16412a.ts
 ✓ test/parser/suite/ts/pass/76fb65d8bb8a406f.ts
 ✓ test/parser/suite/ts/pass/7703375e18a5ea10.ts
 ✗ test/parser/suite/ts/pass/77099e2804d1abe7.ts (parse errors)
@@ -11883,17 +11459,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 ✓ test/parser/suite/ts/pass/7abf15585e9b54a2.ts
 ✓ test/parser/suite/ts/pass/7ac0a06261695efc.ts
-✗ test/parser/suite/ts/pass/7ac5c6ea2637a567.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 |     case M.fn(1):
-25 |     case <T>(x: number) => '':
-   |               ^
-26 |     case (<T>(x: number) => '')(2):
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7ac5c6ea2637a567.ts
 ✓ test/parser/suite/ts/pass/7ac9527e42f8130c.ts
 ✗ test/parser/suite/ts/pass/7acb7fe1006477e3.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -11976,17 +11542,7 @@ error: 'let' is not allowed as a variable name in a lexical declaration
 ✓ test/parser/suite/ts/pass/7b4f7ed0cc7034b4.ts
 ✓ test/parser/suite/ts/pass/7b599904e5062198.ts
 ✓ test/parser/suite/ts/pass/7b7cf8a9a641098e.module.ts
-✗ test/parser/suite/ts/pass/7b7f7f752217fe8c.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
- 1 | // @target: es2015
- 2 | const validHasKey = <T extends object>(
-   |                                      ^
- 3 |   thing: T,
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/7b7f7f752217fe8c.ts
 ✓ test/parser/suite/ts/pass/7b82984ba6d8f434.ts
 ✓ test/parser/suite/ts/pass/7b8f1914d820ef19.ts
 ✗ test/parser/suite/ts/pass/7b8feaac9c98b7d9.ts (parse errors)
@@ -12059,17 +11615,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/7c2f09e707785798.ts
 ✓ test/parser/suite/ts/pass/7c33ba66e01c4a36.module.ts
-✗ test/parser/suite/ts/pass/7c38b4735ae570c4.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-12 |     let result = await (bluebird.all as any)([a, b, c, d, e].filter(el => !!el));
-13 |     let func = <T>(f: (a: A, b?: B, c?: C, d?: D, e?: E) => T): T =>
-   |                     ^
-14 |         f.apply(this, result);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7c38b4735ae570c4.module.ts
 ✓ test/parser/suite/ts/pass/7c44fcb25ffe61fb.ts
 ✗ test/parser/suite/ts/pass/7c4b6fb8972fef71.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -12546,17 +12092,7 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/80e6c46868c05f64.ts
 ✓ test/parser/suite/ts/pass/80fbf794ea01f8de.ts
 ✓ test/parser/suite/ts/pass/810dac22c186b832.module.ts
-✗ test/parser/suite/ts/pass/811467a567dde024.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-37 | var b = {
-38 |     foo: <U extends T, T extends A>(x: U): U => {
-   |                      ^
-39 |         var a = x['foo'](); // should be string
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/811467a567dde024.ts
 ✗ test/parser/suite/ts/pass/8115544b8c474fce.module.tsx (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -12640,17 +12176,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/8272241a817496ac.ts
 ✓ test/parser/suite/ts/pass/829219fcef156a36.ts
 ✓ test/parser/suite/ts/pass/8294a267e70943da.ts
-✗ test/parser/suite/ts/pass/829b40ee9f253c5e.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 6 | 
- 7 | const createTransform = <I, O>(tr: (from: I) => O) => tr;
-   |                           ^
- 8 | 
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/829b40ee9f253c5e.ts
 ✓ test/parser/suite/ts/pass/829ddf487f4c34f3.ts
 ✗ test/parser/suite/ts/pass/829f47fa1b07d2f8.ts (parse errors)
 error: Expected '{' to start class body, but found 'Foo'
@@ -12849,10 +12375,10 @@ error: 'super()' is only valid in a constructor of a derived class
 ✗ test/parser/suite/ts/pass/84a00a2d07cc503f.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 6 | 
- 7 | const flowtypes = <A>(b: B) => {
-   |                        ^
- 8 |   type Combined = A & B
+ 9 | 
+10 |   const combined = (fn: (combined: Combined) => void) => null
+   |                       ^
+11 |   const literal = (fn: (aPlusB: A & B) => void) => null
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -13298,17 +12824,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/88f0456f9a18c51f.ts
 ✓ test/parser/suite/ts/pass/88f0a58d293ca72a.ts
 ✓ test/parser/suite/ts/pass/88f6b4698dcbd984.module.ts
-✗ test/parser/suite/ts/pass/88f8f9fd95e78aa4.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
- 5 | 
- 6 | const f = <F extends (...args: any[]) => <G>(x: G) => void>(_: F): F => _;
-   |                                                           ^
- 7 | 
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/88f8f9fd95e78aa4.ts
 ✓ test/parser/suite/ts/pass/88fd8b895939e99a.ts
 ✓ test/parser/suite/ts/pass/89021a0f3aa35be4.ts
 ✓ test/parser/suite/ts/pass/890d75b7d4d0b8cd.ts
@@ -13323,17 +12839,7 @@ error: Expected '?' in a conditional type, but found '>'
 ✓ test/parser/suite/ts/pass/89946f13fbc1c51a.ts
 ✓ test/parser/suite/ts/pass/89b0709751a18c68.ts
 ✓ test/parser/suite/ts/pass/89b0b82b8082b40c.module.ts
-✗ test/parser/suite/ts/pass/89b834664edcebe4.module.tsx (parse errors)
-error: Expected '}' to close JSX expression, but found 'WrapperComponentProps'
-   |
-11 | ) => {
-12 |     type WrapperComponentProps = ComposedComponentProps & { myProp: string };
-   |          ^^^^^^^^^^^^^^^^^^^^^
-13 |     const WrapperComponent: React.ComponentClass<WrapperComponentProps> = null as any;
-   |
-   = help: Add '}' to close the expression
-
-
+✓ test/parser/suite/ts/pass/89b834664edcebe4.module.tsx
 ✓ test/parser/suite/ts/pass/89c60227e5e518f9.ts
 ✓ test/parser/suite/ts/pass/89cbe22a5f15296a.ts
 ✓ test/parser/suite/ts/pass/89de9b461cce0949.ts
@@ -14015,17 +13521,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/904caad56151f485.ts
 ✓ test/parser/suite/ts/pass/906668872932b32e.ts
 ✓ test/parser/suite/ts/pass/90718fdb25e511da.ts
-✗ test/parser/suite/ts/pass/9071b0a2e667b002.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-16 |     var r = foo4(a);
-17 |     var r2 = foo4(<T>(x: T) => x);
-   |                        ^
-18 |     var r4 = foo4(x => x);    
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/9071b0a2e667b002.ts
 ✓ test/parser/suite/ts/pass/908092dab46148b0.ts
 ✓ test/parser/suite/ts/pass/90838de409f83812.module.ts
 ✓ test/parser/suite/ts/pass/908cda9f4aa3123f.ts
@@ -14094,17 +13590,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/90d9ccdd6e159a9a.ts
 ✓ test/parser/suite/ts/pass/90e0561e405b8474.ts
-✗ test/parser/suite/ts/pass/90e9f77f4ae36e0e.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-62 | 
-63 | const get = <T extends string>(t: T, foo: Foo<T>): T => foo[`get${t}`];  // Type 'Foo<T>[`get${T}`]' is not assignable to type 'T'
-   |                              ^
-64 | 
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/90e9f77f4ae36e0e.ts
 ✓ test/parser/suite/ts/pass/90fb8d53acd92edb.ts
 ✓ test/parser/suite/ts/pass/910a9d16abb246e0.ts
 ✓ test/parser/suite/ts/pass/911a7b4ea65f4e9f.ts
@@ -14163,17 +13649,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/91a10a635e14ccfc.ts
 ✓ test/parser/suite/ts/pass/91a74f37449c7d61.ts
 ✓ test/parser/suite/ts/pass/91b844b90b9fbaa6.ts
-✗ test/parser/suite/ts/pass/91c499ecfdbdf036.tsx (parse errors)
-error: Unexpected token '}'
-   |
-39 |   style,
-40 | }: AnimatedViewProps<T>) => <></>;
-   | ^
-41 | 
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/91c499ecfdbdf036.tsx
 ✓ test/parser/suite/ts/pass/91ce15a09fc116cc.ts
 ✓ test/parser/suite/ts/pass/91ead67f09b21b7d.ts
 ✓ test/parser/suite/ts/pass/91ec464f8ec7a19d.ts
@@ -14400,10 +13876,10 @@ error: Expected ']' after computed property key, but found ':'
 ✗ test/parser/suite/ts/pass/94821781a9b9574e.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 8 | 
- 9 | var r = foo(<U>(x: U) => ''); // {}
-   |                  ^
-10 | var r2 = foo<string>(<U>(x: U) => ''); // string 
+30 | function other<T, U>(t: T, u: U) {
+31 |     var r10 = foo2(1, (x: T) => ''); // error
+   |                         ^
+32 |     var r10 = foo2(1, (x) => ''); // string
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -14539,17 +14015,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/96795b115654904c.ts
 ✓ test/parser/suite/ts/pass/968408d31d0003e2.ts
 ✓ test/parser/suite/ts/pass/9685679e566101bd.ts
-✗ test/parser/suite/ts/pass/9685e4a876c0bd6d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-26 | var b = {
-27 |     foo: <T>(x: T) => {
-   |               ^
-28 |         var a = x['toString'](); // should be string
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/9685e4a876c0bd6d.ts
 ✓ test/parser/suite/ts/pass/968ebbe4e51facca.ts
 ✓ test/parser/suite/ts/pass/968f0875f902de3a.ts
 ✓ test/parser/suite/ts/pass/96902b76336b6b2e.ts
@@ -14596,17 +14062,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/96ebf2a104227d19.module.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 8 | }
- 9 | export var compileServer = task<number, number, any>(<P0, P1, P2>() => {
-   |                                                         ^
-10 | 
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/96ebf2a104227d19.module.ts
 ✓ test/parser/suite/ts/pass/96ecb344b24806a6.ts
 ✗ test/parser/suite/ts/pass/96ff28742e285da3.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -14731,17 +14187,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/986a4c30dc9fd4b5.ts
 ✓ test/parser/suite/ts/pass/9879f224b2a33318.ts
 ✓ test/parser/suite/ts/pass/987afb928d6d7dc7.ts
-✗ test/parser/suite/ts/pass/9883b64419366813.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-45 | 
-46 | const onSomeEvent = <T extends keyof TypesMap>(p: P<T>) =>
-   |                                              ^
-47 |     typeHandlers[p.t]?.(p);
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/9883b64419366813.ts
 ✓ test/parser/suite/ts/pass/9885eda36eff39da.module.ts
 ✗ test/parser/suite/ts/pass/9886d43a2fa48e84.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -14790,10 +14236,10 @@ error: Expected declaration after 'export', but found 'namespace'
 ✗ test/parser/suite/ts/pass/98efdb7d0c38e97a.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-12 |     var c = new C<number>();
-13 |     var r = c.foo(<U>(x: U) => ''); // {}
-   |                        ^
-14 |     var r2 = c.foo<string>(<U>(x: U) => ''); // string 
+57 |     function other<T, U>(t: T, u: U) {
+58 |         var r10 = c.foo2(1, (x: T) => ''); // error
+   |                               ^
+59 |         var r10 = c.foo2(1, (x) => ''); // string
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -14952,17 +14398,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/9a4f786c16790670.ts
-✗ test/parser/suite/ts/pass/9a51d38f4a225fc3.module.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-18 |     a.b.c.d.e.f.g = 0;
-19 |     removedFiles.forEach(<A, B extends A, C>(each: FileWithErrors<A, B, C>) => {
-   |                            ^
-20 |       this.removeFile(each);
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/9a51d38f4a225fc3.module.ts
 ✓ test/parser/suite/ts/pass/9a69455fec132cb4.ts
 ✓ test/parser/suite/ts/pass/9a799ce628ab6dcc.ts
 ✗ test/parser/suite/ts/pass/9a7dd937eb377709.ts (parse errors)
@@ -15980,31 +15416,19 @@ error: 'function' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/a58b099d85149235.ts
 ✓ test/parser/suite/ts/pass/a5953965808f7c6c.ts
 ✓ test/parser/suite/ts/pass/a5a8efa037b926aa.ts
-✗ test/parser/suite/ts/pass/a5af197de99af2d8.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-79 | throw function () { return 'a string' };
-80 | throw <T>(x:T) => 42;
-   |            ^
-81 | throw { x: 12, y: 13 };
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a5af197de99af2d8.ts
 ✓ test/parser/suite/ts/pass/a5b6489cbc01f12b.ts
 ✓ test/parser/suite/ts/pass/a5bbee33debc7d9d.ts
 ✓ test/parser/suite/ts/pass/a5cde727c4d276bf.ts
 ✓ test/parser/suite/ts/pass/a5dd1fdc5a3c168d.ts
 ✗ test/parser/suite/ts/pass/a5e6f8103948caa4.tsx (parse errors)
-error: Expected '(' to start function type parameters, but found '{'
+error: Expected '(' to start parameter list, but found '{'
    |
 10 |         <span>
 11 |           {0}{0}
    |           ^
 12 |         </span>
    |
-   = help: A function or constructor type requires a parenthesized parameter list
-
 
 ✗ test/parser/suite/ts/pass/a5ec5a3330dbf2cb.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -16512,16 +15936,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/aa762a42c39a4500.ts
 ✓ test/parser/suite/ts/pass/aa76e9937d5d60e1.ts
-✗ test/parser/suite/ts/pass/aa7c2bf6d9b50527.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | // @declaration: true
- 4 | export const f = (<T>(arg: {[K in keyof T]: T[K] | string}) => arg)({'0': 0}); // Original prop uses string syntax
-   |                          ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/aa7c2bf6d9b50527.module.ts
 ✗ test/parser/suite/ts/pass/aa8133beb633c5e1.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -16641,17 +16056,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/abcf0ff9a2be5282.ts
 ✓ test/parser/suite/ts/pass/abd1a2ce821d2f6c.ts
 ✓ test/parser/suite/ts/pass/abd275d941748aa3.ts
-✗ test/parser/suite/ts/pass/abd2c56c0bb4805e.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-20 | 
-21 | const post = <PATH extends PostPath>(
-   |                                    ^
-22 |     path: PATH,
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/abd2c56c0bb4805e.ts
 ✗ test/parser/suite/ts/pass/abd3451a93473890.ts (parse errors)
 error: Deleting a variable in strict mode is not allowed
    |
@@ -17533,17 +16938,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/b4537e43e567f7be.ts
 ✓ test/parser/suite/ts/pass/b45656e0077ccf9b.ts
-✗ test/parser/suite/ts/pass/b465a9c02d77ae6c.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-29 | const ComponentWithForwardRef = forwardRef(
-30 |   <T extends FunctionComponent<any>>(
-   |                                    ^
-31 |     props: ComponentPropsWithoutRef<T>,
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/b465a9c02d77ae6c.ts
 ✓ test/parser/suite/ts/pass/b46619c22dcb4293.ts
 ✓ test/parser/suite/ts/pass/b4679b6e25fc0ad4.ts
 ✓ test/parser/suite/ts/pass/b4680ba60a4402f6.ts
@@ -17793,17 +17188,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/b6d7d0b72a9bc1b0.module.ts
 ✓ test/parser/suite/ts/pass/b6e2c14b7301891f.ts
 ✓ test/parser/suite/ts/pass/b6ec5ff9889cd007.ts
-✗ test/parser/suite/ts/pass/b6f05409eb03ddb7.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-32 | 
-33 | const resolveMapped = <K extends keyof typeof mapped>(key: K) => mapped[key].toString();  // Error
-   |                                                     ^
-34 | 
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/b6f05409eb03ddb7.ts
 ✗ test/parser/suite/ts/pass/b6f2f71e1ca84c24.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -17853,17 +17238,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/b751ef557303924e.ts
-✗ test/parser/suite/ts/pass/b765cc494186c1f9.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-32 | 
-33 | var r8 = true ? <T>(x: T) => { return x } : null;
-   |                      ^
-34 | var r8b = true ? null : <T>(x: T) => { return x }; // type parameters not identical across declarations
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b765cc494186c1f9.ts
 ✓ test/parser/suite/ts/pass/b76be91aa5a8d72b.ts
 ✓ test/parser/suite/ts/pass/b76e350f8f271894.ts
 ✗ test/parser/suite/ts/pass/b77274cc13c05b3d.ts (parse errors)
@@ -18331,14 +17706,14 @@ error: Cannot continue to label 'TWO' across function boundaries
 ✓ test/parser/suite/ts/pass/bb7d7ebac948c145.ts
 ✓ test/parser/suite/ts/pass/bb81891d45ffe3c7.tsx
 ✗ test/parser/suite/ts/pass/bb83d8998cb3b41a.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
+error: Expected declaration after 'export', but found 'declare'
    |
-39 | class XXX {
-40 |   log = implement<this>()(<N extends number>(n: N) => succeed(n));
-   |                                            ^
-41 | }
+42 | 
+43 | export declare const inner: XXX;
+   |        ^^^^^^^
+44 | export declare const outer: ProxyMap<XXX>;
    |
-   = help: A conditional type is written 'T extends U ? X : Y'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/bb88d9d21a39e647.ts
@@ -18585,10 +17960,10 @@ error: Expected '{' to start function body, but found ';'
 ✗ test/parser/suite/ts/pass/bdc6269395cf6673.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 7 | x.foo(1); // no error
- 8 | var f = <T>(x: B<T>) => { return x.foo(1); } // error
-   |              ^
- 9 | var f2 = <T>(x: B<T>) => { return x.foo<T>(1); } // error
+10 | var f3 = <T>(x: B<T>) => { return x.foo<number>(1); } // error
+11 | var f4 = (x: B<number>) => { return x.foo(1); } // no error
+   |            ^
+12 | 
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -18758,17 +18133,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/bf037310e122073f.ts
 ✓ test/parser/suite/ts/pass/bf08c9b693200143.ts
 ✓ test/parser/suite/ts/pass/bf281efa11268532.ts
-✗ test/parser/suite/ts/pass/bf33524287fc637b.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 8 | 
- 9 | var f2 = <T, U>(x: T, y: U): T => { return null; }
-   |            ^
-10 | var r2 = f2<number>(1, '');
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/bf33524287fc637b.ts
 ✓ test/parser/suite/ts/pass/bf3359d92ef26dba.ts
 ✗ test/parser/suite/ts/pass/bf3801bb5633f805.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
@@ -18815,17 +18180,7 @@ error: Expected declaration after 'export', but found 'type'
 
 ✓ test/parser/suite/ts/pass/bf8af4833290a428.ts
 ✓ test/parser/suite/ts/pass/bf9a9b582b8f02f8.ts
-✗ test/parser/suite/ts/pass/bf9b5f371a4c3854.ts (parse errors)
-error: Expected '>' to close a type assertion, but found '='
-   |
- 2 | const fn1 = () => ({
- 3 |     test: <T = undefined>(value: T): T => value,
-   |              ^
- 4 |     extraValue: () => {},
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/bf9b5f371a4c3854.ts
 ✓ test/parser/suite/ts/pass/bf9cc58a8e0fb3ac.ts
 ✗ test/parser/suite/ts/pass/bf9d28c442102332.ts (parse errors)
 error: Yield expression is not allowed in formal parameters
@@ -19443,7 +18798,7 @@ error: Getter must have no parameters
    |
 12 |     n: 13,
 13 |     get x(this: Foo) { return this.n; },
-   |           ^^^^^^^^^
+   |          ^^^^^^^^^^^
 14 |     set x(this: Bar, n) { this.wrong = "method"; }
    |
    = help: Remove all parameters from the getter.
@@ -19640,17 +18995,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c691aef343454620.ts
 ✓ test/parser/suite/ts/pass/c6a430f76d3146b6.ts
 ✓ test/parser/suite/ts/pass/c6a5b9b8e2abd4b3.ts
-✗ test/parser/suite/ts/pass/c6aac4100fcccff2.module.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 5 | 
- 6 | export const foo = <T,>(x: T) => {
-   |                      ^
- 7 |     const inner = <T,>(y: T) => [x, y] as const;
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/c6aac4100fcccff2.module.ts
 ✓ test/parser/suite/ts/pass/c6aacb2559043307.ts
 ✓ test/parser/suite/ts/pass/c6aeaffc05837950.ts
 ✓ test/parser/suite/ts/pass/c6b314cc9c7eaec3.ts
@@ -19841,17 +19186,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c8533fe99ef038cf.ts
 ✓ test/parser/suite/ts/pass/c856d81b24a5ff12.ts
 ✓ test/parser/suite/ts/pass/c858122477dc1750.ts
-✗ test/parser/suite/ts/pass/c863becd22e28a13.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-22 | 
-23 | var e = <T, U extends T>() => { }
-   |           ^
-24 | var e2 = <T extends U, U>() => { }
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/c863becd22e28a13.ts
 ✓ test/parser/suite/ts/pass/c864e718dc49ae25.ts
 ✓ test/parser/suite/ts/pass/c868578f235cd5f3.ts
 ✓ test/parser/suite/ts/pass/c86ed725f9f24e14.module.ts
@@ -19953,17 +19288,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/c9eac098fffd45a4.ts
 ✓ test/parser/suite/ts/pass/c9ec2993dcec296b.ts
-✗ test/parser/suite/ts/pass/c9f5efdb479a6e56.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
- 7 | 
- 8 | const WithLocation = <T extends Constructor<Point>>(Base: T) => class extends Base {
-   |                                                   ^
- 9 |   getLocation(): [number, number] {
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/c9f5efdb479a6e56.ts
 ✓ test/parser/suite/ts/pass/c9f71e0cc686b6a6.ts
 ✓ test/parser/suite/ts/pass/c9fb645a8a12a966.module.ts
 ✓ test/parser/suite/ts/pass/c9fd15e1c329a42f.module.ts
@@ -20237,15 +19562,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/cccf8605e3bcb86e.ts
 ✓ test/parser/suite/ts/pass/ccd0624133d9d457.ts
 ✓ test/parser/suite/ts/pass/ccd3fd543889d07c.ts
-✗ test/parser/suite/ts/pass/ccd68cc1bc38e162.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
-95 | 
-96 | const func = <T>() => {};
-   |                 ^^
-97 | const assign = <T, U>(a: T, b: U) => Object.assign(a, b);
-   |
-
+✓ test/parser/suite/ts/pass/ccd68cc1bc38e162.ts
 ✓ test/parser/suite/ts/pass/ccd6d7d996473bc4.ts
 ✗ test/parser/suite/ts/pass/ccdfc1b8ad01d7a6.ts (parse errors)
 error: Unexpected token '@' in binding pattern
@@ -20258,17 +19575,7 @@ error: Unexpected token '@' in binding pattern
    = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
 
 
-✗ test/parser/suite/ts/pass/ccf01f663fbad84a.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-    |
-264 | const getStringAndNumberFromOriginalAndMapped = <
-265 |   K extends KeyOfOriginal,
-    |                          ^
-266 |   N extends NestedKeyOfOriginalFor<K>
-    |
-    = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/ccf01f663fbad84a.ts
 ✓ test/parser/suite/ts/pass/cd0463086aa812e5.ts
 ✓ test/parser/suite/ts/pass/cd073d163eb5c022.ts
 ✓ test/parser/suite/ts/pass/cd0f9cb6eeb9db19.ts
@@ -20286,14 +19593,14 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 
 ✗ test/parser/suite/ts/pass/cd2a771d9ac94789.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
+error: Expected declaration after 'export', but found 'type'
    |
- 1 | // @target: es2015
- 2 | const createCacheReducer = <N extends string, QR>(
-   |                                             ^
- 3 |     queries: Cache<N, QR>["queries"],
+13 | 
+14 | export type Cache<N extends string, QR> = {
+   |        ^^^^
+15 |     queries: {
    |
-   = help: A conditional type is written 'T extends U ? X : Y'
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/cd34f2c76f6ad6e8.ts
@@ -20425,15 +19732,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/ce2dc8c2b3995d0d.ts
 ✓ test/parser/suite/ts/pass/ce3096ffad7b40e9.ts
 ✓ test/parser/suite/ts/pass/ce342e31d0473d29.ts
-✗ test/parser/suite/ts/pass/ce3e7b5d89225704.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
-41 | new (<any>A());
-42 | (<Tany>()=> {})();
-   |        ^^
-43 | (<any>function foo() { })();
-   |
-
+✓ test/parser/suite/ts/pass/ce3e7b5d89225704.ts
 ✓ test/parser/suite/ts/pass/ce4428e58fc4275b.ts
 ✓ test/parser/suite/ts/pass/ce45ed1398bcac52.ts
 ✗ test/parser/suite/ts/pass/ce466f2d04677b6f.ts (parse errors)
@@ -20521,15 +19820,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/ceeb80d973e43649.ts
 ✓ test/parser/suite/ts/pass/ceee14a1270151c3.ts
 ✓ test/parser/suite/ts/pass/cef065032fc83fb6.ts
-✗ test/parser/suite/ts/pass/cef0aa9bbf5a7df0.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
-13 | 
-14 | let l = <T>() => { };
-   |            ^^
-15 | 
-   |
-
+✓ test/parser/suite/ts/pass/cef0aa9bbf5a7df0.ts
 ✓ test/parser/suite/ts/pass/cef238340f1e9eb1.ts
 ✓ test/parser/suite/ts/pass/cef32521bd91d8b2.ts
 ✗ test/parser/suite/ts/pass/cf075d092621391b.ts (parse errors)
@@ -20706,29 +19997,10 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d0da592b1163824b.ts
 ✓ test/parser/suite/ts/pass/d0e38175c510ee83.ts
 ✓ test/parser/suite/ts/pass/d0e6b0b1403cbdaa.ts
-✗ test/parser/suite/ts/pass/d0ebc1558171fe46.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-15 | 
-16 | (<T extends UNKNOWN>(a) => { });
-   |                    ^
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/d0ebc1558171fe46.ts
 ✓ test/parser/suite/ts/pass/d0fa9bd4eb239bad.module.ts
 ✓ test/parser/suite/ts/pass/d0fc8b6d255f5b66.ts
-✗ test/parser/suite/ts/pass/d0fd18b1cfe9a9ef.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-95 | function f12<T extends <U>(x: U) => U>(x: T) {
-96 |     var r8 = true ? <T>(x: T) => { return x } : x; // ok
-   |                          ^
-97 |     var r8b = true ? x : <T>(x: T) => { return x }; // ok, type parameters not identical across declarations
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d0fd18b1cfe9a9ef.ts
 ✓ test/parser/suite/ts/pass/d0fff1ba148a6a8b.ts
 ✓ test/parser/suite/ts/pass/d10560a7143c6b71.ts
 ✓ test/parser/suite/ts/pass/d1087a586b6eb522.ts
@@ -20788,17 +20060,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/d190f00e1de28b94.ts
-✗ test/parser/suite/ts/pass/d1a8fc2809a0d619.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-10 | const fn = <
-11 |   A extends ObjA,
-   |                 ^
-12 |   B extends ObjB = ObjB
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/d1a8fc2809a0d619.ts
 ✗ test/parser/suite/ts/pass/d1a9eb5dcbc0a9ba.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
     |
@@ -20882,17 +20144,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d24abdad14ee0448.ts
 ✓ test/parser/suite/ts/pass/d257e89ad0b73b6d.ts
 ✓ test/parser/suite/ts/pass/d2659df1001d6642.ts
-✗ test/parser/suite/ts/pass/d26c77332fee6dd4.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 6 | 
- 7 | var a = <A,>(x: A) => x;
-   |           ^
- 8 | function a2<A,>(x: A) { return x }
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/d26c77332fee6dd4.ts
 ✓ test/parser/suite/ts/pass/d26d955527c274d1.ts
 ✗ test/parser/suite/ts/pass/d2773efdbc223505.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -20925,17 +20177,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d2a25d419ada4c13.ts
 ✓ test/parser/suite/ts/pass/d2a61f42f803dd7c.ts
 ✓ test/parser/suite/ts/pass/d2a6f1e83557ae32.ts
-✗ test/parser/suite/ts/pass/d2a8363e522ad688.ts (parse errors)
-error: Expected '?' in a conditional type, but found '='
-   |
-13 | const WrappedComponent = wrapComponent(
-14 |   <T extends string = "span">(props: {
-   |                     ^
-15 |     as?: T | undefined;
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/d2a8363e522ad688.ts
 ✓ test/parser/suite/ts/pass/d2ae27bb0d2bd89c.ts
 ✗ test/parser/suite/ts/pass/d2b34f30706e1946.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -20996,17 +20238,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 ✓ test/parser/suite/ts/pass/d2e3a23f59586ec3.ts
 ✓ test/parser/suite/ts/pass/d2e5f6d21e4b395a.ts
-✗ test/parser/suite/ts/pass/d2e9b5bef35e9223.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-17 | 
-18 | const isNumClass = <Item extends NumClass<number> | StrClass<string>> (
-   |                                                                     ^
-19 |         item: Item
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/d2e9b5bef35e9223.module.ts
 ✓ test/parser/suite/ts/pass/d2e9e6dfd7efdc65.ts
 ✗ test/parser/suite/ts/pass/d2ec040747188a9a.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
@@ -21510,10 +20742,10 @@ error: Expected declaration after 'export', but found 'interface'
 ✗ test/parser/suite/ts/pass/d858d637ed9097cd.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-80 | 
 81 | var r1arg1 = <T>(x: T) => [x];
-   |                   ^
 82 | var r1arg2 = (x: number) => [1];
+   |                ^
+83 | var r1 = foo1(r1arg1); // any, return types are not subtype of first overload
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -21532,17 +20764,7 @@ error: Expected ',' or '}' in object, but found '<'
    = help: Add a comma between properties or close the object with '}'.
 
 
-✗ test/parser/suite/ts/pass/d874bd5af1cdae02.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | const leak = call(wrap(<T>(x: T) => x), 1);
-   |                             ^
- 8 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d874bd5af1cdae02.ts
 ✓ test/parser/suite/ts/pass/d87f5eb2663fb680.ts
 ✓ test/parser/suite/ts/pass/d88242ffb66cc303.ts
 ✓ test/parser/suite/ts/pass/d88ded81ce878081.ts
@@ -21770,17 +20992,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/db7265ada4af9c30.ts
 ✓ test/parser/suite/ts/pass/db757a24b38d2edd.ts
 ✓ test/parser/suite/ts/pass/db7d09fcd47121cb.ts
-✗ test/parser/suite/ts/pass/db91688b90befb41.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-13 |     | Record<string, new (...args: any[]) => Client> // or map of classes
-14 | >(
-   | ^
-15 |   clientDef: D
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/db91688b90befb41.module.ts
 ✓ test/parser/suite/ts/pass/db9623394b10e2d3.ts
 ✓ test/parser/suite/ts/pass/db98302ba9b2b92f.ts
 ✗ test/parser/suite/ts/pass/db9d24887e84301f.ts (parse errors)
@@ -21795,17 +21007,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/dbae7b5dd6e136c9.ts
-✗ test/parser/suite/ts/pass/dbbbab143f2b8781.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-70 | var b = {
-71 |     foo: <U extends A, T extends A>(x: U, y: T) => {
-   |                      ^
-72 |         var a = x['foo'](); // should be string
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/dbbbab143f2b8781.ts
 ✓ test/parser/suite/ts/pass/dbd5aeb5e00faba0.ts
 ✓ test/parser/suite/ts/pass/dbf15286056b2179.ts
 ✓ test/parser/suite/ts/pass/dbf4a7e22f8a164f.ts
@@ -21998,15 +21200,14 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✗ test/parser/suite/ts/pass/de25de3e4688970f.module.ts (parse errors)
-error: Expected ')' after function arguments, but found ':'
+error: Expected declaration after 'export', but found 'type'
    |
-11 | 
-12 | const g: <U, R, S>(com: () => Iterator<S, U, R> | AsyncIterator<S, U, R>) => Promise<U> = async <U, R, S>(com: () => Iterator<S, U, R> | AsyncIterator<S, U, R>): Promise<U> => {
-   |                                                                                                              ^
-   |                                                                                                          ~ Opened here
-13 |   throw com;
+61 | 
+62 | export type ComponentClass<P> = new (props: P) => Component<P>;
+   |        ^^^^
+63 | export type FunctionComponent<P> = (props: P) => null;
    |
-   = help: Function calls must end with ')'. Check for missing commas or unclosed parentheses.
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/de3fa281b05a2ada.module.ts
@@ -22274,10 +21475,10 @@ error: Expected '{' to start function body, but found ';'
 ✗ test/parser/suite/ts/pass/e11a6a6fe87f940d.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
-22 | 
-23 | t = <T>(x: T) => 1;
-   |          ^
-24 | t = () => 1;
+37 | t = a3;
+38 | t = (x: string) => 1;
+   |       ^
+39 | t = function (x: string) { return ''; }
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -23255,10 +22456,10 @@ error: Expected '{' to start function body, but found ';'
 ✗ test/parser/suite/ts/pass/eadfbc772d638035.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 8 |   let x = {
  9 |     foo: <T2>(t2: T2) => x,
-   |                 ^
 10 |     bar: (t1: T1) => x,
+   |             ^
+11 |   };
    |
    = help: Add a comma between elements or close with ')'.
 
@@ -23480,17 +22681,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/ecd36a9648e0e94f.ts
 ✓ test/parser/suite/ts/pass/eceb4fd5333c3177.ts
 ✓ test/parser/suite/ts/pass/ecf61644954a1673.ts
-✗ test/parser/suite/ts/pass/ecfe332ebcfb1820.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-17 | 
-18 | var b = <T extends T>() => { }
-   |                     ^
-19 | var b2 = <T, U extends U>() => { }
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/ecfe332ebcfb1820.ts
 ✓ test/parser/suite/ts/pass/ed08e7493e030d5b.ts
 ✓ test/parser/suite/ts/pass/ed1cc19fe5002959.ts
 ✓ test/parser/suite/ts/pass/ed1e86010a40c33b.ts
@@ -23742,17 +22933,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/f00bcfbba6c9dc98.ts
-✗ test/parser/suite/ts/pass/f0211821b86d57bf.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-23 | 
-24 | var f3 = <T, U extends T>(x: T, y: U): T => {
-   |            ^
-25 |     x = y;
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/f0211821b86d57bf.ts
 ✗ test/parser/suite/ts/pass/f02ff9c08aef9a56.module.ts (parse errors)
 error: Deleting a variable in strict mode is not allowed
    |
@@ -23927,14 +23108,14 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/f19a9bf3ec8e79ab.ts
 ✓ test/parser/suite/ts/pass/f19db491e8a5e304.ts
 ✗ test/parser/suite/ts/pass/f1be9939d3edff1a.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
     |
-184 | function invoker <K extends string | number | symbol, A extends any[]> (key: K, ...args: A) {
-185 |     return <T extends Record<K, (...args: A) => any>> (obj: T): ReturnType<T[K]> => obj[key](...args)
-    |                                                     ^
-186 | }
+187 | 
+188 | const result = invoker('test', true)({ test: (a: boolean) => 123 })
+    |                                                ^
+189 | 
     |
-    = help: A conditional type is written 'T extends U ? X : Y'
+    = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/f1c190628f288a74.ts (parse errors)
@@ -24386,17 +23567,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/f535b742fdf7c0c8.ts
 ✓ test/parser/suite/ts/pass/f5390be180482999.ts
 ✓ test/parser/suite/ts/pass/f53c6609b8d14ada.ts
-✗ test/parser/suite/ts/pass/f53d2425ebe21f8d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-27 | 
-28 | for (var x in (<T>(x: T) => x)) { }
-   |                     ^
-29 | for (var x in function (x: string, y: number) { return x + y }) { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f53d2425ebe21f8d.ts
 ✗ test/parser/suite/ts/pass/f5403f644eb393ad.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
    |
@@ -24409,16 +23580,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 
 ✓ test/parser/suite/ts/pass/f5458599492ec800.ts
-✗ test/parser/suite/ts/pass/f54a5f4fe6023787.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
- 2 | // @declaration: true
- 3 | const f = <TFirstArgs extends any[], TLastArg>(...args: [...TFirstArgs, TLastArg]): void => {};
-   |                                    ^
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/f54a5f4fe6023787.ts
 ✓ test/parser/suite/ts/pass/f54d7088ca4e270f.ts
 ✓ test/parser/suite/ts/pass/f54dcb2fe5301d08.ts
 ✓ test/parser/suite/ts/pass/f54fe3fd8f2d2916.ts
@@ -25018,17 +24180,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/fba9a71160c95c6a.ts
 ✓ test/parser/suite/ts/pass/fbbc6d4326763b5f.ts
 ✓ test/parser/suite/ts/pass/fbc221d259a9279d.ts
-✗ test/parser/suite/ts/pass/fbc6a339a1ee89d1.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-    |
-354 | 
-355 | const f = <P extends object>(a: P & {}) => {
-    |                            ^
-356 |     "foo" in a;
-    |
-    = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/fbc6a339a1ee89d1.ts
 ✓ test/parser/suite/ts/pass/fbcfe89e1e4a7953.ts
 ✓ test/parser/suite/ts/pass/fbddcfea619cace8.ts
 ✗ test/parser/suite/ts/pass/fbe00c3dbc86d500.ts (parse errors)
@@ -25129,15 +24281,7 @@ error: 'const' declarations must be initialized
 
 ✓ test/parser/suite/ts/pass/fc5eec58e9ac91ef.ts
 ✓ test/parser/suite/ts/pass/fc6c916343a9d8ae.ts
-✗ test/parser/suite/ts/pass/fc777ba154511ab6.ts (parse errors)
-error: Empty parentheses are only valid as arrow function parameters
-   |
- 2 | declare const fA: <T>() => { v: T };
- 3 | const fB = <T>() => {
-   |               ^^
- 4 |     return { v: '' as any as T };
-   |
-
+✓ test/parser/suite/ts/pass/fc777ba154511ab6.ts
 ✓ test/parser/suite/ts/pass/fc8df0acb771acd0.ts
 ✓ test/parser/suite/ts/pass/fc95ecee9d5e5137.module.ts
 ✓ test/parser/suite/ts/pass/fc9ed7ae1577bca7.ts
@@ -25161,17 +24305,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/fce0e5565fe0bb18.ts
 ✓ test/parser/suite/ts/pass/fce6078d707e5f4f.ts
 ✓ test/parser/suite/ts/pass/fcec461402ddcbf5.ts
-✗ test/parser/suite/ts/pass/fd0504bb1a6d237e.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-37 | 
-38 | var f3 = <T, U extends T>(x: T, y: U) => {
-   |            ^
-39 |     function bar<V extends T, W extends U>(r: X, s: Y) { // error
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/fd0504bb1a6d237e.ts
 ✓ test/parser/suite/ts/pass/fd0d07b2eafa8db6.ts
 ✓ test/parser/suite/ts/pass/fd12c781211aba42.ts
 ✓ test/parser/suite/ts/pass/fd134b304a31fd73.ts
@@ -25280,17 +24414,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/fef291bfb5933b3f.ts
 ✓ test/parser/suite/ts/pass/fef576e9fdc62c5c.ts
 ✓ test/parser/suite/ts/pass/ff05af0c1d51c82b.ts
-✗ test/parser/suite/ts/pass/ff253b05c1b71000.ts (parse errors)
-error: Expected '?' in a conditional type, but found '>'
-   |
-11 | 
-12 | const soonFrozenObjectDeprecation = <T extends object>(
-   |                                                      ^
-13 |   obj: T,
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/ff253b05c1b71000.ts
 ✗ test/parser/suite/ts/pass/ff28d0d61a4f632b.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |

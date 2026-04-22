@@ -9,6 +9,7 @@ const Precedence = @import("../../token.zig").Precedence;
 const literals = @import("../literals.zig");
 const functions = @import("../functions.zig");
 const expressions = @import("../expressions.zig");
+const parenthesized = @import("../parenthesized.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
@@ -546,19 +547,7 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
 
     const type_parameters = try parseTypeParameters(parser);
 
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' to start function type parameters",
-        "A function or constructor type requires a parenthesized parameter list",
-    )) return null;
-
     const params = try functions.parseFormalParamaters(parser, .signature, false) orelse return null;
-
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close function type parameters",
-        "Each '(' in a function type must be matched by a ')'",
-    )) return null;
 
     if (parser.current_token.tag != .arrow) {
         try parser.reportExpected(
@@ -943,21 +932,7 @@ fn parseConstructSignature(parser: *Parser) Error!?ast.NodeIndex {
 /// the opening `(`, delegates to the JS formal-parameter parser in signature
 /// mode, then expects the closing `)`.
 fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' to start signature parameters",
-        "A signature parameter list must be enclosed in parentheses",
-    )) return null;
-
-    const params = try functions.parseFormalParamaters(parser, .signature, false) orelse return null;
-
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close signature parameters",
-        "Each '(' in a signature must be matched by a ')'",
-    )) return null;
-
-    return params;
+    return functions.parseFormalParamaters(parser, .signature, false);
 }
 
 /// [k: T]: V    readonly [k: T]: V
@@ -1929,6 +1904,40 @@ pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) vo
     if (end > pattern_span.end) {
         parser.tree.replaceSpan(pattern, .{ .start = pattern_span.start, .end = end });
     }
+}
+
+pub fn tryParseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.tree.isTs());
+    std.debug.assert(parser.current_token.tag == .less_than);
+
+    const cp = parser.checkpoint();
+    if (try parseGenericArrow(parser, is_async, arrow_start)) |arrow| return arrow;
+    parser.rewind(cp);
+    return null;
+}
+
+/// inner of `tryParseGenericArrow`, returns `null` at any rewind point, the
+/// outer wrapper owns the checkpoint so failure paths stay repetition-free.
+fn parseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+    const type_parameters = try parseTypeParameters(parser);
+    if (type_parameters == .null) return null;
+
+    if (parser.current_token.tag != .left_paren) return null;
+
+    const saved_await = parser.context.await_is_keyword;
+    if (is_async) parser.context.await_is_keyword = true;
+    defer parser.context.await_is_keyword = saved_await;
+
+    const params = try functions.parseFormalParamaters(parser, .arrow_formal_parameters, false) orelse return null;
+
+    const return_type: ast.NodeIndex = if (parser.current_token.tag == .colon)
+        try parseReturnTypeAnnotation(parser) orelse return null
+    else
+        .null;
+
+    if (parser.current_token.tag != .arrow or parser.current_token.hasLineTerminatorBefore()) return null;
+
+    return parenthesized.buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
 }
 
 /// `<Type>expr` prefix type assertion. the right operand is a unary
