@@ -39,7 +39,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .using => parseUsingOrExpression(parser),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
-        .type, .interface, .@"enum", .namespace, .module, .declare => parseTsDeclarationOrExpression(parser),
+        .type, .interface, .@"enum", .namespace, .module, .declare, .abstract => parseTsDeclarationOrExpression(parser),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),

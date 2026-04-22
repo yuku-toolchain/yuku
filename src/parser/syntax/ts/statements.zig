@@ -15,6 +15,7 @@ const ts_types = @import("types.zig");
 /// the matching declaration parser. `is_const` is only meaningful on enums.
 pub const Modifiers = struct {
     declare: bool = false,
+    abstract: bool = false,
     is_const: bool = false,
 };
 
@@ -25,6 +26,7 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     var cur = parser.current_token;
     var idx: usize = 0;
     var has_declare = false;
+    var has_abstract = false;
 
     // skip 'declare' modifier
     if (cur.tag == .declare) {
@@ -32,6 +34,18 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
         if (cur.hasLineTerminatorBefore()) return false;
         idx += 1;
         has_declare = true;
+    }
+
+    // skip 'abstract' modifier. `abstract` is only valid in front of `class`
+    // (with or without a preceding `declare`). everything else with a leading
+    // `abstract` token is a regular expression, so we leave it alone.
+    if (cur.tag == .abstract) {
+        const next = peek[idx] orelse return null;
+        if (next.hasLineTerminatorBefore()) return false;
+        if (next.tag != .class) return false;
+        cur = next;
+        idx += 1;
+        has_abstract = true;
     }
 
     // `const enum`, `declare const enum`, and `declare const <binding>` all
@@ -68,11 +82,11 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
             const next = peek[idx] orelse return null;
             return next.tag == .left_brace and !next.hasLineTerminatorBefore();
         },
-        // every ambient binding form: `declare var/let/function/class` plus
-        // the destructuring variants of `declare var/let`. the non-ambient
-        // forms are handled by the regular statement dispatch.
+        // every ambient binding form, `declare var/let/function/class` plus
+        // the destructuring variants of `declare var/let`. `abstract class`
+        // also lands here.
         .@"var", .let, .function, .class => {
-            if (!has_declare) return false;
+            if (!has_declare and !has_abstract) return false;
             const name = peek[idx] orelse return null;
             if (name.hasLineTerminatorBefore()) return false;
             return switch (cur.tag) {
@@ -99,6 +113,10 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         mods.declare = true;
         try parser.advance() orelse return null;
     }
+    if (parser.current_token.tag == .abstract) {
+        mods.abstract = true;
+        try parser.advance() orelse return null;
+    }
     if (parser.current_token.tag == .@"const") {
         const next = try parser.peekAhead() orelse return null;
         if (isConstEnumHead(next)) {
@@ -120,7 +138,11 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
             start,
         ),
         .function => functions.parseFunction(parser, .{ .is_declare = mods.declare }, start),
-        .class => class.parseClass(parser, .{ .is_declare = mods.declare }, start),
+        .class => class.parseClass(
+            parser,
+            .{ .is_declare = mods.declare, .is_abstract = mods.abstract },
+            start,
+        ),
         else => unreachable,
     };
 }

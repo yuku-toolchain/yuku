@@ -33798,13 +33798,11 @@ error: Unexpected token ':'
 
 
 ✓ test/parser/suite/js/fail/fa6a6d04f835e4c2.js
-error: Expected '{' to start function body, but found '}'
+error: Expected '{' to start method body, but found '}'
    |
  1 | class A { constructor() {} 'constructor'() }
    |                                            ^
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✓ test/parser/suite/js/fail/fa749cf3a252f600.js
 error: A rest element cannot have an initializer

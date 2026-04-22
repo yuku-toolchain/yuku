@@ -310,13 +310,14 @@ fn writeFieldExpr(w: *Writer, comptime tag_name: []const u8, comptime field_name
 
 fn isSpecial(comptime name: []const u8) bool {
     inline for ([_][]const u8{
-        "formal_parameter",                   "formal_parameters",   "function",              "arrow_function_expression",
-        "program",                            "directive",           "string_literal",        "numeric_literal",
-        "bigint_literal",                     "boolean_literal",     "null_literal",          "regexp_literal",
-        "template_element",                   "class",               "property_definition",   "unary_expression",
-        "binding_property",                   "array_pattern",       "object_pattern",        "jsx_text",
-        "ts_function_type",                   "ts_constructor_type", "ts_method_signature",   "ts_call_signature_declaration",
-        "ts_construct_signature_declaration", "ts_mapped_type",      "ts_module_declaration", "ts_global_declaration",
+        "formal_parameter",              "formal_parameters",                  "function",            "arrow_function_expression",
+        "program",                       "directive",                          "string_literal",      "numeric_literal",
+        "bigint_literal",                "boolean_literal",                    "null_literal",        "regexp_literal",
+        "template_element",              "class",                              "method_definition",   "property_definition",
+        "unary_expression",              "binding_property",                   "array_pattern",       "object_pattern",
+        "jsx_text",                      "ts_function_type",                   "ts_constructor_type", "ts_method_signature",
+        "ts_call_signature_declaration", "ts_construct_signature_declaration", "ts_mapped_type",      "ts_module_declaration",
+        "ts_global_declaration",
     }) |s| if (std.mem.eql(u8, s, name)) return true;
     return false;
 }
@@ -405,6 +406,27 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         try emit(w,
             \\    case {d}: {{ const r = {{ type: CLASS_TYPES[flags & {d}], start, end, decorators: nodeArr(f{d}, f0), id: f{d} !== NULL ? node(f{d}) : null, superClass: f{d} !== NULL ? node(f{d}) : null, body: node(f{d}) }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.superTypeArguments = f{d} !== NULL ? node(f{d}) : null; r.implements = nodeArr(f{d}, f{d}); r.abstract = !!(flags & {d}); r.declare = !!(flags & {d}); }} return r; }}
         , .{ tag, comptime enumMask(ast.ClassType), sd, si, si, ss, ss, sb, stp, stp, ssta, ssta, simp, simp + 1, comptime flagMask(ast.Class, "abstract"), comptime flagMask(ast.Class, "declare") });
+    } else if (comptime eql(u8, name, "method_definition")) {
+        const M = ast.MethodDefinition;
+        const sd = comptime slotOf(M, "decorators");
+        const sk = comptime slotOf(M, "key");
+        const sv = comptime slotOf(M, "value");
+        try emit(w,
+            \\    case {d}: {{ const r = {{ type: "MethodDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: node(f{d}), kind: METHOD_KINDS[flags & {d}], computed: !!(flags & {d}), static: !!(flags & {d}) }}; if (_isTs) {{ r.override = !!(flags & {d}); r.optional = !!(flags & {d}); const _abs = !!(flags & {d}); r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}]; if (_abs) r.type = "TSAbstractMethodDefinition"; }} return r; }}
+        , .{
+            tag,
+            sd,
+            sk,
+            sv,
+            comptime enumMask(ast.MethodDefinitionKind),
+            comptime flagMask(M, "computed"),
+            comptime flagMask(M, "static"),
+            comptime flagMask(M, "override"),
+            comptime flagMask(M, "optional"),
+            comptime flagMask(M, "abstract"),
+            comptime flagBit(M, "accessibility"),
+            comptime enumMask(ast.Accessibility),
+        });
     } else if (comptime eql(u8, name, "property_definition")) {
         const P = ast.PropertyDefinition;
         const sd = comptime slotOf(P, "decorators");
@@ -412,7 +434,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const sv = comptime slotOf(P, "value");
         const sta = comptime slotOf(P, "type_annotation");
         try emit(w,
-            \\    case {d}: {{ const r = {{ type: (flags & {d}) ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: f{d} !== NULL ? node(f{d}) : null, computed: !!(flags & {d}), static: !!(flags & {d}) }}; if (_isTs) {{ r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; r.declare = !!(flags & {d}); r.override = !!(flags & {d}); r.optional = !!(flags & {d}); r.definite = !!(flags & {d}); r.readonly = !!(flags & {d}); r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}]; }} return r; }}
+            \\    case {d}: {{ const _acc = !!(flags & {d}); const r = {{ type: _acc ? "AccessorProperty" : "PropertyDefinition", start, end, decorators: nodeArr(f{d}, f0), key: node(f{d}), value: f{d} !== NULL ? node(f{d}) : null, computed: !!(flags & {d}), static: !!(flags & {d}) }}; if (_isTs) {{ r.typeAnnotation = f{d} !== NULL ? node(f{d}) : null; r.declare = !!(flags & {d}); r.override = !!(flags & {d}); r.optional = !!(flags & {d}); r.definite = !!(flags & {d}); r.readonly = !!(flags & {d}); const _abs = !!(flags & {d}); r.accessibility = ACCESSIBILITY[(flags >> {d}) & {d}]; if (_abs) r.type = _acc ? "TSAbstractAccessorProperty" : "TSAbstractPropertyDefinition"; }} return r; }}
         , .{
             tag,
             comptime flagMask(P, "accessor"),
@@ -429,6 +451,7 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
             comptime flagMask(P, "optional"),
             comptime flagMask(P, "definite"),
             comptime flagMask(P, "readonly"),
+            comptime flagMask(P, "abstract"),
             comptime flagBit(P, "accessibility"),
             comptime enumMask(ast.Accessibility),
         });
@@ -597,8 +620,8 @@ const TS_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{
     .{ .node = "function", .fields = &.{ "type_parameters", "return_type" } },
     .{ .node = "arrow_function_expression", .fields = &.{ "type_parameters", "return_type" } },
     .{ .node = "class", .fields = &.{ "type_parameters", "super_type_arguments", "implements", "abstract", "declare" } },
-    .{ .node = "method_definition", .fields = &.{ "override", "optional", "accessibility" } },
-    .{ .node = "property_definition", .fields = &.{ "type_annotation", "declare", "override", "optional", "definite", "readonly", "accessibility" } },
+    .{ .node = "method_definition", .fields = &.{ "override", "optional", "abstract", "accessibility" } },
+    .{ .node = "property_definition", .fields = &.{ "type_annotation", "declare", "override", "optional", "definite", "readonly", "abstract", "accessibility" } },
     .{ .node = "call_expression", .fields = &.{"type_arguments"} },
     .{ .node = "new_expression", .fields = &.{"type_arguments"} },
     .{ .node = "tagged_template_expression", .fields = &.{"type_arguments"} },
