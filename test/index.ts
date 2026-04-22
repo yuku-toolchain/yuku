@@ -1,10 +1,17 @@
-// definite assignment assertion
-let a!: number;
-
-// optional function param
-function f(x?: number) {}
-
-// optional method signature param
-interface I {
-  m(x?: number): void;
+// @target: es2015
+declare class Box<T> {
+    value: T;
 }
+
+
+declare const maybeBox: unknown;
+
+maybeBox instanceof Box; // OK
+
+maybeBox instanceof Box<number>; // error
+maybeBox instanceof (Box<number>); // error
+maybeBox instanceof ((Box<number>)); // error
+
+Box<number> instanceof Object; // OK
+(Box<number>) instanceof Object; // OK
+((Box<number>)) instanceof Object; // OK

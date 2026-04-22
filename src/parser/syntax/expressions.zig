@@ -6,6 +6,7 @@ const ast = @import("../ast.zig");
 const Parser = @import("../parser.zig").Parser;
 const Error = @import("../parser.zig").Error;
 const TokenTag = @import("../token.zig").TokenTag;
+const Token = @import("../token.zig").Token;
 const std = @import("std");
 const Precedence = @import("../token.zig").Precedence;
 
@@ -42,30 +43,25 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
     while (true) {
         const current_token = parser.current_token;
 
-        const current_precedence = current_token.tag.precedence();
+        // ts `<` is a call-level postfix, dispatches before binary precedence
+        if (try tryConsumeTypeArgumentedPostfix(parser, left)) |node| {
+            left = node;
+            continue;
+        }
 
-        if (current_precedence < min_precedence or current_precedence == 0) break;
+        const infix_precedence = infixPrecedence(current_token, parser.tree.isTs());
+
+        if (infix_precedence < min_precedence or infix_precedence == 0) break;
 
         // for example:
         //  a++()        <- can't call an update expression
         //  () => {}()   <- can't call an arrow function
-        // breaking here produces natural "expected semicolon" error.
-        if (current_precedence > maxLeftPrecedence(parser.tree.getData(left))) break;
+        // breaking here produces natural "expected semicolon" error
+        if (infix_precedence > maxLeftPrecedence(parser.tree.getData(left))) break;
 
         if (opts.respect_allow_in and current_token.tag == .in and !parser.context.allow_in) break;
 
-        // [no LineTerminator here] ++
-        // [no LineTerminator here] --
-        if((current_token.tag == .increment or current_token.tag == .decrement) and current_token.hasLineTerminatorBefore()) break;
-
-        // splits `x\nas T` into two statements
-        if ((current_token.tag == .as or current_token.tag == .satisfies) and current_token.hasLineTerminatorBefore()) break;
-
-        // so `x\n!y` stays two statements via ASI instead of folding into
-        // `(x!)(y)`.
-        if (current_token.tag == .logical_not and parser.tree.isTs() and current_token.hasLineTerminatorBefore()) break;
-
-        left = try parseInfix(parser, current_precedence, left) orelse return null;
+        left = try parseInfix(parser, infix_precedence, left) orelse return null;
     }
 
     return left;
@@ -141,14 +137,6 @@ fn parseInfix(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.N
 
     if (parser.tree.isTs() and current.tag == .logical_not and !current.hasLineTerminatorBefore()) {
         return ts_types.parseNonNullExpression(parser, left);
-    }
-
-    // ts: `<` after a LeftHandSideExpression may open type arguments for a
-    // generic call `f<T>(x)`, a generic tagged template `` f<T>`x` ``, or a
-    // stand-alone instantiation expression `f<T>`. on speculative-parse
-    // failure this returns null and `<` continues as a binary operator.
-    if (parser.tree.isTs() and current.tag == .less_than) {
-        if (try ts_types.parseTypeArgumentedCallOrInstantiation(parser, left)) |node| return node;
     }
 
     if (current.tag.isBinaryOperator()) {
@@ -1176,17 +1164,40 @@ pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex 
     return expr;
 }
 
-/// returns the maximum left-binding power of operators allowed to take
-/// the given expression as their left operand. this encodes the js
-/// grammar hierarchy directly into the pratt parser:
-///  - AssignmentExpression-level (arrow, yield): only comma can follow
-///  - Non-LeftHandSideExpressions (unary, binary, etc.): binary ops OK,
-///    but no member access, calls, or postfix ++/--
-///  - LeftHandSideExpressions: unrestricted
 inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
     return switch (data) {
         .arrow_function_expression, .yield_expression => Precedence.Comma,
         .update_expression, .unary_expression, .await_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => Precedence.Unary,
         else => std.math.maxInt(u8),
     };
+}
+
+/// precedence of `token` as an infix operator. same as
+/// `tag.precedence()` except that a few tokens degrade to 0 when preceded
+/// by a line terminator, encoding the ecmascript "[no LineTerminator here]"
+/// restricted productions that would otherwise let the pratt loop fold two
+/// statements into one under ASI:
+/// - `a [no LineTerminator here] ++` / `--` (postfix update).
+/// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
+/// - `a [no LineTerminator here] !` (ts non-null assertion).
+inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
+    if (token.hasLineTerminatorBefore()) switch (token.tag) {
+        .increment, .decrement, .as, .satisfies => return 0,
+        .logical_not => if (is_ts) return 0,
+        else => {},
+    };
+
+    return token.tag.precedence();
+}
+
+/// ts `<` after a LeftHandSideExpression opens call-level type arguments:
+/// generic call `f<T>(x)`, generic tagged template `` f<T>`x` ``, or bare
+/// instantiation `f<T>`. it sits above the relational `<` in the grammar, so
+/// the pratt loop must attempt it before the binary precedence gate (which
+/// would drop us at relational level in a recursive context)
+inline fn tryConsumeTypeArgumentedPostfix(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    if (!parser.tree.isTs()) return null;
+    if (parser.current_token.tag != .less_than) return null;
+    if (maxLeftPrecedence(parser.tree.getData(left)) < Precedence.Call) return null;
+    return ts_types.parseTypeArgumentedCallOrInstantiation(parser, left);
 }

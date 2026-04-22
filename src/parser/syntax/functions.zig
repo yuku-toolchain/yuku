@@ -89,6 +89,12 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         );
     }
 
+    // `function f<T, U extends V>(...)`
+    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+        try ts_types.parseTypeParameters(parser)
+    else
+        .null;
+
     if (!try parser.expect(
         .left_paren,
         "Expected '(' to start parameter list",
@@ -166,6 +172,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
             .async = opts.is_async,
             .params = params,
             .body = body,
+            .type_parameters = type_parameters,
             .return_type = return_type,
         },
     }, .{

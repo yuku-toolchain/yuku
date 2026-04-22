@@ -74,6 +74,12 @@ pub fn parseClassDecorated(
         return null;
     }
 
+    // `class Foo<T, U extends V> ...`
+    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+        try ts_types.parseTypeParameters(parser)
+    else
+        .null;
+
     // `extends expr`.
     var super_class: ast.NodeIndex = .null;
     if (parser.current_token.tag == .extends) {
@@ -96,6 +102,7 @@ pub fn parseClassDecorated(
         .id = id,
         .super_class = super_class,
         .body = body,
+        .type_parameters = type_parameters,
         .implements = implements,
         .declare = opts.is_declare,
         .abstract = opts.is_abstract,
@@ -195,8 +202,13 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     try validatePrivateConstructor(parser, key, computed);
     try detectConstructorKind(parser, key, &mods, computed);
 
-    // dispatch on the shape of what follows the key
-    if (parser.current_token.tag == .left_paren) {
+    // dispatch on the shape of what follows the key. `(` always starts a
+    // method parameter list. in ts a leading `<` is a generic method's
+    // type parameter list, so dispatch there too.
+    const is_method_start = parser.current_token.tag == .left_paren or
+        (parser.tree.isTs() and parser.current_token.tag == .less_than);
+
+    if (is_method_start) {
         if (mods.is_accessor) {
             try parser.report(
                 parser.current_token.span,
@@ -458,13 +470,20 @@ fn parseMethodDefinition(
     }
 
     const func_start = parser.current_token.span.start;
+
+    // `m<T, U extends V>(...)`
+    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+        try ts_types.parseTypeParameters(parser)
+    else
+        .null;
+
     if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
     const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
     try validateGetSetParams(parser, mods.kind, params);
     const params_end = parser.current_token.span.end;
     if (!try parser.expect(.right_paren, "Expected ')' after method parameters", null)) return null;
 
-    // ts return type `: T`.
+    // ts return type `: T`
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
@@ -473,7 +492,7 @@ fn parseMethodDefinition(
     }
 
     // body. required in js, ts folds a missing body into a bodyless
-    // function terminated by `;` or asi.
+    // function terminated by `;` or ASI.
     var body: ast.NodeIndex = .null;
     var function_type: ast.FunctionType = .function_expression;
     var end: u32 = return_type_end;
@@ -496,6 +515,7 @@ fn parseMethodDefinition(
         .async = mods.is_async,
         .params = params,
         .body = body,
+        .type_parameters = type_parameters,
         .return_type = return_type,
     } }, .{ .start = func_start, .end = end });
 
