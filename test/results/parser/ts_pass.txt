@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       5281/8261 (63.93%)
-Failed:       2980
-AST mismatch: 0/5281
+Passed:       5364/8261 (64.93%)
+Failed:       2897
+AST mismatch: 0/5364
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -587,17 +587,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/0497bde4ea8e782a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | 
-10 | class Button extends Control implements SelectableControl {
-   |                              ^^^^^^^^^^
-11 |     select() { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/0497bde4ea8e782a.ts
 ✓ test/parser/suite/ts/pass/049eaf282a2c000b.ts
 ✓ test/parser/suite/ts/pass/04a2576d74711dba.ts
 ✗ test/parser/suite/ts/pass/04a8215673963e72.ts (parse errors)
@@ -733,17 +723,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/05b7946b9b7efc96.ts
 ✓ test/parser/suite/ts/pass/05b966291b1a7de1.ts
 ✓ test/parser/suite/ts/pass/05b972c774571831.module.ts
-✗ test/parser/suite/ts/pass/05c37ceac4f167fc.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 3 | 
- 4 | declare class MySettable implements Settable {
-   |                          ^^^^^^^^^^
- 5 |     set(option: Record<string, unknown>): void;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/05c37ceac4f167fc.ts
 ✗ test/parser/suite/ts/pass/05c7a692760abe47.module.ts (parse errors)
 error: Export 'n2' is not defined
    |
@@ -765,17 +745,7 @@ error: Export 'n2' is not defined
 ✓ test/parser/suite/ts/pass/060e8c772a094d89.ts
 ✓ test/parser/suite/ts/pass/0610245487bcd3aa.ts
 ✓ test/parser/suite/ts/pass/06287b588c2578a2.ts
-✗ test/parser/suite/ts/pass/062f6a4b3d3aca08.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | }
- 6 | abstract class B implements A {
-   |                  ^^^^^^^^^^
- 7 |     abstract prop: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/062f6a4b3d3aca08.ts
 ✗ test/parser/suite/ts/pass/063141ff1384af23.ts (parse errors)
 error: Expected a type, but found '?'
    |
@@ -839,17 +809,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/068c5fa9a41941ac.ts
 ✓ test/parser/suite/ts/pass/068c91620945f45d.ts
 ✓ test/parser/suite/ts/pass/0697a279ceedc4f5.ts
-✗ test/parser/suite/ts/pass/0699d19fecf89c4a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-37 | 
-38 | class ValidClass implements ValidInterface {
-   |                  ^^^^^^^^^^
-39 |     x: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/0699d19fecf89c4a.ts
 ✓ test/parser/suite/ts/pass/069e6128b0a48df9.ts
 ✓ test/parser/suite/ts/pass/06a0caf6992db5ee.ts
 ✓ test/parser/suite/ts/pass/06b00deaa54c1353.ts
@@ -876,17 +836,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/06fbea5fd70573b6.ts
 ✓ test/parser/suite/ts/pass/070244cfd7985f16.ts
-✗ test/parser/suite/ts/pass/070cf46024d5100f.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | 
-10 | class Bar implements I { // error
-   |           ^^^^^^^^^^
-11 | }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/070cf46024d5100f.ts
 ✗ test/parser/suite/ts/pass/0722e425a045fa9a.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -1364,17 +1314,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/0a0ec648dea73e38.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 7 | }
- 8 | class C implements A {
-   |         ^^^^^^^^^^
- 9 |     
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/0a0ec648dea73e38.ts
 ✓ test/parser/suite/ts/pass/0a200f030e284207.ts
 ✓ test/parser/suite/ts/pass/0a21dcf8654aaf33.ts
 ✓ test/parser/suite/ts/pass/0a2d9db51d320a33.module.ts
@@ -1549,16 +1489,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/0b51b11f3a3a5352.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 4 | interface I extends M { }
- 5 | class C2 implements M { }
-   |          ^^^^^^^^^^
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/0b51b11f3a3a5352.ts
 ✓ test/parser/suite/ts/pass/0b5220a31edd9d64.ts
 ✗ test/parser/suite/ts/pass/0b58a1d04c49e80e.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
@@ -1725,17 +1656,7 @@ error: Expected ']' after computed property key, but found ':'
  8 | }
    |
 
-✗ test/parser/suite/ts/pass/0c40db0f89f865e7.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-13 | }
-14 | class DerivedInterface implements Base {
-   |                        ^^^^^^^^^^
-15 |     n: DerivedInterface | string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/0c40db0f89f865e7.ts
 ✓ test/parser/suite/ts/pass/0c4edfce16594963.ts
 ✓ test/parser/suite/ts/pass/0c5cf9499ad9a70e.ts
 ✗ test/parser/suite/ts/pass/0c63afab136ff78a.module.ts (parse errors)
@@ -2206,17 +2127,7 @@ error: Label 'target' does not denote an iteration statement
    = help: A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement
 
 
-✗ test/parser/suite/ts/pass/0f95374c28a9d739.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 4 | }
- 5 | class C implements I {
-   |         ^^^^^^^^^^
- 6 |     private x = 0; // should raise error at class decl
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/0f95374c28a9d739.ts
 ✓ test/parser/suite/ts/pass/0f978dfc4113f393.ts
 ✗ test/parser/suite/ts/pass/0f983e258903e59a.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -2572,15 +2483,13 @@ error: Expected ';' after class field, but found '<'
 
 ✓ test/parser/suite/ts/pass/112d5b7d100fd9ca.ts
 ✗ test/parser/suite/ts/pass/113a8ad4230af6f2.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ']' after computed property key, but found ':'
    |
-11 | 
 12 | class B implements A {
-   |         ^^^^^^^^^^
 13 |     [x: string]: Base; // error
+   |       ^
+14 | }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/suite/ts/pass/114200c75f3912c9.ts
 ✓ test/parser/suite/ts/pass/1144a76fb2b8da93.ts
@@ -2668,17 +2577,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/119e9cf58c29c408.ts
 ✓ test/parser/suite/ts/pass/11a9bdfc4bfbdc7c.ts
 ✓ test/parser/suite/ts/pass/11ae0406e22e94cd.ts
-✗ test/parser/suite/ts/pass/11ae5b7ff2b04de6.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-14 |     }
-15 |     export class Bug implements IMode {
-   |                      ^^^^^^^^^^
-16 |         public tokenize(line:string, tokens:IToken[], includeStates:boolean):ILineTokens {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/11ae5b7ff2b04de6.ts
 ✓ test/parser/suite/ts/pass/11c4f6c5cdf5a41f.module.ts
 ✓ test/parser/suite/ts/pass/11dac9db1650e185.ts
 ✓ test/parser/suite/ts/pass/11de5491a9682329.ts
@@ -2697,17 +2596,7 @@ error: Expected ';' after class field, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/121299d8d8e4683a.ts
-✗ test/parser/suite/ts/pass/121546c26ba15f5f.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-20 |     }
-21 |     export class Bug implements IMode {
-   |                      ^^^^^^^^^^
-22 |         public onEnter(line:string, state:IState, offset:number):IAction {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/121546c26ba15f5f.ts
 ✓ test/parser/suite/ts/pass/122a825f4e631947.ts
 ✗ test/parser/suite/ts/pass/122d1514a080a0b3.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -3519,17 +3408,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/17cc6498b42df97d.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 7 | 
- 8 | class Point implements IPoint {
-   |             ^^^^^^^^^^
- 9 |     constructor(public x,public y){}
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/17cc6498b42df97d.ts
 ✗ test/parser/suite/ts/pass/17d8ae0c1b3cf0d2.ts (parse errors)
 error: Expected ')' to close signature parameters, but found '?'
    |
@@ -3560,17 +3439,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/1856dddf90c4f399.ts
 ✓ test/parser/suite/ts/pass/185a3cb267d794fc.ts
 ✓ test/parser/suite/ts/pass/185b1e627720e873.ts
-✗ test/parser/suite/ts/pass/185b602584571d3d.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-17 | 
-18 | class D extends C implements A { // error
-   |                   ^^^^^^^^^^
-19 |     private w!: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/185b602584571d3d.ts
 ✗ test/parser/suite/ts/pass/187235ed34b8c73c.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -4036,17 +3905,7 @@ error: Expected '?' in a conditional type, but found '>'
    = help: A conditional type is written 'T extends U ? X : Y'
 
 
-✗ test/parser/suite/ts/pass/1b5963dd2b62d65e.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | }
- 6 | class C implements I {
-   |         ^^^^^^^^^^
- 7 |     x1(a: number, callback: (x: 'hi') => number);
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/1b5963dd2b62d65e.ts
 ✓ test/parser/suite/ts/pass/1b6bc8fc4ca7f36c.ts
 ✗ test/parser/suite/ts/pass/1b6e33d848a0aa78.ts (parse errors)
 error: Expected ')' to close function type parameters, but found '?'
@@ -4334,17 +4193,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/1d6806a8f07ef061.ts
 ✓ test/parser/suite/ts/pass/1d6ae84abf928a8f.ts
-✗ test/parser/suite/ts/pass/1d6c6d094f5258a6.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | }
- 6 | class C implements A {
-   |         ^^^^^^^^^^
- 7 |     foo() {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/1d6c6d094f5258a6.ts
 ✓ test/parser/suite/ts/pass/1d6cb2871f814ed9.ts
 ✓ test/parser/suite/ts/pass/1d7775666b7948aa.ts
 ✗ test/parser/suite/ts/pass/1d7953329dca7095.module.tsx (parse errors)
@@ -4396,17 +4245,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/1da9855288709d92.ts
 ✓ test/parser/suite/ts/pass/1dbd7ffb400b0dbd.ts
 ✓ test/parser/suite/ts/pass/1dbdbe69c3f01395.ts
-✗ test/parser/suite/ts/pass/1dc63c5e9f4bf6ed.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-10 | 
-11 | class D extends C implements I { // error
-   |                   ^^^^^^^^^^
-12 |     public foo(x: any) { return x; }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/1dc63c5e9f4bf6ed.ts
 ✓ test/parser/suite/ts/pass/1de35281b118ae0c.ts
 ✗ test/parser/suite/ts/pass/1de4fa3f8cef0a2e.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -4937,17 +4776,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/21fe18135dc56ff4.ts
 ✓ test/parser/suite/ts/pass/220b5e9875c1c9c0.ts
 ✓ test/parser/suite/ts/pass/22104078e0f71dc3.ts
-✗ test/parser/suite/ts/pass/2218a43dbbef7378.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-13 |     // Class
-14 |     export class Point implements IPoint {
-   |                        ^^^^^^^^^^
-15 |         // Constructor
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/2218a43dbbef7378.ts
 ✓ test/parser/suite/ts/pass/221bf83adc5192f5.ts
 ✗ test/parser/suite/ts/pass/222c98fad9fff1f2.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -5325,17 +5154,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/24bdb3ba3f2ea20f.ts
 ✓ test/parser/suite/ts/pass/24c7986cc8963601.ts
 ✓ test/parser/suite/ts/pass/24d093474506a285.ts
-✗ test/parser/suite/ts/pass/24d1171e9bf81b6e.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-16 | 
-17 |     class B implements A {
-   |             ^^^^^^^^^^
-18 |         fooo: Derived; // error
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/24d1171e9bf81b6e.ts
 ✓ test/parser/suite/ts/pass/24da56273546a5ad.ts
 ✗ test/parser/suite/ts/pass/24e02f303e706586.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -5363,17 +5182,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/24fb3a93eb1e67c2.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-22 | 
-23 | class C1 implements I2 { // should be an error - it doesn't implement the members of I1
-   |          ^^^^^^^^^^
-24 |     public i2P1!: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/24fb3a93eb1e67c2.ts
 ✗ test/parser/suite/ts/pass/24ff91536b3be614.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -6232,12 +6041,12 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/2b1c138bfbe01188.ts
 ✓ test/parser/suite/ts/pass/2b2733f53a0b834f.ts
 ✗ test/parser/suite/ts/pass/2b368b2e644e51dd.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 6 | 
- 7 | class C implements I {
-   |         ^^^^^^^^^^
- 8 |     id: number;
+10 | 
+11 | class D<T>{
+   |        ^
+12 |     source: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -6280,17 +6089,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/2b9bb410ca24e328.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-11 | 
-12 | class C implements Function {
-   |         ^^^^^^^^^^
-13 |     prototype = null;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/2b9bb410ca24e328.ts
 ✓ test/parser/suite/ts/pass/2b9c28f392320e5b.ts
 ✓ test/parser/suite/ts/pass/2b9ce47f201fe83a.ts
 ✗ test/parser/suite/ts/pass/2b9f317efb4f971e.ts (parse errors)
@@ -7054,12 +6853,12 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/30f13216ea5d3be4.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 5 | 
- 6 | class C implements I {
-   |         ^^^^^^^^^^
- 7 |     id: number;
+ 9 | 
+10 | class D<T>{
+   |        ^
+11 |     source: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -7156,17 +6955,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/314c0c9699ae91a2.ts
-✗ test/parser/suite/ts/pass/31609a682b925275.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 8 | 
- 9 | class C3 implements I1 {
-   |          ^^^^^^^^^^
-10 |     public iObj:{ };
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/31609a682b925275.ts
 ✓ test/parser/suite/ts/pass/3163508e301af3ae.ts
 ✗ test/parser/suite/ts/pass/31641d5bce5d6d73.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -7316,28 +7105,18 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/321929e0d2ad4efc.ts
 ✓ test/parser/suite/ts/pass/3228ff5032957fff.ts
 ✓ test/parser/suite/ts/pass/322958af01858ba9.ts
-✗ test/parser/suite/ts/pass/322b9978609d0943.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-10 | }
-11 | class B implements A {
-   |         ^^^^^^^^^^
-12 |   method1() { }      // should error
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/322b9978609d0943.ts
 ✓ test/parser/suite/ts/pass/322c3584f1696007.ts
 ✓ test/parser/suite/ts/pass/3238632bb41768e1.ts
 ✗ test/parser/suite/ts/pass/323d283afd286640.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ';' after class field, but found '<'
    |
- 8 | 
- 9 | class IntFooBad implements IFoo<number> { // error
-   |                 ^^^^^^^^^^
-10 |     foo(x: string): string { return null; }
+33 | class StringFoo3 implements IFoo<string> { // error
+34 |     foo<T>(x: T): T { return null; }
+   |        ^
+35 | }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Add a semicolon after the field declaration.
 
 
 ✗ test/parser/suite/ts/pass/3240544fcb6caf15.ts (parse errors)
@@ -8040,14 +7819,14 @@ error: 'this' is reserved and cannot be used as a binding identifier
    |
 
 ✗ test/parser/suite/ts/pass/373f9ee79fc1e8de.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ';' after class field, but found '<'
    |
- 4 | }
  5 | class CacheService implements ICache { // Should not error that property type of get are incomaptible
-   |                    ^^^^^^^^^^
  6 |     get<T>(key: string): T {
+   |        ^
+ 7 |         return undefined;
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/37408f71b77bdc92.ts
@@ -8889,17 +8668,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/3d7c76fb9ae20a25.ts
-✗ test/parser/suite/ts/pass/3d80b8ea174d84da.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 2 | class A { foo(): number { return 1; } }
- 3 | class C implements A {
-   |         ^^^^^^^^^^
- 4 |     foo() {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/3d80b8ea174d84da.ts
 ✓ test/parser/suite/ts/pass/3d821fe93337617e.ts
 ✓ test/parser/suite/ts/pass/3d8679d57dddaf5c.module.ts
 ✗ test/parser/suite/ts/pass/3d9e17ac408ef564.module.ts (parse errors)
@@ -10310,17 +10079,7 @@ error: 'export' declaration may only appear at the top level
 
 ✓ test/parser/suite/ts/pass/467a77cb53a5f247.ts
 ✓ test/parser/suite/ts/pass/4681c0bd4d890351.ts
-✗ test/parser/suite/ts/pass/468a5c79239d5c3a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 8 | // Derived1 is assignable to, but not a subtype of, Base
- 9 | class Derived1 implements Base {
-   |                ^^^^^^^^^^
-10 |     foo: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/468a5c79239d5c3a.ts
 ✗ test/parser/suite/ts/pass/468de98cb3626dd9.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -10622,17 +10381,7 @@ error: Cannot break to label 'target' across function boundaries
    |
 
 ✓ test/parser/suite/ts/pass/48367c8bdf6f1ad9.ts
-✗ test/parser/suite/ts/pass/4838a987793853f2.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 2 | namespace M {
- 3 |     export class C implements I {} // this should be an unresolved symbol I error
-   |                    ^^^^^^^^^^
- 4 | }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/4838a987793853f2.ts
 ✗ test/parser/suite/ts/pass/48396d5cef744600.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -10679,17 +10428,7 @@ error: Expected ')' after method parameters, but found '?'
    |
 
 ✓ test/parser/suite/ts/pass/48790a9605b0404e.ts
-✗ test/parser/suite/ts/pass/488e97ecb429257a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-21 | 
-22 | class D implements I, J {
-   |         ^^^^^^^^^^
-23 |     baz() { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/488e97ecb429257a.ts
 ✗ test/parser/suite/ts/pass/4891648ed9df9379.ts (parse errors)
 error: Expected ')' to close signature parameters, but found '?'
    |
@@ -10871,17 +10610,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/49b8f606cc92897f.module.ts
-✗ test/parser/suite/ts/pass/49bfcf8a26c1293a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | interface I { id: number }
-10 | class C implements I {
-   |         ^^^^^^^^^^
-11 |     id: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/49bfcf8a26c1293a.ts
 ✓ test/parser/suite/ts/pass/49c392728df0cbaa.ts
 ✗ test/parser/suite/ts/pass/49c9fe7b597fd0b7.ts (parse errors)
 error: Expected ')' to close signature parameters, but found '?'
@@ -11313,17 +11042,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/4d093d81529d0aee.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-10 | 
-11 | class D2 implements I {
-   |          ^^^^^^^^^^
-12 |     public foo(x: any) { return x }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/4d093d81529d0aee.ts
 ✗ test/parser/suite/ts/pass/4d10874b0f3cd175.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
    |
@@ -11346,17 +11065,7 @@ error: Expected ')' to close parameter list, but found '?'
    = help: Add a closing parenthesis ')' after the parameters, or check for missing commas between parameters.
 
 
-✗ test/parser/suite/ts/pass/4d365620bb11b368.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | }
- 7 | abstract class B implements A {
-   |                  ^^^^^^^^^^
- 8 |     abstract prop: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/4d365620bb11b368.ts
 ✗ test/parser/suite/ts/pass/4d388a78c7f07f68.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -11846,17 +11555,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/5061c5c348127a8d.ts
-✗ test/parser/suite/ts/pass/506b64bed1a9b8c0.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class C implements I {
-   |         ^^^^^^^^^^
- 7 |     [Symbol.toPrimitive]() {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/506b64bed1a9b8c0.ts
 ✓ test/parser/suite/ts/pass/506ceba63a342f1d.ts
 ✓ test/parser/suite/ts/pass/5070f596363759e7.ts
 ✓ test/parser/suite/ts/pass/507cd00bf6a85786.ts
@@ -12100,15 +11799,13 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/526b3df358f68f65.ts
 ✗ test/parser/suite/ts/pass/5272a2b3e0f82eb2.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ')' after method parameters, but found '?'
    |
-28 | // based on: https://github.com/microsoft/TypeScript/blob/15f67e0b482faf9f6a3ab9965f3c11196bf3e99b/src/harness/compilerImpl.ts#L77
-29 | class MyMap implements Map<string, number> {
-   |             ^^^^^^^^^^
-30 |     declare private _keys: string[];
+36 |     delete(key: string): boolean { return false; }
+37 |     forEach(callbackfn: (value: number, key: string, map: Map<string, number>) => void, thisArg?: any): void { }
+   |                                                                                                ^
+38 |     get(key: string): number | undefined { return undefined; }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✗ test/parser/suite/ts/pass/5281690ffdba8688.module.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -12917,17 +12614,7 @@ error: 'this' is reserved and cannot be used as a binding identifier
    |
 
 ✓ test/parser/suite/ts/pass/57cdf2cdbcd24606.ts
-✗ test/parser/suite/ts/pass/57de3829af562752.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-10 | 
-11 | class D extends C implements I {
-   |                   ^^^^^^^^^^
-12 |     public foo(x: any) { return x; }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/57de3829af562752.ts
 ✓ test/parser/suite/ts/pass/57deb66f4d4a0024.ts
 ✗ test/parser/suite/ts/pass/57e8295ef821960f.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
@@ -13498,17 +13185,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/5c07fbec166a95c5.ts
 ✓ test/parser/suite/ts/pass/5c1788645c3a78d6.ts
 ✓ test/parser/suite/ts/pass/5c22bd1fbf89f3da.tsx
-✗ test/parser/suite/ts/pass/5c26d6f77d05655a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 1 | // @target: es2015
- 2 | class C implements I {
-   |         ^^^^^^^^^^
- 3 |     public foo(x: any) { return x; }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/5c26d6f77d05655a.ts
 ✗ test/parser/suite/ts/pass/5c283c131dbe5d58.ts (parse errors)
 error: Expected ';' after for-loop init, but found 'of'
    |
@@ -13737,17 +13414,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/5d2bfdfde8fd118d.ts
 ✓ test/parser/suite/ts/pass/5d35ec9e28bc952d.ts
 ✓ test/parser/suite/ts/pass/5d398101d6edc625.ts
-✗ test/parser/suite/ts/pass/5d40b10d6cfa0ad7.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 8 | 
- 9 | class C5 implements I1 {
-   |          ^^^^^^^^^^
-10 |     public iNum:number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/5d40b10d6cfa0ad7.ts
 ✓ test/parser/suite/ts/pass/5d5445cd209cb0b8.ts
 ✗ test/parser/suite/ts/pass/5d583179f8358ba0.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -14049,17 +13716,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/5fbd5d02779d7e97.ts
 ✓ test/parser/suite/ts/pass/5fd507811add369e.ts
 ✓ test/parser/suite/ts/pass/5fe8278525db07ad.ts
-✗ test/parser/suite/ts/pass/5ff214402a858fb3.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class C implements I {
-   |         ^^^^^^^^^^
- 7 |     [Symbol.toPrimitive]() {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/5ff214402a858fb3.ts
 ✓ test/parser/suite/ts/pass/5ff4c80a4920a2be.ts
 ✓ test/parser/suite/ts/pass/5ff78bcb7697cacb.ts
 ✓ test/parser/suite/ts/pass/5ffca47d25fda001.ts
@@ -15016,17 +14673,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/66f60e4aaf92cb79.ts
-✗ test/parser/suite/ts/pass/66fdda54338e1def.module.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 1 | // @target: es2015
- 2 |     export class NullLogger implements ILogger {
-   |                             ^^^^^^^^^^
- 3 |         public information(): boolean { return false; }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/66fdda54338e1def.module.ts
 ✓ test/parser/suite/ts/pass/67115a9277b6f2fd.ts
 ✓ test/parser/suite/ts/pass/6717069c7009c7cf.ts
 ✓ test/parser/suite/ts/pass/6737cbdd2d285153.ts
@@ -15108,29 +14755,19 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/679334585d27367a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 7 | 
- 8 | class C implements I {
-   |         ^^^^^^^^^^
- 9 |     id: number;
+16 | 
+17 | class D<T>{
+   |        ^
+18 |     source: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
 ✓ test/parser/suite/ts/pass/67936221c686a1da.ts
 ✓ test/parser/suite/ts/pass/67aa62eccb3b02df.module.ts
-✗ test/parser/suite/ts/pass/67ba97b17b7b1162.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class Bar implements Foo<Bar, string> {
-   |           ^^^^^^^^^^
- 7 |   foo(bar: string): void {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/67ba97b17b7b1162.ts
 ✗ test/parser/suite/ts/pass/67d50368366c59ab.tsx (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -15530,17 +15167,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/6a83dffea1b7be56.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-19 | 
-20 | class D implements I, J {
-   |         ^^^^^^^^^^
-21 |     baz() { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/6a83dffea1b7be56.ts
 ✓ test/parser/suite/ts/pass/6a8b1674322df71e.ts
 ✓ test/parser/suite/ts/pass/6a8e3f5cfeaa8c82.ts
 ✓ test/parser/suite/ts/pass/6a8f791b0af41a67.ts
@@ -15630,17 +15257,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/6b3c8ba9012dd5f4.module.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | 
- 7 | class C1 implements I1 {
-   |          ^^^^^^^^^^
- 8 |     public item:number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/6b3c8ba9012dd5f4.module.ts
 ✓ test/parser/suite/ts/pass/6b44dde314117a8b.ts
 ✓ test/parser/suite/ts/pass/6b4b9fe4f528af6b.ts
 ✓ test/parser/suite/ts/pass/6b5547cc3a16b875.ts
@@ -16073,17 +15690,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/6e52b9298eb9b8b1.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-13 | 
-14 | class D implements A { // error
-   |         ^^^^^^^^^^
-15 |     private x!: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/6e52b9298eb9b8b1.ts
 ✓ test/parser/suite/ts/pass/6e591b69e0b66934.ts
 ✗ test/parser/suite/ts/pass/6e599ddcefbbf60b.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -16683,14 +16290,14 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/72c511bfb04951df.ts
 ✓ test/parser/suite/ts/pass/72dcba11464203d5.ts
 ✗ test/parser/suite/ts/pass/72e1f75d0cbfcc2b.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start function body, but found ';'
    |
- 6 | 
- 7 | class C1 implements IFoo1 { // incompatible on the return type
-   |          ^^^^^^^^^^
- 8 |     public p1() {
+38 | 
+39 | function if1(i: IFoo1): void;
+   |                             ^
+40 | function if1(i: IFoo2): void;
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/72e5361922bc94d0.ts
@@ -16794,17 +16401,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/73d3f87ed8291daa.ts
-✗ test/parser/suite/ts/pass/73dc8307bfcbb777.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | 
- 7 | class C1 implements I1 { 
-   |          ^^^^^^^^^^
- 8 |     IM1():void[] {return null;}
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/73dc8307bfcbb777.ts
 ✓ test/parser/suite/ts/pass/73dfb8a6e6459c84.ts
 ✓ test/parser/suite/ts/pass/73e1407c136d4283.ts
 ✓ test/parser/suite/ts/pass/73e1c8a634df98a1.ts
@@ -17235,17 +16832,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/7646dfc8e9a8f278.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 4 | }
- 5 | class Foo implements Qux {
-   |           ^^^^^^^^^^
- 6 |  private Bar: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/7646dfc8e9a8f278.ts
 ✓ test/parser/suite/ts/pass/764bd435046446f7.ts
 ✓ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts
 ✗ test/parser/suite/ts/pass/765441ad39f393dc.ts (parse errors)
@@ -17562,17 +17149,7 @@ error: Expected ')' after method parameters, but found '?'
 ✓ test/parser/suite/ts/pass/781792f0f84fbde6.ts
 ✓ test/parser/suite/ts/pass/781f15a12a048fc9.ts
 ✓ test/parser/suite/ts/pass/7820a9ebb9e94c1f.ts
-✗ test/parser/suite/ts/pass/78262044c7744832.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class S implements S2 { foo: string; }
-   |         ^^^^^^^^^^
- 7 | class T implements T2 { foo: string; }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/78262044c7744832.ts
 ✓ test/parser/suite/ts/pass/7837467a313c6021.ts
 ✓ test/parser/suite/ts/pass/783c417e692a8a84.ts
 ✗ test/parser/suite/ts/pass/7843c8c0bdbc2dd4.ts (parse errors)
@@ -17625,15 +17202,13 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/78a614dc709922ac.ts
 ✓ test/parser/suite/ts/pass/78b23a24e668b0db.ts
 ✗ test/parser/suite/ts/pass/78ba667066e8d84a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ')' after method parameters, but found '?'
    |
- 3 |     interface iface { }
- 4 |     class base implements iface { }
-   |                ^^^^^^^^^^
- 5 |     class base2 implements iface { }
+ 9 |     class f {
+10 |         public voidIfAny(x: boolean, y?: boolean): number;
+   |                                       ^
+11 |         public voidIfAny(x: string, y?: boolean): number;
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/suite/ts/pass/78bf7982ec209fa2.ts
 ✓ test/parser/suite/ts/pass/78c330f88a425097.module.ts
@@ -17844,17 +17419,7 @@ error: Expected ')' after method parameters, but found '?'
  7 | 
    |
 
-✗ test/parser/suite/ts/pass/7a1ff8df25bb098a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 3 | class A { a = 10; }
- 4 | class C implements I { c };
-   |         ^^^^^^^^^^
- 5 | class D implements I { d };
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/7a1ff8df25bb098a.ts
 ✗ test/parser/suite/ts/pass/7a228ba19dd782ea.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -18326,17 +17891,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/7d01617e73327c20.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-17 | 
-18 | class D extends C implements A { // error
-   |                   ^^^^^^^^^^
-19 |     y: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/7d01617e73327c20.ts
 ✗ test/parser/suite/ts/pass/7d044ff2ac6bcf70.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'declare'
    |
@@ -18829,17 +18384,7 @@ error: Expected '{' to start class body, but found '<'
 ✓ test/parser/suite/ts/pass/8095520dca131191.ts
 ✓ test/parser/suite/ts/pass/80963311c75f2a96.ts
 ✓ test/parser/suite/ts/pass/8096b5996a9646b7.ts
-✗ test/parser/suite/ts/pass/809c96542e2e2bc4.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | declare class Buffer implements IBuffer {
-   |                      ^^^^^^^^^^
- 7 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/809c96542e2e2bc4.ts
 ✓ test/parser/suite/ts/pass/80a14e11d7570bfd.ts
 ✓ test/parser/suite/ts/pass/80a37ffa84a6becd.ts
 ✗ test/parser/suite/ts/pass/80a40255efa349b1.ts (parse errors)
@@ -19169,17 +18714,7 @@ error: Expected ';' after class field, but found '<'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/832982e1ed718061.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | 
-10 | class Derived2 implements Base2 {
-   |                ^^^^^^^^^^
-11 |     method(...args: any[]): void { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/832982e1ed718061.ts
 ✗ test/parser/suite/ts/pass/832a7f5524b5e264.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -19461,12 +18996,12 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
 
 ✓ test/parser/suite/ts/pass/8558a9f51bd7e915.ts
 ✗ test/parser/suite/ts/pass/855ec5f319406140.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
-29 | 
-30 | class D implements A {
-   |         ^^^^^^^^^^
-31 |     a: number;
+43 | namespace M {
+44 |     class C<T> {
+   |            ^
+45 |         a: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -19579,17 +19114,7 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 
 ✓ test/parser/suite/ts/pass/85ea816e769ec261.ts
 ✓ test/parser/suite/ts/pass/85ec7c0196e28d5c.ts
-✗ test/parser/suite/ts/pass/85ee0edebb024405.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-12 | interface I { id: number }
-13 | class C implements I {
-   |         ^^^^^^^^^^
-14 |     id: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/85ee0edebb024405.ts
 ✗ test/parser/suite/ts/pass/85ff8a2aaec1ed17.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -20898,17 +20423,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/8f0985277afd8baa.ts
-✗ test/parser/suite/ts/pass/8f0b28ed34119d5c.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-24 | }
-25 | class J implements I {
-   |         ^^^^^^^^^^
-26 |     old_x = this.x;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/8f0b28ed34119d5c.ts
 ✓ test/parser/suite/ts/pass/8f1385ea2a5b0c6e.ts
 ✗ test/parser/suite/ts/pass/8f1726c7ae4cf920.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -21612,17 +21127,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/946f0bba3a247276.ts
 ✓ test/parser/suite/ts/pass/94735f9336db5620.ts
-✗ test/parser/suite/ts/pass/9475695a7899f31f.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class B implements A {}
-   |         ^^^^^^^^^^
- 7 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/9475695a7899f31f.ts
 ✗ test/parser/suite/ts/pass/94821781a9b9574e.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -21634,17 +21139,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/9486f24b8805d90c.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | 
- 7 | class C1 implements ifoo {
-   |          ^^^^^^^^^^
- 8 |     public y:number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/9486f24b8805d90c.ts
 ✓ test/parser/suite/ts/pass/94896f5822036405.module.ts
 ✗ test/parser/suite/ts/pass/948aa13fca005137.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -21811,17 +21306,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/963178cd5379816a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | 
- 7 | class C1 implements I1 {
-   |          ^^^^^^^^^^
- 8 |     method(a = 0, b) { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/963178cd5379816a.ts
 ✓ test/parser/suite/ts/pass/963d7ff519910dfd.ts
 ✗ test/parser/suite/ts/pass/9656605d4f62c2fa.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -21887,17 +21372,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/968ebbe4e51facca.ts
-✗ test/parser/suite/ts/pass/968f0875f902de3a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | }
- 6 | class MyClass implements MyInterface {
-   |               ^^^^^^^^^^
- 7 |     myMethod(myList: any[]) { // valid
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/968f0875f902de3a.ts
 ✓ test/parser/suite/ts/pass/96902b76336b6b2e.ts
 ✗ test/parser/suite/ts/pass/969e57001f6b415d.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -22200,17 +21675,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/988c6b173c7403b7.ts
 ✓ test/parser/suite/ts/pass/988dd843bb0f847b.module.ts
-✗ test/parser/suite/ts/pass/98a958cad56cf31c.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 2 | interface I {}
- 3 | class AAA implements I { }
-   |           ^^^^^^^^^^
- 4 | var x: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/98a958cad56cf31c.ts
 ✓ test/parser/suite/ts/pass/98ab66ddbeaa522b.ts
 ✗ test/parser/suite/ts/pass/98b7f4df74da9ac4.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -22485,17 +21950,7 @@ error: Expected '(' to start parameter list, but found '<'
     = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/99fe3f2afb3a8ec7.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-10 | 
-11 |     export class Point2d implements Point {
-   |                          ^^^^^^^^^^
-12 |         constructor(public x: number, public y: number) { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/99fe3f2afb3a8ec7.ts
 ✗ test/parser/suite/ts/pass/99fedadb9eb4543e.ts (parse errors)
 error: 'let' is not allowed as a variable name in a lexical declaration
    |
@@ -22945,17 +22400,7 @@ error: Expected ')' after method parameters, but found '?'
  9 | }
    |
 
-✗ test/parser/suite/ts/pass/9d0035b97465df02.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | 
-10 | class Bar extends Foo implements I { // ok
-   |                       ^^^^^^^^^^
-11 |     y!: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/9d0035b97465df02.ts
 ✓ test/parser/suite/ts/pass/9d31f63823f43f2d.ts
 ✓ test/parser/suite/ts/pass/9d3ec2350eb9a97e.ts
 ✓ test/parser/suite/ts/pass/9d3f4bf440270b98.ts
@@ -23142,17 +22587,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/9e74abd850e283b3.module.ts
 ✓ test/parser/suite/ts/pass/9e7974e50ce61b63.module.ts
 ✓ test/parser/suite/ts/pass/9e7c9b4923cfae3b.ts
-✗ test/parser/suite/ts/pass/9e84bbe4f0f50e1d.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 2 | interface A {}
- 3 | let x = class B implements A {
-   |                 ^^^^^^^^^^
- 4 |     prop: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/9e84bbe4f0f50e1d.ts
 ✗ test/parser/suite/ts/pass/9e85c7ddb72af334.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -23529,17 +22964,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/a1106c9cec3108d5.ts
 ✓ test/parser/suite/ts/pass/a113804ec3dcb10f.ts
 ✓ test/parser/suite/ts/pass/a115e2f6164affd6.ts
-✗ test/parser/suite/ts/pass/a12c63a7c3ae9a71.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 7 | 
- 8 | class C1 implements i4 {
-   |          ^^^^^^^^^^
- 9 |     public name(): string { return ""; }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/a12c63a7c3ae9a71.ts
 ✓ test/parser/suite/ts/pass/a1372240e0745019.ts
 ✓ test/parser/suite/ts/pass/a1536c579acfa61c.ts
 ✓ test/parser/suite/ts/pass/a1580d2e7c68996a.ts
@@ -23706,17 +23131,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/a29c242c9fff3f9b.ts
-✗ test/parser/suite/ts/pass/a2a650bc099f94bd.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 8 | 
- 9 | class C1 implements i1 {
-   |          ^^^^^^^^^^
-10 |     public name:string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/a2a650bc099f94bd.ts
 ✗ test/parser/suite/ts/pass/a2b7ddb62fdc8f8a.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -23783,17 +23198,7 @@ error: Expected declaration after 'export', but found 'declare'
 
 ✓ test/parser/suite/ts/pass/a33e07b5658159e2.ts
 ✓ test/parser/suite/ts/pass/a33f29969465f2ad.module.ts
-✗ test/parser/suite/ts/pass/a344f4cf48181fe1.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 8 | type Wrapper = Foo & Bar;
- 9 | class Baz implements Wrapper {
-   |           ^^^^^^^^^^
-10 |     x: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/a344f4cf48181fe1.ts
 ✓ test/parser/suite/ts/pass/a34770c40241cd6d.ts
 ✓ test/parser/suite/ts/pass/a34ea13570823330.module.ts
 ✓ test/parser/suite/ts/pass/a3683bc771c75d99.ts
@@ -24024,17 +23429,7 @@ error: Expected ']' after computed property key, but found ':'
 13 | }
    |
 
-✗ test/parser/suite/ts/pass/a49e1b6ac0217fb1.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-10 |     // Class
-11 |     export class Point implements IPoint {
-   |                        ^^^^^^^^^^
-12 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/a49e1b6ac0217fb1.ts
 ✓ test/parser/suite/ts/pass/a4a41879659188f5.ts
 ✓ test/parser/suite/ts/pass/a4adb25d4a3d633c.ts
 ✓ test/parser/suite/ts/pass/a4b31a4ef7a8812d.ts
@@ -24183,12 +23578,12 @@ error: 'function' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/a5953965808f7c6c.ts
 ✓ test/parser/suite/ts/pass/a5a8efa037b926aa.ts
 ✗ test/parser/suite/ts/pass/a5af197de99af2d8.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
-10 | 
-11 | class C implements I {
-   |         ^^^^^^^^^^
-12 |     id: number;
+14 | 
+15 | class D<T>{
+   |        ^
+16 |     source: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -24369,15 +23764,13 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/a71faf6a9b7340a9.module.ts
 ✓ test/parser/suite/ts/pass/a72780fc757e9f78.ts
 ✗ test/parser/suite/ts/pass/a72a927e80fefb25.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ')' after method parameters, but found '?'
    |
-13 | 
-14 | class C1 implements I1,I2 {
-   |          ^^^^^^^^^^
 15 |     private iFn();
+16 |     private iFn(n?:number, s?:string) { }
+   |                  ^
+17 |     private iAny:any;
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✗ test/parser/suite/ts/pass/a72d52d8999d6bff.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
@@ -25217,12 +24610,12 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/ac73f2893da6327d.ts
 ✓ test/parser/suite/ts/pass/ac8f34b99ed9eeaf.ts
 ✗ test/parser/suite/ts/pass/ac991c4b39eae6cf.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 3 | class A extends Comparable {}
- 4 | class B implements Comparable {}
-   |         ^^^^^^^^^^
- 5 | 
+ 6 | interface Comparable2<T> {}
+ 7 | class A2<T> extends Comparable2<T> {}
+   |         ^
+ 8 | class B2<T> implements Comparable2<T> {}
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -26107,12 +25500,12 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/b261d83ab5c78a0a.ts
 ✗ test/parser/suite/ts/pass/b28593716976cce9.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 5 | 
- 6 | class CharField implements Field<string> {
-   |                 ^^^^^^^^^^
- 7 |     clean(input: string) {
+17 | 
+18 | class ObjectField<A, T extends { [name: string]: Field<any> }> {
+   |                  ^
+19 |     constructor(public fields: T) { }
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -26316,17 +25709,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/b3e73eac7e74c6d4.ts
-✗ test/parser/suite/ts/pass/b3e9dd7947c91cee.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | 
- 7 | class C implements I {
-   |         ^^^^^^^^^^
- 8 |     x1(a: number, callback: (x: 'hi') => number) { // error
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/b3e9dd7947c91cee.ts
 ✓ test/parser/suite/ts/pass/b3edf149ec781d77.ts
 ✓ test/parser/suite/ts/pass/b3f6c22ba363aa6c.ts
 ✗ test/parser/suite/ts/pass/b3f9dec05ef769bc.ts (parse errors)
@@ -26548,12 +25931,12 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/b57c7724bd0de4c1.ts
 ✓ test/parser/suite/ts/pass/b59000375c9d668f.ts
 ✗ test/parser/suite/ts/pass/b59cbe04e8e18261.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
-20 | 
-21 | class D implements A {
-   |         ^^^^^^^^^^
-22 |     a: number;
+32 | namespace M {
+33 |     class C<T> {
+   |            ^
+34 |         a: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -26672,15 +26055,13 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/b678dcc88257bc59.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ')' after method parameters, but found '?'
    |
- 7 | 
  8 | class C1 implements I1 {
-   |          ^^^^^^^^^^
  9 |     method(a = 0, b?) { }
+   |                    ^
+10 | }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/suite/ts/pass/b67cb97cb00c18ae.ts
 ✓ test/parser/suite/ts/pass/b67f419a5cd198fa.ts
@@ -27266,17 +26647,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/b9f984bf1f3eccab.ts
-✗ test/parser/suite/ts/pass/b9fc8d1dcfb55297.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 2 | class A { foo(): number { return 1; } }
- 3 | class C implements A {} // error
-   |         ^^^^^^^^^^
- 4 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/b9fc8d1dcfb55297.ts
 ✗ test/parser/suite/ts/pass/b9fdd22ab6e894f8.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -28120,17 +27491,7 @@ error: Expected '(' to start parameter list, but found '<'
    = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
-✗ test/parser/suite/ts/pass/bfb0104b62f32df4.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-19 | }
-20 | class c1 implements i1 {
-   |          ^^^^^^^^^^
-21 |     public i1_p1!: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/bfb0104b62f32df4.ts
 ✓ test/parser/suite/ts/pass/bfb41eaac596df46.ts
 ✗ test/parser/suite/ts/pass/bfb687f7bf2ef4ba.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -29110,14 +28471,14 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/c5e9df7d668de0e0.ts
 ✓ test/parser/suite/ts/pass/c5f6537eccce08a6.ts
 ✗ test/parser/suite/ts/pass/c5fc181269288728.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
- 6 | 
- 7 | class C implements I {
-   |         ^^^^^^^^^^
- 8 |     x1(a: number, callback: (x: 'hi') => number);
+18 | declare var c: C;
+19 | c.x1(1, (x: 'hi') => { return 1; } );
+   |           ^
+20 | c.x1(1, (x: 'bye') => { return 1; } ); 
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Add a comma between elements or close with ')'.
 
 
 ✗ test/parser/suite/ts/pass/c5feae6c8c039573.ts (parse errors)
@@ -29747,17 +29108,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/ca93ab90d62d7708.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 4 | // should be an error 
- 5 | class c1 implements i1 { private name:string; }
-   |          ^^^^^^^^^^
- 6 |  
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/ca93ab90d62d7708.ts
 ✗ test/parser/suite/ts/pass/ca945e731f04d614.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -30168,17 +29519,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/cd819117a056ca6a.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 4 |     interface X { m1:number; }
- 5 |     export class XX implements X { constructor(public m1:number) { } }
-   |                     ^^^^^^^^^^
- 6 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/cd819117a056ca6a.ts
 ✓ test/parser/suite/ts/pass/cd83c2d75ba6e122.ts
 ✗ test/parser/suite/ts/pass/cd83dd24dbe95dd4.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'declare'
@@ -30309,17 +29650,7 @@ error: Expected ']' after computed property key, but found ':'
  8 | 
    |
 
-✗ test/parser/suite/ts/pass/ce47a6d1db9bc4fc.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-20 | namespace Formatting {
-21 |     export class Indenter implements ILineIndenationResolver  {
-   |                           ^^^^^^^^^^
-22 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/ce47a6d1db9bc4fc.ts
 ✗ test/parser/suite/ts/pass/ce54212bf8a371d8.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -30624,17 +29955,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/d09a1437960e41db.ts
-✗ test/parser/suite/ts/pass/d0a6e5ccc63644fa.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | }
- 6 | class C implements A {
-   |         ^^^^^^^^^^
- 7 |     private x = 1;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/d0a6e5ccc63644fa.ts
 ✗ test/parser/suite/ts/pass/d0b4e5df70b16f04.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -30788,14 +30109,14 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✗ test/parser/suite/ts/pass/d1ad5ecc7021f58f.module.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected declaration after 'export', but found 'namespace'
    |
- 7 |     interface I2 { item:number; }   
- 8 |     class C1 implements I1 {
-   |              ^^^^^^^^^^
- 9 |         public item:number;
+26 | 
+27 | export namespace M2 {
+   |        ^^^^^^^^^
+28 |     export interface I1 { item:string; }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/d1ae963dc31ee54a.ts
@@ -31123,17 +30444,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/d36c34f1eed368b1.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | 
-10 | class Bar implements I { // error
-   |           ^^^^^^^^^^
-11 | }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/d36c34f1eed368b1.ts
 ✗ test/parser/suite/ts/pass/d36d0074b9d9fa9e.ts (parse errors)
 error: Expected ',' or ')' in parenthesized expression, but found ':'
    |
@@ -31393,17 +30704,7 @@ error: Expected ')' to close parameter list, but found '?'
 ✓ test/parser/suite/ts/pass/d53cc32fe5e60272.ts
 ✓ test/parser/suite/ts/pass/d5517139af78ef64.ts
 ✓ test/parser/suite/ts/pass/d554e92de0aec433.module.ts
-✗ test/parser/suite/ts/pass/d558f34b4d3b56ef.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-14 | 
-15 | class TextBase implements IText {
-   |                ^^^^^^^^^^
-16 |         public foo: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/d558f34b4d3b56ef.ts
 ✓ test/parser/suite/ts/pass/d559dc8e2d8821bf.ts
 ✓ test/parser/suite/ts/pass/d56a709038125cdb.module.ts
 ✗ test/parser/suite/ts/pass/d57177b513f80361.ts (parse errors)
@@ -31513,17 +30814,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/d6285c456307b305.ts
-✗ test/parser/suite/ts/pass/d62f94504523677e.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 6 | 
- 7 | class Bug implements I {
-   |           ^^^^^^^^^^
- 8 |     public foo(value: number) {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/d62f94504523677e.ts
 ✓ test/parser/suite/ts/pass/d6373e65efc8da47.ts
 ✗ test/parser/suite/ts/pass/d6424bb20f39ebf1.module.ts (parse errors)
 error: 'static' is reserved in strict mode and cannot be used as a binding identifier
@@ -31946,12 +31237,12 @@ error: Expected ')' to close parameter list, but found '?'
 
 ✓ test/parser/suite/ts/pass/d9f76e8a3051873e.ts
 ✗ test/parser/suite/ts/pass/da1055b062575ca4.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found 'number'
    |
- 3 | 
- 4 | class C implements number { }
-   |         ^^^^^^^^^^
- 5 | class C2 implements string { }
+ 7 | 
+ 8 | const C4 = class implements number {}
+   |                             ^^^^^^
+ 9 | const C5 = class implements string {}
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -32119,17 +31410,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/dae011fc6fe39271.ts
-✗ test/parser/suite/ts/pass/dae0d2368a465bc4.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-23 | }
-24 | class c1 implements i1 {
-   |          ^^^^^^^^^^
-25 |     public i1_p1: number;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/dae0d2368a465bc4.ts
 ✓ test/parser/suite/ts/pass/dae58af4ea185294.ts
 ✗ test/parser/suite/ts/pass/dae840f77538c0a1.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
@@ -32374,25 +31655,15 @@ error: Expected ')' to close signature parameters, but found '?'
 ✓ test/parser/suite/ts/pass/dcbd2dd08cdbfbbd.ts
 ✓ test/parser/suite/ts/pass/dcbfc18aab8e5b1b.ts
 ✓ test/parser/suite/ts/pass/dcd058f05bbbca07.ts
-✗ test/parser/suite/ts/pass/dce10f495bd0a663.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 9 | 
-10 | class C2 implements C1 { // error -- missing x
-   |          ^^^^^^^^^^
-11 | }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/dce10f495bd0a663.ts
 ✓ test/parser/suite/ts/pass/dce3a06232932cdb.ts
 ✗ test/parser/suite/ts/pass/dce3c10560f63290.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 5 | 
- 6 | class C implements I {
-   |         ^^^^^^^^^^
- 7 |     id: number;
+ 9 | 
+10 | class D<T>{
+   |        ^
+11 |     source: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -33626,14 +32897,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/e512cf8844d5ec0a.ts
 ✗ test/parser/suite/ts/pass/e5190debf908cb5b.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ';' after class field, but found '<'
    |
- 5 | 
- 6 | class IntFooBad implements IFoo<number> {
-   |                 ^^^^^^^^^^
- 7 |     foo(x: string): string { return null; }
+14 | class StringFoo3 implements IFoo<string> {
+15 |     foo<T>(x: T): T { return null; }
+   |        ^
+16 | }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/e51a4b9b354dd058.ts
@@ -33665,17 +32936,7 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/e564f0c1f0bc2376.ts
 ✓ test/parser/suite/ts/pass/e56e912427cdb00a.ts
-✗ test/parser/suite/ts/pass/e5759586e57275fd.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 4 | }
- 5 | class Camera implements iface{
-   |              ^^^^^^^^^^
- 6 |     constructor (public str: string) {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/e5759586e57275fd.ts
 ✓ test/parser/suite/ts/pass/e575aff33ec3f246.ts
 ✗ test/parser/suite/ts/pass/e578a9b49ea9d330.tsx (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -33842,14 +33103,14 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/e6e07ec689c2da73.ts
 ✓ test/parser/suite/ts/pass/e7058a24e60b628b.ts
 ✗ test/parser/suite/ts/pass/e706fbd8b8cd8c43.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '(' to start parameter list, but found '<'
    |
- 4 | interface F { }
- 5 | class Class implements F {
-   |             ^^^^^^^^^^
- 6 |     constructor() { }
+26 | 
+27 | function d0<T extends Class>({x} = { x: new Class() }) { }
+   |            ^
+28 | function d1<T extends F>({x}: { x: F }) { }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Function parameters must be enclosed in parentheses: function name(a, b) {}
 
 
 ✗ test/parser/suite/ts/pass/e707f78c71765961.ts (parse errors)
@@ -34585,17 +33846,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/ec54bfde325117dc.ts
 ✓ test/parser/suite/ts/pass/ec55d0290cc7013a.ts
-✗ test/parser/suite/ts/pass/ec5aaeb744cfc160.module.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 3 | 
- 4 |     export class LoggerAdapter implements ILogger {
-   |                                ^^^^^^^^^^
- 5 |         constructor (public logger: ILogger) { 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/ec5aaeb744cfc160.module.ts
 ✓ test/parser/suite/ts/pass/ec6770f4f4433925.ts
 ✓ test/parser/suite/ts/pass/ec7009723c5bb1bc.ts
 ✓ test/parser/suite/ts/pass/ec73d8617afbca21.module.ts
@@ -34622,14 +33873,14 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 
 ✗ test/parser/suite/ts/pass/ec88c5d50ec92bd3.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ';' after class field, but found '<'
    |
- 9 | // OK
 10 | class X implements I {  
-   |         ^^^^^^^^^^
 11 |     f<T extends B>(): T { return undefined; }
+   |      ^
+12 | } // { f: () => { b; } }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
+   = help: Add a semicolon after the field declaration.
 
 
 ✓ test/parser/suite/ts/pass/ec8ba5429c1a1a45.ts
@@ -34819,17 +34070,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/ee4f3c721f150cba.ts
 ✓ test/parser/suite/ts/pass/ee6340addb6b23bf.ts
 ✓ test/parser/suite/ts/pass/ee6605b0f812bfce.ts
-✗ test/parser/suite/ts/pass/ee67f6c59b0254e5.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 3 | interface base1 { i }
- 4 | class C implements base { c }
-   |         ^^^^^^^^^^
- 5 | class D implements base { d }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/ee67f6c59b0254e5.ts
 ✓ test/parser/suite/ts/pass/ee8ba03d71cf4c89.module.ts
 ✓ test/parser/suite/ts/pass/ee9bd571fc067f49.ts
 ✓ test/parser/suite/ts/pass/eea46bc783cc26ad.ts
@@ -34954,16 +34195,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/ef5c0237a2bf297e.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 2 | class A { }
- 3 | class C implements A { }
-   |         ^^^^^^^^^^
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/ef5c0237a2bf297e.ts
 ✓ test/parser/suite/ts/pass/ef61759797f47b29.ts
 ✓ test/parser/suite/ts/pass/ef61d9ed4236bd06.ts
 ✗ test/parser/suite/ts/pass/ef631f62ac26fe8e.ts (parse errors)
@@ -35218,17 +34450,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/ts/pass/f10e531f003cc577.ts
-✗ test/parser/suite/ts/pass/f10e8c528882e7c4.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class C1 implements I1 {
-   |          ^^^^^^^^^^
- 7 |     public get getset1(){return 1;}
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/f10e8c528882e7c4.ts
 ✓ test/parser/suite/ts/pass/f12273fbad14e034.ts
 ✓ test/parser/suite/ts/pass/f1227e96c75e9cfd.ts
 ✓ test/parser/suite/ts/pass/f1346dcca16c673f.ts
@@ -35444,17 +34666,7 @@ error: Identifier 'foo' has already been declared
 
 ✓ test/parser/suite/ts/pass/f22b0b246f8bc072.ts
 ✓ test/parser/suite/ts/pass/f235a6711296f3f1.ts
-✗ test/parser/suite/ts/pass/f23f365a4bb0466c.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class C implements I {
-   |         ^^^^^^^^^^
- 7 |     [Symbol.toStringTag]() {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/f23f365a4bb0466c.ts
 ✓ test/parser/suite/ts/pass/f24502e8e1486696.ts
 ✓ test/parser/suite/ts/pass/f253b08399636a97.module.ts
 ✓ test/parser/suite/ts/pass/f259b17628144d69.ts
@@ -36034,17 +35246,7 @@ error: Expected '{' to start class body, but found '<'
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/f54fe3fd8f2d2916.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-17 | 
-18 | class Dog implements Animal {
-   |           ^^^^^^^^^^
-19 |     run() {};
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/f54fe3fd8f2d2916.ts
 ✗ test/parser/suite/ts/pass/f5516d3717d94357.ts (parse errors)
 error: Expected '{' to start class body, but found '<'
    |
@@ -36102,17 +35304,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/f5a8665621ef3fbf.module.ts
-✗ test/parser/suite/ts/pass/f5be171c2f8d25a3.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
-14 | 
-15 | class D implements MyDoc {
-   |         ^^^^^^^^^^
-16 |     createElement(tagName:string): Base;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/f5be171c2f8d25a3.ts
 ✗ test/parser/suite/ts/pass/f5c547dd3f96da2d.ts (parse errors)
 error: Expected '(' to start parameter list, but found '<'
    |
@@ -36573,17 +35765,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/f8addf368b0a9882.ts
 ✓ test/parser/suite/ts/pass/f8aed2f2ccbb38a0.module.ts
 ✓ test/parser/suite/ts/pass/f8be6d5e7fcac8ec.ts
-✗ test/parser/suite/ts/pass/f8c047c3f4dac920.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 8 | 
- 9 | class C4 implements I1 {
-   |          ^^^^^^^^^^
-10 |     public iObj:{ };
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/f8c047c3f4dac920.ts
 ✓ test/parser/suite/ts/pass/f8cb2f85b36e328b.ts
 ✓ test/parser/suite/ts/pass/f8cea0d39149401a.ts
 ✓ test/parser/suite/ts/pass/f8cf39ac43946c9b.module.ts
@@ -36629,15 +35811,13 @@ error: Expected '(' to start parameter list, but found '<'
 
 ✓ test/parser/suite/ts/pass/f92f52b9733ddc56.ts
 ✗ test/parser/suite/ts/pass/f9321784200fd3fd.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected ']' after computed property key, but found ':'
    |
- 5 | }
  6 | class A implements I {
-   |         ^^^^^^^^^^
  7 |     [index: string]: { prop }
+   |           ^
+ 8 | }
    |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
 
 ✓ test/parser/suite/ts/pass/f9329837dea7640a.ts
 ✓ test/parser/suite/ts/pass/f943113baf0e06aa.ts
@@ -36654,12 +35834,12 @@ error: Expected '{' to start class body, but found '<'
 
 ✓ test/parser/suite/ts/pass/f94d5ce1c5e2b080.ts
 ✗ test/parser/suite/ts/pass/f94e15038e9d0041.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
+error: Expected '{' to start class body, but found '<'
    |
- 7 | 
- 8 | class C implements I {
-   |         ^^^^^^^^^^
- 9 |     id: number;
+11 | 
+12 | class D<T>{
+   |        ^
+13 |     source: T;
    |
    = help: Class body must be enclosed in braces: class Name { ... }
 
@@ -37137,17 +36317,7 @@ error: Expected '{' to start class body, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/fd0d07b2eafa8db6.ts
-✗ test/parser/suite/ts/pass/fd12c781211aba42.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | }
- 6 | class D extends C implements C {
-   |                   ^^^^^^^^^^
- 7 |     baz() { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/fd12c781211aba42.ts
 ✓ test/parser/suite/ts/pass/fd134b304a31fd73.ts
 ✓ test/parser/suite/ts/pass/fd177f0c18a9d9d7.ts
 ✓ test/parser/suite/ts/pass/fd2cca9b80df3ecd.ts
@@ -37299,17 +36469,7 @@ error: Expected '(' to start parameter list, but found '<'
 ✓ test/parser/suite/ts/pass/fe8c1780de8d49be.ts
 ✓ test/parser/suite/ts/pass/fe8dac6313abdabc.ts
 ✓ test/parser/suite/ts/pass/fe903c779a2faab8.ts
-✗ test/parser/suite/ts/pass/fe9a8e0b78a3319f.ts (parse errors)
-error: Expected '{' to start class body, but found 'implements'
-   |
- 5 | 
- 6 | class C1 implements I1 { 
-   |          ^^^^^^^^^^
- 7 |     IM1():void[] {return null;}
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/fe9a8e0b78a3319f.ts
 ✗ test/parser/suite/ts/pass/feb12b6c265c71c0.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |

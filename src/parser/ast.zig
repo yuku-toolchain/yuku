@@ -3186,6 +3186,26 @@ pub const TSInterfaceHeritage = struct {
     type_arguments: NodeIndex = .null,
 };
 
+/// One entry in a class's `implements` clause. The implemented interface is
+/// identified by a runtime expression (an identifier path) with an optional
+/// `<T, U>` type argument list.
+///
+/// ## Example
+/// ```ts
+/// class Foo implements Bar, Base.Thing<T> {}
+/// //                   ^^^ TSClassImplements (expression = Identifier "Bar")
+/// //                        ^^^^^^^^^^^^^^^ TSClassImplements (expression = MemberExpression, type_arguments = <T>)
+/// ```
+pub const TSClassImplements = struct {
+    /// the implemented type expression. an `IdentifierReference` or a
+    /// left-associative `MemberExpression` chain of identifier names. calls,
+    /// computed access, and optional chaining are rejected by the grammar.
+    expression: NodeIndex,
+    /// a `TSTypeParameterInstantiation` or `.null` when the entry has no
+    /// `<T>` type arguments
+    type_arguments: NodeIndex = .null,
+};
+
 /// A TypeScript `enum` declaration. Creates a named runtime binding that also
 /// acts as a type. May be prefixed by `const` (enum whose members are inlined
 /// at use sites) and/or `declare` (ambient declaration, no emitted runtime).
@@ -3793,6 +3813,7 @@ pub const NodeData = union(enum) {
     ts_interface_declaration: TSInterfaceDeclaration,
     ts_interface_body: TSInterfaceBody,
     ts_interface_heritage: TSInterfaceHeritage,
+    ts_class_implements: TSClassImplements,
     ts_enum_declaration: TSEnumDeclaration,
     ts_enum_body: TSEnumBody,
     ts_enum_member: TSEnumMember,

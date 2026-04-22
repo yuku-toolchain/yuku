@@ -12,6 +12,7 @@ const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
 const ts_types = @import("ts/types.zig");
+const ts_statements = @import("ts/statements.zig");
 const ecmascript = @import("../ecmascript.zig");
 
 //
@@ -80,6 +81,13 @@ pub fn parseClassDecorated(
         super_class = try expressions.parseLeftHandSideExpression(parser) orelse return null;
     }
 
+    // ts: `implements A, B.C<T>, ...`. may appear with or without a preceding
+    // `extends` clause.
+    const implements: ast.IndexRange = if (parser.tree.isTs())
+        try ts_statements.parseImplementsClause(parser) orelse return null
+    else
+        .empty;
+
     const body = try parseClassBody(parser) orelse return null;
 
     return try parser.tree.createNode(.{ .class = .{
@@ -88,6 +96,7 @@ pub fn parseClassDecorated(
         .id = id,
         .super_class = super_class,
         .body = body,
+        .implements = implements,
         .declare = opts.is_declare,
         .abstract = opts.is_abstract,
     } }, .{ .start = start, .end = parser.tree.getSpan(body).end });

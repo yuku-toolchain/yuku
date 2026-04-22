@@ -222,7 +222,7 @@ fn parseInterfaceExtendsClause(parser: *Parser) Error!?ast.IndexRange {
 /// chain built from `IdentifierReference` heads and `MemberExpression` links,
 /// matching the runtime-expression shape the ESTree output expects.
 fn parseInterfaceHeritage(parser: *Parser) Error!?ast.NodeIndex {
-    const expression = try parseInterfaceHeritageExpression(parser) orelse return null;
+    const expression = try parseHeritageExpression(parser) orelse return null;
     const type_arguments = try ts_types.parseTypeArguments(parser);
 
     const start = parser.tree.getSpan(expression).start;
@@ -240,11 +240,56 @@ fn parseInterfaceHeritage(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
+/// `implements Bar, Foo.Baz<U>` at the class head. returns an empty range when
+/// the current token is not `.implements`. each entry is a `TSClassImplements`
+/// wrapping the same identifier-path expression shape used by interface
+/// heritage. mirrors `parseHeritageClause` (kind = `implements`) in
+/// microsoft/typescript-go's parser.go, specialised to the class grammar.
+pub fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
+    if (parser.current_token.tag != .implements) return .empty;
+    try parser.advance() orelse return null; // consume 'implements'
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (true) {
+        const entry = try parseClassImplements(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), entry);
+        if (parser.current_token.tag != .comma) break;
+        try parser.advance() orelse return null; // consume ','
+    }
+
+    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+}
+
+/// one `TSClassImplements` entry. shares the expression shape with
+/// `TSInterfaceHeritage` (identifier head, dotted member chain, optional
+/// `<T>` type arguments).
+fn parseClassImplements(parser: *Parser) Error!?ast.NodeIndex {
+    const expression = try parseHeritageExpression(parser) orelse return null;
+    const type_arguments = try ts_types.parseTypeArguments(parser);
+
+    const start = parser.tree.getSpan(expression).start;
+    const end = if (type_arguments != .null)
+        parser.tree.getSpan(type_arguments).end
+    else
+        parser.tree.getSpan(expression).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_class_implements = .{
+            .expression = expression,
+            .type_arguments = type_arguments,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
 /// consumes an `IdentifierReference` head and any number of `.<name>`
 /// continuations, producing left-associative `MemberExpression` nodes. does
 /// not accept calls, computed access, or optional chaining (these are
-/// invalid in heritage position).
-fn parseInterfaceHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
+/// invalid in heritage position). shared between `extends` on interfaces
+/// and `implements` on classes.
+fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     var expression = try literals.parseIdentifier(parser) orelse return null;
 
     while (parser.current_token.tag == .dot) {
