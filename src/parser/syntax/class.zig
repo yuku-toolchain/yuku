@@ -80,11 +80,16 @@ pub fn parseClassDecorated(
     else
         .null;
 
-    // `extends expr`.
+    // `extends expr` with optional ts `<T, U>` super-class type arguments.
     var super_class: ast.NodeIndex = .null;
+    var super_type_arguments: ast.NodeIndex = .null;
+
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
         super_class = try expressions.parseLeftHandSideExpression(parser) orelse return null;
+        if (parser.tree.isTs() and parser.current_token.tag == .less_than) {
+            super_type_arguments = try ts_types.parseTypeArguments(parser);
+        }
     }
 
     // ts: `implements A, B.C<T>, ...`. may appear with or without a preceding
@@ -103,6 +108,7 @@ pub fn parseClassDecorated(
         .super_class = super_class,
         .body = body,
         .type_parameters = type_parameters,
+        .super_type_arguments = super_type_arguments,
         .implements = implements,
         .declare = opts.is_declare,
         .abstract = opts.is_abstract,
