@@ -10,7 +10,7 @@ const std = @import("std");
 
 pub const ParseVariableDeclarationOpts = struct {
     await_using: bool = false,
-    /// ts: sets the `declare` flag on the resulting `VariableDeclaration` node
+    /// sets the `declare` flag on the resulting `VariableDeclaration`
     /// and relaxes ambient-incompatible initializer checks.
     is_declare: bool = false,
 };

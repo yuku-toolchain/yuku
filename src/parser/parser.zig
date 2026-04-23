@@ -39,6 +39,11 @@ const ParserContext = struct {
     in_single_statement_context: bool = false,
     // https://tc39.es/ecma262/#directive-prologue
     in_directive_prologue: bool = false,
+    /// when false, a speculatively parsed arrow with a return type must
+    /// be followed by an outer `:` to commit, otherwise we rewind. keeps
+    /// `(params): T => body` from eating the `:` of an enclosing ternary
+    /// consequent or case label.
+    allow_arrow_return_type: bool = true,
 };
 
 const ParserState = struct {
@@ -363,16 +368,6 @@ pub const Parser = struct {
         self.scratch_b.items.shrinkRetainingCapacity(cp.scratch_b_len);
         self.context = cp.context;
         self.state = cp.state;
-    }
-
-    /// runs `callback(self)` speculatively and always rewinds, returning
-    /// whatever the callback returned. use for pure grammar peeks whose
-    /// result never commits. for commit-or-rewind use `checkpoint` and
-    /// `rewind` directly.
-    pub inline fn lookahead(self: *Parser, comptime R: type, comptime callback: fn (*Parser) Error!R) Error!R {
-        const cp = self.checkpoint();
-        defer self.rewind(cp);
-        return try callback(self);
     }
 
     /// peeks the next `n` tokens after `current_token` in a single forward

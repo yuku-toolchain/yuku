@@ -281,8 +281,9 @@ pub const ScopeTracker = struct {
         return .{ .strict = self.currentScope().flags.strict };
     }
 
-    // mirrors `enter`, pops the same number of scopes that were pushed.
-    // For named function/class expressions, that's two pops (body + name).
+    // the inverse of `enter`: pops the same number of scopes that were
+    // pushed. for named function / class expressions that is two pops
+    // (body + name).
     pub fn exit(self: *ScopeTracker, data: ast.NodeData) void {
         switch (data) {
             .function => |func| {

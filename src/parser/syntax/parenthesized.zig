@@ -193,10 +193,12 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
     );
 }
 
-/// convert cover to ArrowFunctionExpression parameters and body
-pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async: bool, arrow_start: u32, type_parameters: ast.NodeIndex, return_type: ast.NodeIndex) Error!?ast.NodeIndex {
+/// converts the cover into `ArrowFunctionExpression` parameters and body.
+/// the cover path is js-only, since all ts arrows go through `parseArrow`,
+/// so no type parameters or return type need to thread through here.
+pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     const params = try convertToFormalParameters(parser, cover) orelse return null;
-    return buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
+    return buildArrowFunction(parser, params, is_async, arrow_start, .null, .null);
 }
 
 /// convert a single identifier to arrow function (x => body case).

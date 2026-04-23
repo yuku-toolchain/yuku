@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       6701/8261 (81.12%)
-Failed:       1560
-AST mismatch: 0/6701
+Passed:       6953/8261 (84.17%)
+Failed:       1308
+AST mismatch: 0/6953
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
@@ -61,17 +61,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/00dfee63d07eb847.ts
 ✓ test/parser/suite/ts/pass/00e1f867debfcd15.ts
 ✓ test/parser/suite/ts/pass/00fc2c18464d5566.ts
-✗ test/parser/suite/ts/pass/0102bcae7caf60dd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | 
-22 | goofus((a: string) => ({ dog() { return a; } }));
-   |          ^
-23 | goofus((a: string) => ({ dog: function() { return a; } }));
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0102bcae7caf60dd.ts
 ✓ test/parser/suite/ts/pass/01069b6b08e625f4.module.ts
 ✓ test/parser/suite/ts/pass/0109aa73d419c097.ts
 ✓ test/parser/suite/ts/pass/01125188cd26508c.ts
@@ -207,32 +197,12 @@ error: Invalid character at start of identifier
    = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
 
 
-✗ test/parser/suite/ts/pass/0235bc6eb8d92eba.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | declare function id<T>(x: T): T;
- 3 | const { f = (x: string) => x.length } = id({ f: x => x.charAt });
-   |               ^
- 4 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0235bc6eb8d92eba.ts
 ✓ test/parser/suite/ts/pass/023b42710a0a267c.ts
 ✓ test/parser/suite/ts/pass/023b9edef5ffd0ea.ts
 ✓ test/parser/suite/ts/pass/024be59f4217a2d3.ts
 ✓ test/parser/suite/ts/pass/02597eca7b6b7260.ts
-✗ test/parser/suite/ts/pass/02628cc29efca456.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-17 | 
-18 | const f = (arg: LiteralsOrWeakTypes) => {
-   |               ^
-19 |     if (arg === "A") {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/02628cc29efca456.ts
 ✗ test/parser/suite/ts/pass/02697e8fc7e1cc87.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
    |
@@ -251,17 +221,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/029dce276648f8a7.ts
 ✓ test/parser/suite/ts/pass/02ad1d6696715c46.ts
 ✓ test/parser/suite/ts/pass/02b4d2b034d27c1f.ts
-✗ test/parser/suite/ts/pass/02be8012dcc4e270.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | var ResultIsNumber4 = +{ x: 1, y: 2};
-25 | var ResultIsNumber5 = +{ x: 1, y: (n: number) => { return n; } };
-   |                                     ^
-26 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/02be8012dcc4e270.ts
 ✓ test/parser/suite/ts/pass/02bf06c59cd56e25.ts
 ✓ test/parser/suite/ts/pass/02c37754edc741d8.ts
 ✓ test/parser/suite/ts/pass/02cb47d91a62e7fe.ts
@@ -277,17 +237,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/030adebab641e8ba.ts
 ✓ test/parser/suite/ts/pass/030fc59012db46bc.ts
 ✓ test/parser/suite/ts/pass/031f14be2b72e483.ts
-✗ test/parser/suite/ts/pass/031fe166a93962c8.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | var x: () => A;
- 5 | (a: A) => { };
-   |   ^
- 6 | var y: A<A>;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/031fe166a93962c8.ts
 ✓ test/parser/suite/ts/pass/0325f817d5810814.ts
 ✓ test/parser/suite/ts/pass/032ca7d64a51ca1d.tsx
 ✓ test/parser/suite/ts/pass/032e45d2e6b42843.ts
@@ -598,27 +548,17 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/07a7813daea06868.module.tsx
 ✓ test/parser/suite/ts/pass/07bff205ee0e7151.ts
 ✓ test/parser/suite/ts/pass/07c178ba5a72a5a5.module.ts
-✗ test/parser/suite/ts/pass/07c29c491cb736c7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-26 | var ResultIsNumber4 = ~{ x: 1, y: 2};
-27 | var ResultIsNumber5 = ~{ x: 1, y: (n: number) => { return n; } };
-   |                                     ^
-28 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/07c29c491cb736c7.ts
 ✓ test/parser/suite/ts/pass/07c5eb12c25ff924.ts
 ✗ test/parser/suite/ts/pass/07c7bca687d7c3c7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Expected '{' to start function body, but found ':'
    |
-15 | var callSig2: { num: (n: number) => string; };
-16 | var callSig3 = { num: (n: number) => '' };
-   |                         ^
-17 | var callSig3: { num: (n: number) => string; };
+19 | // Get accessor only, type of the property is the annotated return type of the get accessor
+20 | var getter1 = { get x(): string { return undefined; } };
+   |                        ^
+21 | var getter1: { readonly x: string; }
    |
-   = help: Add a comma between elements or close with ')'.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✗ test/parser/suite/ts/pass/07d0f7d78df0a568.module.ts (parse errors)
@@ -631,30 +571,10 @@ error: Export 'n2' is not defined
    |
 
 ✓ test/parser/suite/ts/pass/07d1b9e3dbcf7220.module.ts
-✗ test/parser/suite/ts/pass/07e4335cb46b7073.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 |             this.x = C.y+this.c1+this.c2+c3;
- 7 |             this.g = (v:number) => C.f(this.x+C.y+v+this.c1+this.c2+C.pub);
-   |                        ^
- 8 |         }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/07e4335cb46b7073.ts
 ✓ test/parser/suite/ts/pass/07e6c7e0f8953f5e.ts
 ✓ test/parser/suite/ts/pass/07e77d1b728fdbcc.ts
-✗ test/parser/suite/ts/pass/07ed53745cc5ab2d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | 
-12 |     var r1: (x: {}) => {} = foo((x: number) => 1, (x: string) => '');
-   |                                   ^
-13 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/07ed53745cc5ab2d.ts
 ✓ test/parser/suite/ts/pass/07ef5b9c66fa814f.ts
 ✓ test/parser/suite/ts/pass/07f3a1aefe5e4312.ts
 ✓ test/parser/suite/ts/pass/07f6e40c660e002f.ts
@@ -800,17 +720,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/09ecc28bf9409f06.module.tsx
 ✓ test/parser/suite/ts/pass/09f22b60372078c0.ts
 ✓ test/parser/suite/ts/pass/09f4781a6a0fb300.module.ts
-✗ test/parser/suite/ts/pass/0a00a6d77b774054.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-12 | var r1b = foo((x) => 1, (x) => ''); // {} => {}
-13 | var r2 = foo((x: Object) => null, (x: string) => ''); // Object => Object
-   |                ^
-14 | var r3 = foo((x: number) => 1, (x: Object) => null); // number => number
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0a00a6d77b774054.ts
 ✗ test/parser/suite/ts/pass/0a0d40a49aef20b5.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -835,17 +745,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/0a4712e08dec1dd2.ts
 ✓ test/parser/suite/ts/pass/0a47a5660d494bde.ts
 ✓ test/parser/suite/ts/pass/0a47be06e49f2e27.ts
-✗ test/parser/suite/ts/pass/0a4ed414828948af.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 | 
-10 | const isA = (x: MyUnion): x is A => x.type === "A";
-   |               ^
-11 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0a4ed414828948af.ts
 ✓ test/parser/suite/ts/pass/0a53626d828db36c.ts
 ✓ test/parser/suite/ts/pass/0a5fe28a0ffbdc75.ts
 ✓ test/parser/suite/ts/pass/0a5ff30f09158ac8.ts
@@ -940,33 +840,13 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/0b51a4626c4dc8da.ts
 ✓ test/parser/suite/ts/pass/0b51b11f3a3a5352.ts
 ✓ test/parser/suite/ts/pass/0b5220a31edd9d64.ts
-✗ test/parser/suite/ts/pass/0b58a1d04c49e80e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 | map.getOrInsertComputed("key", () => 123);
-10 | map.getOrInsertComputed("key", (key: string) => 123);
-   |                                    ^
-11 | mapW.getOrInsert({}, 123);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0b58a1d04c49e80e.ts
 ✓ test/parser/suite/ts/pass/0b636b7c56d43a7e.ts
 ✓ test/parser/suite/ts/pass/0b72f2103dcb193b.ts
 ✓ test/parser/suite/ts/pass/0b748bf52e65afd8.module.tsx
 ✓ test/parser/suite/ts/pass/0b7862a6438e775f.ts
 ✓ test/parser/suite/ts/pass/0b7c297f1161f38d.ts
-✗ test/parser/suite/ts/pass/0b9acf73ccdb1f0c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | function foo3(x: (n: number) =>number) { };
- 9 | foo3((s:string) => { });
-   |        ^
-10 | foo3((n) => { return; });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0b9acf73ccdb1f0c.ts
 ✓ test/parser/suite/ts/pass/0ba1e5e48ac79596.ts
 ✓ test/parser/suite/ts/pass/0ba4431b5658f3d8.ts
 ✗ test/parser/suite/ts/pass/0ba677b81d995653.ts (parse errors)
@@ -1115,17 +995,7 @@ error: Expected ']' after computed property key, but found ':'
  9 | }
    |
 
-✗ test/parser/suite/ts/pass/0cd8e3681431c6f4.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | // SINGLE PARAMETER
-15 | Promise.try((foo: string) => "Async result", "foo");
-   |                 ^
-16 | Promise.try((foo) => "Async result", "foo");
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0cd8e3681431c6f4.ts
 ✓ test/parser/suite/ts/pass/0cdac3ef01c93734.ts
 ✗ test/parser/suite/ts/pass/0ce3c3d7d3f7288a.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -1213,17 +1083,7 @@ error: 'eval' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/0d53486e837d9c54.ts
 ✓ test/parser/suite/ts/pass/0d54da2e6d01ad7e.ts
 ✓ test/parser/suite/ts/pass/0d6d55bfc2262ed2.ts
-✗ test/parser/suite/ts/pass/0d7e9b609da60972.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | 
- 5 | const f = (hdr: string, val: number) => `${hdr}:\t${val}\r\n` as `${string}:\t${number}\r\n`;
-   |               ^
- 6 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0d7e9b609da60972.ts
 ✓ test/parser/suite/ts/pass/0d859ca020eee6f8.ts
 ✓ test/parser/suite/ts/pass/0d85ad4c7d02e7c0.ts
 ✓ test/parser/suite/ts/pass/0d93b541a31043ad.ts
@@ -1278,17 +1138,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/0ea0911cc18c9589.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-57 |     var r1 = foo2(<T, U>(x: T) => <U[]>null); // any
-58 |     var r1a = [(x: number) => [''], <T, U>(x: T) => <U[]>null];
-   |                  ^
-59 |     var r1b = [<T, U>(x: T) => <U[]>null, (x: number) => ['']];
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0ea0911cc18c9589.ts
 ✓ test/parser/suite/ts/pass/0ea9f504b0a977b2.ts
 ✗ test/parser/suite/ts/pass/0eac9b5f6947fd26.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -1334,17 +1184,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
  5 | --eval;
    |
 
-✗ test/parser/suite/ts/pass/0f0a6397402e703b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-27 | test(
-28 |   (deps: typeof DEPS, data) => ({
-   |        ^
-29 |     fn1: function() { return deps.foo },
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0f0a6397402e703b.ts
 ✓ test/parser/suite/ts/pass/0f0b2feca63cd1b4.ts
 ✓ test/parser/suite/ts/pass/0f0e9a05c2eb553c.ts
 ✗ test/parser/suite/ts/pass/0f12d6921cacfdfd.ts (parse errors)
@@ -1416,28 +1256,18 @@ error: Expected ',' or '}' in object, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/0fce26a8d6b72615.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Expected declaration after 'export', but found 'type'
    |
-13 | 
-14 | export const a1 = (isNaN: typeof globalThis.isNaN): typeof globalThis.isNaN => isNaN;
-   |                         ^
-15 | export const a2 = (isNaN: typeof globalThis.isNaN, bar?: typeof globalThis.isNaN): typeof globalThis.isNaN => bar ?? isNaN;
+25 | 
+26 | export type a4Return = ReturnType<ReturnType<typeof a4>>;
+   |        ^^^^
+27 | export type a4oReturn = ReturnType<ReturnType<typeof aObj['a4']>>;
    |
-   = help: Add a comma between elements or close with ')'.
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/0fd5860727ec3cf9.ts
-✗ test/parser/suite/ts/pass/0fd6d4a184071b2b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-258 | let case1 = foo({
-259 |     [directive]: (x: string) => 'str',
-    |                    ^
-260 |     addOne: (x: number) => x + 1,
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/0fd6d4a184071b2b.ts
 ✗ test/parser/suite/ts/pass/0fe24950a43a9805.ts (parse errors)
 error: 'new' is reserved and cannot be used as an identifier
    |
@@ -1465,16 +1295,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/100d790802b8d331.ts
 ✓ test/parser/suite/ts/pass/101e15b2b8d5bc06.ts
 ✓ test/parser/suite/ts/pass/102f0828fb7dddb9.ts
-✗ test/parser/suite/ts/pass/1032320de1673334.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | 
- 5 | var v2 = (s: string) => s.length || function (s) { s.aaa };
-   |            ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/1032320de1673334.ts
 ✓ test/parser/suite/ts/pass/10340d7fa5ec3ffc.module.ts
 ✓ test/parser/suite/ts/pass/103e3c33c3cedddc.ts
 ✗ test/parser/suite/ts/pass/104ae0f4303237de.ts (parse errors)
@@ -1548,29 +1369,9 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/107235cc187eb5b2.ts
 ✓ test/parser/suite/ts/pass/1075c7017239fa5d.ts
-✗ test/parser/suite/ts/pass/1077ef0e39f39a8f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | // @strict: false
- 3 | var f1 = (_i: number, ...restParameters) => { //_i is error
-   |             ^
- 4 |     var _i = 10; // no error
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/1077ef0e39f39a8f.ts
 ✓ test/parser/suite/ts/pass/1087b2c8f6ac4b71.ts
-✗ test/parser/suite/ts/pass/108ddc462142c660.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-105 | 
-106 | const f = (_a: string, _b: string): void => {};
-    |              ^
-107 | 
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/108ddc462142c660.module.ts
 ✗ test/parser/suite/ts/pass/10932cdd649dd36f.ts (parse errors)
 error: Expected ']' to close an indexed access type, but found ':'
    |
@@ -1582,17 +1383,7 @@ error: Expected ']' to close an indexed access type, but found ':'
    = help: Each '[' in a type must be matched by a ']'
 
 
-✗ test/parser/suite/ts/pass/10947cb4f4278c6d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var funcExp = (...rest) => { }
- 4 | var funcExp1 = (X: number, ...rest) => { }
-   |                  ^
- 5 | var funcExp2 = function (...rest) { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/10947cb4f4278c6d.ts
 ✓ test/parser/suite/ts/pass/109a26be40a64ee3.module.ts
 ✓ test/parser/suite/ts/pass/10c6f33188931b3c.ts
 ✓ test/parser/suite/ts/pass/10eb8b46933cd737.ts
@@ -1775,17 +1566,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/12f2b6ba4d54a870.ts
 ✓ test/parser/suite/ts/pass/12fe48504f38d72f.ts
 ✓ test/parser/suite/ts/pass/1302f1412d2cd838.ts
-✗ test/parser/suite/ts/pass/130c659eb0f66b95.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | // intra-binding-pattern reference in the initializer for fn2
-22 | const { fn1 = (x: number) => 0, fn2 = fn1 } = { fn1: x => x + 1, fn2: x => x + 2 };
-   |                 ^
-23 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/130c659eb0f66b95.ts
 ✓ test/parser/suite/ts/pass/130d28c7d416afb6.ts
 ✓ test/parser/suite/ts/pass/131189832295810d.ts
 ✓ test/parser/suite/ts/pass/1329fc3c2ded7ebb.ts
@@ -1909,17 +1690,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/14bfa63e069e694a.ts
 ✓ test/parser/suite/ts/pass/14bfb978418e2683.ts
 ✓ test/parser/suite/ts/pass/14c09740dd978bc7.ts
-✗ test/parser/suite/ts/pass/14c0b7f79857aa4f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-34 | 
-35 | const testMethod = (m: A2 | B2) => {
-   |                      ^
-36 |     if (m.error) {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/14c0b7f79857aa4f.ts
 ✓ test/parser/suite/ts/pass/14d09775b99e5668.ts
 ✓ test/parser/suite/ts/pass/14d155b431451c3b.ts
 ✓ test/parser/suite/ts/pass/14d5c33db1acdbfe.ts
@@ -1955,17 +1726,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 ✓ test/parser/suite/ts/pass/155ccd7411027472.ts
 ✓ test/parser/suite/ts/pass/155d3d592a11eeaf.ts
-✗ test/parser/suite/ts/pass/1562f9c8a28673dd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | 
-11 | foo((y: string) => {
-   |       ^
-12 |     return y2 => {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/1562f9c8a28673dd.ts
 ✗ test/parser/suite/ts/pass/1564ae4f5abc48ca.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -2011,17 +1772,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/15c234097493ff62.ts
 ✓ test/parser/suite/ts/pass/15c425cd232a78bf.ts
-✗ test/parser/suite/ts/pass/15c759a753bd2a39.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | var ResultIsNumber4 = -{ x: "", y: "" };
-25 | var ResultIsNumber5 = -{ x: "", y: (s: string) => { return s; } };
-   |                                      ^
-26 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/15c759a753bd2a39.ts
 ✓ test/parser/suite/ts/pass/15d68211b3411b71.ts
 ✓ test/parser/suite/ts/pass/15d871c611a8d622.ts
 ✓ test/parser/suite/ts/pass/15db969383cc053d.ts
@@ -2039,17 +1790,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/160bd340c1bd83ff.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-34 |     g: {},
-35 |     h: (x: number) => 1,
-   |          ^
-36 |     i: <T>(x: T) => x,
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/160bd340c1bd83ff.ts
 ✓ test/parser/suite/ts/pass/160da69d7bf119a0.ts
 ✓ test/parser/suite/ts/pass/160de5c243f6058a.ts
 ✓ test/parser/suite/ts/pass/160e6c0f1b64fe84.ts
@@ -2203,17 +1944,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/177462f91c0cf36a.ts
 ✓ test/parser/suite/ts/pass/17862ae8cdff0a0f.ts
 ✓ test/parser/suite/ts/pass/17896e7f8d8f0461.ts
-✗ test/parser/suite/ts/pass/178e9d6c27501c96.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 |         C.bar = (x) => x; // ok
-10 |         C.bar = (x: number) => 1; // ok
-   |                   ^
-11 |         return 1;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/178e9d6c27501c96.ts
 ✓ test/parser/suite/ts/pass/17920936cef75e78.ts
 ✓ test/parser/suite/ts/pass/179a65897b0844cd.ts
 ✗ test/parser/suite/ts/pass/179c10219e391024.ts (parse errors)
@@ -2250,17 +1981,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/17f81d4daf8edc52.ts
 ✓ test/parser/suite/ts/pass/180c813fe37c87f0.module.ts
 ✓ test/parser/suite/ts/pass/180cc3a6d247cecf.ts
-✗ test/parser/suite/ts/pass/1854ced7d62f01c5.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 |     constructor(f: () => T) {
-11 |         (item: Thing) => { return [item.Components]; };
-   |              ^
-12 |     }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/1854ced7d62f01c5.ts
 ✓ test/parser/suite/ts/pass/1856dddf90c4f399.ts
 ✓ test/parser/suite/ts/pass/185a3cb267d794fc.ts
 ✓ test/parser/suite/ts/pass/185b1e627720e873.ts
@@ -2327,17 +2048,7 @@ error: Expected declaration after 'export', but found 'abstract'
 ✓ test/parser/suite/ts/pass/1947e69c8fc248c4.ts
 ✓ test/parser/suite/ts/pass/195138849de2f032.ts
 ✓ test/parser/suite/ts/pass/19613f842df6f7d0.ts
-✗ test/parser/suite/ts/pass/1964efbd22411bbb.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | test2(
-22 |   (a: number | boolean, b: string | number) => {},
-   |     ^
-23 |   (c: string | boolean, d: number | boolean) => {},
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/1964efbd22411bbb.ts
 ✗ test/parser/suite/ts/pass/196a813ab9a08ea0.module.ts (parse errors)
 error: 'eval' is not allowed as a binding identifier in strict mode
    |
@@ -2370,17 +2081,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/19d3a6c40826d77a.ts
 ✓ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
-✗ test/parser/suite/ts/pass/19d9761c28ff2511.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-23 |     render() {
-24 |         const h = (x: unknown) => x;
-   |                     ^
-25 |         return h(this.get("msg"));
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/19d9761c28ff2511.ts
 ✗ test/parser/suite/ts/pass/19dba5022f3d025e.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
     |
@@ -2756,17 +2457,7 @@ error: Expected declaration after 'export', but found 'declare'
 
 
 ✓ test/parser/suite/ts/pass/1da24c081efc3f0a.ts
-✗ test/parser/suite/ts/pass/1da55549b5edb3d1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | f2({ toString: (s) => s }) 
-14 | f2({ toString: (s: string) => s }) 
-   |                  ^
-15 | f2({ value: '', toString: (s) => s.uhhh }) 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/1da55549b5edb3d1.ts
 ✓ test/parser/suite/ts/pass/1da9855288709d92.ts
 ✓ test/parser/suite/ts/pass/1dbd7ffb400b0dbd.ts
 ✓ test/parser/suite/ts/pass/1dbdbe69c3f01395.ts
@@ -3017,17 +2708,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/21c7afdc002c184f.module.tsx
 ✓ test/parser/suite/ts/pass/21cab5911d167212.ts
 ✓ test/parser/suite/ts/pass/21cfa402d34de07b.ts
-✗ test/parser/suite/ts/pass/21d002a222734f8f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-25 | var ResultIsAny4 = void { x: "", y: "" };
-26 | var ResultIsAny5 = void { x: "", y: (s: string) => { return s; } };
-   |                                       ^
-27 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/21d002a222734f8f.ts
 ✗ test/parser/suite/ts/pass/21d407c14fd23270.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -3488,17 +3169,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/276f9f5dfb56ef2b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | // https://github.com/microsoft/TypeScript/issues/41814
- 4 | const test = (names: string[]) =>
-   |                    ^
- 5 |     // single-line comment
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/276f9f5dfb56ef2b.ts
 ✗ test/parser/suite/ts/pass/2770ef90e9c8f4e0.ts (parse errors)
 error: Private field '#method' must be declared in an enclosing class
    |
@@ -3545,17 +3216,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/27f2bb1d9373061b.module.ts
 ✓ test/parser/suite/ts/pass/27f3f2291a6cf6ce.ts
 ✓ test/parser/suite/ts/pass/27f4d1005ea5ed7a.module.ts
-✗ test/parser/suite/ts/pass/27f8a94134dbf743.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 |     x() {
- 8 |         var lambda = (_super: number) => { // Error 
-   |                             ^
- 9 |         }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/27f8a94134dbf743.ts
 ✓ test/parser/suite/ts/pass/27fe2a5c3b14ce38.ts
 ✓ test/parser/suite/ts/pass/2802c83c84f7da40.ts
 ✓ test/parser/suite/ts/pass/2803a4be184b6b62.ts
@@ -3609,17 +3270,7 @@ error: Private field '#unknown' must be declared in an enclosing class
 ✓ test/parser/suite/ts/pass/2894b3a78ee39406.ts
 ✓ test/parser/suite/ts/pass/2898e217314ee819.ts
 ✓ test/parser/suite/ts/pass/289a2bf13e287fad.ts
-✗ test/parser/suite/ts/pass/28ad807046defc13.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | 
- 6 | const sleep = (tm: number) => new Promise(resolve => setTimeout(resolve, tm));
-   |                  ^
- 7 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/28ad807046defc13.ts
 ✓ test/parser/suite/ts/pass/28adb7fc5f460306.ts
 ✓ test/parser/suite/ts/pass/28af670a32b9fc03.ts
 ✓ test/parser/suite/ts/pass/28b34ab52a909a76.ts
@@ -3668,17 +3319,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/2928216d9ad7189d.ts
 ✓ test/parser/suite/ts/pass/292b41e1820fb5e6.ts
-✗ test/parser/suite/ts/pass/292bb43525bb9221.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-23 | /// lamdaFoo var comment
-24 | var lambdaFoo = /** this is lambda comment*/ (/**param a*/a: number, /**param b*/b: number) => a + b;
-   |                                                            ^
-25 | var lambddaNoVarComment = /** this is lambda multiplication*/ (/**param a*/a: number, /**param b*/b: number) => a * b;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/292bb43525bb9221.ts
 ✓ test/parser/suite/ts/pass/293cf2058026c689.ts
 ✓ test/parser/suite/ts/pass/293e626b6c9bc403.ts
 ✓ test/parser/suite/ts/pass/294638a04f1b1330.ts
@@ -3761,14 +3402,14 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/2a9c91186279613c.module.ts
 ✓ test/parser/suite/ts/pass/2a9fd58093713af4.ts
 ✗ test/parser/suite/ts/pass/2aa1ecf683ba8104.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Unexpected token '@' in binding pattern
    |
-11 | 
-12 |     @decorator((x: C1) => x.#x)
-   |                  ^
-13 |     y() {}
+18 | 
+19 |     y(@decorator((x: C2) => x.#x) p) {}
+   |       ^
+20 | }
    |
-   = help: Add a comma between elements or close with ')'.
+   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
 
 
 ✓ test/parser/suite/ts/pass/2ab5c870f5d46d41.ts
@@ -3915,17 +3556,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/2c59f4724f3bb3a6.ts
 ✓ test/parser/suite/ts/pass/2c6514c2a3497400.ts
 ✓ test/parser/suite/ts/pass/2c73ee568086877c.ts
-✗ test/parser/suite/ts/pass/2c7dc4fe7a454b73.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | /** `static #cleanup` */
- 7 | const IterableWeakMap_cleanup = ({ ref, set }: {
-   |                                              ^
- 8 |     readonly ref: WeakRef<object>;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/2c7dc4fe7a454b73.module.ts
 ✓ test/parser/suite/ts/pass/2c7f47593b442fee.ts
 ✗ test/parser/suite/ts/pass/2c8294dd80dc1aaf.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -3957,14 +3588,14 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |
 
 ✗ test/parser/suite/ts/pass/2c8555978ed9dc76.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Expected declaration after 'export', but found 'interface'
    |
-20 |     var array: I[] = null;
-21 |     var fn = (s: string) => {
-   |                ^
-22 |         return 'hello ' + s;
+33 |     export class AA<T> { s: T }
+34 |     export interface I { id: number }
+   |            ^^^^^^^^^
+35 | 
    |
-   = help: Add a comma between elements or close with ')'.
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/2cacc223289f0bf1.ts
@@ -3991,15 +3622,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/2d18790e03bcdcff.module.ts
 ✓ test/parser/suite/ts/pass/2d1a5f3875320655.ts
-✗ test/parser/suite/ts/pass/2d2ebc4e814d2a15.ts (parse errors)
-error: Expected a type, but found 'function'
-   |
- 2 | let a: any;
- 3 | const c = true ? (a) : (function() {});
-   |                         ^^^^^^^^
- 4 | const d = true ? (a) : ((function() {}));
-   |
-
+✓ test/parser/suite/ts/pass/2d2ebc4e814d2a15.ts
 ✓ test/parser/suite/ts/pass/2d2f59102699e7fd.ts
 ✓ test/parser/suite/ts/pass/2d339d1444c47f09.ts
 ✗ test/parser/suite/ts/pass/2d3cff3bafbded55.module.ts (parse errors)
@@ -4048,17 +3671,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/2d98c923bc8dd84b.ts
 ✓ test/parser/suite/ts/pass/2da8216199fd56c9.module.ts
 ✓ test/parser/suite/ts/pass/2daf316d870ceadb.ts
-✗ test/parser/suite/ts/pass/2db0ef80ba0e17b3.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | 
-11 | const isA = (x: AorB): x is A => x.type === "A";
-   |               ^
-12 | const isB = (x: AorB): x is B => x.type === "B";
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/2db0ef80ba0e17b3.ts
 ✓ test/parser/suite/ts/pass/2db4180699ca5b5f.ts
 ✓ test/parser/suite/ts/pass/2dcc4a4f77258d1e.ts
 ✓ test/parser/suite/ts/pass/2dce64f78f3bf080.ts
@@ -4172,17 +3785,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/2f00caa89805c505.ts
 ✓ test/parser/suite/ts/pass/2f01cb5c7b9d122e.ts
 ✓ test/parser/suite/ts/pass/2f01f9da5eb52f73.ts
-✗ test/parser/suite/ts/pass/2f04d014d6d102bc.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 |         C.prototype.bar = (x) => x; // ok
-10 |         C.prototype.bar = (x: number) => 1; // ok
-   |                             ^
-11 |         return 1;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/2f04d014d6d102bc.ts
 ✓ test/parser/suite/ts/pass/2f07f10a2128623f.ts
 ✗ test/parser/suite/ts/pass/2f1f1c6a26374593.ts (parse errors)
 error: A class can only have one constructor
@@ -4279,17 +3882,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/3058102a2f25b76e.ts
 ✓ test/parser/suite/ts/pass/3058e79b6188fb5a.ts
 ✓ test/parser/suite/ts/pass/30621bc0a253df45.ts
-✗ test/parser/suite/ts/pass/30687cca5ec66421.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | function f2<T extends Base, U extends Base>(a: { x: T; y: U }) {
-22 |     return (x: T) => a.y;
-   |              ^
-23 | }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/30687cca5ec66421.ts
 ✓ test/parser/suite/ts/pass/3069cff3a5e1ae3e.ts
 ✓ test/parser/suite/ts/pass/307a38cb469ad64c.ts
 ✓ test/parser/suite/ts/pass/307a8029a4a022e4.ts
@@ -4476,17 +4069,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/32530a4db76f2007.ts
 ✓ test/parser/suite/ts/pass/325dcf9e1ccdeb22.ts
 ✓ test/parser/suite/ts/pass/3263e62dd6e20c50.module.ts
-✗ test/parser/suite/ts/pass/326a6994072a825c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-44 | t = a3;
-45 | t = (x: string) => 1;
-   |       ^
-46 | t = function (x: string) { return ''; }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/326a6994072a825c.ts
 ✓ test/parser/suite/ts/pass/328f922ef8b5d228.module.ts
 ✗ test/parser/suite/ts/pass/3298dd54bd7a756c.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -4524,17 +4107,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/3318f9362575f2ae.ts
 ✓ test/parser/suite/ts/pass/331b589a27377569.ts
 ✓ test/parser/suite/ts/pass/331b76a288b10f32.ts
-✗ test/parser/suite/ts/pass/3321c1c28ac955d8.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | @(() => {})
- 3 | @((a: any) => {})
-   |     ^
- 4 | @((a: any, b: any) => {})
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3321c1c28ac955d8.ts
 ✓ test/parser/suite/ts/pass/3322324eb25aae75.ts
 ✓ test/parser/suite/ts/pass/33226cf7308f123a.ts
 ✓ test/parser/suite/ts/pass/33252eb6e068ad03.ts
@@ -4623,17 +4196,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
     = help: Each '(' in a type must be matched by a ')'
 
 
-✗ test/parser/suite/ts/pass/34432f6734343a09.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 1 | // @target: es2015
- 2 | const x = (a: any[]) => (
-   |             ^
- 3 |     // comment
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/34432f6734343a09.ts
 ✓ test/parser/suite/ts/pass/344a6cb93baaecbd.ts
 ✓ test/parser/suite/ts/pass/345127a718b460aa.module.ts
 ✓ test/parser/suite/ts/pass/3451baf722c004ab.ts
@@ -4668,17 +4231,7 @@ error: 'private' is reserved in strict mode and cannot be used as a binding iden
    |
 
 ✓ test/parser/suite/ts/pass/34c3737cc4ae80a5.ts
-✗ test/parser/suite/ts/pass/34c8db0eddc58ce2.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-16 | var o: Object = {}
-17 | var f: Function = (x: string) => x.length;
-   |                     ^
-18 | var r2: RegExp = /./g;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/34c8db0eddc58ce2.ts
 ✓ test/parser/suite/ts/pass/34ca41cc99ee4d81.ts
 ✗ test/parser/suite/ts/pass/34d779ccc2d97e23.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -4749,17 +4302,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/354dffb730f2d6a4.module.ts
 ✓ test/parser/suite/ts/pass/35574737548a98b7.ts
 ✓ test/parser/suite/ts/pass/355e1489db6017e1.ts
-✗ test/parser/suite/ts/pass/35686e9868d1c72a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-15 |     props!: ComponentProps;
-16 |     public thumbYElementRef = (ref: HTMLElement | null) => {
-   |                                   ^
-17 |         typeof this.props.thumbYProps!.elementRef === 'function' && this.props.thumbYProps!.elementRef(ref);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/35686e9868d1c72a.ts
 ✗ test/parser/suite/ts/pass/356fe830d668e75c.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -4822,62 +4365,22 @@ error: Expected declaration after 'export', but found 'abstract'
 ✓ test/parser/suite/ts/pass/36b2b8c9575d5db3.ts
 ✓ test/parser/suite/ts/pass/36b47fd98b1374d7.ts
 ✓ test/parser/suite/ts/pass/36bf8928455454ab.ts
-✗ test/parser/suite/ts/pass/36c01977be72beae.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | 
-22 | var f10 = (p4: null) => { }
-   |              ^
-23 | var f11 = (p5: undefined) => { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/36c01977be72beae.ts
 ✓ test/parser/suite/ts/pass/36eeebdd339892bd.ts
 ✓ test/parser/suite/ts/pass/36ef22359306063a.ts
-✗ test/parser/suite/ts/pass/37006be3bebd4745.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | 
-12 | const guard = (arg: Type): arg is TypeExt => arg.type === 1;
-   |                   ^
-13 | const otherFunc = (arg1: Type, arg2: TypeExt): void => {};
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/37006be3bebd4745.module.ts
 ✓ test/parser/suite/ts/pass/37099fa607557128.ts
 ✓ test/parser/suite/ts/pass/370bbb136a395a0a.module.ts
 ✓ test/parser/suite/ts/pass/370fc696069e4e58.ts
 ✓ test/parser/suite/ts/pass/37181dda24d07e18.ts
-✗ test/parser/suite/ts/pass/3718a835c97d30af.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 |     declare function foo1(cb: any): any;
- 5 |     var r = foo1((x: number) => 1); // ok because base returns void
-   |                    ^
- 6 |     var r2 = foo1(<T>(x: T) => ''); // ok because base returns void
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3718a835c97d30af.ts
 ✓ test/parser/suite/ts/pass/372533cac6e7f4cc.tsx
 ✓ test/parser/suite/ts/pass/373c17dfe7aeae97.ts
 ✓ test/parser/suite/ts/pass/373f9ee79fc1e8de.ts
 ✓ test/parser/suite/ts/pass/37408f71b77bdc92.ts
 ✓ test/parser/suite/ts/pass/374f083de33f0d12.ts
 ✓ test/parser/suite/ts/pass/37551e8ced2c61bb.ts
-✗ test/parser/suite/ts/pass/37572ebbbdac62f2.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 |     #x = 100;
- 7 |     [(getX = (a: A) => a.#x, "_")]() {}
-   |                ^
- 8 | }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/37572ebbbdac62f2.ts
 ✓ test/parser/suite/ts/pass/37606e436022b989.ts
 ✗ test/parser/suite/ts/pass/376529e3f832f726.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -4954,17 +4457,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/37f14a5b2b3f4a8f.ts
-✗ test/parser/suite/ts/pass/37f56667a4252f84.ts (parse errors)
-error: Unexpected token ':'
-   |
-12 |     a = () => 1; // ok, same number of required params
-13 |     a = (...args: number[]) => 1; // ok, same number of required params
-   |                 ^
-14 |     a = (...args: string[]) => 1; // error, type mismatch
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/37f56667a4252f84.ts
 ✗ test/parser/suite/ts/pass/37f6385d08935ba3.ts (parse errors)
 error: Expected '{' to start class body, but found '('
    |
@@ -4995,17 +4488,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/382ff3ae705f9235.ts
 ✓ test/parser/suite/ts/pass/3835c045c639a8bb.ts
 ✓ test/parser/suite/ts/pass/383dc34f8d496650.module.ts
-✗ test/parser/suite/ts/pass/385e77ba67b13549.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-132 |     i = 0;
-133 |     return (k: number) => k === i + 1;
-    |              ^
-134 | }
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/385e77ba67b13549.ts
 ✓ test/parser/suite/ts/pass/385eee735619105f.ts
 ✓ test/parser/suite/ts/pass/38616cd98d512b71.ts
 ✓ test/parser/suite/ts/pass/3876c756bddc5ca5.module.ts
@@ -5063,14 +4546,14 @@ error: Unexpected token '@' in binding pattern
 
 ✓ test/parser/suite/ts/pass/39f07b4dac39e9e0.ts
 ✗ test/parser/suite/ts/pass/39f2fa36d459d80d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Expected '{' to start function body, but found ';'
    |
-11 |     y() {
-12 |         var lamda = (_this: number) => { // Error 
+81 | 
+82 | function f3(_this: number); // no code gen - no error
    |                           ^
-13 |             return x => this;   // New scope.  So should inject new _this capture
+83 | function f3(_this: string); // no code gen - no error
    |
-   = help: Add a comma between elements or close with ')'.
+   = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
 ✓ test/parser/suite/ts/pass/39fcc7375de21c23.ts
@@ -5204,17 +4687,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/3b1ac9f7db199ddb.ts
-✗ test/parser/suite/ts/pass/3b1fca444499f624.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 |   if (typeof a === "number") {
- 6 |     const fn = (arg: typeof a) => true;
-   |                    ^
- 7 |     return fn;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3b1fca444499f624.ts
 ✓ test/parser/suite/ts/pass/3b201f11ebd81de8.tsx
 ✓ test/parser/suite/ts/pass/3b22a5b46d33d0b4.module.tsx
 ✓ test/parser/suite/ts/pass/3b3063e8890ed661.ts
@@ -5249,29 +4722,9 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/3b7a4f45a12236c5.ts
 ✓ test/parser/suite/ts/pass/3b7d98920b11d277.ts
 ✓ test/parser/suite/ts/pass/3b7fdea7599077d4.ts
-✗ test/parser/suite/ts/pass/3b8197514ef4e272.ts (parse errors)
-error: Unexpected token ')'
-   |
-15 | // optional parameters
-16 | ((j?) => j + 1)(12);
-   |     ^
-17 | ((k?) => k + 1)();
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/3b8197514ef4e272.ts
 ✓ test/parser/suite/ts/pass/3b883cdbd4baed78.ts
-✗ test/parser/suite/ts/pass/3b94512af78e1ee3.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var f1 = () => { }
- 4 | var f2 = (x: string, y: string) => { }
-   |            ^
- 5 | var f3 = (x: string, y: number, ...rest) => { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3b94512af78e1ee3.ts
 ✓ test/parser/suite/ts/pass/3b96c03f69ae1155.ts
 ✓ test/parser/suite/ts/pass/3b98622030a5ad49.ts
 ✗ test/parser/suite/ts/pass/3b98da5d9c20b4ca.ts (parse errors)
@@ -5286,17 +4739,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/3baf1c0abdf95c90.ts
 ✓ test/parser/suite/ts/pass/3bb78dec723bf882.ts
 ✓ test/parser/suite/ts/pass/3bb89722607d90fb.ts
-✗ test/parser/suite/ts/pass/3bcafb601c065479.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | }
- 5 | var g = (x: string) => x + "blah";
-   |           ^
- 6 | var x = () => g;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3bcafb601c065479.ts
 ✓ test/parser/suite/ts/pass/3bd09cc9e668c16b.ts
 ✓ test/parser/suite/ts/pass/3bd78aeea64eb0c0.ts
 ✓ test/parser/suite/ts/pass/3bd7a6668b64015d.ts
@@ -5350,17 +4793,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/3c239e8a380dbdc5.ts
 ✓ test/parser/suite/ts/pass/3c23a5a217c7c550.ts
 ✓ test/parser/suite/ts/pass/3c321a8ebf11b5d6.ts
-✗ test/parser/suite/ts/pass/3c326eb2d79b53fd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | // GH#32358
- 6 | const fn = (param: string) => undefined;
-   |                  ^
- 7 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3c326eb2d79b53fd.ts
 ✓ test/parser/suite/ts/pass/3c3b66d54096cf60.ts
 ✓ test/parser/suite/ts/pass/3c4106e1b13a71de.ts
 ✓ test/parser/suite/ts/pass/3c4a62fcfc7289b5.ts
@@ -5438,17 +4871,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/3d255508f097bf55.ts
 ✓ test/parser/suite/ts/pass/3d41a328af665f01.ts
 ✓ test/parser/suite/ts/pass/3d44efc3f9367746.ts
-✗ test/parser/suite/ts/pass/3d453be0cc22d4a0.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 | class Test {
- 8 |     static member = async (x: string) => { };
-   |                             ^
- 9 | }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3d453be0cc22d4a0.ts
 ✓ test/parser/suite/ts/pass/3d45710fd929a455.ts
 ✓ test/parser/suite/ts/pass/3d48bbe06804ab0d.ts
 ✓ test/parser/suite/ts/pass/3d58cc02a4c23543.ts
@@ -5569,14 +4992,14 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/3e35e754d49c47c3.ts
 ✓ test/parser/suite/ts/pass/3e373c841d82501c.ts
 ✗ test/parser/suite/ts/pass/3e3f3cc69b9b3392.module.ts (parse errors)
-error: Unexpected token ':'
-   |
-89 | function asFunction<A extends any[], B>(cf: new (...args: A) => B) {
-90 |     return (...args: A) => new cf(...args);
-   |                    ^
-91 | }
-   |
-   = help: Expected an expression
+error: Expected declaration after 'export', but found 'interface'
+    |
+128 | }
+129 | export interface Data {
+    |        ^^^^^^^^^
+130 |     key: number;
+    |
+    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/3e4f59684f533541.ts
@@ -5601,17 +5024,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/3e9be4870c935b22.ts
 ✓ test/parser/suite/ts/pass/3e9f4be2adc7f3de.ts
 ✓ test/parser/suite/ts/pass/3ea90eed87f024ef.ts
-✗ test/parser/suite/ts/pass/3eae19358a54aae9.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | var lambda = (l1) => { };       // Error at "l1"
- 5 | var lambd2 = (ll1, ll2: string) => { }  // Error at "ll1"
-   |                       ^
- 6 | var lamda3 = function myLambda3(myParam) { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/3eae19358a54aae9.ts
 ✓ test/parser/suite/ts/pass/3eb14c406ee296f5.ts
 ✓ test/parser/suite/ts/pass/3eb86d88016f11e1.module.ts
 ✓ test/parser/suite/ts/pass/3ebc7bd87173e1a1.ts
@@ -5770,17 +5183,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/40d29d4baac61b91.ts
 ✓ test/parser/suite/ts/pass/40ddccbd7a7059fd.ts
 ✓ test/parser/suite/ts/pass/40df36558526685b.ts
-✗ test/parser/suite/ts/pass/40edfaeb2a437ffc.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-141 | var g1 = applySpec({
-142 |     sum: (a: any) => 3,
-    |            ^
-143 |     nested: {
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/40edfaeb2a437ffc.ts
 ✓ test/parser/suite/ts/pass/40f47e7d38e1031b.ts
 ✓ test/parser/suite/ts/pass/4104e10e0e244002.ts
 ✓ test/parser/suite/ts/pass/4107a9a1fafe9241.ts
@@ -5985,17 +5388,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/434ff865e9106f47.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-19 | foo(a, { foo: 1, bar: '', hm: true }, b);
-20 | foo((x: number, y: string) => { }, (x, y: boolean) => { }, () => { });
-   |       ^
-21 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/434ff865e9106f47.ts
 ✓ test/parser/suite/ts/pass/4350b9ba2c553948.ts
 ✓ test/parser/suite/ts/pass/435368ecfb9a77ef.ts
 ✓ test/parser/suite/ts/pass/435705dcfd5ab04e.ts
@@ -6011,17 +5404,7 @@ error: Duplicate export of 'default'
  6 | 
    |
 
-✗ test/parser/suite/ts/pass/435cf26cb52b4903.module.ts (parse errors)
-error: Expected '>' to close a type assertion, but found '='
-   |
-21 | 
-22 | const foo = <A = {}>() => (x: Out & A) => null
-   |                ^
-23 | 
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/435cf26cb52b4903.module.ts
 ✓ test/parser/suite/ts/pass/435ecad7017854ee.ts
 ✓ test/parser/suite/ts/pass/4364fbea7db51ea0.ts
 ✓ test/parser/suite/ts/pass/436c02ef51deec3a.ts
@@ -6077,17 +5460,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/440cb56248793f12.ts
 ✓ test/parser/suite/ts/pass/441199873c22e74b.ts
 ✓ test/parser/suite/ts/pass/4415387679141073.ts
-✗ test/parser/suite/ts/pass/4418aa37bf68462d.ts (parse errors)
-error: Unexpected token ':'
-   |
- 4 |     foo(message: string): () => string {
- 5 |         return (...x: string[]) =>
-   |                     ^
- 6 |             /// <summary>Test summary</summary>
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/4418aa37bf68462d.ts
 ✓ test/parser/suite/ts/pass/441b13fd0b719ba4.ts
 ✓ test/parser/suite/ts/pass/4420a3c9b392dc79.ts
 ✓ test/parser/suite/ts/pass/4427622e75cf14a7.ts
@@ -6186,17 +5559,7 @@ error: Expected declaration after 'export', but found 'declare'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/450dc03acf7221bf.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-16 | // errors on all 3 lines, bug was that r5 was the only line with errors
-17 | var f = (x: number) => { return x.toFixed() };
-   |           ^
-18 | var r5 = _.forEach<number>(c2, f); 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/450dc03acf7221bf.ts
 ✓ test/parser/suite/ts/pass/4515ce1aa8cca813.ts
 ✗ test/parser/suite/ts/pass/452a2f370caca9f1.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
@@ -6236,17 +5599,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/45985725510951e9.ts
 ✓ test/parser/suite/ts/pass/45a19b8eb9fd46af.module.ts
 ✓ test/parser/suite/ts/pass/45a837d13dfa107c.ts
-✗ test/parser/suite/ts/pass/45af334dd6e972bb.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-66 | let g1 = f5((x, y) => 42);
-67 | let g2 = f5((x: number, y) => 42);
-   |               ^
-68 | let g3 = f5((x: number, y: number) => x + y);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/45af334dd6e972bb.ts
 ✓ test/parser/suite/ts/pass/45b4257d12c19349.module.ts
 ✓ test/parser/suite/ts/pass/45b42b5ecc5db688.ts
 ✓ test/parser/suite/ts/pass/45ba38b18114cca7.module.ts
@@ -6411,17 +5764,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/47bba0c78937338b.ts
-✗ test/parser/suite/ts/pass/47c41e45b93861f1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | simple((a: number, b) => {})
-   |          ^
- 8 | simple((a, b: number) => {})
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/47c41e45b93861f1.ts
 ✓ test/parser/suite/ts/pass/47cafcf877cac9e3.ts
 ✓ test/parser/suite/ts/pass/47d9bd9e4f9720c3.ts
 ✗ test/parser/suite/ts/pass/47dae7153121ba91.module.ts (parse errors)
@@ -6474,17 +5817,7 @@ error: Cannot break to label 'target' across function boundaries
 
 ✓ test/parser/suite/ts/pass/48367c8bdf6f1ad9.ts
 ✓ test/parser/suite/ts/pass/4838a987793853f2.ts
-✗ test/parser/suite/ts/pass/48396d5cef744600.ts (parse errors)
-error: Unexpected token ':'
-   |
- 7 | declare function filter<T>(predicate: (value: T, index: number) => boolean): T;
- 8 | const a = filter((pose?: number) => true);
-   |                        ^
- 9 | const b = filter((pose?: number, _?: number) => true);
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/48396d5cef744600.ts
 ✓ test/parser/suite/ts/pass/48409b185d46ba7d.ts
 ✗ test/parser/suite/ts/pass/4844ca8ec039bdd8.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -6587,17 +5920,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/498bcd72d7ef9850.ts
 ✓ test/parser/suite/ts/pass/498c872a2bce61ea.ts
 ✓ test/parser/suite/ts/pass/498ca399ceaac4ca.ts
-✗ test/parser/suite/ts/pass/498f6fd0d3ea6ede.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | 
- 6 | const fn1 = (options: { headers?: {} }) => { };
-   |                     ^
- 7 | fn1({ headers: { foo: 1 } });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/498f6fd0d3ea6ede.ts
 ✓ test/parser/suite/ts/pass/4999dd178e65cd03.ts
 ✓ test/parser/suite/ts/pass/49a016fb0f418cba.ts
 ✗ test/parser/suite/ts/pass/49a073eb88ac02e8.module.ts (parse errors)
@@ -6622,34 +5945,14 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/49a5ba4cf4d3b7c9.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-18 | declare var c: C;
-19 | c.x1(1, (x: 'hi') => { return 1; } );
-   |           ^
-20 | c.x1(1, (x: 'bye') => { return 1; } );
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/49a5ba4cf4d3b7c9.ts
 ✓ test/parser/suite/ts/pass/49b8f606cc92897f.module.ts
 ✓ test/parser/suite/ts/pass/49bfcf8a26c1293a.ts
 ✓ test/parser/suite/ts/pass/49c392728df0cbaa.ts
 ✓ test/parser/suite/ts/pass/49c9fe7b597fd0b7.ts
 ✓ test/parser/suite/ts/pass/49cbc82901fa1f45.ts
 ✓ test/parser/suite/ts/pass/49de9623206ed82a.ts
-✗ test/parser/suite/ts/pass/49e1e80baca4bc74.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 |         return class CoachMarkAnchor extends Component<CoachMarkAnchorProps<AnchorType<P>> & P, {}> {
-15 |             private _onAnchorRef = (anchor: AnchorType<P>) => {
-   |                                           ^
-16 |                 const anchorRef = this.props.anchorRef;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/49e1e80baca4bc74.ts
 ✗ test/parser/suite/ts/pass/49ef2716249c1905.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -6857,17 +6160,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/4c65aeffd2a78aa8.ts
 ✓ test/parser/suite/ts/pass/4c6db6ec91ec6224.ts
 ✓ test/parser/suite/ts/pass/4c888ac384f54969.module.ts
-✗ test/parser/suite/ts/pass/4c888bb5e2fa9e79.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-80 |     if (true) {
-81 |         return (x: number) => { }
-   |                  ^
-82 |     } else {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/4c888bb5e2fa9e79.ts
 ✗ test/parser/suite/ts/pass/4c9259f10a5f7ac8.ts (parse errors)
 error: Private field '#prop' must be declared in an enclosing class
    |
@@ -6939,40 +6232,10 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/4d85c34e00391b61.ts
 ✓ test/parser/suite/ts/pass/4d9503e47c5c32e2.ts
 ✓ test/parser/suite/ts/pass/4d9761acaf37d7df.ts
-✗ test/parser/suite/ts/pass/4d9d5777017e9d07.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 |  */
- 8 | export const foo = (p: string) => {
-   |                      ^
- 9 |     return {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/4d9ec4e2e35cb1d2.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | const mapStateToProps = createStructuredSelector({
-11 |   editable: (state: any, props: any) => editable(), // expect "Type '(state: any, props: any) => {}' is not assignable to type 'Selector<unknown, {}>'", _not_ a circularity error
-   |                   ^
-12 | });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/4d9d5777017e9d07.module.ts
+✓ test/parser/suite/ts/pass/4d9ec4e2e35cb1d2.ts
 ✓ test/parser/suite/ts/pass/4da2e84f0a4873ce.module.tsx
-✗ test/parser/suite/ts/pass/4da35df5b3780a87.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | }
- 9 | foo((arg: Foo) => { return arg.x; });
-   |         ^
-10 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/4da35df5b3780a87.ts
 ✓ test/parser/suite/ts/pass/4da38f212281150e.ts
 ✓ test/parser/suite/ts/pass/4da3949a12b494a5.ts
 ✗ test/parser/suite/ts/pass/4da7fcb1a7090b3e.module.ts (parse errors)
@@ -6990,17 +6253,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/4dafdaf9cd008101.ts
 ✓ test/parser/suite/ts/pass/4dc64f437e295913.ts
 ✓ test/parser/suite/ts/pass/4dd44de7c5c9df97.module.ts
-✗ test/parser/suite/ts/pass/4debb55fea5f14b3.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found ';'
-   |
- 6 |     const val = param !== undefined;
- 7 |     return val ? (assert(param !== undefined), param) : null;
-   |                                                             ^
- 8 |     // ^^^^^ Still typed as number | null | undefined
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
+✓ test/parser/suite/ts/pass/4debb55fea5f14b3.ts
 ✓ test/parser/suite/ts/pass/4df210801a0d6fff.ts
 ✗ test/parser/suite/ts/pass/4df5fb01a0418afe.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -7042,17 +6295,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/4e805eef16f34fbc.ts
 ✓ test/parser/suite/ts/pass/4e842638a2709975.ts
 ✓ test/parser/suite/ts/pass/4e930b6c57b0dfef.ts
-✗ test/parser/suite/ts/pass/4e9781ec942380c6.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | class Foo<T> {
- 5 |     static a = (n: T) => { };
-   |                  ^
- 6 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/4e9781ec942380c6.ts
 ✓ test/parser/suite/ts/pass/4e99de60320770b7.ts
 ✓ test/parser/suite/ts/pass/4e9ffe4185e5d9c6.ts
 ✓ test/parser/suite/ts/pass/4ea48fc1055a345f.ts
@@ -7114,17 +6357,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/4f2219172f959d0d.ts
 ✓ test/parser/suite/ts/pass/4f23fb208a21ec6f.ts
 ✓ test/parser/suite/ts/pass/4f2fc98d38908eac.ts
-✗ test/parser/suite/ts/pass/4f32d4da8e334d15.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-40 |     // Implicit-'any' errors for x and z.
-41 |     public pub_f12 = (x, y: any, z) => "";
-   |                           ^
-42 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/4f32d4da8e334d15.ts
 ✗ test/parser/suite/ts/pass/4f4a60eb1418b679.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -7215,17 +6448,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/503f2f202b93fa0e.ts
 ✓ test/parser/suite/ts/pass/5041ade1e954e259.ts
 ✓ test/parser/suite/ts/pass/5042bb49e3ff3f8b.ts
-✗ test/parser/suite/ts/pass/504ddee3a110768c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | 
-11 | var r1 = foo('', (x: string) => '', (x: Object) => null); // any => any
-   |                    ^
-12 | var r1ii = foo('', (x) => '', (x) => null); // string => string
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/504ddee3a110768c.ts
 ✓ test/parser/suite/ts/pass/504e837d83c41359.ts
 ✓ test/parser/suite/ts/pass/5055f75f00ec737a.ts
 ✓ test/parser/suite/ts/pass/505624de71e63f53.ts
@@ -7277,17 +6500,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/50d79382d589fe4d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-39 |   entry: assign({
-40 |     count: (ctx: { count: number }) => ++ctx.count,
-   |                ^
-41 |   }),
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/50d79382d589fe4d.ts
 ✓ test/parser/suite/ts/pass/50f2482a47964ded.ts
 ✓ test/parser/suite/ts/pass/50f9c25c69cf87b9.ts
 ✓ test/parser/suite/ts/pass/50ff20f08f1d5944.ts
@@ -7330,17 +6543,7 @@ error: Getter must have no parameters
    = help: Remove all parameters from the getter.
 
 
-✗ test/parser/suite/ts/pass/517b6b50c4ca0fc7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | 
-15 | var rf1 = (x: number) => { return x.toFixed() };
-   |             ^
-16 | var r1a = _.map(c2, (x) => { return x.toFixed() });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/517b6b50c4ca0fc7.ts
 ✓ test/parser/suite/ts/pass/5180988ef6d35c3c.module.tsx
 ✓ test/parser/suite/ts/pass/5185a30109492c67.ts
 ✓ test/parser/suite/ts/pass/5186277cc54b3075.ts
@@ -7367,17 +6570,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/51f918694ddc9156.ts
 ✓ test/parser/suite/ts/pass/5210eb7331d37445.ts
 ✓ test/parser/suite/ts/pass/521e34471daa0866.ts
-✗ test/parser/suite/ts/pass/522c1d8469e31adf.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
- 7 | 
- 8 |     = <T, S>(f: (_: T) => S) =>
-   |         ^
- 9 |         <U>(g: (_: U) => T) =>
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/522c1d8469e31adf.ts
 ✓ test/parser/suite/ts/pass/52300ced9388a5a8.ts
 ✓ test/parser/suite/ts/pass/5238eae2fbb1fe5c.ts
 ✗ test/parser/suite/ts/pass/523d9110ee41cd92.module.ts (parse errors)
@@ -7422,17 +6615,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/526b3df358f68f65.ts
 ✓ test/parser/suite/ts/pass/5272a2b3e0f82eb2.ts
 ✓ test/parser/suite/ts/pass/5281690ffdba8688.module.ts
-✗ test/parser/suite/ts/pass/5284d91f31892061.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found ')'
-   |
- 4 | function return1(x: boolean): 3 {
- 5 |     return (x ? (1) : 2);
-   |                        ^
- 6 | }
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
+✓ test/parser/suite/ts/pass/5284d91f31892061.ts
 ✗ test/parser/suite/ts/pass/5286e2bbaba0939b.ts (parse errors)
 error: Illegal break statement
    |
@@ -7444,17 +6627,7 @@ error: Illegal break statement
    = help: A 'break' statement can only be used within an enclosing iteration or switch statement
 
 
-✗ test/parser/suite/ts/pass/5297467285a5e33c.ts (parse errors)
-error: Unexpected token ':'
-   |
- 5 | 
- 6 | const getName1 = (person?: Person): string => {
-   |                          ^
- 7 |   return typeof person?.name === 'string' ? person?.name : '';
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/5297467285a5e33c.ts
 ✓ test/parser/suite/ts/pass/529c65d4774dee65.ts
 ✓ test/parser/suite/ts/pass/529f0e2c11fd3cf1.ts
 ✓ test/parser/suite/ts/pass/52aa016a3c5278ff.ts
@@ -7490,33 +6663,13 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/5304992a1d074494.ts
 ✓ test/parser/suite/ts/pass/5317682333edd09f.ts
 ✓ test/parser/suite/ts/pass/531ab6f8ffef847d.ts
-✗ test/parser/suite/ts/pass/532e85f10a912314.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | 
- 6 | const parameterFn = (props:{store:string}) => alert(props.store)
-   |                           ^
- 7 | const brokenFunction = <OwnProps>(f: (p: {dispatch: number} & OwnProps) => void) => (o: OwnProps) => o
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/532e85f10a912314.module.ts
 ✓ test/parser/suite/ts/pass/533b51458255d3dc.ts
 ✓ test/parser/suite/ts/pass/535975d245aae083.ts
 ✓ test/parser/suite/ts/pass/5361107171cb3d01.ts
 ✓ test/parser/suite/ts/pass/53637677f6bf39aa.ts
 ✓ test/parser/suite/ts/pass/536b4e2779e84236.ts
-✗ test/parser/suite/ts/pass/536f5cabc10aed94.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-91 | const TEST_CASES = [
-92 |     (value: string) => {
-   |           ^
-93 |         if (isEmptyString(value)) {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/536f5cabc10aed94.ts
 ✓ test/parser/suite/ts/pass/5376dd47c7d915e4.ts
 ✓ test/parser/suite/ts/pass/538caa9a5a1a91d7.ts
 ✓ test/parser/suite/ts/pass/53920684a7c0b885.ts
@@ -7570,17 +6723,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/543f0b2ed099cfa3.ts
 ✓ test/parser/suite/ts/pass/543fb86e41ece9b1.ts
 ✓ test/parser/suite/ts/pass/544efe6eec1f2347.ts
-✗ test/parser/suite/ts/pass/5457932b867f93d1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | const x = (a: number) => 5;
-   |             ^
- 8 | type Xps = Parameters<typeof x>;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5457932b867f93d1.ts
 ✓ test/parser/suite/ts/pass/545ebc70120fd053.ts
 ✓ test/parser/suite/ts/pass/546202b5be45197e.ts
 ✓ test/parser/suite/ts/pass/54621e6272629fb2.ts
@@ -7640,17 +6783,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/5567007359dc9360.ts
 ✓ test/parser/suite/ts/pass/556dd6f33fe1a315.ts
 ✓ test/parser/suite/ts/pass/5573848575544c9d.ts
-✗ test/parser/suite/ts/pass/55766c33b2dcf9be.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | var f = function foo(x = 1) { }
- 7 | var f2 = (x: number, y = 1) => { }
-   |            ^
- 8 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/55766c33b2dcf9be.ts
 ✓ test/parser/suite/ts/pass/55826685a03d4e4f.ts
 ✗ test/parser/suite/ts/pass/558d33b77a97880a.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -7677,28 +6810,8 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/55b0eaf8f756c2eb.ts
 ✓ test/parser/suite/ts/pass/55b55b4b10ae2ed7.ts
 ✓ test/parser/suite/ts/pass/55bde1b2bc5ace0b.ts
-✗ test/parser/suite/ts/pass/55c7105dce58210e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | var x = {
- 3 |     a: < <T>(x: T) => T > ((x: any) => 1),
-   |                              ^
- 4 |     b: <T>(x: T) => { x }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/55c8078a85da0cbd.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | 
- 5 | export const fn1 = ({ prop: a, prop: b }: { prop: number }) => a + b;
-   |                                         ^
- 6 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/55c7105dce58210e.ts
+✓ test/parser/suite/ts/pass/55c8078a85da0cbd.module.ts
 ✗ test/parser/suite/ts/pass/55ca2eb3df4aa15f.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -7843,17 +6956,7 @@ error: Identifier 'Point' has already been declared
 
 
 ✓ test/parser/suite/ts/pass/57017e996ac3aa1f.ts
-✗ test/parser/suite/ts/pass/5703aa4a3f994719.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 | 
- 8 | let f = foo((y: "foo" | "bar") => y === "foo" ? y : "foo");
-   |               ^
- 9 | let fResult = f("foo");
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5703aa4a3f994719.ts
 ✓ test/parser/suite/ts/pass/57051ea3b28da954.ts
 ✓ test/parser/suite/ts/pass/5706251a4ff562f5.ts
 ✓ test/parser/suite/ts/pass/5718216dcd5e957c.ts
@@ -7864,17 +6967,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/5746dbffad821d1d.ts
 ✓ test/parser/suite/ts/pass/574d4d19f9dee4dc.ts
 ✓ test/parser/suite/ts/pass/574edd828ece8990.ts
-✗ test/parser/suite/ts/pass/574f872cee9a6a51.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-12 | f2({ toString: (s) => s }) // error, missing property value from ArgsString
-13 | f2({ toString: (s: string) => s }) // error, missing property value from ArgsString
-   |                  ^
-14 | f2({ value: '', toString: (s) => s.uhhh }) // error
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/574f872cee9a6a51.ts
 ✓ test/parser/suite/ts/pass/574fa157f32dc5a6.ts
 ✗ test/parser/suite/ts/pass/57525da7bafafe2b.module.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -8124,25 +7217,8 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/59afc69fa63dbbb7.ts
 ✓ test/parser/suite/ts/pass/59bcdc9a229ef096.module.ts
 ✓ test/parser/suite/ts/pass/59be50c626e815e3.ts
-✗ test/parser/suite/ts/pass/59d9b92720571e7d.ts (parse errors)
-error: Expected a type, but found 'function'
-   |
- 2 | let a: any;
- 3 | const c = true ? (a) : function() {};
-   |                        ^^^^^^^^
- 4 | 
-   |
-
-✗ test/parser/suite/ts/pass/59e3e57bee6d7b82.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | declare function foo3(cb: (x: number) => number): typeof cb;
- 3 | var r5 = foo3((x: number) => ''); // error
-   |                 ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/59d9b92720571e7d.ts
+✓ test/parser/suite/ts/pass/59e3e57bee6d7b82.ts
 ✓ test/parser/suite/ts/pass/59e4c07b7a94b887.ts
 ✓ test/parser/suite/ts/pass/5a12da19fc0c319e.ts
 ✓ test/parser/suite/ts/pass/5a13fac586acaaaf.ts
@@ -8257,17 +7333,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 
 ✓ test/parser/suite/ts/pass/5b5fbd5868482af8.ts
-✗ test/parser/suite/ts/pass/5b61e8f54edb8e39.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var r = < <T>(x: T) => T > ((x) => { return null; }); // bug was 'could not find dotted symbol T' on x's annotation in the type assertion instead of no error
- 4 | var s = < <T>(x: T) => T > ((x: any) => { return null; }); // no error
-   |                               ^
- 5 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5b61e8f54edb8e39.ts
 ✓ test/parser/suite/ts/pass/5b7346bde24d3e44.module.ts
 ✓ test/parser/suite/ts/pass/5b8b9c2d250b2d9c.module.ts
 ✓ test/parser/suite/ts/pass/5b8c7aa4e3cc0dbd.ts
@@ -8313,17 +7379,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/5c37ccb22e30ea35.ts
 ✓ test/parser/suite/ts/pass/5c3e63b88ea89ebe.ts
 ✓ test/parser/suite/ts/pass/5c4c2d83fb87819e.ts
-✗ test/parser/suite/ts/pass/5c4cddc1facc555d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | // @emitDecoratorMetadata: true
- 5 | const dec = (obj: {}, prop: string) => undefined
-   |                 ^
- 6 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5c4cddc1facc555d.ts
 ✓ test/parser/suite/ts/pass/5c4e7e3570eb17a8.ts
 ✓ test/parser/suite/ts/pass/5c54cac83e51f8d6.ts
 ✓ test/parser/suite/ts/pass/5c62da3ed63082cc.ts
@@ -8346,16 +7402,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/5c9b11bc0e17643a.ts
 ✓ test/parser/suite/ts/pass/5c9c1efb6911e7d4.ts
-✗ test/parser/suite/ts/pass/5c9fc4052c8f19c0.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | 
- 4 | f((n: number) => n); 
-   |     ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5c9fc4052c8f19c0.ts
 ✓ test/parser/suite/ts/pass/5caa83c45dc783d4.module.ts
 ✓ test/parser/suite/ts/pass/5cad0ad11fb13c7c.ts
 ✗ test/parser/suite/ts/pass/5cb0086c3c10136c.ts (parse errors)
@@ -8486,16 +7533,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/5dba561b66fae533.ts
 ✓ test/parser/suite/ts/pass/5dd69480dc832d62.ts
 ✓ test/parser/suite/ts/pass/5de023726a6bd24a.ts
-✗ test/parser/suite/ts/pass/5de8fe76ff101a68.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | var i2: I = { x1: (a: number, cb: (x: 'hi') => number) => { } }; // error
-   |                     ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/5de8fe76ff101a68.ts
 ✓ test/parser/suite/ts/pass/5e1cebe701fd8f28.ts
 ✗ test/parser/suite/ts/pass/5e1e5702d4f93f9d.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -8600,17 +7638,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/5f547cbc348a4590.ts
 ✓ test/parser/suite/ts/pass/5f569fd202cd9a3d.ts
 ✓ test/parser/suite/ts/pass/5f56efce8c5a912a.ts
-✗ test/parser/suite/ts/pass/5f60360e063ef8a1.ts (parse errors)
-error: Expected '=>' in function type, but found ';'
-    |
-125 |             y = x && x.toString() // number | boolean | string
-126 |             );
-    |              ^
-127 |     }
-    |
-    = help: A function type is written '(params) => ReturnType'
-
-
+✓ test/parser/suite/ts/pass/5f60360e063ef8a1.ts
 ✓ test/parser/suite/ts/pass/5f62688ece018569.ts
 ✓ test/parser/suite/ts/pass/5f6448a966d36933.ts
 ✓ test/parser/suite/ts/pass/5f6474bb36a48664.module.ts
@@ -8769,17 +7797,7 @@ error: Duplicate export of 'default'
 
 ✓ test/parser/suite/ts/pass/618ae869d8084357.ts
 ✓ test/parser/suite/ts/pass/61922ccdbcb29d9c.ts
-✗ test/parser/suite/ts/pass/6195e801efc358a1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-162 | function example<TParams, TDone, TMapped>(options: Opts<TParams, TDone, TMapped>) {
-163 |     return (params: TParams) => {
-    |                   ^
-164 |         const data = options.fetch(params, 123)
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6195e801efc358a1.ts
 ✓ test/parser/suite/ts/pass/619aa520e9889710.ts
 ✗ test/parser/suite/ts/pass/61b10b48a481b56f.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -8886,17 +7904,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/62e0831114afcc12.ts
 ✓ test/parser/suite/ts/pass/62e66dc90d86e9f3.ts
 ✓ test/parser/suite/ts/pass/62e8f5b07b79a700.ts
-✗ test/parser/suite/ts/pass/62ec4762b9e40cb7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | // ArrowFormalParameters => AssignmentExpression is equivalent to ArrowFormalParameters => { return AssignmentExpression; }
- 4 | var a = (p: string) => p.length;
-   |           ^
- 5 | var a = (p: string) => { return p.length; }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/62ec4762b9e40cb7.ts
 ✓ test/parser/suite/ts/pass/62eddab047cd3504.ts
 ✓ test/parser/suite/ts/pass/6312c0989ad314dd.ts
 ✓ test/parser/suite/ts/pass/6313afa069a2b57d.ts
@@ -9058,17 +8066,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/651952e952770e33.ts
 ✓ test/parser/suite/ts/pass/65321b775afc0b70.ts
 ✓ test/parser/suite/ts/pass/653546d9de19c7fa.ts
-✗ test/parser/suite/ts/pass/654e065878163941.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-36 |         ? x
-37 |         : ((a: number | boolean) => {
-   |              ^
-38 |             var b = x; // new scope - number | boolean
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/654e065878163941.ts
 ✓ test/parser/suite/ts/pass/6551ce39354a701d.ts
 ✓ test/parser/suite/ts/pass/6556ce7e08636875.ts
 ✓ test/parser/suite/ts/pass/6567067669673687.ts
@@ -9177,17 +8175,7 @@ error: Expected ']' after computed property key, but found ':'
 10 | }
    |
 
-✗ test/parser/suite/ts/pass/669ef9023c7f2ad0.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-110 | 
-111 | const test_55033_minimal = factory_55033_minimal((b: string) => {})
-    |                                                    ^
-112 | 
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/669ef9023c7f2ad0.ts
 ✓ test/parser/suite/ts/pass/669f9976f5f2fa01.ts
 ✓ test/parser/suite/ts/pass/66a0f1f8ae896077.ts
 ✓ test/parser/suite/ts/pass/66ad484a5267c2b2.ts
@@ -9213,17 +8201,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/67115a9277b6f2fd.ts
 ✓ test/parser/suite/ts/pass/6717069c7009c7cf.ts
 ✓ test/parser/suite/ts/pass/6737cbdd2d285153.ts
-✗ test/parser/suite/ts/pass/67439cfbc4e146ab.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-22 | var x3 = f1()
-23 |     .then(f2, (e: Error) => {
-   |                 ^
-24 |     throw e;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/67439cfbc4e146ab.ts
 ✗ test/parser/suite/ts/pass/674c1ad53fafb8ca.ts (parse errors)
 error: Expected ';' after class field, but found ':'
    |
@@ -9277,17 +8255,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/67da0945daf4f76e.ts
 ✓ test/parser/suite/ts/pass/67da77510778c273.ts
-✗ test/parser/suite/ts/pass/67e646a806da36ac.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-12 | 
-13 | var x2: (a: A) => void = true ? (a: C) => a.foo : (b: number) => { };
-   |                                   ^
-14 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/67e646a806da36ac.ts
 ✓ test/parser/suite/ts/pass/67e81f31ab9b4962.ts
 ✓ test/parser/suite/ts/pass/67f49bf2408b0584.ts
 ✓ test/parser/suite/ts/pass/67f55e72d3f991c3.module.ts
@@ -9436,17 +8404,7 @@ error: Expected '>' to close JSX opening element, but found '<'
 ✓ test/parser/suite/ts/pass/69ed29365fdc0da7.module.ts
 ✓ test/parser/suite/ts/pass/69ee7bea2fca1862.ts
 ✓ test/parser/suite/ts/pass/6a0898bda0c20464.ts
-✗ test/parser/suite/ts/pass/6a102f59a7d78149.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-34 | 
-35 | const printFn = (action: typeof actionA | typeof actionB)=> console.log(action);
-   |                        ^
-36 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6a102f59a7d78149.ts
 ✗ test/parser/suite/ts/pass/6a1bb39e5c080cc9.ts (parse errors)
 error: A class can only have one constructor
    |
@@ -9458,17 +8416,7 @@ error: A class can only have one constructor
 23 |     constructor() { }
    |
 
-✗ test/parser/suite/ts/pass/6a1cbcd62d6fdba9.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | (foo: Foo) => {
-   |     ^
- 8 |     bar[id]++;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6a1cbcd62d6fdba9.ts
 ✓ test/parser/suite/ts/pass/6a263191842628a0.ts
 ✗ test/parser/suite/ts/pass/6a280bc04449ab2b.ts (parse errors)
 error: A class can only have one constructor
@@ -9625,17 +8573,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/6c4e9b9efe99512f.module.ts
-✗ test/parser/suite/ts/pass/6c4f63e9786080b1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-111 | 
-112 | var r18arg = (x: <T>(a: T) => T) => <any[]>null;
-    |                ^
-113 | var r18 = foo18(r18arg);
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6c4f63e9786080b1.ts
 ✓ test/parser/suite/ts/pass/6c52386d9d3cfdd1.ts
 ✓ test/parser/suite/ts/pass/6c61fa90bc51b0c2.ts
 ✗ test/parser/suite/ts/pass/6c667e186e31184c.module.ts (parse errors)
@@ -9749,42 +8687,12 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/6d797209fe546635.ts
 ✓ test/parser/suite/ts/pass/6d7f13dc4b0ba18b.ts
 ✓ test/parser/suite/ts/pass/6d83e67093790a41.ts
-✗ test/parser/suite/ts/pass/6d871c140398331d.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | // @strictNullChecks: true
- 5 | export const Foo = (opts: {
-   |                         ^
- 6 |     a?(): void,
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/6d88c1c0df73d436.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | // @alwaysStrict: true, false
- 5 | var f1 = (i: number, ...arguments) => { //arguments is error
-   |            ^
- 6 |     var arguments: any[]; // no error
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6d871c140398331d.module.ts
+✓ test/parser/suite/ts/pass/6d88c1c0df73d436.ts
 ✓ test/parser/suite/ts/pass/6d8ceb7270a80ba3.ts
 ✓ test/parser/suite/ts/pass/6d9f471f79c97fde.ts
 ✓ test/parser/suite/ts/pass/6da54cf2bd8bf662.ts
-✗ test/parser/suite/ts/pass/6daf7e6986fdac86.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | var r2 = foo({ cb: <T>(x: T, y: T) => '' }); // error
-12 | var r3 = foo({ cb: (x: string, y: number) => '' }); // error
-   |                      ^
-13 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6daf7e6986fdac86.ts
 ✓ test/parser/suite/ts/pass/6dd98f02db72f416.ts
 ✓ test/parser/suite/ts/pass/6de18b489addc31b.ts
 ✓ test/parser/suite/ts/pass/6de3adf655839d8b.ts
@@ -9834,17 +8742,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/6e1f7e2d20701cd1.ts
 ✓ test/parser/suite/ts/pass/6e25fb52a0e66fcc.module.ts
 ✓ test/parser/suite/ts/pass/6e2eb205e5e8d74f.ts
-✗ test/parser/suite/ts/pass/6e315c8e3fe3c716.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-177 | 
-178 | const reducerBroken = (state: number, { type, payload }: Action3) => {
-    |                             ^
-179 |     switch (type) {
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6e315c8e3fe3c716.ts
 ✓ test/parser/suite/ts/pass/6e383742a6b7774c.ts
 ✗ test/parser/suite/ts/pass/6e43aca090c3a5f3.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -9929,17 +8827,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/6f54cb35d9fb8d05.ts
 ✓ test/parser/suite/ts/pass/6f56eacc61e38ce0.ts
 ✓ test/parser/suite/ts/pass/6f59a5dd59d61daa.ts
-✗ test/parser/suite/ts/pass/6f5a9a5433578a44.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var lambda1 = (y = "hello") => { }
- 4 | var lambda2 = (x: number, y = "hello") => { }
-   |                 ^
- 5 | var lambda3 = (x: number, y = "hello", ...rest) => { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/6f5a9a5433578a44.ts
 ✓ test/parser/suite/ts/pass/6f5bf08ce5a45e7b.ts
 ✓ test/parser/suite/ts/pass/6f6a0ba693d6ec4d.ts
 ✓ test/parser/suite/ts/pass/6f77b9b5f052818e.ts
@@ -10126,16 +9014,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
    = help: Try inserting a semicolon here
 
 
-✗ test/parser/suite/ts/pass/71d07d0e83de6cd1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | 
- 4 | var f: (x: 'hi') => number = (x: 'hi') => { return 1; };
-   |                                ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/71d07d0e83de6cd1.ts
 ✓ test/parser/suite/ts/pass/71dd8ec5b9d16c79.ts
 ✗ test/parser/suite/ts/pass/71dec25562ba51e5.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
@@ -10185,17 +9064,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/726181e52fb2e319.ts
 ✓ test/parser/suite/ts/pass/726599cd85d76a30.ts
 ✓ test/parser/suite/ts/pass/7267170224f1e2a4.ts
-✗ test/parser/suite/ts/pass/72732147952b1a39.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | function foo<T, U extends T>(t: T, t2: U) {
-14 |     return (x: T) => t2;
-   |              ^
-15 | }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/72732147952b1a39.ts
 ✓ test/parser/suite/ts/pass/72758df9fa29e25c.ts
 ✓ test/parser/suite/ts/pass/7278204d92cdeaf9.module.ts
 ✓ test/parser/suite/ts/pass/7278706da0ea6c89.ts
@@ -10274,17 +9143,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/73f9942368760312.ts
 ✓ test/parser/suite/ts/pass/740211f82ea56d4e.ts
 ✓ test/parser/suite/ts/pass/7402779bf47bc5f2.ts
-✗ test/parser/suite/ts/pass/74086abbd1a70047.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var lambda1 = (y = "hello") => { }
- 4 | var lambda2 = (x: number, y = "hello") => { }
-   |                 ^
- 5 | var lambda3 = (x: number, y = "hello", ...rest) => { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/74086abbd1a70047.ts
 ✓ test/parser/suite/ts/pass/7409d78277f9b3d6.ts
 ✓ test/parser/suite/ts/pass/740be8f54710df98.ts
 ✓ test/parser/suite/ts/pass/740d02144ee87c8a.ts
@@ -10478,17 +9337,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/7646dfc8e9a8f278.ts
 ✓ test/parser/suite/ts/pass/764bd435046446f7.ts
 ✓ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts
-✗ test/parser/suite/ts/pass/765441ad39f393dc.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-133 | 
-134 | const doSomethingWithLevel = (level: Level) => {
-    |                                    ^
-135 |   let next: Level;
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/765441ad39f393dc.ts
 ✗ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts (parse errors)
 error: Expected '{' to start function body, but found 'export'
    |
@@ -10544,17 +9393,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/76c864df5ea8c94c.ts
 ✓ test/parser/suite/ts/pass/76ca30f33f767b45.ts
-✗ test/parser/suite/ts/pass/76db2e3fda41eafc.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 |     private static func: Function[] = [
- 6 |      (that: Bug, name: string) => {
-   |           ^
- 7 |          that.foo(name);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/76db2e3fda41eafc.ts
 ✓ test/parser/suite/ts/pass/76de3533e858f91f.ts
 ✓ test/parser/suite/ts/pass/76de8aa4564bbd26.ts
 ✓ test/parser/suite/ts/pass/76e2d6f4a83af8c8.ts
@@ -10639,17 +9478,7 @@ error: 'const' declarations must be initialized
 
 
 ✓ test/parser/suite/ts/pass/778c69fedaa039c9.ts
-✗ test/parser/suite/ts/pass/779235073a2b6810.ts (parse errors)
-error: Unexpected token ')'
-   |
-15 | // optional parameters
-16 | ((j?) => j + 1)(12);
-   |     ^
-17 | ((k?) => k + 1)();
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/779235073a2b6810.ts
 ✓ test/parser/suite/ts/pass/77975ab377b30559.ts
 ✗ test/parser/suite/ts/pass/779a6dd8d44b2d15.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -10664,31 +9493,11 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/77a2a4527230a32d.ts
 ✓ test/parser/suite/ts/pass/77aaa6652ca344d6.ts
-✗ test/parser/suite/ts/pass/77b0fb456e23dbea.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-64 | // Arrow function
-65 | let f1 = (p1: A): p1 is C => false;
-   |             ^
-66 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/77b0fb456e23dbea.ts
 ✓ test/parser/suite/ts/pass/77b1fff4bd3e4375.ts
 ✓ test/parser/suite/ts/pass/77b76010ac98b898.ts
 ✓ test/parser/suite/ts/pass/77bb105b57e61c39.ts
-✗ test/parser/suite/ts/pass/77be90fd5d368f8f.module.ts (parse errors)
-error: Unexpected token ':'
-   |
-11 | 
-12 | export const foo1 = (type?: Unresolved): void => {};
-   |                           ^
-13 | export const foo2 = (type?: Unresolved | undefined): void => {};
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/77be90fd5d368f8f.module.ts
 ✓ test/parser/suite/ts/pass/77c2f7de2526b428.ts
 ✓ test/parser/suite/ts/pass/77c9ff77ce1cfeab.ts
 ✗ test/parser/suite/ts/pass/77e43291c32f226a.ts (parse errors)
@@ -10944,17 +9753,7 @@ error: 'eval' is not allowed as a binding identifier in strict mode
    |
 
 ✓ test/parser/suite/ts/pass/7ab78bd402f16816.ts
-✗ test/parser/suite/ts/pass/7ab83e41f13c3cd0.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | // https://github.com/microsoft/TypeScript/issues/58436
- 6 | const dec = (x: number, y: number, z: number, t: number) => (_: any, ctx: DecoratorContext): any => { };
-   |               ^
- 7 | const Foo = class {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7ab83e41f13c3cd0.ts
 ✓ test/parser/suite/ts/pass/7abf15585e9b54a2.ts
 ✓ test/parser/suite/ts/pass/7ac0a06261695efc.ts
 ✓ test/parser/suite/ts/pass/7ac5c6ea2637a567.ts
@@ -11256,17 +10055,7 @@ error: Private field '#foo' must be declared in an enclosing class
 ✓ test/parser/suite/ts/pass/7dc0b5bc41025706.ts
 ✓ test/parser/suite/ts/pass/7dc216c3c7d466db.ts
 ✓ test/parser/suite/ts/pass/7dc68ccd4fdadb02.ts
-✗ test/parser/suite/ts/pass/7dc77e588a0249f4.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-36 | t = a3;
-37 | t = (x: string) => 1;
-   |       ^
-38 | t = function (x: string) { return ''; }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7dc77e588a0249f4.ts
 ✓ test/parser/suite/ts/pass/7dcc13ffc7eead66.ts
 ✓ test/parser/suite/ts/pass/7dcd798891d58f26.ts
 ✓ test/parser/suite/ts/pass/7dce24b72bc634fb.ts
@@ -11297,27 +10086,8 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/7df6e5ab275b1bcf.ts
 ✓ test/parser/suite/ts/pass/7e03b5543d52cd14.ts
-✗ test/parser/suite/ts/pass/7e03baa6ad191112.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found ')'
-   |
-14 | // Parens
-15 | const test4 = (opt ? (undefined) : (17)) ?? 42;
-   |                                        ^
-16 | 
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
-✗ test/parser/suite/ts/pass/7e04be86442e0d40.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | 
- 6 | foo((t, u: number) => t.a)
-   |          ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7e03baa6ad191112.ts
+✓ test/parser/suite/ts/pass/7e04be86442e0d40.ts
 ✗ test/parser/suite/ts/pass/7e0b9236b27c0e43.ts (parse errors)
 error: A class can only have one constructor
    |
@@ -11350,17 +10120,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/7e9628c6849a238c.ts
 ✓ test/parser/suite/ts/pass/7ea387e6c226bb5f.ts
 ✓ test/parser/suite/ts/pass/7ea3f08d8c547553.ts
-✗ test/parser/suite/ts/pass/7ea5118abf5b3c56.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | var style: IBookStyle = {
-15 |     initialLeftPageTransforms: (width: number) => {
-   |                                      ^
-16 |         return [
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7ea5118abf5b3c56.ts
 ✓ test/parser/suite/ts/pass/7ea8f1c63ddca7a0.ts
 ✓ test/parser/suite/ts/pass/7eb567f8fb2f33bf.ts
 ✓ test/parser/suite/ts/pass/7ed6faf475be2aa4.ts
@@ -11389,17 +10149,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/7f0935e3245c579d.ts
 ✓ test/parser/suite/ts/pass/7f0990e7568eb573.ts
 ✓ test/parser/suite/ts/pass/7f20ae9d3822e2d8.ts
-✗ test/parser/suite/ts/pass/7f27d2e6c603746a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-34 | abstract class DerivedAbstractClass extends AbstractClass {
-35 |     cb = (s: string) => {};
-   |            ^
-36 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7f27d2e6c603746a.ts
 ✓ test/parser/suite/ts/pass/7f455ecaf64445f2.ts
 ✓ test/parser/suite/ts/pass/7f48eb861814779d.ts
 ✓ test/parser/suite/ts/pass/7f504881a2a962aa.ts
@@ -11422,17 +10172,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/7f7dea493379a4b6.ts
 ✓ test/parser/suite/ts/pass/7f8050b5919e1b98.ts
 ✓ test/parser/suite/ts/pass/7f852dbe3ba52c43.ts
-✗ test/parser/suite/ts/pass/7f88677eb73250f5.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-18 | var r5 = true ? b : a; // typeof b
-19 | var r6 = true ? (x: number) => { } : (x: Object) => { }; // returns number => void
-   |                   ^
-20 | var r7: (x: Object) => void = true ? (x: number) => { } : (x: Object) => { }; 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/7f88677eb73250f5.ts
 ✓ test/parser/suite/ts/pass/7f8b3b4585b490ae.ts
 ✓ test/parser/suite/ts/pass/7f8f3d5bcc83ca7e.ts
 ✓ test/parser/suite/ts/pass/7f9d76897b814238.ts
@@ -11449,17 +10189,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/7fff70453733a21e.ts
 ✓ test/parser/suite/ts/pass/80066b95de43b9f2.ts
 ✓ test/parser/suite/ts/pass/8007f332ebd2fea1.ts
-✗ test/parser/suite/ts/pass/8009b17118436ec9.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | var ResultIsString4 = typeof { x: "", y: "" };
-25 | var ResultIsString5 = typeof { x: "", y: (s: string) => { return s; } };
-   |                                            ^
-26 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8009b17118436ec9.ts
 ✓ test/parser/suite/ts/pass/8009c8e6c5759bef.ts
 ✗ test/parser/suite/ts/pass/803243468cabc265.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -11724,17 +10454,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/83552e423c68d7d1.ts
-✗ test/parser/suite/ts/pass/8365f4cdd2c999c8.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-334 | function x332(n: Genric<Base>) { }; x332({ func: n => { return [d1, d2]; } });
-335 | var x333 = (n: () => Base[]) => n; x333(() => [d1, d2]);
-    |              ^
-336 | var x334 = (n: () => Base[]) => n; x334(function() { return [d1, d2] });
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8365f4cdd2c999c8.ts
 ✗ test/parser/suite/ts/pass/836e9f95dda8fa8a.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -11763,17 +10483,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/8414f3844fb0ddb3.ts
 ✓ test/parser/suite/ts/pass/841675004eaf1fb5.module.ts
 ✓ test/parser/suite/ts/pass/8428611aea98331a.ts
-✗ test/parser/suite/ts/pass/843263a8dba1d493.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-25 | 
-26 | const enhancer4 = withH((props: Props) => ({
-   |                               ^
-27 |     onChange: (props) => (e: any) => {},
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/843263a8dba1d493.ts
 ✗ test/parser/suite/ts/pass/8434c55d5a46c091.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -11810,17 +10520,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/848406f4a14d8207.ts
 ✓ test/parser/suite/ts/pass/848f508702e35839.ts
 ✓ test/parser/suite/ts/pass/849a99514a439fe4.ts
-✗ test/parser/suite/ts/pass/84a00a2d07cc503f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 | 
-10 |   const combined = (fn: (combined: Combined) => void) => null
-   |                       ^
-11 |   const literal = (fn: (aPlusB: A & B) => void) => null
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/84a00a2d07cc503f.ts
 ✓ test/parser/suite/ts/pass/84b6cfc585d4e016.ts
 ✓ test/parser/suite/ts/pass/84c55e5edbfa60f1.tsx
 ✓ test/parser/suite/ts/pass/84cd913d9b2c1288.ts
@@ -12066,17 +10766,7 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/874767956dfa78a6.ts
 ✓ test/parser/suite/ts/pass/87499f198f3afe19.ts
 ✓ test/parser/suite/ts/pass/874d37fd2dfa47f7.ts
-✗ test/parser/suite/ts/pass/8759cb8ef5c5d99e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | 
- 4 | const isString = (x: unknown): x is string => typeof x === 'string';
-   |                    ^
- 5 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8759cb8ef5c5d99e.ts
 ✓ test/parser/suite/ts/pass/875bf0d06dd779bc.module.ts
 ✓ test/parser/suite/ts/pass/875ea29d870c581e.ts
 ✓ test/parser/suite/ts/pass/875f208ed58093c0.ts
@@ -12189,16 +10879,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/88770988b57fba8c.ts
 ✓ test/parser/suite/ts/pass/887f94869610b2ab.ts
 ✓ test/parser/suite/ts/pass/8888d9a4f2f84fde.ts
-✗ test/parser/suite/ts/pass/889162560e8fbddf.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found 'end of file'
-   |
- 1 | // @target: es2015
- 2 | (a=this.R[c])?a.JW||(a.e5(this,c),a.JW=_.l):this.A
-   |                                                   ^
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
+✓ test/parser/suite/ts/pass/889162560e8fbddf.ts
 ✓ test/parser/suite/ts/pass/8898dfe51838cf31.ts
 ✓ test/parser/suite/ts/pass/889c1b9812354b63.ts
 ✓ test/parser/suite/ts/pass/88a3d98fe6ced82a.ts
@@ -12281,17 +10962,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/89de9b461cce0949.ts
 ✓ test/parser/suite/ts/pass/89e21439ccbaa00b.ts
 ✓ test/parser/suite/ts/pass/89f2c58edc63ace5.ts
-✗ test/parser/suite/ts/pass/8a03b91c9e1410e2.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | 
-11 | const square = (x: number) => x * x;
-   |                  ^
-12 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8a03b91c9e1410e2.ts
 ✗ test/parser/suite/ts/pass/8a04dd36835f0253.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -12386,17 +11057,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/8afea4b375fe8c05.ts
 ✓ test/parser/suite/ts/pass/8b02e6f07b8de3fc.ts
-✗ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts (parse errors)
-error: Expected '=>' in function type, but found '&&'
-   |
-44 |         // do not change value
-45 |         : ((y = x) && x.toString()))); // number | boolean | string
-   |                    ^^
-46 | }
-   |
-   = help: A function type is written '(params) => ReturnType'
-
-
+✓ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
 ✗ test/parser/suite/ts/pass/8b0853d37670ce97.ts (parse errors)
 error: Unexpected token '{' as class element key
    |
@@ -12473,17 +11134,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/8bc922711bb37b1e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | const fn1 = (s: { a: true }) => {};
-   |               ^
- 8 | fn1({} satisfies unknown);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8bc922711bb37b1e.ts
 ✓ test/parser/suite/ts/pass/8bd0519a46117883.ts
 ✓ test/parser/suite/ts/pass/8bd76d46ad692953.ts
 ✓ test/parser/suite/ts/pass/8bf8ae4ad6c9fca4.module.ts
@@ -12590,17 +11241,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/8d24ac7790a6035b.ts
 ✓ test/parser/suite/ts/pass/8d2589ef0729fa47.ts
-✗ test/parser/suite/ts/pass/8d2b59e4cdefacaf.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | 
-15 | var e = (x: C) => { var y: C; return y; }
-   |           ^
-16 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8d2b59e4cdefacaf.ts
 ✓ test/parser/suite/ts/pass/8d3773222038192c.ts
 ✓ test/parser/suite/ts/pass/8d37dcf220afaf3d.ts
 ✓ test/parser/suite/ts/pass/8d3fee6c62fa564f.ts
@@ -12620,17 +11261,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/8d94d488abf6a07a.module.ts
-✗ test/parser/suite/ts/pass/8d96d47e1985b4ba.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-20 | var r1 = foo((x) => x);
-21 | var r2 = foo((x: string) => x);
-   |                ^
-22 | var r3 = foo(function (x) { return x });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8d96d47e1985b4ba.ts
 ✓ test/parser/suite/ts/pass/8d9dd33059dd7e9e.ts
 ✓ test/parser/suite/ts/pass/8daa90b19c8ebdfc.ts
 ✗ test/parser/suite/ts/pass/8db4deccd83f306b.ts (parse errors)
@@ -12644,17 +11275,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/8db7ca041b661b28.ts
 ✓ test/parser/suite/ts/pass/8db96f22cd975c84.ts
-✗ test/parser/suite/ts/pass/8dbef3eac9ab0375.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | var r1a = _.map(c2, (x) => { return x.toFixed() }); 
-14 | var rf1 = (x: number) => { return x.toFixed() };
-   |             ^
-15 | var r1b = _.map(c2, rf1); 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/8dbef3eac9ab0375.ts
 ✓ test/parser/suite/ts/pass/8dc591397eddf351.ts
 ✓ test/parser/suite/ts/pass/8dc7b678a661f85b.ts
 ✓ test/parser/suite/ts/pass/8dd1f53dd993ccc0.ts
@@ -13051,17 +11672,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/91ec464f8ec7a19d.ts
 ✓ test/parser/suite/ts/pass/91eeaffd3f288a41.ts
 ✓ test/parser/suite/ts/pass/91f4141af738e71f.ts
-✗ test/parser/suite/ts/pass/91fee8ff90c09a28.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | var f2 = (x: string) => {
-   |            ^
- 8 |     this.name = x
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/91fee8ff90c09a28.ts
 ✓ test/parser/suite/ts/pass/920a2c4c3a845261.ts
 ✗ test/parser/suite/ts/pass/9233dc6ab2cf72bf.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -13104,17 +11715,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/927d059da0f9ccba.ts
 ✓ test/parser/suite/ts/pass/9281ee6ca57d95f0.ts
 ✓ test/parser/suite/ts/pass/9286281dcdaafa16.ts
-✗ test/parser/suite/ts/pass/928e802cc1922cdd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 | var c = {
- 8 |   get: (key: string) => 'foobar'
-   |            ^
- 9 | };
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/928e802cc1922cdd.ts
 ✓ test/parser/suite/ts/pass/928f875737f03545.ts
 ✗ test/parser/suite/ts/pass/9296a05ea775d6ce.ts (parse errors)
 error: 'enum' is reserved and cannot be used as a binding identifier
@@ -13249,17 +11850,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/946f0bba3a247276.ts
 ✓ test/parser/suite/ts/pass/94735f9336db5620.ts
 ✓ test/parser/suite/ts/pass/9475695a7899f31f.ts
-✗ test/parser/suite/ts/pass/94821781a9b9574e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-30 | function other<T, U>(t: T, u: U) {
-31 |     var r10 = foo2(1, (x: T) => ''); // error
-   |                         ^
-32 |     var r10 = foo2(1, (x) => ''); // string
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/94821781a9b9574e.ts
 ✓ test/parser/suite/ts/pass/9486f24b8805d90c.ts
 ✓ test/parser/suite/ts/pass/94896f5822036405.module.ts
 ✗ test/parser/suite/ts/pass/948aa13fca005137.module.ts (parse errors)
@@ -13599,17 +12190,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/98cdc3f16ed46a03.ts
 ✓ test/parser/suite/ts/pass/98d3a5feb989ffd6.ts
 ✓ test/parser/suite/ts/pass/98e0bbed943d42a5.ts
-✗ test/parser/suite/ts/pass/98efdb7d0c38e97a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-57 |     function other<T, U>(t: T, u: U) {
-58 |         var r10 = c.foo2(1, (x: T) => ''); // error
-   |                               ^
-59 |         var r10 = c.foo2(1, (x) => ''); // string
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/98efdb7d0c38e97a.ts
 ✓ test/parser/suite/ts/pass/98f2227304165408.ts
 ✓ test/parser/suite/ts/pass/98fa109059eb3f88.ts
 ✓ test/parser/suite/ts/pass/98fed2794aeb03f2.module.ts
@@ -13707,17 +12288,7 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/99c952c91829b233.ts
 ✓ test/parser/suite/ts/pass/99c98597d8e07f23.module.ts
 ✓ test/parser/suite/ts/pass/99cd3b076c9dff4b.ts
-✗ test/parser/suite/ts/pass/99d1bcba62adf55a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-26 | 
-27 | var obj = (n: number) => '';
-   |             ^
-28 | var obj: { (n: number): string; }; // OK
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/99d1bcba62adf55a.ts
 ✓ test/parser/suite/ts/pass/99d2f3177a066f4f.ts
 ✓ test/parser/suite/ts/pass/99d38ae7ad71e4e9.ts
 ✓ test/parser/suite/ts/pass/99db18743fabd92c.ts
@@ -13737,17 +12308,7 @@ error: 'let' is not allowed as a variable name in a lexical declaration
 
 ✓ test/parser/suite/ts/pass/9a00fcdffeeb7c1e.tsx
 ✓ test/parser/suite/ts/pass/9a06db3f3bcfea17.ts
-✗ test/parser/suite/ts/pass/9a1751d5173af047.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-27 |     if (typeof arg == "object") {
-28 |       return Object.keys(arg).reduce<ClassNameObject>((obj: ClassNameObject, key: keyof S) => {
-   |                                                           ^
-29 |         const exportedClassName = styles[key];
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/9a1751d5173af047.module.ts
 ✓ test/parser/suite/ts/pass/9a1fc2c9f957ec87.ts
 ✓ test/parser/suite/ts/pass/9a30713a8449a4bc.ts
 ✓ test/parser/suite/ts/pass/9a3f2f2d4d880cf8.tsx
@@ -13829,17 +12390,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/9b05df574aa014ce.module.tsx (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | /// <reference path="/.lib/react16.d.ts" />
- 6 | const Select = (p: {value?: unknown}) => <p></p>;
-   |                  ^
- 7 | import React from 'react';
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/9b05df574aa014ce.module.tsx
 ✗ test/parser/suite/ts/pass/9b07e9feab3b0a75.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -13855,17 +12406,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/9b28947b8f82796d.module.ts
 ✓ test/parser/suite/ts/pass/9b56c5afa0c94190.ts
 ✓ test/parser/suite/ts/pass/9b57fac0435dc537.ts
-✗ test/parser/suite/ts/pass/9b673e77bf5bb42d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | var f = function foo(x: 'hi') { }
- 7 | var f2 = (x: 'hi', y: 'hi') => { }
-   |            ^
- 8 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/9b673e77bf5bb42d.ts
 ✗ test/parser/suite/ts/pass/9b7bae18b3f5588e.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -14096,29 +12637,17 @@ error: A class can only have one constructor
 
 ✓ test/parser/suite/ts/pass/9e34e42e9a2f760d.ts
 ✗ test/parser/suite/ts/pass/9e3e96b15d116238.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Private field '#foo' must be declared in an enclosing class
    |
-10 | 
-11 |     @dec(this, (x: A) => x.#foo) // ok
-   |                  ^
-12 |     m() {}
+ 6 | 
+ 7 | @dec(x => x.#foo) // error
+   |             ^^^^
+ 8 | class A {
    |
-   = help: Add a comma between elements or close with ')'.
-
 
 ✓ test/parser/suite/ts/pass/9e3ef423d19ee39e.module.ts
 ✓ test/parser/suite/ts/pass/9e43ef3d177442ae.ts
-✗ test/parser/suite/ts/pass/9e4576196f589f2f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | var ResultIsBoolean4 = delete { x: 1, y: 2};
-25 | var ResultIsBoolean5 = delete { x: 1, y: (n: number) => { return n; } };
-   |                                            ^
-26 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/9e4576196f589f2f.ts
 ✓ test/parser/suite/ts/pass/9e5a4e780419bcc8.ts
 ✗ test/parser/suite/ts/pass/9e5cb38a5f5d5047.ts (parse errors)
 error: Illegal continue statement
@@ -14257,17 +12786,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/a046384efcbca234.ts
 ✓ test/parser/suite/ts/pass/a0519925c8ff46d2.ts
 ✓ test/parser/suite/ts/pass/a05318b810d640cc.ts
-✗ test/parser/suite/ts/pass/a064a5995ecd99c3.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 |   
-10 | call((x: number, y: number) => x + y);
-   |        ^
-11 | call((x: number, y: number) => x + y, 1, 2, 3, 4, 5, 6, 7);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a064a5995ecd99c3.ts
 ✓ test/parser/suite/ts/pass/a0794a9faed0e295.ts
 ✓ test/parser/suite/ts/pass/a07aed3fb8240149.ts
 ✓ test/parser/suite/ts/pass/a07ba19f1fd720be.ts
@@ -14377,17 +12896,7 @@ error: Expected ']' after computed property key, but found ':'
    |
 
 ✓ test/parser/suite/ts/pass/a1e505a46da37336.ts
-✗ test/parser/suite/ts/pass/a1f37211a48ca596.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | 
- 7 | var f2 = (x: string) => {
-   |            ^
- 8 |     this.name = x
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a1f37211a48ca596.ts
 ✓ test/parser/suite/ts/pass/a1f7a4b6b75657d1.ts
 ✓ test/parser/suite/ts/pass/a1ff2371d1127028.ts
 ✗ test/parser/suite/ts/pass/a2009e3c8d3d276c.module.tsx (parse errors)
@@ -14453,33 +12962,13 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/a2b7e25b3caca3d3.ts
 ✓ test/parser/suite/ts/pass/a2bd78b37ef1b658.ts
 ✓ test/parser/suite/ts/pass/a2d7ae928e1fb99b.module.ts
-✗ test/parser/suite/ts/pass/a2f0e1f7b97d91ba.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
-   |
-36 | 
-37 | const arrayMap = <T, U>(f: (x: T) => U) => (a: T[]) => a.map(f);
-   |                    ^
-38 | const arrayFilter = <T>(f: (x: T) => boolean) => (a: T[]) => a.filter(f);
-   |
-   = help: A type assertion is written '<Type>expression'
-
-
+✓ test/parser/suite/ts/pass/a2f0e1f7b97d91ba.ts
 ✓ test/parser/suite/ts/pass/a2f1b8b0c313e01f.ts
 ✓ test/parser/suite/ts/pass/a2f6b6bcd064d658.ts
 ✓ test/parser/suite/ts/pass/a3037860479109aa.module.tsx
 ✓ test/parser/suite/ts/pass/a3084220eacfbeeb.ts
 ✓ test/parser/suite/ts/pass/a310f62f3de32ddd.module.ts
-✗ test/parser/suite/ts/pass/a314e23224a3972b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | 
- 9 | foo((x:number,y,z)=>{return x+y+z;});
-   |       ^
-10 | foo((x,y,z)=>{return x+y+z;});
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a314e23224a3972b.ts
 ✓ test/parser/suite/ts/pass/a31916d46ad3e8b8.ts
 ✓ test/parser/suite/ts/pass/a32acfc035c7d4e7.ts
 ✓ test/parser/suite/ts/pass/a32c014d92e166c9.ts
@@ -14522,17 +13011,7 @@ error: 'new' is reserved and cannot be used as an identifier
    |
 
 ✓ test/parser/suite/ts/pass/a39124d51d27a7d7.ts
-✗ test/parser/suite/ts/pass/a39557fb65132023.module.ts (parse errors)
-error: Unexpected token ')'
-   |
-27 | const f6: () => any = (x = 1) => 0;  // number
-28 | const f7: () => any = (x?) => 0;  // Implicit any error
-   |                          ^
-29 | const f8: () => any = (...x) => 0;  // []
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/a39557fb65132023.module.ts
 ✓ test/parser/suite/ts/pass/a39bb8e529af7675.ts
 ✓ test/parser/suite/ts/pass/a3a2c908039ace55.ts
 ✓ test/parser/suite/ts/pass/a3a82de1fe6ee38a.ts
@@ -14730,15 +13209,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/a57a56dbb9c708cd.ts (parse errors)
-error: 'function' is reserved and cannot be used as a binding identifier
-   |
- 2 | function foo(q: string, b: number) {
- 3 |     return true ? (q ? true : false) : (b = q.length, function() { });
-   |                                                       ^^^^^^^^
- 4 | };
-   |
-
+✓ test/parser/suite/ts/pass/a57a56dbb9c708cd.ts
 ✓ test/parser/suite/ts/pass/a58b099d85149235.ts
 ✓ test/parser/suite/ts/pass/a5953965808f7c6c.ts
 ✓ test/parser/suite/ts/pass/a5a8efa037b926aa.ts
@@ -14747,15 +13218,7 @@ error: 'function' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/a5bbee33debc7d9d.ts
 ✓ test/parser/suite/ts/pass/a5cde727c4d276bf.ts
 ✓ test/parser/suite/ts/pass/a5dd1fdc5a3c168d.ts
-✗ test/parser/suite/ts/pass/a5e6f8103948caa4.tsx (parse errors)
-error: Expected '(' to start parameter list, but found '{'
-   |
-10 |         <span>
-11 |           {0}{0}
-   |           ^
-12 |         </span>
-   |
-
+✓ test/parser/suite/ts/pass/a5e6f8103948caa4.tsx
 ✗ test/parser/suite/ts/pass/a5ec5a3330dbf2cb.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -14767,16 +13230,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/a5f78fb095214a8e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-20 | // (x:string) => any
-21 | var f = (x: string) => f(x);
-   |           ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a5f78fb095214a8e.ts
 ✗ test/parser/suite/ts/pass/a5f9c2a73058382a.ts (parse errors)
 error: 'super' property access is only valid inside a method or class body
    |
@@ -14940,17 +13394,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/a84026107542e2da.module.ts
-✗ test/parser/suite/ts/pass/a84ed08e4c5f1499.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-67 | // Repro from #50567
-68 | const foo = (value: unknown): string => {
-   |                   ^
-69 |   if (!value) {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a84ed08e4c5f1499.ts
 ✓ test/parser/suite/ts/pass/a850ef39fab9f8c1.ts
 ✓ test/parser/suite/ts/pass/a85398e928ea14b6.ts
 ✓ test/parser/suite/ts/pass/a8631f33b91f2561.ts
@@ -15039,17 +13483,7 @@ error: Expected ';' after for-loop init, but found 'of'
  3 | }
    |
 
-✗ test/parser/suite/ts/pass/a8f944ab7a197e7d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 |     get x() {
- 9 |         return (x: string) => "";
-   |                  ^
-10 |     }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a8f944ab7a197e7d.ts
 ✓ test/parser/suite/ts/pass/a8fd1727d73b68d0.ts
 ✓ test/parser/suite/ts/pass/a90a1e9f60ebee4f.ts
 ✓ test/parser/suite/ts/pass/a90c055a26de7dbd.ts
@@ -15069,17 +13503,7 @@ error: Expected ']' after computed property key, but found ':'
  8 | 
    |
 
-✗ test/parser/suite/ts/pass/a9616d655c988a78.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-28 | //Cond is an object type literal
-29 | ((a: string) => a.length) ? exprAny1 : exprAny2;
-   |    ^
-30 | ((a: string) => a.length) ? exprBoolean1 : exprBoolean2;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a9616d655c988a78.ts
 ✓ test/parser/suite/ts/pass/a9617272f2bf3d54.ts
 ✗ test/parser/suite/ts/pass/a9645db3a45bd4f4.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -15095,17 +13519,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/a964964b6f53aa59.module.ts
 ✓ test/parser/suite/ts/pass/a965ea329d2b4d7a.ts
 ✓ test/parser/suite/ts/pass/a96911d798260685.ts
-✗ test/parser/suite/ts/pass/a97450a63e171e7f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-15 | 
-16 | const [oops2] = [1, 2, 3].reduce((acc: number[], e) => acc.concat(e), []);
-   |                                      ^
-17 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a97450a63e171e7f.ts
 ✓ test/parser/suite/ts/pass/a98220084d38b299.ts
 ✓ test/parser/suite/ts/pass/a9848db412b47ed3.ts
 ✗ test/parser/suite/ts/pass/a98d6aaeb4a1b036.module.ts (parse errors)
@@ -15126,33 +13540,13 @@ error: Expected '{' to start function body, but found 'export'
 ✓ test/parser/suite/ts/pass/a9905b16d0efa38e.ts
 ✓ test/parser/suite/ts/pass/a9908212d124dd12.ts
 ✓ test/parser/suite/ts/pass/a9961ed2802c4c5f.ts
-✗ test/parser/suite/ts/pass/a9a5a978b007cb5d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | var r1 = foo((x) => x);
-22 | var r2 = foo((x: string[]) => x);
-   |                ^
-23 | var r3 = foo(function (x) { return x });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a9a5a978b007cb5d.ts
 ✓ test/parser/suite/ts/pass/a9a95dfa4c7349c4.ts
 ✓ test/parser/suite/ts/pass/a9ac9ea5ddd4b7e1.ts
 ✓ test/parser/suite/ts/pass/a9aea85669c2eac3.ts
 ✓ test/parser/suite/ts/pass/a9b9f63fad433d20.ts
 ✓ test/parser/suite/ts/pass/a9ca0fa21d52a672.ts
-✗ test/parser/suite/ts/pass/a9cf26e5c87486c0.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-64 |     // variables in function expressions
-65 |     var r = ((param1: string | number) => {
-   |                     ^
-66 |         // global vars in function declaration
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/a9cf26e5c87486c0.ts
 ✗ test/parser/suite/ts/pass/a9dc1530171d5902.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -15176,17 +13570,7 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/aa0369d7630c9e13.ts
 ✓ test/parser/suite/ts/pass/aa039624cd5b4972.ts
-✗ test/parser/suite/ts/pass/aa04a203501862a8.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 |     // getX has privileged access to #x
-12 |     getX = (obj: C) => obj.#x;
-   |                ^
-13 |   }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/aa04a203501862a8.ts
 ✗ test/parser/suite/ts/pass/aa18a4e2a4f5d925.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'declare'
    |
@@ -15200,17 +13584,7 @@ error: Expected declaration after 'export', but found 'declare'
 
 ✓ test/parser/suite/ts/pass/aa18d9d79087cdac.ts
 ✓ test/parser/suite/ts/pass/aa1fdc5d5e9f02ce.ts
-✗ test/parser/suite/ts/pass/aa238e555973df9f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-25 | var ResultIsAny4 = void { x: 1, y: 2};
-26 | var ResultIsAny5 = void { x: 1, y: (n: number) => { return n; } };
-   |                                      ^
-27 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/aa238e555973df9f.ts
 ✓ test/parser/suite/ts/pass/aa3ae0a938c5915a.ts
 ✓ test/parser/suite/ts/pass/aa53643c420ee170.ts
 ✓ test/parser/suite/ts/pass/aa5b355cf085923f.ts
@@ -15279,17 +13653,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/ab5a49546ae9e23e.ts
 ✓ test/parser/suite/ts/pass/ab60ae1a335de356.module.ts
 ✓ test/parser/suite/ts/pass/ab62f645c4df5c08.ts
-✗ test/parser/suite/ts/pass/ab63ddb69548e46b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-85 | // Distinguishing numbers from bigints with typeof
-86 | const isBigInt: (x: 0n | 1n) => bigint = (x: 0n | 1n) => x;
-   |                                            ^
-87 | const isNumber: (x: 0 | 1) => number = (x: 0 | 1) => x;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ab63ddb69548e46b.ts
 ✓ test/parser/suite/ts/pass/ab6802f971eead23.ts
 ✓ test/parser/suite/ts/pass/ab72ee81fc7b3476.ts
 ✓ test/parser/suite/ts/pass/ab890e6aad9f485d.ts
@@ -15440,17 +13804,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/ad8b2f3a4bfdd47d.ts
 ✓ test/parser/suite/ts/pass/ad8e92217de10a53.ts
 ✓ test/parser/suite/ts/pass/ad9cb91df0a33e2f.ts
-✗ test/parser/suite/ts/pass/ad9cfe3d912e50a1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 4 | 
- 5 | var v2 = (s: string) => s.length || function (s) { s.length };
-   |            ^
- 6 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ad9cfe3d912e50a1.ts
 ✓ test/parser/suite/ts/pass/adccf47e2cffc5d3.ts
 ✓ test/parser/suite/ts/pass/adcdba1e5ecfcf24.ts
 ✓ test/parser/suite/ts/pass/add26ac395dcad12.module.ts
@@ -15471,27 +13825,8 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/ae074a11df0fcaa9.tsx
 ✓ test/parser/suite/ts/pass/ae093c82c0f4f48e.module.ts
 ✓ test/parser/suite/ts/pass/ae0b286513bc9c33.ts
-✗ test/parser/suite/ts/pass/ae0d67f7a6071b75.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | var r = c.foo('');
-14 | var r2 = r({ length: 3, charAt: (x: number) => { '' } }); // error
-   |                                   ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/ae1357e7e29dada2.tsx (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-21 | 
-22 | let Funk = (_props: ComponentProps) => <div>Hello</div>;
-   |                   ^
-23 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ae0d67f7a6071b75.ts
+✓ test/parser/suite/ts/pass/ae1357e7e29dada2.tsx
 ✓ test/parser/suite/ts/pass/ae1a72a174d49433.ts
 ✓ test/parser/suite/ts/pass/ae2fabeeb4dbe6a7.ts
 ✓ test/parser/suite/ts/pass/ae41dc5d1c435c4a.module.ts
@@ -15581,17 +13916,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/afa276004cbdf93e.ts
-✗ test/parser/suite/ts/pass/afa9a29149b290d3.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | var c = new C({ length: 2 });
-15 | var r = c.foo({ length: 3, charAt: (x: number) => { '' } });
-   |                                      ^
-16 | var r2 = r('');
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/afa9a29149b290d3.ts
 ✗ test/parser/suite/ts/pass/afae9c36ba65b9ef.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -15628,17 +13953,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/aff8820b7bdc13bd.ts
 ✓ test/parser/suite/ts/pass/affad38eb623df0c.module.tsx
 ✓ test/parser/suite/ts/pass/b01103cfb6c3a2f2.ts
-✗ test/parser/suite/ts/pass/b0138a84c0d377e5.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-41 |     // ok
-42 |     [].forEach((f: () => void) => f && f.apply(parent, []));
-   |                  ^
-43 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b0138a84c0d377e5.ts
 ✓ test/parser/suite/ts/pass/b016e71ecdceb61c.ts
 ✓ test/parser/suite/ts/pass/b01861b98401a4d4.ts
 ✗ test/parser/suite/ts/pass/b01c3d5b372ad93f.module.ts (parse errors)
@@ -15705,28 +14020,8 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/b077e2146881d8c1.ts
 ✓ test/parser/suite/ts/pass/b083953e7bb929be.ts
 ✓ test/parser/suite/ts/pass/b08c4318df497cfa.ts
-✗ test/parser/suite/ts/pass/b091d6ebbd0dc9bc.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-102 | 
-103 | const f1 = (t: "a" | ("b" & "c")): "a" => t;
-    |              ^
-104 | 
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/b094c35e0d1159d6.ts (parse errors)
-error: Unexpected token ':'
-   |
- 5 | class A {
- 6 |     b = async (...args: any[]) => {
-   |                       ^
- 7 |         await Promise.resolve();
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/b091d6ebbd0dc9bc.ts
+✓ test/parser/suite/ts/pass/b094c35e0d1159d6.ts
 ✓ test/parser/suite/ts/pass/b09b85d63de2414f.ts
 ✗ test/parser/suite/ts/pass/b0a4e1ba9fa614bb.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -16247,17 +14542,7 @@ error: Expected '{' to start function body, but found 'function'
 
 ✓ test/parser/suite/ts/pass/b516712f9f7c6a4c.ts
 ✓ test/parser/suite/ts/pass/b5184726944dcf9d.ts
-✗ test/parser/suite/ts/pass/b52707ab284a842c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-27 | var fn = function (s: string) { return 42; }
-28 | var fn = (s: string) => 3;
-   |            ^
-29 | var fn: (s: string) => number;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b52707ab284a842c.ts
 ✓ test/parser/suite/ts/pass/b52ae98e8fb7d8da.ts
 ✓ test/parser/suite/ts/pass/b530032c4eb57e14.ts
 ✓ test/parser/suite/ts/pass/b53feff741916d09.ts
@@ -16287,14 +14572,14 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/b5b0a08161dac526.module.tsx
 ✓ test/parser/suite/ts/pass/b5cc13ed4e14eb8f.ts
 ✗ test/parser/suite/ts/pass/b5cc725192f755e6.ts (parse errors)
-error: Expected '>' to close a type assertion, but found ','
+error: Expected ',' or '}' in object, but found '<'
    |
- 9 | 
-10 | const toThenable = <Result, Input>(fn: (input: Input) => Result | Thenable<Result>) =>
-   |                           ^
-11 |     (input: Input): Thenable<Result> => {
+13 |         return {
+14 |             then<V>(onFulfilled: (value: Result) => V | Thenable<V>) {
+   |                 ^
+15 |                 return toThenable<V, Result>(onFulfilled)(result as Result)
    |
-   = help: A type assertion is written '<Type>expression'
+   = help: Add a comma between properties or close the object with '}'.
 
 
 ✓ test/parser/suite/ts/pass/b5db8fe8b1a0b28c.ts
@@ -16304,17 +14589,7 @@ error: Expected '>' to close a type assertion, but found ','
 ✓ test/parser/suite/ts/pass/b5f43f435778755b.ts
 ✓ test/parser/suite/ts/pass/b5f78857ba3ffd5a.module.ts
 ✓ test/parser/suite/ts/pass/b5fb07750b51969f.ts
-✗ test/parser/suite/ts/pass/b60497e02ed72786.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | 
- 9 | var f2 = (x: number) => { return null; }
-   |            ^
-10 | var r2 = f2<string>(1);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b60497e02ed72786.ts
 ✓ test/parser/suite/ts/pass/b6073007f97c8915.ts
 ✗ test/parser/suite/ts/pass/b6080918da78e73c.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -16329,17 +14604,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/b60955a6b9d12139.ts
 ✓ test/parser/suite/ts/pass/b60d9ef689672358.ts
 ✓ test/parser/suite/ts/pass/b60e030ab00fd5b8.ts
-✗ test/parser/suite/ts/pass/b60e845122e12a5b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | declare var obj: () => {}
- 9 | var obj1 = { x: (s: string) => { }, y: (s1) => { }};
-   |                   ^
-10 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b60e845122e12a5b.ts
 ✓ test/parser/suite/ts/pass/b60fd3bdcb7d339f.ts
 ✓ test/parser/suite/ts/pass/b6197b78ec2a9e1d.ts
 ✓ test/parser/suite/ts/pass/b61e050f2f8d5996.ts
@@ -16440,17 +14705,7 @@ error: Invalid character at start of identifier
 ✓ test/parser/suite/ts/pass/b7308556c4ef91d0.ts
 ✓ test/parser/suite/ts/pass/b749b8c31e01c0fb.ts
 ✓ test/parser/suite/ts/pass/b74c362dc471c7f0.ts
-✗ test/parser/suite/ts/pass/b74de7e26071be60.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | let trace: any[] = [];
- 6 | let order = (n: any): any => trace.push(n);
-   |               ^
- 7 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b74de7e26071be60.ts
 ✓ test/parser/suite/ts/pass/b751ef557303924e.ts
 ✓ test/parser/suite/ts/pass/b765cc494186c1f9.ts
 ✓ test/parser/suite/ts/pass/b76be91aa5a8d72b.ts
@@ -16532,31 +14787,11 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/b7ee01919fa23143.ts
 ✓ test/parser/suite/ts/pass/b7f703c0148884a9.ts
-✗ test/parser/suite/ts/pass/b80155dd13abfb27.module.tsx (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-36 | 
-37 |     const test1 = (type: "foo" | "bar") =>
-   |                        ^
-38 |         messages[type]({ a: "A", b: 0 });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b80155dd13abfb27.module.tsx
 ✓ test/parser/suite/ts/pass/b80bfbe3d3990713.ts
 ✓ test/parser/suite/ts/pass/b80db1dbe0f6b12e.ts
 ✓ test/parser/suite/ts/pass/b816b31f47f8c207.ts
-✗ test/parser/suite/ts/pass/b81701a7fe74dd68.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-91 | 
-92 | const f1 = (t: "a" | ("b" & "c")): "a" => t;
-   |              ^
-93 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b81701a7fe74dd68.ts
 ✗ test/parser/suite/ts/pass/b81b29bc58c73681.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -16617,17 +14852,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/b8b9c06a6c9caa38.ts
 ✓ test/parser/suite/ts/pass/b8ba9a15dead0f43.ts
 ✓ test/parser/suite/ts/pass/b8bc291c3dc74cb4.ts
-✗ test/parser/suite/ts/pass/b8c35c54ed8bd7e1.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found ')'
-   |
-10 |         break;
-11 |     case (randBool() ? ("bar") : "baz" ? "bar" : "baz"):
-   |                                                       ^
-12 |         break;
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
+✓ test/parser/suite/ts/pass/b8c35c54ed8bd7e1.ts
 ✓ test/parser/suite/ts/pass/b8cdfbecad9133e2.ts
 ✗ test/parser/suite/ts/pass/b8d3c510e651086d.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'declare'
@@ -16754,17 +14979,7 @@ error: Expected ']' after computed property key, but found ':'
 16 | }
    |
 
-✗ test/parser/suite/ts/pass/b9d5f3d7854bfbe6.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | 
-15 | export let blah: IDirectiveLinkFn<number> | ConstructableA | IDirectivePrePost<number> = (x: string) => {}
-   |                                                                                            ^
-16 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/b9d5f3d7854bfbe6.module.ts
 ✓ test/parser/suite/ts/pass/b9d9da5b86805d13.ts
 ✓ test/parser/suite/ts/pass/b9e50f0652b322fc.ts
 ✓ test/parser/suite/ts/pass/b9e9edc6c431abfd.ts
@@ -16847,17 +15062,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/bac504963584e3e8.ts
 ✓ test/parser/suite/ts/pass/bacce4962d69c35d.ts
 ✓ test/parser/suite/ts/pass/bacdb0417a5638c2.ts
-✗ test/parser/suite/ts/pass/bad1dcff0675be06.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-77 | 
-78 | call((x: number, y: number) => x + y) // error
-   |        ^
-79 | call((x: number, y: number) => x + y, 4, 2) // ok
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bad1dcff0675be06.ts
 ✓ test/parser/suite/ts/pass/badeb5503492988f.ts
 ✗ test/parser/suite/ts/pass/baec4d44eddfaba9.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -16937,17 +15142,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/bbec8fcabde9dc92.ts
 ✓ test/parser/suite/ts/pass/bbf7afd596c3e95b.ts
 ✓ test/parser/suite/ts/pass/bbfac8e28d8d9eb5.ts
-✗ test/parser/suite/ts/pass/bc071c7556d73c8a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | var m: Mapper<string>;
- 9 | var a = m.map((x: string) => x);  // string[]
-   |                 ^
-10 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bc071c7556d73c8a.ts
 ✗ test/parser/suite/ts/pass/bc0f7c24294ad30f.ts (parse errors)
 error: Duplicate private name '#foo'
    |
@@ -16993,31 +15188,11 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/bc87c5545b7dbbb9.ts
 ✓ test/parser/suite/ts/pass/bc896564141b56e8.module.ts
 ✓ test/parser/suite/ts/pass/bc926b60c4382de0.ts
-✗ test/parser/suite/ts/pass/bc9643c9a47e2cbd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | 
-12 | var ds = [(x: Object) => 1, (x: string) => 2]; // { (x:Object) => number }[]
-   |             ^
-13 | var es = [(x: string) => 2, (x: Object) => 1]; // { (x:string) => number }[]
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bc9643c9a47e2cbd.ts
 ✓ test/parser/suite/ts/pass/bc97c3723a233b44.ts
 ✓ test/parser/suite/ts/pass/bcb515d1a028103f.ts
 ✓ test/parser/suite/ts/pass/bcb557a9774f9af6.ts
-✗ test/parser/suite/ts/pass/bcbd231a6b4ac924.module.tsx (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-34 | 
-35 | const RenderElement = ({ title }: { title: string }) => <div>{title}</div>;
-   |                                 ^
-36 | Component = RenderElement;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bcbd231a6b4ac924.module.tsx
 ✓ test/parser/suite/ts/pass/bcbd97419aa7825f.ts
 ✓ test/parser/suite/ts/pass/bcd32af49861c01a.ts
 ✓ test/parser/suite/ts/pass/bcd98f74ce07c8b9.ts
@@ -17027,15 +15202,15 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/bcf0a8588395e0ef.ts
 ✓ test/parser/suite/ts/pass/bcf434893390c7dd.ts
 ✗ test/parser/suite/ts/pass/bcf45da3e105cb7d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: A class can only have one constructor
    |
- 4 |     a() {
- 5 |         var lamda = (_super: number) => { // No Error 
-   |                            ^
- 6 |             return x => this;   // New scope.  So should inject new _this capture
+51 | class Foo4 extends Foo {
+52 |     constructor(_super: number); // no code gen - no error
+   |     ~~~~~~~~~~~ first constructor defined here
+53 |     constructor(_super: string);// no code gen - no error
+   |     ^^^^^^^^^^^
+54 |     constructor(_super: any) { // should be error
    |
-   = help: Add a comma between elements or close with ')'.
-
 
 ✓ test/parser/suite/ts/pass/bcf9296e8135e590.ts
 ✓ test/parser/suite/ts/pass/bcfa953cbae488da.ts
@@ -17083,17 +15258,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/bd6ac70f6aabad74.ts
 ✓ test/parser/suite/ts/pass/bd71c8cb02d4627a.ts
 ✓ test/parser/suite/ts/pass/bd75144b2febaa27.ts
-✗ test/parser/suite/ts/pass/bd8e60d7b2ad6f6e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 | function someGenerics4<T, U>(n: T, f: (x: U) => void) { }
- 8 | someGenerics4<string, number>('', (x: string) => ''); // Error
-   |                                     ^
- 9 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bd8e60d7b2ad6f6e.ts
 ✓ test/parser/suite/ts/pass/bd8ea679a7c712a9.ts
 ✗ test/parser/suite/ts/pass/bd93b09d1a592dc2.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -17141,17 +15306,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/bdc6269395cf6673.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | var f3 = <T>(x: B<T>) => { return x.foo<number>(1); } // error
-11 | var f4 = (x: B<number>) => { return x.foo(1); } // no error
-   |            ^
-12 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bdc6269395cf6673.ts
 ✓ test/parser/suite/ts/pass/bddcb72a7a2158cc.ts
 ✓ test/parser/suite/ts/pass/bddf51701ff85628.ts
 ✓ test/parser/suite/ts/pass/bde676d186a2fa0a.ts
@@ -17410,17 +15565,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/bfee258fa0da16f4.ts
 ✓ test/parser/suite/ts/pass/bfef410e08f334b9.ts
 ✓ test/parser/suite/ts/pass/bff46adf9db31e63.ts
-✗ test/parser/suite/ts/pass/bff932a033752521.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var greetings = 0;
- 4 | var greet = (greeting: string): number => {
-   |                      ^
- 5 |     greetings++;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/bff932a033752521.ts
 ✓ test/parser/suite/ts/pass/bffb394c7567702f.ts
 ✓ test/parser/suite/ts/pass/bffe040a29bdd6a2.ts
 ✓ test/parser/suite/ts/pass/bffea1c695ff0d8c.ts
@@ -17558,17 +15703,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/c0deffb36de074e2.ts
-✗ test/parser/suite/ts/pass/c11164f75cd076b8.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 |   
- 8 | call((x: number, y: number) => x + y);
-   |        ^
- 9 | call((x: number, y: number) => x + y, 1, 2, 3, 4, 5, 6, 7);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c11164f75cd076b8.ts
 ✗ test/parser/suite/ts/pass/c111688073b4cfa5.ts (parse errors)
 error: Expected ')' after catch parameter, but found ':'
    |
@@ -17612,15 +15747,7 @@ error: Expected ')' after catch parameter, but found ':'
 
 ✓ test/parser/suite/ts/pass/c17abd8d2c9de89b.ts
 ✓ test/parser/suite/ts/pass/c17d8c812a58eefd.ts
-✗ test/parser/suite/ts/pass/c188a25c57f6bdc2.ts (parse errors)
-error: Expected a type, but found 'break'
-   |
-18 |     case "baz" && ("foo" || "bar"):
-19 |         break;
-   |         ^^^^^
-20 |     case "bar" && ("baz" || "bar"):
-   |
-
+✓ test/parser/suite/ts/pass/c188a25c57f6bdc2.ts
 ✓ test/parser/suite/ts/pass/c18ebb8db3b85376.module.ts
 ✓ test/parser/suite/ts/pass/c19a1901b0eb2abb.ts
 ✓ test/parser/suite/ts/pass/c19de378d91a50cb.ts
@@ -17650,17 +15777,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/c1cc3f39e6e91241.ts
-✗ test/parser/suite/ts/pass/c1ce1ef6c942ca65.module.tsx (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | 
-12 | const Info = (props: InfoProps) =>
-   |                    ^
-13 | props.status === "hidden"
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c1ce1ef6c942ca65.module.tsx
 ✓ test/parser/suite/ts/pass/c1d465c94fd47862.ts
 ✓ test/parser/suite/ts/pass/c1d90d841665e4a8.ts
 ✓ test/parser/suite/ts/pass/c1e44ca66ecda106.ts
@@ -17683,17 +15800,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/c203fd9aa416cc6e.ts
 ✓ test/parser/suite/ts/pass/c20ec1072d239345.ts
-✗ test/parser/suite/ts/pass/c20edda306a6d2b4.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found '??'
-   |
- 9 | const foo2 = a ?? 'foo' ? 1 : 2;
-10 | const foo3 = a ?? 'foo' ? (b ?? 'bar') : (c ?? 'baz');
-   |                                             ^^
-11 | 
-   |
-   = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/c20edda306a6d2b4.ts
 ✓ test/parser/suite/ts/pass/c217d4582c2f9fd6.ts
 ✓ test/parser/suite/ts/pass/c223772d14e46764.ts
 ✓ test/parser/suite/ts/pass/c2254ec2676f1543.ts
@@ -17803,28 +15910,18 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✗ test/parser/suite/ts/pass/c31309f36c94e8c7.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-120 | 
-121 | const simpleAction = (payload: boolean) => ({
-    |                              ^
-122 |   type: "SIMPLE_ACTION",
-    |
-    = help: Add a comma between elements or close with ')'.
-
+error: A class can only have one constructor
+   |
+ 3 | declare class Component<P> {
+ 4 |   constructor(props: Readonly<P>);
+   |   ~~~~~~~~~~~ first constructor defined here
+ 5 |   constructor(props: P, context?: any);
+   |   ^^^^^^^^^^^
+ 6 |   readonly props: Readonly<P> & Readonly<{ children?: {} }>;
+   |
 
 ✓ test/parser/suite/ts/pass/c31883c26c6c3367.ts
-✗ test/parser/suite/ts/pass/c31a7c3a606620ad.ts (parse errors)
-error: Unexpected token ':'
-   |
- 4 |     foo(message: string): () => string {
- 5 |         return (...x: string[]) =>
-   |                     ^
- 6 |             /// <summary>Test summary</summary>
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/c31a7c3a606620ad.ts
 ✓ test/parser/suite/ts/pass/c31a89189385e5b2.ts
 ✓ test/parser/suite/ts/pass/c31aacbcbb63c0f0.ts
 ✓ test/parser/suite/ts/pass/c31e18c96b32b176.ts
@@ -17833,17 +15930,7 @@ error: Unexpected token ':'
 ✓ test/parser/suite/ts/pass/c329bf242ca9a1c0.ts
 ✓ test/parser/suite/ts/pass/c32cff1cec056999.ts
 ✓ test/parser/suite/ts/pass/c32fc6e8b7e394e3.ts
-✗ test/parser/suite/ts/pass/c3331d4d6f246006.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-25 | var ResultIsString4 = typeof { x: 1, y: 2};
-26 | var ResultIsString5 = typeof { x: 1, y: (n: number) => { return n; } };
-   |                                           ^
-27 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c3331d4d6f246006.ts
 ✓ test/parser/suite/ts/pass/c3400050122518b7.ts
 ✓ test/parser/suite/ts/pass/c34c275d748e5c91.ts
 ✓ test/parser/suite/ts/pass/c34c3c83e6a3fa95.ts
@@ -17867,17 +15954,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 ✓ test/parser/suite/ts/pass/c38f75376a4db8e7.ts
 ✓ test/parser/suite/ts/pass/c39107c45fc0b2c3.ts
 ✓ test/parser/suite/ts/pass/c3927980fd3c3125.ts
-✗ test/parser/suite/ts/pass/c39d0ac26140af2c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | function foo<T, U extends T>(t: T, t2: U) {
-14 |     return (x: T) => t2;
-   |              ^
-15 | }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c39d0ac26140af2c.ts
 ✓ test/parser/suite/ts/pass/c39d9e3df0d9a8d3.ts
 ✓ test/parser/suite/ts/pass/c39da5dc2060f374.ts
 ✓ test/parser/suite/ts/pass/c3af8e5af8e23b33.ts
@@ -17890,17 +15967,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/c414eabf4d77e599.ts
 ✓ test/parser/suite/ts/pass/c42efb30992b3eb3.ts
 ✓ test/parser/suite/ts/pass/c433a66ff7a0f623.ts
-✗ test/parser/suite/ts/pass/c4341674b977bf38.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-19 | foo(a, b, { foo: 1, bar: '', hm: true });
-20 | foo((x: number, y) => { }, (x) => { }, () => { });
-   |       ^
-21 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c4341674b977bf38.ts
 ✗ test/parser/suite/ts/pass/c43877b527718565.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -17919,17 +15986,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c46b9158c5d7b6fb.module.ts
 ✓ test/parser/suite/ts/pass/c4774563c03a2960.ts
 ✓ test/parser/suite/ts/pass/c487902e1bf334a0.ts
-✗ test/parser/suite/ts/pass/c4925f281ee09917.ts (parse errors)
-error: Unexpected token ':'
-   |
-96 | function bind<T, U extends unknown[], V>(f: (x: T, ...rest: U) => V, x: T) {
-97 |     return (...rest: U) => f(x, ...rest);
-   |                    ^
-98 | }
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/c4925f281ee09917.ts
 ✓ test/parser/suite/ts/pass/c4adb5874094c755.ts
 ✓ test/parser/suite/ts/pass/c4d6f2560c1bc84d.ts
 ✓ test/parser/suite/ts/pass/c4e594bdcfe8de4e.ts
@@ -18079,17 +16136,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/c5e9df7d668de0e0.ts
 ✓ test/parser/suite/ts/pass/c5f6537eccce08a6.ts
-✗ test/parser/suite/ts/pass/c5fc181269288728.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-18 | declare var c: C;
-19 | c.x1(1, (x: 'hi') => { return 1; } );
-   |           ^
-20 | c.x1(1, (x: 'bye') => { return 1; } ); 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c5fc181269288728.ts
 ✓ test/parser/suite/ts/pass/c5feae6c8c039573.ts
 ✓ test/parser/suite/ts/pass/c617b6b16c8643c7.ts
 ✓ test/parser/suite/ts/pass/c6189e72b63cd387.ts
@@ -18213,17 +16260,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/c74c06f052f88cf4.ts
 ✓ test/parser/suite/ts/pass/c7554f133d53818b.ts
 ✓ test/parser/suite/ts/pass/c757ce8e49fa71c8.ts
-✗ test/parser/suite/ts/pass/c7690fd1598f3aef.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | // @sourcemap: true
- 3 | ((item: string) =>
-   |       ^
- 4 |     item
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c7690fd1598f3aef.ts
 ✓ test/parser/suite/ts/pass/c76c1b2f398c7dae.ts
 ✗ test/parser/suite/ts/pass/c77303c61729d22b.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found '.'
@@ -18262,17 +16299,7 @@ error: A class can only have one constructor
    |
 
 ✓ test/parser/suite/ts/pass/c792ed389c4dd5a4.ts
-✗ test/parser/suite/ts/pass/c7a8902a1b768c2e.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-16 | 
-17 | const validate = (_: { query?: unknown; body?: unknown }) => {};
-   |                    ^
-18 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c7a8902a1b768c2e.module.ts
 ✓ test/parser/suite/ts/pass/c7ae67eed06de0d4.ts
 ✓ test/parser/suite/ts/pass/c7bfb9f2c4510a3a.ts
 ✗ test/parser/suite/ts/pass/c7c1a5cefb9d57c7.ts (parse errors)
@@ -18337,17 +16364,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c86ed725f9f24e14.module.ts
 ✓ test/parser/suite/ts/pass/c87dbc652accbab8.ts
 ✓ test/parser/suite/ts/pass/c88193e105927ffe.ts
-✗ test/parser/suite/ts/pass/c88260bcebed0a19.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 | 
-10 |     messageHandler = (message: string) => {
-   |                              ^
-11 |         console.log(message); // This shouldnt be error
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/c88260bcebed0a19.ts
 ✓ test/parser/suite/ts/pass/c8833cd84af9304a.ts
 ✓ test/parser/suite/ts/pass/c88f47cb506cdc5f.ts
 ✓ test/parser/suite/ts/pass/c89fa25c0794afaf.ts
@@ -18447,17 +16464,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/ca3c06f1c4778bc0.ts
 ✓ test/parser/suite/ts/pass/ca410e18fd4af542.ts
 ✓ test/parser/suite/ts/pass/ca5450bb0953d1e8.ts
-✗ test/parser/suite/ts/pass/ca5bccdffa74530c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-30 | t = a3;
-31 | t = (x: string) => 1;
-   |       ^
-32 | t = function (x: string) { return ''; }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ca5bccdffa74530c.ts
 ✓ test/parser/suite/ts/pass/ca63799f3f65c84c.ts
 ✓ test/parser/suite/ts/pass/ca6a0307864adb10.ts
 ✓ test/parser/suite/ts/pass/ca870ad8114e2d70.module.ts
@@ -18521,17 +16528,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/cba15a23424be3f7.ts
 ✓ test/parser/suite/ts/pass/cba29376eaa93f79.ts
 ✓ test/parser/suite/ts/pass/cbb0d2cdae8d6151.ts
-✗ test/parser/suite/ts/pass/cbc1258b9b8dffa7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-38 | /** comment2 */
-39 | var z = /** lambda comment */ (x: number, y: number) => x + y;
-   |                                 ^
-40 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/cbc1258b9b8dffa7.ts
 ✓ test/parser/suite/ts/pass/cbc556ba76259c51.ts
 ✗ test/parser/suite/ts/pass/cbcd3b8c5776ae22.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -18862,17 +16859,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/ce587ba42b6f4486.ts
-✗ test/parser/suite/ts/pass/ce58e4710414e239.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found '>='
-   |
-18 |             ? (c - CharacterCodes._0)
-19 |             : (c >= CharacterCodes.A && c <= CharacterCodes.F)
-   |                  ^^
-20 |                 ? c - CharacterCodes.A + 10
-   |
-   = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/ce58e4710414e239.ts
 ✓ test/parser/suite/ts/pass/ce68c1716550abb8.ts
 ✓ test/parser/suite/ts/pass/ce6c35522d86e305.ts
 ✓ test/parser/suite/ts/pass/ce7391210894b2c1.ts
@@ -18896,15 +16883,13 @@ error: Unexpected token '@' in binding pattern
 
 ✓ test/parser/suite/ts/pass/cebc2ad1cd336049.module.ts
 ✗ test/parser/suite/ts/pass/cec0ecc1e0019278.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Private field '#y' must be declared in an enclosing class
    |
-11 |     // getX has privileged access to #x
 12 |     getX = (obj: C) => obj.#x;
-   |                ^
 13 |     getY = (obj: D) => obj.#y;
+   |                            ^^
+14 |   }
    |
-   = help: Add a comma between elements or close with ')'.
-
 
 ✗ test/parser/suite/ts/pass/cec2755537e147ae.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
@@ -19111,17 +17096,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d1087a586b6eb522.ts
 ✓ test/parser/suite/ts/pass/d10c383bfce17ee8.ts
 ✓ test/parser/suite/ts/pass/d10d698276ffbacf.ts
-✗ test/parser/suite/ts/pass/d10f41db8b6dbde3.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-15 |     checkLimit: (ctx, max = 500) => {},
-16 |     hasAccess: (ctx, user: { name: string }) => {},
-   |                          ^
-17 |   },
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d10f41db8b6dbde3.ts
 ✓ test/parser/suite/ts/pass/d114df40ec16bfb2.ts
 ✓ test/parser/suite/ts/pass/d1294bf0dc15d363.ts
 ✓ test/parser/suite/ts/pass/d1505f8178cc3373.ts
@@ -19208,17 +17183,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/d1e741d8ce3b3c95.ts
 ✓ test/parser/suite/ts/pass/d1f101d688608a1f.ts
 ✓ test/parser/suite/ts/pass/d1f75f888dde0161.ts
-✗ test/parser/suite/ts/pass/d1f8794b23a08230.ts (parse errors)
-error: Unexpected token ':'
-   |
-15 |     a = () => 1 // ok, same number of required params
-16 |     a = (x?: number) => 1; // ok, same number of required params
-   |            ^
-17 |     a = (x: number) => 1; // error, too many required params
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/d1f8794b23a08230.ts
 ✗ test/parser/suite/ts/pass/d1fd710f2c9584dc.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
     |
@@ -19295,17 +17260,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/d2c2365604abc89a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-15 | const funcs1 = {
-16 |     funcA: (a: boolean): void => {},
-   |              ^
-17 |     funcB: (b: string, bb: string): void => {},
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d2c2365604abc89a.ts
 ✗ test/parser/suite/ts/pass/d2cce5987b09afef.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -19320,17 +17275,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d2cea2be662cd40c.tsx
 ✓ test/parser/suite/ts/pass/d2d1cda04985795d.ts
 ✓ test/parser/suite/ts/pass/d2d68cbe07caf20f.ts
-✗ test/parser/suite/ts/pass/d2d9e18a49b96fd7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | 
-25 | arr.map((a: number | string, index: number) => { 
-   |           ^
-26 |     return index
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d2d9e18a49b96fd7.ts
 ✓ test/parser/suite/ts/pass/d2e3a23f59586ec3.ts
 ✓ test/parser/suite/ts/pass/d2e5f6d21e4b395a.ts
 ✓ test/parser/suite/ts/pass/d2e9b5bef35e9223.module.ts
@@ -19390,17 +17335,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/d35af70f01ab3857.ts (parse errors)
-error: Unexpected token ':'
-    |
-317 | function curry<T extends unknown[], U extends unknown[], R>(f: (...args: [...T, ...U]) => R, ...a: T) {
-318 |     return (...b: U) => f(...a, ...b);
-    |                 ^
-319 | }
-    |
-    = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/d35af70f01ab3857.ts
 ✓ test/parser/suite/ts/pass/d3601d7911a8e96e.ts
 ✗ test/parser/suite/ts/pass/d362e871f8f5efb3.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -19414,17 +17349,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/d36c34f1eed368b1.ts
-✗ test/parser/suite/ts/pass/d36d0074b9d9fa9e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-60 | i3_i = {
-61 |     f: /**own f*/ (/**i3_i a*/a: number) => "Hello" + a,
-   |                                ^
-62 |     l: this.f,
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d36d0074b9d9fa9e.ts
 ✓ test/parser/suite/ts/pass/d370745922a3bd85.ts
 ✓ test/parser/suite/ts/pass/d3745cc892fdf073.ts
 ✗ test/parser/suite/ts/pass/d385619b459a9685.ts (parse errors)
@@ -19712,17 +17637,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/d6fd643fcd4281a1.ts
-✗ test/parser/suite/ts/pass/d700a20fe390f666.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 7 | // Tempting to remove alias if unused 
- 8 | let notReferenced = ({ name: alias }: Named) => { }
-   |                                     ^
- 9 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d700a20fe390f666.ts
 ✗ test/parser/suite/ts/pass/d70e95e0ab69be9d.module.ts (parse errors)
 error: Unexpected token '@' in binding pattern
    |
@@ -19814,17 +17729,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d8372ca13788a9bd.ts
 ✓ test/parser/suite/ts/pass/d842102573d9b9f3.ts
 ✓ test/parser/suite/ts/pass/d84486680495b916.ts
-✗ test/parser/suite/ts/pass/d858d637ed9097cd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-81 | var r1arg1 = <T>(x: T) => [x];
-82 | var r1arg2 = (x: number) => [1];
-   |                ^
-83 | var r1 = foo1(r1arg1); // any, return types are not subtype of first overload
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/d858d637ed9097cd.ts
 ✓ test/parser/suite/ts/pass/d85c67cb060acfc6.ts
 ✓ test/parser/suite/ts/pass/d8634111403cebb7.ts
 ✓ test/parser/suite/ts/pass/d86a802a38ad8536.ts
@@ -20034,17 +17939,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/db230328d52f2f42.ts
 ✓ test/parser/suite/ts/pass/db2db1774e5f251a.ts
 ✓ test/parser/suite/ts/pass/db384641ee734a02.ts
-✗ test/parser/suite/ts/pass/db3a9f06d38f683f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | var r3 = utils.mapReduce(c, (x) => { return 1 }, (y) => { return new Date() });
-12 | var r4 = utils.mapReduce(c, (x: string) => { return 1 }, (y: number) => { return new Date() });
-   |                               ^
-13 | var f1 = (x: string) => { return 1 };
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/db3a9f06d38f683f.ts
 ✓ test/parser/suite/ts/pass/db42c94f963aee06.ts
 ✓ test/parser/suite/ts/pass/db5749165ae78070.ts
 ✓ test/parser/suite/ts/pass/db5986c3dc8caa2a.ts
@@ -20070,17 +17965,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/db91688b90befb41.module.ts
 ✓ test/parser/suite/ts/pass/db9623394b10e2d3.ts
 ✓ test/parser/suite/ts/pass/db98302ba9b2b92f.ts
-✗ test/parser/suite/ts/pass/db9d24887e84301f.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | var f = function foo(x?: number) { }
- 7 | var f2 = (x: number, y?: number) => { }
-   |            ^
- 8 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/db9d24887e84301f.ts
 ✓ test/parser/suite/ts/pass/dbae7b5dd6e136c9.ts
 ✓ test/parser/suite/ts/pass/dbbbab143f2b8781.ts
 ✓ test/parser/suite/ts/pass/dbd5aeb5e00faba0.ts
@@ -20133,17 +18018,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/dce3c10560f63290.ts
 ✓ test/parser/suite/ts/pass/dce8a38527aa7256.ts
 ✓ test/parser/suite/ts/pass/dcef7382264b20e3.ts
-✗ test/parser/suite/ts/pass/dcf4f75083047529.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var funcExp = (...rest) => { }
- 4 | var funcExp1 = (X: number, ...rest) => { }
-   |                  ^
- 5 | var funcExp2 = function (...rest) { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/dcf4f75083047529.ts
 ✓ test/parser/suite/ts/pass/dcf759340c42face.ts
 ✓ test/parser/suite/ts/pass/dcf9858cc81445ff.ts
 ✓ test/parser/suite/ts/pass/dd0577ac58da8b48.ts
@@ -20154,17 +18029,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/dd28ea040ea305e7.ts
 ✓ test/parser/suite/ts/pass/dd2ae0d55df46424.ts
 ✓ test/parser/suite/ts/pass/dd3698b6ff950944.ts
-✗ test/parser/suite/ts/pass/dd3b9e5ddf87ecca.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-39 |   entry: assign({
-40 |     count: (ctx: { count: number }) => ++ctx.count,
-   |                ^
-41 |   }),
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/dd3b9e5ddf87ecca.ts
 ✓ test/parser/suite/ts/pass/dd4242e1f751f943.ts
 ✓ test/parser/suite/ts/pass/dd4ea9c0f3fbf724.ts
 ✓ test/parser/suite/ts/pass/dd5174c7e7438da8.ts
@@ -20211,17 +18076,7 @@ error: Expected declaration after 'export', but found 'type'
 
 ✓ test/parser/suite/ts/pass/ddd62a1e71166bdf.ts
 ✓ test/parser/suite/ts/pass/ddd75baccea18c3e.ts
-✗ test/parser/suite/ts/pass/ddd7c0427e9d6517.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | 
-14 | const repro_43249 = (value: unknown) => {
-   |                           ^
-15 |     if (typeof value !== "string") {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ddd7c0427e9d6517.ts
 ✓ test/parser/suite/ts/pass/ddd7e96bbd467421.ts
 ✓ test/parser/suite/ts/pass/ddef43deb5e9a493.module.ts
 ✓ test/parser/suite/ts/pass/ddf4729e1e42330c.ts
@@ -20288,17 +18143,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/de3fa281b05a2ada.module.ts
 ✓ test/parser/suite/ts/pass/de467e8d7618cd38.ts
 ✓ test/parser/suite/ts/pass/de4c9994727697c7.ts
-✗ test/parser/suite/ts/pass/de70b6e6e63032e0.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 8 | test({ // Should error, as last one wins, and is wrong type
- 9 |     thunk: (str: string) => {},
-   |                ^
-10 |     thunk: (num: number) => {}
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/de70b6e6e63032e0.ts
 ✓ test/parser/suite/ts/pass/de70fcc81d8d4f8c.ts
 ✓ test/parser/suite/ts/pass/de7dedbb9c1ab201.ts
 ✓ test/parser/suite/ts/pass/de7ed4da4d9beee2.ts
@@ -20334,17 +18179,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/defbdbff8f21e921.ts
 ✓ test/parser/suite/ts/pass/df0043273c2a0d0f.ts
 ✓ test/parser/suite/ts/pass/df00ca52a6e44771.ts
-✗ test/parser/suite/ts/pass/df0aa3e8144ba009.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | var ResultIsNumber4 = +{ x: "", y: "" };
-25 | var ResultIsNumber5 = +{ x: "", y: (s: string) => { return s; } };
-   |                                      ^
-26 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/df0aa3e8144ba009.ts
 ✓ test/parser/suite/ts/pass/df10a3262995dd9e.ts
 ✓ test/parser/suite/ts/pass/df18d5c6c1cff7b0.ts
 ✓ test/parser/suite/ts/pass/df277bb02891939b.ts
@@ -20389,17 +18224,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/df6063ed7467738b.ts
 ✓ test/parser/suite/ts/pass/df614479e4ba8539.ts
 ✓ test/parser/suite/ts/pass/df62159158bb7f11.ts
-✗ test/parser/suite/ts/pass/df62a1852b38ea1d.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found ';'
-   |
-16 |         ? ((x = "hello") && x) // string
-17 |         : x; // number
-   |            ^
-18 | }
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
+✓ test/parser/suite/ts/pass/df62a1852b38ea1d.ts
 ✓ test/parser/suite/ts/pass/df6e004ada655b71.ts
 ✓ test/parser/suite/ts/pass/df748af6365163dc.ts
 ✗ test/parser/suite/ts/pass/df873ec6c95e36e8.ts (parse errors)
@@ -20537,17 +18362,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/e10cf60227b76ab6.ts
 ✓ test/parser/suite/ts/pass/e116bdef52e2d4ed.module.ts
-✗ test/parser/suite/ts/pass/e11a6a6fe87f940d.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-37 | t = a3;
-38 | t = (x: string) => 1;
-   |       ^
-39 | t = function (x: string) { return ''; }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e11a6a6fe87f940d.ts
 ✓ test/parser/suite/ts/pass/e11fc15c1f0c7e1f.ts
 ✓ test/parser/suite/ts/pass/e126c018bf418dfb.ts
 ✓ test/parser/suite/ts/pass/e12a1952eeebaa94.ts
@@ -20606,17 +18421,7 @@ error: Expected declaration after 'export', but found 'declare'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e199bc1068af6330.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-15 | // exactly
-16 | test((t1: D, t2) => { t2.test2 })
-   |         ^
-17 | test((t1, t2: D) => { t2.test2 })
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e199bc1068af6330.ts
 ✓ test/parser/suite/ts/pass/e1a12327be6ec26f.ts
 ✓ test/parser/suite/ts/pass/e1a29914ee635f11.ts
 ✗ test/parser/suite/ts/pass/e1a59386ca709006.ts (parse errors)
@@ -20758,17 +18563,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/e31a183b4911185f.ts
 ✓ test/parser/suite/ts/pass/e31e1d5b6fcd2680.ts
 ✓ test/parser/suite/ts/pass/e3269ac2288af513.module.ts
-✗ test/parser/suite/ts/pass/e32f980534c2388e.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | // more args
-14 | testError((t1: D, t2, t3) => {})
-   |              ^
-15 | testError((t1, t2: D, t3) => {})
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e32f980534c2388e.ts
 ✓ test/parser/suite/ts/pass/e3362fca5579160d.ts
 ✓ test/parser/suite/ts/pass/e338818619f2c258.ts
 ✓ test/parser/suite/ts/pass/e33e19ab10a13a98.ts
@@ -20841,14 +18636,14 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/e4345e2ac6b4b9f3.ts
 ✓ test/parser/suite/ts/pass/e43bc55b8bdec7ad.ts
 ✗ test/parser/suite/ts/pass/e43f0ac48debfb71.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
+error: Expected declaration after 'export', but found 'interface'
    |
-14 | 
-15 | var e = (x: I) => { var y: I; return y; }
-   |           ^
-16 | 
+26 | namespace M {
+27 |     export interface E<T> { foo: T }
+   |            ^^^^^^^^^
+28 | }
    |
-   = help: Add a comma between elements or close with ')'.
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✗ test/parser/suite/ts/pass/e4408d717e159158.module.ts (parse errors)
@@ -20862,28 +18657,8 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e44a57deb2d62f93.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 1 | // @target: es2015
- 2 | export const narrowToLiterals = (str: string) => {
-   |                                     ^
- 3 |     switch (str) {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/e451d1772617e17a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | 
- 6 | takesCallback((a: number, b: number) => {});
-   |                 ^
- 7 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e44a57deb2d62f93.module.ts
+✓ test/parser/suite/ts/pass/e451d1772617e17a.ts
 ✓ test/parser/suite/ts/pass/e453916f3ddd5019.ts
 ✓ test/parser/suite/ts/pass/e45d0a5b2d6c4532.ts
 ✓ test/parser/suite/ts/pass/e465b8a62c207156.ts
@@ -20891,17 +18666,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/e46e4daa58648736.ts
 ✓ test/parser/suite/ts/pass/e478162faa06f06b.module.ts
 ✓ test/parser/suite/ts/pass/e47a4adb63731d8b.ts
-✗ test/parser/suite/ts/pass/e494622358f33f3d.ts (parse errors)
-error: Expected ':' after conditional expression consequent, but found 'return'
-   |
-24 |                 this._elementType.getMemberTypeNameEx(false, scopeSymbol, getPrettyTypeName)) : 1
-25 |                 return MemberName.create(elementMemberName, "", "[]");
-   |                 ^^^^^^
-26 |             }
-   |
-   = help: The ternary operator requires a colon (:) to separate the consequent and alternate expressions.
-
-
+✓ test/parser/suite/ts/pass/e494622358f33f3d.ts
 ✓ test/parser/suite/ts/pass/e49b1e321b3aeba8.ts
 ✓ test/parser/suite/ts/pass/e49d3de84502467d.module.ts
 ✓ test/parser/suite/ts/pass/e49f0467876c824d.ts
@@ -20974,17 +18739,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e563585e25016d1c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 5 | declare function f<T>(value: T | number): void;
- 6 | f((a: any) => "")
-   |     ^
- 7 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e563585e25016d1c.ts
 ✓ test/parser/suite/ts/pass/e564f0c1f0bc2376.ts
 ✓ test/parser/suite/ts/pass/e56e912427cdb00a.ts
 ✓ test/parser/suite/ts/pass/e5759586e57275fd.ts
@@ -21036,17 +18791,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/e60b94cc01287ceb.ts
 ✓ test/parser/suite/ts/pass/e60ef7a7dcc277db.ts
 ✓ test/parser/suite/ts/pass/e612db867d68cc52.ts
-✗ test/parser/suite/ts/pass/e617ecd9a044510b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-26 | var ResultIsNumber4 = ~{ x: "", y: "" };
-27 | var ResultIsNumber5 = ~{ x: "", y: (s: string) => { return s; } };
-   |                                      ^
-28 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e617ecd9a044510b.ts
 ✓ test/parser/suite/ts/pass/e61fb2b3991eef3b.ts
 ✓ test/parser/suite/ts/pass/e63265a823f54df9.ts
 ✓ test/parser/suite/ts/pass/e63d44bfb40a48ef.ts
@@ -21087,17 +18832,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e69eb76fe3279abd.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 | 
-11 | const g = (arg: LiteralsAndWeakTypes) => {
-   |               ^
-12 |     if (arg === 'A') {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e69eb76fe3279abd.ts
 ✓ test/parser/suite/ts/pass/e6a2fac693af9a16.ts
 ✓ test/parser/suite/ts/pass/e6a5cc8c88649335.ts
 ✓ test/parser/suite/ts/pass/e6a900d825c8b9a0.ts
@@ -21108,17 +18843,7 @@ error: Expected ',' or ')' in parenthesized expression, but found ':'
 ✓ test/parser/suite/ts/pass/e6cee21de47325f3.ts
 ✓ test/parser/suite/ts/pass/e6d06efa2f96c1af.ts
 ✓ test/parser/suite/ts/pass/e6d545d35b244b3a.ts
-✗ test/parser/suite/ts/pass/e6d592ea056b98e1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-15 | 
-16 | const isTruthy = (x: number | null) => !!x;
-   |                    ^
-17 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/e6d592ea056b98e1.ts
 ✓ test/parser/suite/ts/pass/e6d5baef59216043.ts
 ✓ test/parser/suite/ts/pass/e6dc2728c0e2d1e6.ts
 ✓ test/parser/suite/ts/pass/e6e07ec689c2da73.ts
@@ -21468,17 +19193,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/eac865e9ce59f2e3.ts
 ✓ test/parser/suite/ts/pass/eace8d03e9940103.ts
 ✓ test/parser/suite/ts/pass/ead8e28437627922.ts
-✗ test/parser/suite/ts/pass/eadfbc772d638035.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 9 |     foo: <T2>(t2: T2) => x,
-10 |     bar: (t1: T1) => x,
-   |             ^
-11 |   };
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/eadfbc772d638035.ts
 ✓ test/parser/suite/ts/pass/eae1464f3ae5aca5.module.ts
 ✓ test/parser/suite/ts/pass/eae40db88488471b.ts
 ✓ test/parser/suite/ts/pass/eae5c0bda10b38db.ts
@@ -21635,17 +19350,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/ec6770f4f4433925.ts
 ✓ test/parser/suite/ts/pass/ec7009723c5bb1bc.ts
 ✓ test/parser/suite/ts/pass/ec73d8617afbca21.module.ts
-✗ test/parser/suite/ts/pass/ec74c21b4ff3e150.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-22 | 
-23 | const ExpandoArrow = (n: number) => n.toString();
-   |                        ^
-24 | ExpandoArrow.prop = 2
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ec74c21b4ff3e150.ts
 ✗ test/parser/suite/ts/pass/ec755f36c7bacf2c.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
    |
@@ -22042,17 +19747,7 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/ts/pass/f1227e96c75e9cfd.ts
 ✓ test/parser/suite/ts/pass/f1346dcca16c673f.ts
 ✓ test/parser/suite/ts/pass/f13c0229f67a4af8.ts
-✗ test/parser/suite/ts/pass/f13dbed9165f06e7.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-35 | 
-36 |     @dec(this, (x: C) => x.#a)
-   |                  ^
-37 |     b = 2;
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f13dbed9165f06e7.ts
 ✓ test/parser/suite/ts/pass/f1544f7e8ac2757e.ts
 ✓ test/parser/suite/ts/pass/f157d4e17c2d7c53.ts
 ✓ test/parser/suite/ts/pass/f159ae1d0fbf8300.ts
@@ -22082,39 +19777,9 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/f192cabc643c5160.ts
 ✓ test/parser/suite/ts/pass/f19a9bf3ec8e79ab.ts
 ✓ test/parser/suite/ts/pass/f19db491e8a5e304.ts
-✗ test/parser/suite/ts/pass/f1be9939d3edff1a.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-187 | 
-188 | const result = invoker('test', true)({ test: (a: boolean) => 123 })
-    |                                                ^
-189 | 
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/f1c190628f288a74.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | declare function wrapper(x: any);
- 3 | wrapper((array: [any]) => {
-   |               ^
- 4 |     [this.test, this.test1, this.test2] = array;  // even though there is a compiler error, we should still emit lexical capture for "this"
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/f1ce7acd181eb02c.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-11 | 
-12 | const usersOverAge = make((age: number) => data => {
-   |                               ^
-13 |     return data.filter(user => user.age >= age);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f1be9939d3edff1a.ts
+✓ test/parser/suite/ts/pass/f1c190628f288a74.ts
+✓ test/parser/suite/ts/pass/f1ce7acd181eb02c.ts
 ✗ test/parser/suite/ts/pass/f1d3fc356f51cc70.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -22300,33 +19965,13 @@ error: Expected ']' after computed property key, but found ':'
 
 ✓ test/parser/suite/ts/pass/f2f4a336bb80285f.ts
 ✓ test/parser/suite/ts/pass/f2fddbbd5e8d3f5a.ts
-✗ test/parser/suite/ts/pass/f3034babbd5bddd1.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | 
-15 | var xs = [(x: A) => { }, (x: B) => { }, (x: C) => { }];
-   |             ^
-16 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f3034babbd5bddd1.ts
 ✓ test/parser/suite/ts/pass/f30a9ce8fdb7be80.ts
 ✓ test/parser/suite/ts/pass/f3193631f7e1efaa.ts
 ✓ test/parser/suite/ts/pass/f319b5196976ac5a.ts
 ✓ test/parser/suite/ts/pass/f31c966b0827c210.ts
 ✓ test/parser/suite/ts/pass/f31fd6b67ee9d312.ts
-✗ test/parser/suite/ts/pass/f323c38d738c1852.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 2 | var resolve = {
- 3 |     id: /*! @ngInject */ (details: any) => details.id,
-   |                                  ^
- 4 |     id1: /* c1 */ "hello",
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f323c38d738c1852.ts
 ✓ test/parser/suite/ts/pass/f346460d29713930.ts
 ✓ test/parser/suite/ts/pass/f350816a0c4a5498.ts
 ✓ test/parser/suite/ts/pass/f351f525c3d6b426.ts
@@ -22413,17 +20058,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/f4511ff37b26c9ff.ts
 ✓ test/parser/suite/ts/pass/f4526b2836b0042c.ts
 ✓ test/parser/suite/ts/pass/f4545359373f6362.ts
-✗ test/parser/suite/ts/pass/f45aa600f91a4513.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | for (const comp of list) {
- 7 |     comp.sp.y = comp.sp.r.find((k: any) => k.c == (comp.xp ? '1' : '0'))
-   |                                  ^
- 8 |     for (const item of comp.c) {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f45aa600f91a4513.ts
 ✓ test/parser/suite/ts/pass/f45be51c413e24b9.module.ts
 ✓ test/parser/suite/ts/pass/f45f02e276dd2238.ts
 ✓ test/parser/suite/ts/pass/f46614534d2a4657.ts
@@ -22549,29 +20184,9 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/f54d7088ca4e270f.ts
 ✓ test/parser/suite/ts/pass/f54dcb2fe5301d08.ts
 ✓ test/parser/suite/ts/pass/f54fe3fd8f2d2916.ts
-✗ test/parser/suite/ts/pass/f5516d3717d94357.ts (parse errors)
-error: Unexpected token ':'
-   |
-14 |             this.a = () => null; // ok, same T of required params
-15 |             this.a = (x?: T) => null; // ok, same T of required params
-   |                         ^
-16 |             this.a = (x: T) => null; // error, too many required params
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/f5516d3717d94357.ts
 ✓ test/parser/suite/ts/pass/f569df7490b847d8.ts
-✗ test/parser/suite/ts/pass/f56dd20c3ab1fac2.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-25 | var r = foo2(new Function());
-26 | var r2 = foo2((x: string[]) => x);
-   |                 ^
-27 | var r6 = foo2(C);
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f56dd20c3ab1fac2.ts
 ✓ test/parser/suite/ts/pass/f5791b9ac55caa4e.ts
 ✗ test/parser/suite/ts/pass/f579e74efa5c1ae9.ts (parse errors)
 error: Expected ']' after computed property key, but found ':'
@@ -22598,17 +20213,7 @@ error: Cannot break to label 'label' across function boundaries
 ✓ test/parser/suite/ts/pass/f5a8665621ef3fbf.module.ts
 ✓ test/parser/suite/ts/pass/f5be171c2f8d25a3.ts
 ✓ test/parser/suite/ts/pass/f5c547dd3f96da2d.ts
-✗ test/parser/suite/ts/pass/f5cfbb8521586701.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | declare function conforms<T>(source: { [K in keyof T]: (val: T[K]) => boolean }): (value: T) => boolean;
- 7 | conforms({ foo: (v: string) => false })({ foo: "hello" });
-   |                   ^
- 8 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f5cfbb8521586701.ts
 ✗ test/parser/suite/ts/pass/f5dab850cf19bf50.module.ts (parse errors)
 error: 'public' is reserved in strict mode and cannot be used as an identifier
    |
@@ -22677,17 +20282,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/f6991574fc9f0dc5.ts
 ✓ test/parser/suite/ts/pass/f69f02727fa5e211.ts
 ✓ test/parser/suite/ts/pass/f6acace18c8c8c99.ts
-✗ test/parser/suite/ts/pass/f6adad28945142de.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-13 | let app: MyApp;
-14 | app.use((err: any, req, res, next) => { return; });
-   |             ^
-15 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f6adad28945142de.ts
 ✓ test/parser/suite/ts/pass/f6b9bda12fe53bde.ts
 ✓ test/parser/suite/ts/pass/f6c09bbbf930945f.ts
 ✓ test/parser/suite/ts/pass/f6c89ab9d2350625.ts
@@ -22705,17 +20300,7 @@ error: A class can only have one constructor
    |
 
 ✓ test/parser/suite/ts/pass/f6fbb5fced206773.ts
-✗ test/parser/suite/ts/pass/f6feb0a89c7cfafe.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-82 | 
-83 | const fn = (value: MyUnion) => {
-   |                  ^
-84 |     value.foo;  // Error
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f6feb0a89c7cfafe.module.ts
 ✗ test/parser/suite/ts/pass/f7033386eca7f7a9.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
    |
@@ -22776,28 +20361,8 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/f7657411ccefc129.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 3 | var f1 = () => { }
- 4 | var f2 = (x: string, y: string) => { }
-   |            ^
- 5 | var f3 = (x: string, y: number, ...rest) => { }
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
-✗ test/parser/suite/ts/pass/f765d84969cf73b5.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-10 |         readdir(covFileDir, () => {
-11 |         } , (error: Error, files: {}[]) => {
-   |                   ^
-12 |                 files.forEach((file) => {
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f7657411ccefc129.ts
+✓ test/parser/suite/ts/pass/f765d84969cf73b5.module.ts
 ✓ test/parser/suite/ts/pass/f77260a66a73d7ac.ts
 ✓ test/parser/suite/ts/pass/f792f557dae4de63.ts
 ✓ test/parser/suite/ts/pass/f7a955e9da76f31a.ts
@@ -22974,16 +20539,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/f9bbe9c960c9945f.ts
 ✓ test/parser/suite/ts/pass/f9bc750edacd18d8.ts
-✗ test/parser/suite/ts/pass/f9ca87e32ea94a0b.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-40 | var r19 = a + { a: '' };
-41 | var r20 = a + ((a: string) => { return a });
-   |                  ^
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/f9ca87e32ea94a0b.ts
 ✓ test/parser/suite/ts/pass/f9d2749d94235c37.ts
 ✓ test/parser/suite/ts/pass/f9e309292e27d605.ts
 ✓ test/parser/suite/ts/pass/f9e6513b2cbf65b5.ts
@@ -23079,17 +20635,7 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/fb8784b15e6c0b15.ts (parse errors)
-error: Expected '=>' in function type, but found '&&'
-   |
-43 |         // do not change value
-44 |         : ((y = x) && x.toString()))); // x is boolean
-   |                    ^^
-45 | }
-   |
-   = help: A function type is written '(params) => ReturnType'
-
-
+✓ test/parser/suite/ts/pass/fb8784b15e6c0b15.ts
 ✓ test/parser/suite/ts/pass/fb980c25bb822423.ts
 ✓ test/parser/suite/ts/pass/fb9b6610e9ee6382.ts
 ✓ test/parser/suite/ts/pass/fb9f9dae3fc5a86d.ts
@@ -23111,30 +20657,10 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/fbe00c3dbc86d500.ts
 ✓ test/parser/suite/ts/pass/fbe25f079c770787.ts
 ✓ test/parser/suite/ts/pass/fbeba55b5055e701.ts
-✗ test/parser/suite/ts/pass/fbef78162e96cacf.module.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
- 6 | export const fun = (
- 7 |     subFun: <Collection, Field extends keyof Collection>()
-   |           ^
- 8 |         => FlatArray<Collection[Field], 0>[]) => { };
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/fbef78162e96cacf.module.ts
 ✓ test/parser/suite/ts/pass/fbf8ec7fe21b73f3.ts
 ✓ test/parser/suite/ts/pass/fc00bf5fa56f37e9.ts
-✗ test/parser/suite/ts/pass/fc092681af3e7e74.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-24 | var ResultIsBoolean4 = delete { x: "", y: "" };
-25 | var ResultIsBoolean5 = delete { x: "", y: (s: string) => { return s; } };
-   |                                             ^
-26 | 
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/fc092681af3e7e74.ts
 ✗ test/parser/suite/ts/pass/fc0a5abcdc6e0d49.ts (parse errors)
 error: 'new' is reserved and cannot be used as an identifier
    |
@@ -23226,17 +20752,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/fd134b304a31fd73.ts
 ✓ test/parser/suite/ts/pass/fd177f0c18a9d9d7.ts
 ✓ test/parser/suite/ts/pass/fd2cca9b80df3ecd.ts
-✗ test/parser/suite/ts/pass/fd426d3bf4afe075.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-17 |   bar: {
-18 |     fn: (a: string) => {},
-   |           ^
-19 |     thing: 'asd',
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/fd426d3bf4afe075.ts
 ✓ test/parser/suite/ts/pass/fd4a4991e20d1ae8.ts
 ✓ test/parser/suite/ts/pass/fd5a58aaeee4b137.ts
 ✓ test/parser/suite/ts/pass/fd6c63cef8a08c14.ts
@@ -23369,17 +20885,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/ff753e27876cb421.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-    |
-228 | 
-229 | const f = (value: Union) => {
-    |                 ^
-230 |     if (!checkIsPremium(value)) {
-    |
-    = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/ff753e27876cb421.ts
 ✗ test/parser/suite/ts/pass/ff771f51af5a6bb8.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'declare'
    |
@@ -23422,14 +20928,4 @@ error: Expected '{' to start function body, but found ';'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/fffa27205719eea5.ts (parse errors)
-error: Expected ',' or ')' in parenthesized expression, but found ':'
-   |
-14 | declare var c2: Collection<number, string>;
-15 | var rf1 = (x: number, y: string) => { return x.toFixed() };
-   |             ^
-16 | var r5a = _.map<number, string, Date>(c2, (x, y) => { return x.toFixed() });
-   |
-   = help: Add a comma between elements or close with ')'.
-
-
+✓ test/parser/suite/ts/pass/fffa27205719eea5.ts

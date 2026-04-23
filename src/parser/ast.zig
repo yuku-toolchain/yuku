@@ -378,15 +378,15 @@ pub const Class = struct {
     /// `.null` when the class has no `extends` clause
     super_class: NodeIndex,
     body: NodeIndex,
-    /// ts: `.null` when the class has no `<T, U>` parameters
+    /// `.null` when the class has no `<T, U>` parameters
     type_parameters: NodeIndex = .null,
-    /// ts: `.null` when `extends` has no `<T>` arguments
+    /// `.null` when `extends` has no `<T>` arguments
     super_type_arguments: NodeIndex = .null,
-    /// ts: empty when the class has no `implements` clause
+    /// empty when the class has no `implements` clause
     implements: IndexRange = .empty,
-    /// ts: true for `abstract class`
+    /// true for `abstract class`
     abstract: bool = false,
-    /// ts: true for `declare class`
+    /// true for `declare class`
     declare: bool = false,
 };
 
@@ -472,13 +472,13 @@ pub const MethodDefinition = struct {
     kind: MethodDefinitionKind,
     computed: bool,
     static: bool,
-    /// ts: true for the `override` modifier
+    /// true for the `override` modifier
     override: bool = false,
-    /// ts: true for optional method (`foo?()`)
+    /// true for optional method (`foo?()`)
     optional: bool = false,
-    /// ts: true for the `abstract` modifier.
+    /// true for the `abstract` modifier.
     abstract: bool = false,
-    /// ts: `.none` when no modifier was written
+    /// `.none` when no modifier was written
     accessibility: Accessibility = .none,
 };
 
@@ -504,21 +504,21 @@ pub const PropertyDefinition = struct {
     static: bool,
     /// true for `accessor x;` auto-accessor fields
     accessor: bool,
-    /// ts: `.null` when the field has no annotation
+    /// `.null` when the field has no annotation
     type_annotation: NodeIndex = .null,
-    /// ts: true for the `declare` modifier
+    /// true for the `declare` modifier
     declare: bool = false,
-    /// ts: true for the `override` modifier
+    /// true for the `override` modifier
     override: bool = false,
-    /// ts: true for optional property (`foo?: T`)
+    /// true for optional property (`foo?: T`)
     optional: bool = false,
-    /// ts: true for definite assignment assertion (`foo!: T`)
+    /// true for definite assignment assertion (`foo!: T`)
     definite: bool = false,
-    /// ts: true for the `readonly` modifier
+    /// true for the `readonly` modifier
     readonly: bool = false,
-    /// ts: true for the `abstract` modifier.
+    /// true for the `abstract` modifier.
     abstract: bool = false,
-    /// ts: `.none` when no modifier was written
+    /// `.none` when no modifier was written
     accessibility: Accessibility = .none,
 };
 
@@ -954,7 +954,7 @@ pub const VariableKind = enum {
 pub const VariableDeclaration = struct {
     kind: VariableKind,
     declarators: IndexRange,
-    /// ts: true for `declare var x: T`
+    /// true for `declare var x: T`
     declare: bool = false,
 };
 
@@ -973,7 +973,7 @@ pub const VariableDeclarator = struct {
     id: NodeIndex,
     /// initializer, `.null` when absent
     init: NodeIndex,
-    /// ts: true for definite assignment assertion (`let x!: T`)
+    /// true for definite assignment assertion (`let x!: T`)
     definite: bool = false,
 };
 
@@ -1415,12 +1415,12 @@ pub const PrivateIdentifier = struct {
 /// ```
 pub const BindingIdentifier = struct {
     name: String = .empty,
-    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`).
+    /// decorators on a parameter binding (legacy `experimentalDecorators`).
     /// empty for non-parameter bindings.
     decorators: IndexRange = .empty,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// ts: true when marked optional (`x?: T`)
+    /// true when marked optional (`x?: T`)
     optional: bool = false,
 };
 
@@ -1461,11 +1461,11 @@ pub const LabelIdentifier = struct {
 pub const AssignmentPattern = struct {
     left: NodeIndex,
     right: NodeIndex,
-    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`)
+    /// decorators on a parameter binding (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// ts: true when marked optional in a parameter position
+    /// true when marked optional in a parameter position
     optional: bool = false,
 };
 
@@ -1479,11 +1479,11 @@ pub const AssignmentPattern = struct {
 /// ```
 pub const BindingRestElement = struct {
     argument: NodeIndex,
-    /// ts: decorators on a parameter rest element (legacy `experimentalDecorators`)
+    /// decorators on a parameter rest element (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// ts: true when marked optional in a parameter position
+    /// true when marked optional in a parameter position
     optional: bool = false,
 };
 
@@ -1502,11 +1502,11 @@ pub const ArrayPattern = struct {
     elements: IndexRange,
     /// `.null` when no rest element is present
     rest: NodeIndex,
-    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`)
+    /// decorators on a parameter binding (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// ts: true when marked optional in a parameter position
+    /// true when marked optional in a parameter position
     optional: bool = false,
 };
 
@@ -1523,11 +1523,11 @@ pub const ObjectPattern = struct {
     properties: IndexRange,
     /// `.null` when no rest element is present
     rest: NodeIndex,
-    /// ts: decorators on a parameter binding (legacy `experimentalDecorators`)
+    /// decorators on a parameter binding (legacy `experimentalDecorators`)
     decorators: IndexRange = .empty,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_annotation: NodeIndex = .null,
-    /// ts: true when marked optional in a parameter position
+    /// true when marked optional in a parameter position
     optional: bool = false,
 };
 
@@ -1716,9 +1716,9 @@ pub const Function = struct {
     params: NodeIndex,
     /// `.null` for `declare function` and empty-body signatures
     body: NodeIndex,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_parameters: NodeIndex = .null,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     return_type: NodeIndex = .null,
 };
 
@@ -1813,9 +1813,9 @@ pub const ArrowFunctionExpression = struct {
     params: NodeIndex,
     /// a `FunctionBody` when `expression` is false, otherwise an expression
     body: NodeIndex,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_parameters: NodeIndex = .null,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     return_type: NodeIndex = .null,
 };
 
@@ -1867,7 +1867,7 @@ pub const CallExpression = struct {
     arguments: IndexRange,
     /// true for `foo?.()`
     optional: bool,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
@@ -1897,7 +1897,7 @@ pub const ChainExpression = struct {
 pub const TaggedTemplateExpression = struct {
     tag: NodeIndex,
     quasi: NodeIndex,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
@@ -1915,7 +1915,7 @@ pub const TaggedTemplateExpression = struct {
 pub const NewExpression = struct {
     callee: NodeIndex,
     arguments: IndexRange,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 
@@ -2039,7 +2039,7 @@ pub const ImportDeclaration = struct {
     attributes: IndexRange,
     /// `null` for a regular import
     phase: ?ImportPhase,
-    /// ts: `.type` for `import type { ... }`
+    /// `.type` for `import type { ... }`
     import_kind: ImportOrExportKind = .value,
 };
 
@@ -2058,7 +2058,7 @@ pub const ImportSpecifier = struct {
     /// `IdentifierName` or `StringLiteral`
     imported: NodeIndex,
     local: NodeIndex,
-    /// ts: `.type` for `import { type X }`
+    /// `.type` for `import { type X }`
     import_kind: ImportOrExportKind = .value,
 };
 
@@ -2116,7 +2116,7 @@ pub const ExportNamedDeclaration = struct {
     /// `.null` when there is no `from` clause
     source: NodeIndex,
     attributes: IndexRange,
-    /// ts: `.type` for `export type { ... }`
+    /// `.type` for `export type { ... }`
     export_kind: ImportOrExportKind = .value,
 };
 
@@ -2148,7 +2148,7 @@ pub const ExportAllDeclaration = struct {
     exported: NodeIndex,
     source: NodeIndex,
     attributes: IndexRange,
-    /// ts: `.type` for `export type * from "..."`
+    /// `.type` for `export type * from "..."`
     export_kind: ImportOrExportKind = .value,
 };
 
@@ -2168,7 +2168,7 @@ pub const ExportSpecifier = struct {
     local: NodeIndex,
     /// `IdentifierName` or `StringLiteral`
     exported: NodeIndex,
-    /// ts: `.type` for `export { type X }`
+    /// `.type` for `export { type X }`
     export_kind: ImportOrExportKind = .value,
 };
 
@@ -3509,7 +3509,7 @@ pub const TSImportEqualsDeclaration = struct {
     id: NodeIndex,
     /// `TSExternalModuleReference`, `IdentifierReference`, or `TSQualifiedName`.
     module_reference: NodeIndex,
-    /// ts: `.type` for `import type x = ...`, `.value` otherwise.
+    /// `.type` for `import type x = ...`, `.value` otherwise.
     import_kind: ImportOrExportKind = .value,
 };
 
@@ -3560,7 +3560,7 @@ pub const JSXOpeningElement = struct {
     name: NodeIndex,
     attributes: IndexRange,
     self_closing: bool,
-    /// ts: `.null` when absent
+    /// `.null` when absent
     type_arguments: NodeIndex = .null,
 };
 

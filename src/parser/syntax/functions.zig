@@ -101,7 +101,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     const params_end = parser.tree.getSpan(params).end;
 
-    // ts return type, `function f(): Type { ... }`
+    // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
 
@@ -247,13 +247,12 @@ pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) E
 
     // `function f(this: T, ...)` and related signature forms. `this` is
     // never a real binding, so it short-circuits the modifier, pattern,
-    // and default-value branches below. mirrors the `KindThisKeyword`
-    // arm of `parseParameterWorker` in microsoft/typescript-go's parser.go.
+    // and default-value branches below.
     if (parser.tree.isTs() and parser.current_token.tag == .this) {
         return try parseThisParameter(parser);
     }
 
-    // ts parameter property modifiers, only accepted inside class constructors.
+    // parameter-property modifiers, only accepted inside class constructors.
     var pp_accessibility: ast.Accessibility = .none;
     var pp_readonly = false;
     var pp_override = false;
@@ -279,14 +278,14 @@ pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) E
 
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    // `function f(x?: Type) { ... }` optional parameter marker.
+    // optional parameter marker `x?`.
     if (parser.tree.isTs() and parser.current_token.tag == .question) {
         const question_end = parser.current_token.span.end;
         try parser.advance() orelse return null;
         ts_types.markPatternOptional(parser, pattern, question_end);
     }
 
-    // `function f(x: Type) { ... }`
+    // type annotation `x: Type`.
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);
@@ -309,12 +308,11 @@ pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) E
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
 }
 
-/// parses `this` or `this: Type` as a ts parameter. emitted inside the
+/// parses `this` or `this: Type` as a parameter. emitted inside the
 /// regular `FormalParameter` wrapper so signature walks, span tracking,
-/// and the decoder's `formal_parameter` unwrap rule all continue to work.
-/// the inner `TSThisParameter` renders in ESTree as an `Identifier` with
-/// `name: "this"`, matching the `@typescript-eslint/typescript-estree`
-/// convention.
+/// and the decoder's `formal_parameter` unwrap rule keep working. the
+/// inner `TSThisParameter` renders in ESTree as an `Identifier` named
+/// `this`, matching the @typescript-eslint/typescript-estree convention.
 fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
@@ -340,10 +338,10 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// true when the current token is a parameter property modifier and the
+/// true when the current token is a parameter-property modifier and the
 /// next token can start a binding pattern or another modifier. without
-/// the lookahead `constructor(readonly)` would incorrectly eat `readonly`
-/// as a modifier and then fail on the missing name.
+/// this lookahead, `constructor(readonly)` would eat `readonly` as a
+/// modifier and then fail on the missing name.
 fn isParameterPropertyModifierStart(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
     if (!isParameterPropertyModifierTag(tag)) return false;
@@ -358,7 +356,6 @@ inline fn isParameterPropertyModifierTag(tag: TokenTag) bool {
 }
 
 /// tokens that can legally follow a parameter property modifier.
-/// matches `canFollowModifier` in typescript-go for parameter positions.
 inline fn canFollowParameterPropertyModifier(tag: TokenTag) bool {
     return tag.isIdentifierLike() or
         tag == .left_bracket or

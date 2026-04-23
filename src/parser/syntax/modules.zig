@@ -47,10 +47,9 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
-    // import x = <module reference> (ts import equals). mirrors
-    // parseImportDeclarationOrImportEqualsDeclaration in microsoft/typescript-go's
-    // parser.go. the equals form takes over whenever an identifier head is
-    // followed by `=`, including the type-only `import type x = ...` shape.
+    // `import x = <module reference>`. the equals form takes over
+    // whenever an identifier head is followed by `=`, including the
+    // type-only `import type x = ...` shape.
     if (parser.tree.isTs() and parser.current_token.tag.isIdentifierLike()) {
         const after_id = try parser.peekAhead() orelse return null;
         if (after_id.tag == .assign) {
@@ -360,10 +359,9 @@ const SpecifierParts = struct {
     kind: ast.ImportOrExportKind = .value,
 };
 
-/// parses one import or export specifier head, disambiguating the optional
-/// `type` modifier. mirrors `parseImportOrExportSpecifier` in
-/// microsoft/typescript-go's parser.go. the possibilities when the first
-/// token is `type` are:
+/// parses one import or export specifier head, disambiguating the
+/// optional `type` modifier. the possibilities when the first token is
+/// `type` are:
 ///
 /// ```
 /// { type }             -> kind=value, name=type
@@ -719,7 +717,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         .at => {
             declaration = try extensions.parseDecorated(parser, .{}) orelse return null;
         },
-        // ts: `export import x = ...`
+        // `export import x = ...`
         .import => if (parser.tree.isTs()) {
             declaration = try parseImportDeclaration(parser) orelse return null;
         } else {

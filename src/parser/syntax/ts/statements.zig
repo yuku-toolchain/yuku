@@ -10,9 +10,11 @@ const variables = @import("../variables.zig");
 const functions = @import("../functions.zig");
 const class = @import("../class.zig");
 const ts_types = @import("types.zig");
+const ts_signatures = @import("signatures.zig");
 
-/// modifier keywords eaten by `parseTsDeclaration` before dispatching to
-/// the matching declaration parser. `is_const` is only meaningful on enums.
+/// modifier keywords consumed by `parseTsDeclaration` before it
+/// dispatches to the matching declaration parser. `is_const` is only
+/// meaningful on enums.
 pub const Modifiers = struct {
     declare: bool = false,
     abstract: bool = false,
@@ -28,7 +30,7 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     var has_declare = false;
     var has_abstract = false;
 
-    // skip 'declare' modifier
+    // skip a leading `declare` modifier.
     if (cur.tag == .declare) {
         cur = peek[idx] orelse return null;
         if (cur.hasLineTerminatorBefore()) return false;
@@ -36,9 +38,8 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
         has_declare = true;
     }
 
-    // skip 'abstract' modifier. `abstract` is only valid in front of `class`
-    // (with or without a preceding `declare`). everything else with a leading
-    // `abstract` token is a regular expression, so we leave it alone.
+    // `abstract` only precedes `class` (with or without a preceding
+    // `declare`). any other follow-up means it's just an identifier.
     if (cur.tag == .abstract) {
         const next = peek[idx] orelse return null;
         if (next.hasLineTerminatorBefore()) return false;
@@ -48,10 +49,10 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
         has_abstract = true;
     }
 
-    // `const enum`, `declare const enum`, and `declare const <binding>` all
-    // start here. skip the `const` kind keyword for the enum forms so the
-    // switch below dispatches on `enum`. plain `declare const x` short-circuits
-    // here since there is no further routing needed beyond the binding check.
+    // `const enum`, `declare const enum`, and `declare const <binding>`
+    // all start here. for enum forms, advance past `const` so the switch
+    // below dispatches on `enum`. for `declare const x`, no further
+    // routing is needed after the binding check.
     if (cur.tag == .@"const") {
         const next = peek[idx] orelse return null;
         if (isConstEnumHead(next)) {
@@ -70,21 +71,21 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
             return name.tag.isIdentifierLike() and !name.hasLineTerminatorBefore();
         },
         .module => {
-            // `module` accepts an identifier name (deprecated namespace form)
+            // `module` accepts an identifier (deprecated namespace form)
             // or a string literal (ambient external module).
             const name = peek[idx] orelse return null;
             if (name.hasLineTerminatorBefore()) return false;
             return name.tag.isIdentifierLike() or name.tag == .string_literal;
         },
         .global => {
-            // `global { ... }` is only a module augmentation under `declare`.
+            // `global { ... }` is a module augmentation, only under `declare`.
             if (!has_declare) return false;
             const next = peek[idx] orelse return null;
             return next.tag == .left_brace and !next.hasLineTerminatorBefore();
         },
-        // every ambient binding form, `declare var/let/function/class` plus
-        // the destructuring variants of `declare var/let`. `abstract class`
-        // also lands here.
+        // ambient binding forms `declare var / let / function / class`,
+        // destructuring variants of `declare var / let`, and
+        // `abstract class`.
         .@"var", .let, .function, .class => {
             if (!has_declare and !has_abstract) return false;
             const name = peek[idx] orelse return null;
@@ -98,9 +99,9 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
     }
 }
 
-/// `const enum` and `declare const enum` share a two-token head. collapsing
-/// the check lets `isStartOfTsDeclaration` and `parseTsDeclaration` agree on
-/// the predicate without duplicating the newline rule.
+/// `const enum` and `declare const enum` share a two-token head. one
+/// predicate lets `isStartOfTsDeclaration` and `parseTsDeclaration` agree
+/// without duplicating the newline rule.
 fn isConstEnumHead(after_const: Token) bool {
     return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
 }
@@ -147,7 +148,7 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-/// `type Foo<T> = Bar<T>;` or the `declare`-prefixed ambient form.
+/// `type Foo<T> = Bar<T>` or the `declare`-prefixed ambient form.
 pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .type);
     try parser.advance() orelse return null; // consume 'type'
@@ -198,9 +199,9 @@ pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
     );
 }
 
-/// `extends Bar, Baz<U>` or an empty range when the `extends` keyword is
-/// absent. each heritage entry is a `TSInterfaceHeritage` holding an
-/// expression and an optional `<T>` type argument list.
+/// `extends Bar, Baz<U>` on an interface, or an empty range when
+/// `extends` is absent. each entry is a `TSInterfaceHeritage` holding an
+/// expression and an optional `<T>` argument list.
 fn parseInterfaceExtendsClause(parser: *Parser) Error!?ast.IndexRange {
     if (parser.current_token.tag != .extends) return .empty;
     try parser.advance() orelse return null; // consume 'extends'
@@ -218,9 +219,9 @@ fn parseInterfaceExtendsClause(parser: *Parser) Error!?ast.IndexRange {
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
-/// `Bar` or `Foo.Bar` or `Foo.Bar<U>`. the expression is an identifier-path
-/// chain built from `IdentifierReference` heads and `MemberExpression` links,
-/// matching the runtime-expression shape the ESTree output expects.
+/// `Bar`, `Foo.Bar`, or `Foo.Bar<U>`. the expression is an identifier
+/// path, built from an `IdentifierReference` head and `MemberExpression`
+/// links so the ESTree output matches the runtime-expression shape.
 fn parseInterfaceHeritage(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try parseHeritageExpression(parser) orelse return null;
     const type_arguments = try ts_types.parseTypeArguments(parser);
@@ -240,11 +241,9 @@ fn parseInterfaceHeritage(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// `implements Bar, Foo.Baz<U>` at the class head. returns an empty range when
-/// the current token is not `.implements`. each entry is a `TSClassImplements`
-/// wrapping the same identifier-path expression shape used by interface
-/// heritage. mirrors `parseHeritageClause` (kind = `implements`) in
-/// microsoft/typescript-go's parser.go, specialised to the class grammar.
+/// `implements Bar, Foo.Baz<U>` on a class, or an empty range when
+/// `implements` is absent. each entry is a `TSClassImplements` over the
+/// same identifier-path shape as interface heritage.
 pub fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
     if (parser.current_token.tag != .implements) return .empty;
     try parser.advance() orelse return null; // consume 'implements'
@@ -264,7 +263,7 @@ pub fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
 
 /// one `TSClassImplements` entry. shares the expression shape with
 /// `TSInterfaceHeritage` (identifier head, dotted member chain, optional
-/// `<T>` type arguments).
+/// `<T>` arguments).
 fn parseClassImplements(parser: *Parser) Error!?ast.NodeIndex {
     const expression = try parseHeritageExpression(parser) orelse return null;
     const type_arguments = try ts_types.parseTypeArguments(parser);
@@ -284,11 +283,10 @@ fn parseClassImplements(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// consumes an `IdentifierReference` head and any number of `.<name>`
-/// continuations, producing left-associative `MemberExpression` nodes. does
-/// not accept calls, computed access, or optional chaining (these are
-/// invalid in heritage position). shared between `extends` on interfaces
-/// and `implements` on classes.
+/// an `IdentifierReference` head followed by any number of `.<name>`
+/// continuations, producing left-associative `MemberExpression` nodes.
+/// calls, computed access, and optional chaining are not valid here.
+/// shared by `extends` on interfaces and `implements` on classes.
 fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     var expression = try literals.parseIdentifier(parser) orelse return null;
 
@@ -331,9 +329,8 @@ pub fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!
     );
 }
 
-/// `{ A, B = 1, }` body of an enum declaration. produces a `TSEnumBody`
-/// wrapping the member list. members are comma separated with an optional
-/// trailing comma.
+/// `{ A, B = 1, }` body of an enum. wraps the members in a `TSEnumBody`.
+/// members are comma separated with an optional trailing comma.
 fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .left_brace) {
         try parser.reportExpected(
@@ -372,9 +369,8 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// one member of an enum body, a name (identifier, string, or template) with
-/// an optional `= expr` initializer. the name may also appear inside `[...]`
-/// to form a computed member.
+/// one enum member. a name (identifier, string, template, or `[expr]`)
+/// with an optional `= expr` initializer.
 fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
     const name = try parseEnumMemberName(parser) orelse return null;
     const start = parser.tree.getSpan(name.id).start;
@@ -404,7 +400,7 @@ const EnumMemberName = struct {
 };
 
 /// identifier, string literal, no-substitution template literal, or a
-/// computed `[stringLit]` / `[noSubTemplate]` wrapper.
+/// computed `[expr]` wrapper.
 fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
     const tag = parser.current_token.tag;
 
@@ -442,8 +438,8 @@ fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
     return null;
 }
 
-/// `{ a: T; b(): U; [k: string]: V }` body of an interface. produces a
-/// `TSInterfaceBody` wrapping the signature list.
+/// `{ a: T; b(): U; [k: string]: V }` body of an interface. wraps the
+/// signatures in a `TSInterfaceBody`.
 fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .left_brace) {
         try parser.reportExpected(
@@ -455,7 +451,7 @@ fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     const start = parser.current_token.span.start;
-    const members = try ts_types.parseObjectTypeMembers(parser) orelse return null;
+    const members = try ts_signatures.parseObjectTypeMembers(parser) orelse return null;
 
     return try parser.tree.createNode(
         .{ .ts_interface_body = .{ .body = members } },
@@ -463,9 +459,9 @@ fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// `namespace Foo { ... }`, `namespace A.B.C { ... }`, `module "./mod" { ... }`,
-/// and their `declare`-prefixed ambient forms. the caller has already eaten
-/// any `declare` modifier into `mods` and captured the leading `start` offset.
+/// `namespace Foo { ... }`, `namespace A.B.C { ... }`,
+/// `module "./mod" { ... }`, and their `declare`-prefixed ambient forms.
+/// the caller consumes any `declare` modifier and passes `start`.
 pub fn parseModuleDeclaration(
     parser: *Parser,
     mods: Modifiers,
@@ -498,8 +494,8 @@ pub fn parseModuleDeclaration(
     );
 }
 
-/// `declare global { ... }` augmentation. the caller has already eaten the
-/// `declare` modifier into `mods` and captured the leading `start` offset.
+/// `declare global { ... }` augmentation. the caller consumes the
+/// `declare` modifier and passes `start`.
 pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .global);
 
@@ -516,9 +512,9 @@ pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Erro
     );
 }
 
-/// a `BindingIdentifier` or a left-associative `TSQualifiedName` chain formed
-/// by dotted identifier parts. `namespace A.B.C { ... }` is sugar for a single
-/// module declaration whose name is `TSQualifiedName(TSQualifiedName(A, B), C)`.
+/// a `BindingIdentifier` or a left-associative `TSQualifiedName` chain
+/// of dotted identifier parts. `namespace A.B.C { ... }` is sugar for a
+/// single module whose name is `TSQualifiedName(TSQualifiedName(A, B), C)`.
 fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
     var name = try literals.parseBindingIdentifier(parser) orelse return null;
 
@@ -536,16 +532,16 @@ fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
     return name;
 }
 
-/// an optional module body. returns `.null` when no `{` follows (forward
-/// declaration forms like `declare module "foo";`). otherwise delegates to
-/// `parseModuleBlock`.
+/// optional module body. returns `.null` when no `{` follows (forward
+/// declaration forms like `declare module "foo"`), otherwise delegates
+/// to `parseModuleBlock`.
 fn parseOptionalModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .left_brace) return .null;
     return parseModuleBlock(parser);
 }
 
 /// `{ <statements> }` body of a module, namespace, or global declaration.
-/// produces a `TSModuleBlock` whose `body` is a range of regular statements.
+/// the emitted `TSModuleBlock` holds a range of regular statements.
 fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 

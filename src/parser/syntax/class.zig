@@ -26,9 +26,9 @@ pub const ParseClassOpts = struct {
     // `export default class` allows an optional name but still produces a
     // `ClassDeclaration` in the AST.
     is_default_export: bool = false,
-    // ts: `declare class Foo {}`
+    // `declare class Foo {}`
     is_declare: bool = false,
-    // ts: `abstract class Foo {}`
+    // `abstract class Foo {}`
     is_abstract: bool = false,
 };
 
@@ -92,7 +92,7 @@ pub fn parseClassDecorated(
         }
     }
 
-    // ts: `implements A, B.C<T>, ...`. may appear with or without a preceding
+    // `implements A, B.C<T>, ...`. may appear with or without a preceding
     // `extends` clause.
     const implements: ast.IndexRange = if (parser.tree.isTs())
         try ts_statements.parseImplementsClause(parser) orelse return null
@@ -190,7 +190,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         computed = parsed.computed;
     }
 
-    // ts post-key markers: `?` (optional) and `!` (definite assignment)
+    // post-key markers `?` (optional) and `!` (definite assignment).
     var optional = false;
     var definite = false;
     if (parser.tree.isTs()) switch (parser.current_token.tag) {
@@ -353,8 +353,8 @@ inline fn canStartElementKey(tag: TokenTag) bool {
 }
 
 // ts modifiers and `accessor` require the next token on the same line.
-// `abstract\n foo()` parses as `abstract;` + `foo()`, not a single
-// abstract method. js modifiers stay permissive.
+// `abstract\n foo()` parses as `abstract` + `foo()`, not a single
+// abstract method. plain js modifiers stay permissive.
 inline fn requiresSameLine(tag: TokenTag) bool {
     return switch (tag) {
         .static, .async, .get, .set => false,
@@ -487,7 +487,7 @@ fn parseMethodDefinition(
     try validateGetSetParams(parser, mods.kind, params);
     const params_end = parser.tree.getSpan(params).end;
 
-    // ts return type `: T`
+    // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
@@ -495,7 +495,7 @@ fn parseMethodDefinition(
         return_type_end = parser.tree.getSpan(return_type).end;
     }
 
-    // body. required in js, ts folds a missing body into a bodyless
+    // body. required in js. in ts a missing body folds into a bodyless
     // function terminated by `;` or ASI.
     var body: ast.NodeIndex = .null;
     var function_type: ast.FunctionType = .function_expression;
@@ -557,7 +557,7 @@ fn parsePropertyDefinition(
 
     var end = parser.prev_token_end;
 
-    // ts `: Type`
+    // optional `: Type` annotation.
     var type_annotation: ast.NodeIndex = .null;
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         type_annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;

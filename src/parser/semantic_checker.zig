@@ -672,8 +672,7 @@ const SemanticVisit = struct {
     }
 
     /// 15.7.7 AllPrivateIdentifiersValid: walks ancestor ClassBody nodes,
-    /// collecting PrivateBoundIdentifiers at each level, mirrors the spec's
-    /// `newNames = list-concatenation of names and PrivateBoundIdentifiers of ClassBody`.
+    /// collecting PrivateBoundIdentifiers at each level.
     fn isPrivateNameDeclared(ctx: *SemanticCtx, name: []const u8) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
