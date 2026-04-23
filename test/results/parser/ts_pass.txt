@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       7807/8261 (94.50%)
-Failed:       454
-AST mismatch: 0/7807
+Passed:       7819/8261 (94.65%)
+Failed:       442
+AST mismatch: 0/7819
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -281,15 +281,7 @@ error: Export 'n2' is not defined
 ✓ test/parser/suite/ts/pass/0610245487bcd3aa.ts
 ✓ test/parser/suite/ts/pass/06287b588c2578a2.ts
 ✓ test/parser/suite/ts/pass/062f6a4b3d3aca08.ts
-✗ test/parser/suite/ts/pass/063141ff1384af23.ts (parse errors)
-error: Expected a type, but found '?'
-   |
- 3 | 
- 4 | function f1(a: string): a is ?string {
-   |                              ^
- 5 |     return true;
-   |
-
+✓ test/parser/suite/ts/pass/063141ff1384af23.ts
 ✓ test/parser/suite/ts/pass/063308f7b7463dee.ts
 ✓ test/parser/suite/ts/pass/06478ee5e5ded818.ts
 ✓ test/parser/suite/ts/pass/0649329b1746b667.module.ts
@@ -820,17 +812,7 @@ error: Expected '>' to close JSX opening element, but found '<'
 ✓ test/parser/suite/ts/pass/1077ef0e39f39a8f.ts
 ✓ test/parser/suite/ts/pass/1087b2c8f6ac4b71.ts
 ✓ test/parser/suite/ts/pass/108ddc462142c660.module.ts
-✗ test/parser/suite/ts/pass/10932cdd649dd36f.ts (parse errors)
-error: Expected ']' to close an indexed access type, but found ':'
-   |
- 7 |     thisIsNotATag(x: string): void
- 8 |     [x: number]: I;
-   |       ^
- 9 | }
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/10932cdd649dd36f.ts
 ✓ test/parser/suite/ts/pass/10947cb4f4278c6d.ts
 ✓ test/parser/suite/ts/pass/109a26be40a64ee3.module.ts
 ✓ test/parser/suite/ts/pass/10c6f33188931b3c.ts
@@ -2341,17 +2323,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/2fc37117a17ec212.ts
 ✓ test/parser/suite/ts/pass/2fc52d8db8643639.module.ts
 ✓ test/parser/suite/ts/pass/2fd2333317484c9c.ts
-✗ test/parser/suite/ts/pass/2fddc0d156bdc7d7.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '('
-   |
-15 |     ["foo"](): void
-16 |     ["bar"](): void;
-   |            ^
-17 |     ["foo"]() {
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/2fddc0d156bdc7d7.ts
 ✓ test/parser/suite/ts/pass/2fec0e2ece420416.ts
 ✓ test/parser/suite/ts/pass/2fed4cbcad395958.ts
 ✓ test/parser/suite/ts/pass/2fef61dc36b12021.ts
@@ -3515,17 +3487,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/46f572f0981e1cec.ts
 ✓ test/parser/suite/ts/pass/46fdbe2ccae3cdf6.ts
 ✓ test/parser/suite/ts/pass/470c58f3927f69e8.ts
-✗ test/parser/suite/ts/pass/47105e0f37a8805c.ts (parse errors)
-error: Expected ']' to close an indexed access type, but found ':'
-   |
- 7 |     thisIsNotATag(x: string): void
- 8 |     [x: number]: I;
-   |       ^
- 9 | }
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/47105e0f37a8805c.ts
 ✓ test/parser/suite/ts/pass/471de97851f6e51b.ts
 ✓ test/parser/suite/ts/pass/472a9146d6b3aaac.ts
 ✓ test/parser/suite/ts/pass/472b8fb3d7e291dc.module.ts
@@ -3748,11 +3710,11 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/ts/pass/4b58932db0513618.ts
 ✓ test/parser/suite/ts/pass/4b5a1b11e884dd19.ts
 ✗ test/parser/suite/ts/pass/4b5d6e3182639ec7.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found '?'
+error: Expected ')' to close a parenthesized type, but found ':'
    |
 15 | 
 16 |     static field: ({}?: { x: string }) => void
-   |                      ^
+   |                       ^
 17 |     static field2: ({}?: { x: string }) => void
    |
    = help: Each '(' in a type must be matched by a ')'
@@ -3961,17 +3923,7 @@ error: 'await using' is not allowed at the top level of a script
 ✓ test/parser/suite/ts/pass/4fcc600a991fdab5.ts
 ✓ test/parser/suite/ts/pass/4fcfc708b72dc43a.ts
 ✓ test/parser/suite/ts/pass/4fd0c0c14d009c8d.ts
-✗ test/parser/suite/ts/pass/4fd79536a32ff978.module.ts (parse errors)
-error: Expected ';', ',', or newline between type members, but found '?'
-   |
-95 |     [Readonly]?: string
-96 |     [Optional]?: string
-   |               ^
-97 |     [Hint]?: string
-   |
-   = help: Separate type members with ';', ',', or a newline, or close the block with '}'
-
-
+✓ test/parser/suite/ts/pass/4fd79536a32ff978.module.ts
 ✓ test/parser/suite/ts/pass/4fe048f1f51b3576.ts
 ✓ test/parser/suite/ts/pass/4ff6a8335cfd9fac.ts
 ✓ test/parser/suite/ts/pass/500464fb3b4ca975.ts
@@ -5114,17 +5066,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/6717069c7009c7cf.ts
 ✓ test/parser/suite/ts/pass/6737cbdd2d285153.ts
 ✓ test/parser/suite/ts/pass/67439cfbc4e146ab.ts
-✗ test/parser/suite/ts/pass/674c1ad53fafb8ca.ts (parse errors)
-error: Expected ';' after class field, but found ':'
-   |
- 4 |     [e]: number
- 5 |     [e2]: number
-   |         ^
- 6 | }
-   |
-   = help: Add a semicolon after the field declaration.
-
-
+✓ test/parser/suite/ts/pass/674c1ad53fafb8ca.ts
 ✓ test/parser/suite/ts/pass/674e1bafe18da3a5.ts
 ✓ test/parser/suite/ts/pass/674e4bf078d9bda9.module.ts
 ✓ test/parser/suite/ts/pass/674e9964fc9f7350.ts
@@ -7162,17 +7104,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/9094ea2f23c89f31.ts
 ✓ test/parser/suite/ts/pass/9094f50b03d5a554.ts
 ✓ test/parser/suite/ts/pass/909fc2c2669af932.ts
-✗ test/parser/suite/ts/pass/90a1e212b859a1bd.ts (parse errors)
-error: Expected ']' to close an indexed access type, but found ':'
-   |
- 7 |     thisIsNotATag(x: string): void
- 8 |     [x: number]: I;
-   |       ^
- 9 | }
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/90a1e212b859a1bd.ts
 ✓ test/parser/suite/ts/pass/90ad559bde069031.ts
 ✓ test/parser/suite/ts/pass/90b143b6b1cd381d.ts
 ✓ test/parser/suite/ts/pass/90b31043acc432b0.ts
@@ -7423,13 +7355,15 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/96bee13d733a6e8b.ts
 ✓ test/parser/suite/ts/pass/96c2bde6ee94b825.module.ts
 ✗ test/parser/suite/ts/pass/96c69fcdd6e92425.ts (parse errors)
-error: Expected a type, but found '?'
+error: Expected '?' in a conditional type, but found ':'
    |
  7 |   a?: number
  8 |   extends?: string | string[]
-   |          ^
+   |           ^
  9 | }
    |
+   = help: A conditional type is written 'T extends U ? X : Y'
+
 
 ✓ test/parser/suite/ts/pass/96cb1e331588bc21.ts
 ✓ test/parser/suite/ts/pass/96cd84a1731c858b.ts
@@ -8240,17 +8174,7 @@ error: Expected '{' to start class body, but found '('
    = help: Class body must be enclosed in braces: class Name { ... }
 
 
-✗ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
-   |
- 3 | 
- 4 | function f1(a: string): a is string! {
-   |                                    ^
- 5 |     return true;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts
 ✓ test/parser/suite/ts/pass/a88f91fb7ee6f1dc.ts
 ✓ test/parser/suite/ts/pass/a89dc48255b992b5.ts
 ✓ test/parser/suite/ts/pass/a89e655c5c1557a9.ts
@@ -9456,17 +9380,7 @@ error: Yield expression is not allowed in formal parameters
  3 | }
    |
 
-✗ test/parser/suite/ts/pass/bfab7ff7c1b7a53d.ts (parse errors)
-error: Unexpected token '?'
-   |
-11 | 
-12 | const WhatFoo = foo<?>;
-   |                     ^
-13 | const HuhFoo = foo<string?>;
-   |
-   = help: Expected an expression
-
-
+✓ test/parser/suite/ts/pass/bfab7ff7c1b7a53d.ts
 ✓ test/parser/suite/ts/pass/bfb0104b62f32df4.ts
 ✓ test/parser/suite/ts/pass/bfb41eaac596df46.ts
 ✓ test/parser/suite/ts/pass/bfb687f7bf2ef4ba.ts
@@ -9491,17 +9405,7 @@ error: Unexpected token '?'
 ✓ test/parser/suite/ts/pass/c021d0cbfa7c490f.ts
 ✓ test/parser/suite/ts/pass/c026d054cada6274.ts
 ✓ test/parser/suite/ts/pass/c02bba30ddaaeecb.ts
-✗ test/parser/suite/ts/pass/c02c785562053bc8.ts (parse errors)
-error: Expected ']' to close an indexed access type, but found ':'
-   |
-13 |     foo: string
-14 |     [k: string]: string
-   |       ^
-15 | }
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/c02c785562053bc8.ts
 ✓ test/parser/suite/ts/pass/c0390ec3e3ffe0a1.module.ts
 ✓ test/parser/suite/ts/pass/c03b99b5a0894d2d.ts
 ✓ test/parser/suite/ts/pass/c047aee8f494be29.ts
@@ -10703,17 +10607,7 @@ error: Private field '#foo' must be declared in an enclosing class
 
 ✓ test/parser/suite/ts/pass/d7aa2c56e9f7eb9f.ts
 ✓ test/parser/suite/ts/pass/d7bf4e12a48cb5a6.ts
-✗ test/parser/suite/ts/pass/d7c5c14ded7308ff.ts (parse errors)
-error: Expected ']' to close an indexed access type, but found ':'
-   |
- 5 |     hasOwnProperty(objectId: number): boolean
- 6 |     [objectId: number]: IHeapObjectProperty[]
-   |              ^
- 7 | }
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/d7c5c14ded7308ff.ts
 ✓ test/parser/suite/ts/pass/d7c9a74568702cab.ts
 ✓ test/parser/suite/ts/pass/d7cb7f2821d305be.ts
 ✗ test/parser/suite/ts/pass/d7cd05b9fd2525ed.module.ts (parse errors)
@@ -11997,17 +11891,7 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/ts/pass/f1feaa567deab5eb.ts
 ✓ test/parser/suite/ts/pass/f21309e4f1ed06c8.ts
 ✓ test/parser/suite/ts/pass/f213dbaa3c521ba9.ts
-✗ test/parser/suite/ts/pass/f217a30027cc37ce.ts (parse errors)
-error: Expected ']' to close an indexed access type, but found ':'
-   |
- 7 |     thisIsNotATag(x: string): void
- 8 |     [x: number]: I;
-   |       ^
- 9 | }
-   |
-   = help: Each '[' in a type must be matched by a ']'
-
-
+✓ test/parser/suite/ts/pass/f217a30027cc37ce.ts
 ✓ test/parser/suite/ts/pass/f21999329c1922cc.ts
 ✓ test/parser/suite/ts/pass/f21d924e6057ef64.module.ts
 ✗ test/parser/suite/ts/pass/f221b03cdbc1a0bd.ts (parse errors)

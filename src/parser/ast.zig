@@ -2671,6 +2671,50 @@ pub const TSRestType = struct {
     type_annotation: NodeIndex,
 };
 
+/// A JSDoc-style nullable type marker, written as a prefix `?T` or a
+/// postfix `T?`.
+///
+/// ## Example
+/// ```ts
+/// let a: ?string;
+/// //     ^^^^^^^ TSJSDocNullableType (postfix = false)
+/// let b: number?;
+/// //     ^^^^^^^ TSJSDocNullableType (postfix = true)
+/// ```
+pub const TSJSDocNullableType = struct {
+    /// the inner `TSType` the `?` applies to
+    type_annotation: NodeIndex,
+    /// true when the `?` follows the type, false when it precedes it
+    postfix: bool = false,
+};
+
+/// A JSDoc-style non-nullable type marker. Written as a prefix `!T` or a
+/// postfix `T!`.
+///
+/// ## Example
+/// ```ts
+/// let a: !string;
+/// //     ^^^^^^^ TSJSDocNonNullableType (postfix = false)
+/// let b: number!;
+/// //     ^^^^^^^ TSJSDocNonNullableType (postfix = true)
+/// ```
+pub const TSJSDocNonNullableType = struct {
+    /// the inner `TSType` the `!` applies to
+    type_annotation: NodeIndex,
+    /// true when the `!` follows the type, false when it precedes it
+    postfix: bool = false,
+};
+
+/// A JSDoc-style unknown type written as a bare `?`, valid only in a type
+/// argument slot (`Foo<?>`, `Foo<?, T>`).
+///
+/// ## Example
+/// ```ts
+/// const x = foo<?>;
+/// //            ^ TSJSDocUnknownType
+/// ```
+pub const TSJSDocUnknownType = struct {};
+
 /// A union type. Combines two or more types with `|`, representing a value
 /// that is any one of the constituents.
 ///
@@ -3821,6 +3865,9 @@ pub const NodeData = union(enum) {
     ts_named_tuple_member: TSNamedTupleMember,
     ts_optional_type: TSOptionalType,
     ts_rest_type: TSRestType,
+    ts_jsdoc_nullable_type: TSJSDocNullableType,
+    ts_jsdoc_non_nullable_type: TSJSDocNonNullableType,
+    ts_jsdoc_unknown_type: TSJSDocUnknownType,
     ts_union_type: TSUnionType,
     ts_intersection_type: TSIntersectionType,
     ts_conditional_type: TSConditionalType,

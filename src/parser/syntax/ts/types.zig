@@ -169,40 +169,76 @@ fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// T[]   T[K]
-/// ^^^   ^^^^
+/// T[]   T[K]   T?   T!
+/// ^^^   ^^^^   ^^   ^^
+///
+/// postfix `?` yields to an enclosing conditional type when a type
+/// follows, since that `?` belongs to `T extends U ? X : Y`.
 fn parsePostfixType(parser: *Parser) Error!?ast.NodeIndex {
     var ty = try parsePrimaryType(parser) orelse return null;
 
-    while (parser.current_token.tag == .left_bracket) {
-        const start = parser.tree.getSpan(ty).start;
-        try parser.advance() orelse return null; // consume '['
-
-        if (parser.current_token.tag == .right_bracket) {
-            const end = parser.current_token.span.end;
-            try parser.advance() orelse return null; // consume ']'
-            ty = try parser.tree.createNode(
-                .{ .ts_array_type = .{ .element_type = ty } },
-                .{ .start = start, .end = end },
-            );
-            continue;
+    while (!parser.current_token.hasLineTerminatorBefore()) {
+        switch (parser.current_token.tag) {
+            .left_bracket => ty = try parseArrayOrIndexedAccessType(parser, ty) orelse return null,
+            .question => {
+                if (!try isPostfixNullable(parser)) return ty;
+                ty = try parseJSDocPostfix(parser, ty, .nullable) orelse return null;
+            },
+            .logical_not => ty = try parseJSDocPostfix(parser, ty, .non_nullable) orelse return null,
+            else => return ty,
         }
-
-        const index = try parseType(parser) orelse return null;
-
-        if (!try parser.expect(
-            .right_bracket,
-            "Expected ']' to close an indexed access type",
-            "Each '[' in a type must be matched by a ']'",
-        )) return null;
-
-        ty = try parser.tree.createNode(
-            .{ .ts_indexed_access_type = .{ .object_type = ty, .index_type = index } },
-            .{ .start = start, .end = parser.prev_token_end },
-        );
     }
 
     return ty;
+}
+
+/// T[]   T[K]
+/// ^^^   ^^^^
+fn parseArrayOrIndexedAccessType(parser: *Parser, element: ast.NodeIndex) Error!?ast.NodeIndex {
+    const start = parser.tree.getSpan(element).start;
+    try parser.advance() orelse return null; // consume '['
+
+    if (parser.current_token.tag == .right_bracket) {
+        const end = parser.current_token.span.end;
+        try parser.advance() orelse return null; // consume ']'
+        return try parser.tree.createNode(
+            .{ .ts_array_type = .{ .element_type = element } },
+            .{ .start = start, .end = end },
+        );
+    }
+
+    const index = try parseType(parser) orelse return null;
+
+    if (!try parser.expect(
+        .right_bracket,
+        "Expected ']' to close an indexed access type",
+        "Each '[' in a type must be matched by a ']'",
+    )) return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_indexed_access_type = .{ .object_type = element, .index_type = index } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+/// T?   T!
+/// ^^   ^^
+fn parseJSDocPostfix(parser: *Parser, inner: ast.NodeIndex, comptime kind: JSDocKind) Error!?ast.NodeIndex {
+    const start = parser.tree.getSpan(inner).start;
+    const end = parser.current_token.span.end;
+    try parser.advance() orelse return null; // consume '?' or '!'
+    return try parser.tree.createNode(
+        jsdocNodeData(inner, kind, true),
+        .{ .start = start, .end = end },
+    );
+}
+
+/// true when a postfix `?` should be consumed as `TSJSDocNullableType`.
+/// false when a type starts after it, so the `?` belongs to an outer
+/// conditional type.
+fn isPostfixNullable(parser: *Parser) Error!bool {
+    const next = (try parser.peekAhead()) orelse return false;
+    return !isStartOfType(next.tag);
 }
 
 /// string   42   Foo<T>
@@ -250,6 +286,8 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .template_head => return parseTemplateLiteralType(parser),
             .typeof => return parseTypeQuery(parser),
             .import => return parseImportType(parser),
+            .question => return parseJSDocNullableOrUnknownType(parser),
+            .logical_not => return parseJSDocNonNullableType(parser),
             else => {},
         }
     }
@@ -403,6 +441,86 @@ fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
         } },
         .{ .start = start, .end = end },
     );
+}
+
+/// ?T   ?
+/// ^^   ^
+///
+/// a bare `?` (no type following) is a `TSJSDocUnknownType`, valid only
+/// in a type argument slot such as `Foo<?>`.
+fn parseJSDocNullableOrUnknownType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .question);
+
+    const start = parser.current_token.span.start;
+    const q_end = parser.current_token.span.end;
+    try parser.advance() orelse return null; // consume '?'
+
+    if (!isStartOfType(parser.current_token.tag)) {
+        return try parser.tree.createNode(
+            .{ .ts_jsdoc_unknown_type = .{} },
+            .{ .start = start, .end = q_end },
+        );
+    }
+
+    const inner = try parseType(parser) orelse return null;
+    return try parser.tree.createNode(
+        jsdocNodeData(inner, .nullable, false),
+        .{ .start = start, .end = parser.tree.getSpan(inner).end },
+    );
+}
+
+/// !T
+/// ^^
+///
+/// the operand is a primary type rather than a full type, so `!T[]`
+/// groups as `(!T)[]`.
+fn parseJSDocNonNullableType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .logical_not);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume '!'
+
+    const inner = try parsePrimaryType(parser) orelse return null;
+    return try parser.tree.createNode(
+        jsdocNodeData(inner, .non_nullable, false),
+        .{ .start = start, .end = parser.tree.getSpan(inner).end },
+    );
+}
+
+const JSDocKind = enum { nullable, non_nullable };
+
+fn jsdocNodeData(inner: ast.NodeIndex, comptime kind: JSDocKind, postfix: bool) ast.NodeData {
+    return switch (kind) {
+        .nullable => .{ .ts_jsdoc_nullable_type = .{ .type_annotation = inner, .postfix = postfix } },
+        .non_nullable => .{ .ts_jsdoc_non_nullable_type = .{ .type_annotation = inner, .postfix = postfix } },
+    };
+}
+
+/// true when `tag` can start a type
+fn isStartOfType(tag: TokenTag) bool {
+    return switch (tag) {
+        // keyword types (see `parseTypeKeyword`)
+        .any, .bigint, .boolean, .intrinsic, .never, .null_literal, .number,
+        .object, .string, .symbol, .this, .undefined, .unknown, .void,
+        // literal types (see `parseLiteralType`)
+        .true, .false, .string_literal, .numeric_literal, .hex_literal,
+        .octal_literal, .binary_literal, .bigint_literal,
+        .no_substitution_template, .template_head, .minus, .plus,
+        // compound type openers
+        .left_paren, .left_bracket, .left_brace, .less_than,
+        // unary type operators
+        .keyof, .unique, .readonly, .infer, .typeof, .import,
+        // function or constructor type leads
+        .new, .abstract,
+        // predicate lead
+        .asserts,
+        // jsdoc prefix markers
+        .question, .logical_not,
+        // tuple rest
+        .spread,
+        => true,
+        else => tag.isIdentifierLike(),
+    };
 }
 
 /// keyof T   unique symbol   readonly T[]
@@ -653,8 +771,9 @@ fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// tuple element without the `...` prefix. picks the named form on
-/// `label:` or `label?:`, otherwise parses a plain type and wraps a
-/// trailing `?` in `TSOptionalType`.
+/// `label:` or `label?:`, otherwise parses a type and rewrites a trailing
+/// postfix `TSJSDocNullableType` into `TSOptionalType` since `parseType`
+/// always consumes `T?` greedily as a postfix jsdoc nullable.
 fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
     if (try isNamedTupleElement(parser)) {
         return parseNamedTupleMember(parser);
@@ -662,14 +781,12 @@ fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
 
     const ty = try parseType(parser) orelse return null;
 
-    if (parser.current_token.tag == .question) {
-        const start = parser.tree.getSpan(ty).start;
-        const end = parser.current_token.span.end;
-        try parser.advance() orelse return null; // consume '?'
-        return try parser.tree.createNode(
-            .{ .ts_optional_type = .{ .type_annotation = ty } },
-            .{ .start = start, .end = end },
-        );
+    switch (parser.tree.getData(ty)) {
+        .ts_jsdoc_nullable_type => |n| if (n.postfix) return try parser.tree.createNode(
+            .{ .ts_optional_type = .{ .type_annotation = n.type_annotation } },
+            parser.tree.getSpan(ty),
+        ),
+        else => {},
     }
 
     return ty;

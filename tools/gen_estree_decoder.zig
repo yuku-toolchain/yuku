@@ -721,6 +721,10 @@ fn estreeType(comptime name: []const u8) []const u8 {
         .{ "label_identifier", "Identifier" },
         // snake to pascal would produce "Bigint", typescript uses "BigInt".
         .{ "ts_bigint_keyword", "TSBigIntKeyword" },
+        // snake to pascal would produce "Jsdoc...", typescript uses "JSDoc...".
+        .{ "ts_jsdoc_nullable_type", "TSJSDocNullableType" },
+        .{ "ts_jsdoc_non_nullable_type", "TSJSDocNonNullableType" },
+        .{ "ts_jsdoc_unknown_type", "TSJSDocUnknownType" },
     };
     inline for (overrides) |o| if (comptime std.mem.eql(u8, name, o[0])) return o[1];
     if (comptime std.mem.startsWith(u8, name, "jsx_")) return "JSX" ++ snakeConvert(name[4..], true);
