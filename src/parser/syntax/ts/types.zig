@@ -532,7 +532,7 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
 
     const type_parameters = try parseTypeParameters(parser);
 
-    const params = try functions.parseFormalParamaters(parser, .signature, false) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
 
     if (parser.current_token.tag != .arrow) {
         try parser.reportExpected(
@@ -845,50 +845,8 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
 /// `IdentifierName` because these are property accesses on the imported
 /// module type, not references to bindings in scope.
 fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
-    const first_token = parser.current_token;
-    if (!first_token.tag.isIdentifierLike()) {
-        try parser.reportExpected(
-            first_token.span,
-            "Expected an identifier after '.' in an import type",
-            .{ .help = "An import type qualifier is written 'import(\"m\").Foo' or 'import(\"m\").Foo.Bar'" },
-        );
-        return null;
-    }
-
-    const start = first_token.span.start;
-
-    var name = try parser.tree.createNode(.{
-        .identifier_name = .{ .name = try parser.identifierName(first_token) },
-    }, first_token.span);
-
-    try parser.advanceWithoutEscapeCheck() orelse return null;
-
-    while (parser.current_token.tag == .dot) {
-        try parser.advance() orelse return null; // consume '.'
-
-        const right_token = parser.current_token;
-        if (!right_token.tag.isIdentifierLike()) {
-            try parser.reportExpected(
-                right_token.span,
-                "Expected an identifier after '.' in an import type qualifier",
-                .{ .help = "Each '.' in an import type qualifier must be followed by an identifier" },
-            );
-            return null;
-        }
-
-        const right = try parser.tree.createNode(.{
-            .identifier_name = .{ .name = try parser.identifierName(right_token) },
-        }, right_token.span);
-
-        try parser.advanceWithoutEscapeCheck() orelse return null;
-
-        name = try parser.tree.createNode(
-            .{ .ts_qualified_name = .{ .left = name, .right = right } },
-            .{ .start = start, .end = right_token.span.end },
-        );
-    }
-
-    return name;
+    const head = try parseIdentifierNameHead(parser) orelse return null;
+    return extendQualifiedName(parser, head);
 }
 
 /// dotted entity name `A.B.C`. head is an `IdentifierReference` (or
@@ -905,9 +863,7 @@ fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
         return null;
     }
 
-    const start = first_token.span.start;
-
-    var name = if (first_token.tag == .this)
+    const head = if (first_token.tag == .this)
         try parser.tree.createNode(.{ .this_expression = .{} }, first_token.span)
     else
         try parser.tree.createNode(.{
@@ -916,6 +872,32 @@ fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
+    return extendQualifiedName(parser, head);
+}
+
+fn parseIdentifierNameHead(parser: *Parser) Error!?ast.NodeIndex {
+    const token = parser.current_token;
+    if (!token.tag.isIdentifierLike()) {
+        try parser.reportExpected(
+            token.span,
+            "Expected an identifier",
+            .{ .help = "Each '.' in a qualified name must be followed by an identifier" },
+        );
+        return null;
+    }
+    const head = try parser.tree.createNode(
+        .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
+        token.span,
+    );
+    try parser.advanceWithoutEscapeCheck() orelse return null;
+    return head;
+}
+
+/// extends a head node with any number of `.Id` continuations, wrapping
+/// each step in `TSQualifiedName`. the right side is always an
+/// `IdentifierName` so reserved words are accepted after `.`.
+pub fn extendQualifiedName(parser: *Parser, head: ast.NodeIndex) Error!?ast.NodeIndex {
+    var name = head;
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null; // consume '.'
 
@@ -924,23 +906,22 @@ fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
             try parser.reportExpected(
                 right_token.span,
                 "Expected an identifier after '.'",
-                .{ .help = "A qualified entity name must end with an identifier" },
+                .{ .help = "A qualified name must end with an identifier" },
             );
             return null;
         }
 
-        const right = try parser.tree.createNode(.{
-            .identifier_name = .{ .name = try parser.identifierName(right_token) },
-        }, right_token.span);
-
+        const right = try parser.tree.createNode(
+            .{ .identifier_name = .{ .name = try parser.identifierName(right_token) } },
+            right_token.span,
+        );
         try parser.advanceWithoutEscapeCheck() orelse return null;
 
         name = try parser.tree.createNode(
             .{ .ts_qualified_name = .{ .left = name, .right = right } },
-            .{ .start = start, .end = right_token.span.end },
+            .{ .start = parser.tree.getSpan(name).start, .end = right_token.span.end },
         );
     }
-
     return name;
 }
 
@@ -1029,13 +1010,42 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
 
     // modifier keywords are contextual. treat the current token as a
     // modifier only when an identifier-like token follows, so the word
-    // itself can still be a parameter name (e.g. `<out>`).
+    // itself can still be a parameter name (e.g. `<out>`). modifiers
+    // must appear in the order `const in out`, each at most once.
     while (true) {
-        const tag = parser.current_token.tag;
+        const token = parser.current_token;
+        const tag = token.tag;
         if (tag != .in and tag != .out and tag != .@"const") break;
 
         const next = (try parser.peekAhead()) orelse break;
         if (!next.tag.isIdentifierLike()) break;
+
+        const already_present = switch (tag) {
+            .@"const" => is_const,
+            .in => is_in,
+            .out => is_out,
+            else => unreachable,
+        };
+        const out_of_order = switch (tag) {
+            .@"const" => is_in or is_out,
+            .in => is_out,
+            .out => false,
+            else => unreachable,
+        };
+
+        if (already_present) {
+            try parser.report(
+                token.span,
+                try parser.fmt("Duplicate '{s}' modifier on type parameter", .{tag.toString().?}),
+                .{},
+            );
+        } else if (out_of_order) {
+            try parser.report(
+                token.span,
+                "Type parameter modifiers must appear in the order 'const in out'",
+                .{},
+            );
+        }
 
         switch (tag) {
             .@"const" => is_const = true,
@@ -1045,7 +1055,7 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
         }
 
         if (!start_set) {
-            start = parser.current_token.span.start;
+            start = token.span.start;
             start_set = true;
         }
 

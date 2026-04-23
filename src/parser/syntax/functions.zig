@@ -90,7 +90,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     const is_unique_formal_parameters = is_generator or opts.is_async;
 
-    const params = try parseFormalParamaters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters, false) orelse return null;
+    const params = try parseFormalParameters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters, false) orelse return null;
 
     const params_end = parser.tree.getSpan(params).end;
 
@@ -109,7 +109,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     if (opts.is_declare and parser.current_token.tag == .left_brace) {
         try parser.report(
             parser.current_token.span,
-            parser.withTsCode("1183", "An implementation cannot be declared in ambient contexts."),
+            "An implementation cannot be declared in ambient contexts",
             .{ .help = "Remove the function body or remove the 'declare' modifier" },
         );
         return null;
@@ -202,7 +202,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
 /// parses a parenthesised parameter list. `allow_parameter_properties` is
 /// set only for class constructor parameters and enables ts parameter
 /// property shorthand (`constructor(public x: T)`).
-pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, allow_parameter_properties: bool) Error!?ast.NodeIndex {
+pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, allow_parameter_properties: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;
 
@@ -224,7 +224,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, all
                 return null;
             }
         } else {
-            const param = try parseFormalParamater(parser, allow_parameter_properties) orelse break;
+            const param = try parseFormalParameter(parser, allow_parameter_properties) orelse break;
             try parser.scratch_a.append(parser.allocator(), param);
         }
 
@@ -242,7 +242,7 @@ pub fn parseFormalParamaters(parser: *Parser, kind: ast.FormalParameterKind, all
     } }, .{ .start = start, .end = end });
 }
 
-pub fn parseFormalParamater(parser: *Parser, allow_parameter_properties: bool) Error!?ast.NodeIndex {
+pub fn parseFormalParameter(parser: *Parser, allow_parameter_properties: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     // `function f(this: T, ...)` and related signature forms. `this` is

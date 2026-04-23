@@ -65,7 +65,7 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
 
     if (parser.current_token.tag != .left_paren) return null;
 
-    const params = try functions.parseFormalParamaters(parser, .arrow_formal_parameters, false) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .arrow_formal_parameters, false) orelse return null;
 
     const return_type: ast.NodeIndex = if (parser.current_token.tag == .colon)
         try types.parseReturnTypeAnnotation(parser) orelse return null

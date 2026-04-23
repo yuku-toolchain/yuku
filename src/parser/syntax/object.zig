@@ -326,7 +326,7 @@ fn parseObjectMethodProperty(
 
     const func_start = parser.current_token.span.start;
 
-    const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters, false) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, false) orelse return null;
     const params_data = parser.tree.getData(params).formal_parameters;
 
     // validate getter has no parameters

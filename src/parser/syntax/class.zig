@@ -533,7 +533,7 @@ fn parseMethodDefinition(
     else
         .null;
 
-    const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
+    const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
     try validateGetSetParams(parser, mods.kind, params);
     const params_end = parser.tree.getSpan(params).end;
 

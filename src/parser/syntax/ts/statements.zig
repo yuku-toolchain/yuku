@@ -4,6 +4,7 @@ const Parser = @import("../../parser.zig").Parser;
 const Error = @import("../../parser.zig").Error;
 const Precedence = @import("../../token.zig").Precedence;
 const Token = @import("../../token.zig").Token;
+const TokenTag = @import("../../token.zig").TokenTag;
 const expressions = @import("../expressions.zig");
 const literals = @import("../literals.zig");
 const variables = @import("../variables.zig");
@@ -199,30 +200,36 @@ pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
     );
 }
 
-/// `extends Bar, Baz<U>` on an interface, or an empty range when
-/// `extends` is absent. each entry is a `TSInterfaceHeritage` holding an
-/// expression and an optional `<T>` argument list.
-fn parseInterfaceExtendsClause(parser: *Parser) Error!?ast.IndexRange {
-    if (parser.current_token.tag != .extends) return .empty;
-    try parser.advance() orelse return null; // consume 'extends'
+const HeritageKind = enum { interface, class };
+
+/// `extends Bar, Baz<U>` on an interface, `implements Bar, Baz<U>` on a
+/// class, or an empty range when the keyword is absent. each entry wraps
+/// an identifier-path expression and an optional `<T>` argument list.
+fn parseHeritageClause(
+    parser: *Parser,
+    comptime keyword: TokenTag,
+    comptime kind: HeritageKind,
+) Error!?ast.IndexRange {
+    if (parser.current_token.tag != keyword) return .empty;
+    try parser.advance() orelse return null;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
     while (true) {
-        const heritage = try parseInterfaceHeritage(parser) orelse return null;
-        try parser.scratch_a.append(parser.allocator(), heritage);
+        const entry = try parseHeritageEntry(parser, kind) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), entry);
         if (parser.current_token.tag != .comma) break;
-        try parser.advance() orelse return null; // consume ','
+        try parser.advance() orelse return null;
     }
 
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 /// `Bar`, `Foo.Bar`, or `Foo.Bar<U>`. the expression is an identifier
-/// path, built from an `IdentifierReference` head and `MemberExpression`
+/// path built from an `IdentifierReference` head and `MemberExpression`
 /// links so the ESTree output matches the runtime-expression shape.
-fn parseInterfaceHeritage(parser: *Parser) Error!?ast.NodeIndex {
+fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.NodeIndex {
     const expression = try parseHeritageExpression(parser) orelse return null;
     const type_arguments = try ts_types.parseTypeArguments(parser);
 
@@ -232,55 +239,26 @@ fn parseInterfaceHeritage(parser: *Parser) Error!?ast.NodeIndex {
     else
         parser.tree.getSpan(expression).end;
 
-    return try parser.tree.createNode(
-        .{ .ts_interface_heritage = .{
+    const data: ast.NodeData = switch (kind) {
+        .interface => .{ .ts_interface_heritage = .{
             .expression = expression,
             .type_arguments = type_arguments,
         } },
-        .{ .start = start, .end = end },
-    );
-}
-
-/// `implements Bar, Foo.Baz<U>` on a class, or an empty range when
-/// `implements` is absent. each entry is a `TSClassImplements` over the
-/// same identifier-path shape as interface heritage.
-pub fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
-    if (parser.current_token.tag != .implements) return .empty;
-    try parser.advance() orelse return null; // consume 'implements'
-
-    const checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(checkpoint);
-
-    while (true) {
-        const entry = try parseClassImplements(parser) orelse return null;
-        try parser.scratch_a.append(parser.allocator(), entry);
-        if (parser.current_token.tag != .comma) break;
-        try parser.advance() orelse return null; // consume ','
-    }
-
-    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
-}
-
-/// one `TSClassImplements` entry. shares the expression shape with
-/// `TSInterfaceHeritage` (identifier head, dotted member chain, optional
-/// `<T>` arguments).
-fn parseClassImplements(parser: *Parser) Error!?ast.NodeIndex {
-    const expression = try parseHeritageExpression(parser) orelse return null;
-    const type_arguments = try ts_types.parseTypeArguments(parser);
-
-    const start = parser.tree.getSpan(expression).start;
-    const end = if (type_arguments != .null)
-        parser.tree.getSpan(type_arguments).end
-    else
-        parser.tree.getSpan(expression).end;
-
-    return try parser.tree.createNode(
-        .{ .ts_class_implements = .{
+        .class => .{ .ts_class_implements = .{
             .expression = expression,
             .type_arguments = type_arguments,
         } },
-        .{ .start = start, .end = end },
-    );
+    };
+
+    return try parser.tree.createNode(data, .{ .start = start, .end = end });
+}
+
+inline fn parseInterfaceExtendsClause(parser: *Parser) Error!?ast.IndexRange {
+    return parseHeritageClause(parser, .extends, .interface);
+}
+
+pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
+    return parseHeritageClause(parser, .implements, .class);
 }
 
 /// an `IdentifierReference` head followed by any number of `.<name>`
@@ -516,20 +494,8 @@ pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Erro
 /// of dotted identifier parts. `namespace A.B.C { ... }` is sugar for a
 /// single module whose name is `TSQualifiedName(TSQualifiedName(A, B), C)`.
 fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
-    var name = try literals.parseBindingIdentifier(parser) orelse return null;
-
-    while (parser.current_token.tag == .dot) {
-        try parser.advance() orelse return null; // consume '.'
-        const right = try literals.parseIdentifierName(parser) orelse return null;
-        const left_start = parser.tree.getSpan(name).start;
-        const right_end = parser.tree.getSpan(right).end;
-        name = try parser.tree.createNode(
-            .{ .ts_qualified_name = .{ .left = name, .right = right } },
-            .{ .start = left_start, .end = right_end },
-        );
-    }
-
-    return name;
+    const head = try literals.parseBindingIdentifier(parser) orelse return null;
+    return ts_types.extendQualifiedName(parser, head);
 }
 
 /// optional module body. returns `.null` when no `{` follows (forward

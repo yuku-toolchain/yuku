@@ -202,14 +202,14 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
     // `(...)` or `<...>` here is always a bare call signature.
-    if (tag == .left_paren or tag == .less_than) return parseCallSignature(parser);
+    if (tag == .left_paren or tag == .less_than) return parseCallOrConstructSignature(parser, false);
 
     // `new (...)` or `new <...>` is a construct signature. otherwise `new`
     // is a property name.
     if (tag == .new) {
         const next = (try parser.peekAhead()) orelse return null;
         if (next.tag == .left_paren or next.tag == .less_than) {
-            return parseConstructSignature(parser);
+            return parseCallOrConstructSignature(parser, true);
         }
     }
 
@@ -271,10 +271,15 @@ inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
         tag == .spread;
 }
 
-/// (params): R    <T>(params): R
-/// ^^^^^^^^^^^    ^^^^^^^^^^^^^^
-fn parseCallSignature(parser: *Parser) Error!?ast.NodeIndex {
+/// (params): R    <T>(params): R    new (params): R    new <T>(params): R
+/// ^^^^^^^^^^^    ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
+fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
+
+    if (is_construct) {
+        std.debug.assert(parser.current_token.tag == .new);
+        try parser.advance() orelse return null; // consume 'new'
+    }
 
     const type_parameters = try types.parseTypeParameters(parser);
     const params = try parseSignatureParameters(parser) orelse return null;
@@ -286,47 +291,25 @@ fn parseCallSignature(parser: *Parser) Error!?ast.NodeIndex {
         end = parser.tree.getSpan(return_type).end;
     }
 
-    return try parser.tree.createNode(
-        .{ .ts_call_signature_declaration = .{
-            .type_parameters = type_parameters,
-            .params = params,
-            .return_type = return_type,
-        } },
-        .{ .start = start, .end = end },
-    );
-}
-
-/// new (params): R    new <T>(params): R
-/// ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
-fn parseConstructSignature(parser: *Parser) Error!?ast.NodeIndex {
-    std.debug.assert(parser.current_token.tag == .new);
-
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'new'
-
-    const type_parameters = try types.parseTypeParameters(parser);
-    const params = try parseSignatureParameters(parser) orelse return null;
-
-    var return_type: ast.NodeIndex = .null;
-    var end = parser.prev_token_end;
-    if (parser.current_token.tag == .colon) {
-        return_type = try types.parseReturnTypeAnnotation(parser) orelse return null;
-        end = parser.tree.getSpan(return_type).end;
-    }
-
-    return try parser.tree.createNode(
+    const data: ast.NodeData = if (is_construct)
         .{ .ts_construct_signature_declaration = .{
             .type_parameters = type_parameters,
             .params = params,
             .return_type = return_type,
-        } },
-        .{ .start = start, .end = end },
-    );
+        } }
+    else
+        .{ .ts_call_signature_declaration = .{
+            .type_parameters = type_parameters,
+            .params = params,
+            .return_type = return_type,
+        } };
+
+    return try parser.tree.createNode(data, .{ .start = start, .end = end });
 }
 
 /// `(params)` shared by call, construct, and method signatures.
 fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
-    return functions.parseFormalParamaters(parser, .signature, false);
+    return functions.parseFormalParameters(parser, .signature, false);
 }
 
 /// [k: T]: V    readonly [k: T]: V
@@ -342,16 +325,17 @@ pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModi
     std.debug.assert(parser.current_token.tag == .left_bracket);
     try parser.advance() orelse return null; // consume '['
 
-    const params_checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(params_checkpoint);
-
-    while (parser.current_token.tag != .right_bracket and parser.current_token.tag != .eof) {
-        const param = try parseIndexSignatureParameter(parser) orelse return null;
-        try parser.scratch_a.append(parser.allocator(), param);
-        if (parser.current_token.tag == .comma) {
-            try parser.advance() orelse return null;
-        } else break;
+    // TS1096: an index signature must have exactly one parameter.
+    const param = try parseIndexSignatureParameter(parser) orelse return null;
+    if (parser.current_token.tag == .comma) {
+        try parser.report(
+            parser.current_token.span,
+            "An index signature must have exactly one parameter",
+            .{ .help = "An index signature is written '[name: KeyType]: ValueType'." },
+        );
+        return null;
     }
+    const parameters = try parser.tree.createExtra(&.{param});
 
     if (!try parser.expect(
         .right_bracket,
@@ -370,8 +354,6 @@ pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModi
 
     const type_annotation = try types.parseTypeAnnotation(parser) orelse return null;
     const end = parser.tree.getSpan(type_annotation).end;
-
-    const parameters = try parser.createExtraFromScratch(&parser.scratch_a, params_checkpoint);
 
     return try parser.tree.createNode(
         .{ .ts_index_signature = .{
@@ -475,6 +457,14 @@ fn parseMethodSignatureBody(
     if (parser.current_token.tag == .colon) {
         return_type = try types.parseReturnTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(return_type).end;
+
+        if (kind == .set) {
+            try parser.report(
+                parser.tree.getSpan(return_type),
+                "A 'set' accessor cannot have a return type annotation",
+                .{ .help = "Setters do not return a value; remove the ': T' annotation." },
+            );
+        }
     }
 
     return try parser.tree.createNode(
