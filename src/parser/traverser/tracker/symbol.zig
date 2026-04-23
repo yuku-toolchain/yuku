@@ -310,6 +310,7 @@ pub const SymbolTracker = struct {
     // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,
     binding_is_const: bool = false,
+    binding_is_ambient: bool = false,
     target_scope: TargetScope = .current,
     is_export: bool = false,
     is_default_export: bool = false,
@@ -342,6 +343,10 @@ pub const SymbolTracker = struct {
                 self.is_default_export = true;
             },
             .variable_declaration => |decl| {
+                // var declarations only appear inside non-ambient bodies
+                // because ambient namespaces and declare-only forms are
+                // skipped by the traverser before they reach this point.
+                self.binding_is_ambient = false;
                 switch (decl.kind) {
                     .@"var" => {
                         self.binding_kind = .hoisted;
@@ -363,6 +368,12 @@ pub const SymbolTracker = struct {
             .function => |func| {
                 self.binding_kind = .function;
                 self.binding_is_const = false;
+                // typescript ambient context: `declare function`, top-level
+                // overload signatures, and body-less class methods (overloads,
+                // abstract members, ambient methods).
+                self.binding_is_ambient = func.declare or
+                    func.type == .ts_declare_function or
+                    func.type == .ts_empty_body_function_expression;
                 self.target_scope = switch (func.type) {
                     // declarations bind in the enclosing scope
                     .function_declaration, .ts_declare_function => .parent,
@@ -373,6 +384,7 @@ pub const SymbolTracker = struct {
             .class => |cls| {
                 self.binding_kind = .class;
                 self.binding_is_const = false;
+                self.binding_is_ambient = cls.declare;
                 self.target_scope = switch (cls.type) {
                     .class_declaration => .parent,
                     else => .name,
@@ -381,6 +393,8 @@ pub const SymbolTracker = struct {
             .formal_parameters => {
                 self.binding_kind = .parameter;
                 self.binding_is_const = false;
+                // ambient is inherited from the enclosing function, so leave
+                // `binding_is_ambient` untouched here.
                 self.target_scope = .current;
                 // parameters are never exported
                 self.is_export = false;
@@ -394,11 +408,13 @@ pub const SymbolTracker = struct {
             .import_declaration => {
                 self.binding_kind = .import;
                 self.binding_is_const = false;
+                self.binding_is_ambient = false;
                 self.target_scope = .current;
             },
             .catch_clause => {
                 self.binding_kind = .parameter;
                 self.binding_is_const = false;
+                self.binding_is_ambient = false;
                 self.target_scope = .current;
             },
             else => {},
@@ -482,6 +498,7 @@ pub const SymbolTracker = struct {
                 .exported = self.is_export,
                 .is_default = self.is_default_export,
                 .is_const = self.binding_is_const,
+                .is_ambient = self.binding_is_ambient,
             },
             .scope = target_scope,
             .node = node,
@@ -509,6 +526,12 @@ pub const SymbolTracker = struct {
     /// is a let, var, function name, import, etc.
     pub inline fn currentBindingKind(self: *const SymbolTracker) Symbol.Kind {
         return self.binding_kind;
+    }
+
+    /// True when the current binding context is a typescript ambient
+    /// declaration. See `setBindingContext` for what counts as ambient.
+    pub inline fn currentBindingIsAmbient(self: *const SymbolTracker) bool {
+        return self.binding_is_ambient;
     }
 
     /// Returns the symbol for the given ID.

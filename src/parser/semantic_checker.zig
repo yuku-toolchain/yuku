@@ -52,8 +52,10 @@ const SemanticVisit = struct {
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
 
+        const is_ambient = ctx.symbols.currentBindingIsAmbient();
+
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
-        if (ctx.scope.isStrict()) {
+        if (ctx.scope.isStrict() and !is_ambient) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
 
             if (isEvalOrArguments(name))
@@ -72,8 +74,10 @@ const SemanticVisit = struct {
             const existing = ctx.symbols.getSymbol(sym);
 
             // Section 14.2.1, 14.12.1: block/switch lexical redeclaration.
-            if (existing.kind.isBlockScoped(target_scope_kind) or
-                current_kind.isBlockScoped(target_scope_kind))
+            const merging_with_ambient = is_ambient or existing.flags.is_ambient;
+            if (!merging_with_ambient and
+                (existing.kind.isBlockScoped(target_scope_kind) or
+                    current_kind.isBlockScoped(target_scope_kind)))
             {
                 try self.reportRedeclaration(id, node_index, existing, ctx);
                 return .proceed;
@@ -593,9 +597,13 @@ const SemanticVisit = struct {
         for (children, 0..) |child, j| {
             const child_data = ctx.tree.getData(child);
 
+            // a body-less method is a typescript overload signature,
+            // abstract member, or ambient method. it has no
+            // implementation, so it does not count toward the
+            // duplicate-constructor check.
             if (child_data == .method_definition) {
                 const md = child_data.method_definition;
-                if (md.kind == .constructor) {
+                if (md.kind == .constructor and ctx.tree.getData(md.value).function.body != .null) {
                     if (first_constructor) |first| {
                         try self.report(ctx.tree.getSpan(md.key), "A class can only have one constructor", .{
                             .labels = try self.labels(&.{

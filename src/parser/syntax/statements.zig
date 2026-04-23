@@ -15,6 +15,7 @@ const grammar = @import("../grammar.zig");
 const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
 const ts_statements = @import("ts/statements.zig");
+const ts_types = @import("ts/types.zig");
 
 const ParseStatementOpts = struct {
     /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
@@ -584,6 +585,12 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .left_paren) {
         try parser.advance() orelse return null; // consume '('
         param = try patterns.parseBindingPattern(parser) orelse return null;
+
+        if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+            ts_types.applyTypeAnnotationToPattern(parser, param, annotation);
+        }
+
         if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) return null;
     }
 

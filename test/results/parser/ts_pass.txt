@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       7819/8261 (94.65%)
-Failed:       442
-AST mismatch: 0/7819
+Passed:       8054/8261 (97.49%)
+Failed:       207
+AST mismatch: 0/8054
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -182,15 +182,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/0408984ccc59bcc7.ts
 ✓ test/parser/suite/ts/pass/0418622091a719c8.ts
 ✓ test/parser/suite/ts/pass/041b00b9e98e800b.ts
-✗ test/parser/suite/ts/pass/041d72a631bbe0e2.ts (parse errors)
-error: 'arguments' is not allowed as a binding identifier in strict mode
-   |
- 4 |     public implements() { }
- 5 |     public foo(arguments: any) { }
-   |                ^^^^^^^^^^^^^^
- 6 |     private bar(eval:any) {
-   |
-
+✓ test/parser/suite/ts/pass/041d72a631bbe0e2.ts
 ✓ test/parser/suite/ts/pass/042b8c81bbe2fb4c.ts
 ✓ test/parser/suite/ts/pass/044c672fd959b0d9.ts
 ✓ test/parser/suite/ts/pass/045087a868bd0c98.ts
@@ -259,15 +251,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/05b966291b1a7de1.ts
 ✓ test/parser/suite/ts/pass/05b972c774571831.module.ts
 ✓ test/parser/suite/ts/pass/05c37ceac4f167fc.ts
-✗ test/parser/suite/ts/pass/05c7a692760abe47.module.ts (parse errors)
-error: Export 'n2' is not defined
-   |
-10 | export {n as n1}
-11 | export {n2}
-   |         ^^
-12 | export {n2 as n3}
-   |
-
+✓ test/parser/suite/ts/pass/05c7a692760abe47.module.ts
 ✓ test/parser/suite/ts/pass/05c9175df1050052.ts
 ✓ test/parser/suite/ts/pass/05cb583eba8bab11.ts
 ✓ test/parser/suite/ts/pass/05d0554d3860de12.ts
@@ -333,15 +317,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/07d0f7d78df0a568.module.ts (parse errors)
-error: Export 'n2' is not defined
-   |
-10 | export {n as n1}
-11 | export {n2}
-   |         ^^
-12 | export {n2 as n3}
-   |
-
+✓ test/parser/suite/ts/pass/07d0f7d78df0a568.module.ts
 ✓ test/parser/suite/ts/pass/07d1b9e3dbcf7220.module.ts
 ✓ test/parser/suite/ts/pass/07e4335cb46b7073.ts
 ✓ test/parser/suite/ts/pass/07e6c7e0f8953f5e.ts
@@ -400,41 +376,13 @@ error: Export 'n2' is not defined
 ✓ test/parser/suite/ts/pass/097c89e785ce1507.ts
 ✓ test/parser/suite/ts/pass/097e9b78e7f359de.ts
 ✓ test/parser/suite/ts/pass/09866ab22c085196.ts
-✗ test/parser/suite/ts/pass/098e53087f223d35.module.ts (parse errors)
-error: Export 'string' is not defined
-   |
- 2 | // @target: es2015
- 3 | export { string };
-   |          ^^^^^^
- 4 | export type { number };
-   |
-
-✗ test/parser/suite/ts/pass/09a1d6c3a37de1a1.ts (parse errors)
-error: Cannot use 'export' declaration outside a module
-   |
- 2 | {
- 3 |    export function bar() {
-   |    ^^^^^^^^^^^^^^^^^^^^^^^^
- 4 |    }
-   | ^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/098e53087f223d35.module.ts
+✓ test/parser/suite/ts/pass/09a1d6c3a37de1a1.ts
 ✓ test/parser/suite/ts/pass/09a41ab3d4412e71.ts
 ✓ test/parser/suite/ts/pass/09ada812864fb29c.ts
 ✓ test/parser/suite/ts/pass/09b72efb9e87f68e.ts
 ✓ test/parser/suite/ts/pass/09bca18b47504906.ts
-✗ test/parser/suite/ts/pass/09c006c0a0409e11.ts (parse errors)
-error: A class can only have one constructor
-    |
-183 | class C7_public {
-184 |     constructor (c7_c2: C6_public);
-    |     ~~~~~~~~~~~ first constructor defined here
-185 |     constructor (c7_c1_2: any) {
-    |     ^^^^^^^^^^^
-186 |     }
-    |
-
+✓ test/parser/suite/ts/pass/09c006c0a0409e11.ts
 ✓ test/parser/suite/ts/pass/09c1c5f2cedfcffc.ts
 ✓ test/parser/suite/ts/pass/09c69b4bb4289864.ts
 ✓ test/parser/suite/ts/pass/09c89384d266d77b.ts
@@ -552,14 +500,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/0c40db0f89f865e7.ts
 ✓ test/parser/suite/ts/pass/0c4edfce16594963.ts
 ✓ test/parser/suite/ts/pass/0c5cf9499ad9a70e.ts
-✗ test/parser/suite/ts/pass/0c63afab136ff78a.module.ts (parse errors)
-error: Cannot assign to 'eval' or 'arguments' in strict mode
-   |
- 2 | "use strict";
- 3 | eval = 1;
-   | ^^^^
-   |
-
+✓ test/parser/suite/ts/pass/0c63afab136ff78a.module.ts
 ✓ test/parser/suite/ts/pass/0c65394c25133f00.ts
 ✓ test/parser/suite/ts/pass/0c67503c37a611bc.ts
 ✓ test/parser/suite/ts/pass/0c6e09084489f187.ts
@@ -567,18 +508,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/0c723e92796a9fb7.ts
 ✓ test/parser/suite/ts/pass/0c7c750191212cd2.ts
 ✓ test/parser/suite/ts/pass/0c87140e462cd8e4.ts
-✗ test/parser/suite/ts/pass/0c9d889b961f6912.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 6 | 
- 7 | export default function () { }
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 8 | export { default } from './hi'
-   |          ^^^^^^^
-   |          ~~~~~~~ exported again here
- 9 | export { aa as default } from './hi'
-   |
-
+✓ test/parser/suite/ts/pass/0c9d889b961f6912.module.ts
 ✓ test/parser/suite/ts/pass/0cb1b3df33ce7aef.ts
 ✓ test/parser/suite/ts/pass/0cbdc0687d3ac48d.ts
 ✓ test/parser/suite/ts/pass/0cd8e3681431c6f4.ts
@@ -605,15 +535,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/0d15a1d0471e006d.module.ts
 ✓ test/parser/suite/ts/pass/0d1cc2b7f5819e67.ts
 ✓ test/parser/suite/ts/pass/0d1eefcd7a2e96c2.module.ts
-✗ test/parser/suite/ts/pass/0d2185396fa29978.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 3 | "use strict";
- 4 | var v = function f(eval) {
-   |                    ^^^^
- 5 | };
-   |
-
+✓ test/parser/suite/ts/pass/0d2185396fa29978.module.ts
 ✓ test/parser/suite/ts/pass/0d29438b308e4096.ts
 ✓ test/parser/suite/ts/pass/0d37df822964daa4.ts
 ✓ test/parser/suite/ts/pass/0d46292b5d3b2d3d.ts
@@ -676,32 +598,14 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/0ebb0198b269e0a9.ts
 ✓ test/parser/suite/ts/pass/0ecfea03fb3594d2.ts
 ✓ test/parser/suite/ts/pass/0ed188758af2ce18.ts
-✗ test/parser/suite/ts/pass/0ed8e6225a4afccb.module.ts (parse errors)
-error: 'export' declaration may only appear at the top level
-   |
- 2 | export function foo() {
- 3 |    export function bar() {
-   |    ^^^^^^^^^^^^^^^^^^^^^^^^
- 4 |    }
-   | ^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/0ed8e6225a4afccb.module.ts
 ✓ test/parser/suite/ts/pass/0edb7ea5a53e55d6.ts
 ✓ test/parser/suite/ts/pass/0edee4d2e0097845.ts
 ✓ test/parser/suite/ts/pass/0ee82bf9aa2fa96d.ts
 ✓ test/parser/suite/ts/pass/0eefbea413f501a7.ts
 ✓ test/parser/suite/ts/pass/0ef30b5778b4e439.ts
 ✓ test/parser/suite/ts/pass/0f011574139884f1.ts
-✗ test/parser/suite/ts/pass/0f09e010e5d84467.module.ts (parse errors)
-error: Cannot assign to 'eval' or 'arguments' in strict mode
-   |
- 3 | 
- 4 | ++eval;
-   | ^^^^^^
- 5 | --eval;
-   |
-
+✓ test/parser/suite/ts/pass/0f09e010e5d84467.module.ts
 ✓ test/parser/suite/ts/pass/0f0a6397402e703b.ts
 ✓ test/parser/suite/ts/pass/0f0b2feca63cd1b4.ts
 ✓ test/parser/suite/ts/pass/0f0e9a05c2eb553c.ts
@@ -714,16 +618,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/0f3d0e0d34e8870c.ts
 ✓ test/parser/suite/ts/pass/0f42e6512fc6bc0f.ts
 ✓ test/parser/suite/ts/pass/0f4a1bd3dc242b17.ts
-✗ test/parser/suite/ts/pass/0f4c14b6701b04d0.ts (parse errors)
-error: Label 'target' does not denote an iteration statement
-   |
- 2 | target:
- 3 |   continue target;
-   |   ^^^^^^^^^^^^^^^^
-   |
-   = help: A 'continue' statement can only jump to a label of an enclosing 'for', 'while', 'do-while', 'for-in', or 'for-of' statement
-
-
+✓ test/parser/suite/ts/pass/0f4c14b6701b04d0.ts
 ✓ test/parser/suite/ts/pass/0f95374c28a9d739.ts
 ✓ test/parser/suite/ts/pass/0f978dfc4113f393.ts
 ✗ test/parser/suite/ts/pass/0f983e258903e59a.module.ts (parse errors)
@@ -767,17 +662,7 @@ error: 'new' is reserved and cannot be used as an identifier
 
 ✓ test/parser/suite/ts/pass/0fe91a86df7a2e2c.ts
 ✓ test/parser/suite/ts/pass/0fef73917fa40771.module.ts
-✗ test/parser/suite/ts/pass/0ff63a135e127a5c.ts (parse errors)
-error: Illegal continue statement
-   |
- 5 |     case 5:
- 6 |         continue;
-   |         ^^^^^^^^^
- 7 | }
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/0ff63a135e127a5c.ts
 ✓ test/parser/suite/ts/pass/10032d5d16e68d0b.ts
 ✓ test/parser/suite/ts/pass/100a1365c6959a09.module.ts
 ✓ test/parser/suite/ts/pass/100d790802b8d331.ts
@@ -903,30 +788,11 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/1267f09c3df4bb93.ts
 ✓ test/parser/suite/ts/pass/1270537f28b756ce.ts
 ✓ test/parser/suite/ts/pass/127e962c06b64a61.ts
-✗ test/parser/suite/ts/pass/1291f5d5e9a6dbd4.ts (parse errors)
-error: Illegal break statement
-   |
- 1 | // @target: es2015
- 2 | break;
-   | ^^^^^^
-   |
-   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
-
-
+✓ test/parser/suite/ts/pass/1291f5d5e9a6dbd4.ts
 ✓ test/parser/suite/ts/pass/129ba87b3767828b.ts
 ✓ test/parser/suite/ts/pass/12c4b27082eb1060.ts
 ✓ test/parser/suite/ts/pass/12cda5712419da52.ts
-✗ test/parser/suite/ts/pass/12f22188052c4702.ts (parse errors)
-error: Illegal continue statement
-   |
- 7 | // naked continue not allowed
- 8 | continue;
-   | ^^^^^^^^^
- 9 | 
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/12f22188052c4702.ts
 ✓ test/parser/suite/ts/pass/12f2b6ba4d54a870.ts
 ✓ test/parser/suite/ts/pass/12fe48504f38d72f.ts
 ✓ test/parser/suite/ts/pass/1302f1412d2cd838.ts
@@ -976,20 +842,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/142edabb9603029b.ts
 ✓ test/parser/suite/ts/pass/1435c4ccd1e98125.module.ts
 ✓ test/parser/suite/ts/pass/14360699064a46df.ts
-✗ test/parser/suite/ts/pass/1436ae61f7a06758.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
- 3 | function Foo():Foo; // error
- 4 | function Foo(s:string):Foo; // error
-   |          ~~~ 'Foo' was first declared as a function here
- 5 | class Foo { // error
-   |       ^^^
-   |       ~~~ cannot be redeclared here
- 6 |     bar1() { /*WScript.Echo("bar1");*/ }
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/1436ae61f7a06758.ts
 ✓ test/parser/suite/ts/pass/143aa097cec2d947.ts
 ✓ test/parser/suite/ts/pass/144eda3c7e9c8526.ts
 ✓ test/parser/suite/ts/pass/145f78c94b8ac777.ts
@@ -1001,17 +854,7 @@ error: Identifier 'Foo' has already been declared
 ✓ test/parser/suite/ts/pass/1492ca60ceee8025.ts
 ✓ test/parser/suite/ts/pass/149cdf7e3e3f3243.ts
 ✓ test/parser/suite/ts/pass/149dc4e90a437cc7.ts
-✗ test/parser/suite/ts/pass/149e25c736add938.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
-10 | class B {
-11 |     constructor() { super(value => String(value)); }
-   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-12 | }
-   |
-   = help: Add an 'extends' clause to the class or remove the 'super()' call
-
-
+✓ test/parser/suite/ts/pass/149e25c736add938.ts
 ✓ test/parser/suite/ts/pass/14aaf89888bcf799.ts
 ✓ test/parser/suite/ts/pass/14bdc77257ab7267.ts
 ✓ test/parser/suite/ts/pass/14bfa63e069e694a.ts
@@ -1028,18 +871,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/150a5762db129f87.ts
 ✓ test/parser/suite/ts/pass/1513939fe2ec8d5d.ts
 ✓ test/parser/suite/ts/pass/152655c47dd6cdee.ts
-✗ test/parser/suite/ts/pass/15371163f95d91e1.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default 0;
-   | ~~~~~~~~~~~~~~~~~ first exported here
- 4 | export default function() {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/15371163f95d91e1.module.ts
 ✓ test/parser/suite/ts/pass/1541e016f58a1bb7.module.ts
 ✓ test/parser/suite/ts/pass/155ccd7411027472.ts
 ✓ test/parser/suite/ts/pass/155d3d592a11eeaf.ts
@@ -1056,19 +888,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/15a64eeea2f5de8a.module.ts
 ✓ test/parser/suite/ts/pass/15a9f31939ec4496.module.ts
 ✓ test/parser/suite/ts/pass/15ac3e88a72c0568.ts
-✗ test/parser/suite/ts/pass/15af09ecd27cc60c.ts (parse errors)
-error: Identifier 'bar' has already been declared
-   |
- 1 | // @target: es2015
- 2 | function bar(): string;
-   |          ~~~ 'bar' was first declared as a function here
- 3 | class bar {}
-   |       ^^^
-   |       ~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'bar'
-
-
+✓ test/parser/suite/ts/pass/15af09ecd27cc60c.ts
 ✓ test/parser/suite/ts/pass/15c234097493ff62.ts
 ✓ test/parser/suite/ts/pass/15c425cd232a78bf.ts
 ✓ test/parser/suite/ts/pass/15c759a753bd2a39.ts
@@ -1137,34 +957,12 @@ error: Expected '{' to start function body, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/171abf269996029a.ts
-✗ test/parser/suite/ts/pass/171d4598153404a6.module.ts (parse errors)
-error: 'with' statements are not allowed in strict mode
-   |
-68 | // @ts-ignore
-69 | with (_) {
-   | ^^^^^^^^^^^
-70 |     var y = _;
-   | ^^^^^^^^^^^^^^^
-71 | }
-   | ^
-72 | 
-   |
-
+✓ test/parser/suite/ts/pass/171d4598153404a6.module.ts
 ✓ test/parser/suite/ts/pass/171e2b3ac0488f27.ts
 ✓ test/parser/suite/ts/pass/171ec3500057b0e8.ts
 ✓ test/parser/suite/ts/pass/17317aa4a8cd36e4.ts
 ✓ test/parser/suite/ts/pass/17365036feedf060.ts
-✗ test/parser/suite/ts/pass/17387757f7d1ac52.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
-74 |         function inner() {
-75 |             super.publicFunc();
-   |             ^^^^^^^^^^^^^^^^
-76 |         }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/17387757f7d1ac52.ts
 ✓ test/parser/suite/ts/pass/174e006112b8ba55.ts
 ✗ test/parser/suite/ts/pass/174e56bdc12072c8.ts (parse errors)
 error: 'const' declarations must be initialized
@@ -1222,15 +1020,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/18d200b91d94dd87.ts
 ✓ test/parser/suite/ts/pass/18ddb0c7c9786a31.ts
 ✓ test/parser/suite/ts/pass/18e14e9af940963d.ts
-✗ test/parser/suite/ts/pass/18e4a08fa7f50fd9.ts (parse errors)
-error: 'arguments' is not allowed as a binding identifier in strict mode
-   |
- 3 | class c1 {
- 4 |     public foo(i: number, ...arguments) { //arguments is error
-   |                              ^^^^^^^^^
- 5 |         var arguments: any[]; // no error
-   |
-
+✓ test/parser/suite/ts/pass/18e4a08fa7f50fd9.ts
 ✓ test/parser/suite/ts/pass/18e6f11d7c4273e9.ts
 ✓ test/parser/suite/ts/pass/190649b6a3d82526.ts
 ✓ test/parser/suite/ts/pass/191103683eb3bcc4.module.ts
@@ -1242,14 +1032,7 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/195138849de2f032.ts
 ✓ test/parser/suite/ts/pass/19613f842df6f7d0.ts
 ✓ test/parser/suite/ts/pass/1964efbd22411bbb.ts
-✗ test/parser/suite/ts/pass/196a813ab9a08ea0.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 3 | "use strict";
- 4 | var v = { set foo(eval) { } }
-   |                   ^^^^
-   |
-
+✓ test/parser/suite/ts/pass/196a813ab9a08ea0.module.ts
 ✓ test/parser/suite/ts/pass/19718b8e01077af2.ts
 ✓ test/parser/suite/ts/pass/19790653fe8bc121.ts
 ✓ test/parser/suite/ts/pass/197b1d6b922bc2ba.ts
@@ -1265,20 +1048,7 @@ error: 'eval' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/19d3a6c40826d77a.ts
 ✓ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
 ✓ test/parser/suite/ts/pass/19d9761c28ff2511.ts
-✗ test/parser/suite/ts/pass/19dba5022f3d025e.module.ts (parse errors)
-error: Identifier 'getProp' has already been declared
-    |
-135 | 
-136 | declare function getProp<T, P0 extends keyof T & string, P1 extends keyof T[P0] & string, P2 extends keyof T[P0][P1] & string>(obj: T, path: `${P0}.${P1}.${P2}`): T[P0][P1][P2];
-    |                  ~~~~~~~ 'getProp' was first declared as a function here
-137 | declare function getProp<T, P0 extends keyof T & string, P1 extends keyof T[P0] & string>(obj: T, path: `${P0}.${P1}`): T[P0][P1];
-    |                  ^^^^^^^
-    |                  ~~~~~~~ cannot be redeclared here
-138 | declare function getProp<T, P0 extends keyof T & string>(obj: T, path: P0): T[P0];
-    |
-    = help: Consider removing or renaming this declaration of 'getProp'
-
-
+✓ test/parser/suite/ts/pass/19dba5022f3d025e.module.ts
 ✓ test/parser/suite/ts/pass/19e0fa86bd8f4eed.ts
 ✓ test/parser/suite/ts/pass/1a22af89b09071d5.module.ts
 ✓ test/parser/suite/ts/pass/1a237a6b32717820.ts
@@ -1296,15 +1066,7 @@ error: Identifier 'getProp' has already been declared
 ✓ test/parser/suite/ts/pass/1a7ead139cd2b6df.ts
 ✓ test/parser/suite/ts/pass/1a88f3f4d65d02b6.ts
 ✓ test/parser/suite/ts/pass/1a9199145784f4fc.ts
-✗ test/parser/suite/ts/pass/1a964a2c4756dc39.ts (parse errors)
-error: Private field '#method' must be declared in an enclosing class
-   |
-10 | console.log(C.getInstance().getField());
-11 | C.getInstance().#method; // Error
-   |                 ^^^^^^^
-12 | C.getInstance().#field; // Error
-   |
-
+✓ test/parser/suite/ts/pass/1a964a2c4756dc39.ts
 ✓ test/parser/suite/ts/pass/1a9a8faf00041376.ts
 ✓ test/parser/suite/ts/pass/1a9f5f182faeff58.ts
 ✓ test/parser/suite/ts/pass/1ab7c0a5f53ddb9b.ts
@@ -1370,17 +1132,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/1c45ea9d2183680a.ts
 ✓ test/parser/suite/ts/pass/1c48852f3aa9060f.ts
 ✓ test/parser/suite/ts/pass/1c4c49240f53f306.ts
-✗ test/parser/suite/ts/pass/1c513cb6a7aa521b.ts (parse errors)
-error: A class can only have one constructor
-   |
- 7 |     private c: number;
- 8 |     constructor(s: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 9 |     constructor(n: number);
-   |     ^^^^^^^^^^^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/1c513cb6a7aa521b.ts
 ✓ test/parser/suite/ts/pass/1c688d40f741045a.ts
 ✓ test/parser/suite/ts/pass/1c6f5aac0aa53df8.ts
 ✓ test/parser/suite/ts/pass/1c8a3856227244e0.module.ts
@@ -1392,17 +1144,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/1ca507b05cb305b7.ts
 ✓ test/parser/suite/ts/pass/1caca3e89451b18c.module.ts
 ✓ test/parser/suite/ts/pass/1cb373eaf0aa221c.ts
-✗ test/parser/suite/ts/pass/1cbaedb142c6af4d.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |     constructor(x) { }
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(y, x) { } // illegal, 2 constructor implementations
-   |     ^^^^^^^^^^^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/1cbaedb142c6af4d.ts
 ✓ test/parser/suite/ts/pass/1ccbf52a7fe932f4.ts
 ✓ test/parser/suite/ts/pass/1cddfe31e221267e.ts
 ✓ test/parser/suite/ts/pass/1cde432525ff1795.ts
@@ -1419,15 +1161,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/1d3059e57b106594.ts
 ✓ test/parser/suite/ts/pass/1d34f28bd5c15db7.ts
 ✓ test/parser/suite/ts/pass/1d376b616228a05f.ts
-✗ test/parser/suite/ts/pass/1d3d5d75833ab052.ts (parse errors)
-error: 'static' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 3 | class test {
- 4 |     constructor (static) { }
-   |                  ^^^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/1d3d5d75833ab052.ts
 ✓ test/parser/suite/ts/pass/1d481838779ddba2.ts
 ✓ test/parser/suite/ts/pass/1d526dbe415219ce.ts
 ✗ test/parser/suite/ts/pass/1d53219ff8c573e6.module.tsx (parse errors)
@@ -1468,18 +1202,7 @@ error: Expected '>' to close JSX opening element, but found '<'
 ✓ test/parser/suite/ts/pass/1e154736736175d6.ts
 ✓ test/parser/suite/ts/pass/1e1e4ab3b80e876b.ts
 ✓ test/parser/suite/ts/pass/1e205d0164efb0fd.ts
-✗ test/parser/suite/ts/pass/1e2da2bc48b1c713.module.ts (parse errors)
-error: Duplicate export of 'r5'
-   |
-21 | var i2: I;
-22 | export var r5: typeof i;
-   |            ~~~~~~~~~~~~ first exported here
-23 | export var r5: typeof i2;
-   |            ^^^^^^^^^^^^^
-   |            ~~~~~~~~~~~~~ exported again here
-24 | 
-   |
-
+✓ test/parser/suite/ts/pass/1e2da2bc48b1c713.module.ts
 ✓ test/parser/suite/ts/pass/1e3037086e240371.ts
 ✓ test/parser/suite/ts/pass/1e37b7d9bd37379a.ts
 ✓ test/parser/suite/ts/pass/1e401403bfa6bb03.ts
@@ -1540,17 +1263,7 @@ error: Duplicate export of 'r5'
 ✓ test/parser/suite/ts/pass/205f43562b316cad.ts
 ✓ test/parser/suite/ts/pass/2060d3550204c6b0.ts
 ✓ test/parser/suite/ts/pass/2062e1b78275bf05.ts
-✗ test/parser/suite/ts/pass/20635a741c16d166.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 |     foo: string;
- 4 |     constructor(x = 1); // error
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor() {
-   |     ^^^^^^^^^^^
- 6 |     }
-   |
-
+✓ test/parser/suite/ts/pass/20635a741c16d166.ts
 ✓ test/parser/suite/ts/pass/207ad207bcc5de2d.ts
 ✓ test/parser/suite/ts/pass/207d0875b0c4cc50.ts
 ✓ test/parser/suite/ts/pass/207e4701e7afa68a.ts
@@ -1582,20 +1295,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/2146136496b938db.ts
 ✓ test/parser/suite/ts/pass/2147efbe261ca30d.ts
 ✓ test/parser/suite/ts/pass/215decb76cdb19be.ts
-✗ test/parser/suite/ts/pass/2161d19d5017b837.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
-10 | // just want to make sure this one doesn't crash the compiler
-11 | function Foo();
-   |          ~~~ 'Foo' was first declared as a function here
-12 | class Foo {
-   |       ^^^
-   |       ~~~ cannot be redeclared here
-13 |  static bar;
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/2161d19d5017b837.ts
 ✓ test/parser/suite/ts/pass/216a1c138b692d90.ts
 ✓ test/parser/suite/ts/pass/216d6e4e5edcce21.ts
 ✓ test/parser/suite/ts/pass/2176f9086fac28c6.ts
@@ -1665,17 +1365,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/22c27b9ca3f14812.ts
 ✓ test/parser/suite/ts/pass/22c32ed2f15fde7d.module.tsx
 ✓ test/parser/suite/ts/pass/22c6a2110e25e2b0.ts
-✗ test/parser/suite/ts/pass/22c720a519ecf008.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
- 7 | class C extends Base {
- 8 |     [super.bar()]() { }
-   |      ^^^^^^^^^
- 9 | }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/22c720a519ecf008.ts
 ✓ test/parser/suite/ts/pass/22c7559c26cd9965.module.ts
 ✓ test/parser/suite/ts/pass/22cc879690cdb421.ts
 ✓ test/parser/suite/ts/pass/22d1234bd3f13f43.ts
@@ -1766,15 +1456,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/25518cb8f10a850d.tsx
 ✓ test/parser/suite/ts/pass/2555be5980fe6f27.ts
 ✓ test/parser/suite/ts/pass/2560dfd6956266ff.ts
-✗ test/parser/suite/ts/pass/257c2a538ca20656.module.ts (parse errors)
-error: 'arguments' is not allowed as a binding identifier in strict mode
-   |
-26 | /// shadowed arguments
-27 | function f1(arguments, ...a) {
-   |             ^^^^^^^^^
-28 | }
-   |
-
+✓ test/parser/suite/ts/pass/257c2a538ca20656.module.ts
 ✓ test/parser/suite/ts/pass/257f4b2fffdb7735.ts
 ✓ test/parser/suite/ts/pass/2589569ef742968f.ts
 ✓ test/parser/suite/ts/pass/258fba10aaf5d9be.ts
@@ -1798,28 +1480,8 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/25f7bedfddd39368.ts
 ✓ test/parser/suite/ts/pass/25fa3e845a281027.ts
 ✓ test/parser/suite/ts/pass/25fb739da6e75feb.ts
-✗ test/parser/suite/ts/pass/25fcb2a06448b4e4.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |    constructor();
-   |    ~~~~~~~~~~~ first constructor defined here
- 5 |    constructor(a) { }
-   |    ^^^^^^^^^^^
- 6 | }
-   |
-
-✗ test/parser/suite/ts/pass/25ffcc97e3e18828.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class FooBase {
- 3 |     constructor(s: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(n: number);
-   |     ^^^^^^^^^^^
- 5 |     constructor(x: any) {
-   |
-
+✓ test/parser/suite/ts/pass/25fcb2a06448b4e4.ts
+✓ test/parser/suite/ts/pass/25ffcc97e3e18828.ts
 ✓ test/parser/suite/ts/pass/2617f91b8f4b7383.ts
 ✓ test/parser/suite/ts/pass/26333e1c091907a8.tsx
 ✓ test/parser/suite/ts/pass/2638521365de607d.ts
@@ -1860,33 +1522,14 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/2724ffaa3588111f.ts
 ✓ test/parser/suite/ts/pass/272d2f70994a33d4.ts
 ✓ test/parser/suite/ts/pass/272d76b6369a1116.ts
-✗ test/parser/suite/ts/pass/273461f5fcc43446.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default function foo(value: number): number
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 4 | export default function foo(value: string): string
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 5 | export default function foo(value: string | number): string | number {
-   |
-
+✓ test/parser/suite/ts/pass/273461f5fcc43446.module.ts
 ✓ test/parser/suite/ts/pass/273707cff5c289c0.module.ts
 ✓ test/parser/suite/ts/pass/27394d67257c09d7.ts
 ✓ test/parser/suite/ts/pass/2750cde7c3ebc69a.ts
 ✓ test/parser/suite/ts/pass/2754093d3c8de181.ts
 ✓ test/parser/suite/ts/pass/275a75926b385c47.module.ts
 ✓ test/parser/suite/ts/pass/276f9f5dfb56ef2b.ts
-✗ test/parser/suite/ts/pass/2770ef90e9c8f4e0.ts (parse errors)
-error: Private field '#method' must be declared in an enclosing class
-   |
-13 | }
-14 | new A2().#method(); // Error
-   |          ^^^^^^^
-15 | 
-   |
-
+✓ test/parser/suite/ts/pass/2770ef90e9c8f4e0.ts
 ✓ test/parser/suite/ts/pass/277a72b3f4f37f3f.ts
 ✓ test/parser/suite/ts/pass/2780a698df394986.ts
 ✗ test/parser/suite/ts/pass/2781638ea77a8ba5.ts (parse errors)
@@ -1935,15 +1578,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/287b6d7763069aa8.ts
 ✓ test/parser/suite/ts/pass/287f2976ad07835c.ts
 ✓ test/parser/suite/ts/pass/288145ec3a590b27.ts
-✗ test/parser/suite/ts/pass/28882c659f08470f.ts (parse errors)
-error: Private field '#unknown' must be declared in an enclosing class
-   |
-20 |                 x.#bar;
-21 |                 x.#unknown; // Error
-   |                   ^^^^^^^^
-22 |             }
-   |
-
+✓ test/parser/suite/ts/pass/28882c659f08470f.ts
 ✓ test/parser/suite/ts/pass/2892f461b7b2f66e.ts
 ✓ test/parser/suite/ts/pass/2894b3a78ee39406.ts
 ✓ test/parser/suite/ts/pass/2898e217314ee819.ts
@@ -2051,15 +1686,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/2ae80aa041c07650.ts
 ✓ test/parser/suite/ts/pass/2aed9c0160560cc3.ts
 ✓ test/parser/suite/ts/pass/2af2c5751f2c284f.ts
-✗ test/parser/suite/ts/pass/2af5479d1ecf91fd.ts (parse errors)
-error: Private field '#foo' must be declared in an enclosing class
-   |
- 7 | 
- 8 | new A().#foo = 4;               // Error
-   |         ^^^^
- 9 | 
-   |
-
+✓ test/parser/suite/ts/pass/2af5479d1ecf91fd.ts
 ✓ test/parser/suite/ts/pass/2b0fd6caa1a1a3a0.ts
 ✓ test/parser/suite/ts/pass/2b1bb313d526eacf.ts
 ✓ test/parser/suite/ts/pass/2b1c138bfbe01188.ts
@@ -2129,24 +1756,8 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/2c7dc4fe7a454b73.module.ts
 ✓ test/parser/suite/ts/pass/2c7f47593b442fee.ts
 ✓ test/parser/suite/ts/pass/2c8294dd80dc1aaf.module.ts
-✗ test/parser/suite/ts/pass/2c82b050900068c0.ts (parse errors)
-error: Private field '#method' must be declared in an enclosing class
-   |
-10 | console.log(C.getClass().getField());
-11 | C.getClass().#method; // Error
-   |              ^^^^^^^
-12 | C.getClass().#field; // Error
-   |
-
-✗ test/parser/suite/ts/pass/2c84337734f4a8c5.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 3 | "use strict";
- 4 | function f(eval) {
-   |            ^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/2c82b050900068c0.ts
+✓ test/parser/suite/ts/pass/2c84337734f4a8c5.module.ts
 ✓ test/parser/suite/ts/pass/2c8555978ed9dc76.ts
 ✓ test/parser/suite/ts/pass/2cacc223289f0bf1.ts
 ✓ test/parser/suite/ts/pass/2caed62411afc0e5.ts
@@ -2181,16 +1792,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/2d547ad7c82b8255.ts
 ✓ test/parser/suite/ts/pass/2d5fd7999a2cd4b8.ts
 ✓ test/parser/suite/ts/pass/2d644220237aad0a.ts
-✗ test/parser/suite/ts/pass/2d6cbe29890859ee.module.ts (parse errors)
-error: 'with' statements are not allowed in strict mode
-   |
- 2 | "use strict";
- 3 | with (a) {
-   | ^^^^^^^^^^^
- 4 | }
-   | ^
-   |
-
+✓ test/parser/suite/ts/pass/2d6cbe29890859ee.module.ts
 ✓ test/parser/suite/ts/pass/2d7b656f7e2c55bd.ts
 ✓ test/parser/suite/ts/pass/2d7cf33c7d69558b.ts
 ✓ test/parser/suite/ts/pass/2d7feda02c5ff5d6.ts
@@ -2206,19 +1808,7 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/ts/pass/2dcc4a4f77258d1e.ts
 ✓ test/parser/suite/ts/pass/2dce64f78f3bf080.ts
 ✓ test/parser/suite/ts/pass/2dcef96a7b736812.ts
-✗ test/parser/suite/ts/pass/2dd50e8c1ecbb459.ts (parse errors)
-error: Cannot use 'export' declaration outside a module
-   |
- 3 |     namespace M { }
- 4 |     export namespace N {
-   |     ^^^^^^^^^^^^^^^^^^^^^
- 5 |         export interface I { }
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- 6 |     }
-   | ^^^^^
- 7 | 
-   |
-
+✓ test/parser/suite/ts/pass/2dd50e8c1ecbb459.ts
 ✓ test/parser/suite/ts/pass/2de1d4e251a91c18.ts
 ✓ test/parser/suite/ts/pass/2de22f2e228175e5.module.ts
 ✓ test/parser/suite/ts/pass/2de2c001b685b797.ts
@@ -2226,27 +1816,12 @@ error: Cannot use 'export' declaration outside a module
 ✓ test/parser/suite/ts/pass/2deac57f2a7e7f51.ts
 ✓ test/parser/suite/ts/pass/2dee771216d8b98b.ts
 ✓ test/parser/suite/ts/pass/2e01999294371d8b.ts
-✗ test/parser/suite/ts/pass/2e023c81924ae1f0.module.ts (parse errors)
-error: Export 'ns' is not defined
-   |
-11 | 
-12 | export {ns, AnEnum, ns as FooBar, AnEnum as BarEnum};
-   |         ^^
-   |
-
+✓ test/parser/suite/ts/pass/2e023c81924ae1f0.module.ts
 ✓ test/parser/suite/ts/pass/2e1123cdf8b48003.module.ts
 ✓ test/parser/suite/ts/pass/2e1cb6d9fa6adb46.ts
 ✓ test/parser/suite/ts/pass/2e21001f99f8767f.ts
 ✓ test/parser/suite/ts/pass/2e2d3854ab2da4b9.ts
-✗ test/parser/suite/ts/pass/2e2ffd4369575eef.ts (parse errors)
-error: 'new.target' is only valid inside functions, class field initializers, or static blocks
-   |
- 2 | // @target: es5, es2015
- 3 | const a = new.target;
-   |           ^^^^^^^^^^
- 4 | const b = () => new.target;
-   |
-
+✓ test/parser/suite/ts/pass/2e2ffd4369575eef.ts
 ✓ test/parser/suite/ts/pass/2e3afd4beae14763.ts
 ✓ test/parser/suite/ts/pass/2e3c6a0b7d60f072.ts
 ✓ test/parser/suite/ts/pass/2e4ee978f43dfc2d.ts
@@ -2262,17 +1837,7 @@ error: 'new.target' is only valid inside functions, class field initializers, or
 ✓ test/parser/suite/ts/pass/2e9a53cbadd3f567.ts
 ✓ test/parser/suite/ts/pass/2ebd4551c16cb2f0.ts
 ✓ test/parser/suite/ts/pass/2ebec110a688a783.ts
-✗ test/parser/suite/ts/pass/2ec0485163d80598.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | declare class C2 {
- 3 |  constructor(public p1:string); // ERROR
-   |  ~~~~~~~~~~~ first constructor defined here
- 4 |  constructor(private p2:number); // ERROR
-   |  ^^^^^^^^^^^
- 5 |  constructor(public p3:any); // ERROR
-   |
-
+✓ test/parser/suite/ts/pass/2ec0485163d80598.ts
 ✓ test/parser/suite/ts/pass/2ec8b860fcc95633.module.ts
 ✓ test/parser/suite/ts/pass/2ecb3277df7bf7e1.module.ts
 ✓ test/parser/suite/ts/pass/2edce6c487891199.ts
@@ -2291,17 +1856,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/2f01f9da5eb52f73.ts
 ✓ test/parser/suite/ts/pass/2f04d014d6d102bc.ts
 ✓ test/parser/suite/ts/pass/2f07f10a2128623f.ts
-✗ test/parser/suite/ts/pass/2f1f1c6a26374593.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class C {
- 3 |     constructor(y: any)
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(x: number) {
-   |     ^^^^^^^^^^^
- 5 |     }
-   |
-
+✓ test/parser/suite/ts/pass/2f1f1c6a26374593.ts
 ✓ test/parser/suite/ts/pass/2f2a3ebbb1fdea80.module.ts
 ✓ test/parser/suite/ts/pass/2f3ec3bdfe32c794.ts
 ✓ test/parser/suite/ts/pass/2f3edb389b392a0b.ts
@@ -2360,17 +1915,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/3069cff3a5e1ae3e.ts
 ✓ test/parser/suite/ts/pass/307a38cb469ad64c.ts
 ✓ test/parser/suite/ts/pass/307a8029a4a022e4.ts
-✗ test/parser/suite/ts/pass/307b3eed4091b821.module.ts (parse errors)
-error: A class can only have one constructor
-    |
-368 | export class C7_public {
-369 |     constructor (c7_c1: C5_private); // error
-    |     ~~~~~~~~~~~ first constructor defined here
-370 |     constructor (c7_c2: C6_public);
-    |     ^^^^^^^^^^^
-371 |     constructor (c7_c1_2: any) {
-    |
-
+✓ test/parser/suite/ts/pass/307b3eed4091b821.module.ts
 ✓ test/parser/suite/ts/pass/307b74e917dfcbef.ts
 ✓ test/parser/suite/ts/pass/309acd53029c80e1.ts
 ✓ test/parser/suite/ts/pass/309ecfaefa57fed8.ts
@@ -2408,15 +1953,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/3136ade1694d9423.ts
 ✓ test/parser/suite/ts/pass/313708e561ef2437.ts
 ✓ test/parser/suite/ts/pass/313cd33901b22d6b.ts
-✗ test/parser/suite/ts/pass/313f15e777d766b7.ts (parse errors)
-error: Private field '#bar' must be declared in an enclosing class
-   |
-11 |         thing.#baz;
-12 |         thing.#bar; // Error
-   |               ^^^^
-13 |         thing.#foo();
-   |
-
+✓ test/parser/suite/ts/pass/313f15e777d766b7.ts
 ✓ test/parser/suite/ts/pass/314190ba75363723.ts
 ✓ test/parser/suite/ts/pass/314c0c9699ae91a2.ts
 ✓ test/parser/suite/ts/pass/31609a682b925275.ts
@@ -2508,15 +2045,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/33226cf7308f123a.ts
 ✓ test/parser/suite/ts/pass/33252eb6e068ad03.ts
 ✓ test/parser/suite/ts/pass/333e38bd214b2014.ts
-✗ test/parser/suite/ts/pass/334202a257523643.ts (parse errors)
-error: 'arguments' is not allowed as a binding identifier in strict mode
-   |
- 4 | class C {
- 5 |     f(arguments) {
-   |       ^^^^^^^^^
- 6 |         var a = () => arguments;
-   |
-
+✓ test/parser/suite/ts/pass/334202a257523643.ts
 ✓ test/parser/suite/ts/pass/3349572b26680fc2.ts
 ✓ test/parser/suite/ts/pass/335ebd74b4ebf3b1.ts
 ✓ test/parser/suite/ts/pass/335fc59e2612a107.ts
@@ -2578,15 +2107,7 @@ error: Unexpected token '{' as class element key
 
 
 ✓ test/parser/suite/ts/pass/34c0e921ae71e348.ts
-✗ test/parser/suite/ts/pass/34c262272b11f2f3.ts (parse errors)
-error: 'private' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 4 | class Foo {
- 5 |     constructor(private, public, static) {
-   |                 ^^^^^^^
- 6 |         private = public = static;
-   |
-
+✓ test/parser/suite/ts/pass/34c262272b11f2f3.ts
 ✓ test/parser/suite/ts/pass/34c3737cc4ae80a5.ts
 ✓ test/parser/suite/ts/pass/34c8db0eddc58ce2.ts
 ✓ test/parser/suite/ts/pass/34ca41cc99ee4d81.ts
@@ -2622,17 +2143,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/351af375b16d6d94.ts
 ✓ test/parser/suite/ts/pass/3525612caaf81603.ts
 ✓ test/parser/suite/ts/pass/352f067618cfc041.ts
-✗ test/parser/suite/ts/pass/3536849d391da08d.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
-10 |             function inner() {
-11 |                 super.sayHello();
-   |                 ^^^^^^^^^^^^^^
-12 |             }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/3536849d391da08d.ts
 ✓ test/parser/suite/ts/pass/353c10dc8d526c39.ts
 ✓ test/parser/suite/ts/pass/3547a8f3f46d1071.ts
 ✓ test/parser/suite/ts/pass/3549d0e8540395a8.ts
@@ -2704,15 +2215,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/377ee16a0c479ea9.ts
 ✓ test/parser/suite/ts/pass/378783178c27cd76.ts
 ✓ test/parser/suite/ts/pass/3788f9daa437912e.ts
-✗ test/parser/suite/ts/pass/37903a588d3e49f0.module.ts (parse errors)
-error: 'package' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 2 | "use strict"
- 3 | import * as package from "./1"
-   |             ^^^^^^^
- 4 | import {foo as private} from "./1"
-   |
-
+✓ test/parser/suite/ts/pass/37903a588d3e49f0.module.ts
 ✓ test/parser/suite/ts/pass/3798743df342c94e.ts
 ✓ test/parser/suite/ts/pass/379d8c50471e3658.ts
 ✗ test/parser/suite/ts/pass/37b2f4b2b3688ed6.ts (parse errors)
@@ -2824,32 +2327,12 @@ error: Unexpected token '@' in binding pattern
 
 
 ✓ test/parser/suite/ts/pass/39f07b4dac39e9e0.ts
-✗ test/parser/suite/ts/pass/39f2fa36d459d80d.ts (parse errors)
-error: A class can only have one constructor
-   |
-59 | class Foo3 {
-60 |     constructor(_this: string); // no code gen - no error
-   |     ~~~~~~~~~~~ first constructor defined here
-61 |     constructor(_this: number); // no code gen - no error
-   |     ^^^^^^^^^^^
-62 |     constructor(_this: any) { // Error
-   |
-
+✓ test/parser/suite/ts/pass/39f2fa36d459d80d.ts
 ✓ test/parser/suite/ts/pass/39fcc7375de21c23.ts
 ✓ test/parser/suite/ts/pass/3a046a56336f644e.ts
 ✓ test/parser/suite/ts/pass/3a0b95bc3078c98d.ts
 ✓ test/parser/suite/ts/pass/3a0d3c34b6bccab4.ts
-✗ test/parser/suite/ts/pass/3a0e45519904869b.ts (parse errors)
-error: Illegal break statement
-   |
- 7 | // naked break not allowed
- 8 | break;
-   | ^^^^^^
- 9 | 
-   |
-   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
-
-
+✓ test/parser/suite/ts/pass/3a0e45519904869b.ts
 ✓ test/parser/suite/ts/pass/3a1d201f17b32701.ts
 ✓ test/parser/suite/ts/pass/3a2e3c16f2511f5d.ts
 ✓ test/parser/suite/ts/pass/3a31da615f692092.module.ts
@@ -2865,17 +2348,7 @@ error: Illegal break statement
 ✓ test/parser/suite/ts/pass/3a7005f0690599fc.ts
 ✓ test/parser/suite/ts/pass/3a80c7d58b7c57b6.ts
 ✓ test/parser/suite/ts/pass/3a9989fc8e61f47b.ts
-✗ test/parser/suite/ts/pass/3aa14e185acb79b4.ts (parse errors)
-error: A class can only have one constructor
-   |
- 4 | declare class C {
- 5 |     constructor(x: "hi");
-   |     ~~~~~~~~~~~ first constructor defined here
- 6 |     constructor(x: "foo");
-   |     ^^^^^^^^^^^
- 7 |     constructor(x: number);
-   |
-
+✓ test/parser/suite/ts/pass/3aa14e185acb79b4.ts
 ✓ test/parser/suite/ts/pass/3aa1e3b9e78afcbe.ts
 ✓ test/parser/suite/ts/pass/3aa6496b4a7d2354.ts
 ✓ test/parser/suite/ts/pass/3ab8edb4184f2dfc.ts
@@ -2937,33 +2410,13 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/3bd78aeea64eb0c0.ts
 ✓ test/parser/suite/ts/pass/3bd7a6668b64015d.ts
 ✓ test/parser/suite/ts/pass/3bdc1fe416230c1e.ts
-✗ test/parser/suite/ts/pass/3be18cefeb9cd727.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class Foo {
- 3 |     constructor(s: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(n: number);
-   |     ^^^^^^^^^^^
- 5 |     constructor(x: any) {
-   |
-
+✓ test/parser/suite/ts/pass/3be18cefeb9cd727.ts
 ✓ test/parser/suite/ts/pass/3bf67897627ecaa9.ts
 ✓ test/parser/suite/ts/pass/3bfac6403a65d163.module.ts
 ✓ test/parser/suite/ts/pass/3c05b9e68c432ffd.ts
 ✓ test/parser/suite/ts/pass/3c1262c7cc20b146.ts
 ✓ test/parser/suite/ts/pass/3c13b3df67592777.ts
-✗ test/parser/suite/ts/pass/3c16aa738bf4e46d.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 9 |         var r3 = () => { super(); }
-10 |         var r4 = function () { super(); }
-   |                                ^^^^^^^
-11 |         var r5 = {
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/3c16aa738bf4e46d.ts
 ✓ test/parser/suite/ts/pass/3c1e79ca6b7c6da8.ts
 ✓ test/parser/suite/ts/pass/3c239e8a380dbdc5.ts
 ✓ test/parser/suite/ts/pass/3c23a5a217c7c550.ts
@@ -3043,33 +2496,10 @@ error: 'const' declarations in for loop initializer must be initialized
 ✓ test/parser/suite/ts/pass/3e262d5450d13879.ts
 ✓ test/parser/suite/ts/pass/3e28d8c2b6216994.ts
 ✓ test/parser/suite/ts/pass/3e2a20dd974adbb8.ts
-✗ test/parser/suite/ts/pass/3e2b3a3deb1860f4.ts (parse errors)
-error: A class can only have one constructor
-   |
-17 | class b3 extends a {
-18 |     constructor(_super: number); // no code gen - no error
-   |     ~~~~~~~~~~~ first constructor defined here
-19 |     constructor(_super: string);// no code gen - no error
-   |     ^^^^^^^^^^^
-20 |     constructor(_super: any) { // should be error
-   |
-
+✓ test/parser/suite/ts/pass/3e2b3a3deb1860f4.ts
 ✓ test/parser/suite/ts/pass/3e35e754d49c47c3.ts
 ✓ test/parser/suite/ts/pass/3e373c841d82501c.ts
-✗ test/parser/suite/ts/pass/3e3f3cc69b9b3392.module.ts (parse errors)
-error: Identifier 'pipe' has already been declared
-   |
- 3 | 
- 4 | declare function pipe<A extends any[], B>(ab: (...args: A) => B): (...args: A) => B;
-   |                  ~~~~ 'pipe' was first declared as a function here
- 5 | declare function pipe<A extends any[], B, C>(ab: (...args: A) => B, bc: (b: B) => C): (...args: A) => C;
-   |                  ^^^^
-   |                  ~~~~ cannot be redeclared here
- 6 | declare function pipe<A extends any[], B, C, D>(ab: (...args: A) => B, bc: (b: B) => C, cd: (c: C) => D): (...args: A) => D;
-   |
-   = help: Consider removing or renaming this declaration of 'pipe'
-
-
+✓ test/parser/suite/ts/pass/3e3f3cc69b9b3392.module.ts
 ✓ test/parser/suite/ts/pass/3e4f59684f533541.ts
 ✓ test/parser/suite/ts/pass/3e5ce7301ef3754d.ts
 ✓ test/parser/suite/ts/pass/3e5d1967be8fe04d.ts
@@ -3093,14 +2523,7 @@ error: Identifier 'pipe' has already been declared
 ✓ test/parser/suite/ts/pass/3ef240f74d6f7692.ts
 ✓ test/parser/suite/ts/pass/3ef9c1f4cc8df545.ts
 ✓ test/parser/suite/ts/pass/3efa6d47daa2cb47.ts
-✗ test/parser/suite/ts/pass/3f015840dca0db8d.module.ts (parse errors)
-error: 'yield' is reserved in strict mode and cannot be used as an identifier
-   |
- 2 | "use strict";
- 3 | yield(foo);
-   | ^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/3f015840dca0db8d.module.ts
 ✓ test/parser/suite/ts/pass/3f1774e9702f6aeb.ts
 ✓ test/parser/suite/ts/pass/3f2557055abf4faf.ts
 ✓ test/parser/suite/ts/pass/3f26ab33e0cc1407.ts
@@ -3223,28 +2646,13 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/4185f652d6be3854.ts
 ✓ test/parser/suite/ts/pass/419794102dd44beb.ts
 ✓ test/parser/suite/ts/pass/419c38cbd28dea87.ts
-✗ test/parser/suite/ts/pass/419ed0aaa5ff7c38.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 3 | // Should be an error
- 4 | for (let let of [1,2,3]) {}
-   |          ^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/419ed0aaa5ff7c38.ts
 ✓ test/parser/suite/ts/pass/41aa6401e2979187.ts
 ✓ test/parser/suite/ts/pass/41cc2be180561c61.ts
 ✓ test/parser/suite/ts/pass/41dd6efdeda9c9bb.ts
 ✓ test/parser/suite/ts/pass/41df92b474c819dd.ts
 ✓ test/parser/suite/ts/pass/41ed93761c3540a1.ts
-✗ test/parser/suite/ts/pass/41f10158a8b17fed.module.ts (parse errors)
-error: Export 'Foo' is not defined
-   |
- 5 | import Foo = SomeNonExistingName
- 6 | export {Foo}
-   |         ^^^
-   |
-
+✓ test/parser/suite/ts/pass/41f10158a8b17fed.module.ts
 ✓ test/parser/suite/ts/pass/41f7fff2022a1e56.ts
 ✓ test/parser/suite/ts/pass/420753afd117e975.ts
 ✓ test/parser/suite/ts/pass/4211b2e16063fa48.ts
@@ -3302,18 +2710,7 @@ error: Expected ';' after class field, but found 'is'
 ✓ test/parser/suite/ts/pass/4350b9ba2c553948.ts
 ✓ test/parser/suite/ts/pass/435368ecfb9a77ef.ts
 ✓ test/parser/suite/ts/pass/435705dcfd5ab04e.ts
-✗ test/parser/suite/ts/pass/4357127d6a7ebafa.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 3 | const foo = 1
- 4 | export default foo
-   | ~~~~~~~~~~~~~~~~~~ first exported here
- 5 | export default class Foo {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 6 | 
-   |
-
+✓ test/parser/suite/ts/pass/4357127d6a7ebafa.module.ts
 ✓ test/parser/suite/ts/pass/435cf26cb52b4903.module.ts
 ✓ test/parser/suite/ts/pass/435ecad7017854ee.ts
 ✓ test/parser/suite/ts/pass/4364fbea7db51ea0.ts
@@ -3366,17 +2763,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/445543b316e530cc.ts
 ✓ test/parser/suite/ts/pass/445d597350a8f66d.ts
 ✓ test/parser/suite/ts/pass/446db8a33c067c22.ts
-✗ test/parser/suite/ts/pass/447eebd15f70c46d.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 6 | class D extends C {
- 7 |     static c = super();
-   |                ^^^^^^^
- 8 | }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/447eebd15f70c46d.ts
 ✓ test/parser/suite/ts/pass/449700773f14a53c.ts
 ✓ test/parser/suite/ts/pass/44a52010b961cc0d.ts
 ✓ test/parser/suite/ts/pass/44a674c4cd1c5372.ts
@@ -3446,15 +2833,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/4664ef0bcdb16e36.ts
 ✓ test/parser/suite/ts/pass/466f69ccdf9948af.ts
 ✓ test/parser/suite/ts/pass/46702ade4840759d.ts
-✗ test/parser/suite/ts/pass/467104d2ed9fdabe.module.ts (parse errors)
-error: 'export' declaration may only appear at the top level
-   |
- 3 | export function foo() {
- 4 |    export var x = this;
-   |    ^^^^^^^^^^^^^^^^^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/467104d2ed9fdabe.module.ts
 ✓ test/parser/suite/ts/pass/467a77cb53a5f247.ts
 ✓ test/parser/suite/ts/pass/4681c0bd4d890351.ts
 ✓ test/parser/suite/ts/pass/468a5c79239d5c3a.ts
@@ -3499,14 +2878,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/4750260fe5b1ae88.ts
 ✓ test/parser/suite/ts/pass/477269f8d6f61e73.ts
 ✓ test/parser/suite/ts/pass/47777b76f2419ea9.ts
-✗ test/parser/suite/ts/pass/47807c6ae2571454.module.ts (parse errors)
-error: Deleting a variable in strict mode is not allowed
-   |
- 3 | var a;
- 4 | delete a;
-   | ^^^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/47807c6ae2571454.module.ts
 ✓ test/parser/suite/ts/pass/47822a4e7e2a5168.ts
 ✓ test/parser/suite/ts/pass/47885b0d35bdd9a5.ts
 ✓ test/parser/suite/ts/pass/478b7985c5f05019.ts
@@ -3558,15 +2930,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/481865977dfb3cf8.ts
 ✓ test/parser/suite/ts/pass/48288ac0b2e3a6a1.ts
 ✓ test/parser/suite/ts/pass/482d5a1b9c6c5914.ts
-✗ test/parser/suite/ts/pass/48322585650cd3f8.ts (parse errors)
-error: Cannot break to label 'target' across function boundaries
-   |
- 5 |     while (true) {
- 6 |       break target;
-   |       ^^^^^^^^^^^^^
- 7 |     }
-   |
-
+✓ test/parser/suite/ts/pass/48322585650cd3f8.ts
 ✓ test/parser/suite/ts/pass/48367c8bdf6f1ad9.ts
 ✓ test/parser/suite/ts/pass/4838a987793853f2.ts
 ✓ test/parser/suite/ts/pass/48396d5cef744600.ts
@@ -3603,17 +2967,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 
 ✓ test/parser/suite/ts/pass/48e49630cbdb9b40.ts
-✗ test/parser/suite/ts/pass/48eb3c8e9a93319e.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class C1 {
- 3 |     constructor(public p1:string); // ERROR
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(private p2:number); // ERROR
-   |     ^^^^^^^^^^^
- 5 |     constructor(public p3:any) {} // OK
-   |
-
+✓ test/parser/suite/ts/pass/48eb3c8e9a93319e.ts
 ✓ test/parser/suite/ts/pass/48f8551f71118aeb.ts
 ✓ test/parser/suite/ts/pass/49083ca0231f3850.module.ts
 ✓ test/parser/suite/ts/pass/491844c2ee3d81b3.ts
@@ -3673,22 +3027,7 @@ error: Expected ';', ',', or newline between type members, but found '='
 ✓ test/parser/suite/ts/pass/4a7561a950bf6ebb.ts
 ✓ test/parser/suite/ts/pass/4a78875ce9e16d1c.ts
 ✓ test/parser/suite/ts/pass/4a7de41ad03273d1.ts
-✗ test/parser/suite/ts/pass/4a8d51db37175e4b.ts (parse errors)
-error: Identifier 'b' has already been declared
-   |
- 8 | class C {}
- 9 | (({ [class extends C { static x = 1 }.x]: b = "" }) => { var C; })();
-   |                                           ~ 'b' was first declared as a class here
-10 | 
-11 | const x = "";
-12 | (({ [class extends C { static x = 1 }.x]: b = "" }, d = x) => { var x; })();
-   |                                           ^
-   |                                           ~ cannot be redeclared here
-13 | 
-   |
-   = help: Consider removing or renaming this declaration of 'b'
-
-
+✓ test/parser/suite/ts/pass/4a8d51db37175e4b.ts
 ✓ test/parser/suite/ts/pass/4a9004f5d7772ece.ts
 ✓ test/parser/suite/ts/pass/4a9450d42bf7f35a.ts
 ✓ test/parser/suite/ts/pass/4a96911a2caf9550.ts
@@ -3767,15 +3106,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/4c6db6ec91ec6224.ts
 ✓ test/parser/suite/ts/pass/4c888ac384f54969.module.ts
 ✓ test/parser/suite/ts/pass/4c888bb5e2fa9e79.ts
-✗ test/parser/suite/ts/pass/4c9259f10a5f7ac8.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-10 |     static method(x: Derived) {
-11 |         console.log(x.#prop);
-   |                       ^^^^^
-12 |     }
-   |
-
+✓ test/parser/suite/ts/pass/4c9259f10a5f7ac8.ts
 ✓ test/parser/suite/ts/pass/4ca5fd06454f1d29.ts
 ✓ test/parser/suite/ts/pass/4cab47efc68df372.ts
 ✓ test/parser/suite/ts/pass/4cb701a3bacc3316.ts
@@ -3828,17 +3159,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/4e04119e3e851e68.ts
 ✓ test/parser/suite/ts/pass/4e0c6094a2930bf0.ts
 ✓ test/parser/suite/ts/pass/4e19a60f5178bddb.ts
-✗ test/parser/suite/ts/pass/4e1bd59f154b01db.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |    constructor(a = 4);
-   |    ~~~~~~~~~~~ first constructor defined here
- 5 |    constructor(a, b) { }
-   |    ^^^^^^^^^^^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/4e1bd59f154b01db.ts
 ✓ test/parser/suite/ts/pass/4e385b917b140f9f.ts
 ✓ test/parser/suite/ts/pass/4e42fe720297a656.ts
 ✓ test/parser/suite/ts/pass/4e48b6962644051c.ts
@@ -3910,15 +3231,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/4fa5c7c8cd3cb2e8.ts
 ✓ test/parser/suite/ts/pass/4fb4a3d6ff87f00d.tsx
 ✓ test/parser/suite/ts/pass/4fbb6946b81eb80b.ts
-✗ test/parser/suite/ts/pass/4fbe0b328fa8af31.ts (parse errors)
-error: 'await using' is not allowed at the top level of a script
-   |
- 6 | 
- 7 | await using x = null;
-   | ^^^^^^^^^^^^^^^^^^^^^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/4fbe0b328fa8af31.ts
 ✓ test/parser/suite/ts/pass/4fbf108370bba7ec.ts
 ✓ test/parser/suite/ts/pass/4fcc600a991fdab5.ts
 ✓ test/parser/suite/ts/pass/4fcfc708b72dc43a.ts
@@ -3930,19 +3243,7 @@ error: 'await using' is not allowed at the top level of a script
 ✓ test/parser/suite/ts/pass/500e4e8a14d75df9.ts
 ✓ test/parser/suite/ts/pass/5017ab11cdfd6b4b.ts
 ✓ test/parser/suite/ts/pass/502eaa610a98946d.ts
-✗ test/parser/suite/ts/pass/50332d89997c6db8.module.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
- 3 | export type Foo = number;
- 4 | export function Foo(): number;
-   |                 ~~~ 'Foo' was first declared as a function here
- 5 | export function Foo(): any {}
-   |                 ^^^
-   |                 ~~~ cannot be redeclared here
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/50332d89997c6db8.module.ts
 ✓ test/parser/suite/ts/pass/503f2f202b93fa0e.ts
 ✓ test/parser/suite/ts/pass/5041ade1e954e259.ts
 ✓ test/parser/suite/ts/pass/5042bb49e3ff3f8b.ts
@@ -4044,17 +3345,7 @@ error: Getter must have no parameters
 ✓ test/parser/suite/ts/pass/5272a2b3e0f82eb2.ts
 ✓ test/parser/suite/ts/pass/5281690ffdba8688.module.ts
 ✓ test/parser/suite/ts/pass/5284d91f31892061.ts
-✗ test/parser/suite/ts/pass/5286e2bbaba0939b.ts (parse errors)
-error: Illegal break statement
-   |
- 3 |   function f() {
- 4 |     break;
-   |     ^^^^^^
- 5 |   }
-   |
-   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
-
-
+✓ test/parser/suite/ts/pass/5286e2bbaba0939b.ts
 ✓ test/parser/suite/ts/pass/5297467285a5e33c.ts
 ✓ test/parser/suite/ts/pass/529c65d4774dee65.ts
 ✓ test/parser/suite/ts/pass/529f0e2c11fd3cf1.ts
@@ -4101,20 +3392,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/53c40503405e480a.ts
 ✓ test/parser/suite/ts/pass/53f38ef4be30c8ee.ts
 ✓ test/parser/suite/ts/pass/53f437293635ad7f.module.ts
-✗ test/parser/suite/ts/pass/53f490f8cb88be46.module.ts (parse errors)
-error: Identifier 'bar' has already been declared
-   |
- 8 | 
- 9 | declare function bar();
-   |                  ~~~ 'bar' was first declared as a function here
-10 | export function bar(s: string);
-   |                 ^^^
-   |                 ~~~ cannot be redeclared here
-11 | function bar(s?: string) { }
-   |
-   = help: Consider removing or renaming this declaration of 'bar'
-
-
+✓ test/parser/suite/ts/pass/53f490f8cb88be46.module.ts
 ✓ test/parser/suite/ts/pass/5400d3472f4ec136.ts
 ✓ test/parser/suite/ts/pass/540956b9d6fcd187.ts
 ✓ test/parser/suite/ts/pass/5410e5aeeb21f0c0.ts
@@ -4142,29 +3420,9 @@ error: Identifier 'bar' has already been declared
 ✓ test/parser/suite/ts/pass/54bec892ef56e91a.ts
 ✓ test/parser/suite/ts/pass/54bf808e757e9dc3.module.ts
 ✓ test/parser/suite/ts/pass/54c137a8ddfd9f01.ts
-✗ test/parser/suite/ts/pass/54c76bdaa323e23d.ts (parse errors)
-error: A class can only have one constructor
-   |
-24 | class C {
-25 |     constructor(x: string);
-   |     ~~~~~~~~~~~ first constructor defined here
-26 | constructor(x: any) {}
-   | ^^^^^^^^^^^
-27 | }
-   |
-
+✓ test/parser/suite/ts/pass/54c76bdaa323e23d.ts
 ✓ test/parser/suite/ts/pass/54cf019adb052da9.ts
-✗ test/parser/suite/ts/pass/54d7e58a5dcb0207.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 4 | function foo() {
- 5 |     super(value => String(value));
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- 6 | }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/54d7e58a5dcb0207.ts
 ✓ test/parser/suite/ts/pass/54d8822fc997b8ba.ts
 ✓ test/parser/suite/ts/pass/54ee06a1ca435cfd.ts
 ✓ test/parser/suite/ts/pass/54f522305e173d27.ts
@@ -4204,17 +3462,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/55d9cc58baafc22d.ts
 ✓ test/parser/suite/ts/pass/55e2c7a696cb9ca4.ts
 ✓ test/parser/suite/ts/pass/55e44f0ee8014553.ts
-✗ test/parser/suite/ts/pass/55e5b50a3998c79c.ts (parse errors)
-error: A class can only have one constructor
-   |
- 6 | class D extends B<number> {
- 7 |     constructor(a: any)
-   |     ~~~~~~~~~~~ first constructor defined here
- 8 |     constructor(b: number) {
-   |     ^^^^^^^^^^^
- 9 |         super(b);
-   |
-
+✓ test/parser/suite/ts/pass/55e5b50a3998c79c.ts
 ✓ test/parser/suite/ts/pass/55ec033d82b578fc.ts
 ✓ test/parser/suite/ts/pass/55f284776f2990c1.ts
 ✓ test/parser/suite/ts/pass/55f50900bc3efff7.ts
@@ -4243,35 +3491,11 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/56c4cb09b17a474d.module.ts
 ✓ test/parser/suite/ts/pass/56cbfd8fd36811b3.ts
 ✓ test/parser/suite/ts/pass/56d217602897bdd3.ts
-✗ test/parser/suite/ts/pass/56d4a512d86ed210.ts (parse errors)
-error: Use of undefined label 'target'
-   |
- 2 | while (true) {
- 3 |   continue target;
-   |   ^^^^^^^^^^^^^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/56d4a512d86ed210.ts
 ✓ test/parser/suite/ts/pass/56e1c080a70c37f0.ts
 ✓ test/parser/suite/ts/pass/56e1ed5b479617c8.ts
 ✓ test/parser/suite/ts/pass/56f78be8161ca497.ts
-✗ test/parser/suite/ts/pass/5701498dc0c71467.ts (parse errors)
-error: Identifier 'Point' has already been declared
-   |
- 2 | // @strict: false
- 3 | declare class Point
-   |               ~~~~~ 'Point' was first declared as a class here
- 4 | {
-.. |
-16 | // to be Point and return type is inferred to be void
-17 | function Point(x, y) {
-   |          ^^^^^
-   |          ~~~~~ cannot be redeclared here
-18 |     this.x = x;
-   |
-   = help: Consider removing or renaming this declaration of 'Point'
-
-
+✓ test/parser/suite/ts/pass/5701498dc0c71467.ts
 ✓ test/parser/suite/ts/pass/57017e996ac3aa1f.ts
 ✓ test/parser/suite/ts/pass/5703aa4a3f994719.ts
 ✓ test/parser/suite/ts/pass/57051ea3b28da954.ts
@@ -4301,14 +3525,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/5757bcf6eb02541e.ts
 ✓ test/parser/suite/ts/pass/57594693f32a56cf.ts
 ✓ test/parser/suite/ts/pass/576378cff1d48efb.ts
-✗ test/parser/suite/ts/pass/57658e1e4c0e3966.module.ts (parse errors)
-error: Cannot assign to 'eval' or 'arguments' in strict mode
-   |
- 2 | "use strict";
- 3 | arguments = 1;
-   | ^^^^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/57658e1e4c0e3966.module.ts
 ✓ test/parser/suite/ts/pass/576c4d2ddf2cee8a.module.ts
 ✓ test/parser/suite/ts/pass/577922190073cf34.ts
 ✓ test/parser/suite/ts/pass/577a5768bd3e9996.ts
@@ -4382,17 +3599,7 @@ error: Expected ',' or '}' in object, but found '<'
 
 
 ✓ test/parser/suite/ts/pass/58d6ae53d33ac379.module.ts
-✗ test/parser/suite/ts/pass/58df139dea95360b.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
-17 |     p1: function () {
-18 |         super.method();
-   |         ^^^^^^^^^^^^
-19 |     },
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/58df139dea95360b.ts
 ✓ test/parser/suite/ts/pass/58e3251cb68c971a.ts
 ✓ test/parser/suite/ts/pass/58ee1b056561e4c4.module.ts
 ✓ test/parser/suite/ts/pass/58f6c6814d029c75.ts
@@ -4413,15 +3620,7 @@ error: Invalid assignment target
    = help: The left-hand side of a compound assignment must be a variable or property access
 
 
-✗ test/parser/suite/ts/pass/5934625485a58d5d.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-10 |     static method(x: Derived) {
-11 |         console.log(x.#prop());
-   |                       ^^^^^
-12 |     }
-   |
-
+✓ test/parser/suite/ts/pass/5934625485a58d5d.ts
 ✓ test/parser/suite/ts/pass/5938347a550032d5.ts
 ✓ test/parser/suite/ts/pass/593cd0447b77bac2.ts
 ✓ test/parser/suite/ts/pass/594a014a4a95d418.ts
@@ -4482,17 +3681,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/5acee4da26b81218.ts
 ✓ test/parser/suite/ts/pass/5ad4a46d04f7b49b.ts
 ✓ test/parser/suite/ts/pass/5adb5c2e263b627f.ts
-✗ test/parser/suite/ts/pass/5addd3d2f4d8709f.ts (parse errors)
-error: A class can only have one constructor
-   |
-44 | class c5 {
-45 |     constructor(_i: number, ...rest); // no codegen no error
-   |     ~~~~~~~~~~~ first constructor defined here
-46 |     constructor(_i: string, ...rest); // no codegen no error
-   |     ^^^^^^^^^^^
-47 |     constructor(_i: any, ...rest) { // error
-   |
-
+✓ test/parser/suite/ts/pass/5addd3d2f4d8709f.ts
 ✓ test/parser/suite/ts/pass/5ae32627fc8f06d9.ts
 ✓ test/parser/suite/ts/pass/5aedf85f63551167.ts
 ✓ test/parser/suite/ts/pass/5aefc0dd916110f6.ts
@@ -4645,18 +3834,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/5de8fe76ff101a68.ts
 ✓ test/parser/suite/ts/pass/5e1cebe701fd8f28.ts
 ✓ test/parser/suite/ts/pass/5e1e5702d4f93f9d.ts
-✗ test/parser/suite/ts/pass/5e20d3f782d1f074.module.ts (parse errors)
-error: Duplicate export of 'r5'
-   |
-21 | var i2: I;
-22 | export var r5: typeof i;
-   |            ~~~~~~~~~~~~ first exported here
-23 | export var r5: typeof i2;
-   |            ^^^^^^^^^^^^^
-   |            ~~~~~~~~~~~~~ exported again here
-24 | 
-   |
-
+✓ test/parser/suite/ts/pass/5e20d3f782d1f074.module.ts
 ✓ test/parser/suite/ts/pass/5e21a9979e0db299.module.ts
 ✓ test/parser/suite/ts/pass/5e2208ecd2f5dc78.ts
 ✓ test/parser/suite/ts/pass/5e24a905c56c4f38.module.ts
@@ -4674,17 +3852,7 @@ error: Duplicate export of 'r5'
 ✓ test/parser/suite/ts/pass/5e74c4dd6d52650b.ts
 ✓ test/parser/suite/ts/pass/5e7d8104f592d0eb.ts
 ✓ test/parser/suite/ts/pass/5e837a1a594486ce.ts
-✗ test/parser/suite/ts/pass/5e8a0444bfde16f3.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |     constructor() { } // error
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(x) { } // error
-   |     ^^^^^^^^^^^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/5e8a0444bfde16f3.ts
 ✓ test/parser/suite/ts/pass/5e8c3dd1a6847e04.ts
 ✓ test/parser/suite/ts/pass/5ea7709de4234881.ts
 ✓ test/parser/suite/ts/pass/5eb7fafc498657bd.ts
@@ -4753,17 +3921,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/60a811e03975ca50.ts
 ✓ test/parser/suite/ts/pass/60b7424b9eec0ec1.ts
 ✓ test/parser/suite/ts/pass/60b7fe545bc0049c.ts
-✗ test/parser/suite/ts/pass/60c3260578d0da89.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class C<T> {
- 3 |     constructor(x: T);
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(x: T);
-   |     ^^^^^^^^^^^
- 5 |     constructor(x: any) { }
-   |
-
+✓ test/parser/suite/ts/pass/60c3260578d0da89.ts
 ✓ test/parser/suite/ts/pass/60cf5b81ae703611.ts
 ✓ test/parser/suite/ts/pass/60d142e15d29a3ce.ts
 ✓ test/parser/suite/ts/pass/60d2a072c2cdf0c6.ts
@@ -4786,15 +3944,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/60fd11d3650e991c.ts
 ✓ test/parser/suite/ts/pass/610224f1e7cf6b80.ts
 ✓ test/parser/suite/ts/pass/61094d5aa2cafffd.ts
-✗ test/parser/suite/ts/pass/6119ea729ae1f1b5.ts (parse errors)
-error: Expected ')' after catch parameter, but found ':'
-   |
-18 |             super(true);
-19 |         } catch (e: unknown) {
-   |                   ^
-20 |             console.log('Error: ' + (e as Error).message);
-   |
-
+✓ test/parser/suite/ts/pass/6119ea729ae1f1b5.ts
 ✓ test/parser/suite/ts/pass/611a0ebc787dddfb.ts
 ✓ test/parser/suite/ts/pass/611dda9e7dd4c418.ts
 ✓ test/parser/suite/ts/pass/61265d71daabd8ea.module.ts
@@ -4804,17 +3954,7 @@ error: Expected ')' after catch parameter, but found ':'
 ✓ test/parser/suite/ts/pass/6149c9c077fc7f6d.ts
 ✓ test/parser/suite/ts/pass/61594a47b05ef4dc.ts
 ✓ test/parser/suite/ts/pass/61753843a23a29aa.ts
-✗ test/parser/suite/ts/pass/61819de3b56bf114.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default function bar() { }
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 4 | export default class C {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
-   |
-
+✓ test/parser/suite/ts/pass/61819de3b56bf114.module.ts
 ✓ test/parser/suite/ts/pass/618ae869d8084357.ts
 ✓ test/parser/suite/ts/pass/61922ccdbcb29d9c.ts
 ✓ test/parser/suite/ts/pass/6195e801efc358a1.ts
@@ -4927,21 +4067,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/63e26292874e0163.ts
 ✓ test/parser/suite/ts/pass/63ea4d680673d372.module.ts
 ✓ test/parser/suite/ts/pass/63f6193620b8b522.ts
-✗ test/parser/suite/ts/pass/640b952a9dff8c03.ts (parse errors)
-error: Identifier 'D' has already been declared
-   |
- 1 | // @target: es2015
- 2 | declare function D(): string; // error
-   |                  ~ 'D' was first declared as a function here
- 3 | 
- 4 | declare class D { constructor (value: number); } // error
-   |               ^
-   |               ~ cannot be redeclared here
- 5 | 
-   |
-   = help: Consider removing or renaming this declaration of 'D'
-
-
+✓ test/parser/suite/ts/pass/640b952a9dff8c03.ts
 ✓ test/parser/suite/ts/pass/6411ee491c1bc47f.ts
 ✓ test/parser/suite/ts/pass/6411f2ae8f2f3ec0.ts
 ✗ test/parser/suite/ts/pass/64121ac9fff3b26e.ts (parse errors)
@@ -5034,17 +4160,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/6639b35a01c21f6c.module.ts
 ✓ test/parser/suite/ts/pass/664787c8398561c1.ts
 ✓ test/parser/suite/ts/pass/6660de8f94bc7cc0.ts
-✗ test/parser/suite/ts/pass/666f50fdd1372beb.ts (parse errors)
-error: A class can only have one constructor
-   |
-19 | class Foo4 {
-20 |     constructor(_this: number); // No code gen - no error
-   |     ~~~~~~~~~~~ first constructor defined here
-21 |     constructor(_this: string); // No code gen - no error
-   |     ^^^^^^^^^^^
-22 |     constructor(_this: any) { // Error
-   |
-
+✓ test/parser/suite/ts/pass/666f50fdd1372beb.ts
 ✓ test/parser/suite/ts/pass/667283d8106abf4f.ts
 ✓ test/parser/suite/ts/pass/667acbb91f6d3090.ts
 ✓ test/parser/suite/ts/pass/6695946bbd9d7a66.ts
@@ -5101,17 +4217,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/681daefb97ae7135.module.ts
 ✓ test/parser/suite/ts/pass/6826b3596d09fc33.ts
 ✓ test/parser/suite/ts/pass/6827b5feab7a38c2.ts
-✗ test/parser/suite/ts/pass/6833f4f80d668603.ts (parse errors)
-error: A class can only have one constructor
-   |
- 5 | class C {
- 6 |     constructor(x: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 7 |     constructor(x: number);
-   |     ^^^^^^^^^^^
- 8 |     constructor(x) { }
-   |
-
+✓ test/parser/suite/ts/pass/6833f4f80d668603.ts
 ✓ test/parser/suite/ts/pass/683d1ffb7e4c80d3.ts
 ✓ test/parser/suite/ts/pass/684bf837b8509109.module.ts
 ✓ test/parser/suite/ts/pass/6855a4febc59b274.ts
@@ -5152,23 +4258,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/692a6be530fce8a3.ts
 ✓ test/parser/suite/ts/pass/692b9a847c1149ab.ts
 ✓ test/parser/suite/ts/pass/6930a1cddc118f91.ts
-✗ test/parser/suite/ts/pass/693aaecb1cfb3183.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default {
-   | ~~~~~~~~~~~~~~~~~
- 4 |     uhoh: "another default",
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 5 | };
-   | ~~ first exported here
- 6 | 
- 7 | export default function Foo() { }
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/693aaecb1cfb3183.module.ts
 ✓ test/parser/suite/ts/pass/695865ed06d9cfda.ts
 ✓ test/parser/suite/ts/pass/6966b5316760269b.ts
 ✓ test/parser/suite/ts/pass/69707d59d7d1c3d6.ts
@@ -5201,30 +4291,10 @@ error: Expected '>' to close JSX opening element, but found '<'
 ✓ test/parser/suite/ts/pass/69ee7bea2fca1862.ts
 ✓ test/parser/suite/ts/pass/6a0898bda0c20464.ts
 ✓ test/parser/suite/ts/pass/6a102f59a7d78149.ts
-✗ test/parser/suite/ts/pass/6a1bb39e5c080cc9.ts (parse errors)
-error: A class can only have one constructor
-   |
-20 | class fn1 {
-21 |     constructor(s: string);
-   |     ~~~~~~~~~~~ first constructor defined here
-22 |     constructor(s: number);
-   |     ^^^^^^^^^^^
-23 |     constructor() { }
-   |
-
+✓ test/parser/suite/ts/pass/6a1bb39e5c080cc9.ts
 ✓ test/parser/suite/ts/pass/6a1cbcd62d6fdba9.ts
 ✓ test/parser/suite/ts/pass/6a263191842628a0.ts
-✗ test/parser/suite/ts/pass/6a280bc04449ab2b.ts (parse errors)
-error: A class can only have one constructor
-   |
-11 | class C2 {
-12 |     private constructor(x: number);
-   |             ~~~~~~~~~~~ first constructor defined here
-13 |     private constructor(x: any) { }
-   |             ^^^^^^^^^^^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/6a280bc04449ab2b.ts
 ✓ test/parser/suite/ts/pass/6a2a2a6c9b83d500.ts
 ✓ test/parser/suite/ts/pass/6a36bd87a9377f12.module.ts
 ✓ test/parser/suite/ts/pass/6a3fe0449365d6e6.ts
@@ -5359,38 +4429,16 @@ error: Unexpected token 'delete' in expression
 ✓ test/parser/suite/ts/pass/6de18b489addc31b.ts
 ✓ test/parser/suite/ts/pass/6de3adf655839d8b.ts
 ✓ test/parser/suite/ts/pass/6de3c1985db2549e.module.ts
-✗ test/parser/suite/ts/pass/6dee4998cf1f9d02.module.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-16 | 
-17 | A2.#prop; // Error
-   |    ^^^^^
-18 | 
-   |
-
+✓ test/parser/suite/ts/pass/6dee4998cf1f9d02.module.ts
 ✓ test/parser/suite/ts/pass/6dee63cc27c1d7a0.ts
 ✓ test/parser/suite/ts/pass/6def6a8476b22f09.ts
-✗ test/parser/suite/ts/pass/6df29e491cb4c782.module.ts (parse errors)
-error: Export 'A' is not defined
-   |
- 9 | }
-10 | export {A, B}
-   |         ^
-   |
-
+✓ test/parser/suite/ts/pass/6df29e491cb4c782.module.ts
 ✓ test/parser/suite/ts/pass/6dfd41b4a0709043.module.ts
 ✓ test/parser/suite/ts/pass/6e02da3d7702c757.ts
 ✓ test/parser/suite/ts/pass/6e088f4e3e920644.module.ts
 ✓ test/parser/suite/ts/pass/6e10dfbc93468f2b.ts
 ✓ test/parser/suite/ts/pass/6e1a433caa8d3c93.ts
-✗ test/parser/suite/ts/pass/6e1ee2dd504b97ce.module.ts (parse errors)
-error: Cannot assign to 'eval' or 'arguments' in strict mode
-   |
- 2 | "use strict";
- 3 | eval++;
-   | ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/6e1ee2dd504b97ce.module.ts
 ✓ test/parser/suite/ts/pass/6e1f7e2d20701cd1.ts
 ✓ test/parser/suite/ts/pass/6e25fb52a0e66fcc.module.ts
 ✓ test/parser/suite/ts/pass/6e2eb205e5e8d74f.ts
@@ -5480,15 +4528,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/702f195db0f72fde.ts
 ✓ test/parser/suite/ts/pass/7032640538a992fb.ts
 ✓ test/parser/suite/ts/pass/7035ab156e39fa4a.ts
-✗ test/parser/suite/ts/pass/70425adb194f08f2.ts (parse errors)
-error: Cannot continue to label 'target' across function boundaries
-   |
- 7 |     while (true) {
- 8 |       continue target;
-   |       ^^^^^^^^^^^^^^^^
- 9 |     }
-   |
-
+✓ test/parser/suite/ts/pass/70425adb194f08f2.ts
 ✓ test/parser/suite/ts/pass/7044371b33ea86d6.ts
 ✓ test/parser/suite/ts/pass/7049b7934839d326.ts
 ✓ test/parser/suite/ts/pass/705391485a41b29e.ts
@@ -5697,15 +4737,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/7595d627611ba30f.ts
 ✓ test/parser/suite/ts/pass/75a962e4289dc2f0.ts
 ✓ test/parser/suite/ts/pass/75acb3e9118d09ee.ts
-✗ test/parser/suite/ts/pass/75bc58e2025f6d79.module.ts (parse errors)
-error: 'public' is reserved in strict mode and cannot be used as a binding identifier
-   |
-17 | throw NotEarlyError;
-18 | var public = 1;
-   |     ^^^^^^
-19 | 
-   |
-
+✓ test/parser/suite/ts/pass/75bc58e2025f6d79.module.ts
 ✓ test/parser/suite/ts/pass/75c1500d8a1d1f82.ts
 ✓ test/parser/suite/ts/pass/75c6ac03c031582d.ts
 ✓ test/parser/suite/ts/pass/75e5eee1f3dbd185.ts
@@ -5852,39 +4884,14 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/78bf7982ec209fa2.ts
 ✓ test/parser/suite/ts/pass/78c330f88a425097.module.ts
 ✓ test/parser/suite/ts/pass/78c587fa3137fdbe.ts
-✗ test/parser/suite/ts/pass/78ca96b1ce2b494f.module.ts (parse errors)
-error: Duplicate export of 'foo'
-   |
- 6 | // Function Variables
- 7 | export const fnExpressionConstVariable = function foo() { return 0;}
-   |                                                   ~~~ first exported here
- 8 | export const fnArrowConstVariable = () => "S";
- 9 | 
-10 | export let fnExpressionLetVariable = function foo() { return 0;}
-   |                                               ^^^
-   |                                               ~~~ exported again here
-11 | export let fnArrowLetVariable = () => "S";
-   |
-
+✓ test/parser/suite/ts/pass/78ca96b1ce2b494f.module.ts
 ✓ test/parser/suite/ts/pass/78d4758022537ece.ts
 ✓ test/parser/suite/ts/pass/78da68e56db333e3.ts
 ✓ test/parser/suite/ts/pass/78ef48d1464e425f.ts
 ✓ test/parser/suite/ts/pass/78f19dfca0235424.ts
 ✓ test/parser/suite/ts/pass/78fabb8054aae082.ts
 ✓ test/parser/suite/ts/pass/790ee3c3be9f8ee3.ts
-✗ test/parser/suite/ts/pass/79152c29b731eb7a.ts (parse errors)
-error: Cannot use 'export' declaration outside a module
-   |
- 3 |     namespace M { }
- 4 |     export namespace N {
-   |     ^^^^^^^^^^^^^^^^^^^^^
- 5 |         export interface I { }
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- 6 |     }
-   | ^^^^^
- 7 | 
-   |
-
+✓ test/parser/suite/ts/pass/79152c29b731eb7a.ts
 ✓ test/parser/suite/ts/pass/7915fbec6cb729cf.ts
 ✓ test/parser/suite/ts/pass/79174fa875c01003.ts
 ✓ test/parser/suite/ts/pass/792c5d979aefb2e7.ts
@@ -5929,38 +4936,12 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/79fd18b772860ccb.tsx
 ✓ test/parser/suite/ts/pass/7a028bbbd80cbc61.ts
 ✓ test/parser/suite/ts/pass/7a02d38908d31078.ts
-✗ test/parser/suite/ts/pass/7a0e03fee2f7798f.module.ts (parse errors)
-error: Identifier 'createSlice' has already been declared
-    |
- 95 | 
- 96 | declare function createSlice<T>(
-    |                  ~~~~~~~~~~~ 'createSlice' was first declared as a function here
- 97 |   reducers: { [K: string]: (state: string) => void } & {
-... |
-128 | 
-129 | declare function createSlice<
-    |                  ^^^^^^^^^^^
-    |                  ~~~~~~~~~~~ cannot be redeclared here
-130 |   State,
-    |
-    = help: Consider removing or renaming this declaration of 'createSlice'
-
-
+✓ test/parser/suite/ts/pass/7a0e03fee2f7798f.module.ts
 ✓ test/parser/suite/ts/pass/7a0ed88964d5b007.ts
 ✓ test/parser/suite/ts/pass/7a127e6ccef1887d.ts
 ✓ test/parser/suite/ts/pass/7a1ff8df25bb098a.ts
 ✓ test/parser/suite/ts/pass/7a228ba19dd782ea.ts
-✗ test/parser/suite/ts/pass/7a283c13f0fcce22.ts (parse errors)
-error: Illegal continue statement
-   |
- 3 |   function f() {
- 4 |     continue;
-   |     ^^^^^^^^^
- 5 |   }
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/7a283c13f0fcce22.ts
 ✓ test/parser/suite/ts/pass/7a381df144ffe069.ts
 ✓ test/parser/suite/ts/pass/7a3c907379ccee04.ts
 ✓ test/parser/suite/ts/pass/7a4a08d7a639e7d5.ts
@@ -5980,15 +4961,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/7aaa03ee098033fa.ts
 ✓ test/parser/suite/ts/pass/7aac86436d501b71.ts
 ✓ test/parser/suite/ts/pass/7ab1e070be9cba8a.ts
-✗ test/parser/suite/ts/pass/7ab551d56cc54e08.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 4 | }
- 5 | catch(eval) {
-   |       ^^^^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/7ab551d56cc54e08.module.ts
 ✓ test/parser/suite/ts/pass/7ab78bd402f16816.ts
 ✓ test/parser/suite/ts/pass/7ab83e41f13c3cd0.ts
 ✓ test/parser/suite/ts/pass/7abf15585e9b54a2.ts
@@ -6032,15 +5005,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/7b15d52619f6c8ec.ts
 ✓ test/parser/suite/ts/pass/7b188267705f0683.ts
 ✓ test/parser/suite/ts/pass/7b1f09ee036c407e.ts
-✗ test/parser/suite/ts/pass/7b28736bed0ab406.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 3 | // All use of let in const declaration should be an error
- 4 | let x = 50, let = 5;
-   |             ^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/7b28736bed0ab406.ts
 ✓ test/parser/suite/ts/pass/7b355389846c42ad.ts
 ✓ test/parser/suite/ts/pass/7b4ec9c907d434fa.ts
 ✓ test/parser/suite/ts/pass/7b4f7ed0cc7034b4.ts
@@ -6049,17 +5014,7 @@ error: 'let' is not allowed as a variable name in a lexical declaration
 ✓ test/parser/suite/ts/pass/7b7f7f752217fe8c.ts
 ✓ test/parser/suite/ts/pass/7b82984ba6d8f434.ts
 ✓ test/parser/suite/ts/pass/7b8f1914d820ef19.ts
-✗ test/parser/suite/ts/pass/7b8feaac9c98b7d9.ts (parse errors)
-error: Illegal continue statement
-   |
- 7 | // naked continue not allowed
- 8 | continue;
-   | ^^^^^^^^^
- 9 | 
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/7b8feaac9c98b7d9.ts
 ✓ test/parser/suite/ts/pass/7b8ff371f637765d.ts
 ✓ test/parser/suite/ts/pass/7b91290a1d97f8a6.ts
 ✓ test/parser/suite/ts/pass/7b97734ce4ad6c87.ts
@@ -6103,17 +5058,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/7cc2de818efaa3e1.ts
 ✓ test/parser/suite/ts/pass/7cc8c643a11a45cb.ts
 ✓ test/parser/suite/ts/pass/7ce4a41a1b0e37d0.ts
-✗ test/parser/suite/ts/pass/7ceb93e117d05a08.ts (parse errors)
-error: A class can only have one constructor
-   |
-10 | class c4 {
-11 |     constructor(param: string);
-   |     ~~~~~~~~~~~ first constructor defined here
-12 |     constructor(param: number);
-   |     ^^^^^^^^^^^
-13 |     constructor(param: any) {
-   |
-
+✓ test/parser/suite/ts/pass/7ceb93e117d05a08.ts
 ✓ test/parser/suite/ts/pass/7cfb7c21090c421a.ts
 ✓ test/parser/suite/ts/pass/7cfcd805ced191b3.ts
 ✓ test/parser/suite/ts/pass/7d01617e73327c20.ts
@@ -6150,15 +5095,7 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/ts/pass/7d90abc813f234b5.ts
 ✓ test/parser/suite/ts/pass/7d9ac4dd02299d34.ts
 ✓ test/parser/suite/ts/pass/7d9ad189be53c3e5.ts
-✗ test/parser/suite/ts/pass/7d9ebba8416a3bef.ts (parse errors)
-error: Private field '#foo' must be declared in an enclosing class
-   |
-25 | declare let b: C<string>;
-26 | a.#foo;                                   // Error
-   |   ^^^^
-27 | a.#method;                                // Error
-   |
-
+✓ test/parser/suite/ts/pass/7d9ebba8416a3bef.ts
 ✓ test/parser/suite/ts/pass/7da6731189845f3f.ts
 ✓ test/parser/suite/ts/pass/7da7fe5ad5c9abb0.ts
 ✓ test/parser/suite/ts/pass/7dacdfa439df11d6.ts
@@ -6190,17 +5127,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/7e03b5543d52cd14.ts
 ✓ test/parser/suite/ts/pass/7e03baa6ad191112.ts
 ✓ test/parser/suite/ts/pass/7e04be86442e0d40.ts
-✗ test/parser/suite/ts/pass/7e0b9236b27c0e43.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C<T> {
- 4 |     constructor(x: number);
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(x: string);
-   |     ^^^^^^^^^^^
- 6 |     constructor(public x) { }
-   |
-
+✓ test/parser/suite/ts/pass/7e0b9236b27c0e43.ts
 ✓ test/parser/suite/ts/pass/7e1f126b481bfa4f.ts
 ✓ test/parser/suite/ts/pass/7e281917b4525072.ts
 ✓ test/parser/suite/ts/pass/7e43e59fe714c943.ts
@@ -6208,17 +5135,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/7e502ef7c51a2edc.ts
 ✓ test/parser/suite/ts/pass/7e5200956b15b42d.ts
 ✓ test/parser/suite/ts/pass/7e6191c5ac74f8cb.module.ts
-✗ test/parser/suite/ts/pass/7e8ed61069773cb6.ts (parse errors)
-error: A class can only have one constructor
-   |
- 4 |     foo: string;
- 5 |     constructor(x?, y?: any[]); 
-   |     ~~~~~~~~~~~ first constructor defined here
- 6 |     constructor() {
-   |     ^^^^^^^^^^^
- 7 |     }
-   |
-
+✓ test/parser/suite/ts/pass/7e8ed61069773cb6.ts
 ✓ test/parser/suite/ts/pass/7e9628c6849a238c.ts
 ✓ test/parser/suite/ts/pass/7ea387e6c226bb5f.ts
 ✓ test/parser/suite/ts/pass/7ea3f08d8c547553.ts
@@ -6282,14 +5199,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/8057c288ea6b92f0.ts
 ✓ test/parser/suite/ts/pass/805d12c9fc2051b5.ts
 ✓ test/parser/suite/ts/pass/805e7d096c6afb53.ts
-✗ test/parser/suite/ts/pass/8067686818574509.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 3 | "use strict";
- 4 | var eval;
-   |     ^^^^
-   |
-
+✓ test/parser/suite/ts/pass/8067686818574509.module.ts
 ✓ test/parser/suite/ts/pass/806794234614669f.tsx
 ✓ test/parser/suite/ts/pass/80711171637c18c0.ts
 ✓ test/parser/suite/ts/pass/8078c1fd3e9fb1bc.module.ts
@@ -6340,20 +5250,7 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/813edaa02a2cbc31.ts
 ✓ test/parser/suite/ts/pass/815bb016553894d3.ts
 ✓ test/parser/suite/ts/pass/8176957b59aec3ed.ts
-✗ test/parser/suite/ts/pass/8184cdac6ebbb56e.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
- 3 | function Foo():Foo; // error
- 4 | function Foo(s:string):Foo; // error
-   |          ~~~ 'Foo' was first declared as a function here
- 5 | class Foo { // error
-   |       ^^^
-   |       ~~~ cannot be redeclared here
- 6 |     bar1(s:string);
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/8184cdac6ebbb56e.ts
 ✓ test/parser/suite/ts/pass/818d186fa937dfad.ts
 ✓ test/parser/suite/ts/pass/81a0136756d097e3.ts
 ✓ test/parser/suite/ts/pass/81a8088a15024fc9.ts
@@ -6382,17 +5279,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/823c8061df663f8f.ts
 ✓ test/parser/suite/ts/pass/8240d13f4de16d38.ts
 ✓ test/parser/suite/ts/pass/824de1e36d83e1bf.ts
-✗ test/parser/suite/ts/pass/825517d6b975ea92.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class C1 {
- 3 |  constructor(public p1:string); // ERROR
-   |  ~~~~~~~~~~~ first constructor defined here
- 4 |  constructor(private p2:number); // ERROR
-   |  ^^^^^^^^^^^
- 5 |  constructor(public p3:any) {} // OK
-   |
-
+✓ test/parser/suite/ts/pass/825517d6b975ea92.ts
 ✓ test/parser/suite/ts/pass/8265bf79b9f29ab8.ts
 ✓ test/parser/suite/ts/pass/826aa4e88b709f88.ts
 ✓ test/parser/suite/ts/pass/826ba5a803798969.ts
@@ -6454,17 +5341,7 @@ error: Expected '{' to start class body, but found 'Foo'
 ✓ test/parser/suite/ts/pass/8428611aea98331a.ts
 ✓ test/parser/suite/ts/pass/843263a8dba1d493.ts
 ✓ test/parser/suite/ts/pass/8434c55d5a46c091.module.ts
-✗ test/parser/suite/ts/pass/8447f2a7404b4c89.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 4 | class C extends Base {
- 5 |     [(super(), "prop")]() { }
-   |       ^^^^^^^
- 6 | }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/8447f2a7404b4c89.ts
 ✓ test/parser/suite/ts/pass/844f3f5f2f208984.ts
 ✓ test/parser/suite/ts/pass/8451c9f240cfc0fa.ts
 ✓ test/parser/suite/ts/pass/8459b64b49c9d447.ts
@@ -6483,15 +5360,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/84b6cfc585d4e016.ts
 ✓ test/parser/suite/ts/pass/84c55e5edbfa60f1.tsx
 ✓ test/parser/suite/ts/pass/84cd913d9b2c1288.ts
-✗ test/parser/suite/ts/pass/84cdbcc1411d77fe.module.ts (parse errors)
-error: 'static' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 5 | class test {
- 6 |     constructor (static) { }
-   |                  ^^^^^^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/84cdbcc1411d77fe.module.ts
 ✓ test/parser/suite/ts/pass/84d344795ce1a4c3.ts
 ✓ test/parser/suite/ts/pass/84d55e795a0dce65.ts
 ✓ test/parser/suite/ts/pass/84d76782eb06ebda.ts
@@ -6510,15 +5379,7 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
 ✓ test/parser/suite/ts/pass/8531453d06bcbaea.ts
 ✓ test/parser/suite/ts/pass/853d3a648c303cca.ts
 ✓ test/parser/suite/ts/pass/8540c79232d68bf9.ts
-✗ test/parser/suite/ts/pass/8553f3ab261adeff.module.ts (parse errors)
-error: 'public' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 2 | "use strict"
- 3 | var [public] = [1];
-   |      ^^^^^^
- 4 | var { x: public } = { x: 1 };
-   |
-
+✓ test/parser/suite/ts/pass/8553f3ab261adeff.module.ts
 ✓ test/parser/suite/ts/pass/8558a9f51bd7e915.ts
 ✓ test/parser/suite/ts/pass/855ec5f319406140.ts
 ✓ test/parser/suite/ts/pass/8573a9c11ed42f0b.ts
@@ -6560,27 +5421,11 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
 ✓ test/parser/suite/ts/pass/868d0bf0c30637b7.ts
 ✓ test/parser/suite/ts/pass/8695869c356a9b7c.ts
 ✓ test/parser/suite/ts/pass/86a37aab89e267bf.ts
-✗ test/parser/suite/ts/pass/86a3fb6b164eefdf.ts (parse errors)
-error: Private field '#f' must be declared in an enclosing class
-   |
- 8 |     constructor(message: string) {
- 9 |         this.#f = 3           // Error (index signatures do not implicitly declare private names)
-   |              ^^
-10 |         this["#foo"] = 3;     // Okay (type has index signature and "#foo" does not collide with private identifier #foo)
-   |
-
+✓ test/parser/suite/ts/pass/86a3fb6b164eefdf.ts
 ✓ test/parser/suite/ts/pass/86ac2f5d97f2e72b.ts
 ✓ test/parser/suite/ts/pass/86b5a76ba45f05ec.ts
 ✓ test/parser/suite/ts/pass/86b8c36f2e9f0d96.ts
-✗ test/parser/suite/ts/pass/86ba8aa30a461081.ts (parse errors)
-error: Yield expression is not allowed in formal parameters
-   |
- 3 |   // 'yield' here is an identifier, and not a yield expression.
- 4 |   function*foo(a = yield) {
-   |                    ^^^^^
- 5 |   }
-   |
-
+✓ test/parser/suite/ts/pass/86ba8aa30a461081.ts
 ✓ test/parser/suite/ts/pass/86bb7b2e3ad3664e.ts
 ✓ test/parser/suite/ts/pass/86bfbd68b6ccc7eb.ts
 ✓ test/parser/suite/ts/pass/86d220be3f677d2f.ts
@@ -6588,15 +5433,7 @@ error: Yield expression is not allowed in formal parameters
 ✓ test/parser/suite/ts/pass/86efc03aed8d3ff8.module.ts
 ✓ test/parser/suite/ts/pass/87044cbbed1da4bc.ts
 ✓ test/parser/suite/ts/pass/870d0eb9df588f83.ts
-✗ test/parser/suite/ts/pass/870fdd42cafb4a26.ts (parse errors)
-error: Use of undefined label 'target'
-   |
- 2 | while (true) {
- 3 |   break target;
-   |   ^^^^^^^^^^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/870fdd42cafb4a26.ts
 ✓ test/parser/suite/ts/pass/872acdb7578f9dfb.ts
 ✓ test/parser/suite/ts/pass/872d1ece04ec2bd2.ts
 ✓ test/parser/suite/ts/pass/8740dcac55f033fb.ts
@@ -6634,17 +5471,7 @@ error: Use of undefined label 'target'
 ✓ test/parser/suite/ts/pass/8809b550a1bf0bbf.ts
 ✓ test/parser/suite/ts/pass/880e28d7d3719f4e.ts
 ✓ test/parser/suite/ts/pass/880f67e8a35bfa57.ts
-✗ test/parser/suite/ts/pass/8811034ab4e47032.ts (parse errors)
-error: A class can only have one constructor
-   |
-16 | class AsyncLoader<TResult extends {}> {
-17 |     constructor(props: string, context: any);
-   |     ~~~~~~~~~~~ first constructor defined here
-18 |     constructor(props: AsyncLoaderProps<TResult>);
-   |     ^^^^^^^^^^^
-19 |     constructor(...args: any[]) {}
-   |
-
+✓ test/parser/suite/ts/pass/8811034ab4e47032.ts
 ✓ test/parser/suite/ts/pass/881204e0792e6594.ts
 ✓ test/parser/suite/ts/pass/881e9832fba76452.ts
 ✓ test/parser/suite/ts/pass/8829dd61b3d456ab.ts
@@ -6700,29 +5527,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/88bee05e1bcb6b54.ts
 ✓ test/parser/suite/ts/pass/88bf9238714e5ffc.ts
 ✓ test/parser/suite/ts/pass/88c245b9dbb36e0c.ts
-✗ test/parser/suite/ts/pass/88cb205e14e0cd7b.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default function Foo (){
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 4 |     
-   | ~~~~~
- 5 | }
-   | ~ first exported here
- 6 | 
- 7 | export default {
-   | ^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~
- 8 |     uhoh: "another default",
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 9 | };
-   | ^^
-   | ~~ exported again here
-10 | 
-   |
-
+✓ test/parser/suite/ts/pass/88cb205e14e0cd7b.module.ts
 ✓ test/parser/suite/ts/pass/88cc835ce77dad1f.ts
 ✓ test/parser/suite/ts/pass/88cd15e9e53228fc.ts
 ✓ test/parser/suite/ts/pass/88d384e58aab0c5a.module.ts
@@ -6789,17 +5594,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/8ac61d094ba285f6.ts
 ✓ test/parser/suite/ts/pass/8ac63e237fcd6b66.ts
 ✓ test/parser/suite/ts/pass/8ac83689ec676f4d.ts
-✗ test/parser/suite/ts/pass/8acc117d526f5108.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class C {
- 3 |     constructor(x: number);
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(x: number);
-   |     ^^^^^^^^^^^
- 5 |     constructor(x: any) { }
-   |
-
+✓ test/parser/suite/ts/pass/8acc117d526f5108.ts
 ✓ test/parser/suite/ts/pass/8acfd0fac65506a3.ts
 ✓ test/parser/suite/ts/pass/8ad7f0d14895f6ee.ts
 ✓ test/parser/suite/ts/pass/8aef84d223069cc9.module.ts
@@ -6938,18 +5733,7 @@ error: Unexpected token ':' as class element key
 ✓ test/parser/suite/ts/pass/8e3363f043924492.module.ts
 ✓ test/parser/suite/ts/pass/8e383f86bff36815.module.ts
 ✓ test/parser/suite/ts/pass/8e3987aa381cfee7.ts
-✗ test/parser/suite/ts/pass/8e39a04f4e42bb3f.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 3 | const foo = 1
- 4 | export default foo
-   | ~~~~~~~~~~~~~~~~~~ first exported here
- 5 | export default class Foo {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 6 | type Bar = {}
-   |
-
+✓ test/parser/suite/ts/pass/8e39a04f4e42bb3f.module.ts
 ✓ test/parser/suite/ts/pass/8e3d93b4eb6665b8.ts
 ✗ test/parser/suite/ts/pass/8e4bf6d11cdcbab2.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -6972,15 +5756,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/8e7def3effd989b2.ts
 ✓ test/parser/suite/ts/pass/8e835a81886c3849.ts
 ✓ test/parser/suite/ts/pass/8e8d7c0793de2f61.ts
-✗ test/parser/suite/ts/pass/8e958aa177b9829f.ts (parse errors)
-error: Private field '#nope' must be declared in an enclosing class
-   |
- 2 | 
- 3 | exports.#nope = 1;           // Error (outside class body)
-   |         ^^^^^
- 4 | function A() { }
-   |
-
+✓ test/parser/suite/ts/pass/8e958aa177b9829f.ts
 ✓ test/parser/suite/ts/pass/8e987dc2be37a901.ts
 ✓ test/parser/suite/ts/pass/8ea0e3ceac4cd0cb.ts
 ✓ test/parser/suite/ts/pass/8ead36ef0a52b3e0.ts
@@ -6991,29 +5767,13 @@ error: Private field '#nope' must be declared in an enclosing class
 ✓ test/parser/suite/ts/pass/8ed4aa5b1cdec7ab.ts
 ✓ test/parser/suite/ts/pass/8ed647916c1cd9a0.tsx
 ✓ test/parser/suite/ts/pass/8ee313bda63ce6dd.module.tsx
-✗ test/parser/suite/ts/pass/8ee7307933c57819.ts (parse errors)
-error: 'public' is reserved in strict mode and cannot be used as an identifier
-   |
- 2 | class C {
- 3 |     [public]() { }
-   |      ^^^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/8ee7307933c57819.ts
 ✓ test/parser/suite/ts/pass/8ee760d17bd140bd.ts
 ✓ test/parser/suite/ts/pass/8ef06f4b213e3ee8.ts
 ✓ test/parser/suite/ts/pass/8ef4c27a91ef76ca.ts
 ✓ test/parser/suite/ts/pass/8ef53fe91589889e.ts
 ✓ test/parser/suite/ts/pass/8efa4386d6f77444.ts
-✗ test/parser/suite/ts/pass/8efc6c63af2a3905.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 3 | // All use of let in const declaration should be an error
- 4 | let x = 50, let = 5;
-   |             ^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/8efc6c63af2a3905.ts
 ✓ test/parser/suite/ts/pass/8f04e7247e654a5f.ts
 ✓ test/parser/suite/ts/pass/8f0549cf13cd57e7.module.ts
 ✓ test/parser/suite/ts/pass/8f05e9e1ce710dc8.ts
@@ -7052,17 +5812,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/8f85b411268665c6.ts
 ✓ test/parser/suite/ts/pass/8f912f9e5326a7a6.module.ts
 ✓ test/parser/suite/ts/pass/8f98fe5bf13b7281.module.tsx
-✗ test/parser/suite/ts/pass/8fbab75776366129.ts (parse errors)
-error: Illegal break statement
-   |
- 4 | // naked break not allowed
- 5 | break;
-   | ^^^^^^
- 6 | 
-   |
-   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
-
-
+✓ test/parser/suite/ts/pass/8fbab75776366129.ts
 ✓ test/parser/suite/ts/pass/8fc277199bec892d.module.ts
 ✓ test/parser/suite/ts/pass/8fca7b5958cf25fd.ts
 ✓ test/parser/suite/ts/pass/8fd6b5fdb48f41cf.ts
@@ -7120,20 +5870,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/910a9d16abb246e0.ts
 ✓ test/parser/suite/ts/pass/911a7b4ea65f4e9f.ts
 ✓ test/parser/suite/ts/pass/911b84a306a4039c.ts
-✗ test/parser/suite/ts/pass/913654920971d627.module.ts (parse errors)
-error: Identifier 'callme' has already been declared
-   |
-12 | }
-13 | declare function callme(x: Foo<any>): Foo<any>;
-   |                  ~~~~~~ 'callme' was first declared as a function here
-14 | declare function callme(x: object): string;
-   |                  ^^^^^^
-   |                  ~~~~~~ cannot be redeclared here
-15 | 
-   |
-   = help: Consider removing or renaming this declaration of 'callme'
-
-
+✓ test/parser/suite/ts/pass/913654920971d627.module.ts
 ✓ test/parser/suite/ts/pass/91434c45b501477a.ts
 ✓ test/parser/suite/ts/pass/91463901854e02d9.ts
 ✓ test/parser/suite/ts/pass/9147ceeb173cd281.ts
@@ -7141,17 +5878,7 @@ error: Identifier 'callme' has already been declared
 ✓ test/parser/suite/ts/pass/915e6dbbe0e3b3c0.module.ts
 ✓ test/parser/suite/ts/pass/9163b8bbf58608c5.ts
 ✓ test/parser/suite/ts/pass/9168e16d16ad057e.ts
-✗ test/parser/suite/ts/pass/916ff5228fdfe34d.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |     constructor(x);
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(x = 1) {
-   |     ^^^^^^^^^^^
- 6 |         var y = x;
-   |
-
+✓ test/parser/suite/ts/pass/916ff5228fdfe34d.ts
 ✓ test/parser/suite/ts/pass/917498eab618163a.ts
 ✓ test/parser/suite/ts/pass/917ff264616e98d0.module.ts
 ✓ test/parser/suite/ts/pass/91883733123cba74.module.ts
@@ -7177,29 +5904,11 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/92392a78cd5579e9.ts
 ✓ test/parser/suite/ts/pass/9242ce08812009fd.ts
 ✓ test/parser/suite/ts/pass/9245b0561c5149e9.ts
-✗ test/parser/suite/ts/pass/925863dd9a17514f.ts (parse errors)
-error: 'public' is reserved in strict mode and cannot be used as an identifier
-   |
- 2 | class C {
- 3 |     [public ]: string;
-   |      ^^^^^^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/925863dd9a17514f.ts
 ✓ test/parser/suite/ts/pass/925fd291daad4de1.ts
 ✓ test/parser/suite/ts/pass/9271320ac2c5bf72.ts
 ✓ test/parser/suite/ts/pass/92728f3b0559676a.ts
-✗ test/parser/suite/ts/pass/927748d11d85014e.ts (parse errors)
-error: Illegal continue statement
-   |
- 3 |   default:
- 4 |     continue;
-   |     ^^^^^^^^^
- 5 | }
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/927748d11d85014e.ts
 ✓ test/parser/suite/ts/pass/927d059da0f9ccba.ts
 ✓ test/parser/suite/ts/pass/9281ee6ca57d95f0.ts
 ✓ test/parser/suite/ts/pass/9286281dcdaafa16.ts
@@ -7219,15 +5928,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/93199a75c9500f2e.ts
 ✓ test/parser/suite/ts/pass/933205a737568be0.module.ts
 ✓ test/parser/suite/ts/pass/933dbbd6fc1bf623.ts
-✗ test/parser/suite/ts/pass/93621a6eabf6fb18.ts (parse errors)
-error: for-in/of loop variable declaration may not have an initializer
-   |
- 1 | //@target: ES6
- 2 | for (var a = 1 of X) {
-   |          ^^^^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/93621a6eabf6fb18.ts
 ✓ test/parser/suite/ts/pass/9366df311d97f1b8.ts
 ✓ test/parser/suite/ts/pass/93777bc6c214c974.ts
 ✓ test/parser/suite/ts/pass/93799353b441ee2f.ts
@@ -7255,17 +5956,7 @@ error: Unexpected token 'void' in expression
 
 
 ✓ test/parser/suite/ts/pass/94157ecb9a694601.module.ts
-✗ test/parser/suite/ts/pass/94255d180175c695.module.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | declare class Component<P> {
- 4 |     constructor(props: Readonly<P>);
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(props: P, context?: any);
-   |     ^^^^^^^^^^^
- 6 |     readonly props: Readonly<P> & Readonly<{ children?: {} }>;
-   |
-
+✓ test/parser/suite/ts/pass/94255d180175c695.module.ts
 ✓ test/parser/suite/ts/pass/9434e80f3aed71ae.ts
 ✓ test/parser/suite/ts/pass/944058b7f9f6378c.ts
 ✓ test/parser/suite/ts/pass/944f14e1603bcc9b.ts
@@ -7321,17 +6012,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/96278edc6cad1d00.ts
 ✓ test/parser/suite/ts/pass/962ec873943977e7.ts
 ✓ test/parser/suite/ts/pass/962f5ac1452fde5a.ts
-✗ test/parser/suite/ts/pass/9631743ff20d5f7b.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 3 |     constructor() {
- 4 |         super(); // error
-   |         ^^^^^^^
- 5 |     }
-   |
-   = help: Add an 'extends' clause to the class or remove the 'super()' call
-
-
+✓ test/parser/suite/ts/pass/9631743ff20d5f7b.ts
 ✓ test/parser/suite/ts/pass/963178cd5379816a.ts
 ✓ test/parser/suite/ts/pass/963d7ff519910dfd.ts
 ✓ test/parser/suite/ts/pass/9656605d4f62c2fa.ts
@@ -7386,17 +6067,7 @@ error: Expected '?' in a conditional type, but found ':'
 ✓ test/parser/suite/ts/pass/9734f2e7a3c5f889.ts
 ✓ test/parser/suite/ts/pass/97395036f099b4bb.ts
 ✓ test/parser/suite/ts/pass/973a2fc23766f47a.ts
-✗ test/parser/suite/ts/pass/973d9414df8c6b22.module.ts (parse errors)
-error: Illegal 'use strict' directive in function with non-simple parameter list
-   |
- 2 | // @strict: false
- 3 | function a(a = 10) {
-   |            ~~~~~~ non-simple parameter
- 4 |     "use strict";
-   |     ^^^^^^^^^^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/973d9414df8c6b22.module.ts
 ✓ test/parser/suite/ts/pass/9750242839722cc1.ts
 ✓ test/parser/suite/ts/pass/9750e9f3ed53fd62.ts
 ✓ test/parser/suite/ts/pass/9752e17d5f19d20d.ts
@@ -7412,17 +6083,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 ✓ test/parser/suite/ts/pass/97c39be7978a5d49.ts
 ✓ test/parser/suite/ts/pass/97c523aa0ac9f6ca.ts
 ✓ test/parser/suite/ts/pass/97cdc348958e3597.ts
-✗ test/parser/suite/ts/pass/97d35f8dbb14a4b0.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 4 | class C extends Base {
- 5 |     [(super(), "prop")]() { }
-   |       ^^^^^^^
- 6 | }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/97d35f8dbb14a4b0.ts
 ✓ test/parser/suite/ts/pass/97d52ef48fa09743.ts
 ✓ test/parser/suite/ts/pass/97d5a3ad13bd083a.ts
 ✓ test/parser/suite/ts/pass/97e5dd737b3f72e5.ts
@@ -7499,23 +6160,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/9969f4fa2b470e27.ts
 ✓ test/parser/suite/ts/pass/99721f2b4414b381.ts
 ✓ test/parser/suite/ts/pass/99727cd8b79b298b.ts
-✗ test/parser/suite/ts/pass/99749ba9d8417de3.ts (parse errors)
-error: Identifier 'Point' has already been declared
-   |
- 2 | // @strict: false
- 3 | declare class Point
-   |               ~~~~~ 'Point' was first declared as a class here
- 4 | {
-.. |
-15 | // to be Point and return type is inferred to be void
-16 | function Point(x, y) {
-   |          ^^^^^
-   |          ~~~~~ cannot be redeclared here
-17 |     this.x = x;
-   |
-   = help: Consider removing or renaming this declaration of 'Point'
-
-
+✓ test/parser/suite/ts/pass/99749ba9d8417de3.ts
 ✓ test/parser/suite/ts/pass/997afc5165114584.ts
 ✓ test/parser/suite/ts/pass/998180478af1e04f.ts
 ✓ test/parser/suite/ts/pass/998e67050906a621.ts
@@ -7523,15 +6168,7 @@ error: Identifier 'Point' has already been declared
 ✓ test/parser/suite/ts/pass/99ad8a642159d0a7.ts
 ✓ test/parser/suite/ts/pass/99af753b5ea8edf3.ts
 ✓ test/parser/suite/ts/pass/99c092d90c7c26f7.ts
-✗ test/parser/suite/ts/pass/99c285c730a19774.ts (parse errors)
-error: 'arguments' is not allowed as a binding identifier in strict mode
-   |
- 4 | class c1 {
- 5 |     constructor(i: number, ...arguments) { // error
-   |                               ^^^^^^^^^
- 6 |         var arguments: any[]; // no error
-   |
-
+✓ test/parser/suite/ts/pass/99c285c730a19774.ts
 ✓ test/parser/suite/ts/pass/99c538d3e978b24c.ts
 ✓ test/parser/suite/ts/pass/99c952c91829b233.ts
 ✓ test/parser/suite/ts/pass/99c98597d8e07f23.module.ts
@@ -7545,15 +6182,7 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/99ecf4aabc49456a.ts
 ✓ test/parser/suite/ts/pass/99fa7079e4ea625a.ts
 ✓ test/parser/suite/ts/pass/99fe3f2afb3a8ec7.ts
-✗ test/parser/suite/ts/pass/99fedadb9eb4543e.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 3 | // Should be an error
- 4 | for (let let of [1,2,3]) {}
-   |          ^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/99fedadb9eb4543e.ts
 ✓ test/parser/suite/ts/pass/9a00fcdffeeb7c1e.tsx
 ✓ test/parser/suite/ts/pass/9a06db3f3bcfea17.ts
 ✓ test/parser/suite/ts/pass/9a1751d5173af047.module.ts
@@ -7692,42 +6321,14 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/9e2d28de257d32ea.ts
 ✓ test/parser/suite/ts/pass/9e2e00727cc49826.ts
 ✓ test/parser/suite/ts/pass/9e2f1528d16c95ed.ts
-✗ test/parser/suite/ts/pass/9e31efd1f160595a.ts (parse errors)
-error: A class can only have one constructor
-   |
- 4 | class C {
- 5 |     constructor(x: number, y: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 6 |     constructor(x: number, y: string); // error
-   |     ^^^^^^^^^^^
- 7 |     constructor(x: number) { }
-   |
-
+✓ test/parser/suite/ts/pass/9e31efd1f160595a.ts
 ✓ test/parser/suite/ts/pass/9e34e42e9a2f760d.ts
-✗ test/parser/suite/ts/pass/9e3e96b15d116238.ts (parse errors)
-error: Private field '#foo' must be declared in an enclosing class
-   |
- 6 | 
- 7 | @dec(x => x.#foo) // error
-   |             ^^^^
- 8 | class A {
-   |
-
+✓ test/parser/suite/ts/pass/9e3e96b15d116238.ts
 ✓ test/parser/suite/ts/pass/9e3ef423d19ee39e.module.ts
 ✓ test/parser/suite/ts/pass/9e43ef3d177442ae.ts
 ✓ test/parser/suite/ts/pass/9e4576196f589f2f.ts
 ✓ test/parser/suite/ts/pass/9e5a4e780419bcc8.ts
-✗ test/parser/suite/ts/pass/9e5cb38a5f5d5047.ts (parse errors)
-error: Illegal continue statement
-   |
- 7 | // naked continue not allowed
- 8 | continue;
-   | ^^^^^^^^^
- 9 | 
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/9e5cb38a5f5d5047.ts
 ✓ test/parser/suite/ts/pass/9e70015cc2bc40cd.ts
 ✓ test/parser/suite/ts/pass/9e72e404a790b730.module.ts
 ✓ test/parser/suite/ts/pass/9e74abd850e283b3.module.ts
@@ -7911,26 +6512,9 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/a3b8527e18926304.ts
 ✓ test/parser/suite/ts/pass/a3c079ca52e80441.ts
 ✓ test/parser/suite/ts/pass/a3c63f3d275394c8.ts
-✗ test/parser/suite/ts/pass/a3cda352fb18ddfa.ts (parse errors)
-error: A class can only have one constructor
-   |
-11 | class C2 {
-12 |     protected constructor(x: number);
-   |               ~~~~~~~~~~~ first constructor defined here
-13 |     protected constructor(x: any) { }
-   |               ^^^^^^^^^^^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/a3cda352fb18ddfa.ts
 ✓ test/parser/suite/ts/pass/a3cdd323355c0e1d.ts
-✗ test/parser/suite/ts/pass/a3d03aca539b4e16.module.ts (parse errors)
-error: 'static' is reserved in strict mode and cannot be used as an identifier
-   |
- 5 | foo1();
- 6 | static();
-   | ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/a3d03aca539b4e16.module.ts
 ✓ test/parser/suite/ts/pass/a3d3a0a87a457c12.ts
 ✓ test/parser/suite/ts/pass/a3d4d5afe5220ea0.ts
 ✗ test/parser/suite/ts/pass/a3dd4f37b50f23e5.ts (parse errors)
@@ -7945,23 +6529,7 @@ error: Invalid character at start of identifier
 
 
 ✓ test/parser/suite/ts/pass/a3e6021934419105.ts
-✗ test/parser/suite/ts/pass/a3e8eb3007dd2145.ts (parse errors)
-error: 'with' statements are not allowed in strict mode
-   |
-12 |     constructor() {
-13 |         with(new C()) {
-   |         ^^^^^^^^^^^^^^^^
-14 |             foo();
-   | ^^^^^^^^^^^^^^^^^^^
-15 |             super();
-   | ^^^^^^^^^^^^^^^^^^^^^
-16 |             bar();
-   | ^^^^^^^^^^^^^^^^^^^
-17 |         }
-   | ^^^^^^^^^
-18 | 
-   |
-
+✓ test/parser/suite/ts/pass/a3e8eb3007dd2145.ts
 ✓ test/parser/suite/ts/pass/a40b97d75c257445.module.ts
 ✓ test/parser/suite/ts/pass/a41b174db8fdc84b.ts
 ✓ test/parser/suite/ts/pass/a41e24cd79d7ca7e.ts
@@ -7978,16 +6546,7 @@ error: 'with' statements are not allowed in strict mode
 ✓ test/parser/suite/ts/pass/a46b155f566aea13.ts
 ✓ test/parser/suite/ts/pass/a474d4436afa4485.module.ts
 ✓ test/parser/suite/ts/pass/a4755715db2c2098.ts
-✗ test/parser/suite/ts/pass/a4776496a3fc1606.ts (parse errors)
-error: Illegal continue statement
-   |
- 1 | // @target: es2015
- 2 | continue;
-   | ^^^^^^^^^
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/a4776496a3fc1606.ts
 ✓ test/parser/suite/ts/pass/a47b559437eab0f9.ts
 ✓ test/parser/suite/ts/pass/a47e15bb6e9818e1.ts
 ✓ test/parser/suite/ts/pass/a47e70af61fd7f20.ts
@@ -8006,15 +6565,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/a4d3c594f9fc8b8d.ts
 ✓ test/parser/suite/ts/pass/a4e7e820dcabf1b3.ts
 ✓ test/parser/suite/ts/pass/a4e893518b760fad.ts
-✗ test/parser/suite/ts/pass/a4edcdea780301ad.ts (parse errors)
-error: 'static' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 5 | class test {
- 6 |     constructor (static) { }
-   |                  ^^^^^^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/a4edcdea780301ad.ts
 ✓ test/parser/suite/ts/pass/a4f0048c633232f3.ts
 ✓ test/parser/suite/ts/pass/a4f359c998a655b6.ts
 ✓ test/parser/suite/ts/pass/a4f606bd0329b031.ts
@@ -8045,32 +6596,14 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
 ✓ test/parser/suite/ts/pass/a5e6f8103948caa4.tsx
 ✓ test/parser/suite/ts/pass/a5ec5a3330dbf2cb.ts
 ✓ test/parser/suite/ts/pass/a5f78fb095214a8e.ts
-✗ test/parser/suite/ts/pass/a5f9c2a73058382a.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
-17 |     p1: function () {
-18 |         super.method();
-   |         ^^^^^^^^^^^^
-19 |     },
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/a5f9c2a73058382a.ts
 ✓ test/parser/suite/ts/pass/a604fe4af0638f51.ts
 ✓ test/parser/suite/ts/pass/a611f7a70db293e8.ts
 ✓ test/parser/suite/ts/pass/a61949a5773f72b1.ts
 ✓ test/parser/suite/ts/pass/a61d0af2d64ec251.ts
 ✓ test/parser/suite/ts/pass/a61dc30abf6c096b.ts
 ✓ test/parser/suite/ts/pass/a6305e20eb5c75ed.ts
-✗ test/parser/suite/ts/pass/a63105be9e60e57d.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-12 | function func(x: I) {
-13 |     x.#prop = 123;
-   |       ^^^^^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/a63105be9e60e57d.ts
 ✓ test/parser/suite/ts/pass/a631ff86af8e5bcb.module.ts
 ✓ test/parser/suite/ts/pass/a634b94b1833ec64.ts
 ✗ test/parser/suite/ts/pass/a63e0feb4cb6274c.ts (parse errors)
@@ -8275,20 +6808,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/aac24408d0ef7c65.ts
 ✓ test/parser/suite/ts/pass/aac3c3a60056e1d0.ts
 ✓ test/parser/suite/ts/pass/aac489499affd372.ts
-✗ test/parser/suite/ts/pass/aad8031e44d0ced7.ts (parse errors)
-error: Identifier 'B' has already been declared
-   |
- 6 | 
- 7 | declare function B(p: string): B;
-   |                  ~ 'B' was first declared as a function here
- 8 | declare class B extends A {
-   |               ^
-   |               ~ cannot be redeclared here
- 9 |     constructor(p: string);
-   |
-   = help: Consider removing or renaming this declaration of 'B'
-
-
+✓ test/parser/suite/ts/pass/aad8031e44d0ced7.ts
 ✓ test/parser/suite/ts/pass/aae280b37a77c3ee.ts
 ✓ test/parser/suite/ts/pass/aaecc5edc2bd5734.ts
 ✓ test/parser/suite/ts/pass/aaf7970d73ba5a5c.module.ts
@@ -8335,15 +6855,7 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/ts/pass/abd1a2ce821d2f6c.ts
 ✓ test/parser/suite/ts/pass/abd275d941748aa3.ts
 ✓ test/parser/suite/ts/pass/abd2c56c0bb4805e.ts
-✗ test/parser/suite/ts/pass/abd3451a93473890.ts (parse errors)
-error: Deleting a variable in strict mode is not allowed
-   |
- 6 |     static [() => { }]() { }
- 7 |     get [delete id]() { }
-   |          ^^^^^^^^^
- 8 |     set [[0, 1]](v) { }
-   |
-
+✓ test/parser/suite/ts/pass/abd3451a93473890.ts
 ✓ test/parser/suite/ts/pass/abd877817991855f.ts
 ✓ test/parser/suite/ts/pass/abe2149d24b9244d.ts
 ✓ test/parser/suite/ts/pass/abe2cd1b21032fd4.ts
@@ -8426,18 +6938,7 @@ error: Expected '?' in a conditional type, but found ','
 ✓ test/parser/suite/ts/pass/aee66b63f2862974.module.ts
 ✓ test/parser/suite/ts/pass/aeecc2cae933fedb.ts
 ✓ test/parser/suite/ts/pass/aef46a1a1215fb98.ts
-✗ test/parser/suite/ts/pass/aefa17ca3c01c04e.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 4 | 
- 5 | export default function f();
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 6 | export default function f(x: string);
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 7 | export default function f(...args: any[]) {
-   |
-
+✓ test/parser/suite/ts/pass/aefa17ca3c01c04e.module.ts
 ✓ test/parser/suite/ts/pass/af13de08afcfa256.ts
 ✓ test/parser/suite/ts/pass/af19e5e68e97e91c.module.ts
 ✓ test/parser/suite/ts/pass/af345189c57af121.ts
@@ -8455,15 +6956,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 
 ✓ test/parser/suite/ts/pass/af49fc74afcbc4fe.ts
 ✓ test/parser/suite/ts/pass/af516278179422bb.ts
-✗ test/parser/suite/ts/pass/af60cec5ca84720e.ts (parse errors)
-error: Deleting a variable in strict mode is not allowed
-   |
- 6 |     static [() => { }]() { }
- 7 |     get [delete id]() { }
-   |          ^^^^^^^^^
- 8 |     set [[0, 1]](v) { }
-   |
-
+✓ test/parser/suite/ts/pass/af60cec5ca84720e.ts
 ✓ test/parser/suite/ts/pass/af7c31eb798b9b3a.ts
 ✓ test/parser/suite/ts/pass/af85b1b8641ec186.ts
 ✓ test/parser/suite/ts/pass/af96d4faea8b7ad8.ts
@@ -8472,20 +6965,7 @@ error: Deleting a variable in strict mode is not allowed
 ✓ test/parser/suite/ts/pass/af9bf30f573e4cd9.ts
 ✓ test/parser/suite/ts/pass/afa276004cbdf93e.ts
 ✓ test/parser/suite/ts/pass/afa9a29149b290d3.ts
-✗ test/parser/suite/ts/pass/afae9c36ba65b9ef.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
- 3 | // which are also namespaces can be represented in declaration files
- 4 | declare function Foo (x: number): Foo.Inst;
-   |                  ~~~ 'Foo' was first declared as a function here
- 5 | declare class Foo {
-   |               ^^^
-   |               ~~~ cannot be redeclared here
- 6 |     constructor(x: string);
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/afae9c36ba65b9ef.ts
 ✓ test/parser/suite/ts/pass/afb0119cea1767e5.ts
 ✓ test/parser/suite/ts/pass/afd27a718db37f42.module.ts
 ✓ test/parser/suite/ts/pass/afd8613ffd147ae3.ts
@@ -8581,15 +7061,7 @@ error: Expected ';' after for-loop init, but found ':'
 
 ✓ test/parser/suite/ts/pass/b1146458367d5fd5.ts
 ✓ test/parser/suite/ts/pass/b11ea16e4e374c30.ts
-✗ test/parser/suite/ts/pass/b11f9ce81fa5fd63.ts (parse errors)
-error: Cannot break to label 'target' across function boundaries
-   |
- 7 |     while (true) {
- 8 |       break target;
-   |       ^^^^^^^^^^^^^
- 9 |     }
-   |
-
+✓ test/parser/suite/ts/pass/b11f9ce81fa5fd63.ts
 ✓ test/parser/suite/ts/pass/b129ece671d68195.ts
 ✓ test/parser/suite/ts/pass/b137ac72ff0c9468.ts
 ✓ test/parser/suite/ts/pass/b149952a8d33f719.ts
@@ -8598,15 +7070,7 @@ error: Cannot break to label 'target' across function boundaries
 ✓ test/parser/suite/ts/pass/b1698b122ef17449.module.ts
 ✓ test/parser/suite/ts/pass/b1737d6dac5443b9.ts
 ✓ test/parser/suite/ts/pass/b1771e434b440783.module.ts
-✗ test/parser/suite/ts/pass/b178f8990ade6f95.ts (parse errors)
-error: for-in/of loop variable declaration may not have an initializer
-   |
- 1 | //@target: ES5, ES2015
- 2 | for (var a = 1 of X) {
-   |          ^^^^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/b178f8990ade6f95.ts
 ✗ test/parser/suite/ts/pass/b1794f4577729dee.module.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
    |
@@ -8675,17 +7139,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/b31f6abc68c0bd79.ts
 ✓ test/parser/suite/ts/pass/b3249983f249b6c9.ts
 ✓ test/parser/suite/ts/pass/b32ed8286e06aee6.ts
-✗ test/parser/suite/ts/pass/b338dd29b0fe5641.ts (parse errors)
-error: Illegal break statement
-   |
- 7 | // naked break not allowed
- 8 | break;
-   | ^^^^^^
- 9 | 
-   |
-   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
-
-
+✓ test/parser/suite/ts/pass/b338dd29b0fe5641.ts
 ✓ test/parser/suite/ts/pass/b346500fc8619ce8.ts
 ✓ test/parser/suite/ts/pass/b346f32501f8e259.ts
 ✓ test/parser/suite/ts/pass/b352dbf3395f3613.ts
@@ -8710,15 +7164,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/b3b036db33de3e5e.ts
 ✓ test/parser/suite/ts/pass/b3b095e492fb64d2.ts
 ✓ test/parser/suite/ts/pass/b3b2345d8ce80165.ts
-✗ test/parser/suite/ts/pass/b3b76381fbee374f.module.ts (parse errors)
-error: Export 'A' is not defined
-   |
- 9 | 
-10 | export { A }
-   |          ^
-11 | 
-   |
-
+✓ test/parser/suite/ts/pass/b3b76381fbee374f.module.ts
 ✓ test/parser/suite/ts/pass/b3bce6c924b691c9.ts
 ✓ test/parser/suite/ts/pass/b3c28e04953c8b5a.ts
 ✓ test/parser/suite/ts/pass/b3ce8c493bf2cf02.ts
@@ -8758,17 +7204,7 @@ error: Expected ')' to close a parenthesized type, but found '?'
 ✓ test/parser/suite/ts/pass/b4679b6e25fc0ad4.ts
 ✓ test/parser/suite/ts/pass/b4680ba60a4402f6.ts
 ✓ test/parser/suite/ts/pass/b4713d0eb654fffc.ts
-✗ test/parser/suite/ts/pass/b4715a885d67e26c.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
-24 |     constructor() { // error
-25 |         var r = function () { super() } // error
-   |                               ^^^^^^^
-26 |     }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/b4715a885d67e26c.ts
 ✓ test/parser/suite/ts/pass/b472a9bc5ea4fcde.ts
 ✓ test/parser/suite/ts/pass/b47b86c7ae5ff0ed.ts
 ✓ test/parser/suite/ts/pass/b485720f2cc56603.ts
@@ -8793,17 +7229,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/b4e471bfb69ce63b.ts
 ✓ test/parser/suite/ts/pass/b4f993b32058c346.ts
 ✓ test/parser/suite/ts/pass/b4fc74b1a45935d2.ts
-✗ test/parser/suite/ts/pass/b5010664fee8f669.ts (parse errors)
-error: A class can only have one constructor
-   |
-12 | declare class BaseBase<T, U> extends BaseBase2 implements IBase<T, U> {
-13 |     constructor(x: T, ...y: U[]);
-   |     ~~~~~~~~~~~ first constructor defined here
-14 |     constructor(x1: T, x2: T, ...y: U[]);
-   |     ^^^^^^^^^^^
-15 |     constructor(x1: T, x2: U, y: T);
-   |
-
+✓ test/parser/suite/ts/pass/b5010664fee8f669.ts
 ✓ test/parser/suite/ts/pass/b5057ff5bcc96216.ts
 ✓ test/parser/suite/ts/pass/b514b63b2539385e.ts
 ✓ test/parser/suite/ts/pass/b516712f9f7c6a4c.ts
@@ -8875,17 +7301,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/b68c4450bc44e14d.ts
 ✓ test/parser/suite/ts/pass/b68d89597269b240.module.ts
 ✓ test/parser/suite/ts/pass/b69613fcb69c4d64.ts
-✗ test/parser/suite/ts/pass/b69a275029d2873b.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |     constructor(x: number);
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(x: string);
-   |     ^^^^^^^^^^^
- 6 |     constructor(x) { }
-   |
-
+✓ test/parser/suite/ts/pass/b69a275029d2873b.ts
 ✓ test/parser/suite/ts/pass/b6a50d300b56fdb1.module.ts
 ✓ test/parser/suite/ts/pass/b6b4d7758f8e7e4d.ts
 ✓ test/parser/suite/ts/pass/b6b5bdb4744dce44.ts
@@ -8897,15 +7313,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/b6ec5ff9889cd007.ts
 ✓ test/parser/suite/ts/pass/b6f05409eb03ddb7.ts
 ✓ test/parser/suite/ts/pass/b6f2f71e1ca84c24.module.ts
-✗ test/parser/suite/ts/pass/b6f4760035f77cd7.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 3 | // All use of let in const declaration should be an error
- 4 | const x = 50, let = 5;
-   |               ^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/b6f4760035f77cd7.ts
 ✓ test/parser/suite/ts/pass/b70180a6c5f7a128.ts
 ✗ test/parser/suite/ts/pass/b70c7d10161cc3cf.tsx (parse errors)
 error: Invalid character at start of identifier
@@ -8932,17 +7340,7 @@ error: Invalid character at start of identifier
 ✓ test/parser/suite/ts/pass/b7745fc1bb60a584.ts
 ✓ test/parser/suite/ts/pass/b779abd9f4a9c668.ts
 ✓ test/parser/suite/ts/pass/b78157080bd9c5c1.module.ts
-✗ test/parser/suite/ts/pass/b78a65906332d71a.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
- 9 |     // use of super in static properties initializers.
-10 |     [super.bar()]() { }
-   |      ^^^^^^^^^
-11 | }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/b78a65906332d71a.ts
 ✓ test/parser/suite/ts/pass/b79c7c1c95169688.ts
 ✓ test/parser/suite/ts/pass/b79ec5d55d902896.ts
 ✓ test/parser/suite/ts/pass/b7a1fd66dba1798d.ts
@@ -8964,19 +7362,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/b81701a7fe74dd68.ts
 ✓ test/parser/suite/ts/pass/b81b29bc58c73681.module.ts
 ✓ test/parser/suite/ts/pass/b8357c2865a7c263.ts
-✗ test/parser/suite/ts/pass/b83efdc85b59d01b.ts (parse errors)
-error: A switch statement can only have one default clause
-   |
- 6 |         case 2:
- 7 |         default:    // No issues.
-   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~
- 8 |             break;
-   | ~~~~~~~~~~~~~~~~~~ first default defined here
- 9 |         default:    // Error; second 'default' clause.
-   |         ^^^^^^^^
-10 |         default:    // Error; third 'default' clause.
-   |
-
+✓ test/parser/suite/ts/pass/b83efdc85b59d01b.ts
 ✓ test/parser/suite/ts/pass/b844d484c6b6296a.ts
 ✗ test/parser/suite/ts/pass/b86882ccfcd57874.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
@@ -9019,17 +7405,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/b91ec6427e3b189f.ts
 ✓ test/parser/suite/ts/pass/b91f54139cb1a853.ts
 ✓ test/parser/suite/ts/pass/b91fb47cc3648ad3.module.ts
-✗ test/parser/suite/ts/pass/b922d8c2fd4c3c27.ts (parse errors)
-error: Illegal continue statement
-   |
- 3 |     if (true) {
- 4 |         continue;
-   |         ^^^^^^^^^
- 5 |     }
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/b922d8c2fd4c3c27.ts
 ✓ test/parser/suite/ts/pass/b923df8dd2ff3712.ts
 ✓ test/parser/suite/ts/pass/b943ed9a9dee4729.ts
 ✓ test/parser/suite/ts/pass/b9478afdd3b6ef23.ts
@@ -9053,19 +7429,7 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/b9c29578f6714b5c.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default class Foo {}
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 4 | type Bar = {}
- 5 | export default Bar
-   | ^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~ exported again here
- 6 | 
-   |
-
+✓ test/parser/suite/ts/pass/b9c29578f6714b5c.module.ts
 ✓ test/parser/suite/ts/pass/b9cb30dd7fb2f804.ts
 ✓ test/parser/suite/ts/pass/b9cca07053f42e63.ts
 ✓ test/parser/suite/ts/pass/b9cfb13afc4e54f7.ts
@@ -9076,15 +7440,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/b9e50f0652b322fc.ts
 ✓ test/parser/suite/ts/pass/b9e9edc6c431abfd.ts
 ✓ test/parser/suite/ts/pass/b9eb48b4a548ab66.ts
-✗ test/parser/suite/ts/pass/b9f5db097d266b11.ts (parse errors)
-error: Private fields cannot be deleted
-   |
- 6 |     constructor() {
- 7 |         delete this.#v; // Error: The operand of a delete operator cannot be a private name.
-   |         ^^^^^^^^^^^^^^
- 8 |     }
-   |
-
+✓ test/parser/suite/ts/pass/b9f5db097d266b11.ts
 ✓ test/parser/suite/ts/pass/b9f8a85870e2e61e.module.ts
 ✓ test/parser/suite/ts/pass/b9f984bf1f3eccab.ts
 ✓ test/parser/suite/ts/pass/b9fc8d1dcfb55297.ts
@@ -9108,27 +7464,9 @@ error: Private fields cannot be deleted
 ✓ test/parser/suite/ts/pass/ba8088bb4898e987.ts
 ✓ test/parser/suite/ts/pass/ba8808b5614870fb.ts
 ✓ test/parser/suite/ts/pass/ba890028b92c0780.ts
-✗ test/parser/suite/ts/pass/ba8d3653fc145ad9.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-15 | }
-16 | new A2().#prop; // Error
-   |          ^^^^^
-17 | 
-   |
-
+✓ test/parser/suite/ts/pass/ba8d3653fc145ad9.ts
 ✓ test/parser/suite/ts/pass/baa07cd7b13606f8.ts
-✗ test/parser/suite/ts/pass/baa52c3a2efdb98e.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | declare class FooBase {
- 3 |     constructor(s: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(n: number);
-   |     ^^^^^^^^^^^
- 5 |     constructor(x: any);
-   |
-
+✓ test/parser/suite/ts/pass/baa52c3a2efdb98e.ts
 ✓ test/parser/suite/ts/pass/bac22dcffc699a77.ts
 ✓ test/parser/suite/ts/pass/bac24751170e33ab.ts
 ✓ test/parser/suite/ts/pass/bac504963584e3e8.ts
@@ -9159,15 +7497,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/bb216ab584ec9917.ts
 ✓ test/parser/suite/ts/pass/bb22b97b83114c81.ts
 ✓ test/parser/suite/ts/pass/bb2471c0339e3b68.ts
-✗ test/parser/suite/ts/pass/bb2899ee75af6ffb.ts (parse errors)
-error: Cannot continue to label 'TWO' across function boundaries
-   |
- 6 |   var x = () => {
- 7 |     continue TWO;
-   |     ^^^^^^^^^^^^^
- 8 |   }
-   |
-
+✓ test/parser/suite/ts/pass/bb2899ee75af6ffb.ts
 ✓ test/parser/suite/ts/pass/bb2ce7fee4b980b4.ts
 ✓ test/parser/suite/ts/pass/bb3cfefb9b2809de.ts
 ✓ test/parser/suite/ts/pass/bb51a4be3b1cd3be.ts
@@ -9197,17 +7527,7 @@ error: Cannot continue to label 'TWO' across function boundaries
 ✓ test/parser/suite/ts/pass/bbf7afd596c3e95b.ts
 ✓ test/parser/suite/ts/pass/bbfac8e28d8d9eb5.ts
 ✓ test/parser/suite/ts/pass/bc071c7556d73c8a.ts
-✗ test/parser/suite/ts/pass/bc0f7c24294ad30f.ts (parse errors)
-error: Duplicate private name '#foo'
-   |
- 3 | class A {
- 4 |     #foo = 1;
-   |     ~~~~~~~~~ first declared here
- 5 |     static #foo = true; // error (duplicate)
-   |     ^^^^^^^^^^^^^^^^^^^
- 6 |                         // because static and instance private names
-   |
-
+✓ test/parser/suite/ts/pass/bc0f7c24294ad30f.ts
 ✓ test/parser/suite/ts/pass/bc1a8b14e771c339.module.ts
 ✓ test/parser/suite/ts/pass/bc1f7a2b142238b9.ts
 ✓ test/parser/suite/ts/pass/bc2be714d7a6477c.ts
@@ -9235,17 +7555,7 @@ error: Duplicate private name '#foo'
 ✓ test/parser/suite/ts/pass/bce018ea8a304331.ts
 ✓ test/parser/suite/ts/pass/bcf0a8588395e0ef.ts
 ✓ test/parser/suite/ts/pass/bcf434893390c7dd.ts
-✗ test/parser/suite/ts/pass/bcf45da3e105cb7d.ts (parse errors)
-error: A class can only have one constructor
-   |
-51 | class Foo4 extends Foo {
-52 |     constructor(_super: number); // no code gen - no error
-   |     ~~~~~~~~~~~ first constructor defined here
-53 |     constructor(_super: string);// no code gen - no error
-   |     ^^^^^^^^^^^
-54 |     constructor(_super: any) { // should be error
-   |
-
+✓ test/parser/suite/ts/pass/bcf45da3e105cb7d.ts
 ✓ test/parser/suite/ts/pass/bcf9296e8135e590.ts
 ✓ test/parser/suite/ts/pass/bcfa953cbae488da.ts
 ✓ test/parser/suite/ts/pass/bd054b9ca9025b4f.ts
@@ -9294,17 +7604,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 ✓ test/parser/suite/ts/pass/be3f4ba2c2f64175.ts
 ✓ test/parser/suite/ts/pass/be3ffa4647cd7a75.ts
-✗ test/parser/suite/ts/pass/be42e965c0383c62.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
- 8 |     static arrowFunctionBoundary = () => super.f + 1;
- 9 |     static functionExprBoundary = function () { return super.f + 2 };
-   |                                                        ^^^^^^^
-10 |     static classExprBoundary = class { a = super.f + 3 };
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/be42e965c0383c62.ts
 ✗ test/parser/suite/ts/pass/be4ad351a930e0b8.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
    |
@@ -9320,17 +7620,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/be4d59b031736e54.ts
 ✓ test/parser/suite/ts/pass/be4f80d852cefb42.ts
 ✓ test/parser/suite/ts/pass/be5897e34a4cc77e.ts
-✗ test/parser/suite/ts/pass/be5b553073545d16.ts (parse errors)
-error: A class can only have one constructor
-   |
- 9 | class C {
-10 |     constructor(x: 'hi');
-   |     ~~~~~~~~~~~ first constructor defined here
-11 |     constructor(x: 'bye');
-   |     ^^^^^^^^^^^
-12 |     constructor(x: string);
-   |
-
+✓ test/parser/suite/ts/pass/be5b553073545d16.ts
 ✓ test/parser/suite/ts/pass/be5c2a8440868b88.ts
 ✓ test/parser/suite/ts/pass/be65a0ae5bc24fd3.ts
 ✓ test/parser/suite/ts/pass/be6676902397dd2b.module.ts
@@ -9371,15 +7661,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/bf9a9b582b8f02f8.ts
 ✓ test/parser/suite/ts/pass/bf9b5f371a4c3854.ts
 ✓ test/parser/suite/ts/pass/bf9cc58a8e0fb3ac.ts
-✗ test/parser/suite/ts/pass/bf9d28c442102332.ts (parse errors)
-error: Yield expression is not allowed in formal parameters
-   |
- 1 | // @target: es6
- 2 | function*foo(a = yield) {
-   |                  ^^^^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/bf9d28c442102332.ts
 ✓ test/parser/suite/ts/pass/bfab7ff7c1b7a53d.ts
 ✓ test/parser/suite/ts/pass/bfb0104b62f32df4.ts
 ✓ test/parser/suite/ts/pass/bfb41eaac596df46.ts
@@ -9418,17 +7700,7 @@ error: Yield expression is not allowed in formal parameters
 ✓ test/parser/suite/ts/pass/c07436212119520a.ts
 ✓ test/parser/suite/ts/pass/c07f8e732b908394.ts
 ✓ test/parser/suite/ts/pass/c083bcd5d7a95d7c.ts
-✗ test/parser/suite/ts/pass/c09058f46024e9f4.ts (parse errors)
-error: A class can only have one constructor
-   |
- 4 | class A {
- 5 |     public constructor(a: boolean) // error
-   |            ~~~~~~~~~~~ first constructor defined here
- 6 |     protected constructor(a: number) // error
-   |               ^^^^^^^^^^^
- 7 |     private constructor(a: string)
-   |
-
+✓ test/parser/suite/ts/pass/c09058f46024e9f4.ts
 ✓ test/parser/suite/ts/pass/c090954e3331a017.ts
 ✓ test/parser/suite/ts/pass/c092a36f2610a1c4.ts
 ✓ test/parser/suite/ts/pass/c0a9fe2d0e1b74d9.module.ts
@@ -9444,28 +7716,10 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/c0dae604f68cb309.ts
 ✓ test/parser/suite/ts/pass/c0deffb36de074e2.ts
 ✓ test/parser/suite/ts/pass/c11164f75cd076b8.ts
-✗ test/parser/suite/ts/pass/c111688073b4cfa5.ts (parse errors)
-error: Expected ')' after catch parameter, but found ':'
-   |
-30 | }
-31 | catch (e: any) {
-   |         ^
-32 |     // All are allowed.
-   |
-
+✓ test/parser/suite/ts/pass/c111688073b4cfa5.ts
 ✓ test/parser/suite/ts/pass/c113bf5908f20ea9.ts
 ✓ test/parser/suite/ts/pass/c119d8bcc5e8fdaf.module.ts
-✗ test/parser/suite/ts/pass/c12a14bf698f9df2.ts (parse errors)
-error: Illegal break statement
-   |
- 7 | // naked break not allowed
- 8 | break;
-   | ^^^^^^
- 9 | 
-   |
-   = help: A 'break' statement can only be used within an enclosing iteration or switch statement
-
-
+✓ test/parser/suite/ts/pass/c12a14bf698f9df2.ts
 ✓ test/parser/suite/ts/pass/c12db8e7fb7336aa.ts
 ✓ test/parser/suite/ts/pass/c12ebe83917bd402.ts
 ✓ test/parser/suite/ts/pass/c13920d6e6d2b733.ts
@@ -9476,15 +7730,7 @@ error: Illegal break statement
 ✓ test/parser/suite/ts/pass/c160152bd8276c4d.ts
 ✓ test/parser/suite/ts/pass/c16a5bd8e15acfa5.ts
 ✓ test/parser/suite/ts/pass/c1779274bacbf364.ts
-✗ test/parser/suite/ts/pass/c179de6a64c122b8.ts (parse errors)
-error: Expected ')' after catch parameter, but found ':'
-   |
-17 | 
-18 | try {} catch ({ x }: any) { x }
-   |                    ^
-19 | try {} catch ([ x ]: any) { x }
-   |
-
+✓ test/parser/suite/ts/pass/c179de6a64c122b8.ts
 ✓ test/parser/suite/ts/pass/c17abd8d2c9de89b.ts
 ✓ test/parser/suite/ts/pass/c17d8c812a58eefd.ts
 ✓ test/parser/suite/ts/pass/c188a25c57f6bdc2.ts
@@ -9562,44 +7808,16 @@ error: Expected ')' to close parameter list, but found 'is'
     |
 
 ✓ test/parser/suite/ts/pass/c29f8fa19d187426.ts
-✗ test/parser/suite/ts/pass/c2a2602f3ebf23bb.module.ts (parse errors)
-error: 'public' is reserved in strict mode and cannot be used as a binding identifier
-   |
-19 | throw NotEarlyError;
-20 | var public = 1;
-   |     ^^^^^^
-21 | 
-   |
-
+✓ test/parser/suite/ts/pass/c2a2602f3ebf23bb.module.ts
 ✓ test/parser/suite/ts/pass/c2a559b01ac7896d.ts
 ✓ test/parser/suite/ts/pass/c2a9465cc4a47566.ts
-✗ test/parser/suite/ts/pass/c2bfd8c030f5942d.module.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 |     a;
- 4 |     constructor();
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(x = '') {
-   |     ^^^^^^^^^^^
- 6 |         this.a = x;
-   |
-
+✓ test/parser/suite/ts/pass/c2bfd8c030f5942d.module.ts
 ✓ test/parser/suite/ts/pass/c2c46933ee3c9eb7.ts
 ✓ test/parser/suite/ts/pass/c2c8958082decf41.module.ts
 ✓ test/parser/suite/ts/pass/c2e89bff7b0ae68e.ts
 ✓ test/parser/suite/ts/pass/c2fbcd5ed264798e.ts
 ✓ test/parser/suite/ts/pass/c30393641b687509.module.ts
-✗ test/parser/suite/ts/pass/c31309f36c94e8c7.module.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | declare class Component<P> {
- 4 |   constructor(props: Readonly<P>);
-   |   ~~~~~~~~~~~ first constructor defined here
- 5 |   constructor(props: P, context?: any);
-   |   ^^^^^^^^^^^
- 6 |   readonly props: Readonly<P> & Readonly<{ children?: {} }>;
-   |
-
+✓ test/parser/suite/ts/pass/c31309f36c94e8c7.module.ts
 ✓ test/parser/suite/ts/pass/c31883c26c6c3367.ts
 ✓ test/parser/suite/ts/pass/c31a7c3a606620ad.ts
 ✓ test/parser/suite/ts/pass/c31a89189385e5b2.ts
@@ -9737,17 +7955,7 @@ error: Getter must have no parameters
 ✓ test/parser/suite/ts/pass/c6b9650c54bbb485.ts
 ✓ test/parser/suite/ts/pass/c6c1e7df2c56f221.ts
 ✓ test/parser/suite/ts/pass/c6c405b447b0a1a6.ts
-✗ test/parser/suite/ts/pass/c6c92d3fe328a68c.ts (parse errors)
-error: A class can only have one constructor
-   |
- 2 | class C {
- 3 |     constructor(x = '');
-   |     ~~~~~~~~~~~ first constructor defined here
- 4 |     constructor(x = '') {
-   |     ^^^^^^^^^^^
- 5 |     }
-   |
-
+✓ test/parser/suite/ts/pass/c6c92d3fe328a68c.ts
 ✓ test/parser/suite/ts/pass/c6e44708ec9004ae.ts
 ✓ test/parser/suite/ts/pass/c6f966cbeae5707e.ts
 ✓ test/parser/suite/ts/pass/c70923f25132380e.ts
@@ -9781,30 +7989,12 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/c778b1cf5931d62a.module.tsx
 ✓ test/parser/suite/ts/pass/c77d479756c97733.ts
 ✓ test/parser/suite/ts/pass/c78d1b715417cf86.ts
-✗ test/parser/suite/ts/pass/c792ec75af14d385.ts (parse errors)
-error: A class can only have one constructor
-   |
-51 | class OverloadedMonster {
-52 |     constructor(name: string);
-   |     ~~~~~~~~~~~ first constructor defined here
-53 |     constructor(public name: string, public health?: number) {
-   |     ^^^^^^^^^^^
-54 | 
-   |
-
+✓ test/parser/suite/ts/pass/c792ec75af14d385.ts
 ✓ test/parser/suite/ts/pass/c792ed389c4dd5a4.ts
 ✓ test/parser/suite/ts/pass/c7a8902a1b768c2e.module.ts
 ✓ test/parser/suite/ts/pass/c7ae67eed06de0d4.ts
 ✓ test/parser/suite/ts/pass/c7bfb9f2c4510a3a.ts
-✗ test/parser/suite/ts/pass/c7c1a5cefb9d57c7.ts (parse errors)
-error: Expected ')' after catch parameter, but found ':'
-   |
- 2 | try {
- 3 | } catch (e: Error) {
-   |           ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/c7c1a5cefb9d57c7.ts
 ✓ test/parser/suite/ts/pass/c7ca05726968122a.module.ts
 ✓ test/parser/suite/ts/pass/c7d3cadc0e11759c.ts
 ✓ test/parser/suite/ts/pass/c7e57979170571f0.ts
@@ -9881,14 +8071,7 @@ error: Expected ')' after catch parameter, but found ':'
 ✓ test/parser/suite/ts/pass/c9fb645a8a12a966.module.ts
 ✓ test/parser/suite/ts/pass/c9fd15e1c329a42f.module.ts
 ✓ test/parser/suite/ts/pass/ca0687c5e43efcec.ts
-✗ test/parser/suite/ts/pass/ca0cdde37aaec33e.module.ts (parse errors)
-error: Cannot assign to 'eval' or 'arguments' in strict mode
-   |
- 2 | "use strict";
- 3 | ++eval;
-   | ^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/ca0cdde37aaec33e.module.ts
 ✓ test/parser/suite/ts/pass/ca122c9910481fdf.ts
 ✓ test/parser/suite/ts/pass/ca1ee7eca0c8af4b.ts
 ✓ test/parser/suite/ts/pass/ca22bbdb63e213f8.ts
@@ -9914,30 +8097,10 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/cad60bbd973be914.ts
 ✓ test/parser/suite/ts/pass/caefd58ffd31d5d8.ts
 ✓ test/parser/suite/ts/pass/caf902ccfa6f7ec3.ts
-✗ test/parser/suite/ts/pass/cb0e3ada713fd0a3.ts (parse errors)
-error: Illegal continue statement
-   |
- 7 | // naked continue not allowed
- 8 | continue;
-   | ^^^^^^^^^
- 9 | 
-   |
-   = help: A 'continue' statement can only be used within an enclosing iteration statement
-
-
+✓ test/parser/suite/ts/pass/cb0e3ada713fd0a3.ts
 ✓ test/parser/suite/ts/pass/cb1c1de7d245952b.ts
 ✓ test/parser/suite/ts/pass/cb2017641b8f6e5e.ts
-✗ test/parser/suite/ts/pass/cb23008ce4088956.ts (parse errors)
-error: A class can only have one constructor
-   |
- 4 | class C {
- 5 |     constructor(x: number, y?: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 6 |     constructor(x: number, y: string);
-   |     ^^^^^^^^^^^
- 7 |     constructor(x: number) { }
-   |
-
+✓ test/parser/suite/ts/pass/cb23008ce4088956.ts
 ✓ test/parser/suite/ts/pass/cb2e7516bac54a7d.ts
 ✓ test/parser/suite/ts/pass/cb3c7913a2e70da4.ts
 ✓ test/parser/suite/ts/pass/cb4681fedf13990c.ts
@@ -9993,14 +8156,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/cc727dfdd7608959.ts
 ✓ test/parser/suite/ts/pass/cc758959a55440cc.ts
 ✓ test/parser/suite/ts/pass/cc7af4eb2d226159.module.ts
-✗ test/parser/suite/ts/pass/cc7b04da234ac562.ts (parse errors)
-error: 'using' is not allowed at the top level of a script
-   |
- 6 | 
- 7 | using x = {};
-   | ^^^^^^^^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/cc7b04da234ac562.ts
 ✗ test/parser/suite/ts/pass/cc8e054142f4000b.ts (parse errors)
 error: Unexpected token '@' in binding pattern
    |
@@ -10059,74 +8215,21 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/cd507c0fbe412c54.module.ts
 ✓ test/parser/suite/ts/pass/cd5b73be7b7a6a59.ts
 ✓ test/parser/suite/ts/pass/cd5d40eb5bab29e9.ts
-✗ test/parser/suite/ts/pass/cd60affbddf6b097.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
- 2 | // @strict: false
- 3 | class Foo { // error
-   |       ~~~ 'Foo' was first declared as a class here
- 4 |     bar1() { /*WScript.Echo("bar1");*/ }
-.. |
-10 | 
-11 | function Foo(); // error
-   |          ^^^
-   |          ~~~ cannot be redeclared here
-12 | function F1(s:string);
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/cd60affbddf6b097.ts
 ✓ test/parser/suite/ts/pass/cd66a381a1885632.ts
 ✓ test/parser/suite/ts/pass/cd819117a056ca6a.ts
 ✓ test/parser/suite/ts/pass/cd83c2d75ba6e122.ts
 ✓ test/parser/suite/ts/pass/cd83dd24dbe95dd4.module.ts
 ✓ test/parser/suite/ts/pass/cd851bf0cf22aaf5.ts
 ✓ test/parser/suite/ts/pass/cd989c589f313807.module.ts
-✗ test/parser/suite/ts/pass/cd98ac0690e2442f.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default {
-   | ~~~~~~~~~~~~~~~~~
- 4 |     lol: 1
-   | ~~~~~~~~~~~
- 5 | }
-   | ~ first exported here
- 6 | 
- 7 | export default {
-   | ^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~
- 8 |     lol: 2
-   | ^^^^^^^^^^^
-   | ~~~~~~~~~~~
- 9 | }
-   | ^
-   | ~ exported again here
-   |
-
+✓ test/parser/suite/ts/pass/cd98ac0690e2442f.module.ts
 ✓ test/parser/suite/ts/pass/cda0cbfdcecc3afa.ts
 ✓ test/parser/suite/ts/pass/cda39f51a15b95d9.ts
 ✓ test/parser/suite/ts/pass/cdcd9c679f675516.ts
 ✓ test/parser/suite/ts/pass/cdda5326a1a66685.module.ts
 ✓ test/parser/suite/ts/pass/cde120b503d41088.ts
 ✓ test/parser/suite/ts/pass/cdeb5eebca309376.ts
-✗ test/parser/suite/ts/pass/ce124ae9a0e99d8e.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default {
-   | ~~~~~~~~~~~~~~~~~
- 4 |     uhoh: "another default",
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 5 | };
-   | ~~ first exported here
- 6 | 
- 7 | export default class C { }
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/ce124ae9a0e99d8e.module.ts
 ✓ test/parser/suite/ts/pass/ce2dc8c2b3995d0d.ts
 ✓ test/parser/suite/ts/pass/ce3096ffad7b40e9.ts
 ✓ test/parser/suite/ts/pass/ce342e31d0473d29.ts
@@ -10160,15 +8263,7 @@ error: Unexpected token '@' in binding pattern
 
 
 ✓ test/parser/suite/ts/pass/cebc2ad1cd336049.module.ts
-✗ test/parser/suite/ts/pass/cec0ecc1e0019278.ts (parse errors)
-error: Private field '#y' must be declared in an enclosing class
-   |
-12 |     getX = (obj: C) => obj.#x;
-13 |     getY = (obj: D) => obj.#y;
-   |                            ^^
-14 |   }
-   |
-
+✓ test/parser/suite/ts/pass/cec0ecc1e0019278.ts
 ✓ test/parser/suite/ts/pass/cec2755537e147ae.ts
 ✓ test/parser/suite/ts/pass/ceca3fac81746a46.ts
 ✓ test/parser/suite/ts/pass/ced0ee3874e08ffe.ts
@@ -10187,23 +8282,7 @@ error: Private field '#y' must be declared in an enclosing class
 ✓ test/parser/suite/ts/pass/cf25c17f77a87fdc.ts
 ✓ test/parser/suite/ts/pass/cf2b4d37e92758cc.ts
 ✓ test/parser/suite/ts/pass/cf2bd35304c66bcb.ts
-✗ test/parser/suite/ts/pass/cf2c819cdda8f80a.ts (parse errors)
-error: Identifier '_' has already been declared
-   |
- 2 | declare function _<T>(value: Array<T>): _<T>;
- 3 | declare function _<T>(value: T): _<T>;
-   |                  ~ '_' was first declared as a function here
- 4 | 
-.. |
-15 | 
-16 | declare class _<T> {
-   |               ^
-   |               ~ cannot be redeclared here
-17 |     each(iterator: _.ListIterator<T, void>, context?: any): void;
-   |
-   = help: Consider removing or renaming this declaration of '_'
-
-
+✓ test/parser/suite/ts/pass/cf2c819cdda8f80a.ts
 ✓ test/parser/suite/ts/pass/cf2cc79f288179c2.ts
 ✓ test/parser/suite/ts/pass/cf449b1dc0350789.module.ts
 ✓ test/parser/suite/ts/pass/cf4620c4cbbb3039.ts
@@ -10225,37 +8304,13 @@ error: Identifier '_' has already been declared
 ✓ test/parser/suite/ts/pass/d001c87b24cec290.ts
 ✓ test/parser/suite/ts/pass/d00f2db191fc7d44.ts
 ✓ test/parser/suite/ts/pass/d015269a11b1ebda.ts
-✗ test/parser/suite/ts/pass/d017c9355a112b5f.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 2 | // @target: es2015
- 3 | export default class C { }
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 4 | 
- 5 | export default {
-   | ^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~
- 6 |     uhoh: "another default",
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 7 | };
-   | ^^
-   | ~~ exported again here
-   |
-
+✓ test/parser/suite/ts/pass/d017c9355a112b5f.module.ts
 ✓ test/parser/suite/ts/pass/d020ef81363361fc.ts
 ✓ test/parser/suite/ts/pass/d02671ea82773b13.ts
 ✓ test/parser/suite/ts/pass/d0289f4b1f4c0740.ts
 ✓ test/parser/suite/ts/pass/d029f4d3805ed0a5.ts
 ✓ test/parser/suite/ts/pass/d02d2331bbb5ab12.ts
-✗ test/parser/suite/ts/pass/d02d7d0feac77d82.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 1 | //@target: ES6
- 2 | for (let let of []) {}
-   |          ^^^
-   |
-
+✓ test/parser/suite/ts/pass/d02d7d0feac77d82.ts
 ✓ test/parser/suite/ts/pass/d038ab62cc79092a.ts
 ✓ test/parser/suite/ts/pass/d03f432462f2b5cb.ts
 ✓ test/parser/suite/ts/pass/d040e553e13eefeb.ts
@@ -10312,20 +8367,7 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/d180791a29510d6e.ts
 ✓ test/parser/suite/ts/pass/d1819c6e547f77a3.ts
-✗ test/parser/suite/ts/pass/d18cfb6e33541208.module.ts (parse errors)
-error: Identifier 'func' has already been declared
-   |
- 5 | 
- 6 | export function func(details: number, message: string, ...args: any[]): void;
-   |                 ~~~~ 'func' was first declared as a function here
- 7 | export function func(details: number, message: string): any {
-   |                 ^^^^
-   |                 ~~~~ cannot be redeclared here
- 8 |     return details + message;
-   |
-   = help: Consider removing or renaming this declaration of 'func'
-
-
+✓ test/parser/suite/ts/pass/d18cfb6e33541208.module.ts
 ✓ test/parser/suite/ts/pass/d190f00e1de28b94.ts
 ✓ test/parser/suite/ts/pass/d1a8fc2809a0d619.ts
 ✓ test/parser/suite/ts/pass/d1a9eb5dcbc0a9ba.module.ts
@@ -10400,17 +8442,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/d32b3f838355a3ad.ts
 ✓ test/parser/suite/ts/pass/d3339136ddfd4dc9.ts
 ✓ test/parser/suite/ts/pass/d33fcb6620b2539f.ts
-✗ test/parser/suite/ts/pass/d344d078383ab683.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
-10 |     [
-11 |         { [super.bar()]: 1 }[0]
-   |            ^^^^^^^^^
-12 |     ]() { }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/d344d078383ab683.ts
 ✓ test/parser/suite/ts/pass/d35622dfb5a1f565.module.tsx
 ✓ test/parser/suite/ts/pass/d35af70f01ab3857.ts
 ✓ test/parser/suite/ts/pass/d3601d7911a8e96e.ts
@@ -10466,17 +8498,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/d479f8f9e97ef36f.ts
 ✓ test/parser/suite/ts/pass/d47aee7960ee2655.ts
 ✓ test/parser/suite/ts/pass/d4871629c9f6a11f.module.ts
-✗ test/parser/suite/ts/pass/d48aca632b202657.ts (parse errors)
-error: A class can only have one constructor
-   |
- 5 |     //constructor ();
- 6 |     constructor (n: number);
-   |     ~~~~~~~~~~~ first constructor defined here
- 7 |     constructor (s: string);
-   |     ^^^^^^^^^^^
- 8 |     constructor (ns: any) {
-   |
-
+✓ test/parser/suite/ts/pass/d48aca632b202657.ts
 ✓ test/parser/suite/ts/pass/d49dcbbc6fb8041e.ts
 ✓ test/parser/suite/ts/pass/d4a189ce03740064.ts
 ✓ test/parser/suite/ts/pass/d4a534305824f3b1.ts
@@ -10498,15 +8520,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/d5005cc72220ab94.ts
 ✓ test/parser/suite/ts/pass/d501b83b445bcedd.ts
 ✓ test/parser/suite/ts/pass/d506a13d941e02f9.ts
-✗ test/parser/suite/ts/pass/d50893cbcc09c646.module.ts (parse errors)
-error: 'interface' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 3 | 
- 4 | var interface: number = 123;
-   |     ^^^^^^^^^^^^^^^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/d50893cbcc09c646.module.ts
 ✓ test/parser/suite/ts/pass/d509d65fe64be96d.ts
 ✓ test/parser/suite/ts/pass/d50b598926d3f3e4.module.ts
 ✓ test/parser/suite/ts/pass/d514764c1a18ba1c.ts
@@ -10539,15 +8553,7 @@ error: 'interface' is reserved in strict mode and cannot be used as a binding id
 ✓ test/parser/suite/ts/pass/d6285c456307b305.ts
 ✓ test/parser/suite/ts/pass/d62f94504523677e.ts
 ✓ test/parser/suite/ts/pass/d6373e65efc8da47.ts
-✗ test/parser/suite/ts/pass/d6424bb20f39ebf1.module.ts (parse errors)
-error: 'static' is reserved in strict mode and cannot be used as a binding identifier
-   |
- 5 | class test {
- 6 |     constructor (static) { }
-   |                  ^^^^^^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/d6424bb20f39ebf1.module.ts
 ✓ test/parser/suite/ts/pass/d64cfae8621838ab.ts
 ✓ test/parser/suite/ts/pass/d657ad423d4447b5.ts
 ✓ test/parser/suite/ts/pass/d65a2928e2dde609.ts
@@ -10596,15 +8602,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/d765f5da74c45772.ts
 ✓ test/parser/suite/ts/pass/d767babf946f6826.ts
 ✓ test/parser/suite/ts/pass/d791fd1b70b4d15b.ts
-✗ test/parser/suite/ts/pass/d79924562c50ee11.ts (parse errors)
-error: Private field '#foo' must be declared in an enclosing class
-   |
-26 | const x: number = a.baz                   // OK
-27 | a.#foo;                                   // Error
-   |   ^^^^
-28 | a = b;                                    // Error
-   |
-
+✓ test/parser/suite/ts/pass/d79924562c50ee11.ts
 ✓ test/parser/suite/ts/pass/d7aa2c56e9f7eb9f.ts
 ✓ test/parser/suite/ts/pass/d7bf4e12a48cb5a6.ts
 ✓ test/parser/suite/ts/pass/d7c5c14ded7308ff.ts
@@ -10670,15 +8668,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/d8da2d55a70889d5.ts
 ✓ test/parser/suite/ts/pass/d90069081cfac33b.ts
 ✓ test/parser/suite/ts/pass/d904ee22be8225b0.ts
-✗ test/parser/suite/ts/pass/d914ad5837e60a91.ts (parse errors)
-error: Private field '#derivedProp' must be declared in an enclosing class
-   |
- 5 |     static method(x: Derived) {
- 6 |         Derived.#derivedProp // error
-   |                 ^^^^^^^^^^^^
- 7 |         Base.#prop  = 10;
-   |
-
+✓ test/parser/suite/ts/pass/d914ad5837e60a91.ts
 ✓ test/parser/suite/ts/pass/d91c608d4355a0fe.ts
 ✓ test/parser/suite/ts/pass/d92c9e3639d47417.ts
 ✓ test/parser/suite/ts/pass/d943d25cabc51367.ts
@@ -10761,17 +8751,7 @@ error: Expected '{' to start class body, but found 'number'
 ✓ test/parser/suite/ts/pass/db5c873f815fb3b3.ts
 ✓ test/parser/suite/ts/pass/db5e78de965d5f8a.ts
 ✓ test/parser/suite/ts/pass/db623d2b20c1ec6f.ts
-✗ test/parser/suite/ts/pass/db644223d3095c7d.ts (parse errors)
-error: 'super' property access is only valid inside a method or class body
-   |
- 8 |     [
- 9 |         { [super.bar()]: 1 }[0]
-   |            ^^^^^^^^^
-10 |     ]() { }
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/db644223d3095c7d.ts
 ✓ test/parser/suite/ts/pass/db6629cbd26c3f6c.ts
 ✓ test/parser/suite/ts/pass/db6cd744e25ca432.ts
 ✓ test/parser/suite/ts/pass/db7265ada4af9c30.ts
@@ -10832,17 +8812,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/dd5e55e5f5eddaa2.ts
 ✓ test/parser/suite/ts/pass/dd5f696583c23805.ts
 ✓ test/parser/suite/ts/pass/dd6da7cda19bf42e.ts
-✗ test/parser/suite/ts/pass/dd7653e174eb5aab.module.ts (parse errors)
-error: Illegal 'use strict' directive in function with non-simple parameter list
-   |
- 3 | 
- 4 | function a(a = 10) {
-   |            ~~~~~~ non-simple parameter
- 5 |     "use strict";
-   |     ^^^^^^^^^^^^^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/dd7653e174eb5aab.module.ts
 ✓ test/parser/suite/ts/pass/dd816a1dea2d9028.ts
 ✓ test/parser/suite/ts/pass/dd8eaf5424fc3ed9.module.ts
 ✗ test/parser/suite/ts/pass/dd8fa1eba3084caa.ts (parse errors)
@@ -10865,20 +8835,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/ddd7e96bbd467421.ts
 ✓ test/parser/suite/ts/pass/ddef43deb5e9a493.module.ts
 ✓ test/parser/suite/ts/pass/ddf4729e1e42330c.ts
-✗ test/parser/suite/ts/pass/ddf5882a5ffbe502.ts (parse errors)
-error: Identifier 'Foo' has already been declared
-   |
- 3 | function Foo():Foo; // error
- 4 | function Foo(s:string):Foo; // error
-   |          ~~~ 'Foo' was first declared as a function here
- 5 | class Foo { // error
-   |       ^^^
-   |       ~~~ cannot be redeclared here
- 6 |     bar1() { /*WScript.Echo("bar1");*/ }
-   |
-   = help: Consider removing or renaming this declaration of 'Foo'
-
-
+✓ test/parser/suite/ts/pass/ddf5882a5ffbe502.ts
 ✓ test/parser/suite/ts/pass/ddfe04becea6a99f.module.ts
 ✓ test/parser/suite/ts/pass/de032bb80e3472c2.module.ts
 ✓ test/parser/suite/ts/pass/de0b6c86b5a13ff5.tsx
@@ -10924,15 +8881,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/df18d5c6c1cff7b0.ts
 ✓ test/parser/suite/ts/pass/df277bb02891939b.ts
 ✓ test/parser/suite/ts/pass/df39a7b28dced337.ts
-✗ test/parser/suite/ts/pass/df42156a6503f9b9.ts (parse errors)
-error: Cannot continue to label 'TWO' across function boundaries
-   |
- 4 |   var x = () => {
- 5 |     continue TWO;
-   |     ^^^^^^^^^^^^^
- 6 |   }
-   |
-
+✓ test/parser/suite/ts/pass/df42156a6503f9b9.ts
 ✓ test/parser/suite/ts/pass/df454f44d8776d5f.module.ts
 ✓ test/parser/suite/ts/pass/df491d1d31a784e5.ts
 ✓ test/parser/suite/ts/pass/df4c1dd166c35623.ts
@@ -10957,17 +8906,7 @@ error: Cannot continue to label 'TWO' across function boundaries
 ✓ test/parser/suite/ts/pass/dfab02cb98b14eee.ts
 ✓ test/parser/suite/ts/pass/dfc17ae47cddd625.ts
 ✓ test/parser/suite/ts/pass/dfc729864c95aa71.ts
-✗ test/parser/suite/ts/pass/dfdea8bea70c42cb.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 |     a = 1;
- 4 |     constructor(x: number, y?: number, z?: number);
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(x: number, y?: number);
-   |     ^^^^^^^^^^^
- 6 |     constructor(x: number) { this.a = x; }
-   |
-
+✓ test/parser/suite/ts/pass/dfdea8bea70c42cb.ts
 ✓ test/parser/suite/ts/pass/dfe68cca1661a80a.ts
 ✓ test/parser/suite/ts/pass/dffc998d0e772be3.ts
 ✓ test/parser/suite/ts/pass/e010e55904d36485.ts
@@ -11006,17 +8945,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/e0b911e639a07bb5.ts
 ✓ test/parser/suite/ts/pass/e0bd5395afc548b0.ts
 ✓ test/parser/suite/ts/pass/e0beab7fbe9f59e5.ts
-✗ test/parser/suite/ts/pass/e0c2b208a96b37e6.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 6 | class D extends C {
- 7 |     x = super(); 
-   |         ^^^^^^^
- 8 |  
-   |
-   = help: Use an arrow function instead of a regular function to inherit the 'super' binding
-
-
+✓ test/parser/suite/ts/pass/e0c2b208a96b37e6.ts
 ✓ test/parser/suite/ts/pass/e0c74b9d146dc6a8.ts
 ✓ test/parser/suite/ts/pass/e0cae079fbc3a96e.ts
 ✓ test/parser/suite/ts/pass/e0d637b6bc60ec64.ts
@@ -11076,15 +9005,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/e1dfe28b4a677cff.ts
 ✓ test/parser/suite/ts/pass/e209061e08cb0874.ts
 ✓ test/parser/suite/ts/pass/e212d52c2e7b2c6b.ts
-✗ test/parser/suite/ts/pass/e22424cab3f4ae33.ts (parse errors)
-error: Cannot continue to label 'target' across function boundaries
-   |
- 5 |     while (true) {
- 6 |       continue target;
-   |       ^^^^^^^^^^^^^^^^
- 7 |     }
-   |
-
+✓ test/parser/suite/ts/pass/e22424cab3f4ae33.ts
 ✓ test/parser/suite/ts/pass/e235d06b2207baf7.ts
 ✓ test/parser/suite/ts/pass/e23865459bc50a4d.ts
 ✓ test/parser/suite/ts/pass/e24352ecb37c21de.module.ts
@@ -11098,15 +9019,7 @@ error: Cannot continue to label 'target' across function boundaries
 ✓ test/parser/suite/ts/pass/e268cc6d19754f85.ts
 ✓ test/parser/suite/ts/pass/e268fc7232d7d573.module.ts
 ✓ test/parser/suite/ts/pass/e270bdcc1515fdb1.ts
-✗ test/parser/suite/ts/pass/e27e176dfb219e6a.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 3 | "use strict";
- 4 | function eval() {
-   |          ^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/e27e176dfb219e6a.module.ts
 ✓ test/parser/suite/ts/pass/e28753df60744959.ts
 ✓ test/parser/suite/ts/pass/e28af3d320eb4b3f.ts
 ✓ test/parser/suite/ts/pass/e296dba071927252.ts
@@ -11186,14 +9099,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/e49b1e321b3aeba8.ts
 ✓ test/parser/suite/ts/pass/e49d3de84502467d.module.ts
 ✓ test/parser/suite/ts/pass/e49f0467876c824d.ts
-✗ test/parser/suite/ts/pass/e4a8ac38abc733e8.module.ts (parse errors)
-error: Cannot assign to 'eval' or 'arguments' in strict mode
-   |
- 2 | "use strict";
- 3 | eval += 1;
-   | ^^^^
-   |
-
+✓ test/parser/suite/ts/pass/e4a8ac38abc733e8.module.ts
 ✓ test/parser/suite/ts/pass/e4a8c63933979d1a.ts
 ✓ test/parser/suite/ts/pass/e4ae952ee8622dc2.ts
 ✗ test/parser/suite/ts/pass/e4ccf9bf028d7e4c.ts (parse errors)
@@ -11333,15 +9239,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/e860f6c16ff79467.ts
 ✓ test/parser/suite/ts/pass/e8638de18098fa5a.ts
 ✓ test/parser/suite/ts/pass/e863c18f72cc1af4.ts
-✗ test/parser/suite/ts/pass/e864a65573216228.ts (parse errors)
-error: 'arguments' is not allowed in class field initializers or static blocks
-   |
- 3 |   return class T {
- 4 |      a = arguments
-   |          ^^^^^^^^^
- 5 |   }
-   |
-
+✓ test/parser/suite/ts/pass/e864a65573216228.ts
 ✓ test/parser/suite/ts/pass/e86ca8c28d63be9f.ts
 ✓ test/parser/suite/ts/pass/e8768217eb9fbc4a.ts
 ✓ test/parser/suite/ts/pass/e877ff87337163fb.ts
@@ -11490,42 +9388,16 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/eaed3d1b20d5812a.ts
 ✓ test/parser/suite/ts/pass/eafd3bc0071012be.ts
 ✓ test/parser/suite/ts/pass/eb0236d7efad2f8d.ts
-✗ test/parser/suite/ts/pass/eb0607f3b8bd0052.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-10 |     static method(x: Derived) {
-11 |         console.log(x.#prop);
-   |                       ^^^^^
-12 |     }
-   |
-
+✓ test/parser/suite/ts/pass/eb0607f3b8bd0052.ts
 ✓ test/parser/suite/ts/pass/eb1f2a0df46a445d.ts
 ✓ test/parser/suite/ts/pass/eb210183c322cc83.ts
 ✓ test/parser/suite/ts/pass/eb224201dad4c005.module.ts
 ✓ test/parser/suite/ts/pass/eb2a412a5fa8972a.ts
 ✓ test/parser/suite/ts/pass/eb2d48d5d32f8119.ts
-✗ test/parser/suite/ts/pass/eb302e53d6c4d8f7.ts (parse errors)
-error: Illegal 'use strict' directive in function with non-simple parameter list
-   |
- 8 | 
- 9 | function foobar({ bar = {}, ...opts }: Foo = {}) {
-   |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ non-simple parameter
-10 |     "use strict";
-   |     ^^^^^^^^^^^^^
-11 |     "Some other prologue";
-   |
-
+✓ test/parser/suite/ts/pass/eb302e53d6c4d8f7.ts
 ✓ test/parser/suite/ts/pass/eb37e6e918ffe653.module.ts
 ✓ test/parser/suite/ts/pass/eb4cd6f1723f2b19.ts
-✗ test/parser/suite/ts/pass/eb4d77629aa1b4ac.module.ts (parse errors)
-error: 'eval' is not allowed as a binding identifier in strict mode
-   |
- 2 | "use strict";
- 3 | var v = function eval() {
-   |                  ^^^^
- 4 | };
-   |
-
+✓ test/parser/suite/ts/pass/eb4d77629aa1b4ac.module.ts
 ✗ test/parser/suite/ts/pass/eb4d90ce5598ceb5.ts (parse errors)
 error: Expected ',' or '}' in object, but found '<'
    |
@@ -11539,15 +9411,7 @@ error: Expected ',' or '}' in object, but found '<'
 
 ✓ test/parser/suite/ts/pass/eb566f657d185b0c.ts
 ✓ test/parser/suite/ts/pass/eb5a2ab750bc422b.ts
-✗ test/parser/suite/ts/pass/eb5c0944e503c65f.ts (parse errors)
-error: 'new.target' is only valid inside functions, class field initializers, or static blocks
-   |
- 2 | // @target: es6
- 3 | const a = new.target;
-   |           ^^^^^^^^^^
- 4 | const b = () => new.target;
-   |
-
+✓ test/parser/suite/ts/pass/eb5c0944e503c65f.ts
 ✓ test/parser/suite/ts/pass/eb7095ac1b4743f3.ts
 ✓ test/parser/suite/ts/pass/eb7da3704bb3e22c.ts
 ✓ test/parser/suite/ts/pass/eb829ba9efa94b01.ts
@@ -11684,17 +9548,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/eeb1a84111975f17.ts
 ✓ test/parser/suite/ts/pass/eeb2c6478336e657.ts
 ✓ test/parser/suite/ts/pass/eebc419cf68c09cf.ts
-✗ test/parser/suite/ts/pass/eecb60e69bac424a.ts (parse errors)
-error: A class can only have one constructor
-   |
- 6 | 
- 7 |     constructor(a: any)
-   |     ~~~~~~~~~~~ first constructor defined here
- 8 |     constructor(a: any,b: T)
-   |     ^^^^^^^^^^^
- 9 |     constructor(a: T) { this.B = a;}
-   |
-
+✓ test/parser/suite/ts/pass/eecb60e69bac424a.ts
 ✓ test/parser/suite/ts/pass/eecfeceab5eb1384.ts
 ✓ test/parser/suite/ts/pass/eede38de12549740.ts
 ✓ test/parser/suite/ts/pass/eee360873b342527.ts
@@ -11705,15 +9559,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/ef0597d940d14b98.module.ts
 ✓ test/parser/suite/ts/pass/ef0c78afb5424566.ts
 ✓ test/parser/suite/ts/pass/ef15e49548304716.ts
-✗ test/parser/suite/ts/pass/ef1759dbfdabf857.ts (parse errors)
-error: 'let' is not allowed as a variable name in a lexical declaration
-   |
- 3 | // All use of let in const declaration should be an error
- 4 | const x = 50, let = 5;
-   |               ^^^
- 5 | 
-   |
-
+✓ test/parser/suite/ts/pass/ef1759dbfdabf857.ts
 ✓ test/parser/suite/ts/pass/ef189e3057a635a0.ts
 ✓ test/parser/suite/ts/pass/ef1ccc522bd79ee4.ts
 ✓ test/parser/suite/ts/pass/ef329e0793e31624.ts
@@ -11748,30 +9594,8 @@ error: Expected ',' or '}' in object, but found '<'
    = help: Add a comma between properties or close the object with '}'.
 
 
-✗ test/parser/suite/ts/pass/eff54c64777d517b.ts (parse errors)
-error: A class can only have one constructor
-    |
-127 | class c1 {
-128 |     constructor(a: number);
-    |     ~~~~~~~~~~~ first constructor defined here
-129 |     constructor(b: string);
-    |     ^^^^^^^^^^^
-130 |     constructor(aorb: any) {
-    |
-
-✗ test/parser/suite/ts/pass/eff575122955dc0c.module.ts (parse errors)
-error: Duplicate export of 'default'
-   |
- 3 | 
- 4 | export default class AA1 {}
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
- 5 | 
- 6 | export default class BB1 {}
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
- 7 | 
-   |
-
+✓ test/parser/suite/ts/pass/eff54c64777d517b.ts
+✓ test/parser/suite/ts/pass/eff575122955dc0c.module.ts
 ✗ test/parser/suite/ts/pass/eff590eddfc030c3.module.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -11786,14 +9610,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/eff598562a977b65.module.ts
 ✓ test/parser/suite/ts/pass/f00bcfbba6c9dc98.ts
 ✓ test/parser/suite/ts/pass/f0211821b86d57bf.ts
-✗ test/parser/suite/ts/pass/f02ff9c08aef9a56.module.ts (parse errors)
-error: Deleting a variable in strict mode is not allowed
-   |
- 2 | "use strict";
- 3 | delete a;
-   | ^^^^^^^^
-   |
-
+✓ test/parser/suite/ts/pass/f02ff9c08aef9a56.module.ts
 ✓ test/parser/suite/ts/pass/f0488ebe3ba5fe40.ts
 ✓ test/parser/suite/ts/pass/f0546c2185dced2c.ts
 ✓ test/parser/suite/ts/pass/f05f68b9d7439d72.ts
@@ -11833,36 +9650,11 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/f0b0ebae82bacb9c.ts
 ✓ test/parser/suite/ts/pass/f0b4a300ebba3ddd.ts
 ✓ test/parser/suite/ts/pass/f0d23916018cbdc4.module.tsx
-✗ test/parser/suite/ts/pass/f0df19d2fac92b1b.ts (parse errors)
-error: 'super()' is only valid in a constructor of a derived class
-   |
- 5 |     constructor() {
- 6 |         super(); // error
-   |         ^^^^^^^
- 7 |     }
-   |
-   = help: Add an 'extends' clause to the class or remove the 'super()' call
-
-
+✓ test/parser/suite/ts/pass/f0df19d2fac92b1b.ts
 ✓ test/parser/suite/ts/pass/f0e56088d9163c0b.ts
 ✓ test/parser/suite/ts/pass/f0ed592c0c187940.ts
 ✓ test/parser/suite/ts/pass/f0f2d3f77da8a663.ts
-✗ test/parser/suite/ts/pass/f104bb42cfe691da.ts (parse errors)
-error: Identifier 'b' has already been declared
-   |
- 8 | class C {}
- 9 | (({ [class extends C { static x = 1 }.x]: b = "" }) => { var C; })();
-   |                                           ~ 'b' was first declared as a class here
-10 | 
-11 | const x = "";
-12 | (({ [class extends C { static x = 1 }.x]: b = "" }, d = x) => { var x; })();
-   |                                           ^
-   |                                           ~ cannot be redeclared here
-13 | 
-   |
-   = help: Consider removing or renaming this declaration of 'b'
-
-
+✓ test/parser/suite/ts/pass/f104bb42cfe691da.ts
 ✓ test/parser/suite/ts/pass/f10e531f003cc577.ts
 ✓ test/parser/suite/ts/pass/f10e8c528882e7c4.ts
 ✓ test/parser/suite/ts/pass/f12273fbad14e034.ts
@@ -11894,20 +9686,7 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/ts/pass/f217a30027cc37ce.ts
 ✓ test/parser/suite/ts/pass/f21999329c1922cc.ts
 ✓ test/parser/suite/ts/pass/f21d924e6057ef64.module.ts
-✗ test/parser/suite/ts/pass/f221b03cdbc1a0bd.ts (parse errors)
-error: Identifier 'foo' has already been declared
-   |
- 2 | // @strict: false
- 3 | declare class foo{};
-   |               ~~~ 'foo' was first declared as a class here
- 4 | function foo() { return null; }
-   |          ^^^
-   |          ~~~ cannot be redeclared here
- 5 | 
-   |
-   = help: Consider removing or renaming this declaration of 'foo'
-
-
+✓ test/parser/suite/ts/pass/f221b03cdbc1a0bd.ts
 ✓ test/parser/suite/ts/pass/f22b0b246f8bc072.ts
 ✓ test/parser/suite/ts/pass/f235a6711296f3f1.ts
 ✓ test/parser/suite/ts/pass/f23f365a4bb0466c.ts
@@ -11940,15 +9719,7 @@ error: Identifier 'foo' has already been declared
 ✓ test/parser/suite/ts/pass/f2c1f4adc92185eb.ts
 ✓ test/parser/suite/ts/pass/f2c3e06c13291123.ts
 ✓ test/parser/suite/ts/pass/f2c4560dbdb3b229.ts
-✗ test/parser/suite/ts/pass/f2c6db3ad9c90b42.ts (parse errors)
-error: 'arguments' is not allowed as a binding identifier in strict mode
-   |
- 4 | class C {
- 5 |     f(arguments) {
-   |       ^^^^^^^^^
- 6 |         var a = () => arguments;
-   |
-
+✓ test/parser/suite/ts/pass/f2c6db3ad9c90b42.ts
 ✓ test/parser/suite/ts/pass/f2c99af289ffea6f.ts
 ✓ test/parser/suite/ts/pass/f2ce4959be41e96f.module.ts
 ✓ test/parser/suite/ts/pass/f2d17075b25abc6b.ts
@@ -12074,15 +9845,7 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/ts/pass/f5791b9ac55caa4e.ts
 ✓ test/parser/suite/ts/pass/f579e74efa5c1ae9.ts
 ✓ test/parser/suite/ts/pass/f57d401b50362b7c.ts
-✗ test/parser/suite/ts/pass/f58265e2fc9606a9.ts (parse errors)
-error: Cannot break to label 'label' across function boundaries
-   |
- 6 |                 if (v === 1) {
- 7 |                     break label;
-   |                     ^^^^^^^^^^^^
- 8 |                 }
-   |
-
+✓ test/parser/suite/ts/pass/f58265e2fc9606a9.ts
 ✓ test/parser/suite/ts/pass/f583a884b5ff069b.ts
 ✓ test/parser/suite/ts/pass/f5882b0583f1a304.ts
 ✓ test/parser/suite/ts/pass/f58a98941ba82afb.tsx
@@ -12090,15 +9853,7 @@ error: Cannot break to label 'label' across function boundaries
 ✓ test/parser/suite/ts/pass/f5be171c2f8d25a3.ts
 ✓ test/parser/suite/ts/pass/f5c547dd3f96da2d.ts
 ✓ test/parser/suite/ts/pass/f5cfbb8521586701.ts
-✗ test/parser/suite/ts/pass/f5dab850cf19bf50.module.ts (parse errors)
-error: 'public' is reserved in strict mode and cannot be used as an identifier
-   |
- 3 | class C {
- 4 |     [public]() { }
-   |      ^^^^^^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/f5dab850cf19bf50.module.ts
 ✓ test/parser/suite/ts/pass/f5e69884b5f754dd.ts
 ✓ test/parser/suite/ts/pass/f5ebfd1ec9693c3f.ts
 ✓ test/parser/suite/ts/pass/f604c23cf8950fe6.module.ts
@@ -12107,17 +9862,7 @@ error: 'public' is reserved in strict mode and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/f614ac4ccdeb646d.ts
 ✓ test/parser/suite/ts/pass/f616c4349052fd7f.ts
 ✓ test/parser/suite/ts/pass/f6179911267fbd5d.ts
-✗ test/parser/suite/ts/pass/f6217bd21b143675.ts (parse errors)
-error: A class can only have one constructor
-   |
- 5 | class C {
- 6 |     constructor(x: number, y?: string);
-   |     ~~~~~~~~~~~ first constructor defined here
- 7 |     constructor(x: number, y: string);
-   |     ^^^^^^^^^^^
- 8 |     constructor(x: number) { }
-   |
-
+✓ test/parser/suite/ts/pass/f6217bd21b143675.ts
 ✓ test/parser/suite/ts/pass/f6228143411ffaf2.ts
 ✓ test/parser/suite/ts/pass/f6263318068eaee6.ts
 ✓ test/parser/suite/ts/pass/f62e085d9f587914.module.ts
@@ -12144,17 +9889,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/f6c89ab9d2350625.ts
 ✓ test/parser/suite/ts/pass/f6d2ca373624ecb6.ts
 ✓ test/parser/suite/ts/pass/f6de17bed167580f.ts
-✗ test/parser/suite/ts/pass/f6ee14ed6eb29e8e.ts (parse errors)
-error: A class can only have one constructor
-   |
-20 | class Widget<TValue> {
-21 |     constructor(viewModelType: new () => ViewModel<TValue>); // Shouldnt error on this overload
-   |     ~~~~~~~~~~~ first constructor defined here
-22 |     constructor(viewModelType: new () => ViewModel<TValue>) {
-   |     ^^^^^^^^^^^
-23 |     }
-   |
-
+✓ test/parser/suite/ts/pass/f6ee14ed6eb29e8e.ts
 ✓ test/parser/suite/ts/pass/f6fbb5fced206773.ts
 ✓ test/parser/suite/ts/pass/f6feb0a89c7cfafe.module.ts
 ✓ test/parser/suite/ts/pass/f7033386eca7f7a9.ts
@@ -12182,15 +9917,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/f77260a66a73d7ac.ts
 ✓ test/parser/suite/ts/pass/f792f557dae4de63.ts
 ✓ test/parser/suite/ts/pass/f7a955e9da76f31a.ts
-✗ test/parser/suite/ts/pass/f7c3318268a1e01f.ts (parse errors)
-error: Private field '#prop' must be declared in an enclosing class
-   |
-10 |     static method(x: typeof Derived) {
-11 |         console.log(x.#prop);
-   |                       ^^^^^
-12 |     }
-   |
-
+✓ test/parser/suite/ts/pass/f7c3318268a1e01f.ts
 ✓ test/parser/suite/ts/pass/f7c8dfa32fdbe7da.ts
 ✓ test/parser/suite/ts/pass/f7cf44cc260e63da.ts
 ✓ test/parser/suite/ts/pass/f7d7c315064d6e7e.module.ts
@@ -12349,17 +10076,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/fb03ba41eabfa38b.ts
 ✓ test/parser/suite/ts/pass/fb08a63e7ea68928.ts
 ✓ test/parser/suite/ts/pass/fb10a3cf93e0e382.ts
-✗ test/parser/suite/ts/pass/fb35c6d1fc6a54c9.ts (parse errors)
-error: A class can only have one constructor
-   |
-11 | class C2 {
-12 |     public constructor(x: number);
-   |            ~~~~~~~~~~~ first constructor defined here
-13 |     public constructor(x: any) { }
-   |            ^^^^^^^^^^^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/fb35c6d1fc6a54c9.ts
 ✗ test/parser/suite/ts/pass/fb3c8fc50b3c6eee.ts (parse errors)
 error: 'new' is reserved and cannot be used as an identifier
    |
@@ -12444,17 +10161,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/fcb41fed419e646e.ts
 ✓ test/parser/suite/ts/pass/fcb5615854d099d1.ts
 ✓ test/parser/suite/ts/pass/fcb94c3918ee2c10.ts
-✗ test/parser/suite/ts/pass/fccb8f0120af34fb.ts (parse errors)
-error: A class can only have one constructor
-   |
- 3 | class C {
- 4 |     constructor(x);
-   |     ~~~~~~~~~~~ first constructor defined here
- 5 |     constructor(public x: string = 1) { // error
-   |     ^^^^^^^^^^^
- 6 |         var y = x;
-   |
-
+✓ test/parser/suite/ts/pass/fccb8f0120af34fb.ts
 ✓ test/parser/suite/ts/pass/fccf8f5e05778ef0.ts
 ✓ test/parser/suite/ts/pass/fcd5e437d8cd6452.ts
 ✓ test/parser/suite/ts/pass/fce0e5565fe0bb18.ts
