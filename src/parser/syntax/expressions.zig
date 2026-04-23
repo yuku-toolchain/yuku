@@ -117,10 +117,9 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     if (tag == .less_than) {
-        if (parser.tree.isTs()) switch (try ts_arrows.classifyArrowHead(parser)) {
-            .yes, .maybe => if (try ts_arrows.tryParseArrow(parser, false, parser.current_token.span.start)) |arrow| return arrow,
-            .no => {},
-        };
+        if (parser.tree.isTs()) {
+            if (try ts_arrows.tryParseGenericArrow(parser, false, parser.current_token.span.start)) |arrow| return arrow;
+        }
         if (parser.tree.isJsx()) return jsx.parseJsxExpression(parser);
         if (parser.tree.isTs()) return ts_ops.parseTypeAssertion(parser);
     }
@@ -295,12 +294,9 @@ fn parseAsyncFunctionOrArrow(parser: *Parser, precedence: u8) Error!?ast.NodeInd
 
     // async <T>(params) => ...
     if (parser.tree.isTs() and parser.current_token.tag == .less_than and !parser.current_token.hasLineTerminatorBefore()) {
-        switch (try ts_arrows.classifyArrowHead(parser)) {
-            .yes, .maybe => if (try ts_arrows.tryParseArrow(parser, true, async_span.start)) |arrow| {
-                if (is_escaped) try parser.reportEscapedKeyword(async_span);
-                return arrow;
-            },
-            .no => {},
+        if (try ts_arrows.tryParseGenericArrow(parser, true, async_span.start)) |arrow| {
+            if (is_escaped) try parser.reportEscapedKeyword(async_span);
+            return arrow;
         }
     }
 
@@ -429,7 +425,7 @@ fn parseYieldExpression(parser: *Parser) Error!?ast.NodeIndex {
             else => true,
         };
 
-        if(can_start_yield_argument) {
+        if (can_start_yield_argument) {
             // YieldExpression[?In]: yield [no LT] AssignmentExpression[?In]
             const expr = try parseExpression(parser, Precedence.Assignment, .{ .respect_allow_in = true }) orelse return null;
 
