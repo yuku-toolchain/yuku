@@ -13,6 +13,7 @@ const functions = @import("functions.zig");
 const class = @import("class.zig");
 const extensions = @import("extensions.zig");
 const variables = @import("variables.zig");
+const ts_statements = @import("ts/statements.zig");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
@@ -460,15 +461,15 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         return parseTSNamespaceExportDeclaration(parser, start);
     }
 
-    // export type { ... } or export type { ... } from 'module'. only the
-    // named-export form is handled here; `export type * ...` (type-only
-    // re-export) is phase 8.4, and `export type X = Y` routes through the
-    // regular declaration dispatch which is a separate pre-existing gap.
     if (parser.tree.isTs() and parser.current_token.tag == .type) {
         const next = try parser.peekAhead() orelse return null;
         if (next.tag == .left_brace) {
             try parser.advance() orelse return null; // consume 'type'
             return parseExportNamedFromClause(parser, start, .type);
+        }
+        if (next.tag == .star) {
+            try parser.advance() orelse return null; // consume 'type'
+            return parseExportAllDeclaration(parser, start, .type);
         }
     }
 
@@ -480,7 +481,7 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     // export * from 'module'
     // export * as name from 'module'
     if (parser.current_token.tag == .star) {
-        return parseExportAllDeclaration(parser, start);
+        return parseExportAllDeclaration(parser, start, .value);
     }
 
     // export { foo, bar }
@@ -587,7 +588,7 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
 }
 
 /// export * from 'module' or export * as name from 'module'
-fn parseExportAllDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+fn parseExportAllDeclaration(parser: *Parser, start: u32, export_kind: ast.ImportOrExportKind) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '*'
 
     var exported: ast.NodeIndex = .null;
@@ -616,7 +617,7 @@ fn parseExportAllDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
             .exported = exported,
             .source = source,
             .attributes = attributes,
-            .export_kind = .value,
+            .export_kind = export_kind,
         },
     }, .{ .start = start, .end = end });
 }
@@ -697,6 +698,21 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32, export_kind: ast.Impo
 
 /// export var/let/const/function/class
 fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+    if (parser.tree.isTs()) {
+        if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null) {
+            const declaration = try ts_statements.parseTsDeclaration(parser) orelse return null;
+            return try parser.tree.createNode(.{
+                .export_named_declaration = .{
+                    .declaration = declaration,
+                    .specifiers = ast.IndexRange.empty,
+                    .source = .null,
+                    .attributes = ast.IndexRange.empty,
+                    .export_kind = exportKindForDeclaration(parser, declaration),
+                },
+            }, .{ .start = start, .end = parser.tree.getSpan(declaration).end });
+        }
+    }
+
     var declaration: ast.NodeIndex = undefined;
 
     switch (parser.current_token.tag) {
@@ -743,6 +759,19 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             .export_kind = .value,
         },
     }, .{ .start = start, .end = parser.tree.getSpan(declaration).end });
+}
+
+fn exportKindForDeclaration(parser: *Parser, declaration: ast.NodeIndex) ast.ImportOrExportKind {
+    return switch (parser.tree.getData(declaration)) {
+        .ts_interface_declaration, .ts_type_alias_declaration => .type,
+        .ts_enum_declaration => |d| if (d.declare) .type else .value,
+        .ts_module_declaration => |d| if (d.declare) .type else .value,
+        .ts_global_declaration => |d| if (d.declare) .type else .value,
+        .variable_declaration => |d| if (d.declare) .type else .value,
+        .function => |d| if (d.declare) .type else .value,
+        .class => |d| if (d.declare) .type else .value,
+        else => .value,
+    };
 }
 
 const ExportSpecifiersResult = struct {

@@ -1,59 +1,38 @@
-// overload signatures (no declare keyword) → TSDeclareFunction declare:false
-function foo(x: number): string;
-function foo(x: string): number;
-function foo(x: any): any { return x; }
+// 8.4a Export dispatch for TS declarations
 
-// declare function → TSDeclareFunction declare:true
-declare function bar(x: number): string;
-declare function bar<T>(x: T): T;
+// type alias
+export type A = number;
+// interface
+export interface B { x: number; }
+// enum
+export enum C { A, B }
+// const enum
+export const enum D { A, B }
+// namespace
+export namespace N { export const x = 1; }
+// module (deprecated namespace form)
+export module M { const z = 1; }
+// abstract class
+export abstract class E { }
 
-// declare class → ClassDeclaration declare:true
-declare class A {
-  x: number;
-  m(): void;
+// declare variants
+export declare var v: number;
+export declare let l: number;
+export declare const c: number;
+export declare function f(): void;
+export declare class G { }
+export declare abstract class H { }
+export declare enum I { A, B }
+export declare const enum J { A }
+export declare namespace K { }
+export declare interface L { }
+export declare type T = number;
+
+// nested inside namespace
+namespace Outer {
+  export interface Inner { x: number; }
+  export type AliasInner = number;
+  export enum EnumInner { A }
+  export class ClassInner { }
+  export const vInner = 1;
 }
-
-// declare abstract class → ClassDeclaration declare:true abstract:true
-declare abstract class B<T> extends C<T> implements I {
-  abstract m(): T;
-}
-
-// declare namespace
-declare namespace NS {
-  function inner(): void;
-}
-
-// declare module
-declare module M {
-  const x: number;
-}
-
-declare module "ext-mod" {
-  export const x: number;
-}
-
-// declare global
-declare global {
-  interface Window {
-    foo: number;
-  }
-}
-
-declare var v1: number;
-declare let v2: string;
-declare const v3: boolean;
-declare const v4: number, v5: string;
-
-declare interface I1 {
-  x: number;
-}
-
-declare type T1 = number | string;
-
-declare enum E1 { A, B = 2 }
-declare const enum E2 { X, Y }
-
-// export default function overload
-export default function f();
-export default function f(x: string);
-export default function f(...args: any[]) {}
