@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       7049/8261 (85.33%)
-Failed:       1212
-AST mismatch: 0/7049
+Passed:       7253/8261 (87.80%)
+Failed:       1008
+AST mismatch: 0/7253
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -91,17 +91,7 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/019d37e82d71c2d4.ts
 ✓ test/parser/suite/ts/pass/01a0b731fe2ba3d2.ts
 ✓ test/parser/suite/ts/pass/01a31166275ce3fa.ts
-✗ test/parser/suite/ts/pass/01a4bc77ed0b048e.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:string):string;
-   |                                ^
- 3 | function foo(bar:any):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/01a4bc77ed0b048e.ts
 ✓ test/parser/suite/ts/pass/01bf3ec0d9166319.ts
 ✓ test/parser/suite/ts/pass/01c130e3ee5d0320.module.ts
 ✓ test/parser/suite/ts/pass/01c2b366131d2202.ts
@@ -317,17 +307,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/046e6508d342becc.ts
 ✓ test/parser/suite/ts/pass/048b0dc1df92c881.module.ts
 ✓ test/parser/suite/ts/pass/048ef060ced13d09.ts
-✗ test/parser/suite/ts/pass/0490826b22b34db0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo():number;
-   |                      ^
- 4 | function foo():string { return "" }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0490826b22b34db0.ts
 ✓ test/parser/suite/ts/pass/0497bde4ea8e782a.ts
 ✓ test/parser/suite/ts/pass/049eaf282a2c000b.ts
 ✓ test/parser/suite/ts/pass/04a2576d74711dba.ts
@@ -372,17 +352,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/056d9f0cf405b5e4.ts
 ✓ test/parser/suite/ts/pass/0570cff658e86897.module.tsx
 ✓ test/parser/suite/ts/pass/0572d603ac3db492.ts
-✗ test/parser/suite/ts/pass/057426faf3214bd0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(foo:{a:string; b:number;}):string;
-   |                                               ^
- 4 | function foo(foo:{a:string; b:number;}):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/057426faf3214bd0.ts
 ✓ test/parser/suite/ts/pass/05773fc2d05316b2.ts
 ✓ test/parser/suite/ts/pass/058257ef193e21ed.ts
 ✓ test/parser/suite/ts/pass/05864d8af0ea833d.ts
@@ -620,17 +590,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/09497387474638ab.ts
 ✓ test/parser/suite/ts/pass/094bc0b23ead86bc.ts
 ✓ test/parser/suite/ts/pass/094ca5973846b5fe.ts
-✗ test/parser/suite/ts/pass/095024779f10d9c4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}):string;
-   |                                     ^
- 3 | function foo(bar:{a:boolean;}):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/095024779f10d9c4.ts
 ✓ test/parser/suite/ts/pass/095c54fa3dda6889.ts
 ✓ test/parser/suite/ts/pass/096283d2f8261466.ts
 ✓ test/parser/suite/ts/pass/097c89e785ce1507.ts
@@ -771,34 +731,14 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/0aac95e58cbd8cf0.ts
 ✓ test/parser/suite/ts/pass/0ab654e1465d02b6.ts
 ✓ test/parser/suite/ts/pass/0ac91876c8bea619.ts
-✗ test/parser/suite/ts/pass/0adc0adfe1ae1890.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-14 | 
-15 | function foo2(x: I);
-   |                    ^
-16 | function foo2(x: I); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0adc0adfe1ae1890.ts
 ✓ test/parser/suite/ts/pass/0ae650babc3ec3e1.ts
 ✓ test/parser/suite/ts/pass/0ae7d3a954c774a8.ts
 ✓ test/parser/suite/ts/pass/0aed3204f9a0cf10.ts
 ✓ test/parser/suite/ts/pass/0af458d58bdd522f.ts
 ✓ test/parser/suite/ts/pass/0b02b5dcb83cf26a.tsx
 ✓ test/parser/suite/ts/pass/0b0c720185b791b9.ts
-✗ test/parser/suite/ts/pass/0b0d1688997fa8be.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | declare namespace M {
- 3 |     function* f(s: string): Iterable<any>;
-   |                                          ^
- 4 |     function* f(s: number): Iterable<any>;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0b0d1688997fa8be.ts
 ✓ test/parser/suite/ts/pass/0b0ee181b1e82a84.ts
 ✓ test/parser/suite/ts/pass/0b14047346b5bce8.ts
 ✓ test/parser/suite/ts/pass/0b1c99bd0bcf6f63.ts
@@ -832,28 +772,8 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/0bc78eed30211aa0.module.tsx
 ✓ test/parser/suite/ts/pass/0bc87c7817168345.module.ts
 ✓ test/parser/suite/ts/pass/0bcab69eb0248b75.ts
-✗ test/parser/suite/ts/pass/0bd74bc1741ef3cc.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-23 | 
-24 | function foo1b(x: B);
-   |                     ^
-25 | function foo1b(x: B); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/0bd91d69fc76d70c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 |  */
- 8 | function tempFun<T>(tempStrs: TemplateStringsArray, g: (x: T) => T, x: T): T;
-   |                                                                             ^
- 9 | function tempFun<T>(tempStrs: TemplateStringsArray, g: (x: T) => T, h: (y: T) => T, x: T): T;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0bd74bc1741ef3cc.ts
+✓ test/parser/suite/ts/pass/0bd91d69fc76d70c.ts
 ✗ test/parser/suite/ts/pass/0be2aaeb203a0178.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
    |
@@ -868,17 +788,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/0be3e8e0868fb0f8.ts
 ✓ test/parser/suite/ts/pass/0be44cf270fc7e95.ts
 ✓ test/parser/suite/ts/pass/0bf59d026ec2781a.ts
-✗ test/parser/suite/ts/pass/0c01adbac8e95f05.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | 
- 6 | function foo(x: 'a');
-   |                     ^
- 7 | function foo(x: string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0c01adbac8e95f05.ts
 ✓ test/parser/suite/ts/pass/0c030760a76c4fc4.ts
 ✗ test/parser/suite/ts/pass/0c0b1e3c55bcb619.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -1084,17 +994,7 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/0ea0911cc18c9589.ts
 ✓ test/parser/suite/ts/pass/0ea9f504b0a977b2.ts
-✗ test/parser/suite/ts/pass/0eac9b5f6947fd26.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-27 | 
-28 | function foo1(x: A);
-   |                    ^
-29 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0eac9b5f6947fd26.ts
 ✓ test/parser/suite/ts/pass/0eb541052994b22a.ts
 ✓ test/parser/suite/ts/pass/0eb561d7b07a2de9.ts
 ✓ test/parser/suite/ts/pass/0eb60ccabd968117.ts
@@ -1146,17 +1046,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/0f1cde608d2dd8fc.ts
 ✓ test/parser/suite/ts/pass/0f32137fd8dd8df6.ts
 ✓ test/parser/suite/ts/pass/0f33bc8af9665502.ts
-✗ test/parser/suite/ts/pass/0f385270ccdb2923.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function f(x: string): void;
-   |                            ^
- 3 | function f(x: string): void {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0f385270ccdb2923.ts
 ✓ test/parser/suite/ts/pass/0f3d0e0d34e8870c.ts
 ✓ test/parser/suite/ts/pass/0f42e6512fc6bc0f.ts
 ✓ test/parser/suite/ts/pass/0f4a1bd3dc242b17.ts
@@ -1357,17 +1247,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/114e44e16af8efbb.ts
 ✓ test/parser/suite/ts/pass/115033452fd3a3ad.ts
 ✓ test/parser/suite/ts/pass/11529c17707935a3.ts
-✗ test/parser/suite/ts/pass/11544a540555bdd9.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(bar:(b:string)=>void);
-   |                                   ^
- 4 | function foo(bar:(a:number)=>void);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/11544a540555bdd9.ts
 ✓ test/parser/suite/ts/pass/1156c471f0d6a72d.ts
 ✗ test/parser/suite/ts/pass/11586f0e399761c0.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -1553,14 +1433,17 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/14360699064a46df.ts
 ✗ test/parser/suite/ts/pass/1436ae61f7a06758.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'Foo' has already been declared
    |
- 2 | 
  3 | function Foo():Foo; // error
-   |                   ^
  4 | function Foo(s:string):Foo; // error
+   |          ~~~ 'Foo' was first declared as a function here
+ 5 | class Foo { // error
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+ 6 |     bar1() { /*WScript.Echo("bar1");*/ }
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'Foo'
 
 
 ✓ test/parser/suite/ts/pass/143aa097cec2d947.ts
@@ -1573,17 +1456,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/148a2188daf69c94.ts
 ✓ test/parser/suite/ts/pass/1492ca60ceee8025.ts
 ✓ test/parser/suite/ts/pass/149cdf7e3e3f3243.ts
-✗ test/parser/suite/ts/pass/149dc4e90a437cc7.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-23 | 
-24 | function foo1(x: A);
-   |                    ^
-25 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/149dc4e90a437cc7.ts
 ✗ test/parser/suite/ts/pass/149e25c736add938.ts (parse errors)
 error: 'super()' is only valid in a constructor of a derived class
    |
@@ -1596,17 +1469,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/ts/pass/14aaf89888bcf799.ts
-✗ test/parser/suite/ts/pass/14bdc77257ab7267.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | 
- 3 | function foo({ x, y, z }?: { x: string; y: number; z: boolean });
-   |                                                                 ^
- 4 | function foo(...rest: any[]) {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/14bdc77257ab7267.ts
 ✓ test/parser/suite/ts/pass/14bfa63e069e694a.ts
 ✓ test/parser/suite/ts/pass/14bfb978418e2683.ts
 ✓ test/parser/suite/ts/pass/14c09740dd978bc7.ts
@@ -1647,17 +1510,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/155ccd7411027472.ts
 ✓ test/parser/suite/ts/pass/155d3d592a11eeaf.ts
 ✓ test/parser/suite/ts/pass/1562f9c8a28673dd.ts
-✗ test/parser/suite/ts/pass/1564ae4f5abc48ca.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 |     constructor() {
- 5 |         function bar(): string;
-   |                               ^
- 6 |         function bar(s:string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1564ae4f5abc48ca.ts
 ✓ test/parser/suite/ts/pass/15684e9c1047c5aa.ts
 ✓ test/parser/suite/ts/pass/158697403efbbfb7.ts
 ✓ test/parser/suite/ts/pass/1587e7047829de34.ts
@@ -1680,14 +1533,16 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/15a9f31939ec4496.module.ts
 ✓ test/parser/suite/ts/pass/15ac3e88a72c0568.ts
 ✗ test/parser/suite/ts/pass/15af09ecd27cc60c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'bar' has already been declared
    |
  1 | // @target: es2015
  2 | function bar(): string;
-   |                       ^
+   |          ~~~ 'bar' was first declared as a function here
  3 | class bar {}
+   |       ^^^
+   |       ~~~ cannot be redeclared here
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'bar'
 
 
 ✓ test/parser/suite/ts/pass/15c234097493ff62.ts
@@ -1699,17 +1554,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/15dc37e0f9e6a3b9.ts
 ✓ test/parser/suite/ts/pass/15e684d930a92096.module.ts
 ✓ test/parser/suite/ts/pass/15ed3d527e0f8cb7.ts
-✗ test/parser/suite/ts/pass/160ad4777bf8a9cc.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-27 | 
-28 | function foo1(x: A);
-   |                    ^
-29 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/160ad4777bf8a9cc.ts
 ✓ test/parser/suite/ts/pass/160bd340c1bd83ff.ts
 ✓ test/parser/suite/ts/pass/160da69d7bf119a0.ts
 ✓ test/parser/suite/ts/pass/160de5c243f6058a.ts
@@ -1735,30 +1580,10 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/16aa1b7d0ab95244.ts
 ✓ test/parser/suite/ts/pass/16b2352b1da478c2.ts
 ✓ test/parser/suite/ts/pass/16b628dcbbb5e28a.ts
-✗ test/parser/suite/ts/pass/16bcc250464e2288.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function foo(x?: number);
-   |                         ^
- 6 | function foo(x?: number) { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/16bcc250464e2288.ts
 ✓ test/parser/suite/ts/pass/16d4634d5a8cc79d.ts
 ✓ test/parser/suite/ts/pass/16d7d73a2b2b5aac.ts
-✗ test/parser/suite/ts/pass/16d936bea0253eb1.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-16 | 
-17 |     function f4(_i: number, ...rest); // no codegen no error
-   |                                     ^
-18 |     function f4(_i: string, ...rest); // no codegen no error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/16d936bea0253eb1.ts
 ✓ test/parser/suite/ts/pass/16e5cfb9fd5d30ae.ts
 ✓ test/parser/suite/ts/pass/16e7bf0fc1f394ae.ts
 ✗ test/parser/suite/ts/pass/16e7f4e4ae55cb60.module.ts (parse errors)
@@ -1830,17 +1655,7 @@ error: 'const' declarations must be initialized
 
 ✓ test/parser/suite/ts/pass/17506eb5e0fb640a.ts
 ✓ test/parser/suite/ts/pass/175144b31515fea7.module.ts
-✗ test/parser/suite/ts/pass/17620cabd490f214.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | {
- 4 |     function foo();
-   |                   ^
- 5 |     function bar() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/17620cabd490f214.ts
 ✓ test/parser/suite/ts/pass/176a2dd38a337008.ts
 ✗ test/parser/suite/ts/pass/176fe00f52c9f317.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -1873,17 +1688,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/179f533b5d92c9cf.ts
 ✓ test/parser/suite/ts/pass/17a5d52bdac4b6f4.ts
 ✓ test/parser/suite/ts/pass/17aca54397bb4463.ts
-✗ test/parser/suite/ts/pass/17b91fe1623bc629.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | 
- 8 | function callb(lam: (l: A) => void);
-   |                                    ^
- 9 | function callb(lam: (n: B) => void);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/17b91fe1623bc629.ts
 ✓ test/parser/suite/ts/pass/17c6a15553a8d3e5.ts
 ✓ test/parser/suite/ts/pass/17c7be43482bbeb6.ts
 ✓ test/parser/suite/ts/pass/17cc6498b42df97d.ts
@@ -1972,17 +1777,7 @@ error: 'eval' is not allowed as a binding identifier in strict mode
 ✓ test/parser/suite/ts/pass/1996eb41865837ab.ts
 ✓ test/parser/suite/ts/pass/19ab5e35c6b7f7b1.ts
 ✓ test/parser/suite/ts/pass/19ba912a2d8e384d.ts
-✗ test/parser/suite/ts/pass/19ccfc7b636f7919.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | 
- 6 | function tempTag2(templateStrs: TemplateStringsArray, f: FuncType1, x: number): number;
-   |                                                                                       ^
- 7 | function tempTag2(templateStrs: TemplateStringsArray, f: FuncType2, h: FuncType2, x: string): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/19ccfc7b636f7919.ts
 ✓ test/parser/suite/ts/pass/19d3a6c40826d77a.ts
 ✓ test/parser/suite/ts/pass/19d6bcd844cb4342.ts
 ✓ test/parser/suite/ts/pass/19d9761c28ff2511.ts
@@ -2005,29 +1800,9 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/1a53bfc79e597ed4.ts
 ✓ test/parser/suite/ts/pass/1a59dcfe370f0748.module.tsx
 ✓ test/parser/suite/ts/pass/1a5b5942d650ecd5.ts
-✗ test/parser/suite/ts/pass/1a5e34f194f0c981.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 3 | function foo(bar:{a:boolean;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1a5e34f194f0c981.ts
 ✓ test/parser/suite/ts/pass/1a71f62cc1335bed.ts
-✗ test/parser/suite/ts/pass/1a7267da550b36ec.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(foo:string);
-   |                         ^
- 4 | function foo(foo?:string){ return '' };
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1a7267da550b36ec.ts
 ✓ test/parser/suite/ts/pass/1a7ac789faa8e26f.ts
 ✓ test/parser/suite/ts/pass/1a7c1c3e4682fd93.ts
 ✓ test/parser/suite/ts/pass/1a7cd394e247e6fc.ts
@@ -2046,17 +1821,7 @@ error: Private field '#method' must be declared in an enclosing class
 ✓ test/parser/suite/ts/pass/1a9a8faf00041376.ts
 ✓ test/parser/suite/ts/pass/1a9f5f182faeff58.ts
 ✓ test/parser/suite/ts/pass/1ab7c0a5f53ddb9b.ts
-✗ test/parser/suite/ts/pass/1abbe01602d02204.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 |     // Error because body is not ambient and this overload is
- 5 |     export function f();
-   |                        ^
- 6 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1abbe01602d02204.ts
 ✓ test/parser/suite/ts/pass/1aca50a2ce218686.ts
 ✗ test/parser/suite/ts/pass/1adba205104c6478.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -2071,17 +1836,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/1adcae10a3cf5627.ts
 ✓ test/parser/suite/ts/pass/1aecf64033f295fc.ts
-✗ test/parser/suite/ts/pass/1af25d6c34d0da49.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | declare namespace foo {
- 3 |     export function x(): any;
-   |                             ^
- 4 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1af25d6c34d0da49.ts
 ✗ test/parser/suite/ts/pass/1af3dcf81f26daee.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -2109,40 +1864,10 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/1b1f5aa1a23c431a.ts
 ✓ test/parser/suite/ts/pass/1b24ad6fc307d395.ts
 ✓ test/parser/suite/ts/pass/1b2fef73582850d3.ts
-✗ test/parser/suite/ts/pass/1b3530ea75b86dac.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-44 | 
-45 | function overload1(n: number) : string;
-   |                                       ^
-46 | function overload1(s: string) : string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1b3530ea75b86dac.ts
 ✓ test/parser/suite/ts/pass/1b3a3a9d931c3d0f.ts
-✗ test/parser/suite/ts/pass/1b3a909a7815cda3.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 9 | 
-10 | function fun<T>(f: FuncType, x: T): T;
-   |                                      ^
-11 | function fun<T>(f: FuncType, g: FuncType, x: T): T;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/1b46d1c7609e7302.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 |     }
- 7 |     function Y();
-   |                 ^
- 8 |     export { Y as X };
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1b3a909a7815cda3.ts
+✓ test/parser/suite/ts/pass/1b46d1c7609e7302.ts
 ✓ test/parser/suite/ts/pass/1b49edd171c7067b.ts
 ✓ test/parser/suite/ts/pass/1b4ac236aabe8b6e.ts
 ✓ test/parser/suite/ts/pass/1b5963dd2b62d65e.ts
@@ -2249,17 +1974,7 @@ error: A class can only have one constructor
  6 | }
    |
 
-✗ test/parser/suite/ts/pass/1ccbf52a7fe932f4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(bar:number):string;
-   |                                ^
- 4 | function foo(bar:number):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1ccbf52a7fe932f4.ts
 ✓ test/parser/suite/ts/pass/1cddfe31e221267e.ts
 ✓ test/parser/suite/ts/pass/1cde432525ff1795.ts
 ✓ test/parser/suite/ts/pass/1ce877ced5772e6f.module.ts
@@ -2292,17 +2007,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/1d13421c10c2d91d.ts
 ✓ test/parser/suite/ts/pass/1d1b284ed1fc5a40.ts
 ✓ test/parser/suite/ts/pass/1d1e68f5111519c2.ts
-✗ test/parser/suite/ts/pass/1d3059e57b106594.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | 
- 8 |     export default function func(): typeof func;
-   |                                                ^
- 9 | 
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/1d3059e57b106594.ts
 ✓ test/parser/suite/ts/pass/1d34f28bd5c15db7.ts
 ✓ test/parser/suite/ts/pass/1d376b616228a05f.ts
 ✗ test/parser/suite/ts/pass/1d3d5d75833ab052.ts (parse errors)
@@ -2454,17 +2159,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/20203ed742cd329b.ts
 ✓ test/parser/suite/ts/pass/2021acf383433e92.ts
 ✓ test/parser/suite/ts/pass/2029ac9ce2b7925b.ts
-✗ test/parser/suite/ts/pass/2029b28958d1e167.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | //@target: es6
- 2 | function foo1(strs: TemplateStringsArray, x: number): string;
-   |                                                             ^
- 3 | function foo1(strs: string[], x: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/2029b28958d1e167.ts
 ✓ test/parser/suite/ts/pass/2032f79366b6d9a5.ts
 ✓ test/parser/suite/ts/pass/203630a551addc57.ts
 ✓ test/parser/suite/ts/pass/2039a5227875fb46.ts
@@ -2510,17 +2205,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/20b9fbaeefc2e832.ts
 ✓ test/parser/suite/ts/pass/20bb372ebdc87e4a.ts
 ✓ test/parser/suite/ts/pass/20bc44b6843bea78.ts
-✗ test/parser/suite/ts/pass/20cbe0d5be9ad9a1.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | {
- 3 |     function foo();
-   |                   ^
- 4 |     function bar() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/20cbe0d5be9ad9a1.ts
 ✓ test/parser/suite/ts/pass/20d7e5dab029d938.ts
 ✓ test/parser/suite/ts/pass/20dd39323ac0fd4a.ts
 ✓ test/parser/suite/ts/pass/20e0ff09bb721e9e.ts
@@ -2528,17 +2213,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/20f05f1bde427568.ts
 ✓ test/parser/suite/ts/pass/20f2e8e12da7b99a.ts
 ✓ test/parser/suite/ts/pass/20f5a4331c7663d1.ts
-✗ test/parser/suite/ts/pass/20f80a969f439242.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar: string): string;
-   |                                  ^
- 3 | function foo(bar: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/20f80a969f439242.ts
 ✓ test/parser/suite/ts/pass/20f96ebbb4a82f6c.ts
 ✓ test/parser/suite/ts/pass/21018cb1d5cbc160.ts
 ✓ test/parser/suite/ts/pass/21142c8833a4a796.ts
@@ -2549,14 +2224,17 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/2147efbe261ca30d.ts
 ✓ test/parser/suite/ts/pass/215decb76cdb19be.ts
 ✗ test/parser/suite/ts/pass/2161d19d5017b837.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'Foo' has already been declared
    |
 10 | // just want to make sure this one doesn't crash the compiler
 11 | function Foo();
-   |               ^
+   |          ~~~ 'Foo' was first declared as a function here
 12 | class Foo {
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+13 |  static bar;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'Foo'
 
 
 ✓ test/parser/suite/ts/pass/216a1c138b692d90.ts
@@ -2755,17 +2433,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/23f149fcc34b0eaa.module.ts
 ✓ test/parser/suite/ts/pass/23f433c9bf89e048.ts
 ✓ test/parser/suite/ts/pass/23f91105e1dd66cb.ts
-✗ test/parser/suite/ts/pass/24238f410106e4fd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo():string;
-   |                      ^
- 3 | function foo(bar:string):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/24238f410106e4fd.ts
 ✓ test/parser/suite/ts/pass/24273c79c8910925.ts
 ✓ test/parser/suite/ts/pass/242ad65f1a646690.ts
 ✓ test/parser/suite/ts/pass/242d419af42cdcf1.ts
@@ -2817,17 +2485,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/24ed2164afab435b.ts
 ✓ test/parser/suite/ts/pass/24f1fad8fb6ef057.module.ts
 ✓ test/parser/suite/ts/pass/24f7fff3143e83e1.ts
-✗ test/parser/suite/ts/pass/24fadf8b4bb6007f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function foo1(x: number);
-   |                         ^
- 6 | function foo1(x: number);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/24fadf8b4bb6007f.ts
 ✓ test/parser/suite/ts/pass/24fb3a93eb1e67c2.ts
 ✓ test/parser/suite/ts/pass/24ff91536b3be614.ts
 ✓ test/parser/suite/ts/pass/2510663aa707bd71.ts
@@ -2984,15 +2642,16 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/272d2f70994a33d4.ts
 ✓ test/parser/suite/ts/pass/272d76b6369a1116.ts
 ✗ test/parser/suite/ts/pass/273461f5fcc43446.module.ts (parse errors)
-error: Expected '{' to start function body, but found 'export'
+error: Duplicate export of 'default'
    |
+ 2 | // @target: es2015
  3 | export default function foo(value: number): number
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  4 | export default function foo(value: string): string
-   | ^^^^^^
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
  5 | export default function foo(value: string | number): string | number {
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✓ test/parser/suite/ts/pass/273707cff5c289c0.module.ts
 ✓ test/parser/suite/ts/pass/27394d67257c09d7.ts
@@ -3032,17 +2691,7 @@ error: Expected ';' after for-loop init, but found ':'
 
 ✓ test/parser/suite/ts/pass/278be3f4e9cd85ff.ts
 ✓ test/parser/suite/ts/pass/279913189dbeaba8.ts
-✗ test/parser/suite/ts/pass/27b486f8726fff6d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function f(x: "foo"): number;
-   |                             ^
- 5 | function f(x: string): number {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/27b486f8726fff6d.ts
 ✓ test/parser/suite/ts/pass/27ba3584fbf77a8e.ts
 ✓ test/parser/suite/ts/pass/27bb0ebc87edeb85.ts
 ✓ test/parser/suite/ts/pass/27bddc394f39c933.ts
@@ -3185,17 +2834,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/29edaea0bb8ff934.ts
 ✓ test/parser/suite/ts/pass/29ef924e232f7dc3.ts
 ✓ test/parser/suite/ts/pass/29f7f43e1f8fb2ca.ts
-✗ test/parser/suite/ts/pass/29f9eefa5b82abcd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-17 |     import { Request } from 'popsicle';
-18 |     function proxy(): (request: Request) => any;
-   |                                                ^
-19 |     export = proxy;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/29f9eefa5b82abcd.ts
 ✓ test/parser/suite/ts/pass/2a06642f9ff227aa.ts
 ✓ test/parser/suite/ts/pass/2a147fb7933cfd64.ts
 ✓ test/parser/suite/ts/pass/2a220b87ad57a09f.ts
@@ -3442,14 +3081,14 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/2cf92621917018ad.ts
 ✓ test/parser/suite/ts/pass/2cffa5f18f397e1a.ts
 ✗ test/parser/suite/ts/pass/2d11357ae867d700.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '.'
    |
- 4 |     interface X { }
- 5 |     export function foo(s: string);
-   |                                   ^
- 6 | }
+ 7 | string.foo("abc");
+ 8 | var x: string.X;
+   |              ^
+ 9 | 
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/2d18790e03bcdcff.module.ts
@@ -3678,17 +3317,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/302250c001ac1b80.ts
 ✓ test/parser/suite/ts/pass/3022fde17edc5568.ts
 ✓ test/parser/suite/ts/pass/30265fe0b9fab147.ts
-✗ test/parser/suite/ts/pass/3027fbf6817abf9b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}): number;
-   |                                      ^
- 3 | function foo(bar:{a:string;}): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3027fbf6817abf9b.ts
 ✓ test/parser/suite/ts/pass/3031f54861197682.ts
 ✗ test/parser/suite/ts/pass/30405d049270ca93.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -3727,14 +3356,14 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/30a9b491813eccfc.ts
 ✓ test/parser/suite/ts/pass/30aaca83b76cecd2.ts
 ✗ test/parser/suite/ts/pass/30b9c5d1df3f3b26.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Expected declaration after 'export', but found 'interface'
    |
- 5 | 
- 6 |     function express(): express.ExpressServer;
-   |                                              ^
- 7 | 
+ 9 | 
+10 |         export interface ExpressServer {
+   |                ^^^^^^^^^
+11 | 
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/30bcd04fabbc9616.ts
@@ -3818,28 +3447,8 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/31d9f79de1956567.ts
 ✓ test/parser/suite/ts/pass/31debbd842785d63.ts
 ✓ test/parser/suite/ts/pass/31e0c305e3b9dab9.ts
-✗ test/parser/suite/ts/pass/31f14fc2c7262f0f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar: { a:number }[]): number;
-   |                                          ^
- 3 | function foo(bar: { a:string }[]): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/31f1aca268132f3c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function foo(a: "hello"): number;
-   |                                 ^
- 5 | function foo(a: "name"): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/31f14fc2c7262f0f.ts
+✓ test/parser/suite/ts/pass/31f1aca268132f3c.ts
 ✓ test/parser/suite/ts/pass/31f251a11db3c207.module.ts
 ✓ test/parser/suite/ts/pass/31f30348324a8ae6.ts
 ✓ test/parser/suite/ts/pass/31f4c6a422b9ad60.ts
@@ -3887,17 +3496,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3263e62dd6e20c50.module.ts
 ✓ test/parser/suite/ts/pass/326a6994072a825c.ts
 ✓ test/parser/suite/ts/pass/328f922ef8b5d228.module.ts
-✗ test/parser/suite/ts/pass/3298dd54bd7a756c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo():number;
-   |                      ^
- 3 | function foo():string { return "a" }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3298dd54bd7a756c.ts
 ✓ test/parser/suite/ts/pass/32b350e69031fb5a.ts
 ✓ test/parser/suite/ts/pass/32b766f783c7717a.ts
 ✓ test/parser/suite/ts/pass/32bd664d1484ff1f.ts
@@ -3939,16 +3538,7 @@ error: 'arguments' is not allowed as a binding identifier in strict mode
 
 ✓ test/parser/suite/ts/pass/3349572b26680fc2.ts
 ✓ test/parser/suite/ts/pass/335ebd74b4ebf3b1.ts
-✗ test/parser/suite/ts/pass/335fc59e2612a107.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo():string;
-   |                      ^
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/335fc59e2612a107.ts
 ✓ test/parser/suite/ts/pass/3363f9f55707f292.ts
 ✓ test/parser/suite/ts/pass/33658ea30e5278b3.ts
 ✓ test/parser/suite/ts/pass/336a85d9b0a53140.module.ts
@@ -3977,17 +3567,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/33f2d90e6126cdaf.ts
 ✓ test/parser/suite/ts/pass/33f3f2f31e16357e.ts
 ✓ test/parser/suite/ts/pass/340412562740b0a2.ts
-✗ test/parser/suite/ts/pass/3405561e924dfbc0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-24 | 
-25 | function f(p: "hello"): JustHello;
-   |                                  ^
-26 | function f(p: "hello" | "world"): HelloOrWorld;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3405561e924dfbc0.ts
 ✓ test/parser/suite/ts/pass/341764f0d14ec0ec.ts
 ✓ test/parser/suite/ts/pass/342f92fcd267d9a2.ts
 ✗ test/parser/suite/ts/pass/3430132f1e76c27e.ts (parse errors)
@@ -4198,17 +3778,7 @@ error: Expected declaration after 'export', but found 'abstract'
 ✓ test/parser/suite/ts/pass/37551e8ced2c61bb.ts
 ✓ test/parser/suite/ts/pass/37572ebbbdac62f2.ts
 ✓ test/parser/suite/ts/pass/37606e436022b989.ts
-✗ test/parser/suite/ts/pass/376529e3f832f726.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-11 | 
-12 | function foo1(x: C<string>);
-   |                            ^
-13 | function foo1(x: C<number>); // ok
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/376529e3f832f726.ts
 ✓ test/parser/suite/ts/pass/37765c56b6e2a1d7.ts
 ✓ test/parser/suite/ts/pass/377ee16a0c479ea9.ts
 ✓ test/parser/suite/ts/pass/378783178c27cd76.ts
@@ -4235,31 +3805,11 @@ error: Expected '{' to start function body, but found ':'
    = help: Function bodies must be enclosed in braces: function name() { ... }
 
 
-✗ test/parser/suite/ts/pass/37c45b2abc2ff7b7.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo():string;
-   |                      ^
- 3 | function foo(bar:string):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/37c45b2abc2ff7b7.ts
 ✓ test/parser/suite/ts/pass/37cc9f0a17404d2e.ts
 ✓ test/parser/suite/ts/pass/37d0c8c847429707.ts
 ✓ test/parser/suite/ts/pass/37d6c90a51416a71.ts
-✗ test/parser/suite/ts/pass/37df90b8eb4efba0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(x);
-   |                ^
- 4 | function bar() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/37df90b8eb4efba0.ts
 ✓ test/parser/suite/ts/pass/37e4436172f6c235.ts
 ✗ test/parser/suite/ts/pass/37ede12df0f1a6ad.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
@@ -4354,15 +3904,15 @@ error: Unexpected token '@' in binding pattern
 
 ✓ test/parser/suite/ts/pass/39f07b4dac39e9e0.ts
 ✗ test/parser/suite/ts/pass/39f2fa36d459d80d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: A class can only have one constructor
    |
-81 | 
-82 | function f3(_this: number); // no code gen - no error
-   |                           ^
-83 | function f3(_this: string); // no code gen - no error
+59 | class Foo3 {
+60 |     constructor(_this: string); // no code gen - no error
+   |     ~~~~~~~~~~~ first constructor defined here
+61 |     constructor(_this: number); // no code gen - no error
+   |     ^^^^^^^^^^^
+62 |     constructor(_this: any) { // Error
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✓ test/parser/suite/ts/pass/39fcc7375de21c23.ts
 ✓ test/parser/suite/ts/pass/3a046a56336f644e.ts
@@ -4399,17 +3949,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/3a4e9d0f811ad2b8.ts
 ✓ test/parser/suite/ts/pass/3a539f090731f57d.ts
 ✓ test/parser/suite/ts/pass/3a57767d979b12a6.ts
-✗ test/parser/suite/ts/pass/3a65d291bac44098.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | 
- 3 | function foo1(strs: TemplateStringsArray, x: number): string;
-   |                                                             ^
- 4 | function foo1(strs: string[], x: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3a65d291bac44098.ts
 ✗ test/parser/suite/ts/pass/3a66bcb0ff2adb2c.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -4535,17 +4075,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/3bd09cc9e668c16b.ts
 ✓ test/parser/suite/ts/pass/3bd78aeea64eb0c0.ts
 ✓ test/parser/suite/ts/pass/3bd7a6668b64015d.ts
-✗ test/parser/suite/ts/pass/3bdc1fe416230c1e.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-31 | 
-32 | function foo1(x: A);
-   |                    ^
-33 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3bdc1fe416230c1e.ts
 ✗ test/parser/suite/ts/pass/3be18cefeb9cd727.ts (parse errors)
 error: A class can only have one constructor
    |
@@ -4639,29 +4169,9 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/3cfff9e839981845.ts
 ✓ test/parser/suite/ts/pass/3d0cfe3aa80dab15.ts
 ✓ test/parser/suite/ts/pass/3d16863fd4c6d852.ts
-✗ test/parser/suite/ts/pass/3d1a5251d8d15458.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}):number;
-   |                                     ^
- 3 | function foo(bar:{a:string;}):string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3d1a5251d8d15458.ts
 ✓ test/parser/suite/ts/pass/3d1cc3f5bbc9096b.ts
-✗ test/parser/suite/ts/pass/3d22f80dde11fb1d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-43 | 
-44 | function foo1(x: A);
-   |                    ^
-45 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3d22f80dde11fb1d.ts
 ✓ test/parser/suite/ts/pass/3d255508f097bf55.ts
 ✓ test/parser/suite/ts/pass/3d41a328af665f01.ts
 ✓ test/parser/suite/ts/pass/3d44efc3f9367746.ts
@@ -4755,17 +4265,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/3dfc7b67f7b2a4f7.ts
 ✓ test/parser/suite/ts/pass/3e034f214352b6ba.ts
 ✓ test/parser/suite/ts/pass/3e09bae882deae2e.ts
-✗ test/parser/suite/ts/pass/3e0dd80d5b046aa3.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | namespace M {
- 3 |    function foo();
-   |                  ^
- 4 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3e0dd80d5b046aa3.ts
 ✓ test/parser/suite/ts/pass/3e13a44fa5ca2619.ts
 ✓ test/parser/suite/ts/pass/3e19be510bf989e0.ts
 ✓ test/parser/suite/ts/pass/3e25fde72f9b8f79.ts
@@ -4802,17 +4302,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/3e5ee88e56751441.module.ts
 ✓ test/parser/suite/ts/pass/3e614a3e1d56077f.ts
 ✓ test/parser/suite/ts/pass/3e9271c088c5a03e.ts
-✗ test/parser/suite/ts/pass/3e95519663482559.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 8 | class X2 { x: string; }
- 9 | function f(a: X1): A;
-   |                     ^
-10 | function f<T>(a: X<T>): B;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3e95519663482559.ts
 ✓ test/parser/suite/ts/pass/3e95f36b6ddf9ae3.ts
 ✓ test/parser/suite/ts/pass/3e96703139871c07.ts
 ✓ test/parser/suite/ts/pass/3e9be4870c935b22.ts
@@ -4841,17 +4331,7 @@ error: 'yield' is reserved in strict mode and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/3f2557055abf4faf.ts
 ✓ test/parser/suite/ts/pass/3f26ab33e0cc1407.ts
 ✓ test/parser/suite/ts/pass/3f3298ad6eb36683.ts
-✗ test/parser/suite/ts/pass/3f405333da283d70.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo();
-   |               ^
- 3 | function bar() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/3f405333da283d70.ts
 ✓ test/parser/suite/ts/pass/3f4a3e37577fc76d.ts
 ✗ test/parser/suite/ts/pass/3f57a8c7cfc712c0.module.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
@@ -5061,17 +4541,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/42881cf3c986cd0d.ts
 ✓ test/parser/suite/ts/pass/428d100ef1326796.module.ts
 ✓ test/parser/suite/ts/pass/428ecc55a1ef6828.ts
-✗ test/parser/suite/ts/pass/42a769578fee1a4c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 |     }
- 6 |     export function Function(...args: any[]): any;
-   |                                                  ^
- 7 |     export function Function(...args: string[]): Function;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/42a769578fee1a4c.ts
 ✗ test/parser/suite/ts/pass/42a7a9bb06f270cb.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -5098,17 +4568,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/42c5826d3ccdd9b1.ts
 ✓ test/parser/suite/ts/pass/42cbc02a5f54f5ea.module.ts
 ✓ test/parser/suite/ts/pass/42d91e5ae00f20dd.ts
-✗ test/parser/suite/ts/pass/42e3ab4df9823f01.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-    |
-366 | 
-367 | function path<T, K1 extends keyof T>(obj: T, key1: K1): T[K1];
-    |                                                              ^
-368 | function path<T, K1 extends keyof T, K2 extends keyof T[K1]>(obj: T, key1: K1, key2: K2): T[K1][K2];
-    |
-    = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/42e3ab4df9823f01.ts
 ✓ test/parser/suite/ts/pass/42eee111acf99ede.module.ts
 ✓ test/parser/suite/ts/pass/42fb94bab82ed111.ts
 ✓ test/parser/suite/ts/pass/42fee733fd86c5bd.ts
@@ -5194,17 +4654,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/435ecad7017854ee.ts
 ✓ test/parser/suite/ts/pass/4364fbea7db51ea0.ts
 ✓ test/parser/suite/ts/pass/436c02ef51deec3a.ts
-✗ test/parser/suite/ts/pass/4377d7be3134d098.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 9 | 
-10 | function from<T>(array: T[]): Query<T>;
-   |                                       ^
-11 | function from<T>(enumerator: Enumerator<T>): Query<T>;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/4377d7be3134d098.ts
 ✓ test/parser/suite/ts/pass/43790d7e982b173a.ts
 ✓ test/parser/suite/ts/pass/4379d4408cf673a9.ts
 ✓ test/parser/suite/ts/pass/437b17f2d2fa398f.ts
@@ -5257,17 +4707,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/4439adc403524ae9.ts
 ✓ test/parser/suite/ts/pass/443a9fd1f84d8706.ts
 ✓ test/parser/suite/ts/pass/443f347823c14899.ts
-✗ test/parser/suite/ts/pass/44450effa2469ad4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @declaration: true
- 3 | function f(a: 0): 0;
-   |                    ^
- 4 | function f(a: 1): 1;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/44450effa2469ad4.ts
 ✗ test/parser/suite/ts/pass/44488de017227906.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -5645,17 +5085,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/48f8551f71118aeb.ts
 ✓ test/parser/suite/ts/pass/49083ca0231f3850.module.ts
 ✓ test/parser/suite/ts/pass/491844c2ee3d81b3.ts
-✗ test/parser/suite/ts/pass/491abf12f068b4fa.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 3 | function foo(bar:{a:boolean;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/491abf12f068b4fa.ts
 ✓ test/parser/suite/ts/pass/4927bcbeee9d4208.ts
 ✓ test/parser/suite/ts/pass/49318225ce1aa3f2.ts
 ✓ test/parser/suite/ts/pass/49366390ab60d572.ts
@@ -5789,17 +5219,7 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/ts/pass/4ac38f5fc4875018.ts
 ✓ test/parser/suite/ts/pass/4b0ca2fb8f2c7387.module.tsx
 ✓ test/parser/suite/ts/pass/4b1161892d618e24.ts
-✗ test/parser/suite/ts/pass/4b148749e0f3b80f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | //@target: es6
- 2 | function foo(strs: TemplateStringsArray): number;
-   |                                                 ^
- 3 | function foo(strs: TemplateStringsArray, x: number): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/4b148749e0f3b80f.ts
 ✓ test/parser/suite/ts/pass/4b1bc8b5deffbff7.ts
 ✗ test/parser/suite/ts/pass/4b3cef4a912f22cf.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
@@ -5843,17 +5263,7 @@ error: Expected ')' to close a parenthesized type, but found '?'
 ✓ test/parser/suite/ts/pass/4b86ed153dadffc6.ts
 ✓ test/parser/suite/ts/pass/4b8b9b853e2e3cbc.ts
 ✓ test/parser/suite/ts/pass/4b8f1ad4033ae6e8.ts
-✗ test/parser/suite/ts/pass/4b919dc27dadbdaa.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo();
-   |               ^
- 4 | function foo() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/4b919dc27dadbdaa.ts
 ✓ test/parser/suite/ts/pass/4b99774109cceee5.ts
 ✗ test/parser/suite/ts/pass/4ba2e8ccdcc206ed.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
@@ -5874,17 +5284,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/4bcde20c33574a88.ts
 ✓ test/parser/suite/ts/pass/4bd24267463e8082.ts
 ✓ test/parser/suite/ts/pass/4bd961dd1b4328e7.ts
-✗ test/parser/suite/ts/pass/4bde4fa17eafee9c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}):number;
-   |                                     ^
- 3 | function foo(bar:{a:string;}):string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/4bde4fa17eafee9c.ts
 ✓ test/parser/suite/ts/pass/4be2d7a11149e79b.ts
 ✓ test/parser/suite/ts/pass/4be6d21b53858e70.ts
 ✓ test/parser/suite/ts/pass/4bfdd55fd302a18b.ts
@@ -5969,17 +5369,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/4d10874b0f3cd175.ts
 ✓ test/parser/suite/ts/pass/4d2a7c798b01624e.ts
 ✓ test/parser/suite/ts/pass/4d365620bb11b368.ts
-✗ test/parser/suite/ts/pass/4d388a78c7f07f68.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-20 | 
-21 | function hasKind(entity: Entity, kind: "A"): entity is A;
-   |                                                         ^
-22 | function hasKind(entity: Entity, kind: "B"): entity is B;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/4d388a78c7f07f68.ts
 ✓ test/parser/suite/ts/pass/4d42176afc7d554f.ts
 ✓ test/parser/suite/ts/pass/4d55d276119b7e00.ts
 ✓ test/parser/suite/ts/pass/4d5b8c1521bdb66c.ts
@@ -6096,17 +5486,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/4eff38dc80207d7a.ts
 ✓ test/parser/suite/ts/pass/4f0d431bd8a8e6b8.ts
 ✓ test/parser/suite/ts/pass/4f1b50e08ad1ce49.ts
-✗ test/parser/suite/ts/pass/4f1ebddec5fd46b2.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-23 | 
-24 | function foo2(x: I);
-   |                    ^
-25 | function foo2(x: I); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/4f1ebddec5fd46b2.ts
 ✓ test/parser/suite/ts/pass/4f1ebf68cd9b9006.ts
 ✓ test/parser/suite/ts/pass/4f2219172f959d0d.ts
 ✓ test/parser/suite/ts/pass/4f23fb208a21ec6f.ts
@@ -6355,17 +5735,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/526016c07a8594eb.ts
 ✓ test/parser/suite/ts/pass/5263853f324daf85.ts
 ✓ test/parser/suite/ts/pass/52660ddfdf4ffbfd.ts
-✗ test/parser/suite/ts/pass/52695f100b10e560.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | }
- 8 | function Choice<T>(...v_args: T[]): A<T>;
-   |                                         ^
- 9 | function Choice<T>(...v_args: T[]): A<T> {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/52695f100b10e560.ts
 ✓ test/parser/suite/ts/pass/526b3df358f68f65.ts
 ✓ test/parser/suite/ts/pass/5272a2b3e0f82eb2.ts
 ✓ test/parser/suite/ts/pass/5281690ffdba8688.module.ts
@@ -6400,17 +5770,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/52cfa9f41fd884fe.ts
 ✓ test/parser/suite/ts/pass/52d8f89350759d2a.ts
 ✓ test/parser/suite/ts/pass/52db3bfc46313c21.module.ts
-✗ test/parser/suite/ts/pass/52e5fded8cf2a20f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-22 | 
-23 |     function f4(arguments: number, ...rest); // no codegen no error
-   |                                            ^
-24 |     function f4(arguments: string, ...rest); // no codegen no error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/52e5fded8cf2a20f.ts
 ✓ test/parser/suite/ts/pass/52fcbbc274f1da65.ts
 ✓ test/parser/suite/ts/pass/52ff77dd3f1c07ed.ts
 ✓ test/parser/suite/ts/pass/52ffc83e7e033617.ts
@@ -6458,14 +5818,17 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/53f38ef4be30c8ee.ts
 ✓ test/parser/suite/ts/pass/53f437293635ad7f.module.ts
 ✗ test/parser/suite/ts/pass/53f490f8cb88be46.module.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'bar' has already been declared
    |
+ 8 | 
  9 | declare function bar();
+   |                  ~~~ 'bar' was first declared as a function here
 10 | export function bar(s: string);
-   |                               ^
+   |                 ^^^
+   |                 ~~~ cannot be redeclared here
 11 | function bar(s?: string) { }
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'bar'
 
 
 ✓ test/parser/suite/ts/pass/5400d3472f4ec136.ts
@@ -6496,15 +5859,15 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/54bf808e757e9dc3.module.ts
 ✓ test/parser/suite/ts/pass/54c137a8ddfd9f01.ts
 ✗ test/parser/suite/ts/pass/54c76bdaa323e23d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: A class can only have one constructor
    |
- 7 | 
- 8 | function f4(x: string): string;
-   |                               ^
- 9 | 
+24 | class C {
+25 |     constructor(x: string);
+   |     ~~~~~~~~~~~ first constructor defined here
+26 | constructor(x: any) {}
+   | ^^^^^^^^^^^
+27 | }
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✓ test/parser/suite/ts/pass/54cf019adb052da9.ts
 ✗ test/parser/suite/ts/pass/54d7e58a5dcb0207.ts (parse errors)
@@ -6540,17 +5903,7 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/55766c33b2dcf9be.ts
 ✓ test/parser/suite/ts/pass/55826685a03d4e4f.ts
 ✓ test/parser/suite/ts/pass/558d33b77a97880a.ts
-✗ test/parser/suite/ts/pass/558d488284322803.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-31 | 
-32 | function foo1(x: A);
-   |                    ^
-33 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/558d488284322803.ts
 ✓ test/parser/suite/ts/pass/559391c3c519024e.ts
 ✓ test/parser/suite/ts/pass/559535ed04897a98.ts
 ✓ test/parser/suite/ts/pass/55a2810a150f5ede.ts
@@ -6575,17 +5928,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/55d80db9a0bbe1f0.ts
 ✓ test/parser/suite/ts/pass/55d96b5f47a45ebf.ts
 ✓ test/parser/suite/ts/pass/55d9cc58baafc22d.ts
-✗ test/parser/suite/ts/pass/55e2c7a696cb9ca4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(x: { id: number; name?: string; }): void;
-   |                                                      ^
- 3 | foo({ id: 1234 });                 // Ok
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/55e2c7a696cb9ca4.ts
 ✓ test/parser/suite/ts/pass/55e44f0ee8014553.ts
 ✗ test/parser/suite/ts/pass/55e5b50a3998c79c.ts (parse errors)
 error: A class can only have one constructor
@@ -6722,17 +6065,7 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/57559338e8929751.ts
 ✓ test/parser/suite/ts/pass/5757bcf6eb02541e.ts
-✗ test/parser/suite/ts/pass/57594693f32a56cf.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-18 | 
-19 | function f6(x: string, y: number);
-   |                                  ^
-20 | function f6(x: string, y: string): any;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/57594693f32a56cf.ts
 ✓ test/parser/suite/ts/pass/576378cff1d48efb.ts
 ✗ test/parser/suite/ts/pass/57658e1e4c0e3966.module.ts (parse errors)
 error: Cannot assign to 'eval' or 'arguments' in strict mode
@@ -6748,17 +6081,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/577b7d84eb21ed90.ts
 ✓ test/parser/suite/ts/pass/5792aa18bf9d0768.module.ts
 ✓ test/parser/suite/ts/pass/5793700548d133e6.ts
-✗ test/parser/suite/ts/pass/579eeb3051c0102e.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function foo():string;
-   |                      ^
- 6 | function foo():number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/579eeb3051c0102e.ts
 ✓ test/parser/suite/ts/pass/57a40752fc53c23c.module.ts
 ✓ test/parser/suite/ts/pass/57bd688b1552f814.ts
 ✓ test/parser/suite/ts/pass/57bf93d3a087c7cc.ts
@@ -7129,44 +6452,14 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/5c747ccab2ed0e3e.ts
 ✓ test/parser/suite/ts/pass/5c8806ca2a3566a4.ts
 ✓ test/parser/suite/ts/pass/5c8e613f4dc3c3c0.ts
-✗ test/parser/suite/ts/pass/5c971b8f17d3128d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function f(x: "foo"): number;
-   |                             ^
- 5 | function f(x: "foo"): number {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5c971b8f17d3128d.ts
 ✓ test/parser/suite/ts/pass/5c9b11bc0e17643a.ts
 ✓ test/parser/suite/ts/pass/5c9c1efb6911e7d4.ts
 ✓ test/parser/suite/ts/pass/5c9fc4052c8f19c0.ts
 ✓ test/parser/suite/ts/pass/5caa83c45dc783d4.module.ts
 ✓ test/parser/suite/ts/pass/5cad0ad11fb13c7c.ts
-✗ test/parser/suite/ts/pass/5cb0086c3c10136c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | declare namespace M {
- 4 |    function foo();
-   |                  ^
- 5 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/5cb04aa2cf561f40.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 5 | function foo(bar:{a:boolean;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5cb0086c3c10136c.ts
+✓ test/parser/suite/ts/pass/5cb04aa2cf561f40.ts
 ✓ test/parser/suite/ts/pass/5cb052bc76e89f1a.ts
 ✓ test/parser/suite/ts/pass/5cb7f0424f041497.ts
 ✓ test/parser/suite/ts/pass/5cbe01f1e6d9f2f4.ts
@@ -7197,17 +6490,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/5cdcfc7519193298.ts
 ✓ test/parser/suite/ts/pass/5cf3fd3384b251f0.ts
 ✓ test/parser/suite/ts/pass/5cf7dfa281e4ac0f.ts
-✗ test/parser/suite/ts/pass/5cfa228fd9678169.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function getFalsyPrimitive(x: "string"): string;
-   |                                                ^
- 6 | function getFalsyPrimitive(x: "number"): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5cfa228fd9678169.ts
 ✗ test/parser/suite/ts/pass/5d070b1c6216592c.module.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -7246,46 +6529,16 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/5d8c808f7b21d6f4.ts
 ✓ test/parser/suite/ts/pass/5d9513fcbbd5c05f.ts
 ✓ test/parser/suite/ts/pass/5d9dfb5070d3f9d1.ts
-✗ test/parser/suite/ts/pass/5d9f70a7c52015b8.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 8 | 
- 9 | function doThing(x: "dog"): Dog;
-   |                                ^
-10 | function doThing(x: "cat"): Cat;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5d9f70a7c52015b8.ts
 ✓ test/parser/suite/ts/pass/5db28939575e22e2.ts
-✗ test/parser/suite/ts/pass/5db2966f6ca288a6.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function foo(name: "SPAN"): Derived1;
-   |                                     ^
- 8 | function foo(name: "DIV"): Derived2 {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5db2966f6ca288a6.ts
 ✓ test/parser/suite/ts/pass/5db2baf2d2b114fa.ts
 ✓ test/parser/suite/ts/pass/5dba561b66fae533.ts
 ✓ test/parser/suite/ts/pass/5dd69480dc832d62.ts
 ✓ test/parser/suite/ts/pass/5de023726a6bd24a.ts
 ✓ test/parser/suite/ts/pass/5de8fe76ff101a68.ts
 ✓ test/parser/suite/ts/pass/5e1cebe701fd8f28.ts
-✗ test/parser/suite/ts/pass/5e1e5702d4f93f9d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:string):string;
-   |                                ^
- 3 | function foo(bar:number):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5e1e5702d4f93f9d.ts
 ✗ test/parser/suite/ts/pass/5e20d3f782d1f074.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -7446,17 +6699,7 @@ error: A class can only have one constructor
 
 ✓ test/parser/suite/ts/pass/60cf5b81ae703611.ts
 ✓ test/parser/suite/ts/pass/60d142e15d29a3ce.ts
-✗ test/parser/suite/ts/pass/60d2a072c2cdf0c6.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(bar:{a:number;});
-   |                              ^
- 4 | function foo(bar:{a:string;}) { return {a:""} }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/60d2a072c2cdf0c6.ts
 ✓ test/parser/suite/ts/pass/60dc6b5742529051.ts
 ✓ test/parser/suite/ts/pass/60e2f2c0e73b0b98.ts
 ✓ test/parser/suite/ts/pass/60e620d32bf7a4f9.ts
@@ -7482,30 +6725,10 @@ error: Invalid assignment target
    = help: The left-hand side of a compound assignment must be a variable or property access
 
 
-✗ test/parser/suite/ts/pass/60f579cf26e96779.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-26 | 
-27 | function f4(arguments: number, ...rest); // no codegen no error
-   |                                        ^
-28 | function f4(arguments: string, ...rest); // no codegen no error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/60f579cf26e96779.ts
 ✓ test/parser/suite/ts/pass/60fd11d3650e991c.ts
 ✓ test/parser/suite/ts/pass/610224f1e7cf6b80.ts
-✗ test/parser/suite/ts/pass/61094d5aa2cafffd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-19 |     // Should return error for implicit any on return type.
-20 |     function f(x: number);
-   |                          ^
-21 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/61094d5aa2cafffd.ts
 ✗ test/parser/suite/ts/pass/6119ea729ae1f1b5.ts (parse errors)
 error: Expected ')' after catch parameter, but found ':'
    |
@@ -7567,17 +6790,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/61de59f78cdb2f82.ts
 ✓ test/parser/suite/ts/pass/61e60351bff4f4a3.ts
 ✓ test/parser/suite/ts/pass/61e8bc07d6810f50.ts
-✗ test/parser/suite/ts/pass/61eb5df2350adb21.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(a: string): string;
-   |                                ^
- 3 | function foo<T>(a: T): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/61eb5df2350adb21.ts
 ✓ test/parser/suite/ts/pass/61ec44abe3765b31.ts
 ✓ test/parser/suite/ts/pass/61ed84a2e3dc826b.ts
 ✓ test/parser/suite/ts/pass/61ef87bff4e5d426.ts
@@ -7593,14 +6806,14 @@ error: Class declaration requires a name
 
 
 ✗ test/parser/suite/ts/pass/61fa2a02dff0f1e5.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Expected declaration after 'export', but found 'interface'
    |
-25 | 
-26 |     function f2(s: string);
-   |                           ^
-27 |     function f2(n: number);
+74 | 
+75 |     export interface i1 {
+   |            ^^^^^^^^^
+76 |         () : Object;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/620a054dfc99b104.ts
@@ -7811,17 +7024,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/6556ce7e08636875.ts
 ✓ test/parser/suite/ts/pass/6567067669673687.ts
 ✓ test/parser/suite/ts/pass/656b92fc0664c92e.ts
-✗ test/parser/suite/ts/pass/6574ed50e947d83b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo();
-   |               ^
- 4 | 1+1;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/6574ed50e947d83b.ts
 ✓ test/parser/suite/ts/pass/65a841a084637081.ts
 ✗ test/parser/suite/ts/pass/65b2dbec0e6ab88b.ts (parse errors)
 error: Unexpected token '@' in binding pattern
@@ -7869,17 +7072,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/66254884eec406e1.ts
-✗ test/parser/suite/ts/pass/662cb579b4904aa9.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | declare namespace app {
- 6 |   function foo(): void;
-   |                       ^
- 7 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/662cb579b4904aa9.ts
 ✓ test/parser/suite/ts/pass/66343d0a69867a3f.ts
 ✓ test/parser/suite/ts/pass/6639b35a01c21f6c.module.ts
 ✓ test/parser/suite/ts/pass/664787c8398561c1.ts
@@ -8288,28 +7481,8 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/6c810611ca60c946.ts
-✗ test/parser/suite/ts/pass/6c88f7cffde90a18.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 |     // No implicit-'any' errors.
- 6 |     function dm_f1(): void;
-   |                           ^
- 7 | 
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/6c9176f53d013ccd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function foo([x, y, z] ?: [string, number, boolean]);
-   |                                                     ^
- 6 | function foo(...rest: any[]) {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/6c88f7cffde90a18.ts
+✓ test/parser/suite/ts/pass/6c9176f53d013ccd.ts
 ✓ test/parser/suite/ts/pass/6c961004520cc480.ts
 ✓ test/parser/suite/ts/pass/6c98431d9a5de5f3.ts
 ✓ test/parser/suite/ts/pass/6ca63f50595cc5cb.ts
@@ -8364,17 +7537,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/6d4dcd1cbbb6f8db.ts
 ✓ test/parser/suite/ts/pass/6d56a805d3b9fcfd.ts
 ✓ test/parser/suite/ts/pass/6d5bd1e5d8f4db4b.ts
-✗ test/parser/suite/ts/pass/6d74e1f570067733.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function foo(tagName: 'canvas'): Derived3;
-   |                                          ^
- 8 | function foo(tagName:  'div'): Derived2;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/6d74e1f570067733.ts
 ✓ test/parser/suite/ts/pass/6d763daa32ac2e41.ts
 ✓ test/parser/suite/ts/pass/6d797209fe546635.ts
 ✓ test/parser/suite/ts/pass/6d7f13dc4b0ba18b.ts
@@ -8562,17 +7725,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/6ffc02662b881ee4.ts
 ✓ test/parser/suite/ts/pass/7005e476cfcc875c.ts
 ✓ test/parser/suite/ts/pass/7006ca7a76b37abb.ts
-✗ test/parser/suite/ts/pass/700ac15cd13f26ec.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | 
- 8 | function f<T>(a: T);
-   |                    ^
- 9 | function f<T>(a: T);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/700ac15cd13f26ec.ts
 ✓ test/parser/suite/ts/pass/70295da217dc824f.ts
 ✓ test/parser/suite/ts/pass/702a4a09be9d5251.ts
 ✓ test/parser/suite/ts/pass/702ba49e53144249.module.ts
@@ -8619,17 +7772,7 @@ error: Expected declaration after 'export', but found 'type'
 
 ✓ test/parser/suite/ts/pass/70d33737c935fbff.ts
 ✓ test/parser/suite/ts/pass/70d4aa7d01992650.ts
-✗ test/parser/suite/ts/pass/70d4afe19598cc15.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function f(callback: (arg: string, arg2: string) => void): void;
-   |                                                                ^
- 3 | function f(callback: (arg: number) => void): void;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/70d4afe19598cc15.ts
 ✓ test/parser/suite/ts/pass/70dfe59a76f17094.ts
 ✓ test/parser/suite/ts/pass/70e4079f8b2557a3.ts
 ✓ test/parser/suite/ts/pass/70e8cf8731246483.ts
@@ -8641,17 +7784,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/7123ef73dca289e0.ts
 ✓ test/parser/suite/ts/pass/7124b5c970d9a870.ts
 ✓ test/parser/suite/ts/pass/7151c55b741e8624.ts
-✗ test/parser/suite/ts/pass/71529180f73222bb.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | declare namespace M {
- 3 |     function *generator(): any;
-   |                               ^
- 4 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/71529180f73222bb.ts
 ✓ test/parser/suite/ts/pass/7155cac4ad6f46a2.ts
 ✗ test/parser/suite/ts/pass/7158bdad21ff9b6f.module.ts (parse errors)
 error: Expected a class declaration after decorators in declaration position, but found 'export'
@@ -8733,17 +7866,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/7240c37345f37ebd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 |  declare namespace M {
- 5 |     export function RegExp(pattern: string): RegExp;
-   |                                                    ^
- 6 |     export function RegExp(pattern: string, flags: string): RegExp;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/7240c37345f37ebd.ts
 ✓ test/parser/suite/ts/pass/72613a70ef57b303.module.ts
 ✓ test/parser/suite/ts/pass/726181e52fb2e319.ts
 ✓ test/parser/suite/ts/pass/726599cd85d76a30.ts
@@ -8763,17 +7886,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/72c0fec4212b4cba.ts
 ✓ test/parser/suite/ts/pass/72c511bfb04951df.ts
 ✓ test/parser/suite/ts/pass/72dcba11464203d5.ts
-✗ test/parser/suite/ts/pass/72e1f75d0cbfcc2b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-38 | 
-39 | function if1(i: IFoo1): void;
-   |                             ^
-40 | function if1(i: IFoo2): void;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/72e1f75d0cbfcc2b.ts
 ✓ test/parser/suite/ts/pass/72e5361922bc94d0.ts
 ✓ test/parser/suite/ts/pass/72ebbef68535abb1.ts
 ✓ test/parser/suite/ts/pass/72f7b46ac7e63ba9.module.ts
@@ -8785,17 +7898,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/731d922b0138b8f7.ts
 ✓ test/parser/suite/ts/pass/7324f556ad2c56ab.ts
 ✓ test/parser/suite/ts/pass/733c5cbf733dfe0f.ts
-✗ test/parser/suite/ts/pass/733d40c3cccc0125.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(bar:{b:string;});
-   |                              ^
- 4 | function foo(bar:{a:string;});
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/733d40c3cccc0125.ts
 ✓ test/parser/suite/ts/pass/733fd2313c80f2a4.ts
 ✓ test/parser/suite/ts/pass/7345d56bf440aca9.ts
 ✓ test/parser/suite/ts/pass/7355d16060317505.module.ts
@@ -8832,17 +7935,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/740be8f54710df98.ts
 ✓ test/parser/suite/ts/pass/740d02144ee87c8a.ts
 ✓ test/parser/suite/ts/pass/7410d8cad089e327.ts
-✗ test/parser/suite/ts/pass/741471e89539f21f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function callb(lam: (l: number) => void );
-   |                                          ^
- 4 | function callb(lam: (n: string) => void );
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/741471e89539f21f.ts
 ✗ test/parser/suite/ts/pass/7417accf2413af78.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -8866,17 +7959,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/746a1a71e1d83d60.ts
 ✓ test/parser/suite/ts/pass/747db59ff4057b33.ts
 ✓ test/parser/suite/ts/pass/749627d48764dbfb.ts
-✗ test/parser/suite/ts/pass/74a03c90197b1382.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | 
- 8 |     function f(x); // error 
-   |                  ^
- 9 |     function f2(x: any); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/74a03c90197b1382.ts
 ✓ test/parser/suite/ts/pass/74ae520ea22e6679.ts
 ✓ test/parser/suite/ts/pass/74b2371eed4fbad7.ts
 ✓ test/parser/suite/ts/pass/74bffdff2a7134ff.ts
@@ -8906,17 +7989,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/7518839e54a95139.ts
 ✓ test/parser/suite/ts/pass/75190ea0138a5ea8.ts
 ✓ test/parser/suite/ts/pass/752a61be784f59fa.ts
-✗ test/parser/suite/ts/pass/752ac0a4c4f3a859.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function kindIs(kind: Kind, is: "A"): kind is "A";
-   |                                                  ^
- 8 | function kindIs(kind: Kind, is: "B"): kind is "B";
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/752ac0a4c4f3a859.ts
 ✓ test/parser/suite/ts/pass/752c07fa13865ccc.ts
 ✓ test/parser/suite/ts/pass/753200ab3491a706.ts
 ✓ test/parser/suite/ts/pass/75363e2b60566eaa.ts
@@ -8967,17 +8040,7 @@ error: 'public' is reserved in strict mode and cannot be used as a binding ident
 
 ✓ test/parser/suite/ts/pass/75c1500d8a1d1f82.ts
 ✓ test/parser/suite/ts/pass/75c6ac03c031582d.ts
-✗ test/parser/suite/ts/pass/75e5eee1f3dbd185.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function fun(a: string);
-   |                        ^
- 4 | function fun(a = 3);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/75e5eee1f3dbd185.ts
 ✗ test/parser/suite/ts/pass/75f7b4e9445c7392.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -9015,14 +8078,14 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts
 ✓ test/parser/suite/ts/pass/765441ad39f393dc.ts
 ✗ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts (parse errors)
-error: Expected '{' to start function body, but found 'export'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
    |
- 3 | export default function foo(value: number): number
- 4 | export default function foo(value: string): string
-   | ^^^^^^
- 5 | export default function foo(value: string | number): string | number {
+ 7 | }
+ 8 | export default interface Foo {}
+   |                          ^^^
+ 9 | 
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Try inserting a semicolon here
 
 
 ✗ test/parser/suite/ts/pass/765b801b4a0505da.ts (parse errors)
@@ -9081,14 +8144,14 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/76fb65d8bb8a406f.ts
 ✓ test/parser/suite/ts/pass/7703375e18a5ea10.ts
 ✗ test/parser/suite/ts/pass/77099e2804d1abe7.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Expected declaration after 'export', but found 'interface'
    |
- 3 | declare namespace M {
- 4 |      function foo();
-   |                    ^
- 5 |      export function foo();
+ 9 | declare namespace M1 {
+10 |      export interface Foo {}
+   |             ^^^^^^^^^
+11 |      interface Foo {}
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/7722c7a85162d671.ts
@@ -9160,17 +8223,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/77be90fd5d368f8f.module.ts
 ✓ test/parser/suite/ts/pass/77c2f7de2526b428.ts
 ✓ test/parser/suite/ts/pass/77c9ff77ce1cfeab.ts
-✗ test/parser/suite/ts/pass/77e43291c32f226a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:string):string;
-   |                                ^
- 3 | function foo(bar:number):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/77e43291c32f226a.ts
 ✓ test/parser/suite/ts/pass/77e64dbf877a3e39.ts
 ✓ test/parser/suite/ts/pass/77ec57362665a74f.ts
 ✓ test/parser/suite/ts/pass/77ef0f92d8e9ddf2.ts
@@ -9305,17 +8358,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/79f16eb1eac89add.ts
 ✓ test/parser/suite/ts/pass/79fd18b772860ccb.tsx
 ✓ test/parser/suite/ts/pass/7a028bbbd80cbc61.ts
-✗ test/parser/suite/ts/pass/7a02d38908d31078.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function x3(a: number, cb: (x: number) => number);
-   |                                                  ^
- 4 | function x3(a: string, cb: (x: number) => number);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/7a02d38908d31078.ts
 ✗ test/parser/suite/ts/pass/7a0e03fee2f7798f.module.ts (parse errors)
 error: Identifier 'createSlice' has already been declared
     |
@@ -9489,17 +8532,7 @@ error: Illegal continue statement
 
 ✓ test/parser/suite/ts/pass/7b8ff371f637765d.ts
 ✓ test/parser/suite/ts/pass/7b91290a1d97f8a6.ts
-✗ test/parser/suite/ts/pass/7b97734ce4ad6c87.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | declare namespace Foo {
- 3 |     function a():void;
-   |                      ^
- 4 |     var b:number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/7b97734ce4ad6c87.ts
 ✓ test/parser/suite/ts/pass/7b9c42289ddade25.ts
 ✓ test/parser/suite/ts/pass/7ba5500a60c6f3eb.ts
 ✓ test/parser/suite/ts/pass/7ba568e72437773a.ts
@@ -9523,17 +8556,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/7c12523ef0c92c3e.ts
 ✓ test/parser/suite/ts/pass/7c163db648cce6ad.ts
 ✓ test/parser/suite/ts/pass/7c1d6ccb93efdf62.ts
-✗ test/parser/suite/ts/pass/7c22b27c323ce592.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-47 |   fnD: (c: SetOf<D>) => SetOf<E>,
-48 | ):(x: SetOf<A>) => SetOf<E>;
-   |                            ^
-49 | /* ... etc ... */
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/7c22b27c323ce592.ts
 ✓ test/parser/suite/ts/pass/7c25509664bb057e.ts
 ✓ test/parser/suite/ts/pass/7c26eea263a77f52.ts
 ✓ test/parser/suite/ts/pass/7c2f09e707785798.ts
@@ -9560,17 +8583,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/7c8058192e9ab52b.ts
 ✓ test/parser/suite/ts/pass/7c88fec30bc1ea83.ts
 ✓ test/parser/suite/ts/pass/7c8f0f7f2e17a73b.ts
-✗ test/parser/suite/ts/pass/7c9c7b8b23e9109a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function f(x: string): void;
-   |                            ^
- 3 | function f(x: string): number {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/7c9c7b8b23e9109a.ts
 ✓ test/parser/suite/ts/pass/7ca48263417f0c4e.ts
 ✓ test/parser/suite/ts/pass/7ca8599f9fee6051.ts
 ✓ test/parser/suite/ts/pass/7cac223023161df0.ts
@@ -9631,14 +8644,14 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✗ test/parser/suite/ts/pass/7d3ee8a730ebc5a0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Expected declaration after 'export', but found 'declare'
    |
- 4 | declare namespace m3 {
- 5 |     function exports(): string[];
-   |                                 ^
- 6 |     function require(): number[];
+ 8 | namespace m4 {
+ 9 |     export declare function exports(): string;
+   |            ^^^^^^^
+10 |     export declare function require(): string;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
 ✓ test/parser/suite/ts/pass/7d465b80aa0990e9.module.ts
@@ -9701,17 +8714,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/7de381525084ed7e.ts
 ✓ test/parser/suite/ts/pass/7de6a390d5508e37.ts
 ✓ test/parser/suite/ts/pass/7de8fbdeab1a530a.ts
-✗ test/parser/suite/ts/pass/7df541bc5a5a9aa5.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(x);
-   |                ^
- 4 | function foo(x, y);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/7df541bc5a5a9aa5.ts
 ✓ test/parser/suite/ts/pass/7df6e5ab275b1bcf.ts
 ✓ test/parser/suite/ts/pass/7e03b5543d52cd14.ts
 ✓ test/parser/suite/ts/pass/7e03baa6ad191112.ts
@@ -9947,14 +8950,17 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/815bb016553894d3.ts
 ✓ test/parser/suite/ts/pass/8176957b59aec3ed.ts
 ✗ test/parser/suite/ts/pass/8184cdac6ebbb56e.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'Foo' has already been declared
    |
- 2 | // @strict: false
  3 | function Foo():Foo; // error
-   |                   ^
  4 | function Foo(s:string):Foo; // error
+   |          ~~~ 'Foo' was first declared as a function here
+ 5 | class Foo { // error
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+ 6 |     bar1(s:string);
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'Foo'
 
 
 ✓ test/parser/suite/ts/pass/818d186fa937dfad.ts
@@ -10029,17 +9035,7 @@ error: Expected '{' to start class body, but found 'Foo'
 ✓ test/parser/suite/ts/pass/82a7114a980b8a28.ts
 ✓ test/parser/suite/ts/pass/82a962a28dfb678f.ts
 ✓ test/parser/suite/ts/pass/82aded64cd45232d.ts
-✗ test/parser/suite/ts/pass/82afcd33f46c4faf.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-25 |   fnD: (c: SetOf<D>) => SetOf<E>,
-26 | ):(x: SetOf<A>) => SetOf<E>;
-   |                            ^
-27 | /* ... etc ... */
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/82afcd33f46c4faf.ts
 ✓ test/parser/suite/ts/pass/82b12a2074797ae0.ts
 ✓ test/parser/suite/ts/pass/82b6fc10afbd19f0.ts
 ✓ test/parser/suite/ts/pass/82bf413752f50754.ts
@@ -10067,17 +9063,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/83552e423c68d7d1.ts
 ✓ test/parser/suite/ts/pass/8365f4cdd2c999c8.ts
-✗ test/parser/suite/ts/pass/836e9f95dda8fa8a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function data(): string;
-   |                        ^
- 3 | function next(): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/836e9f95dda8fa8a.ts
 ✓ test/parser/suite/ts/pass/836edc9ff9a1ca08.ts
 ✓ test/parser/suite/ts/pass/837137c4c0e46082.ts
 ✓ test/parser/suite/ts/pass/838d91dab61aa1c4.ts
@@ -10202,17 +9188,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/85914e292c0616b5.ts
 ✓ test/parser/suite/ts/pass/8599d6407fdf8d37.ts
-✗ test/parser/suite/ts/pass/85a9e74bf485fc8f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function x1(a: number, cb: (x: 'hi') => number);
-   |                                                ^
- 4 | function x1(a: number, cb: (x: 'bye') => number);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/85a9e74bf485fc8f.ts
 ✗ test/parser/suite/ts/pass/85abcae61bf82b0b.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -10257,43 +9233,13 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/85ee0edebb024405.ts
 ✓ test/parser/suite/ts/pass/85ff8a2aaec1ed17.ts
 ✓ test/parser/suite/ts/pass/861a9af564676d5d.ts
-✗ test/parser/suite/ts/pass/862b09a39eba072f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @target: es6
- 3 | function f(s: string): string;
-   |                              ^
- 4 | function f(n: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/862b09a39eba072f.ts
 ✓ test/parser/suite/ts/pass/862d983758efd1fd.ts
-✗ test/parser/suite/ts/pass/862ea37a7500a130.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | 
- 8 |     export function normal(): void;
-   |                                   ^
- 9 | 
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/862ea37a7500a130.ts
 ✓ test/parser/suite/ts/pass/8636d42d81b0c0b5.module.ts
 ✓ test/parser/suite/ts/pass/8653f0a9fa44e487.ts
 ✓ test/parser/suite/ts/pass/865572d15af8cee1.ts
-✗ test/parser/suite/ts/pass/86736e42f5b333a4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-    |
-116 | */
-117 | function f1(a: number);
-    |                       ^
-118 | function f1(b: string);
-    |
-    = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/86736e42f5b333a4.ts
 ✓ test/parser/suite/ts/pass/867ccd04aaa8ed07.ts
 ✓ test/parser/suite/ts/pass/867e263ad49f5704.ts
 ✓ test/parser/suite/ts/pass/867e7297eae04fc7.ts
@@ -10413,17 +9359,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/87dc3ad2657ae1a9.ts
-✗ test/parser/suite/ts/pass/87e7fc8f69de7dad.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo();
-   |               ^
- 4 | function bar() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/87e7fc8f69de7dad.ts
 ✓ test/parser/suite/ts/pass/87ead8d61204cd86.ts
 ✓ test/parser/suite/ts/pass/87f1258d0d393e6d.ts
 ✓ test/parser/suite/ts/pass/87f254e020f00dc0.ts
@@ -10567,17 +9503,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/8a156f8bec20a2b6.ts
 ✓ test/parser/suite/ts/pass/8a1f12271944ab8e.ts
 ✓ test/parser/suite/ts/pass/8a2827dee8af36c5.module.ts
-✗ test/parser/suite/ts/pass/8a2ba71192d906f8.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-14 | 
-15 | function foo2(x: I);
-   |                    ^
-16 | function foo2(x: I); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8a2ba71192d906f8.ts
 ✓ test/parser/suite/ts/pass/8a3c498d8b096f3b.ts
 ✓ test/parser/suite/ts/pass/8a4e0bba0e09924e.ts
 ✓ test/parser/suite/ts/pass/8a543ea8064a52ae.ts
@@ -10588,17 +9514,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/8a7f10cd391033e3.ts
 ✓ test/parser/suite/ts/pass/8a7f441d9a8a69e1.ts
 ✓ test/parser/suite/ts/pass/8a7f483b60535e16.ts
-✗ test/parser/suite/ts/pass/8a7fa3ab656f54af.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo();
-   |               ^
- 4 | function foo(foo:string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8a7fa3ab656f54af.ts
 ✓ test/parser/suite/ts/pass/8a80b8091d13e890.ts
 ✓ test/parser/suite/ts/pass/8a86e78bfc98b594.ts
 ✓ test/parser/suite/ts/pass/8a8e56cdda5bd5aa.ts
@@ -10632,17 +9548,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/8acfd0fac65506a3.ts
 ✓ test/parser/suite/ts/pass/8ad7f0d14895f6ee.ts
 ✓ test/parser/suite/ts/pass/8aef84d223069cc9.module.ts
-✗ test/parser/suite/ts/pass/8afcd8565410d931.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | //Function overload signature with initializer
- 4 | function fn1(x = 3);
-   |                    ^
- 5 | function fn1() { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8afcd8565410d931.ts
 ✓ test/parser/suite/ts/pass/8afea4b375fe8c05.ts
 ✓ test/parser/suite/ts/pass/8b02e6f07b8de3fc.ts
 ✓ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
@@ -10681,16 +9587,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/8b49e6e3e7d9528c.ts
 ✓ test/parser/suite/ts/pass/8b4a6fc167489a41.ts
 ✓ test/parser/suite/ts/pass/8b504a1edde9e255.ts
-✗ test/parser/suite/ts/pass/8b5aa3645ef66395.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo();
-   |               ^
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8b5aa3645ef66395.ts
 ✓ test/parser/suite/ts/pass/8b623c176635e817.ts
 ✓ test/parser/suite/ts/pass/8b6e758e9676f3bb.ts
 ✓ test/parser/suite/ts/pass/8b73bae4a3536c0a.ts
@@ -10727,17 +9624,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/8bd76d46ad692953.ts
 ✓ test/parser/suite/ts/pass/8bf8ae4ad6c9fca4.module.ts
 ✓ test/parser/suite/ts/pass/8c054ffca809ecbd.ts
-✗ test/parser/suite/ts/pass/8c13746fc977bb6d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function attr(name: string): string;
-   |                                    ^
- 5 | function attr(name: string, value: string): Accessor;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8c13746fc977bb6d.ts
 ✓ test/parser/suite/ts/pass/8c169b9984294dd6.ts
 ✓ test/parser/suite/ts/pass/8c26de6480a5ea5a.ts
 ✗ test/parser/suite/ts/pass/8c2f40312c9b6425.module.ts (parse errors)
@@ -10829,17 +9716,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/8d7b6641bc03ff8f.ts
 ✓ test/parser/suite/ts/pass/8d8534e4eb3f4146.ts
 ✓ test/parser/suite/ts/pass/8d8a217ab35537d5.ts
-✗ test/parser/suite/ts/pass/8d8c7a276990eb0d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | namespace M {
- 3 |     function f(s: string): Iterable<any>;
-   |                                         ^
- 4 |     function f(s: number): Iterable<any>;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8d8c7a276990eb0d.ts
 ✓ test/parser/suite/ts/pass/8d94d488abf6a07a.module.ts
 ✓ test/parser/suite/ts/pass/8d96d47e1985b4ba.ts
 ✓ test/parser/suite/ts/pass/8d9dd33059dd7e9e.ts
@@ -11108,17 +9985,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/908cda9f4aa3123f.ts
 ✓ test/parser/suite/ts/pass/90938f804bcca4de.ts
 ✓ test/parser/suite/ts/pass/9094ea2f23c89f31.ts
-✗ test/parser/suite/ts/pass/9094f50b03d5a554.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:string):string;
-   |                                ^
- 3 | function foo(bar:number):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9094f50b03d5a554.ts
 ✓ test/parser/suite/ts/pass/909fc2c2669af932.ts
 ✗ test/parser/suite/ts/pass/90a1e212b859a1bd.ts (parse errors)
 error: Expected ']' to close an indexed access type, but found ':'
@@ -11131,17 +9998,7 @@ error: Expected ']' to close an indexed access type, but found ':'
    = help: Each '[' in a type must be matched by a ']'
 
 
-✗ test/parser/suite/ts/pass/90ad559bde069031.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-17 |         list: Collection<T>,
-18 |         propertyName: string): any[];
-   |                                     ^
-19 | 
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/90ad559bde069031.ts
 ✗ test/parser/suite/ts/pass/90b143b6b1cd381d.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -11212,17 +10069,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/917ff264616e98d0.module.ts
 ✓ test/parser/suite/ts/pass/91883733123cba74.module.ts
 ✓ test/parser/suite/ts/pass/91898942903455d5.ts
-✗ test/parser/suite/ts/pass/9189afa817362f0f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | }
- 7 | function foo(name: 'hi'): B;
-   |                            ^
- 8 | function foo(name: 'bye'): C;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9189afa817362f0f.ts
 ✓ test/parser/suite/ts/pass/919ad86539090070.ts
 ✓ test/parser/suite/ts/pass/919af3fcf3778dc5.ts
 ✓ test/parser/suite/ts/pass/919c27bfd7605993.module.ts
@@ -11298,17 +10145,7 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/931079e3a0f2be77.ts
 ✓ test/parser/suite/ts/pass/931297c367db27ea.ts
 ✓ test/parser/suite/ts/pass/9312c94f9a310bfe.ts
-✗ test/parser/suite/ts/pass/93153779e8b28210.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | }
- 7 | function foo(name: 'hi'): B;
-   |                            ^
- 8 | function foo(name: 'bye'): C;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/93153779e8b28210.ts
 ✓ test/parser/suite/ts/pass/93186df784dac205.ts
 ✓ test/parser/suite/ts/pass/93199a75c9500f2e.ts
 ✓ test/parser/suite/ts/pass/933205a737568be0.module.ts
@@ -11430,34 +10267,14 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/94c47d4e890dbc6c.ts
 ✓ test/parser/suite/ts/pass/94e2df39e76385f3.ts
 ✓ test/parser/suite/ts/pass/94f26eb6e5f85869.ts
-✗ test/parser/suite/ts/pass/94feb1dd3ece5769.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | 
- 3 | function foo([x, y, z] ?: [string, number, boolean]);
-   |                                                     ^
- 4 | function foo(...rest: any[]) {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/94feb1dd3ece5769.ts
 ✓ test/parser/suite/ts/pass/95131a2a76975fda.ts
 ✓ test/parser/suite/ts/pass/951694d0fc30cc26.ts
 ✓ test/parser/suite/ts/pass/952865821a5a4d90.ts
 ✓ test/parser/suite/ts/pass/9546a21ab009e07f.ts
 ✓ test/parser/suite/ts/pass/95558c7b040cac62.module.ts
 ✓ test/parser/suite/ts/pass/9565defc3e653107.ts
-✗ test/parser/suite/ts/pass/957a4d1b692759fb.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 3 | function foo(bar:{a:boolean;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/957a4d1b692759fb.ts
 ✓ test/parser/suite/ts/pass/958b5b2ef1305360.ts
 ✓ test/parser/suite/ts/pass/9598f33ae9e39218.ts
 ✓ test/parser/suite/ts/pass/95b8511e81d0c9c7.ts
@@ -11489,17 +10306,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/961aa1702ba66724.ts
 ✓ test/parser/suite/ts/pass/961b0db1679875f9.ts
 ✓ test/parser/suite/ts/pass/961f17e4742f61a9.ts
-✗ test/parser/suite/ts/pass/96208a9e681dedef.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function x2(callback: (x?: number) => number);
-   |                                              ^
- 4 | function x2(callback: (x: string) => number);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/96208a9e681dedef.ts
 ✓ test/parser/suite/ts/pass/96278edc6cad1d00.ts
 ✓ test/parser/suite/ts/pass/962ec873943977e7.ts
 ✗ test/parser/suite/ts/pass/962f5ac1452fde5a.ts (parse errors)
@@ -11636,17 +10443,7 @@ error: Illegal 'use strict' directive in function with non-simple parameter list
 ✓ test/parser/suite/ts/pass/9770a60b39d21103.ts
 ✓ test/parser/suite/ts/pass/979d0ad91bb82a24.ts
 ✓ test/parser/suite/ts/pass/97a619cb05f7a280.ts
-✗ test/parser/suite/ts/pass/97b175ad9d64b0bb.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-25 | // Implicit-'any' errors for x1, y2, x3, and y3.
-26 | function f8(x1, y1: number): any;
-   |                                 ^
-27 | function f8(x2: string, y2): any;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/97b175ad9d64b0bb.ts
 ✓ test/parser/suite/ts/pass/97b28cb308ffe0d5.ts
 ✓ test/parser/suite/ts/pass/97bf82c9d40d2254.ts
 ✓ test/parser/suite/ts/pass/97c39be7978a5d49.ts
@@ -11684,17 +10481,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/98119e4ba705b6f4.ts
 ✓ test/parser/suite/ts/pass/981913bb7c76530a.ts
 ✓ test/parser/suite/ts/pass/9819183a9c0da772.ts
-✗ test/parser/suite/ts/pass/98212f7afbebb8a6.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-34 | 
-35 | function foo1(x: A);
-   |                    ^
-36 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/98212f7afbebb8a6.ts
 ✓ test/parser/suite/ts/pass/982257bec246936f.ts
 ✓ test/parser/suite/ts/pass/9851a1916b5f5dc5.ts
 ✓ test/parser/suite/ts/pass/9861f75a6191c4fe.ts
@@ -11719,17 +10506,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/988dd843bb0f847b.module.ts
 ✓ test/parser/suite/ts/pass/98a958cad56cf31c.ts
 ✓ test/parser/suite/ts/pass/98ab66ddbeaa522b.ts
-✗ test/parser/suite/ts/pass/98b7f4df74da9ac4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function x2(a: number, cb: (x: 'hi') => number);
-   |                                                ^
- 4 | function x2(a: number, cb: (x: 'bye') => number);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/98b7f4df74da9ac4.ts
 ✓ test/parser/suite/ts/pass/98b9c98fa16facf5.ts
 ✗ test/parser/suite/ts/pass/98ba96ccc4bdf46f.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -11752,17 +10529,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/98f2227304165408.ts
 ✓ test/parser/suite/ts/pass/98fa109059eb3f88.ts
 ✓ test/parser/suite/ts/pass/98fed2794aeb03f2.module.ts
-✗ test/parser/suite/ts/pass/990149b3c230f0ac.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function tempTag1<T>(templateStrs: TemplateStringsArray, f: FuncType, x: T): T;
-   |                                                                               ^
- 6 | function tempTag1<T>(templateStrs: TemplateStringsArray, f: FuncType, h: FuncType, x: T): T;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/990149b3c230f0ac.ts
 ✓ test/parser/suite/ts/pass/9904875f56fea8b6.ts
 ✓ test/parser/suite/ts/pass/9906613d5108239d.ts
 ✓ test/parser/suite/ts/pass/990786e79273f5e3.ts
@@ -11797,17 +10564,7 @@ error: Expected '{' to start function body, but found ':'
 
 ✓ test/parser/suite/ts/pass/9963b03a19f76e78.ts
 ✓ test/parser/suite/ts/pass/9969f4fa2b470e27.ts
-✗ test/parser/suite/ts/pass/99721f2b4414b381.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | class D extends C { }
- 6 | function foo(x: "hi", items: string[]): typeof foo;
-   |                                                   ^
- 7 | function foo(x: string, items: string[]): typeof foo {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/99721f2b4414b381.ts
 ✓ test/parser/suite/ts/pass/99727cd8b79b298b.ts
 ✗ test/parser/suite/ts/pass/99749ba9d8417de3.ts (parse errors)
 error: Identifier 'Point' has already been declared
@@ -11886,17 +10643,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/9a51d38f4a225fc3.module.ts
 ✓ test/parser/suite/ts/pass/9a69455fec132cb4.ts
 ✓ test/parser/suite/ts/pass/9a799ce628ab6dcc.ts
-✗ test/parser/suite/ts/pass/9a7dd937eb377709.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-26 | 
-27 | function foo1(x: A);
-   |                    ^
-28 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9a7dd937eb377709.ts
 ✓ test/parser/suite/ts/pass/9a832547714d19af.ts
 ✓ test/parser/suite/ts/pass/9a981b494a595c76.ts
 ✗ test/parser/suite/ts/pass/9ab2925d4c975abd.module.ts (parse errors)
@@ -11911,17 +10658,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/9ab6a481dcd888a2.ts
-✗ test/parser/suite/ts/pass/9abc110b66c5f7bf.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 7 | }
- 8 | function foo(name: 'hi'): B;
-   |                            ^
- 9 | function foo(name: 'bye'): C;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9abc110b66c5f7bf.ts
 ✓ test/parser/suite/ts/pass/9ac41a8a56bf7bab.ts
 ✓ test/parser/suite/ts/pass/9ac7057ada5420e0.module.ts
 ✓ test/parser/suite/ts/pass/9ae4f598382a9473.ts
@@ -11949,17 +10686,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/9b05df574aa014ce.module.tsx
-✗ test/parser/suite/ts/pass/9b07e9feab3b0a75.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(foo:{a:string;}):string;
-   |                                     ^
- 4 | function foo(foo:{a:string;}):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9b07e9feab3b0a75.ts
 ✓ test/parser/suite/ts/pass/9b0f93f3684ec02a.ts
 ✓ test/parser/suite/ts/pass/9b28947b8f82796d.module.ts
 ✓ test/parser/suite/ts/pass/9b56c5afa0c94190.ts
@@ -12024,28 +10751,8 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/9bde2672aad893e2.ts
 ✓ test/parser/suite/ts/pass/9bde8afc8424e0f8.ts
 ✓ test/parser/suite/ts/pass/9bdfcbf3e5268271.ts
-✗ test/parser/suite/ts/pass/9be5289dec4d84f7.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function fun<T>(g: (x: T) => T, x: T): T;
-   |                                         ^
- 5 | function fun<T>(g: (x: T) => T, h: (y: T) => T, x: T): T;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/9be5a56d8df26745.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function getFalsyPrimitive(x: "string"): string;
-   |                                                ^
- 8 | function getFalsyPrimitive(x: "number"): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9be5289dec4d84f7.ts
+✓ test/parser/suite/ts/pass/9be5a56d8df26745.ts
 ✓ test/parser/suite/ts/pass/9bef1986a2df19de.ts
 ✓ test/parser/suite/ts/pass/9bf419e0e65a7b72.ts
 ✓ test/parser/suite/ts/pass/9bf465d3519dc515.ts
@@ -12366,17 +11073,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/a0a9c2a589655be1.ts
-✗ test/parser/suite/ts/pass/a0b6e57e37e9b233.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | // ok
- 6 | function f1(x: 'a');
-   |                    ^
- 7 | function f1(x: string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a0b6e57e37e9b233.ts
 ✓ test/parser/suite/ts/pass/a0ceb505f12cda0a.ts
 ✓ test/parser/suite/ts/pass/a0d0cf5991c73e2f.ts
 ✗ test/parser/suite/ts/pass/a0d3d9cf431d9e66.ts (parse errors)
@@ -12394,17 +11091,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/a0e40f572c68b088.ts
 ✓ test/parser/suite/ts/pass/a0e8bbdc36fa1dfb.ts
 ✓ test/parser/suite/ts/pass/a0efa4a748f5460e.ts
-✗ test/parser/suite/ts/pass/a0ff64baeb0dc967.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-15 | 
-16 | function foo1(x: I<string, boolean, number, string>);
-   |                                                     ^
-17 | function foo1(x: I<string, boolean, number, string>); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a0ff64baeb0dc967.ts
 ✓ test/parser/suite/ts/pass/a0ff824483fa335a.ts
 ✗ test/parser/suite/ts/pass/a10fe88c3bcfd023.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -12689,31 +11376,11 @@ error: 'static' is reserved in strict mode and cannot be used as a binding ident
 ✓ test/parser/suite/ts/pass/a4f359c998a655b6.ts
 ✓ test/parser/suite/ts/pass/a4f606bd0329b031.ts
 ✓ test/parser/suite/ts/pass/a50474d68c379194.ts
-✗ test/parser/suite/ts/pass/a50493688200ec82.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 3 | function foo(bar:{a:any;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a50493688200ec82.ts
 ✓ test/parser/suite/ts/pass/a51662cce2f38e51.ts
 ✓ test/parser/suite/ts/pass/a527ef769d71f8a4.ts
 ✓ test/parser/suite/ts/pass/a53688298d172b09.ts
-✗ test/parser/suite/ts/pass/a53ab07e9c0adc14.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @target: es5, es2015
- 3 | function f(s: string): string;
-   |                              ^
- 4 | function f(n: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a53ab07e9c0adc14.ts
 ✓ test/parser/suite/ts/pass/a544c91d426efacd.ts
 ✓ test/parser/suite/ts/pass/a547c04bef24c68a.module.ts
 ✓ test/parser/suite/ts/pass/a54dde2bbb2095f9.ts
@@ -12732,17 +11399,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/a561e01aff48ce75.ts
-✗ test/parser/suite/ts/pass/a5631762099ccd0e.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(foo:string, bar:number);
-   |                                     ^
- 4 | function foo(foo:string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a5631762099ccd0e.ts
 ✓ test/parser/suite/ts/pass/a57a56dbb9c708cd.ts
 ✓ test/parser/suite/ts/pass/a58b099d85149235.ts
 ✓ test/parser/suite/ts/pass/a5953965808f7c6c.ts
@@ -12753,17 +11410,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/a5cde727c4d276bf.ts
 ✓ test/parser/suite/ts/pass/a5dd1fdc5a3c168d.ts
 ✓ test/parser/suite/ts/pass/a5e6f8103948caa4.tsx
-✗ test/parser/suite/ts/pass/a5ec5a3330dbf2cb.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(x: any);
-   |                     ^
- 4 | function foo(x: any);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a5ec5a3330dbf2cb.ts
 ✓ test/parser/suite/ts/pass/a5f78fb095214a8e.ts
 ✗ test/parser/suite/ts/pass/a5f9c2a73058382a.ts (parse errors)
 error: 'super' property access is only valid inside a method or class body
@@ -12916,17 +11563,7 @@ error: Expected ',' or '}' in object, but found '<'
    = help: Add a comma between properties or close the object with '}'.
 
 
-✗ test/parser/suite/ts/pass/a83dfbd81f58cbf1.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 3 | function foo(bar:{a:boolean;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/a83dfbd81f58cbf1.ts
 ✓ test/parser/suite/ts/pass/a84026107542e2da.module.ts
 ✓ test/parser/suite/ts/pass/a84ed08e4c5f1499.ts
 ✓ test/parser/suite/ts/pass/a850ef39fab9f8c1.ts
@@ -12945,14 +11582,14 @@ error: Expected '{' to start class body, but found '('
 
 
 ✗ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts (parse errors)
-error: Expected '{' to start function body, but found '!'
+error: Expected a semicolon or an implicit semicolon after a statement, but found '!'
    |
  3 | 
  4 | function f1(a: string): a is string! {
    |                                    ^
  5 |     return true;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/a88f91fb7ee6f1dc.ts
@@ -13041,14 +11678,14 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/a98220084d38b299.ts
 ✓ test/parser/suite/ts/pass/a9848db412b47ed3.ts
 ✗ test/parser/suite/ts/pass/a98d6aaeb4a1b036.module.ts (parse errors)
-error: Expected '{' to start function body, but found 'export'
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'Bar'
    |
- 3 | export default function foo(value: number): number
- 4 | export default function foo(value: string): string
-   | ^^^^^^
- 5 | export default function foo(value: string | number): string | number {
+ 9 | export default Foo
+10 | export default interface Bar {}
+   |                          ^^^
+11 | 
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/ts/pass/a98dc9fbb6ee8115.ts
@@ -13101,17 +11738,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/aa5e535ba84043f1.ts
 ✓ test/parser/suite/ts/pass/aa62e260dcf925d8.module.tsx
 ✓ test/parser/suite/ts/pass/aa66cff1930889d8.ts
-✗ test/parser/suite/ts/pass/aa6805ceb3af911c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-12 | 
-13 | function foo<T>(x: List<T>);
-   |                            ^
-14 | function foo<U>(x: List<U>); // error, duplicate
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/aa6805ceb3af911c.ts
 ✓ test/parser/suite/ts/pass/aa762a42c39a4500.ts
 ✓ test/parser/suite/ts/pass/aa76e9937d5d60e1.ts
 ✓ test/parser/suite/ts/pass/aa7c2bf6d9b50527.module.ts
@@ -13318,17 +11945,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/adccf47e2cffc5d3.ts
 ✓ test/parser/suite/ts/pass/adcdba1e5ecfcf24.ts
 ✓ test/parser/suite/ts/pass/add26ac395dcad12.module.ts
-✗ test/parser/suite/ts/pass/ade303b2805e8d3f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-31 | 
-32 | function foo1(x: A);
-   |                    ^
-33 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/ade303b2805e8d3f.ts
 ✓ test/parser/suite/ts/pass/ade50fa0c1ff99e7.ts
 ✓ test/parser/suite/ts/pass/adeb515b85b43b32.module.tsx
 ✓ test/parser/suite/ts/pass/adfa61e1e3152b88.ts
@@ -13357,15 +11974,16 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/aeecc2cae933fedb.ts
 ✓ test/parser/suite/ts/pass/aef46a1a1215fb98.ts
 ✗ test/parser/suite/ts/pass/aefa17ca3c01c04e.module.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Duplicate export of 'default'
    |
  4 | 
  5 | export default function f();
-   |                            ^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ first exported here
  6 | export default function f(x: string);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ exported again here
+ 7 | export default function f(...args: any[]) {
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
 
 ✓ test/parser/suite/ts/pass/af13de08afcfa256.ts
 ✗ test/parser/suite/ts/pass/af19e5e68e97e91c.module.ts (parse errors)
@@ -13408,17 +12026,7 @@ error: Deleting a variable in strict mode is not allowed
 ✓ test/parser/suite/ts/pass/af96d4faea8b7ad8.ts
 ✓ test/parser/suite/ts/pass/af97b77fbff61867.ts
 ✓ test/parser/suite/ts/pass/af987f3db044b9cd.ts
-✗ test/parser/suite/ts/pass/af9bf30f573e4cd9.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-27 | 
-28 | function foo1(x: A);
-   |                    ^
-29 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/af9bf30f573e4cd9.ts
 ✓ test/parser/suite/ts/pass/afa276004cbdf93e.ts
 ✓ test/parser/suite/ts/pass/afa9a29149b290d3.ts
 ✗ test/parser/suite/ts/pass/afae9c36ba65b9ef.ts (parse errors)
@@ -13737,17 +12345,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/b257d2f070053b4b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function foo(x: 'a');
-   |                     ^
- 6 | function foo(x: number) { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b257d2f070053b4b.ts
 ✓ test/parser/suite/ts/pass/b261d83ab5c78a0a.ts
 ✓ test/parser/suite/ts/pass/b28593716976cce9.ts
 ✓ test/parser/suite/ts/pass/b285d84297d2d305.ts
@@ -13792,17 +12390,7 @@ error: Illegal break statement
    = help: A 'break' statement can only be used within an enclosing iteration or switch statement
 
 
-✗ test/parser/suite/ts/pass/b346500fc8619ce8.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-23 | 
-24 | function foo1b(x: B);
-   |                     ^
-25 | function foo1b(x: B); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b346500fc8619ce8.ts
 ✓ test/parser/suite/ts/pass/b346f32501f8e259.ts
 ✓ test/parser/suite/ts/pass/b352dbf3395f3613.ts
 ✓ test/parser/suite/ts/pass/b3585557baaf0d86.ts
@@ -13835,17 +12423,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/b3a1475d1506d208.ts
 ✓ test/parser/suite/ts/pass/b3b036db33de3e5e.ts
 ✓ test/parser/suite/ts/pass/b3b095e492fb64d2.ts
-✗ test/parser/suite/ts/pass/b3b2345d8ce80165.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | namespace M {
- 3 |     function* f(s: string): Iterable<any>;
-   |                                          ^
- 4 |     function* f(s: number): Iterable<any>;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b3b2345d8ce80165.ts
 ✗ test/parser/suite/ts/pass/b3b76381fbee374f.module.ts (parse errors)
 error: Export 'A' is not defined
    |
@@ -13938,29 +12516,9 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/b472a9bc5ea4fcde.ts
 ✓ test/parser/suite/ts/pass/b47b86c7ae5ff0ed.ts
 ✓ test/parser/suite/ts/pass/b485720f2cc56603.ts
-✗ test/parser/suite/ts/pass/b486edad44e4d76a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function x3(callback: (x?: 'hi') => number);
-   |                                            ^
- 4 | function x3(callback: (x: string) => number);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b486edad44e4d76a.ts
 ✓ test/parser/suite/ts/pass/b492768e35a1cf1d.ts
-✗ test/parser/suite/ts/pass/b49bb71fd164c9b4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-26 |     // Implicit-'any' errors for x1, y2, x3, and y3.
-27 |     function m_f8(x1, y1: number): any;
-   |                                       ^
-28 |     function m_f8(x2: string, y2): any;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b49bb71fd164c9b4.ts
 ✓ test/parser/suite/ts/pass/b4a04211d64fae89.ts
 ✓ test/parser/suite/ts/pass/b4a79f7e9fd3e07a.ts
 ✓ test/parser/suite/ts/pass/b4b7ff12288f1517.ts
@@ -14001,17 +12559,7 @@ error: A class can only have one constructor
    |
 
 ✓ test/parser/suite/ts/pass/b5057ff5bcc96216.ts
-✗ test/parser/suite/ts/pass/b514b63b2539385e.ts (parse errors)
-error: Expected '{' to start function body, but found 'function'
-   |
- 3 | function foo():{a:number;}
- 4 | function foo():{a:string;}
-   | ^^^^^^^^
- 5 | function foo():{a:any;} { return {a:1} }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b514b63b2539385e.ts
 ✓ test/parser/suite/ts/pass/b516712f9f7c6a4c.ts
 ✓ test/parser/suite/ts/pass/b5184726944dcf9d.ts
 ✓ test/parser/suite/ts/pass/b52707ab284a842c.ts
@@ -14115,17 +12663,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/b6a50d300b56fdb1.module.ts
 ✓ test/parser/suite/ts/pass/b6b4d7758f8e7e4d.ts
 ✓ test/parser/suite/ts/pass/b6b5bdb4744dce44.ts
-✗ test/parser/suite/ts/pass/b6bb45c95bdb6fc4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:string):string;
-   |                                ^
- 3 | function foo(bar:number):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b6bb45c95bdb6fc4.ts
 ✓ test/parser/suite/ts/pass/b6c0a32153230bf7.ts
 ✓ test/parser/suite/ts/pass/b6c4b0e99375dd64.ts
 ✓ test/parser/suite/ts/pass/b6d7d0b72a9bc1b0.module.ts
@@ -14222,17 +12760,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 
 ✓ test/parser/suite/ts/pass/b7a1fd66dba1798d.ts
-✗ test/parser/suite/ts/pass/b7a8ddc048923510.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-34 | 
-35 | function foo1(x: A);
-   |                    ^
-36 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b7a8ddc048923510.ts
 ✓ test/parser/suite/ts/pass/b7ab22940d32a244.ts
 ✓ test/parser/suite/ts/pass/b7ac0c522479bfb7.ts
 ✓ test/parser/suite/ts/pass/b7bb38c95c8798d9.ts
@@ -14283,17 +12811,7 @@ error: A switch statement can only have one default clause
 10 |         default:    // Error; third 'default' clause.
    |
 
-✗ test/parser/suite/ts/pass/b844d484c6b6296a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(bar:{a:number;}[]);
-   |                                ^
- 4 | function foo(bar:{a:number; b:string;}[]);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b844d484c6b6296a.ts
 ✗ test/parser/suite/ts/pass/b86882ccfcd57874.ts (parse errors)
 error: Expected '{' to start function body, but found ':'
    |
@@ -14464,17 +12982,7 @@ error: Expected declaration after 'export', but found 'type'
 
 ✓ test/parser/suite/ts/pass/b9f984bf1f3eccab.ts
 ✓ test/parser/suite/ts/pass/b9fc8d1dcfb55297.ts
-✗ test/parser/suite/ts/pass/b9fdd22ab6e894f8.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo():string;
-   |                      ^
- 3 | function foo(bar:string):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b9fdd22ab6e894f8.ts
 ✓ test/parser/suite/ts/pass/ba03c891c63c89cd.ts
 ✓ test/parser/suite/ts/pass/ba2087ac1df3d25f.ts
 ✓ test/parser/suite/ts/pass/ba27d7458e32089f.ts
@@ -14737,17 +13245,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/bdb1e1253fd6ec0a.ts
 ✓ test/parser/suite/ts/pass/bdb2ec9e3d742004.ts
 ✓ test/parser/suite/ts/pass/bdb8daedeafec621.ts
-✗ test/parser/suite/ts/pass/bdbaaac9f5eec22a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-13 |     }
-14 |     function My(s: boolean);
-   |                            ^
-15 |     function My(s: any) { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/bdbaaac9f5eec22a.ts
 ✓ test/parser/suite/ts/pass/bdc6269395cf6673.ts
 ✓ test/parser/suite/ts/pass/bddcb72a7a2158cc.ts
 ✓ test/parser/suite/ts/pass/bddf51701ff85628.ts
@@ -14814,17 +13312,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/be4d59b031736e54.ts
-✗ test/parser/suite/ts/pass/be4f80d852cefb42.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | class Derived1 extends Base { bar() { } }
- 5 | function f(tagName: 'span', ...args): Derived1;   // error
-   |                                               ^
- 6 | function f(tagName: number, ...args): Base;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/be4f80d852cefb42.ts
 ✓ test/parser/suite/ts/pass/be5897e34a4cc77e.ts
 ✗ test/parser/suite/ts/pass/be5b553073545d16.ts (parse errors)
 error: A class can only have one constructor
@@ -14856,17 +13344,7 @@ error: Expected declaration after 'export', but found 'abstract'
 ✓ test/parser/suite/ts/pass/be864ca9dd6f1b89.ts
 ✓ test/parser/suite/ts/pass/be93d92eda42ef7d.ts
 ✓ test/parser/suite/ts/pass/be948d058188eb6e.ts
-✗ test/parser/suite/ts/pass/bea280e4100ea41d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | 
- 6 | function attr(name: string): string;
-   |                                    ^
- 7 | function attr(name: string, value: string): Accessor;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/bea280e4100ea41d.ts
 ✓ test/parser/suite/ts/pass/bea76faec7040242.ts
 ✓ test/parser/suite/ts/pass/bea962856a1ea10c.ts
 ✗ test/parser/suite/ts/pass/beb87275ec770bdb.module.ts (parse errors)
@@ -14882,17 +13360,7 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/bedee008df6cdecf.ts
 ✓ test/parser/suite/ts/pass/beea7e029ba3bb7f.ts
-✗ test/parser/suite/ts/pass/beeb672f1d4bc8e5.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-29 | 
-30 | function foo1(x: A);
-   |                    ^
-31 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/beeb672f1d4bc8e5.ts
 ✓ test/parser/suite/ts/pass/bf037310e122073f.ts
 ✓ test/parser/suite/ts/pass/bf08c9b693200143.ts
 ✓ test/parser/suite/ts/pass/bf281efa11268532.ts
@@ -14959,17 +13427,7 @@ error: Unexpected token '?'
 
 ✓ test/parser/suite/ts/pass/bfb0104b62f32df4.ts
 ✓ test/parser/suite/ts/pass/bfb41eaac596df46.ts
-✗ test/parser/suite/ts/pass/bfb687f7bf2ef4ba.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:{a:number;}[]):string;
-   |                                       ^
- 3 | function foo(bar:{a:boolean;}[]):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/bfb687f7bf2ef4ba.ts
 ✓ test/parser/suite/ts/pass/bfb8b58caa146bae.ts
 ✗ test/parser/suite/ts/pass/bfb95c72cd70d627.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -15052,28 +13510,8 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/c07436212119520a.ts
-✗ test/parser/suite/ts/pass/c07f8e732b908394.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function Foo(s: string);
-   |                        ^
- 3 | function Foo(n: number) { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/c083bcd5d7a95d7c.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function f(x: "foo"): number;
-   |                             ^
- 5 | function f(x: "foo"): number {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c07f8e732b908394.ts
+✓ test/parser/suite/ts/pass/c083bcd5d7a95d7c.ts
 ✗ test/parser/suite/ts/pass/c09058f46024e9f4.ts (parse errors)
 error: A class can only have one constructor
    |
@@ -15117,17 +13555,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/c0d9e590a62a0033.ts
-✗ test/parser/suite/ts/pass/c0dae604f68cb309.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-13 | 
-14 | function each(collection: string, callback: (indexInArray: any, valueOfElement: any) => any): any;
-   |                                                                                                  ^
-15 | function each(collection: JQuery, callback: (indexInArray: number, valueOfElement: Base) => any): any;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c0dae604f68cb309.ts
 ✓ test/parser/suite/ts/pass/c0deffb36de074e2.ts
 ✓ test/parser/suite/ts/pass/c11164f75cd076b8.ts
 ✗ test/parser/suite/ts/pass/c111688073b4cfa5.ts (parse errors)
@@ -15213,17 +13641,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/c1fb3ef863086776.module.ts
 ✓ test/parser/suite/ts/pass/c1feae4306d34b74.module.ts
 ✓ test/parser/suite/ts/pass/c200ed365fc34f1c.ts
-✗ test/parser/suite/ts/pass/c2019e89e89333c0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | 
- 6 | function fn(s: WorkerFS): void;
-   |                               ^
- 7 | function fn(s: FileSystem): void;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c2019e89e89333c0.ts
 ✓ test/parser/suite/ts/pass/c203fd9aa416cc6e.ts
 ✓ test/parser/suite/ts/pass/c20ec1072d239345.ts
 ✓ test/parser/suite/ts/pass/c20edda306a6d2b4.ts
@@ -15231,17 +13649,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c223772d14e46764.ts
 ✓ test/parser/suite/ts/pass/c2254ec2676f1543.ts
 ✓ test/parser/suite/ts/pass/c226fb03f7781446.ts
-✗ test/parser/suite/ts/pass/c229ab53b3d68e03.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 8 | }
- 9 | function foo(x: "hi", items: string[]): D;
-   |                                          ^
-10 | function foo(x: "bye", items: string[]): E;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c229ab53b3d68e03.ts
 ✓ test/parser/suite/ts/pass/c231209fc28b2e35.module.ts
 ✓ test/parser/suite/ts/pass/c234de4949ce751d.ts
 ✓ test/parser/suite/ts/pass/c240ee8d1946cc4a.ts
@@ -15386,17 +13794,7 @@ error: Parenthesized expression in assignment pattern must be a simple assignmen
 ✓ test/parser/suite/ts/pass/c42efb30992b3eb3.ts
 ✓ test/parser/suite/ts/pass/c433a66ff7a0f623.ts
 ✓ test/parser/suite/ts/pass/c4341674b977bf38.ts
-✗ test/parser/suite/ts/pass/c43877b527718565.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-23 | 
-24 | function foo1(x: A);
-   |                    ^
-25 | function foo1(x: A); // error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c43877b527718565.ts
 ✓ test/parser/suite/ts/pass/c43b969614107c98.ts
 ✓ test/parser/suite/ts/pass/c446e303badec5eb.ts
 ✓ test/parser/suite/ts/pass/c449d2670b4a14a1.ts
@@ -15409,17 +13807,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c4d6f2560c1bc84d.ts
 ✓ test/parser/suite/ts/pass/c4e594bdcfe8de4e.ts
 ✓ test/parser/suite/ts/pass/c4e98000ec15b6b4.ts
-✗ test/parser/suite/ts/pass/c4e99f8a81933f81.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo():string;
-   |                      ^
- 3 | function foo(bar:string):number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c4e99f8a81933f81.ts
 ✓ test/parser/suite/ts/pass/c4f72a923977fb23.ts
 ✓ test/parser/suite/ts/pass/c4f76f7ce4264c6b.ts
 ✗ test/parser/suite/ts/pass/c4fab557112afbde.ts (parse errors)
@@ -15433,17 +13821,7 @@ error: Getter must have no parameters
    = help: Remove all parameters from the getter.
 
 
-✗ test/parser/suite/ts/pass/c50533d3dc30e445.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | namespace M {
- 4 |    function foo();
-   |                  ^
- 5 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c50533d3dc30e445.ts
 ✓ test/parser/suite/ts/pass/c5079fa8b8d15673.ts
 ✓ test/parser/suite/ts/pass/c5162f4a033b6a43.ts
 ✓ test/parser/suite/ts/pass/c522560a6d90ab46.ts
@@ -15488,17 +13866,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/c56f78b8812f1237.ts
-✗ test/parser/suite/ts/pass/c572683d9bd4bc1e.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // Ambiguous call picks the first overload in declaration order
- 3 | function fn1(strs: TemplateStringsArray, s: string): string;
-   |                                                            ^
- 4 | function fn1(strs: TemplateStringsArray, n: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c572683d9bd4bc1e.ts
 ✓ test/parser/suite/ts/pass/c57d3c8bb5a6c060.ts
 ✗ test/parser/suite/ts/pass/c584104273bb1306.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -15580,17 +13948,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/c655319d46607786.ts
-✗ test/parser/suite/ts/pass/c65b42275c757fd0.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function f(x: 'hi');
-   |                    ^
- 6 | function f(x: string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c65b42275c757fd0.ts
 ✓ test/parser/suite/ts/pass/c65fa706a2fbce05.ts
 ✓ test/parser/suite/ts/pass/c677c0e256f25cb0.ts
 ✓ test/parser/suite/ts/pass/c67e675d444470c5.ts
@@ -15744,17 +14102,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 ✓ test/parser/suite/ts/pass/c81a1be6ed7f445e.ts
 ✓ test/parser/suite/ts/pass/c825bf1929394d8d.ts
-✗ test/parser/suite/ts/pass/c8281334d973761f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-29 | 
-30 | function f6(): typeof f6;
-   |                         ^
-31 | function f6(a: typeof f6): () => number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c8281334d973761f.ts
 ✓ test/parser/suite/ts/pass/c82d6a1191f20050.ts
 ✓ test/parser/suite/ts/pass/c83539bc5bfa444a.ts
 ✓ test/parser/suite/ts/pass/c8533fe99ef038cf.ts
@@ -15782,17 +14130,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/c909f4b2ee290259.module.ts
 ✓ test/parser/suite/ts/pass/c90b11b9b0be8cd7.ts
 ✓ test/parser/suite/ts/pass/c911e117aa0c4680.ts
-✗ test/parser/suite/ts/pass/c9131afc2d9a22da.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function foo1(bar: { a:number }[]): Cat;
-   |                                        ^
- 8 | function foo1(bar: { a:string }[]): Dog;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c9131afc2d9a22da.ts
 ✓ test/parser/suite/ts/pass/c9195c2b276c0cc6.ts
 ✓ test/parser/suite/ts/pass/c91f25350253b904.ts
 ✓ test/parser/suite/ts/pass/c92e14a5246302ae.ts
@@ -15966,17 +14304,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/cc1299e00797aeac.ts
 ✓ test/parser/suite/ts/pass/cc24ba72fe22343f.ts
-✗ test/parser/suite/ts/pass/cc2ad06f94ad8dcd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | declare namespace Q {
- 4 |     function f(fn:()=>void); // typechecking the function type shouldnot crash the compiler
-   |                            ^
- 5 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/cc2ad06f94ad8dcd.ts
 ✗ test/parser/suite/ts/pass/cc2e289b412f4245.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -16053,17 +14381,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/ccae0ba3d5658575.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 |  
- 6 | function from<T>(arg: boolean): Query<T>; // was Error: Overload signature is not compatible with function definition.
-   |                                         ^
- 7 | function from<T>(arg: any): Query<T> {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/ccae0ba3d5658575.ts
 ✓ test/parser/suite/ts/pass/cccd1a2a73af91c4.ts
 ✓ test/parser/suite/ts/pass/cccf8605e3bcb86e.ts
 ✓ test/parser/suite/ts/pass/ccd0624133d9d457.ts
@@ -16126,14 +14444,20 @@ error: 'enum' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/cd5b73be7b7a6a59.ts
 ✓ test/parser/suite/ts/pass/cd5d40eb5bab29e9.ts
 ✗ test/parser/suite/ts/pass/cd60affbddf6b097.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'Foo' has already been declared
    |
+ 2 | // @strict: false
+ 3 | class Foo { // error
+   |       ~~~ 'Foo' was first declared as a class here
+ 4 |     bar1() { /*WScript.Echo("bar1");*/ }
+.. |
 10 | 
 11 | function Foo(); // error
-   |               ^
+   |          ^^^
+   |          ~~~ cannot be redeclared here
 12 | function F1(s:string);
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'Foo'
 
 
 ✓ test/parser/suite/ts/pass/cd66a381a1885632.ts
@@ -16269,17 +14593,7 @@ error: Private field '#y' must be declared in an enclosing class
 14 |   }
    |
 
-✗ test/parser/suite/ts/pass/cec2755537e147ae.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-20 | 
-21 | function hasKind(entity: Entity, kind: "A"): entity is A;
-   |                                                         ^
-22 | function hasKind(entity: Entity, kind: "B"): entity is B;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/cec2755537e147ae.ts
 ✓ test/parser/suite/ts/pass/ceca3fac81746a46.ts
 ✓ test/parser/suite/ts/pass/ced0ee3874e08ffe.ts
 ✓ test/parser/suite/ts/pass/ced8f769628ddfa5.module.ts
@@ -16291,31 +14605,27 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/cef0aa9bbf5a7df0.ts
 ✓ test/parser/suite/ts/pass/cef238340f1e9eb1.ts
 ✓ test/parser/suite/ts/pass/cef32521bd91d8b2.ts
-✗ test/parser/suite/ts/pass/cf075d092621391b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | function outer() {
- 5 |     function inner(x:number); // should work
-   |                             ^
- 6 |     function inner(x:string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/cf075d092621391b.ts
 ✓ test/parser/suite/ts/pass/cf19adb021999cef.ts
 ✓ test/parser/suite/ts/pass/cf1f82c3599b5948.ts
 ✓ test/parser/suite/ts/pass/cf25c17f77a87fdc.ts
 ✓ test/parser/suite/ts/pass/cf2b4d37e92758cc.ts
 ✓ test/parser/suite/ts/pass/cf2bd35304c66bcb.ts
 ✗ test/parser/suite/ts/pass/cf2c819cdda8f80a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier '_' has already been declared
    |
- 8 |         //iterator: ListIterator<T, void>,
- 9 |         context?: any): void;
-   |                             ^
-10 | 
+ 2 | declare function _<T>(value: Array<T>): _<T>;
+ 3 | declare function _<T>(value: T): _<T>;
+   |                  ~ '_' was first declared as a function here
+ 4 | 
+.. |
+15 | 
+16 | declare class _<T> {
+   |               ^
+   |               ~ cannot be redeclared here
+17 |     each(iterator: _.ListIterator<T, void>, context?: any): void;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of '_'
 
 
 ✓ test/parser/suite/ts/pass/cf2cc79f288179c2.ts
@@ -16344,17 +14654,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/cfef64f9613ec682.ts
 ✓ test/parser/suite/ts/pass/cff0151cfbe54134.ts
 ✓ test/parser/suite/ts/pass/cff9db1ca36406a0.ts
-✗ test/parser/suite/ts/pass/cffcb9522f43ecc1.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 |     
- 6 | function foo(a: A);
-   |                   ^
- 7 | function foo(b: B);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/cffcb9522f43ecc1.ts
 ✓ test/parser/suite/ts/pass/d000b49b1d09e64e.ts
 ✓ test/parser/suite/ts/pass/d001c87b24cec290.ts
 ✓ test/parser/suite/ts/pass/d00f2db191fc7d44.ts
@@ -16380,17 +14680,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/d020ef81363361fc.ts
 ✓ test/parser/suite/ts/pass/d02671ea82773b13.ts
 ✓ test/parser/suite/ts/pass/d0289f4b1f4c0740.ts
-✗ test/parser/suite/ts/pass/d029f4d3805ed0a5.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function f(x: "foo"): number;
-   |                             ^
- 5 | function f(x: string): number {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d029f4d3805ed0a5.ts
 ✗ test/parser/suite/ts/pass/d02d2331bbb5ab12.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
    |
@@ -16482,17 +14772,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d160a71d418c1366.ts
 ✓ test/parser/suite/ts/pass/d1656bdc46cd807d.ts
 ✓ test/parser/suite/ts/pass/d1690f3df42d385d.ts
-✗ test/parser/suite/ts/pass/d17e990b52e7c3ed.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-31 | 
-32 | function callb(lam:(l: number) => void );
-   |                                         ^
-33 | function callb(lam:(n: string)=>void);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d17e990b52e7c3ed.ts
 ✗ test/parser/suite/ts/pass/d17eb0a1cfd687f1.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -16507,14 +14787,17 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d180791a29510d6e.ts
 ✓ test/parser/suite/ts/pass/d1819c6e547f77a3.ts
 ✗ test/parser/suite/ts/pass/d18cfb6e33541208.module.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'func' has already been declared
    |
  5 | 
  6 | export function func(details: number, message: string, ...args: any[]): void;
-   |                                                                             ^
+   |                 ~~~~ 'func' was first declared as a function here
  7 | export function func(details: number, message: string): any {
+   |                 ^^^^
+   |                 ~~~~ cannot be redeclared here
+ 8 |     return details + message;
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'func'
 
 
 ✓ test/parser/suite/ts/pass/d190f00e1de28b94.ts
@@ -16594,17 +14877,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d2659df1001d6642.ts
 ✓ test/parser/suite/ts/pass/d26c77332fee6dd4.ts
 ✓ test/parser/suite/ts/pass/d26d955527c274d1.ts
-✗ test/parser/suite/ts/pass/d2773efdbc223505.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | // Ambiguous call picks the first overload in declaration order
- 4 | function fn1(strs: TemplateStringsArray, s: string): string;
-   |                                                            ^
- 5 | function fn1(strs: TemplateStringsArray, n: number): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d2773efdbc223505.ts
 ✓ test/parser/suite/ts/pass/d27bad2f2a948cb3.ts
 ✓ test/parser/suite/ts/pass/d280823a7f492f12.ts
 ✗ test/parser/suite/ts/pass/d281cfc5b1619e1c.module.ts (parse errors)
@@ -16848,17 +15121,7 @@ error: 'interface' is reserved in strict mode and cannot be used as a binding id
  5 | 
    |
 
-✗ test/parser/suite/ts/pass/d509d65fe64be96d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | 
- 4 | function f(x: "foo"): number;
-   |                             ^
- 5 | function f(x: string): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d509d65fe64be96d.ts
 ✗ test/parser/suite/ts/pass/d50b598926d3f3e4.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -16896,17 +15159,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d58fbafa4f0f36f8.ts
 ✓ test/parser/suite/ts/pass/d5a632b5466a8e3b.ts
 ✓ test/parser/suite/ts/pass/d5aa4e2e373638e7.ts
-✗ test/parser/suite/ts/pass/d5ad1536d4929963.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function foo(tagName: 'canvas'): Derived1;
-   |                                          ^
- 8 | function foo(tagName:  'div'): Derived2;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d5ad1536d4929963.ts
 ✓ test/parser/suite/ts/pass/d5b43de105055e4b.ts
 ✓ test/parser/suite/ts/pass/d5bc5cf46ef19a63.ts
 ✓ test/parser/suite/ts/pass/d5df8e6d3193b9e9.ts
@@ -16968,17 +15221,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/d6b3637d97696186.ts
 ✓ test/parser/suite/ts/pass/d6b49b64841a7755.ts
 ✓ test/parser/suite/ts/pass/d6b872407e4e59f4.ts
-✗ test/parser/suite/ts/pass/d6bf1215dd87d852.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function f(x: string): number;
-   |                              ^
- 3 | function f(x: string): void {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d6bf1215dd87d852.ts
 ✓ test/parser/suite/ts/pass/d6cadc7c9a23f2ea.ts
 ✓ test/parser/suite/ts/pass/d6cfd57ee93cb4b8.ts
 ✓ test/parser/suite/ts/pass/d6d691df531453dd.ts
@@ -17118,17 +15361,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/d8b5f0dc08f85e5d.ts
 ✓ test/parser/suite/ts/pass/d8be146826bdcd1d.ts
 ✓ test/parser/suite/ts/pass/d8cd0a48e658e63e.ts
-✗ test/parser/suite/ts/pass/d8da2d55a70889d5.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(x: string = '');
-   |                             ^
- 4 | function foo(x = '') { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d8da2d55a70889d5.ts
 ✓ test/parser/suite/ts/pass/d90069081cfac33b.ts
 ✓ test/parser/suite/ts/pass/d904ee22be8225b0.ts
 ✗ test/parser/suite/ts/pass/d914ad5837e60a91.ts (parse errors)
@@ -17148,17 +15381,7 @@ error: Private field '#derivedProp' must be declared in an enclosing class
 ✓ test/parser/suite/ts/pass/d9743f8345274309.ts
 ✓ test/parser/suite/ts/pass/d98271e3f38316ed.ts
 ✓ test/parser/suite/ts/pass/d98dfad7e5f22c64.ts
-✗ test/parser/suite/ts/pass/d996541bbcae7c17.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-20 | 
-21 | function f4(_i: number, ...rest); // no codegen no error
-   |                                 ^
-22 | function f4(_i: string, ...rest); // no codegen no error
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d996541bbcae7c17.ts
 ✓ test/parser/suite/ts/pass/d99697b29c7f3faa.ts
 ✓ test/parser/suite/ts/pass/d99a88e51ca2d39c.module.ts
 ✓ test/parser/suite/ts/pass/d9a8d825d0764e18.ts
@@ -17182,17 +15405,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/d9d9a425a9416832.ts
 ✓ test/parser/suite/ts/pass/d9df56edc382673d.ts
 ✓ test/parser/suite/ts/pass/d9e2d62803dbb360.ts
-✗ test/parser/suite/ts/pass/d9ec1b5ce314cb89.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-64 |     var x;
-65 |     function fn(): number;
-   |                          ^
-66 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d9ec1b5ce314cb89.ts
 ✓ test/parser/suite/ts/pass/d9f76e8a3051873e.ts
 ✗ test/parser/suite/ts/pass/da1055b062575ca4.ts (parse errors)
 error: Expected '{' to start class body, but found 'number'
@@ -17270,17 +15483,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/db011bc94dd74410.ts
 ✓ test/parser/suite/ts/pass/db09d250bbb5c5c7.ts
 ✓ test/parser/suite/ts/pass/db142af0a8931c51.ts
-✗ test/parser/suite/ts/pass/db14968c47b95009.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(a = 4);
-   |                    ^
- 4 | function foo(a, b) {}
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/db14968c47b95009.ts
 ✓ test/parser/suite/ts/pass/db20fae7731435f0.ts
 ✓ test/parser/suite/ts/pass/db230328d52f2f42.ts
 ✓ test/parser/suite/ts/pass/db2db1774e5f251a.ts
@@ -17322,17 +15525,7 @@ error: 'super' property access is only valid inside a method or class body
 ✓ test/parser/suite/ts/pass/dc0c5eddab6f192e.ts
 ✓ test/parser/suite/ts/pass/dc24a71d42504e42.ts
 ✓ test/parser/suite/ts/pass/dc2bb7efba890649.ts
-✗ test/parser/suite/ts/pass/dc2f2bc0f89d0630.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(bar:number):{a:number;}[];
-   |                                       ^
- 3 | function foo(bar:string):{a:number; b:string;}[];
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/dc2f2bc0f89d0630.ts
 ✓ test/parser/suite/ts/pass/dc47e1bd4547f05c.ts
 ✓ test/parser/suite/ts/pass/dc5c75111a7e010d.module.ts
 ✓ test/parser/suite/ts/pass/dc62edf063bb42ca.ts
@@ -17427,14 +15620,17 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/ddef43deb5e9a493.module.ts
 ✓ test/parser/suite/ts/pass/ddf4729e1e42330c.ts
 ✗ test/parser/suite/ts/pass/ddf5882a5ffbe502.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
+error: Identifier 'Foo' has already been declared
    |
- 2 | 
  3 | function Foo():Foo; // error
-   |                   ^
  4 | function Foo(s:string):Foo; // error
+   |          ~~~ 'Foo' was first declared as a function here
+ 5 | class Foo { // error
+   |       ^^^
+   |       ~~~ cannot be redeclared here
+ 6 |     bar1() { /*WScript.Echo("bar1");*/ }
    |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
+   = help: Consider removing or renaming this declaration of 'Foo'
 
 
 ✓ test/parser/suite/ts/pass/ddfe04becea6a99f.module.ts
@@ -17464,17 +15660,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/de16c343fa4957cb.ts
 ✓ test/parser/suite/ts/pass/de1c772a7e3a29a4.module.ts
 ✓ test/parser/suite/ts/pass/de1e88dfc9789032.module.ts
-✗ test/parser/suite/ts/pass/de1ff2e9c0d994f4.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | declare namespace foo {
- 3 |     export function x(): any;
-   |                             ^
- 4 | }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/de1ff2e9c0d994f4.ts
 ✗ test/parser/suite/ts/pass/de25de3e4688970f.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'type'
    |
@@ -17687,17 +15873,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/e0fc106feaafed7a.ts
 ✓ test/parser/suite/ts/pass/e0fcf64b7f31d54c.module.ts
 ✓ test/parser/suite/ts/pass/e1057d8401d893b1.ts
-✗ test/parser/suite/ts/pass/e106db698749ac72.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo1<T extends Date>(test: T);
-   |                                       ^
- 4 | function foo1<T extends Number>(test: string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e106db698749ac72.ts
 ✓ test/parser/suite/ts/pass/e10cf60227b76ab6.ts
 ✓ test/parser/suite/ts/pass/e116bdef52e2d4ed.module.ts
 ✓ test/parser/suite/ts/pass/e11a6a6fe87f940d.ts
@@ -17708,17 +15884,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/e1339729ccb47e27.ts
 ✓ test/parser/suite/ts/pass/e13411e2780d6a53.module.ts
 ✓ test/parser/suite/ts/pass/e136636a60016a52.ts
-✗ test/parser/suite/ts/pass/e13b6ac36b652fbd.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo3<T>(test: string); // error
-   |                               ^
- 4 | function foo3<T>(test: T) { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e13b6ac36b652fbd.ts
 ✓ test/parser/suite/ts/pass/e1419996bd7e4f27.ts
 ✓ test/parser/suite/ts/pass/e14ab6e71e94d9d4.ts
 ✓ test/parser/suite/ts/pass/e15c1259b7c9ffb4.ts
@@ -17863,17 +16029,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/e2b22d02bf66f427.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 9 | 
-10 | function Choice<T>(args: T[]): A<T>;
-   |                                    ^
-11 | function Choice<T>(...v_args: T[]): A<T>;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e2b22d02bf66f427.ts
 ✓ test/parser/suite/ts/pass/e2b90d2261d35a00.ts
 ✓ test/parser/suite/ts/pass/e2c99e33a00744a3.ts
 ✓ test/parser/suite/ts/pass/e2e15dd862ee68f4.ts
@@ -18181,17 +16337,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/e76c580d6503b942.ts
-✗ test/parser/suite/ts/pass/e76df1af34df7e07.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foof(bar: string, y): number;
-   |                                      ^
- 4 | function foof(bar: string, x): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e76df1af34df7e07.ts
 ✓ test/parser/suite/ts/pass/e76f606eaec64085.ts
 ✓ test/parser/suite/ts/pass/e775cab79a2af479.ts
 ✓ test/parser/suite/ts/pass/e77ca1811869072f.ts
@@ -18201,17 +16347,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/e79056dee69a8570.ts
 ✓ test/parser/suite/ts/pass/e795a578eebaebed.ts
 ✓ test/parser/suite/ts/pass/e7a650506f98f1d9.ts
-✗ test/parser/suite/ts/pass/e7be71ac2b3c998b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-13 | // ok, not considered identical because the steps of contextual signature instantiation create fresh type parameters
-14 | function foo(x: A);
-   |                   ^
-15 | function foo(x: B); // error after constraints above made illegal
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e7be71ac2b3c998b.ts
 ✓ test/parser/suite/ts/pass/e7c1fac7060fc291.ts
 ✓ test/parser/suite/ts/pass/e7ce7bf2e289a8dc.ts
 ✓ test/parser/suite/ts/pass/e7d80ccf34cbd281.module.ts
@@ -18219,17 +16355,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/e7eb0c47201a79f5.ts
 ✓ test/parser/suite/ts/pass/e7edb73b8ccd061a.ts
 ✓ test/parser/suite/ts/pass/e7f2be459ddaed6d.ts
-✗ test/parser/suite/ts/pass/e7fb2124b4350ad9.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | var out = foo((x, y) => {
- 6 |     function bar(a: typeof x): void;
-   |                                    ^
- 7 |     function bar(b: typeof y): void;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e7fb2124b4350ad9.ts
 ✓ test/parser/suite/ts/pass/e7fd42d058997be4.module.ts
 ✓ test/parser/suite/ts/pass/e8244c2a9585bd3a.ts
 ✓ test/parser/suite/ts/pass/e82c5e1175830184.ts
@@ -18275,28 +16401,8 @@ error: 'arguments' is not allowed in class field initializers or static blocks
 ✓ test/parser/suite/ts/pass/e89e9a54e053fdd7.ts
 ✓ test/parser/suite/ts/pass/e89f8d56719636b7.ts
 ✓ test/parser/suite/ts/pass/e8a1566274cd217f.ts
-✗ test/parser/suite/ts/pass/e8a3321396843537.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function callb(lam: (l: number) => void);
-   |                                         ^
- 4 | function callb(lam: (n: string) => void);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/e8a521115d1a6797.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(strs: TemplateStringsArray): number;
-   |                                                 ^
- 3 | function foo(strs: TemplateStringsArray, x: number): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e8a3321396843537.ts
+✓ test/parser/suite/ts/pass/e8a521115d1a6797.ts
 ✓ test/parser/suite/ts/pass/e8b272ee8c4e2410.ts
 ✓ test/parser/suite/ts/pass/e8b43e51422a406e.module.ts
 ✗ test/parser/suite/ts/pass/e8b49f8447e4254a.ts (parse errors)
@@ -18406,17 +16512,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 
 
 ✓ test/parser/suite/ts/pass/e95db24644f78615.ts
-✗ test/parser/suite/ts/pass/e965f7fa5cea8c1f.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(a: 'hi', x: string);
-   |                                 ^
- 4 | function foo(a: 'hi', x: string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e965f7fa5cea8c1f.ts
 ✓ test/parser/suite/ts/pass/e973a4fb0f2e26b6.ts
 ✓ test/parser/suite/ts/pass/e98cb39088143919.ts
 ✓ test/parser/suite/ts/pass/e98e8ef79562de63.ts
@@ -18484,17 +16580,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/ea94f3a4a9779b04.ts
 ✓ test/parser/suite/ts/pass/ea9a659ab4c730ac.ts
 ✓ test/parser/suite/ts/pass/ea9c3c8657fe6b83.module.tsx
-✗ test/parser/suite/ts/pass/eaa115513878ac6a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(bar:number):(b:string)=>void;
-   |                                          ^
- 4 | function foo(bar:string):(a:number)=>void;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/eaa115513878ac6a.ts
 ✓ test/parser/suite/ts/pass/eac60d15b2b7d53e.ts
 ✓ test/parser/suite/ts/pass/eac865e9ce59f2e3.ts
 ✓ test/parser/suite/ts/pass/eace8d03e9940103.ts
@@ -18709,17 +16795,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/ed9e50dadb85dd2b.ts
 ✓ test/parser/suite/ts/pass/eda0a3ad82f2e925.ts
 ✓ test/parser/suite/ts/pass/eda0cc9554ea6e42.ts
-✗ test/parser/suite/ts/pass/eda87a4fa313a7d2.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 1 | // @target: es2015
- 2 | function foo(): string;
-   |                       ^
- 3 | function foo(bar: string): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/eda87a4fa313a7d2.ts
 ✓ test/parser/suite/ts/pass/edb17367a86d02c6.ts
 ✓ test/parser/suite/ts/pass/edb63ab4e4b72ee2.ts
 ✓ test/parser/suite/ts/pass/edb99e0525bc7783.ts
@@ -18887,15 +16963,15 @@ error: Expected ',' or '}' in object, but found '<'
 
 
 ✗ test/parser/suite/ts/pass/eff54c64777d517b.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 5 | /** this is signature 1*/
- 6 | function f1(/**param a*/a: number): number;
-   |                                           ^
- 7 | function f1(b: string): number;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
+error: A class can only have one constructor
+    |
+127 | class c1 {
+128 |     constructor(a: number);
+    |     ~~~~~~~~~~~ first constructor defined here
+129 |     constructor(b: string);
+    |     ^^^^^^^^^^^
+130 |     constructor(aorb: any) {
+    |
 
 ✗ test/parser/suite/ts/pass/eff575122955dc0c.module.ts (parse errors)
 error: Duplicate export of 'default'
@@ -19041,17 +17117,7 @@ error: Identifier 'b' has already been declared
 ✓ test/parser/suite/ts/pass/f1544f7e8ac2757e.ts
 ✓ test/parser/suite/ts/pass/f157d4e17c2d7c53.ts
 ✓ test/parser/suite/ts/pass/f159ae1d0fbf8300.ts
-✗ test/parser/suite/ts/pass/f16df2761799e5b2.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function foo1<T>(x: T);
-   |                       ^
- 6 | function foo1<T>(x: T); // no error, different declaration for each T
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/f16df2761799e5b2.ts
 ✗ test/parser/suite/ts/pass/f1763292d5419849.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
    |
@@ -19398,17 +17464,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 ✓ test/parser/suite/ts/pass/f4c2569e0ba35703.ts
 ✓ test/parser/suite/ts/pass/f4cdc05a235a6389.ts
-✗ test/parser/suite/ts/pass/f4d632af47b4429a.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-24 | 
-25 | function foo5(x: A);
-   |                    ^
-26 | function foo5(x: B); // ok
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/f4d632af47b4429a.ts
 ✗ test/parser/suite/ts/pass/f4df05868024e821.ts (parse errors)
 error: Expected ';' after for-loop init, but found ')'
    |
@@ -19624,17 +17680,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/f7583e9c630aaf58.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 4 | 
- 5 | function f(n: typeof f): string;
-   |                                ^
- 6 | function f(n: typeof g): string;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/f7583e9c630aaf58.ts
 ✓ test/parser/suite/ts/pass/f7657411ccefc129.ts
 ✓ test/parser/suite/ts/pass/f765d84969cf73b5.module.ts
 ✓ test/parser/suite/ts/pass/f77260a66a73d7ac.ts
@@ -19874,17 +17920,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/fb62786bd33ab8af.ts
 ✓ test/parser/suite/ts/pass/fb655abc09c1d17a.ts
 ✓ test/parser/suite/ts/pass/fb688dd3ed6dd196.ts
-✗ test/parser/suite/ts/pass/fb6c29f3bd517451.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 6 | 
- 7 | function foo1(bar: { a:number }[]): Dog;
-   |                                        ^
- 8 | function foo1(bar: { a:string }[]): Animal;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/fb6c29f3bd517451.ts
 ✓ test/parser/suite/ts/pass/fb8784b15e6c0b15.ts
 ✓ test/parser/suite/ts/pass/fb980c25bb822423.ts
 ✓ test/parser/suite/ts/pass/fb9b6610e9ee6382.ts
@@ -19939,17 +17975,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/fc561aea7f2a369e.ts (parse errors)
-error: Expected '{' to start function body, but found 'function'
-   |
- 3 | function foo():{a:number;}
- 4 | function foo():{a:string;} { return {a:""} }
-   | ^^^^^^^^
- 5 | 
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/fc561aea7f2a369e.ts
 ✓ test/parser/suite/ts/pass/fc561bebcd06431a.ts
 ✗ test/parser/suite/ts/pass/fc5ea2c446cd56b5.ts (parse errors)
 error: 'const' declarations must be initialized
@@ -20010,17 +18036,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/fda305ebc7439f97.ts
 ✓ test/parser/suite/ts/pass/fda7a5cf6785ab0c.ts
 ✓ test/parser/suite/ts/pass/fda7deb6732f521c.ts
-✗ test/parser/suite/ts/pass/fdab8125eaa32ac3.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
-24 | // signature and simply check compatibility with the implementation.
-25 | function hasKind(entity: Entity, kind: "A" | "A"): entity is A;
-   |                                                               ^
-26 | function hasKind(entity: Entity, kind: "B" | "B"): entity is B;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/fdab8125eaa32ac3.ts
 ✓ test/parser/suite/ts/pass/fdb6f34032d0125e.ts
 ✓ test/parser/suite/ts/pass/fdbc8a9f7a9665cd.module.ts
 ✓ test/parser/suite/ts/pass/fdbea4204d9a1192.ts
@@ -20146,28 +18162,8 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/ffbe9eb32981ac12.ts
 ✓ test/parser/suite/ts/pass/ffd769ebd8dd0f41.ts
 ✓ test/parser/suite/ts/pass/ffd99d0841dd4edd.ts
-✗ test/parser/suite/ts/pass/ffd9d7d54ee4cf7d.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 3 | declare namespace Q {
- 4 |     function _try(method: Function, ...args: any[]): any;
-   |                                                         ^
- 5 |     export { _try as try };
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/ffd9d7d54ee4cf7d.ts
 ✓ test/parser/suite/ts/pass/ffe4b13f6001a224.ts
 ✓ test/parser/suite/ts/pass/ffe7a44738600485.ts
-✗ test/parser/suite/ts/pass/fff72c3f1de3ee09.ts (parse errors)
-error: Expected '{' to start function body, but found ';'
-   |
- 2 | // @strict: false
- 3 | function foo(a: 'hi', x: string);
-   |                                 ^
- 4 | function foo(a: 'hi', x: string);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/fff72c3f1de3ee09.ts
 ✓ test/parser/suite/ts/pass/fffa27205719eea5.ts

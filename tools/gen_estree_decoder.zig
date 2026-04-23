@@ -337,9 +337,10 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
         const srt = comptime slotOf(ast.Function, "return_type");
         const bg = comptime flagMask(ast.Function, "generator");
         const ba = comptime flagMask(ast.Function, "async");
+        const bd = comptime flagMask(ast.Function, "declare");
         try emit(w,
-            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; r.declare = ft === 2; }} return r; }}
-        , .{ tag, comptime enumMask(ast.FunctionType), sid, sid, bg, ba, sp, sp, sb, sb, stp, stp, srt, srt });
+            \\    case {d}: {{ const ft = flags & {d}; const r = {{ type: FUNCTION_TYPES[ft], start, end, id: f{d} !== NULL ? node(f{d}) : null, generator: !!(flags & {d}), async: !!(flags & {d}), params: f{d} !== NULL ? fnParams(f{d}) : [], body: f{d} !== NULL ? node(f{d}) : null, expression: false }}; if (_isTs) {{ r.typeParameters = f{d} !== NULL ? node(f{d}) : null; r.returnType = f{d} !== NULL ? node(f{d}) : null; r.declare = !!(flags & {d}); }} return r; }}
+        , .{ tag, comptime enumMask(ast.FunctionType), sid, sid, bg, ba, sp, sp, sb, sb, stp, stp, srt, srt, bd });
     } else if (comptime eql(u8, name, "arrow_function_expression")) {
         const sp = comptime slotOf(ast.ArrowFunctionExpression, "params");
         const sb = comptime slotOf(ast.ArrowFunctionExpression, "body");

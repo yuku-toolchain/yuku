@@ -24,14 +24,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         null,
     )) return null;
 
-    // export default function produces a declaration with optional name
-    // regular function expression allows optional name but produces expression
-    const function_type: ast.FunctionType = if (opts.is_expression and !opts.is_default_export)
-        .function_expression
-    else if (opts.is_declare)
-        .ts_declare_function
-    else
-        .function_declaration;
+    const is_function_expression = opts.is_expression and !opts.is_default_export;
 
     var is_generator = false;
 
@@ -53,20 +46,20 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     // - `function yield(){}` (declaration) is invalid.
     // - `(function yield(){})` (expression) is ok.
     // - `(function* yield(){})` is invalid.
-    parser.context.yield_is_keyword = switch (function_type) {
-        .function_expression => is_generator,
-        else => outer_yield_is_keyword,
-    };
+    parser.context.yield_is_keyword = if (is_function_expression)
+        is_generator
+    else
+        outer_yield_is_keyword;
 
     // names use different await-keyword rules for declarations vs expressions.
     // in script code:
     // - `async function await(){}` (declaration) is valid.
     // - `(async function await(){})` (expression) is invalid.
     // declarations inherit outer Await context, while async expressions force Await for their name.
-    parser.context.await_is_keyword = switch (function_type) {
-        .function_expression => opts.is_async,
-        else => outer_await_is_keyword,
-    };
+    parser.context.await_is_keyword = if (is_function_expression)
+        opts.is_async
+    else
+        outer_await_is_keyword;
 
     const id = if (parser.current_token.tag.isIdentifierLike())
         try literals.parseBindingIdentifier(parser) orelse .null
@@ -113,28 +106,34 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     var body: ast.NodeIndex = .null;
 
-    if (opts.is_declare) {
-        if (parser.current_token.tag == .left_brace) {
-            try parser.report(
-                parser.current_token.span,
-                parser.withTsCode("1183", "An implementation cannot be declared in ambient contexts."),
-                .{ .help = "Remove the function body or remove the 'declare' modifier" },
-            );
-            return null;
-        }
-    } else {
+    if (opts.is_declare and parser.current_token.tag == .left_brace) {
+        try parser.report(
+            parser.current_token.span,
+            parser.withTsCode("1183", "An implementation cannot be declared in ambient contexts."),
+            .{ .help = "Remove the function body or remove the 'declare' modifier" },
+        );
+        return null;
+    }
+
+    // ts ambient declarations and overload signatures are body-less.
+    const has_body = !opts.is_declare and (!parser.tree.isTs() or
+        is_function_expression or parser.current_token.tag == .left_brace);
+
+    if (has_body) {
         body = try parseFunctionBody(parser) orelse .null;
     }
 
-    // ambient `declare function f(): T;` takes a trailing ASI semicolon,
-    // the regular declaration ends at `}` and signature-only overloads end
-    // at the return type.
     const end = if (body != .null)
         parser.tree.getSpan(body).end
-    else if (opts.is_declare)
-        try parser.eatSemicolon(return_type_end) orelse return null
     else
-        return_type_end;
+        try parser.eatSemicolon(return_type_end) orelse return null;
+
+    const function_type: ast.FunctionType = if (is_function_expression)
+        .function_expression
+    else if (body == .null)
+        .ts_declare_function
+    else
+        .function_declaration;
 
     if (parser.context.in_single_statement_context) {
         @branchHint(.unlikely);
@@ -158,6 +157,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
             .id = id,
             .generator = is_generator,
             .async = opts.is_async,
+            .declare = opts.is_declare,
             .params = params,
             .body = body,
             .type_parameters = type_parameters,

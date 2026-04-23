@@ -1685,9 +1685,11 @@ pub const Directive = struct {
 pub const FunctionType = enum {
     function_declaration,
     function_expression,
-    /// `declare function f(): void;`
+    /// body-less function declaration. covers ambient `declare function`
+    /// and plain overload signatures.
     ts_declare_function,
-    /// body-less signature used in ambient contexts and overloads
+    /// body-less function expression. used as the `value` of body-less
+    /// class methods (overloads, abstract methods, ambient methods).
     ts_empty_body_function_expression,
 };
 
@@ -1705,16 +1707,18 @@ pub const FunctionType = enum {
 /// //                          ^^^ return_type
 /// //                              ^^^^^^^^^^^^ body
 /// ```
-/// `async = true` for `async function`. The `declare function` form uses
-/// `type = .ts_declare_function`.
 pub const Function = struct {
     type: FunctionType,
     /// `.null` for anonymous functions
     id: NodeIndex,
     generator: bool,
     async: bool,
+    /// true when preceded by the `declare` modifier. distinguishes real
+    /// ambient declarations from plain overload signatures, which share
+    /// the `.ts_declare_function` shape.
+    declare: bool = false,
     params: NodeIndex,
-    /// `.null` for `declare function` and empty-body signatures
+    /// `.null` for body-less declarations and signatures
     body: NodeIndex,
     /// `.null` when absent
     type_parameters: NodeIndex = .null,
