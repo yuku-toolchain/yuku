@@ -1,19 +1,11 @@
 suite/ts/pass
 =============
-Passed:       6953/8261 (84.17%)
-Failed:       1308
-AST mismatch: 0/6953
+Passed:       7049/8261 (85.33%)
+Failed:       1212
+AST mismatch: 0/7049
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
-✗ test/parser/suite/ts/pass/0003972a26de5234.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: number]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/0003972a26de5234.ts
 ✓ test/parser/suite/ts/pass/000fb183866340b6.ts
 ✓ test/parser/suite/ts/pass/002d2e63882903ee.ts
 ✓ test/parser/suite/ts/pass/003ce37f7b9967c2.module.ts
@@ -83,15 +75,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/0170f365b3fca508.ts
-✗ test/parser/suite/ts/pass/0179657d6a1044ed.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-30 | class Base2 {
-31 |     [x: string]: Object;
-   |       ^
-32 |     [x: number]: Date;
-   |
-
+✓ test/parser/suite/ts/pass/0179657d6a1044ed.ts
 ✓ test/parser/suite/ts/pass/018007e36a5feb5a.ts
 ✓ test/parser/suite/ts/pass/0180e2ea41b26b88.ts
 ✓ test/parser/suite/ts/pass/018360aa02659173.ts
@@ -370,15 +354,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/04f9363a6ccefa92.ts
 ✓ test/parser/suite/ts/pass/0507b1ab7eb0658b.ts
 ✓ test/parser/suite/ts/pass/051670f19fce6d97.ts
-✗ test/parser/suite/ts/pass/05240d3e43966884.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [s: string]: number;
-   |       ^
- 4 |     constructor() { }
-   |
-
+✓ test/parser/suite/ts/pass/05240d3e43966884.ts
 ✓ test/parser/suite/ts/pass/052828046408782c.ts
 ✓ test/parser/suite/ts/pass/05296599e9fb6537.ts
 ✓ test/parser/suite/ts/pass/053778ba966afd25.module.ts
@@ -500,15 +476,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/069e6128b0a48df9.ts
 ✓ test/parser/suite/ts/pass/06a0caf6992db5ee.ts
 ✓ test/parser/suite/ts/pass/06b00deaa54c1353.ts
-✗ test/parser/suite/ts/pass/06d27dc108fad036.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: string]: Base;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/06d27dc108fad036.ts
 ✓ test/parser/suite/ts/pass/06d46a4a9911b5cc.ts
 ✓ test/parser/suite/ts/pass/06f60ed545e9bd2c.ts
 ✓ test/parser/suite/ts/pass/06fbea5fd70573b6.ts
@@ -926,15 +894,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/0c0cff6e28c79cbe.ts
 ✓ test/parser/suite/ts/pass/0c10eaac1dcfa95c.module.tsx
 ✓ test/parser/suite/ts/pass/0c18fbafafadd897.ts
-✗ test/parser/suite/ts/pass/0c2a16867c7d1b55.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | }
-   |
-
+✓ test/parser/suite/ts/pass/0c2a16867c7d1b55.ts
 ✓ test/parser/suite/ts/pass/0c40db0f89f865e7.ts
 ✓ test/parser/suite/ts/pass/0c4edfce16594963.ts
 ✓ test/parser/suite/ts/pass/0c5cf9499ad9a70e.ts
@@ -986,26 +946,10 @@ error: Duplicate export of 'default'
    |
 
 ✓ test/parser/suite/ts/pass/0cb1b3df33ce7aef.ts
-✗ test/parser/suite/ts/pass/0cbdc0687d3ac48d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 7 |     }
- 8 |     [x: string]: Object;
-   |       ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/0cbdc0687d3ac48d.ts
 ✓ test/parser/suite/ts/pass/0cd8e3681431c6f4.ts
 ✓ test/parser/suite/ts/pass/0cdac3ef01c93734.ts
-✗ test/parser/suite/ts/pass/0ce3c3d7d3f7288a.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-20 |     class C {
-21 |         [x: string]: string;
-   |           ^
-22 |         [x: string]: string;
-   |
-
+✓ test/parser/suite/ts/pass/0ce3c3d7d3f7288a.ts
 ✗ test/parser/suite/ts/pass/0ce4f3f97972398c.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
    |
@@ -1298,15 +1242,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/1032320de1673334.ts
 ✓ test/parser/suite/ts/pass/10340d7fa5ec3ffc.module.ts
 ✓ test/parser/suite/ts/pass/103e3c33c3cedddc.ts
-✗ test/parser/suite/ts/pass/104ae0f4303237de.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     static [s: symbol]: string;
-   |              ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/104ae0f4303237de.ts
 ✓ test/parser/suite/ts/pass/104c125e861fa140.ts
 ✗ test/parser/suite/ts/pass/104f48c9f696c753.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -1414,15 +1350,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/111e0910e7953877.ts
 ✓ test/parser/suite/ts/pass/1120c4e5403ba126.module.ts
 ✓ test/parser/suite/ts/pass/112d5b7d100fd9ca.ts
-✗ test/parser/suite/ts/pass/113a8ad4230af6f2.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-12 | class B implements A {
-13 |     [x: string]: Base; // error
-   |       ^
-14 | }
-   |
-
+✓ test/parser/suite/ts/pass/113a8ad4230af6f2.ts
 ✓ test/parser/suite/ts/pass/114200c75f3912c9.ts
 ✓ test/parser/suite/ts/pass/1144a76fb2b8da93.ts
 ✓ test/parser/suite/ts/pass/1144c71e8cdb1402.ts
@@ -1543,15 +1471,7 @@ error: Illegal break statement
 
 ✓ test/parser/suite/ts/pass/129ba87b3767828b.ts
 ✓ test/parser/suite/ts/pass/12c4b27082eb1060.ts
-✗ test/parser/suite/ts/pass/12cda5712419da52.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 4 | class B {
- 5 |     static readonly [s: string]: number;
-   |                       ^
- 6 |     static readonly [s: number]: 42 | 233
-   |
-
+✓ test/parser/suite/ts/pass/12cda5712419da52.ts
 ✗ test/parser/suite/ts/pass/12f22188052c4702.ts (parse errors)
 error: Illegal continue statement
    |
@@ -1794,15 +1714,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/160da69d7bf119a0.ts
 ✓ test/parser/suite/ts/pass/160de5c243f6058a.ts
 ✓ test/parser/suite/ts/pass/160e6c0f1b64fe84.ts
-✗ test/parser/suite/ts/pass/1616ca848fb9d67d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 |     public set z(v) { }
- 9 |     [x: string]: Object;
-   |       ^
-10 |     [x: number]: Object;
-   |
-
+✓ test/parser/suite/ts/pass/1616ca848fb9d67d.ts
 ✓ test/parser/suite/ts/pass/16198feb20d76542.ts
 ✓ test/parser/suite/ts/pass/161a5e425f99950e.module.ts
 ✓ test/parser/suite/ts/pass/162a148bc62cb0cb.ts
@@ -2000,15 +1912,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/1878eaf2fce0d228.ts
 ✓ test/parser/suite/ts/pass/188e68cbe3a85c47.ts
 ✓ test/parser/suite/ts/pass/1892c6239f9cfd76.ts
-✗ test/parser/suite/ts/pass/18940d8725231bda.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-13 | class Foo {
-14 |     [x: string]: A;
-   |       ^
-15 |     a: A; // ok
-   |
-
+✓ test/parser/suite/ts/pass/18940d8725231bda.ts
 ✓ test/parser/suite/ts/pass/189bd9b1feb45785.ts
 ✓ test/parser/suite/ts/pass/18a652f19c6c67a1.ts
 ✓ test/parser/suite/ts/pass/18ac9f30c2830fe9.ts
@@ -2618,15 +2522,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/20d7e5dab029d938.ts
-✗ test/parser/suite/ts/pass/20dd39323ac0fd4a.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [x: number]: Date;
-   |       ^
- 4 |     [x: string]: Object;
-   |
-
+✓ test/parser/suite/ts/pass/20dd39323ac0fd4a.ts
 ✓ test/parser/suite/ts/pass/20e0ff09bb721e9e.ts
 ✓ test/parser/suite/ts/pass/20eaf9aed5249ed9.ts
 ✓ test/parser/suite/ts/pass/20f05f1bde427568.ts
@@ -2645,24 +2541,8 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/20f96ebbb4a82f6c.ts
 ✓ test/parser/suite/ts/pass/21018cb1d5cbc160.ts
-✗ test/parser/suite/ts/pass/21142c8833a4a796.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 9 | class C {
-10 |     [x: number]: string;
-   |       ^
-11 | 
-   |
-
-✗ test/parser/suite/ts/pass/211f1c8742fb9f1d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-11 |     // No error when the indexer is in a class more derived than the computed property
-12 |     [s: string]: Foo2;
-   |       ^
-13 |     set ["set1"](p: Foo) { }
-   |
-
+✓ test/parser/suite/ts/pass/21142c8833a4a796.ts
+✓ test/parser/suite/ts/pass/211f1c8742fb9f1d.ts
 ✓ test/parser/suite/ts/pass/21306bb9ed035932.ts
 ✓ test/parser/suite/ts/pass/213874255ee47dcd.ts
 ✓ test/parser/suite/ts/pass/2146136496b938db.ts
@@ -2775,15 +2655,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/22c27b9ca3f14812.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 3 | class StringTreeCollectionBase {
- 4 |     [n: number]: StringTree;
-   |       ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/22c27b9ca3f14812.ts
 ✓ test/parser/suite/ts/pass/22c32ed2f15fde7d.module.tsx
 ✓ test/parser/suite/ts/pass/22c6a2110e25e2b0.ts
 ✗ test/parser/suite/ts/pass/22c720a519ecf008.ts (parse errors)
@@ -2877,15 +2749,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/23d5aaeba4b5a106.ts
 ✓ test/parser/suite/ts/pass/23d8e04dd2ee9f4f.ts
 ✓ test/parser/suite/ts/pass/23dc8eb99bccc292.ts
-✗ test/parser/suite/ts/pass/23e48735d0577c0c.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-10 | class I3 {
-11 |     [x: number]: T3;
-   |       ^
-12 | }
-   |
-
+✓ test/parser/suite/ts/pass/23e48735d0577c0c.ts
 ✓ test/parser/suite/ts/pass/23e82831ddff1efe.ts
 ✓ test/parser/suite/ts/pass/23ee94eecef19fdd.ts
 ✓ test/parser/suite/ts/pass/23f149fcc34b0eaa.module.ts
@@ -2904,15 +2768,7 @@ error: Expected '{' to start function body, but found ';'
 
 ✓ test/parser/suite/ts/pass/24273c79c8910925.ts
 ✓ test/parser/suite/ts/pass/242ad65f1a646690.ts
-✗ test/parser/suite/ts/pass/242d419af42cdcf1.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-49 | class Base2 {
-50 |     [i: string]: Object;
-   |       ^
-51 |     [i: number]: typeof x;
-   |
-
+✓ test/parser/suite/ts/pass/242d419af42cdcf1.ts
 ✓ test/parser/suite/ts/pass/243418cdf1e9d559.module.ts
 ✓ test/parser/suite/ts/pass/24344dbcf80c5ce9.ts
 ✓ test/parser/suite/ts/pass/24421c1dc99d103d.ts
@@ -2987,15 +2843,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/254073881b2c225f.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |    [a: string]: number
-   |      ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/254073881b2c225f.ts
 ✓ test/parser/suite/ts/pass/254ca9773e5c6b81.ts
 ✓ test/parser/suite/ts/pass/254f4292415bd59d.ts
 ✗ test/parser/suite/ts/pass/25518cb8f10a850d.tsx (parse errors)
@@ -3134,15 +2982,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/27185400e3098ea4.module.ts
 ✓ test/parser/suite/ts/pass/2724ffaa3588111f.ts
 ✓ test/parser/suite/ts/pass/272d2f70994a33d4.ts
-✗ test/parser/suite/ts/pass/272d76b6369a1116.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |    [a: string]: number; public v: number
-   |      ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/272d76b6369a1116.ts
 ✗ test/parser/suite/ts/pass/273461f5fcc43446.module.ts (parse errors)
 error: Expected '{' to start function body, but found 'export'
    |
@@ -3373,15 +3213,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/2a620f358ac31289.ts
-✗ test/parser/suite/ts/pass/2a63c6c3424aa66e.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 3 | class X {
- 4 |     static [index: string]: string;
-   |                  ^
- 5 |     static x = 12; // Should error, incompatible with index signature
-   |
-
+✓ test/parser/suite/ts/pass/2a63c6c3424aa66e.ts
 ✓ test/parser/suite/ts/pass/2a71cd7b27d34d08.ts
 ✓ test/parser/suite/ts/pass/2a78aadb7c8a240f.ts
 ✗ test/parser/suite/ts/pass/2a7ed4df1ef7449a.module.ts (parse errors)
@@ -3693,15 +3525,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/2de9e3f403d5a1f2.ts
 ✓ test/parser/suite/ts/pass/2deac57f2a7e7f51.ts
 ✓ test/parser/suite/ts/pass/2dee771216d8b98b.ts
-✗ test/parser/suite/ts/pass/2e01999294371d8b.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: number]: Derived;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/2e01999294371d8b.ts
 ✗ test/parser/suite/ts/pass/2e023c81924ae1f0.module.ts (parse errors)
 error: Export 'ns' is not defined
    |
@@ -3939,15 +3763,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/311500d6ca30f026.ts
 ✓ test/parser/suite/ts/pass/311dcb0ebb79ff67.ts
 ✓ test/parser/suite/ts/pass/3122b43806b004ed.ts
-✗ test/parser/suite/ts/pass/31237b22669ad0e3.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-10 | 
-11 |         [idx: number]: Point;
-   |             ^
-12 |         [idx: string]: Point;
-   |
-
+✓ test/parser/suite/ts/pass/31237b22669ad0e3.ts
 ✓ test/parser/suite/ts/pass/3123f0b9d1f6e1a6.ts
 ✓ test/parser/suite/ts/pass/3136ade1694d9423.ts
 ✓ test/parser/suite/ts/pass/313708e561ef2437.ts
@@ -4500,15 +4316,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/38ae3cd796553347.ts
 ✓ test/parser/suite/ts/pass/38c9c40687a1fd5e.ts
 ✓ test/parser/suite/ts/pass/38cc2e5575e9693e.ts
-✗ test/parser/suite/ts/pass/38d15e6c803a2be7.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 4 | class Foo {
- 5 |     [key: string]: number;
-   |         ^
- 6 | 
-   |
-
+✓ test/parser/suite/ts/pass/38d15e6c803a2be7.ts
 ✓ test/parser/suite/ts/pass/38d21ce7db1486d4.ts
 ✓ test/parser/suite/ts/pass/38de42abcbfaa288.module.ts
 ✓ test/parser/suite/ts/pass/38f2d1699cd7bd96.ts
@@ -4640,15 +4448,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/3abadf833d49c1d8.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 9 | class C {
-10 |     readonly [x: string]: Object;
-   |                ^
-11 |     private readonly a1: number;
-   |
-
+✓ test/parser/suite/ts/pass/3abadf833d49c1d8.ts
 ✓ test/parser/suite/ts/pass/3abc66818f7b8e4a.ts
 ✓ test/parser/suite/ts/pass/3adee1115ec8290b.ts
 ✗ test/parser/suite/ts/pass/3aeed6544bd22bd0.ts (parse errors)
@@ -4704,15 +4504,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/3b391adb2bf26d78.ts
 ✓ test/parser/suite/ts/pass/3b3a02b135ffa665.ts
-✗ test/parser/suite/ts/pass/3b41e6dcec230c59.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 7 | class C2 {
- 8 |     [x: string]: this;
-   |       ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/3b41e6dcec230c59.ts
 ✓ test/parser/suite/ts/pass/3b443a9c6dab97c9.ts
 ✓ test/parser/suite/ts/pass/3b4af7bd4ac07d46.ts
 ✓ test/parser/suite/ts/pass/3b4c31690d749603.ts
@@ -4744,13 +4536,15 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/3bd78aeea64eb0c0.ts
 ✓ test/parser/suite/ts/pass/3bd7a6668b64015d.ts
 ✗ test/parser/suite/ts/pass/3bdc1fe416230c1e.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
+error: Expected '{' to start function body, but found ';'
    |
- 5 | class A {
- 6 |     [x: string]: string;
-   |       ^
- 7 | }
+31 | 
+32 | function foo1(x: A);
+   |                    ^
+33 | function foo1(x: A); // error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✗ test/parser/suite/ts/pass/3be18cefeb9cd727.ts (parse errors)
 error: A class can only have one constructor
@@ -5109,15 +4903,7 @@ error: Expected ';' after for-loop init, but found 'in'
  3 | }
    |
 
-✗ test/parser/suite/ts/pass/3fda8c593efd983d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 7 | class C2 {
- 8 |     [s: symbol]: () => { x: string };
-   |       ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/3fda8c593efd983d.ts
 ✓ test/parser/suite/ts/pass/3ff5bceefe8e2258.ts
 ✓ test/parser/suite/ts/pass/3ffd58c065b1c8aa.ts
 ✓ test/parser/suite/ts/pass/40003afdbdd4b2b2.ts
@@ -5444,15 +5230,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/43ca2465375e9dc9.ts
 ✓ test/parser/suite/ts/pass/43ce7e0f48b40f38.ts
 ✓ test/parser/suite/ts/pass/43d636c0e2a8403b.ts
-✗ test/parser/suite/ts/pass/43dcd1bc58e3c1e0.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-62 |     class D1<T extends Foo<U>, U extends Foo<T>, V extends Foo<V>> extends Base<T> {
-63 |         [x: string]: T;
-   |           ^
-64 |         foo: T
-   |
-
+✓ test/parser/suite/ts/pass/43dcd1bc58e3c1e0.ts
 ✓ test/parser/suite/ts/pass/43eeb7e3642664af.ts
 ✓ test/parser/suite/ts/pass/43fd3aec18b3210a.ts
 ✓ test/parser/suite/ts/pass/43ffd9e8b09b7e23.ts
@@ -5516,15 +5294,7 @@ error: 'super()' is only valid in a constructor of a derived class
 
 
 ✓ test/parser/suite/ts/pass/449700773f14a53c.ts
-✗ test/parser/suite/ts/pass/44a52010b961cc0d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: number]: Base;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/44a52010b961cc0d.ts
 ✓ test/parser/suite/ts/pass/44a674c4cd1c5372.ts
 ✓ test/parser/suite/ts/pass/44abb894c41bdf78.ts
 ✓ test/parser/suite/ts/pass/44bbfe6e44903eed.ts
@@ -5819,15 +5589,7 @@ error: Cannot break to label 'target' across function boundaries
 ✓ test/parser/suite/ts/pass/4838a987793853f2.ts
 ✓ test/parser/suite/ts/pass/48396d5cef744600.ts
 ✓ test/parser/suite/ts/pass/48409b185d46ba7d.ts
-✗ test/parser/suite/ts/pass/4844ca8ec039bdd8.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class Foo {
- 3 |     [p: string]: any;
-   |       ^
- 4 |     static [p: string]: number;
-   |
-
+✓ test/parser/suite/ts/pass/4844ca8ec039bdd8.ts
 ✓ test/parser/suite/ts/pass/484eb1f0fde5c52c.ts
 ✓ test/parser/suite/ts/pass/4853079603f9b628.ts
 ✓ test/parser/suite/ts/pass/4854905691d3f0a4.module.ts
@@ -6016,15 +5778,7 @@ error: Identifier 'b' has already been declared
 
 
 ✓ test/parser/suite/ts/pass/4a9004f5d7772ece.ts
-✗ test/parser/suite/ts/pass/4a9450d42bf7f35a.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 5 |     }
- 6 |     [s: symbol]: () => { x: string };
-   |       ^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/4a9450d42bf7f35a.ts
 ✓ test/parser/suite/ts/pass/4a96911a2caf9550.ts
 ✓ test/parser/suite/ts/pass/4aa1c2bc736df2b5.ts
 ✓ test/parser/suite/ts/pass/4aa3607d6bf041c1.module.ts
@@ -6785,23 +6539,17 @@ error: 'super()' is only valid in a constructor of a derived class
 ✓ test/parser/suite/ts/pass/5573848575544c9d.ts
 ✓ test/parser/suite/ts/pass/55766c33b2dcf9be.ts
 ✓ test/parser/suite/ts/pass/55826685a03d4e4f.ts
-✗ test/parser/suite/ts/pass/558d33b77a97880a.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/558d33b77a97880a.ts
 ✗ test/parser/suite/ts/pass/558d488284322803.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
+error: Expected '{' to start function body, but found ';'
    |
- 5 | class A {
- 6 |     [x: number]: string;
-   |       ^
- 7 | }
+31 | 
+32 | function foo1(x: A);
+   |                    ^
+33 | function foo1(x: A); // error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/559391c3c519024e.ts
 ✓ test/parser/suite/ts/pass/559535ed04897a98.ts
@@ -6860,15 +6608,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/56240835617eee58.ts
 ✓ test/parser/suite/ts/pass/56257d017cfc3035.ts
 ✓ test/parser/suite/ts/pass/562b2d0fda523ad1.ts
-✗ test/parser/suite/ts/pass/5636a5c083b2a1a9.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-20 | class C {
-21 |     [x: number]: string;
-   |       ^
-22 |     [x: number]: string;
-   |
-
+✓ test/parser/suite/ts/pass/5636a5c083b2a1a9.ts
 ✓ test/parser/suite/ts/pass/563dcaf0aac57d51.ts
 ✓ test/parser/suite/ts/pass/564a86d4171031f2.ts
 ✓ test/parser/suite/ts/pass/564e48e903c3a9c7.ts
@@ -8098,15 +7838,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/65c2b3907421ccfd.ts
 ✓ test/parser/suite/ts/pass/65cc3b2b60bee699.ts
 ✓ test/parser/suite/ts/pass/65e04f3e7cd69380.ts
-✗ test/parser/suite/ts/pass/65e139ae7550725c.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class JQuery {
- 7 |     [n:number]:JQueryElement
-   |       ^
- 8 | }
-   |
-
+✓ test/parser/suite/ts/pass/65e139ae7550725c.ts
 ✓ test/parser/suite/ts/pass/65e6db545077f87c.ts
 ✓ test/parser/suite/ts/pass/65e996c7aea85c9d.ts
 ✓ test/parser/suite/ts/pass/65f1b5736b6f8b86.ts
@@ -8166,15 +7898,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/667283d8106abf4f.ts
 ✓ test/parser/suite/ts/pass/667acbb91f6d3090.ts
 ✓ test/parser/suite/ts/pass/6695946bbd9d7a66.ts
-✗ test/parser/suite/ts/pass/66959eb92c61992c.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: number]: Base;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/66959eb92c61992c.ts
 ✓ test/parser/suite/ts/pass/669ef9023c7f2ad0.ts
 ✓ test/parser/suite/ts/pass/669f9976f5f2fa01.ts
 ✓ test/parser/suite/ts/pass/66a0f1f8ae896077.ts
@@ -8375,15 +8099,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/69a3d46366e00dbb.ts
 ✓ test/parser/suite/ts/pass/69a75ec67bcad139.ts
 ✓ test/parser/suite/ts/pass/69b02bcceec3230b.ts
-✗ test/parser/suite/ts/pass/69b4c89b3a7554f8.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class Base {
- 3 |     [x: string]: Object;
-   |       ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/69b4c89b3a7554f8.ts
 ✗ test/parser/suite/ts/pass/69b6bc0d8b109816.module.tsx (parse errors)
 error: Expected '>' to close JSX opening element, but found '<'
    |
@@ -8473,15 +8189,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/6ab298d0543f650b.ts
 ✓ test/parser/suite/ts/pass/6ab2fe1bc3365810.ts
 ✓ test/parser/suite/ts/pass/6ab6d52e754a9596.ts
-✗ test/parser/suite/ts/pass/6ac7f55e600f9b76.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     static readonly [s: string]: number;
-   |                       ^
- 4 |     static readonly [s: number]: 42
-   |
-
+✓ test/parser/suite/ts/pass/6ac7f55e600f9b76.ts
 ✓ test/parser/suite/ts/pass/6acb20de2c413e2e.ts
 ✗ test/parser/suite/ts/pass/6ad1d0e77cc5117a.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -8517,15 +8225,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/6b4b9fe4f528af6b.ts
 ✓ test/parser/suite/ts/pass/6b5547cc3a16b875.ts
 ✓ test/parser/suite/ts/pass/6b5ac3ec75d9c2e0.ts
-✗ test/parser/suite/ts/pass/6b6d905a68b15c98.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 7 | class C2 {
- 8 |     [s: symbol]: () => { x: number };
-   |       ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/6b6d905a68b15c98.ts
 ✓ test/parser/suite/ts/pass/6b7c5532a4ffa606.module.ts
 ✓ test/parser/suite/ts/pass/6b879eba5780fba2.ts
 ✓ test/parser/suite/ts/pass/6b88805ffb174be1.ts
@@ -8638,15 +8338,7 @@ error: Unexpected token 'delete' in expression
 ✓ test/parser/suite/ts/pass/6ce8251211b4b964.ts
 ✓ test/parser/suite/ts/pass/6cea3dc098c1f192.ts
 ✓ test/parser/suite/ts/pass/6cea9d474df60aec.ts
-✗ test/parser/suite/ts/pass/6cec87f4370883e4.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 4 | class C {
- 5 |     [x: string]: string;
-   |       ^
- 6 |     [x: string]: string;
-   |
-
+✓ test/parser/suite/ts/pass/6cec87f4370883e4.ts
 ✓ test/parser/suite/ts/pass/6cf2f5d208b94dc3.ts
 ✓ test/parser/suite/ts/pass/6cfcea36d93ea99f.ts
 ✓ test/parser/suite/ts/pass/6d075d3a779a9ae3.ts
@@ -8744,15 +8436,7 @@ error: Cannot assign to 'eval' or 'arguments' in strict mode
 ✓ test/parser/suite/ts/pass/6e2eb205e5e8d74f.ts
 ✓ test/parser/suite/ts/pass/6e315c8e3fe3c716.ts
 ✓ test/parser/suite/ts/pass/6e383742a6b7774c.ts
-✗ test/parser/suite/ts/pass/6e43aca090c3a5f3.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 5 |     }
- 6 |     [s: symbol]: () => { x: number };
-   |       ^
- 7 | }
-   |
-
+✓ test/parser/suite/ts/pass/6e43aca090c3a5f3.ts
 ✓ test/parser/suite/ts/pass/6e46e5feafda4c2b.ts
 ✓ test/parser/suite/ts/pass/6e4e766e48a43223.module.ts
 ✓ test/parser/suite/ts/pass/6e52b9298eb9b8b1.ts
@@ -9252,15 +8936,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/754bf24ecacf2f02.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 4 | class BlockIntrinsics {
- 5 |     [s: string]: string;
-   |       ^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/754bf24ecacf2f02.ts
 ✓ test/parser/suite/ts/pass/7562a86de2e80deb.ts
 ✓ test/parser/suite/ts/pass/75739a96695a6829.ts
 ✓ test/parser/suite/ts/pass/757714a89742035f.ts
@@ -9382,15 +9058,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/76abc3670152dbff.module.ts
 ✓ test/parser/suite/ts/pass/76b3fde74e114c9c.ts
 ✓ test/parser/suite/ts/pass/76b7cb631907fc7e.ts
-✗ test/parser/suite/ts/pass/76c151eb0a010376.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: number]: Derived;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/76c151eb0a010376.ts
 ✓ test/parser/suite/ts/pass/76c864df5ea8c94c.ts
 ✓ test/parser/suite/ts/pass/76ca30f33f767b45.ts
 ✓ test/parser/suite/ts/pass/76db2e3fda41eafc.ts
@@ -9439,15 +9107,7 @@ error: Expected declaration after 'export', but found 'enum'
 
 ✓ test/parser/suite/ts/pass/773b4131315c4bd3.ts
 ✓ test/parser/suite/ts/pass/77407685bf816494.ts
-✗ test/parser/suite/ts/pass/77437781be2005e2.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 |     get ["get1"]() { return new Foo }
-   |
-
+✓ test/parser/suite/ts/pass/77437781be2005e2.ts
 ✓ test/parser/suite/ts/pass/7746fa814c572c2d.ts
 ✗ test/parser/suite/ts/pass/774902e282b4cd80.ts (parse errors)
 error: Expected ';' after for-loop init, but found ':'
@@ -9526,15 +9186,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/78262044c7744832.ts
 ✓ test/parser/suite/ts/pass/7837467a313c6021.ts
 ✓ test/parser/suite/ts/pass/783c417e692a8a84.ts
-✗ test/parser/suite/ts/pass/7843c8c0bdbc2dd4.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/7843c8c0bdbc2dd4.ts
 ✓ test/parser/suite/ts/pass/78465a32eb0aa609.ts
 ✗ test/parser/suite/ts/pass/7868b82c29a2a651.ts (parse errors)
 error: Expected ';' after for-loop init, but found ':'
@@ -9706,15 +9358,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/7a54e4397006aa85.ts
 ✓ test/parser/suite/ts/pass/7a6c9d426b32a4ff.ts
 ✓ test/parser/suite/ts/pass/7a7d3cd9a9b96247.ts
-✗ test/parser/suite/ts/pass/7a80b21ac52ddee6.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-10 | class C2 {
-11 |     [x: string]: this;
-   |       ^
-12 | }
-   |
-
+✓ test/parser/suite/ts/pass/7a80b21ac52ddee6.ts
 ✓ test/parser/suite/ts/pass/7a91ecc75cfa458f.ts
 ✓ test/parser/suite/ts/pass/7a923329bbc1637f.ts
 ✓ test/parser/suite/ts/pass/7a95c4f80137e895.module.ts
@@ -9891,15 +9535,7 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/7c25509664bb057e.ts
-✗ test/parser/suite/ts/pass/7c26eea263a77f52.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     static [s: string]: number;
-   |              ^
- 4 |     static [s: number]: 42
-   |
-
+✓ test/parser/suite/ts/pass/7c26eea263a77f52.ts
 ✓ test/parser/suite/ts/pass/7c2f09e707785798.ts
 ✓ test/parser/suite/ts/pass/7c33ba66e01c4a36.module.ts
 ✓ test/parser/suite/ts/pass/7c38b4735ae570c4.module.ts
@@ -9939,15 +9575,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/7ca8599f9fee6051.ts
 ✓ test/parser/suite/ts/pass/7cac223023161df0.ts
 ✓ test/parser/suite/ts/pass/7cac6db7dc8fad6c.ts
-✗ test/parser/suite/ts/pass/7cacbcbdaecc9b87.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: number]: Derived;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/7cacbcbdaecc9b87.ts
 ✓ test/parser/suite/ts/pass/7cb9213b582fa33d.ts
 ✓ test/parser/suite/ts/pass/7cc2de818efaa3e1.ts
 ✓ test/parser/suite/ts/pass/7cc8c643a11a45cb.ts
@@ -10413,25 +10041,9 @@ error: Expected '{' to start function body, but found ';'
 
 
 ✓ test/parser/suite/ts/pass/82b12a2074797ae0.ts
-✗ test/parser/suite/ts/pass/82b6fc10afbd19f0.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-14 |     class A<T extends Derived> {
-15 |         [x: string]: T;
-   |           ^
-16 |     }
-   |
-
+✓ test/parser/suite/ts/pass/82b6fc10afbd19f0.ts
 ✓ test/parser/suite/ts/pass/82bf413752f50754.ts
-✗ test/parser/suite/ts/pass/82ced2dba560cebc.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |    [a: string]: number;
-   |      ^
- 4 |    public v: number
-   |
-
+✓ test/parser/suite/ts/pass/82ced2dba560cebc.ts
 ✓ test/parser/suite/ts/pass/82d0bbb4605d7cd7.ts
 ✓ test/parser/suite/ts/pass/82d6ae29928b4571.ts
 ✓ test/parser/suite/ts/pass/82f1aad6b2e541d2.ts
@@ -10614,15 +10226,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/85aed2dc88ebcc82.ts
 ✓ test/parser/suite/ts/pass/85c094cb31144984.ts
-✗ test/parser/suite/ts/pass/85cd3274ae7f7ec5.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/85cd3274ae7f7ec5.ts
 ✓ test/parser/suite/ts/pass/85cd4151ac165410.ts
 ✓ test/parser/suite/ts/pass/85cd5473cfd999e0.ts
 ✓ test/parser/suite/ts/pass/85d6b6875a136ce9.ts
@@ -10698,12 +10302,12 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/8695869c356a9b7c.ts
 ✓ test/parser/suite/ts/pass/86a37aab89e267bf.ts
 ✗ test/parser/suite/ts/pass/86a3fb6b164eefdf.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
+error: Private field '#f' must be declared in an enclosing class
    |
- 4 | class A {
- 5 |     [k: string]: any;
-   |       ^
- 6 |     #foo = 3;
+ 8 |     constructor(message: string) {
+ 9 |         this.#f = 3           // Error (index signatures do not implicitly declare private names)
+   |              ^^
+10 |         this["#foo"] = 3;     // Okay (type has index signature and "#foo" does not collide with private identifier #foo)
    |
 
 ✓ test/parser/suite/ts/pass/86ac2f5d97f2e72b.ts
@@ -10744,15 +10348,7 @@ error: Use of undefined label 'target'
  4 | }
    |
 
-✗ test/parser/suite/ts/pass/872acdb7578f9dfb.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-36 | class D1<T extends Foo, U extends Foo, V> extends B1<Foo> {
-37 |     [x: string]: Foo;
-   |       ^
-38 |     foo: T; // ok
-   |
-
+✓ test/parser/suite/ts/pass/872acdb7578f9dfb.ts
 ✗ test/parser/suite/ts/pass/872d1ece04ec2bd2.ts (parse errors)
 error: 'enum' is reserved and cannot be used as a binding identifier
    |
@@ -10833,15 +10429,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/87f254e020f00dc0.ts
 ✓ test/parser/suite/ts/pass/87fe30ba5ed56063.ts
 ✓ test/parser/suite/ts/pass/8803437f96173aef.ts
-✗ test/parser/suite/ts/pass/88086a8f75f4454b.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 9 | class C {
-10 |     [x: string]: string;
-   |       ^
-11 | 
-   |
-
+✓ test/parser/suite/ts/pass/88086a8f75f4454b.ts
 ✓ test/parser/suite/ts/pass/8809b550a1bf0bbf.ts
 ✓ test/parser/suite/ts/pass/880e28d7d3719f4e.ts
 ✓ test/parser/suite/ts/pass/880f67e8a35bfa57.ts
@@ -11163,15 +10751,7 @@ error: Expected a class declaration after decorators in declaration position, bu
    = help: Use '@decorator class Foo {}', or remove the decorator.
 
 
-✗ test/parser/suite/ts/pass/8c312dea6ecbc2b6.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 3 |     0: number;
- 4 |     [x: number]: RegExp;
-   |       ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/8c312dea6ecbc2b6.ts
 ✓ test/parser/suite/ts/pass/8c372308321b57c3.ts
 ✓ test/parser/suite/ts/pass/8c390cc3dcdfd767.ts
 ✓ test/parser/suite/ts/pass/8c526c065fe5de69.ts
@@ -11264,15 +10844,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/8d96d47e1985b4ba.ts
 ✓ test/parser/suite/ts/pass/8d9dd33059dd7e9e.ts
 ✓ test/parser/suite/ts/pass/8daa90b19c8ebdfc.ts
-✗ test/parser/suite/ts/pass/8db4deccd83f306b.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 |     get ["get1"]() { return new Foo }
-   |
-
+✓ test/parser/suite/ts/pass/8db4deccd83f306b.ts
 ✓ test/parser/suite/ts/pass/8db7ca041b661b28.ts
 ✓ test/parser/suite/ts/pass/8db96f22cd975c84.ts
 ✓ test/parser/suite/ts/pass/8dbef3eac9ab0375.ts
@@ -11447,15 +11019,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/8f3cd1fb1be922f9.ts
 ✓ test/parser/suite/ts/pass/8f3fce8cc90ed806.module.tsx
 ✓ test/parser/suite/ts/pass/8f46ff99077713ce.ts
-✗ test/parser/suite/ts/pass/8f52bcaca74f7d96.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-19 |     data!: B;
-20 |     [x: string]: any;
-   |       ^
-21 | }
-   |
-
+✓ test/parser/suite/ts/pass/8f52bcaca74f7d96.ts
 ✓ test/parser/suite/ts/pass/8f59e79fb32e3a47.ts
 ✓ test/parser/suite/ts/pass/8f651f45e3b3b852.ts
 ✗ test/parser/suite/ts/pass/8f6c9bec222bf650.module.ts (parse errors)
@@ -11836,15 +11400,7 @@ error: Expected declaration after 'export', but found 'declare'
 
 ✓ test/parser/suite/ts/pass/9434e80f3aed71ae.ts
 ✓ test/parser/suite/ts/pass/944058b7f9f6378c.ts
-✗ test/parser/suite/ts/pass/944f14e1603bcc9b.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [x: string]: string;
-   |       ^
- 4 |     y = '';
-   |
-
+✓ test/parser/suite/ts/pass/944f14e1603bcc9b.ts
 ✓ test/parser/suite/ts/pass/94587b530239529c.ts
 ✓ test/parser/suite/ts/pass/9460118fa11b7bdc.ts
 ✓ test/parser/suite/ts/pass/946f0bba3a247276.ts
@@ -12129,13 +11685,15 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/981913bb7c76530a.ts
 ✓ test/parser/suite/ts/pass/9819183a9c0da772.ts
 ✗ test/parser/suite/ts/pass/98212f7afbebb8a6.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
+error: Expected '{' to start function body, but found ';'
    |
- 8 | class A {
- 9 |     [x: string]: Base;
-   |       ^
-10 | }
+34 | 
+35 | function foo1(x: A);
+   |                    ^
+36 | function foo1(x: A); // error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/982257bec246936f.ts
 ✓ test/parser/suite/ts/pass/9851a1916b5f5dc5.ts
@@ -12870,15 +12428,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/a15e123af4f4fa82.module.ts
 ✓ test/parser/suite/ts/pass/a15ec236949ba5ae.ts
 ✓ test/parser/suite/ts/pass/a1604c16c2d6aa4a.ts
-✗ test/parser/suite/ts/pass/a1791cba9487554b.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/a1791cba9487554b.ts
 ✓ test/parser/suite/ts/pass/a17c4474f62b6464.ts
 ✓ test/parser/suite/ts/pass/a18c096f046eada3.ts
 ✓ test/parser/suite/ts/pass/a19eb80722fb6af7.ts
@@ -12886,15 +12436,7 @@ error: Expected ']' after computed property key, but found ':'
 ✓ test/parser/suite/ts/pass/a1bc3adc87f2c32d.ts
 ✓ test/parser/suite/ts/pass/a1c2b4bc1807ee82.ts
 ✓ test/parser/suite/ts/pass/a1d30ac4540ddc04.module.ts
-✗ test/parser/suite/ts/pass/a1d58f33aa95f881.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-31 | 
-32 |     [n: number]: T;
-   |       ^
-33 | }
-   |
-
+✓ test/parser/suite/ts/pass/a1d58f33aa95f881.ts
 ✓ test/parser/suite/ts/pass/a1e505a46da37336.ts
 ✓ test/parser/suite/ts/pass/a1f37211a48ca596.ts
 ✓ test/parser/suite/ts/pass/a1f7a4b6b75657d1.ts
@@ -13114,15 +12656,7 @@ error: Illegal continue statement
 ✓ test/parser/suite/ts/pass/a48e26b89680e8b3.ts
 ✓ test/parser/suite/ts/pass/a4925c988d2c0ecc.ts
 ✓ test/parser/suite/ts/pass/a49498cf6ea6b1f0.ts
-✗ test/parser/suite/ts/pass/a49713444de20606.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-11 |     0: B;
-12 |     [x: number]: A;
-   |       ^
-13 | }
-   |
-
+✓ test/parser/suite/ts/pass/a49713444de20606.ts
 ✓ test/parser/suite/ts/pass/a49e1b6ac0217fb1.ts
 ✓ test/parser/suite/ts/pass/a4a41879659188f5.ts
 ✓ test/parser/suite/ts/pass/a4adb25d4a3d633c.ts
@@ -13438,15 +12972,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/a8a5e2515776f0ec.ts
 ✓ test/parser/suite/ts/pass/a8b1c87ab0620f66.ts
 ✓ test/parser/suite/ts/pass/a8b3cc71c064a1d6.ts
-✗ test/parser/suite/ts/pass/a8bb9bf2cc420b40.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class D1<T extends U, U> extends C3<T> {
- 9 |     [x: string]: T;
-   |       ^
-10 |     foo: T; // ok
-   |
-
+✓ test/parser/suite/ts/pass/a8bb9bf2cc420b40.ts
 ✓ test/parser/suite/ts/pass/a8c3c896eb0ed2c9.ts
 ✗ test/parser/suite/ts/pass/a8c6051d16d41795.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -13494,15 +13020,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/a92670c9e162c3b5.ts
 ✓ test/parser/suite/ts/pass/a92e86e99c8f69d5.ts
 ✓ test/parser/suite/ts/pass/a95781025766aad9.module.ts
-✗ test/parser/suite/ts/pass/a9613033d7c07bb5.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/a9613033d7c07bb5.ts
 ✓ test/parser/suite/ts/pass/a9616d655c988a78.ts
 ✓ test/parser/suite/ts/pass/a9617272f2bf3d54.ts
 ✗ test/parser/suite/ts/pass/a9645db3a45bd4f4.ts (parse errors)
@@ -13559,15 +13077,7 @@ error: Expected declaration after 'export', but found 'type'
 
 
 ✓ test/parser/suite/ts/pass/a9e2c19ba7b80759.ts
-✗ test/parser/suite/ts/pass/aa028fdc3df71ae5.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [i: number]: number;
-   |       ^
- 4 | 
-   |
-
+✓ test/parser/suite/ts/pass/aa028fdc3df71ae5.ts
 ✓ test/parser/suite/ts/pass/aa0369d7630c9e13.ts
 ✓ test/parser/suite/ts/pass/aa039624cd5b4972.ts
 ✓ test/parser/suite/ts/pass/aa04a203501862a8.ts
@@ -13809,13 +13319,15 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/adcdba1e5ecfcf24.ts
 ✓ test/parser/suite/ts/pass/add26ac395dcad12.module.ts
 ✗ test/parser/suite/ts/pass/ade303b2805e8d3f.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
+error: Expected '{' to start function body, but found ';'
    |
- 5 | class A {
- 6 |     [x: number]: string;
-   |       ^
- 7 | }
+31 | 
+32 | function foo1(x: A);
+   |                    ^
+33 | function foo1(x: A); // error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/ade50fa0c1ff99e7.ts
 ✓ test/parser/suite/ts/pass/adeb515b85b43b32.module.tsx
@@ -13881,15 +13393,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 
 
 ✓ test/parser/suite/ts/pass/af49fc74afcbc4fe.ts
-✗ test/parser/suite/ts/pass/af516278179422bb.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 |     public set z(v) { }
- 9 |     [x: string]: Object;
-   |       ^
-10 |     [x: number]: Object;
-   |
-
+✓ test/parser/suite/ts/pass/af516278179422bb.ts
 ✗ test/parser/suite/ts/pass/af60cec5ca84720e.ts (parse errors)
 error: Deleting a variable in strict mode is not allowed
    |
@@ -13940,15 +13444,7 @@ error: Expected declaration after 'export', but found 'type'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/afd8613ffd147ae3.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 7 | class C2 extends C1 {
- 8 |     [s: symbol]: () => { x: number };
-   |       ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/afd8613ffd147ae3.ts
 ✓ test/parser/suite/ts/pass/afe8a3b90b173ae0.ts
 ✓ test/parser/suite/ts/pass/aff8820b7bdc13bd.ts
 ✓ test/parser/suite/ts/pass/affad38eb623df0c.module.tsx
@@ -14110,15 +13606,7 @@ error: Expected ';' after for-loop init, but found ':'
    |
 
 ✓ test/parser/suite/ts/pass/b1146458367d5fd5.ts
-✗ test/parser/suite/ts/pass/b11ea16e4e374c30.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: string]: Derived;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/b11ea16e4e374c30.ts
 ✗ test/parser/suite/ts/pass/b11f9ce81fa5fd63.ts (parse errors)
 error: Cannot break to label 'target' across function boundaries
    |
@@ -14194,15 +13682,7 @@ error: Expected declaration after 'export', but found 'namespace'
 ✓ test/parser/suite/ts/pass/b1a46bb5e438a6c1.ts
 ✓ test/parser/suite/ts/pass/b1a9c59483ca34da.ts
 ✓ test/parser/suite/ts/pass/b1b00c84f2229be2.ts
-✗ test/parser/suite/ts/pass/b1b5fe63d9ac3ab2.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [s: symbol]: string;
-   |       ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/b1b5fe63d9ac3ab2.ts
 ✓ test/parser/suite/ts/pass/b1bd5193a84a0b8c.module.ts
 ✓ test/parser/suite/ts/pass/b1bdaa31d7c79322.ts
 ✓ test/parser/suite/ts/pass/b1c7133919a5ce63.ts
@@ -14238,15 +13718,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/b2157737267479d6.ts
 ✓ test/parser/suite/ts/pass/b219d9b1689bcdd6.ts
 ✓ test/parser/suite/ts/pass/b21ce095b19dde3d.ts
-✗ test/parser/suite/ts/pass/b228f43be9183bb3.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 5 |     return class<T> {
- 6 |         static [s: string]: number
-   |                  ^
- 7 |         static [s: number]: 42
-   |
-
+✓ test/parser/suite/ts/pass/b228f43be9183bb3.ts
 ✓ test/parser/suite/ts/pass/b229d4d98022d1f4.ts
 ✓ test/parser/suite/ts/pass/b234ba9d0dea77fb.ts
 ✓ test/parser/suite/ts/pass/b23779e7c645e23d.ts
@@ -14591,15 +14063,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/b5fb07750b51969f.ts
 ✓ test/parser/suite/ts/pass/b60497e02ed72786.ts
 ✓ test/parser/suite/ts/pass/b6073007f97c8915.ts
-✗ test/parser/suite/ts/pass/b6080918da78e73c.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C123 {
- 3 |     [s: string]: number;
-   |       ^
- 4 |     x: number;
-   |
-
+✓ test/parser/suite/ts/pass/b6080918da78e73c.ts
 ✓ test/parser/suite/ts/pass/b608cbc78cd0161b.ts
 ✓ test/parser/suite/ts/pass/b60955a6b9d12139.ts
 ✓ test/parser/suite/ts/pass/b60d9ef689672358.ts
@@ -14759,13 +14223,15 @@ error: Expected declaration after 'export', but found 'namespace'
 
 ✓ test/parser/suite/ts/pass/b7a1fd66dba1798d.ts
 ✗ test/parser/suite/ts/pass/b7a8ddc048923510.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
+error: Expected '{' to start function body, but found ';'
    |
- 8 | class A {
- 9 |     [x: number]: Base;
-   |       ^
-10 | }
+34 | 
+35 | function foo1(x: A);
+   |                    ^
+36 | function foo1(x: A); // error
    |
+   = help: Function bodies must be enclosed in braces: function name() { ... }
+
 
 ✓ test/parser/suite/ts/pass/b7ab22940d32a244.ts
 ✓ test/parser/suite/ts/pass/b7ac0c522479bfb7.ts
@@ -14970,15 +14436,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/b9cca07053f42e63.ts
 ✓ test/parser/suite/ts/pass/b9cfb13afc4e54f7.ts
 ✓ test/parser/suite/ts/pass/b9d1b3f0aaed33db.ts
-✗ test/parser/suite/ts/pass/b9d3ed75be6ab3d4.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-14 |     foo!: string;
-15 |     [x: string]: string;
-   |       ^
-16 | }
-   |
-
+✓ test/parser/suite/ts/pass/b9d3ed75be6ab3d4.ts
 ✓ test/parser/suite/ts/pass/b9d5f3d7854bfbe6.module.ts
 ✓ test/parser/suite/ts/pass/b9d9da5b86805d13.ts
 ✓ test/parser/suite/ts/pass/b9e50f0652b322fc.ts
@@ -15064,15 +14522,7 @@ error: A class can only have one constructor
 ✓ test/parser/suite/ts/pass/bacdb0417a5638c2.ts
 ✓ test/parser/suite/ts/pass/bad1dcff0675be06.ts
 ✓ test/parser/suite/ts/pass/badeb5503492988f.ts
-✗ test/parser/suite/ts/pass/baec4d44eddfaba9.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-11 |     // No error when the indexer is in a class more derived than the computed property
-12 |     [s: string]: Foo2;
-   |       ^
-13 |     set ["set1"](p: Foo) { }
-   |
-
+✓ test/parser/suite/ts/pass/baec4d44eddfaba9.ts
 ✓ test/parser/suite/ts/pass/baf18ac8f67c7f7a.ts
 ✓ test/parser/suite/ts/pass/baf5e3e90455b6cb.ts
 ✗ test/parser/suite/ts/pass/baf89d2fbe6a2d7b.module.ts (parse errors)
@@ -15286,15 +14736,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/bda851833dafb1ef.ts
 ✓ test/parser/suite/ts/pass/bdb1e1253fd6ec0a.ts
 ✓ test/parser/suite/ts/pass/bdb2ec9e3d742004.ts
-✗ test/parser/suite/ts/pass/bdb8daedeafec621.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C123 {
- 3 |     [s: string]: number;
-   |       ^
- 4 |     constructor() {
-   |
-
+✓ test/parser/suite/ts/pass/bdb8daedeafec621.ts
 ✗ test/parser/suite/ts/pass/bdbaaac9f5eec22a.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -15311,15 +14753,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/bddf51701ff85628.ts
 ✓ test/parser/suite/ts/pass/bde676d186a2fa0a.ts
 ✓ test/parser/suite/ts/pass/be16e547d4821944.ts
-✗ test/parser/suite/ts/pass/be1e584aa6d68df5.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-13 | class Foo {
-14 |     [x: number]: A;
-   |       ^
-15 |     1.0: A; // ok
-   |
-
+✓ test/parser/suite/ts/pass/be1e584aa6d68df5.ts
 ✓ test/parser/suite/ts/pass/be229a1c6d5f5380.ts
 ✓ test/parser/suite/ts/pass/be2393b512f3231d.ts
 ✓ test/parser/suite/ts/pass/be37203a8518c4f6.ts
@@ -15475,15 +14909,7 @@ error: Expected declaration after 'export', but found 'enum'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/bf386bb0f9a4b561.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: string]: Base;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/bf386bb0f9a4b561.ts
 ✓ test/parser/suite/ts/pass/bf38ac02583d81a3.module.ts
 ✓ test/parser/suite/ts/pass/bf3a956dc1783015.ts
 ✓ test/parser/suite/ts/pass/bf45e9cb0e90b7a7.ts
@@ -15836,15 +15262,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/c261c51874f89d23.ts
 ✓ test/parser/suite/ts/pass/c262e3bdcf036e28.ts
 ✓ test/parser/suite/ts/pass/c26382c8ef3c6767.ts
-✗ test/parser/suite/ts/pass/c26b1a635de52ec8.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 4 | class C {
- 5 |     static [x: string]: string;
-   |              ^
- 6 | }
-   |
-
+✓ test/parser/suite/ts/pass/c26b1a635de52ec8.ts
 ✓ test/parser/suite/ts/pass/c2724bf579653175.ts
 ✓ test/parser/suite/ts/pass/c273346e320f8b00.ts
 ✓ test/parser/suite/ts/pass/c2736029de069694.ts
@@ -16056,15 +15474,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/c55868749018a587.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C123 {
- 3 |     [s: string]: number;
-   |       ^
- 4 |     constructor() {
-   |
-
+✓ test/parser/suite/ts/pass/c55868749018a587.ts
 ✓ test/parser/suite/ts/pass/c5649298036dc7bc.ts
 ✗ test/parser/suite/ts/pass/c569e8c5d0805f37.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -16143,15 +15553,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/c61929bc9ab16fa8.ts
 ✓ test/parser/suite/ts/pass/c61bf8656f78f2aa.ts
 ✓ test/parser/suite/ts/pass/c638465cfc75e029.ts
-✗ test/parser/suite/ts/pass/c63cb851649cf77f.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 4 | class C {
- 5 |     [x: number]: string;
-   |       ^
- 6 |     [x: number]: string;
-   |
-
+✓ test/parser/suite/ts/pass/c63cb851649cf77f.ts
 ✓ test/parser/suite/ts/pass/c63e0b7610a74f33.ts
 ✓ test/parser/suite/ts/pass/c64b80fe60848e55.ts
 ✓ test/parser/suite/ts/pass/c64e53c2641a7ad0.ts
@@ -16429,15 +15831,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/c9b9de1751cef23d.module.ts
 ✓ test/parser/suite/ts/pass/c9ce02ee8ef05f50.ts
 ✓ test/parser/suite/ts/pass/c9e3d842a1b0d0e2.ts
-✗ test/parser/suite/ts/pass/c9e94e8de457aff9.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class I {
- 3 |     [x: string]: Date
-   |       ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/c9e94e8de457aff9.ts
 ✓ test/parser/suite/ts/pass/c9eac098fffd45a4.ts
 ✓ test/parser/suite/ts/pass/c9ec2993dcec296b.ts
 ✓ test/parser/suite/ts/pass/c9f5efdb479a6e56.ts
@@ -16804,15 +16198,7 @@ error: Expected declaration after 'export', but found 'interface'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/cde120b503d41088.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 8 | class A {
- 9 |     [x: string]: Derived;
-   |       ^
-10 | }
-   |
-
+✓ test/parser/suite/ts/pass/cde120b503d41088.ts
 ✓ test/parser/suite/ts/pass/cdeb5eebca309376.ts
 ✗ test/parser/suite/ts/pass/ce124ae9a0e99d8e.module.ts (parse errors)
 error: Duplicate export of 'default'
@@ -16837,15 +16223,7 @@ error: Duplicate export of 'default'
 ✓ test/parser/suite/ts/pass/ce3e7b5d89225704.ts
 ✓ test/parser/suite/ts/pass/ce4428e58fc4275b.ts
 ✓ test/parser/suite/ts/pass/ce45ed1398bcac52.ts
-✗ test/parser/suite/ts/pass/ce466f2d04677b6f.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/ce466f2d04677b6f.ts
 ✓ test/parser/suite/ts/pass/ce47a6d1db9bc4fc.ts
 ✗ test/parser/suite/ts/pass/ce54212bf8a371d8.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'namespace'
@@ -17517,15 +16895,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 ✓ test/parser/suite/ts/pass/d58fbafa4f0f36f8.ts
 ✓ test/parser/suite/ts/pass/d5a632b5466a8e3b.ts
-✗ test/parser/suite/ts/pass/d5aa4e2e373638e7.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: Foo2;
-   |       ^
- 8 | }
-   |
-
+✓ test/parser/suite/ts/pass/d5aa4e2e373638e7.ts
 ✗ test/parser/suite/ts/pass/d5ad1536d4929963.ts (parse errors)
 error: Expected '{' to start function body, but found ';'
    |
@@ -17651,15 +17021,7 @@ error: Unexpected token '@' in binding pattern
 
 ✓ test/parser/suite/ts/pass/d70f1346a65a9ff1.module.ts
 ✓ test/parser/suite/ts/pass/d71cb015b81404f6.ts
-✗ test/parser/suite/ts/pass/d72e3a004f63e694.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C1 {
- 3 |     [index: string]: string
-   |           ^
- 4 |     one!: string;
-   |
-
+✓ test/parser/suite/ts/pass/d72e3a004f63e694.ts
 ✓ test/parser/suite/ts/pass/d7351d0092152a2b.ts
 ✓ test/parser/suite/ts/pass/d73cc578f447cad2.ts
 ✓ test/parser/suite/ts/pass/d765f5da74c45772.ts
@@ -17801,15 +17163,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/d99a88e51ca2d39c.module.ts
 ✓ test/parser/suite/ts/pass/d9a8d825d0764e18.ts
 ✓ test/parser/suite/ts/pass/d9b7caff7c424d20.ts
-✗ test/parser/suite/ts/pass/d9bd55eec87b20fb.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: () => Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/d9bd55eec87b20fb.ts
 ✓ test/parser/suite/ts/pass/d9c06dc075eccd1a.ts
 ✗ test/parser/suite/ts/pass/d9c5e47b1c362512.ts (parse errors)
 error: Expected declaration after 'export', but found 'interface'
@@ -17889,15 +17243,7 @@ error: Expected declaration after 'export', but found 'namespace'
    = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
 
 
-✗ test/parser/suite/ts/pass/daaa39c4dae53c58.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |    static [x: string]: string;
-   |             ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/daaa39c4dae53c58.ts
 ✓ test/parser/suite/ts/pass/dab6e3eebf77587b.ts
 ✓ test/parser/suite/ts/pass/dab7a1489f74456e.ts
 ✓ test/parser/suite/ts/pass/dabf45288bf28583.ts
@@ -18157,15 +17503,7 @@ error: 'new' is reserved and cannot be used as an identifier
 25 | 
    |
 
-✗ test/parser/suite/ts/pass/de9d878709ff8d7a.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [s: symbol]: string;
-   |       ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/de9d878709ff8d7a.ts
 ✓ test/parser/suite/ts/pass/dea86ac8d7f4aaf6.ts
 ✓ test/parser/suite/ts/pass/deb3cf76a0df9c82.ts
 ✓ test/parser/suite/ts/pass/debbf72223435010.ts
@@ -18424,15 +17762,7 @@ error: Expected declaration after 'export', but found 'declare'
 ✓ test/parser/suite/ts/pass/e199bc1068af6330.ts
 ✓ test/parser/suite/ts/pass/e1a12327be6ec26f.ts
 ✓ test/parser/suite/ts/pass/e1a29914ee635f11.ts
-✗ test/parser/suite/ts/pass/e1a59386ca709006.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-40 | class P {
-41 |     [n: string]: string
-   |       ^
-42 | }
-   |
-
+✓ test/parser/suite/ts/pass/e1a59386ca709006.ts
 ✓ test/parser/suite/ts/pass/e1a7b02f426a6e7b.ts
 ✓ test/parser/suite/ts/pass/e1a988172108b4a1.ts
 ✓ test/parser/suite/ts/pass/e1b65bba491d7784.ts
@@ -18466,15 +17796,7 @@ error: Cannot continue to label 'target' across function boundaries
 ✓ test/parser/suite/ts/pass/e235d06b2207baf7.ts
 ✓ test/parser/suite/ts/pass/e23865459bc50a4d.ts
 ✓ test/parser/suite/ts/pass/e24352ecb37c21de.module.ts
-✗ test/parser/suite/ts/pass/e248fadf09851097.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: number]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/e248fadf09851097.ts
 ✓ test/parser/suite/ts/pass/e24a7ab792ace15c.ts
 ✓ test/parser/suite/ts/pass/e24ae5a3b56a9944.ts
 ✗ test/parser/suite/ts/pass/e24d6f0b9d22c85e.module.ts (parse errors)
@@ -18567,15 +17889,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/e3362fca5579160d.ts
 ✓ test/parser/suite/ts/pass/e338818619f2c258.ts
 ✓ test/parser/suite/ts/pass/e33e19ab10a13a98.ts
-✗ test/parser/suite/ts/pass/e34019420e5f29a8.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |    [a: string]: number
-   |      ^
- 4 |    public v: number
-   |
-
+✓ test/parser/suite/ts/pass/e34019420e5f29a8.ts
 ✓ test/parser/suite/ts/pass/e3492f9ec483b021.ts
 ✓ test/parser/suite/ts/pass/e350703c7c7f295a.ts
 ✓ test/parser/suite/ts/pass/e354a20ef248ef5c.ts
@@ -19152,15 +18466,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/ea59122f02f20d8d.ts
 ✓ test/parser/suite/ts/pass/ea5b0727d1809159.ts
 ✓ test/parser/suite/ts/pass/ea5b7158b9d1c42c.module.tsx
-✗ test/parser/suite/ts/pass/ea799dbd036ef606.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [index:number]:number
-   |           ^
- 4 | }
-   |
-
+✓ test/parser/suite/ts/pass/ea799dbd036ef606.ts
 ✓ test/parser/suite/ts/pass/ea7d7d3b88ffe82a.ts
 ✗ test/parser/suite/ts/pass/ea818e3bdef9e5d5.module.ts (parse errors)
 error: Expected declaration after 'export', but found 'enum'
@@ -19197,15 +18503,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/eae1464f3ae5aca5.module.ts
 ✓ test/parser/suite/ts/pass/eae40db88488471b.ts
 ✓ test/parser/suite/ts/pass/eae5c0bda10b38db.ts
-✗ test/parser/suite/ts/pass/eae6b092615fdd4d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: number]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/eae6b092615fdd4d.ts
 ✓ test/parser/suite/ts/pass/eae76e3eea6cde61.ts
 ✓ test/parser/suite/ts/pass/eaed3d1b20d5812a.ts
 ✓ test/parser/suite/ts/pass/eafd3bc0071012be.ts
@@ -19335,15 +18633,7 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/ec3334ae3d1b63ee.ts
 ✓ test/parser/suite/ts/pass/ec3d3a914108b460.ts
 ✓ test/parser/suite/ts/pass/ec4c05188ad1698a.module.ts
-✗ test/parser/suite/ts/pass/ec5401dbc12fe839.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: number]: Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/ec5401dbc12fe839.ts
 ✓ test/parser/suite/ts/pass/ec54bfde325117dc.ts
 ✓ test/parser/suite/ts/pass/ec55d0290cc7013a.ts
 ✓ test/parser/suite/ts/pass/ec5aaeb744cfc160.module.ts
@@ -19954,15 +19244,7 @@ error: Expected declaration after 'export', but found 'interface'
 ✓ test/parser/suite/ts/pass/f2d57017a24a4ad3.ts
 ✓ test/parser/suite/ts/pass/f2d9c4d7bbac2c4c.ts
 ✓ test/parser/suite/ts/pass/f2dbabe2ef679024.ts
-✗ test/parser/suite/ts/pass/f2e844aa0f7bd35d.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C123 {
- 3 |     [s: string]: number;
-   |       ^
- 4 |     constructor() {
-   |
-
+✓ test/parser/suite/ts/pass/f2e844aa0f7bd35d.ts
 ✓ test/parser/suite/ts/pass/f2f4a336bb80285f.ts
 ✓ test/parser/suite/ts/pass/f2fddbbd5e8d3f5a.ts
 ✓ test/parser/suite/ts/pass/f3034babbd5bddd1.ts
@@ -20188,15 +19470,7 @@ error: Expected declaration after 'export', but found 'enum'
 ✓ test/parser/suite/ts/pass/f569df7490b847d8.ts
 ✓ test/parser/suite/ts/pass/f56dd20c3ab1fac2.ts
 ✓ test/parser/suite/ts/pass/f5791b9ac55caa4e.ts
-✗ test/parser/suite/ts/pass/f579e74efa5c1ae9.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
-50 | class Base2 {
-51 |     [i: string]: Object;
-   |       ^
-52 |     [i: number]: typeof x;
-   |
-
+✓ test/parser/suite/ts/pass/f579e74efa5c1ae9.ts
 ✓ test/parser/suite/ts/pass/f57d401b50362b7c.ts
 ✗ test/parser/suite/ts/pass/f58265e2fc9606a9.ts (parse errors)
 error: Cannot break to label 'label' across function boundaries
@@ -20390,15 +19664,7 @@ error: Expected declaration after 'export', but found 'interface'
 
 
 ✓ test/parser/suite/ts/pass/f7df968d86a790d6.ts
-✗ test/parser/suite/ts/pass/f7f1784caae92d0c.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class C {
- 7 |     [s: string]: () => Foo2;
-   |       ^
- 8 | 
-   |
-
+✓ test/parser/suite/ts/pass/f7f1784caae92d0c.ts
 ✓ test/parser/suite/ts/pass/f80b869b78d70336.ts
 ✓ test/parser/suite/ts/pass/f8135de876010a18.ts
 ✗ test/parser/suite/ts/pass/f81eb5fab4b80cde.module.ts (parse errors)
@@ -20446,15 +19712,7 @@ error: Expected declaration after 'export', but found 'type'
 ✓ test/parser/suite/ts/pass/f89c1dade7d4a1fd.ts
 ✓ test/parser/suite/ts/pass/f89e1e85d670048c.ts
 ✓ test/parser/suite/ts/pass/f8a04b3bf4b9e749.ts
-✗ test/parser/suite/ts/pass/f8a4c5a1d8725497.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 2 | class C {
- 3 |     [x: number]: string;
-   |       ^
- 4 |     1 = '';
-   |
-
+✓ test/parser/suite/ts/pass/f8a4c5a1d8725497.ts
 ✓ test/parser/suite/ts/pass/f8addf368b0a9882.ts
 ✓ test/parser/suite/ts/pass/f8aed2f2ccbb38a0.module.ts
 ✓ test/parser/suite/ts/pass/f8be6d5e7fcac8ec.ts
@@ -20483,15 +19741,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/f9066a05f003af34.ts
 ✓ test/parser/suite/ts/pass/f90955d2d4b589ad.ts
 ✓ test/parser/suite/ts/pass/f92f52b9733ddc56.ts
-✗ test/parser/suite/ts/pass/f9321784200fd3fd.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 6 | class A implements I {
- 7 |     [index: string]: { prop }
-   |           ^
- 8 | }
-   |
-
+✓ test/parser/suite/ts/pass/f9321784200fd3fd.ts
 ✓ test/parser/suite/ts/pass/f9329837dea7640a.ts
 ✓ test/parser/suite/ts/pass/f943113baf0e06aa.ts
 ✗ test/parser/suite/ts/pass/f948e2f4fdbf827c.ts (parse errors)
@@ -20639,15 +19889,7 @@ error: Expected '{' to start function body, but found ';'
 ✓ test/parser/suite/ts/pass/fb980c25bb822423.ts
 ✓ test/parser/suite/ts/pass/fb9b6610e9ee6382.ts
 ✓ test/parser/suite/ts/pass/fb9f9dae3fc5a86d.ts
-✗ test/parser/suite/ts/pass/fba60b6df6e71089.ts (parse errors)
-error: Expected ']' after computed property key, but found ':'
-   |
- 7 | class C2 extends C1 {
- 8 |     [s: symbol]: () => { x: string };
-   |       ^
- 9 | }
-   |
-
+✓ test/parser/suite/ts/pass/fba60b6df6e71089.ts
 ✓ test/parser/suite/ts/pass/fba9a71160c95c6a.ts
 ✓ test/parser/suite/ts/pass/fbbc6d4326763b5f.ts
 ✓ test/parser/suite/ts/pass/fbc221d259a9279d.ts

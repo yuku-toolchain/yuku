@@ -13,6 +13,7 @@ const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
 const ts_types = @import("ts/types.zig");
 const ts_statements = @import("ts/statements.zig");
+const ts_signatures = @import("ts/signatures.zig");
 const ecmascript = @import("../ecmascript.zig");
 
 //
@@ -182,6 +183,15 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null;
     }
 
+    // `[k: T]: V` index signature shares the `[` opener with computed keys.
+    if (key == .null and
+        parser.tree.isTs() and
+        parser.current_token.tag == .left_bracket and
+        try ts_signatures.isIndexSignatureStart(parser))
+    {
+        return parseIndexSignatureElement(parser, elem_start, decorators, mods);
+    }
+
     // key
     var computed = false;
     if (key == .null) {
@@ -250,6 +260,46 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     }
 
     return parsePropertyDefinition(parser, elem_start, decorators, key, computed, mods, optional, definite);
+}
+
+fn parseIndexSignatureElement(
+    parser: *Parser,
+    elem_start: u32,
+    decorators: ast.IndexRange,
+    mods: Modifiers,
+) Error!?ast.NodeIndex {
+    if (decorators.len != 0) {
+        const first = parser.tree.getExtra(decorators)[0];
+        try parser.report(
+            parser.tree.getSpan(first),
+            "Decorators cannot be applied to an index signature",
+            .{},
+        );
+    }
+
+    if (mods.is_async or mods.is_generator or mods.is_accessor or
+        mods.kind != .method or mods.declare or mods.abstract or mods.override)
+    {
+        try parser.report(
+            .{ .start = elem_start, .end = parser.current_token.span.end },
+            "Index signatures only accept 'readonly', 'static', and accessibility modifiers",
+            .{},
+        );
+    }
+
+    const node = try ts_signatures.parseIndexSignature(parser, elem_start, .{
+        .readonly = mods.readonly,
+        .static = mods.is_static,
+    }) orelse return null;
+
+    // fold the trailing `;` into the span
+    if (parser.current_token.tag == .semicolon) {
+        const span = parser.tree.getSpan(node);
+        parser.tree.replaceSpan(node, .{ .start = span.start, .end = parser.current_token.span.end });
+        try parser.advance() orelse return null;
+    }
+
+    return node;
 }
 
 //

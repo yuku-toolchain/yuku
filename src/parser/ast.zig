@@ -3092,6 +3092,8 @@ pub const TSIndexSignature = struct {
     type_annotation: NodeIndex,
     /// true when preceded by the `readonly` modifier
     readonly: bool = false,
+    /// true for class-body index signatures marked `static`.
+    static: bool = false,
 };
 
 /// A TypeScript `type` alias declaration. Binds an identifier to a type,

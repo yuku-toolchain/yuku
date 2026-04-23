@@ -644,6 +644,7 @@ const TS_FIELDS = [_]struct { node: []const u8, fields: []const []const u8 }{
     .{ .node = "assignment_pattern", .fields = &.{ "decorators", "optional", "type_annotation" } },
     .{ .node = "object_pattern", .fields = &.{ "decorators", "optional", "type_annotation" } },
     .{ .node = "array_pattern", .fields = &.{ "decorators", "optional", "type_annotation" } },
+    .{ .node = "ts_index_signature", .fields = &.{"static"} },
 };
 
 fn isTsField(comptime tag: []const u8, comptime field: []const u8) bool {
@@ -687,10 +688,7 @@ const TS_EXTRAS = [_]struct { node: []const u8, extras: []const Extra }{
         .{ .field = "accessibility", .value = "null" },
         .{ .field = "static", .value = "false" },
     } },
-    .{ .node = "ts_index_signature", .extras = &.{
-        .{ .field = "static", .value = "false" },
-        .{ .field = "accessibility", .value = "null" },
-    } },
+    .{ .node = "ts_index_signature", .extras = &.{.{ .field = "accessibility", .value = "null" }} },
     // constructor parameter properties cannot be static; the field is a
     // fixed estree convention with no backing zig storage.
     .{ .node = "ts_parameter_property", .extras = &.{

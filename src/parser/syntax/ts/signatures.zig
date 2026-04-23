@@ -221,7 +221,7 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
             const readonly_start = parser.current_token.span.start;
             try parser.advance() orelse return null; // consume 'readonly'
             if (parser.current_token.tag == .left_bracket and try isIndexSignatureStart(parser)) {
-                return parseIndexSignature(parser, readonly_start, true);
+                return parseIndexSignature(parser, readonly_start, .{ .readonly = true });
             }
             return parsePropertyOrMethodSignature(parser, readonly_start, true);
         }
@@ -231,7 +231,7 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     // `[expr]: T` by the `[ id , ` or `[ id :` shape.
     if (tag == .left_bracket and try isIndexSignatureStart(parser)) {
         const start = parser.current_token.span.start;
-        return parseIndexSignature(parser, start, false);
+        return parseIndexSignature(parser, start, .{});
     }
 
     const start = parser.current_token.span.start;
@@ -240,7 +240,7 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
 
 /// distinguishes `[k: T]: V` index signature from `[expr]: T` computed
 /// key by peeking for an identifier followed by `:` or `,`.
-fn isIndexSignatureStart(parser: *Parser) Error!bool {
+pub fn isIndexSignatureStart(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .left_bracket);
 
     const peek = try parser.peekAheadN(2);
@@ -332,9 +332,13 @@ fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
 /// [k: T]: V    readonly [k: T]: V
 /// ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
 ///
-/// `readonly` is consumed by the caller when present. `start` points at
-/// the modifier keyword in that case, otherwise at the `[`.
-fn parseIndexSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?ast.NodeIndex {
+pub const IndexSignatureModifiers = struct {
+    readonly: bool = false,
+    static: bool = false,
+};
+
+/// `start` points at the first modifier keyword when present, otherwise `[`.
+pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModifiers) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
     try parser.advance() orelse return null; // consume '['
 
@@ -373,7 +377,8 @@ fn parseIndexSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?as
         .{ .ts_index_signature = .{
             .parameters = parameters,
             .type_annotation = type_annotation,
-            .readonly = is_readonly,
+            .readonly = mods.readonly,
+            .static = mods.static,
         } },
         .{ .start = start, .end = end },
     );
