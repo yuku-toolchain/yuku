@@ -1,0 +1,11 @@
+misc/ts
+=======
+Passed:       5/5 (100.00%)
+Failed:       0
+AST mismatch: 0/5
+
+✓ test/parser/misc/ts/ambient-reserved-param.ts
+✓ test/parser/misc/ts/catch-type-annotation.ts
+✓ test/parser/misc/ts/constructor-overloads.ts
+✓ test/parser/misc/ts/declare-function-overloads.ts
+✓ test/parser/misc/ts/function-overloads.ts

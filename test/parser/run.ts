@@ -22,6 +22,9 @@ interface TestSuite {
   recursive?: boolean;
   allowErrors?: boolean;
   skipOnCI?: boolean;
+  /** Write a snapshot file on first run when one does not yet exist.
+   *  Already-existing snapshots still require `--update-snapshots` to overwrite. */
+  autoSnapshot?: boolean;
 }
 
 interface FileResult {
@@ -51,13 +54,23 @@ const suites: TestSuite[] = [
   { path: "suite/jsx/fail", expect: "fail", lang: ["jsx"] },
   { path: "suite/ts/pass", expect: "snapshot", lang: ["ts", "tsx"], skipOnCI: true },
   // { path: "suite/ts/fail", expect: "fail", lang: ["ts", "tsx"] },
-  { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true },
-  { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true },
+  { path: "misc/jsx", expect: "snapshot", lang: ["jsx"], recursive: false, allowErrors: true, autoSnapshot: true },
+  { path: "misc/js", expect: "snapshot", lang: ["js"], recursive: false, allowErrors: true, autoSnapshot: true },
+  {
+    path: "misc/ts",
+    expect: "snapshot",
+    lang: ["ts", "tsx"],
+    recursive: false,
+    allowErrors: true,
+    autoSnapshot: true,
+    options: { semanticErrors: true },
+  },
   {
     path: "misc/js/preserve-parens-disabled",
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
+    autoSnapshot: true,
     options: { preserveParens: false },
   },
   {
@@ -65,6 +78,7 @@ const suites: TestSuite[] = [
     expect: "snapshot",
     lang: ["js"],
     allowErrors: true,
+    autoSnapshot: true,
     options: { allowReturnOutsideFunction: true },
   },
 ];
@@ -133,11 +147,13 @@ function runTest(file: string, content: string, parsed: ParseResult, suite: Test
   }
 }
 
-async function checkSnapshot(file: string, parsed: ParseResult): Promise<SnapshotResult> {
+async function checkSnapshot(file: string, parsed: ParseResult, suite: TestSuite): Promise<SnapshotResult> {
   const snapshotFile = join(dirname(file), "snapshots", `${baseName(file)}.snapshot.json`);
 
   if (!(await Bun.file(snapshotFile).exists())) {
-    return { status: "no_snapshot" };
+    if (!suite.autoSnapshot) return { status: "no_snapshot" };
+    await Bun.write(snapshotFile, serializeAstJson(parsed, 2));
+    return { status: "match" };
   }
 
   const snapshot = deserializeAstJson(await Bun.file(snapshotFile).text());
@@ -185,7 +201,7 @@ async function runSuite(suite: TestSuite, files: string[]): Promise<SuiteResult>
     }
 
     if (passed && suite.expect === "snapshot") {
-      const snap = await checkSnapshot(file, parsed);
+      const snap = await checkSnapshot(file, parsed, suite);
       if (snap.status !== "no_snapshot") {
         entry.snapshotCompared = true;
       }

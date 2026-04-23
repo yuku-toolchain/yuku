@@ -1,0 +1,128 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 66,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "TryStatement",
+        "start": 0,
+        "end": 65,
+        "block": {
+          "type": "BlockStatement",
+          "start": 4,
+          "end": 24,
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "start": 8,
+              "end": 22,
+              "expression": {
+                "type": "CallExpression",
+                "start": 8,
+                "end": 21,
+                "callee": {
+                  "type": "Identifier",
+                  "start": 8,
+                  "end": 19,
+                  "name": "doSomething",
+                  "decorators": [],
+                  "optional": false,
+                  "typeAnnotation": null
+                },
+                "arguments": [],
+                "optional": false,
+                "typeArguments": null
+              },
+              "directive": null
+            }
+          ]
+        },
+        "handler": {
+          "type": "CatchClause",
+          "start": 25,
+          "end": 65,
+          "param": {
+            "type": "Identifier",
+            "start": 32,
+            "end": 42,
+            "name": "e",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 33,
+              "end": 42,
+              "typeAnnotation": {
+                "type": "TSUnknownKeyword",
+                "start": 35,
+                "end": 42
+              }
+            },
+            "optional": false
+          },
+          "body": {
+            "type": "BlockStatement",
+            "start": 44,
+            "end": 65,
+            "body": [
+              {
+                "type": "ExpressionStatement",
+                "start": 48,
+                "end": 63,
+                "expression": {
+                  "type": "CallExpression",
+                  "start": 48,
+                  "end": 62,
+                  "callee": {
+                    "type": "MemberExpression",
+                    "start": 48,
+                    "end": 59,
+                    "object": {
+                      "type": "Identifier",
+                      "start": 48,
+                      "end": 55,
+                      "name": "console",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "start": 56,
+                      "end": 59,
+                      "name": "log",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    },
+                    "computed": false,
+                    "optional": false
+                  },
+                  "arguments": [
+                    {
+                      "type": "Identifier",
+                      "start": 60,
+                      "end": 61,
+                      "name": "e",
+                      "decorators": [],
+                      "optional": false,
+                      "typeAnnotation": null
+                    }
+                  ],
+                  "optional": false,
+                  "typeArguments": null
+                },
+                "directive": null
+              }
+            ]
+          }
+        },
+        "finalizer": null
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}
