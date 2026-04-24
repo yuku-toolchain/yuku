@@ -401,6 +401,12 @@ pub const Parser = struct {
         return self.advance();
     }
 
+    /// re-tokenizes the current token in the current lexer mode.
+    pub inline fn reScanCurrent(self: *Parser) Error!?void {
+        self.lexer.rewindTo(self.current_token.span.start);
+        self.current_token = try self.nextToken() orelse return null;
+    }
+
     pub fn expect(self: *Parser, comptime tag: TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
         if (self.current_token.tag == tag) {
             try self.advance() orelse return false;

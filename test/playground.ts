@@ -9,4 +9,4 @@ const result = parse(source, {
 });
 console.timeEnd('parse')
 
-console.log(JSON.stringify(result, null, 2))
+console.log(JSON.stringify(result.diagnostics, null, 2))

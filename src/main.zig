@@ -6,6 +6,10 @@ pub fn main(init: std.process.Init) !void {
 
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, file_path, init.arena.allocator(), std.Io.Limit.limited(10 * 1024 * 1024));
 
+    {
+        _ = try parser.parse(std.heap.page_allocator, source, .{ .lang = .tsx });
+    }
+
     const io = init.io;
     const n: i96 = 100;
 

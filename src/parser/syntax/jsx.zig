@@ -6,6 +6,7 @@ const Error = @import("../parser.zig").Error;
 
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
+const ts_types = @import("ts/types.zig");
 
 /// context for JSX element parsing, determines post-parse behavior
 const JsxElementContext = enum {
@@ -57,7 +58,7 @@ fn parseJsxElement(parser: *Parser, comptime context: JsxElementContext) Error!?
     // element with children: <elem>...</elem>
     const children = try parseJsxChildren(parser, opening_end) orelse return null;
 
-    const closing = try parseJsxClosingElement(parser, opening_data.name) orelse return null;
+    const closing = try parseJsxClosingElement(parser, opening_data.name, context) orelse return null;
 
     return try parser.tree.createNode(.{
         .jsx_element = .{
@@ -115,6 +116,20 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
     try parser.advance() orelse return null; // consume '<'
 
     const name = try parseJsxElementName(parser) orelse return null;
+
+    // `<Comp<T> />`, `<Comp<T, U>>...</Comp>`
+    // only legal in tsx. type parsing runs in normal mode so keywords like
+    // `string` / `number` tokenize as type keywords instead of
+    // `jsx_identifier`. after the closing `>`, switch back and rescan so
+    // the next token (typically an attribute name) tokenizes under jsx.
+    const type_arguments = if (parser.tree.isTs() and parser.current_token.tag == .less_than) blk: {
+        exitJsxTag(parser);
+        const args = try ts_types.parseTypeArguments(parser);
+        enterJsxTag(parser);
+        try parser.reScanCurrent() orelse return null;
+        break :blk args;
+    } else .null;
+
     const attributes = try parseJsxAttributes(parser) orelse return null;
 
     const self_closing = parser.current_token.tag == .slash;
@@ -150,12 +165,13 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
             .name = name,
             .attributes = attributes,
             .self_closing = self_closing,
+            .type_arguments = type_arguments,
         },
     }, .{ .start = start, .end = end });
 }
 
 // https://facebook.github.io/jsx/#prod-JSXClosingElement
-fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?ast.NodeIndex {
+fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex, comptime context: JsxElementContext) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     enterJsxTag(parser);
@@ -165,11 +181,26 @@ fn parseJsxClosingElement(parser: *Parser, opening_name: ast.NodeIndex) Error!?a
     if (!try parser.expect(.slash, "Expected '/' in JSX closing element", "Add '/' after '<' to close the element")) return null;
 
     const name = try parseJsxElementName(parser) orelse return null;
+
+    if (parser.current_token.tag != .greater_than) {
+        try parser.reportExpected(parser.current_token.span, "Expected '>' to close JSX closing element", .{ .help = "Add '>' to complete the closing tag" });
+        return null;
+    }
     const end = parser.current_token.span.end;
 
-    exitJsxTag(parser);
-
-    if (!try parser.expect(.greater_than, "Expected '>' to close JSX closing element", "Add '>' to complete the closing tag")) return null;
+    // a .child closing tag leaves the `>` in place so the parent `parseJsxChildren` loop
+    // can rescan the following jsx text without a stray identifier scan.
+    switch (context) {
+        .child => exitJsxTag(parser),
+        .top_level => {
+            exitJsxTag(parser);
+            try parser.advance() orelse return null;
+        },
+        .attribute => {
+            enterJsxTag(parser);
+            try parser.advance() orelse return null;
+        },
+    }
 
     if (!jsxNamesMatch(parser, opening_name, name)) {
         const opening_span = parser.tree.getSpan(opening_name);
@@ -264,9 +295,7 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
         try parser.advance() orelse return null; // consume '...'
 
         const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
-        const end = parser.current_token.span.end;
-
-        if (!try parser.expect(.right_brace, "Expected '}' to close JSX spread", "Add '}' to close the spread expression")) return null;
+        const end = try expectJsxChildRightBrace(parser, "JSX spread") orelse return null;
 
         return try parser.tree.createNode(.{ .jsx_spread_child = .{ .expression = expression } }, .{ .start = start, .end = end });
     }
@@ -274,18 +303,26 @@ fn parseJsxChildFromLeftBrace(parser: *Parser) Error!?ast.NodeIndex {
     // empty expression: {}
     if (parser.current_token.tag == .right_brace) {
         const end = parser.current_token.span.end;
-        try parser.advance() orelse return null;
-
         const empty = try parser.tree.createNode(.{ .jsx_empty_expression = .{} }, .{ .start = start + 1, .end = end - 1 });
         return try parser.tree.createNode(.{ .jsx_expression_container = .{ .expression = empty } }, .{ .start = start, .end = end });
     }
 
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
-    const end = parser.current_token.span.end;
-
-    if (!try parser.expect(.right_brace, "Expected '}' to close JSX expression", "Add '}' to close the expression")) return null;
+    const end = try expectJsxChildRightBrace(parser, "JSX expression") orelse return null;
 
     return try parser.tree.createNode(.{ .jsx_expression_container = .{ .expression = expression } }, .{ .start = start, .end = end });
+}
+
+fn expectJsxChildRightBrace(parser: *Parser, comptime what: []const u8) Error!?u32 {
+    if (parser.current_token.tag != .right_brace) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '}' to close " ++ what,
+            .{ .help = "Add '}' to close the expression" },
+        );
+        return null;
+    }
+    return parser.current_token.span.end;
 }
 
 // https://facebook.github.io/jsx/#prod-JSXAttributes

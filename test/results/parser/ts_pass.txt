@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8054/8261 (97.49%)
-Failed:       207
-AST mismatch: 0/8054
+Passed:       8058/8261 (97.54%)
+Failed:       203
+AST mismatch: 0/8058
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -677,17 +677,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/10540b8644b93bb8.ts
 ✓ test/parser/suite/ts/pass/1061bac247650a3f.ts
 ✓ test/parser/suite/ts/pass/10668e938f2dbe65.ts
-✗ test/parser/suite/ts/pass/1066cbb4d2e1e0b8.tsx (parse errors)
-error: Expected '>' to close JSX opening element, but found '<'
-   |
-28 | const elem1 = <FunctionComponent type="abc" />;
-29 | const elem2 = <FunctionComponent<"abc"> />;
-   |                                 ^
-30 | const elem3 = <ClassComponent />;
-   |
-   = help: Add '>' to close the JSX tag
-
-
+✓ test/parser/suite/ts/pass/1066cbb4d2e1e0b8.tsx
 ✓ test/parser/suite/ts/pass/1067d433a4210e64.ts
 ✓ test/parser/suite/ts/pass/106fcfd856d370b2.module.ts
 ✓ test/parser/suite/ts/pass/10709c5e6b0e260b.ts
@@ -1164,17 +1154,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/1d3d5d75833ab052.ts
 ✓ test/parser/suite/ts/pass/1d481838779ddba2.ts
 ✓ test/parser/suite/ts/pass/1d526dbe415219ce.ts
-✗ test/parser/suite/ts/pass/1d53219ff8c573e6.module.tsx (parse errors)
-error: Expected '>' to close JSX opening element, but found '<'
-   |
-30 |         return (
-31 |             <ReactSelectClass<ExtractValueType<WrappedProps>>
-   |                              ^
-32 |                 {...props}
-   |
-   = help: Add '>' to close the JSX tag
-
-
+✓ test/parser/suite/ts/pass/1d53219ff8c573e6.module.tsx
 ✓ test/parser/suite/ts/pass/1d559c2aa0eb0381.ts
 ✓ test/parser/suite/ts/pass/1d6450ee21c53494.module.tsx
 ✓ test/parser/suite/ts/pass/1d654891deba2df8.ts
@@ -4270,16 +4250,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/69a75ec67bcad139.ts
 ✓ test/parser/suite/ts/pass/69b02bcceec3230b.ts
 ✓ test/parser/suite/ts/pass/69b4c89b3a7554f8.ts
-✗ test/parser/suite/ts/pass/69b6bc0d8b109816.module.tsx (parse errors)
-error: Expected '>' to close JSX opening element, but found '<'
-   |
-19 | const el1 = <Test model={model} foo="c" />;
-20 | const el2 = <Test<TestObject> model={model} foo="c" />;
-   |                  ^
-   |
-   = help: Add '>' to close the JSX tag
-
-
+✓ test/parser/suite/ts/pass/69b6bc0d8b109816.module.tsx
 ✓ test/parser/suite/ts/pass/69bde82c8625a454.ts
 ✓ test/parser/suite/ts/pass/69c16f7140abb0f1.ts
 ✓ test/parser/suite/ts/pass/69c63fc86b064d91.ts
@@ -7315,17 +7286,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/b6f2f71e1ca84c24.module.ts
 ✓ test/parser/suite/ts/pass/b6f4760035f77cd7.ts
 ✓ test/parser/suite/ts/pass/b70180a6c5f7a128.ts
-✗ test/parser/suite/ts/pass/b70c7d10161cc3cf.tsx (parse errors)
-error: Invalid character at start of identifier
-   |
- 2 | //@jsx: preserve
- 3 | var t02 = <a>{0}#</a>;
-   |                 ^
- 4 | var t03 = <a>#{0}</a>;
-   |
-   = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
-
-
+✓ test/parser/suite/ts/pass/b70c7d10161cc3cf.tsx
 ✓ test/parser/suite/ts/pass/b71a38a4e59292f5.ts
 ✓ test/parser/suite/ts/pass/b72d4540a202f2e5.module.ts
 ✓ test/parser/suite/ts/pass/b7308556c4ef91d0.ts
