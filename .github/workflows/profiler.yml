@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   benchmarks:
+    name: Profiler
     runs-on: codspeed-macro
     steps:
       - uses: actions/checkout@v5
