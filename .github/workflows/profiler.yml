@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   benchmarks:
-    runs-on: ubuntu-latest
+    runs-on: codspeed-macro
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -26,5 +26,5 @@ jobs:
       - name: Run profiler
         uses: CodSpeedHQ/action@v4
         with:
-          mode: simulation
+          mode: walltime
           run: ./zig-out/bin/profiler
