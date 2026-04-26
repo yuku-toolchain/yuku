@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8108/8261 (98.15%)
-Failed:       153
-AST mismatch: 0/8108
+Passed:       8163/8261 (98.81%)
+Failed:       98
+AST mismatch: 0/8163
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -24,16 +24,7 @@ AST mismatch: 0/8108
 ✓ test/parser/suite/ts/pass/00a97418dde4487e.ts
 ✓ test/parser/suite/ts/pass/00bbe7cfa25250d1.ts
 ✓ test/parser/suite/ts/pass/00bd346b687796f6.ts
-✗ test/parser/suite/ts/pass/00c14a1d0d981386.ts (parse errors)
-error: Shorthand property must be an identifier
-   |
- 1 | // @target: es2015
- 2 | var v = { 0<T>() { } };
-   |           ^
-   |
-   = help: String and numeric keys require explicit ': value' syntax.
-
-
+✓ test/parser/suite/ts/pass/00c14a1d0d981386.ts
 ✓ test/parser/suite/ts/pass/00c3dcee92c3d100.module.ts
 ✓ test/parser/suite/ts/pass/00c613a93a9a5cb9.ts
 ✓ test/parser/suite/ts/pass/00cd03c78b45a902.ts
@@ -167,15 +158,7 @@ error: Invalid character at start of identifier
 ✓ test/parser/suite/ts/pass/044c672fd959b0d9.ts
 ✓ test/parser/suite/ts/pass/045087a868bd0c98.ts
 ✓ test/parser/suite/ts/pass/04566e45d9da299d.ts
-✗ test/parser/suite/ts/pass/045d9168954105c5.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-23 | var a: { new<T>(x: T, y?: T): B<T> }
-24 | var b = { new<T>(x: T, y?: T) { return new C<T>(x, y); } }; // not a construct signature, function called new
-   |           ^^^
-25 | 
-   |
-
+✓ test/parser/suite/ts/pass/045d9168954105c5.ts
 ✓ test/parser/suite/ts/pass/0462028b2a7d6289.module.ts
 ✓ test/parser/suite/ts/pass/046b98c4ad470513.ts
 ✓ test/parser/suite/ts/pass/046e6508d342becc.ts
@@ -286,17 +269,7 @@ error: Expected ';' after for-loop init, but found 'of'
 ✓ test/parser/suite/ts/pass/07c178ba5a72a5a5.module.ts
 ✓ test/parser/suite/ts/pass/07c29c491cb736c7.ts
 ✓ test/parser/suite/ts/pass/07c5eb12c25ff924.ts
-✗ test/parser/suite/ts/pass/07c7bca687d7c3c7.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-19 | // Get accessor only, type of the property is the annotated return type of the get accessor
-20 | var getter1 = { get x(): string { return undefined; } };
-   |                        ^
-21 | var getter1: { readonly x: string; }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/07c7bca687d7c3c7.ts
 ✓ test/parser/suite/ts/pass/07d0f7d78df0a568.module.ts
 ✓ test/parser/suite/ts/pass/07d1b9e3dbcf7220.module.ts
 ✓ test/parser/suite/ts/pass/07e4335cb46b7073.ts
@@ -371,17 +344,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/09f22b60372078c0.ts
 ✓ test/parser/suite/ts/pass/09f4781a6a0fb300.module.ts
 ✓ test/parser/suite/ts/pass/0a00a6d77b774054.ts
-✗ test/parser/suite/ts/pass/0a0d40a49aef20b5.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
- 4 |         _foo: '1',
- 5 |         get foo(): string {
-   |                  ^
- 6 |             return this._foo;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0a0d40a49aef20b5.ts
 ✓ test/parser/suite/ts/pass/0a0e7b08fb197db3.ts
 ✓ test/parser/suite/ts/pass/0a0ec648dea73e38.ts
 ✓ test/parser/suite/ts/pass/0a200f030e284207.ts
@@ -537,17 +500,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/0e7863284f4efe55.ts
 ✓ test/parser/suite/ts/pass/0e934a2a88063acb.ts
 ✓ test/parser/suite/ts/pass/0e95324afb81983a.ts
-✗ test/parser/suite/ts/pass/0ea07ac71d7bad77.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-25 |     async m1() { },
-26 |     async m2(): Promise<void> { },
-   |               ^
-27 |     async m3(): MyPromise<void> { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0ea07ac71d7bad77.ts
 ✓ test/parser/suite/ts/pass/0ea0911cc18c9589.ts
 ✓ test/parser/suite/ts/pass/0ea9f504b0a977b2.ts
 ✓ test/parser/suite/ts/pass/0eac9b5f6947fd26.ts
@@ -581,45 +534,17 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/0f4c14b6701b04d0.ts
 ✓ test/parser/suite/ts/pass/0f95374c28a9d739.ts
 ✓ test/parser/suite/ts/pass/0f978dfc4113f393.ts
-✗ test/parser/suite/ts/pass/0f983e258903e59a.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-60 |     [x]: 0,
-61 |     [y](): number { return 0; },
-   |          ^
-62 |     get [z](): number { return 0; },
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/0f983e258903e59a.module.ts
 ✓ test/parser/suite/ts/pass/0f9d079dd470faed.ts
 ✓ test/parser/suite/ts/pass/0fa37b6d41937f67.ts
 ✓ test/parser/suite/ts/pass/0fa66d94831eb397.ts
 ✓ test/parser/suite/ts/pass/0fad3249ca55fd11.ts
 ✓ test/parser/suite/ts/pass/0fb60010c24a72ae.ts
-✗ test/parser/suite/ts/pass/0fca2752963b4e68.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-40 | var a: { foo<T extends U, U extends One>(x: T, y: U): string }
-41 | var b = { foo<T extends U, U extends Two>(x: T, y: U) { return ''; } };
-   |              ^
-42 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/0fca2752963b4e68.ts
 ✓ test/parser/suite/ts/pass/0fce26a8d6b72615.module.ts
 ✓ test/parser/suite/ts/pass/0fd5860727ec3cf9.ts
 ✓ test/parser/suite/ts/pass/0fd6d4a184071b2b.ts
-✗ test/parser/suite/ts/pass/0fe24950a43a9805.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-36 | var a: { new<T extends U, U extends One>(x: T, y: U): string }
-37 | var b = { new<T extends U, U extends Two>(x: T, y: U) { return ''; } }; // not a construct signature, function called new
-   |           ^^^
-38 | 
-   |
-
+✓ test/parser/suite/ts/pass/0fe24950a43a9805.ts
 ✓ test/parser/suite/ts/pass/0fe91a86df7a2e2c.ts
 ✓ test/parser/suite/ts/pass/0fef73917fa40771.module.ts
 ✓ test/parser/suite/ts/pass/0ff63a135e127a5c.ts
@@ -703,17 +628,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/11e5341cfb831ddf.ts
 ✓ test/parser/suite/ts/pass/11e97937a05b0d4f.ts
 ✓ test/parser/suite/ts/pass/120836e43d187596.module.ts
-✗ test/parser/suite/ts/pass/120c9d199088469d.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-27 | var a: { foo<T>(x: T, y?: T): T }
-28 | var b = { foo<T>(x: T, y?: T) { return x; } };
-   |              ^
-29 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/120c9d199088469d.ts
 ✓ test/parser/suite/ts/pass/121299d8d8e4683a.ts
 ✓ test/parser/suite/ts/pass/121546c26ba15f5f.ts
 ✓ test/parser/suite/ts/pass/122a825f4e631947.ts
@@ -721,17 +636,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/123eb4bd278f9b83.ts
 ✓ test/parser/suite/ts/pass/12439d9083149884.ts
 ✓ test/parser/suite/ts/pass/1248eaebf283cac3.ts
-✗ test/parser/suite/ts/pass/124b696ff50e92fe.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-11 |   },
-12 |   accept_foo (foo: Foo): boolean {
-   |                        ^
-13 |     return !!foo && !!foo.bar;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/124b696ff50e92fe.ts
 ✓ test/parser/suite/ts/pass/1262d95641deed14.ts
 ✓ test/parser/suite/ts/pass/1263d7a1e1ddb976.ts
 ✓ test/parser/suite/ts/pass/1264fbe8cea90d66.ts
@@ -875,17 +780,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/16eeec0a37feacfb.ts
 ✓ test/parser/suite/ts/pass/16fc8254a5e840b2.ts
 ✓ test/parser/suite/ts/pass/17029126e9421bdd.ts
-✗ test/parser/suite/ts/pass/17172f215acc858e.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-39 |     },
-40 |     async return(value: R): Promise<IteratorResult<U, R>> {
-   |                           ^
-41 |       return typeof iterator.return === "function"
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/17172f215acc858e.ts
 ✓ test/parser/suite/ts/pass/171abf269996029a.ts
 ✓ test/parser/suite/ts/pass/171d4598153404a6.module.ts
 ✓ test/parser/suite/ts/pass/171e2b3ac0488f27.ts
@@ -1411,17 +1306,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/26a32ff119e8e4d3.ts
 ✓ test/parser/suite/ts/pass/26a913abf37bf428.ts
 ✓ test/parser/suite/ts/pass/26a97e4fcc027d44.ts
-✗ test/parser/suite/ts/pass/26ac5de2b50f526b.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-11 | export const obj = {
-12 |     m(): this is Foo {
-   |        ^
-13 |         let dis = this as {} as Foo;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/26ac5de2b50f526b.module.ts
 ✓ test/parser/suite/ts/pass/26bc9afb93baf522.module.ts
 ✓ test/parser/suite/ts/pass/26faf7957aff2c77.ts
 ✓ test/parser/suite/ts/pass/26fdc3e0cf367cd1.ts
@@ -1787,17 +1672,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/2ffa9643dfbf9b9f.ts
 ✓ test/parser/suite/ts/pass/2ffb8f474395c8c2.ts
 ✓ test/parser/suite/ts/pass/300c8b206564235f.ts
-✗ test/parser/suite/ts/pass/301303d492b500a4.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-25 | var a: { foo<Z>(x: Z): Z }
-26 | var b = { foo<A>(x: A) { return x; } };
-   |              ^
-27 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/301303d492b500a4.ts
 ✓ test/parser/suite/ts/pass/30183b11d54dfac5.ts
 ✓ test/parser/suite/ts/pass/30215988e65baf7f.ts
 ✓ test/parser/suite/ts/pass/302250c001ac1b80.ts
@@ -1995,29 +1870,13 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/34d950f5f20ee1f2.ts
 ✓ test/parser/suite/ts/pass/34e0a3143a99fb38.ts
 ✓ test/parser/suite/ts/pass/34e3a25c6839703c.module.tsx
-✗ test/parser/suite/ts/pass/34f8128a72e114ef.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-23 | var a: { new<T>(x: T): T }
-24 | var b = { new<T>(x: T): T { return null; } }; // not a construct signature, function called new
-   |           ^^^
-25 | 
-   |
-
+✓ test/parser/suite/ts/pass/34f8128a72e114ef.ts
 ✓ test/parser/suite/ts/pass/34fa6176a029be33.ts
 ✓ test/parser/suite/ts/pass/34fe83243ae087a8.ts
 ✓ test/parser/suite/ts/pass/35012ea6efb70683.ts
 ✓ test/parser/suite/ts/pass/35068637114573ba.ts
 ✓ test/parser/suite/ts/pass/35079d6fa99cb5e2.ts
-✗ test/parser/suite/ts/pass/350a5d2682ee3747.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-23 | var a: { new<T, U>(x: T, y?: U): B<T,U> }
-24 | var b = { new<T, U>(x: T, y?: U) { return new C<T, U>(x, y); } }; // not a construct signature, function called new
-   |           ^^^
-25 | 
-   |
-
+✓ test/parser/suite/ts/pass/350a5d2682ee3747.ts
 ✓ test/parser/suite/ts/pass/3514f6f7a776c2f4.module.ts
 ✓ test/parser/suite/ts/pass/351935aa5fe779cb.ts
 ✓ test/parser/suite/ts/pass/351af375b16d6d94.ts
@@ -2098,17 +1957,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/37903a588d3e49f0.module.ts
 ✓ test/parser/suite/ts/pass/3798743df342c94e.ts
 ✓ test/parser/suite/ts/pass/379d8c50471e3658.ts
-✗ test/parser/suite/ts/pass/37b2f4b2b3688ed6.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
- 7 |   */
- 8 |  get bar(): number {
-   |           ^
- 9 |   return 12;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/37b2f4b2b3688ed6.ts
 ✓ test/parser/suite/ts/pass/37c45b2abc2ff7b7.ts
 ✓ test/parser/suite/ts/pass/37cc9f0a17404d2e.ts
 ✓ test/parser/suite/ts/pass/37d0c8c847429707.ts
@@ -2140,17 +1989,7 @@ error: Expected '{' to start class body, but found '('
 
 
 ✓ test/parser/suite/ts/pass/38071e9cac64c675.ts
-✗ test/parser/suite/ts/pass/38139be8f58693d6.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-34 | 
-35 |     data(): { bar: boolean } {
-   |           ^
-36 |         return {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/38139be8f58693d6.ts
 ✓ test/parser/suite/ts/pass/381bd8cd84427557.ts
 ✓ test/parser/suite/ts/pass/381e415b758eaf50.ts
 ✓ test/parser/suite/ts/pass/381e72adde7a733f.ts
@@ -2263,15 +2102,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3b94512af78e1ee3.ts
 ✓ test/parser/suite/ts/pass/3b96c03f69ae1155.ts
 ✓ test/parser/suite/ts/pass/3b98622030a5ad49.ts
-✗ test/parser/suite/ts/pass/3b98da5d9c20b4ca.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-21 | var a: { new<Z>(x: Z): B<Z> }
-22 | var b = { new<A>(x: A) { return new C<A>(x); } };
-   |           ^^^
-23 | 
-   |
-
+✓ test/parser/suite/ts/pass/3b98da5d9c20b4ca.ts
 ✓ test/parser/suite/ts/pass/3baf1c0abdf95c90.ts
 ✓ test/parser/suite/ts/pass/3bb78dec723bf882.ts
 ✓ test/parser/suite/ts/pass/3bb89722607d90fb.ts
@@ -2472,15 +2303,7 @@ error: Expected ';' after for-loop init, but found 'in'
 ✓ test/parser/suite/ts/pass/409815d165576318.ts
 ✓ test/parser/suite/ts/pass/409c04ff75b183ef.ts
 ✓ test/parser/suite/ts/pass/409ebb7e7851c753.ts
-✗ test/parser/suite/ts/pass/40a4b49bcc76bba8.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-27 | var a: { new<T extends U, U extends Array<string>>(x: T, y: U): string }
-28 | var b = { new<T extends U, U extends RegExp>(x: T, y: U) { return ''; } }; // not a construct signature, function called new
-   |           ^^^
-29 | 
-   |
-
+✓ test/parser/suite/ts/pass/40a4b49bcc76bba8.ts
 ✓ test/parser/suite/ts/pass/40a517dd6ecdede9.ts
 ✓ test/parser/suite/ts/pass/40ad2e930d1c38cd.ts
 ✓ test/parser/suite/ts/pass/40ae03d8b220033a.module.ts
@@ -2594,17 +2417,7 @@ error: Expected ';' after class field, but found 'is'
 ✓ test/parser/suite/ts/pass/439e19bc12006654.ts
 ✓ test/parser/suite/ts/pass/439f30d3c0ee625f.ts
 ✓ test/parser/suite/ts/pass/43b13e51b78b13e0.ts
-✗ test/parser/suite/ts/pass/43b8108bca0c0f31.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-24 |     async m1() { },
-25 |     async m2(): Promise<void> { },
-   |               ^
-26 |     async m3(): MyPromise<void> { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/43b8108bca0c0f31.ts
 ✓ test/parser/suite/ts/pass/43bbcaba57fab961.module.ts
 ✓ test/parser/suite/ts/pass/43bdbd90328368a9.ts
 ✓ test/parser/suite/ts/pass/43bf4d57cbf6f591.ts
@@ -3108,17 +2921,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/50b8c365d2b499e5.ts
 ✓ test/parser/suite/ts/pass/50c0bdd039e4678a.ts
 ✓ test/parser/suite/ts/pass/50c9ed54c5103f36.ts
-✗ test/parser/suite/ts/pass/50cee1b94f549014.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-30 |     },
-31 |     implicitThis(m: number): number { return m; }
-   |                            ^
-32 | };
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/50cee1b94f549014.ts
 ✓ test/parser/suite/ts/pass/50d79382d589fe4d.ts
 ✓ test/parser/suite/ts/pass/50f2482a47964ded.ts
 ✓ test/parser/suite/ts/pass/50f9c25c69cf87b9.ts
@@ -3340,17 +3143,7 @@ error: Getter must have no parameters
 ✓ test/parser/suite/ts/pass/574edd828ece8990.ts
 ✓ test/parser/suite/ts/pass/574f872cee9a6a51.ts
 ✓ test/parser/suite/ts/pass/574fa157f32dc5a6.ts
-✗ test/parser/suite/ts/pass/57525da7bafafe2b.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
- 8 |   /** my awesome getter (first in source order) */
- 9 |   get x(): string {
-   |          ^
-10 |     return "";
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/57525da7bafafe2b.module.ts
 ✓ test/parser/suite/ts/pass/57559338e8929751.ts
 ✓ test/parser/suite/ts/pass/5757bcf6eb02541e.ts
 ✓ test/parser/suite/ts/pass/57594693f32a56cf.ts
@@ -3417,17 +3210,7 @@ error: Invalid operand for increment/decrement operator
 ✓ test/parser/suite/ts/pass/58a776eca3ec96ca.ts
 ✓ test/parser/suite/ts/pass/58ae26cc97a6dc0b.ts
 ✓ test/parser/suite/ts/pass/58c07d3bd1fae702.module.ts
-✗ test/parser/suite/ts/pass/58c20387c1c6cb08.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-27 | var a: { foo<T extends Array<string>>(x: T): string }
-28 | var b = { foo<T extends RegExp>(x: T) { return ''; } };
-   |              ^
-29 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/58c20387c1c6cb08.ts
 ✓ test/parser/suite/ts/pass/58d6ae53d33ac379.module.ts
 ✓ test/parser/suite/ts/pass/58df139dea95360b.ts
 ✓ test/parser/suite/ts/pass/58e3251cb68c971a.ts
@@ -3534,17 +3317,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/5bc0584963ae9193.ts
 ✓ test/parser/suite/ts/pass/5bd481b97d72f94c.ts
 ✓ test/parser/suite/ts/pass/5bdda89aa24d75b9.ts
-✗ test/parser/suite/ts/pass/5be5f80591249e06.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-25 | var a: { foo<T, U>(x: T, y: U): T }
-26 | var b = { foo<T, U>(x: T, y: U) { return x; } };
-   |              ^
-27 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/5be5f80591249e06.ts
 ✓ test/parser/suite/ts/pass/5be7d73a834513b2.ts
 ✓ test/parser/suite/ts/pass/5bf5490efce7e1b9.ts
 ✓ test/parser/suite/ts/pass/5bf5a56d4a249097.ts
@@ -3606,17 +3379,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/5cf3fd3384b251f0.ts
 ✓ test/parser/suite/ts/pass/5cf7dfa281e4ac0f.ts
 ✓ test/parser/suite/ts/pass/5cfa228fd9678169.ts
-✗ test/parser/suite/ts/pass/5d070b1c6216592c.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-25 |     async m1() { },
-26 |     async m2(): Promise<void> { },
-   |               ^
-27 |     async m3(): MyPromise<void> { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/5d070b1c6216592c.module.ts
 ✓ test/parser/suite/ts/pass/5d18129ac1fb4998.ts
 ✓ test/parser/suite/ts/pass/5d1d965f4b8f42a6.ts
 ✓ test/parser/suite/ts/pass/5d212c8ebfea3ffd.ts
@@ -3769,17 +3532,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/61922ccdbcb29d9c.ts
 ✓ test/parser/suite/ts/pass/6195e801efc358a1.ts
 ✓ test/parser/suite/ts/pass/619aa520e9889710.ts
-✗ test/parser/suite/ts/pass/61b10b48a481b56f.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-90 |     .overload({
-91 |         0(node: ImportDeclaration, modifiers: readonly Modifier[] | undefined, importClause: ImportClause | undefined, moduleSpecifier: Expression, assertClause: AssertClause | undefined): ImportDeclaration {
-   |                                                                                                                                                                                            ^
-92 |             return updateImportDeclaration(node, modifiers, importClause, moduleSpecifier, assertClause);
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/61b10b48a481b56f.ts
 ✓ test/parser/suite/ts/pass/61b593674ff21b9b.ts
 ✓ test/parser/suite/ts/pass/61b8ef9af8164226.ts
 ✓ test/parser/suite/ts/pass/61bcb9cf6e002b6f.ts
@@ -4712,17 +4465,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/7acb7fe1006477e3.ts
 ✓ test/parser/suite/ts/pass/7ad4f5e93e0c6f39.ts
 ✓ test/parser/suite/ts/pass/7ae50e2447f052e4.module.ts
-✗ test/parser/suite/ts/pass/7ae8e80a4a4c1fa9.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-27 | var a: { foo<T>(x: T): T }
-28 | var b = { foo<T>(x: T) { return null; } };
-   |              ^
-29 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/7ae8e80a4a4c1fa9.ts
 ✓ test/parser/suite/ts/pass/7af87ad03830dfbe.ts
 ✓ test/parser/suite/ts/pass/7af98463a3314abc.ts
 ✓ test/parser/suite/ts/pass/7afd6a2317a9e5f7.ts
@@ -5426,17 +5169,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8e3987aa381cfee7.ts
 ✓ test/parser/suite/ts/pass/8e39a04f4e42bb3f.module.ts
 ✓ test/parser/suite/ts/pass/8e3d93b4eb6665b8.ts
-✗ test/parser/suite/ts/pass/8e4bf6d11cdcbab2.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-24 |     async m1() { },
-25 |     async m2(): Promise<void> { },
-   |               ^
-26 |     async m3(): MyPromise<void> { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/8e4bf6d11cdcbab2.ts
 ✓ test/parser/suite/ts/pass/8e662d6bd1a8d7d4.ts
 ✓ test/parser/suite/ts/pass/8e6ade829b1489c0.ts
 ✓ test/parser/suite/ts/pass/8e6baa96c1b79b6d.ts
@@ -5826,17 +5559,7 @@ error: Expected '?' in a conditional type, but found ':'
 ✓ test/parser/suite/ts/pass/994c7165849e4812.ts
 ✓ test/parser/suite/ts/pass/994dec62acd4a693.ts
 ✓ test/parser/suite/ts/pass/99562d88ab5b408c.ts
-✗ test/parser/suite/ts/pass/99582800717d1f13.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-22 |     },
-23 |     sub1(n: number): number {
-   |                    ^
-24 |         if (n > 0) {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/99582800717d1f13.ts
 ✓ test/parser/suite/ts/pass/9963b03a19f76e78.ts
 ✓ test/parser/suite/ts/pass/9969f4fa2b470e27.ts
 ✓ test/parser/suite/ts/pass/99721f2b4414b381.ts
@@ -5897,17 +5620,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/9b673e77bf5bb42d.ts
 ✓ test/parser/suite/ts/pass/9b7bae18b3f5588e.module.ts
 ✓ test/parser/suite/ts/pass/9b7e4ab96447ff15.ts
-✗ test/parser/suite/ts/pass/9b7f0a610d0670d4.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
- 4 |         _foo: '1',
- 5 |         get foo(): string {
-   |                  ^
- 6 |             return super._foo;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/9b7f0a610d0670d4.ts
 ✓ test/parser/suite/ts/pass/9b8883429a1b7664.ts
 ✓ test/parser/suite/ts/pass/9b8c9fe7e896ec3f.ts
 ✓ test/parser/suite/ts/pass/9b8df69d51213b24.ts
@@ -5978,17 +5691,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/9dc0ae8136d4dd25.ts
 ✓ test/parser/suite/ts/pass/9dc62beacc9564d6.ts
 ✓ test/parser/suite/ts/pass/9dc844a273364ccc.module.ts
-✗ test/parser/suite/ts/pass/9dcb28b1934012bc.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-51 | x = { f() { return 1; } }
-52 | x = { f<T>(x: T) { return x; } }
-   |        ^
-53 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/9dcb28b1934012bc.ts
 ✓ test/parser/suite/ts/pass/9dd33386e72705c9.ts
 ✓ test/parser/suite/ts/pass/9dd635b662a0e097.ts
 ✓ test/parser/suite/ts/pass/9ddac9cf53fac6da.ts
@@ -6175,15 +5878,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/a373d908467f074a.module.ts
 ✓ test/parser/suite/ts/pass/a380e956ba54462d.ts
 ✓ test/parser/suite/ts/pass/a384cd3d578220f1.ts
-✗ test/parser/suite/ts/pass/a385d71e6ae3e11d.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-21 | var a: { new <Z, A, B, CC, D>(x: Z): C<Z, A, B>; }
-22 | var b = { new<A, B, C, D, E, F>(x: A) { return x; } };
-   |           ^^^
-23 | 
-   |
-
+✓ test/parser/suite/ts/pass/a385d71e6ae3e11d.ts
 ✓ test/parser/suite/ts/pass/a39124d51d27a7d7.ts
 ✓ test/parser/suite/ts/pass/a39557fb65132023.module.ts
 ✓ test/parser/suite/ts/pass/a39bb8e529af7675.ts
@@ -6349,17 +6044,7 @@ error: Expected a type, but found '"AB\r\nC"'
 ✓ test/parser/suite/ts/pass/a81f7826404a5014.ts
 ✓ test/parser/suite/ts/pass/a83794b3a463388f.ts
 ✓ test/parser/suite/ts/pass/a83936e39ba4edc5.ts
-✗ test/parser/suite/ts/pass/a83a6d1cc679059a.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-27 | var a: { foo<T, U>(x: T, y?: U): T }
-28 | var b = { foo<T, U>(x: T, y: U) { return x; } };
-   |              ^
-29 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/a83a6d1cc679059a.ts
 ✓ test/parser/suite/ts/pass/a83dfbd81f58cbf1.ts
 ✓ test/parser/suite/ts/pass/a84026107542e2da.module.ts
 ✓ test/parser/suite/ts/pass/a84ed08e4c5f1499.ts
@@ -6894,17 +6579,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/b5a9bff860745250.ts
 ✓ test/parser/suite/ts/pass/b5b0a08161dac526.module.tsx
 ✓ test/parser/suite/ts/pass/b5cc13ed4e14eb8f.ts
-✗ test/parser/suite/ts/pass/b5cc725192f755e6.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-13 |         return {
-14 |             then<V>(onFulfilled: (value: Result) => V | Thenable<V>) {
-   |                 ^
-15 |                 return toThenable<V, Result>(onFulfilled)(result as Result)
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/b5cc725192f755e6.ts
 ✓ test/parser/suite/ts/pass/b5db8fe8b1a0b28c.ts
 ✓ test/parser/suite/ts/pass/b5e8b520198d7e08.ts
 ✓ test/parser/suite/ts/pass/b5eafc0a32618fc8.module.ts
@@ -6995,17 +6670,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/b8357c2865a7c263.ts
 ✓ test/parser/suite/ts/pass/b83efdc85b59d01b.ts
 ✓ test/parser/suite/ts/pass/b844d484c6b6296a.ts
-✗ test/parser/suite/ts/pass/b86882ccfcd57874.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
- 6 |     b: {
- 7 |         get foo(): string {
-   |                  ^
- 8 |             return a.foo;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b86882ccfcd57874.ts
 ✓ test/parser/suite/ts/pass/b86d2010e2de38fc.ts
 ✓ test/parser/suite/ts/pass/b875a0bf165e8957.ts
 ✓ test/parser/suite/ts/pass/b87b22269be992df.ts
@@ -7049,17 +6714,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/b9aa1547dc104dab.ts
 ✓ test/parser/suite/ts/pass/b9b5fabb4f5dbf8e.ts
 ✓ test/parser/suite/ts/pass/b9b770fcd0f463dd.ts
-✗ test/parser/suite/ts/pass/b9bb1264fb1901a0.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
- 5 | const foo2 = {
- 6 |     isNumber(): this is { b: string } {
-   |               ^
- 7 |         return true;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/b9bb1264fb1901a0.ts
 ✓ test/parser/suite/ts/pass/b9c29578f6714b5c.module.ts
 ✓ test/parser/suite/ts/pass/b9cb30dd7fb2f804.ts
 ✓ test/parser/suite/ts/pass/b9cca07053f42e63.ts
@@ -7389,17 +7044,7 @@ error: Expected a type, but found 'break'
 ✓ test/parser/suite/ts/pass/c2430f9aecab1398.ts
 ✓ test/parser/suite/ts/pass/c246c43e04d714e5.module.ts
 ✓ test/parser/suite/ts/pass/c248a5a86e180e2e.module.ts
-✗ test/parser/suite/ts/pass/c26035fdbe5df72f.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-    |
-189 |     bar: {
-190 |         get(): number {
-    |              ^
-191 |             return this.x;
-    |
-    = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/c26035fdbe5df72f.ts
 ✓ test/parser/suite/ts/pass/c261c51874f89d23.ts
 ✓ test/parser/suite/ts/pass/c262e3bdcf036e28.ts
 ✓ test/parser/suite/ts/pass/c26382c8ef3c6767.ts
@@ -7925,17 +7570,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/d1656bdc46cd807d.ts
 ✓ test/parser/suite/ts/pass/d1690f3df42d385d.ts
 ✓ test/parser/suite/ts/pass/d17e990b52e7c3ed.ts
-✗ test/parser/suite/ts/pass/d17eb0a1cfd687f1.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-11 | export const obj = {
-12 |     m(): this is Foo {
-   |        ^
-13 |         let dis = this as {} as Foo;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d17eb0a1cfd687f1.module.ts
 ✓ test/parser/suite/ts/pass/d180791a29510d6e.ts
 ✓ test/parser/suite/ts/pass/d1819c6e547f77a3.ts
 ✓ test/parser/suite/ts/pass/d18cfb6e33541208.module.ts
@@ -7979,17 +7614,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/d2a6f1e83557ae32.ts
 ✓ test/parser/suite/ts/pass/d2a8363e522ad688.ts
 ✓ test/parser/suite/ts/pass/d2ae27bb0d2bd89c.ts
-✗ test/parser/suite/ts/pass/d2b34f30706e1946.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-14 |     computed: {
-15 |         bar(): number {
-   |              ^
-16 |             let z = this.bar;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d2b34f30706e1946.ts
 ✓ test/parser/suite/ts/pass/d2c2365604abc89a.ts
 ✓ test/parser/suite/ts/pass/d2cce5987b09afef.ts
 ✓ test/parser/suite/ts/pass/d2cea2be662cd40c.tsx
@@ -8169,17 +7794,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/d7c5c14ded7308ff.ts
 ✓ test/parser/suite/ts/pass/d7c9a74568702cab.ts
 ✓ test/parser/suite/ts/pass/d7cb7f2821d305be.ts
-✗ test/parser/suite/ts/pass/d7cd05b9fd2525ed.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-27 |     method() { },
-28 |     okMethod(): void { },
-   |               ^
-29 |     a: 1,
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/d7cd05b9fd2525ed.module.ts
 ✓ test/parser/suite/ts/pass/d7cf8fa6951619ef.ts
 ✗ test/parser/suite/ts/pass/d7d4942fdff92c4e.tsx (parse errors)
 error: 'const' declarations must be initialized
@@ -8203,17 +7818,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/d85c67cb060acfc6.ts
 ✓ test/parser/suite/ts/pass/d8634111403cebb7.ts
 ✓ test/parser/suite/ts/pass/d86a802a38ad8536.ts
-✗ test/parser/suite/ts/pass/d86f34b6962b553a.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-25 | var a: { foo<T>(x: T): T }
-26 | var b = { foo<T>(x: T) { return x; } };
-   |              ^
-27 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/d86f34b6962b553a.ts
 ✓ test/parser/suite/ts/pass/d874bd5af1cdae02.ts
 ✓ test/parser/suite/ts/pass/d87f5eb2663fb680.ts
 ✓ test/parser/suite/ts/pass/d88242ffb66cc303.ts
@@ -8414,15 +8019,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/de7dedbb9c1ab201.ts
 ✓ test/parser/suite/ts/pass/de7ed4da4d9beee2.ts
 ✓ test/parser/suite/ts/pass/de975981cb11357f.ts
-✗ test/parser/suite/ts/pass/de9c829195c6d884.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-23 | var a: { new<T extends Array<string>>(x: T): string }
-24 | var b = { new<T extends RegExp>(x: T) { return ''; } }; // not a construct signature, function called new
-   |           ^^^
-25 | 
-   |
-
+✓ test/parser/suite/ts/pass/de9c829195c6d884.ts
 ✓ test/parser/suite/ts/pass/de9d878709ff8d7a.ts
 ✓ test/parser/suite/ts/pass/dea86ac8d7f4aaf6.ts
 ✓ test/parser/suite/ts/pass/deb3cf76a0df9c82.ts
@@ -8471,28 +8068,8 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/dfe68cca1661a80a.ts
 ✓ test/parser/suite/ts/pass/dffc998d0e772be3.ts
 ✓ test/parser/suite/ts/pass/e010e55904d36485.ts
-✗ test/parser/suite/ts/pass/e011e42f6b02c8c8.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-27 | var a: { foo<T, U>(x: T, y?: U): T }
-28 | var b = { foo<T, U>(x: T, y?: U) { return x; } };
-   |              ^
-29 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
-✗ test/parser/suite/ts/pass/e034b2b21880d409.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-12 | export const obj = {
-13 |     method1(p: typeof s): typeof s {
-   |                         ^
-14 |         return p;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e011e42f6b02c8c8.ts
+✓ test/parser/suite/ts/pass/e034b2b21880d409.module.ts
 ✓ test/parser/suite/ts/pass/e037dc89505bd8d6.ts
 ✓ test/parser/suite/ts/pass/e03a6035309590ee.ts
 ✓ test/parser/suite/ts/pass/e03a7a6ee742e2a5.module.ts
@@ -8631,17 +8208,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/e3eec7138a575b5d.ts
 ✓ test/parser/suite/ts/pass/e3f156cb20eba2d6.module.ts
 ✓ test/parser/suite/ts/pass/e3f349092709b803.module.ts
-✗ test/parser/suite/ts/pass/e40186d7e16623a4.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-25 |     async m1() { },
-26 |     async m2(): Promise<void> { },
-   |               ^
-27 |     async m3(): MyPromise<void> { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/e40186d7e16623a4.module.ts
 ✓ test/parser/suite/ts/pass/e40a8ce0b8340a0d.ts
 ✓ test/parser/suite/ts/pass/e4345e2ac6b4b9f3.ts
 ✓ test/parser/suite/ts/pass/e43bc55b8bdec7ad.ts
@@ -8823,17 +8390,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/e903e8f1dc53f712.ts
 ✓ test/parser/suite/ts/pass/e9067973b9d7fe37.module.ts
 ✓ test/parser/suite/ts/pass/e906a0ef97af216b.ts
-✗ test/parser/suite/ts/pass/e90a40d9c266b647.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-27 | var a: { foo<T extends Date>(x: T): T }
-28 | var b = { foo<T extends Date>(x: T) { return null; } };
-   |              ^
-29 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/e90a40d9c266b647.ts
 ✓ test/parser/suite/ts/pass/e90f3c4d64934175.tsx
 ✓ test/parser/suite/ts/pass/e910c289a7475382.module.ts
 ✓ test/parser/suite/ts/pass/e914bd602ddd1e81.ts
@@ -8869,28 +8426,8 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/e9fbeee98da5b72a.ts
 ✓ test/parser/suite/ts/pass/ea101462dd2ea701.ts
 ✓ test/parser/suite/ts/pass/ea12815392845d75.ts
-✗ test/parser/suite/ts/pass/ea1f83a45d7fc525.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-35 | 
-36 |     data(): { bar: boolean } {
-   |           ^
-37 |         return {
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
-✗ test/parser/suite/ts/pass/ea1ffc1332c6bad0.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-41 |     x1 = {
-42 |         g(x: this): this {
-   |                   ^
-43 |             return undefined;
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/ea1f83a45d7fc525.ts
+✓ test/parser/suite/ts/pass/ea1ffc1332c6bad0.ts
 ✓ test/parser/suite/ts/pass/ea2f78aef40ad99a.ts
 ✓ test/parser/suite/ts/pass/ea31cd3a789a2825.ts
 ✓ test/parser/suite/ts/pass/ea33dbd5c766f9ff.module.ts
@@ -8929,17 +8466,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/eb37e6e918ffe653.module.ts
 ✓ test/parser/suite/ts/pass/eb4cd6f1723f2b19.ts
 ✓ test/parser/suite/ts/pass/eb4d77629aa1b4ac.module.ts
-✗ test/parser/suite/ts/pass/eb4d90ce5598ceb5.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-25 | var a: { foo<Z, A, B, C, D>(x: Z): Z }
-26 | var b = { foo<A, B, C, D, E, F>(x: A) { return x; } };
-   |              ^
-27 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/eb4d90ce5598ceb5.ts
 ✓ test/parser/suite/ts/pass/eb566f657d185b0c.ts
 ✓ test/parser/suite/ts/pass/eb5a2ab750bc422b.ts
 ✓ test/parser/suite/ts/pass/eb5c0944e503c65f.ts
@@ -9084,30 +8611,10 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/efc3c18b6945d484.ts
 ✓ test/parser/suite/ts/pass/efe346c2fa432efb.ts
 ✓ test/parser/suite/ts/pass/eff014c18151d515.ts
-✗ test/parser/suite/ts/pass/eff3bddad8a9e5bf.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
-31 | var a: { foo<T extends U, U extends Array<string>>(x: T, y: U): string }
-32 | var b = { foo<T extends U, U extends RegExp>(x: T, y: U) { return ''; } };
-   |              ^
-33 | 
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/eff3bddad8a9e5bf.ts
 ✓ test/parser/suite/ts/pass/eff54c64777d517b.ts
 ✓ test/parser/suite/ts/pass/eff575122955dc0c.module.ts
-✗ test/parser/suite/ts/pass/eff590eddfc030c3.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-25 | const o1 = {
-26 |     get x(): number { return 0; },
-   |            ^
-27 |     set x(value: Fail<string>) {}
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/eff590eddfc030c3.module.ts
 ✓ test/parser/suite/ts/pass/eff598562a977b65.module.ts
 ✓ test/parser/suite/ts/pass/f00bcfbba6c9dc98.ts
 ✓ test/parser/suite/ts/pass/f0211821b86d57bf.ts
@@ -9117,17 +8624,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/f05f68b9d7439d72.ts
 ✓ test/parser/suite/ts/pass/f0614164e28a39ad.ts
 ✓ test/parser/suite/ts/pass/f068fabd48a64602.ts
-✗ test/parser/suite/ts/pass/f07d8f7a96c3d866.ts (parse errors)
-error: Expected ',' or '}' in object, but found '<'
-   |
- 5 | let a = {
- 6 |   test<K extends keyof Bar> (a: K,  b?: Bar[K]  |  null)  { }
-   |       ^
- 7 | };
-   |
-   = help: Add a comma between properties or close the object with '}'.
-
-
+✓ test/parser/suite/ts/pass/f07d8f7a96c3d866.ts
 ✓ test/parser/suite/ts/pass/f0823d1e9322d965.ts
 ✓ test/parser/suite/ts/pass/f084b5437ae7326e.ts
 ✓ test/parser/suite/ts/pass/f0880577404584c6.ts
@@ -9493,17 +8990,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/f9d2749d94235c37.ts
 ✓ test/parser/suite/ts/pass/f9e309292e27d605.ts
 ✓ test/parser/suite/ts/pass/f9e6513b2cbf65b5.ts
-✗ test/parser/suite/ts/pass/fa20020cd8440de0.module.ts (parse errors)
-error: Expected '{' to start function body, but found ':'
-   |
-27 |     async m1() { },
-28 |     async m2(): Promise<void> { },
-   |               ^
-29 |     async m3(): MyPromise<void> { }
-   |
-   = help: Function bodies must be enclosed in braces: function name() { ... }
-
-
+✓ test/parser/suite/ts/pass/fa20020cd8440de0.module.ts
 ✓ test/parser/suite/ts/pass/fa204333ad010b27.ts
 ✓ test/parser/suite/ts/pass/fa3d80bb75ecaae7.ts
 ✓ test/parser/suite/ts/pass/fa3e8543bf8c0885.ts
@@ -9538,15 +9025,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/fb08a63e7ea68928.ts
 ✓ test/parser/suite/ts/pass/fb10a3cf93e0e382.ts
 ✓ test/parser/suite/ts/pass/fb35c6d1fc6a54c9.ts
-✗ test/parser/suite/ts/pass/fb3c8fc50b3c6eee.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-23 | var a: { new <T, U>(x: T, y?: U): B<T, U> };
-24 | var b = { new<T, U>(x: T, y: U) { return new C<T, U>(x, y); } }; // not a construct signature, function called new
-   |           ^^^
-25 | 
-   |
-
+✓ test/parser/suite/ts/pass/fb3c8fc50b3c6eee.ts
 ✓ test/parser/suite/ts/pass/fb45c2113576a0d7.ts
 ✓ test/parser/suite/ts/pass/fb4b8672b1a9c05a.ts
 ✓ test/parser/suite/ts/pass/fb4c18ce8f0245f5.ts
@@ -9573,15 +9052,7 @@ error: 'new' is reserved and cannot be used as an identifier
 ✓ test/parser/suite/ts/pass/fbf8ec7fe21b73f3.ts
 ✓ test/parser/suite/ts/pass/fc00bf5fa56f37e9.ts
 ✓ test/parser/suite/ts/pass/fc092681af3e7e74.ts
-✗ test/parser/suite/ts/pass/fc0a5abcdc6e0d49.ts (parse errors)
-error: 'new' is reserved and cannot be used as an identifier
-   |
-23 | var a: { new<T extends Date>(x: T): T }
-24 | var b = { new<T extends Date>(x: T) { return null; } }; // not a construct signature, function called new
-   |           ^^^
-25 | 
-   |
-
+✓ test/parser/suite/ts/pass/fc0a5abcdc6e0d49.ts
 ✓ test/parser/suite/ts/pass/fc0d8b4564dacddf.module.ts
 ✓ test/parser/suite/ts/pass/fc1b24d48bcfcee4.ts
 ✓ test/parser/suite/ts/pass/fc2943c7d87ae81d.ts
