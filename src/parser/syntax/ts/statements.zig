@@ -127,6 +127,11 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
+    // propagate ambient context to every nested declaration.
+    const saved_ambient = parser.context.in_ambient;
+    defer parser.context.in_ambient = saved_ambient;
+    if (mods.declare) parser.context.in_ambient = true;
+
     return switch (parser.current_token.tag) {
         .type => parseTypeAliasDeclaration(parser, mods, start),
         .interface => parseInterfaceDeclaration(parser, mods, start),

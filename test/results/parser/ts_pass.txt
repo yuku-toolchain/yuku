@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8185/8261 (99.08%)
-Failed:       76
-AST mismatch: 0/8185
+Passed:       8196/8261 (99.21%)
+Failed:       65
+AST mismatch: 0/8196
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -781,17 +781,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/17365036feedf060.ts
 ✓ test/parser/suite/ts/pass/17387757f7d1ac52.ts
 ✓ test/parser/suite/ts/pass/174e006112b8ba55.ts
-✗ test/parser/suite/ts/pass/174e56bdc12072c8.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 5 | declare namespace M {
- 6 |     const x: number;
-   |           ^
- 7 | }
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/174e56bdc12072c8.ts
 ✓ test/parser/suite/ts/pass/17506eb5e0fb640a.ts
 ✓ test/parser/suite/ts/pass/175144b31515fea7.module.ts
 ✓ test/parser/suite/ts/pass/17620cabd490f214.ts
@@ -1142,17 +1132,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/2280877309a4e406.module.ts
 ✓ test/parser/suite/ts/pass/229c465e9707fa17.ts
 ✓ test/parser/suite/ts/pass/22a3b5a3737b175d.ts
-✗ test/parser/suite/ts/pass/22aaae89c241c318.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 9 | declare namespace M {
-10 |     const c6;
-   |           ^^
-11 |     const c7: number;
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/22aaae89c241c318.ts
 ✓ test/parser/suite/ts/pass/22b2d849227eb962.ts
 ✓ test/parser/suite/ts/pass/22b51daa16fc8b9b.ts
 ✓ test/parser/suite/ts/pass/22b62c0f539baacf.ts
@@ -2455,17 +2435,7 @@ error: Expected ';' after class field, but found 'is'
 ✓ test/parser/suite/ts/pass/468de98cb3626dd9.ts
 ✓ test/parser/suite/ts/pass/469813bb96251684.ts
 ✓ test/parser/suite/ts/pass/46aac3c4b1ecf653.ts
-✗ test/parser/suite/ts/pass/46ac3b75e62d142b.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 4 | 
- 5 | declare namespace foo { const await: any; }
-   |                               ^^^^^
- 6 | 
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/46ac3b75e62d142b.ts
 ✓ test/parser/suite/ts/pass/46c011c7b2269465.ts
 ✓ test/parser/suite/ts/pass/46c688a4424154ee.ts
 ✓ test/parser/suite/ts/pass/46cbca15048f4872.ts
@@ -2768,17 +2738,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/4eb8e88e82b21079.ts
 ✓ test/parser/suite/ts/pass/4ebada98c2eb7ff8.ts
 ✓ test/parser/suite/ts/pass/4ebda9250af4e7c4.module.ts
-✗ test/parser/suite/ts/pass/4ebf310dd0d25f97.module.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 3 | declare namespace pack1 {
- 4 |   const test1: string;
-   |         ^^^^^
- 5 |   export { test1 };
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/4ebf310dd0d25f97.module.ts
 ✓ test/parser/suite/ts/pass/4ec036c2d70e334f.ts
 ✓ test/parser/suite/ts/pass/4ec0c1bc93eab0ac.ts
 ✓ test/parser/suite/ts/pass/4ed1122a904c9c07.ts
@@ -3188,17 +3148,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/5a12da19fc0c319e.ts
 ✓ test/parser/suite/ts/pass/5a13fac586acaaaf.ts
 ✓ test/parser/suite/ts/pass/5a2258a7c0129056.ts
-✗ test/parser/suite/ts/pass/5a2b119372fba844.ts (parse errors)
-error: 'const' declarations must be initialized
-    |
-121 | declare const s: unique symbol;
-122 | declare namespace N { const s: unique symbol; }
-    |                             ^
-123 | declare const o: { [s]: "a", [N.s]: "b" };
-    |
-    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/5a2b119372fba844.ts
 ✓ test/parser/suite/ts/pass/5a348df48eba52f0.ts
 ✓ test/parser/suite/ts/pass/5a34b44fe108e536.ts
 ✓ test/parser/suite/ts/pass/5a3b6351586d24f3.module.ts
@@ -4225,17 +4175,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/7760fc7c795bfa70.ts
 ✓ test/parser/suite/ts/pass/7762f5496f7babcf.ts
 ✓ test/parser/suite/ts/pass/776dbd86919ae51f.ts
-✗ test/parser/suite/ts/pass/777734215a8870dc.module.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 3 | export {}
- 4 | declare global { const x: any }
-   |                        ^
- 5 | global.x // should not suggest `global` (GH#42209)
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/777734215a8870dc.module.ts
 ✓ test/parser/suite/ts/pass/778c69fedaa039c9.ts
 ✓ test/parser/suite/ts/pass/779235073a2b6810.ts
 ✓ test/parser/suite/ts/pass/77975ab377b30559.ts
@@ -4829,17 +4769,7 @@ error: Expected '{' to start class body, but found 'Foo'
 ✓ test/parser/suite/ts/pass/88371a927309214f.ts
 ✓ test/parser/suite/ts/pass/8839b81cc2f8a6dc.ts
 ✓ test/parser/suite/ts/pass/884e0ff00fc07af2.ts
-✗ test/parser/suite/ts/pass/8850090de31bba6a.ts (parse errors)
-error: 'const' declarations must be initialized
-    |
-125 | declare const s: unique symbol;
-126 | declare namespace N { const s: unique symbol; }
-    |                             ^
-127 | declare const o: { [s]: "a", [N.s]: "b" };
-    |
-    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/8850090de31bba6a.ts
 ✓ test/parser/suite/ts/pass/8853e05d4cc106ea.ts
 ✓ test/parser/suite/ts/pass/8856a9c502844673.module.ts
 ✓ test/parser/suite/ts/pass/885b425e850c6462.ts
@@ -7507,17 +7437,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/d3d0544049614691.ts
 ✓ test/parser/suite/ts/pass/d3e80cb829714a28.ts
 ✓ test/parser/suite/ts/pass/d3ebdf57cc532d91.ts
-✗ test/parser/suite/ts/pass/d3ed7d51233a4b79.module.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 2 | export {}
- 3 | declare global { const x: any }
-   |                        ^
- 4 | const globals = { x: true }
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/d3ed7d51233a4b79.module.ts
 ✓ test/parser/suite/ts/pass/d3f58a42d5b187b5.ts
 ✓ test/parser/suite/ts/pass/d409f129dd17126c.ts
 ✓ test/parser/suite/ts/pass/d41fbe19eb4f6ebb.ts
@@ -7635,17 +7555,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/d7cb7f2821d305be.ts
 ✓ test/parser/suite/ts/pass/d7cd05b9fd2525ed.module.ts
 ✓ test/parser/suite/ts/pass/d7cf8fa6951619ef.ts
-✗ test/parser/suite/ts/pass/d7d4942fdff92c4e.tsx (parse errors)
-error: 'const' declarations must be initialized
-   |
-19 | declare namespace PropTypes {
-20 |     export const number: PropTypeChecker<number>;
-   |                  ^^^^^^
-21 |     export const string: PropTypeChecker<string>;
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/d7d4942fdff92c4e.tsx
 ✓ test/parser/suite/ts/pass/d7f0bead057ab579.ts
 ✓ test/parser/suite/ts/pass/d7f861caf70fdc41.ts
 ✓ test/parser/suite/ts/pass/d830916e327c7c01.ts
@@ -8883,30 +8793,10 @@ error: Expected a type, but found '"DE\nF"'
 ✓ test/parser/suite/ts/pass/fc2ecaa06e87a2ee.ts
 ✓ test/parser/suite/ts/pass/fc38fb7a6d5e1d29.ts
 ✓ test/parser/suite/ts/pass/fc467f545275769c.ts
-✗ test/parser/suite/ts/pass/fc5388973f3dc8d1.ts (parse errors)
-error: 'const' declarations must be initialized
-    |
-507 | declare module "Any/Type" {
-508 |     const symbol: unique symbol;
-    |           ^^^^^^
-509 | 
-    |
-    = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/fc5388973f3dc8d1.ts
 ✓ test/parser/suite/ts/pass/fc561aea7f2a369e.ts
 ✓ test/parser/suite/ts/pass/fc561bebcd06431a.ts
-✗ test/parser/suite/ts/pass/fc5ea2c446cd56b5.ts (parse errors)
-error: 'const' declarations must be initialized
-   |
- 1 | // @target: es2015
- 2 | declare module "foobar" { export const x: number; }
-   |                                        ^
- 3 | foobar;
-   |
-   = help: Add '= value' to initialize the constant, or use 'let' if you need to assign it later.
-
-
+✓ test/parser/suite/ts/pass/fc5ea2c446cd56b5.ts
 ✓ test/parser/suite/ts/pass/fc5eec58e9ac91ef.ts
 ✓ test/parser/suite/ts/pass/fc6c916343a9d8ae.ts
 ✓ test/parser/suite/ts/pass/fc777ba154511ab6.ts

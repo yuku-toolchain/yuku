@@ -10,8 +10,8 @@ const std = @import("std");
 
 pub const ParseVariableDeclarationOpts = struct {
     await_using: bool = false,
-    /// sets the `declare` flag on the resulting `VariableDeclaration`
-    /// and relaxes ambient-incompatible initializer checks.
+    /// sets the `declare` flag on the resulting `VariableDeclaration`. ambient
+    /// policy is driven by `parser.context.in_ambient`.
     is_declare: bool = false,
 };
 
@@ -35,7 +35,7 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    const ctx: DeclaratorCtx = if (opts.is_declare) .declare else .normal;
+    const ctx: DeclaratorCtx = if (parser.context.in_ambient) .declare else .normal;
 
     const first_declarator = try parseVariableDeclarator(parser, kind, ctx) orelse return null;
 

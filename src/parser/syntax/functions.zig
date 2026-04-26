@@ -11,6 +11,8 @@ const ts_types = @import("ts/types.zig");
 const ParseFunctionOpts = struct {
     is_async: bool = false,
     is_expression: bool = false,
+    /// sets the `declare` flag on the resulting `Function` node. ambient
+    /// policy is driven by `parser.context.in_ambient`.
     is_declare: bool = false,
     /// for export default function, allows optional name but produces FunctionDeclaration
     is_default_export: bool = false,
@@ -107,17 +109,20 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     var body: ast.NodeIndex = .null;
 
-    if (opts.is_declare and parser.current_token.tag == .left_brace) {
+    // function expressions always carry a body, only declarations obey ambient rules.
+    const is_ambient_declaration = parser.context.in_ambient and !is_function_expression;
+
+    if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
         try parser.report(
             parser.current_token.span,
             "An implementation cannot be declared in ambient contexts",
-            .{ .help = "Remove the function body or remove the 'declare' modifier" },
+            .{ .help = "Remove the function body or the surrounding 'declare' modifier" },
         );
         return null;
     }
 
     // ts ambient declarations and overload signatures are body-less.
-    const has_body = !opts.is_declare and (!parser.tree.isTs() or
+    const has_body = !is_ambient_declaration and (!parser.tree.isTs() or
         is_function_expression or parser.current_token.tag == .left_brace);
 
     if (has_body) {
