@@ -30,7 +30,7 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     parser.context.in_directive_prologue = parser.context.in_directive_prologue and parser.current_token.tag == .string_literal;
 
     return switch (parser.current_token.tag) {
-        .at => extensions.parseDecorated(parser, .{}),
+        .at => parseDecoratedStatement(parser),
         .await => parseAwaitUsingOrExpression(parser),
         .import => parseImportDeclarationOrExpression(parser),
         .async => parseAsyncFunctionOrExpression(parser),
@@ -58,6 +58,18 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .semicolon => parseEmptyStatement(parser),
         else => parseExpressionOrLabeledStatementOrDirective(parser),
     };
+}
+
+/// `@dec class C` or `@dec export [default] class C`.
+fn parseDecoratedStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    const decorators = try extensions.parseDecorators(parser) orelse return null;
+
+    if (parser.current_token.tag == .@"export") {
+        return modules.parseExportDecorated(parser, decorators);
+    }
+
+    return class.parseClassDecorated(parser, .{}, start, decorators);
 }
 
 fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex {

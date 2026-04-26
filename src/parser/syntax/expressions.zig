@@ -83,7 +83,9 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
     }
 
     if (tag == .at) {
-        return extensions.parseDecorated(parser, .{ .is_expression = true });
+        const start = parser.current_token.span.start;
+        const decorators = try extensions.parseDecorators(parser) orelse return null;
+        return class.parseClassDecorated(parser, .{ .is_expression = true }, start, decorators);
     }
 
     if (tag.isUnaryOperator()) {
@@ -1147,34 +1149,43 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
     };
 }
 
+pub const LhsContext = enum {
+    /// `<T>` reserved for `super_type_arguments`, `[k]` allowed
+    extends_clause,
+    /// folds in ts postfix `!` and `<T>`, `[k]` reserved for the
+    /// following class element's key
+    decorator,
+};
+
 /// https://tc39.es/ecma262/#prod-LeftHandSideExpression
-/// used to parse `extends` clause or decorator expression, where we only need left hand side expression
-pub inline fn parseLeftHandSideExpression(parser: *Parser) Error!?ast.NodeIndex {
-    // base expression
-    var expr: ast.NodeIndex = blk: {
-        if (parser.current_token.tag == .left_paren) {
-            break :blk try parseParenthesizedExpression(parser) orelse return null;
-        }
-
-        if (parser.current_token.tag == .new) {
-            break :blk try parseNewExpression(parser) orelse return null;
-        }
-
-        if (parser.current_token.tag == .import) {
-            break :blk try parseImportExpression(parser, null) orelse return null;
-        }
-
-        break :blk try parsePrimaryExpression(parser, .{}) orelse return null;
+pub fn parseLeftHandSideExpression(parser: *Parser, ctx: LhsContext) Error!?ast.NodeIndex {
+    var expr: ast.NodeIndex = switch (parser.current_token.tag) {
+        .left_paren => try parseParenthesizedExpression(parser) orelse return null,
+        .new => try parseNewExpression(parser) orelse return null,
+        .import => try parseImportExpression(parser, null) orelse return null,
+        else => try parsePrimaryExpression(parser, .{}) orelse return null,
     };
 
-    // chain LeftHandSide operations: member access, calls, optional chaining
+    const consume_ts_postfix = ctx == .decorator and parser.tree.isTs();
+
     while (true) {
         expr = switch (parser.current_token.tag) {
             .dot => try parseStaticMemberExpression(parser, expr, false) orelse return null,
-            .left_bracket => try parseComputedMemberExpression(parser, expr, false) orelse return null,
+            .left_bracket => switch (ctx) {
+                .extends_clause => try parseComputedMemberExpression(parser, expr, false) orelse return null,
+                .decorator => break,
+            },
             .left_paren => try parseCallExpression(parser, expr, false, .null) orelse return null,
             .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, expr, .null) orelse return null,
             .optional_chaining => try parseOptionalChain(parser, expr) orelse return null,
+            .logical_not => if (consume_ts_postfix and !parser.current_token.hasLineTerminatorBefore())
+                try ts_ops.parseNonNullExpression(parser, expr) orelse return null
+            else
+                break,
+            .less_than => if (consume_ts_postfix)
+                (try ts_ops.parseTypeArgumentedCallOrInstantiation(parser, expr)) orelse break
+            else
+                break,
             else => break,
         };
     }

@@ -564,9 +564,11 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
         declaration = try class.parseClass(parser, .{ .is_default_export = true }, null) orelse return null;
         is_decl = true;
     }
-    // export default @decorator [declaration]
+    // export default @decorator class
     else if (parser.current_token.tag == .at) {
-        declaration = try extensions.parseDecorated(parser, .{ .is_default_export = true }) orelse return null;
+        const decorators_start = parser.current_token.span.start;
+        const decorators = try extensions.parseDecorators(parser) orelse return null;
+        declaration = try class.parseClassDecorated(parser, .{ .is_default_export = true }, decorators_start, decorators) orelse return null;
         is_decl = true;
     }
     // export default expression
@@ -730,8 +732,11 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         .class => {
             declaration = try class.parseClass(parser, .{}, null) orelse return null;
         },
+        // `export @dec class`: inner `ClassDeclaration` spans from the `@`.
         .at => {
-            declaration = try extensions.parseDecorated(parser, .{}) orelse return null;
+            const decorators_start = parser.current_token.span.start;
+            const decorators = try extensions.parseDecorators(parser) orelse return null;
+            declaration = try class.parseClassDecorated(parser, .{}, decorators_start, decorators) orelse return null;
         },
         // `export import x = ...`
         .import => if (parser.tree.isTs()) {
@@ -759,6 +764,37 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             .export_kind = .value,
         },
     }, .{ .start = start, .end = parser.tree.getSpan(declaration).end });
+}
+
+/// `@dec export [default] class C`. `decorators` were collected at
+/// statement position by the caller, both the wrapping export and the
+/// inner `ClassDeclaration` exclude the leading `@`
+pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+
+    const is_default = parser.current_token.tag == .default;
+    if (is_default) try parser.advance() orelse return null;
+
+    const declaration = try class.parseClassDecorated(
+        parser,
+        .{ .is_default_export = is_default },
+        null,
+        decorators,
+    ) orelse return null;
+    const span: ast.Span = .{ .start = start, .end = parser.tree.getSpan(declaration).end };
+
+    return try parser.tree.createNode(if (is_default) .{
+        .export_default_declaration = .{ .declaration = declaration },
+    } else .{
+        .export_named_declaration = .{
+            .declaration = declaration,
+            .specifiers = ast.IndexRange.empty,
+            .source = .null,
+            .attributes = ast.IndexRange.empty,
+            .export_kind = .value,
+        },
+    }, span);
 }
 
 fn exportKindForDeclaration(parser: *Parser, declaration: ast.NodeIndex) ast.ImportOrExportKind {

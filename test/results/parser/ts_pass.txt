@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8058/8261 (97.54%)
-Failed:       203
-AST mismatch: 0/8058
+Passed:       8108/8261 (98.15%)
+Failed:       153
+AST mismatch: 0/8108
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -109,17 +109,7 @@ error: Invalid character at start of identifier
 ✓ test/parser/suite/ts/pass/024be59f4217a2d3.ts
 ✓ test/parser/suite/ts/pass/02597eca7b6b7260.ts
 ✓ test/parser/suite/ts/pass/02628cc29efca456.ts
-✗ test/parser/suite/ts/pass/02697e8fc7e1cc87.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-14 | @dec
-15 | export default class C {
-   | ^^^^^^
-16 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/02697e8fc7e1cc87.module.ts
 ✓ test/parser/suite/ts/pass/02758f56d7cd6648.ts
 ✓ test/parser/suite/ts/pass/027d9d9da27ac6b6.ts
 ✓ test/parser/suite/ts/pass/028044fe2b3366ef.ts
@@ -164,17 +154,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/039b521437a1f075.ts
 ✓ test/parser/suite/ts/pass/03a6763766befa41.ts
 ✓ test/parser/suite/ts/pass/03adad11ec47c70e.ts
-✗ test/parser/suite/ts/pass/03ae8d90deadcab7.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 5 | class C {
- 6 |     method(this: C, @dec p: number) {}
-   |                     ^
- 7 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/03ae8d90deadcab7.ts
 ✓ test/parser/suite/ts/pass/03b19b9d944a61c5.ts
 ✓ test/parser/suite/ts/pass/03db420d2b7eb8f1.ts
 ✓ test/parser/suite/ts/pass/03f77f112ee6f012.ts
@@ -476,17 +456,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/0bcab69eb0248b75.ts
 ✓ test/parser/suite/ts/pass/0bd74bc1741ef3cc.ts
 ✓ test/parser/suite/ts/pass/0bd91d69fc76d70c.ts
-✗ test/parser/suite/ts/pass/0be2aaeb203a0178.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 5 | @dec
- 6 | export default class {
-   | ^^^^^^
- 7 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/0be2aaeb203a0178.module.ts
 ✓ test/parser/suite/ts/pass/0be3e8e0868fb0f8.ts
 ✓ test/parser/suite/ts/pass/0be44cf270fc7e95.ts
 ✓ test/parser/suite/ts/pass/0bf59d026ec2781a.ts
@@ -520,17 +490,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/0cf173d702b8e830.tsx
 ✓ test/parser/suite/ts/pass/0cf1854d490ea95f.ts
 ✓ test/parser/suite/ts/pass/0cf6db6fa5d2d7bd.ts
-✗ test/parser/suite/ts/pass/0cf9beb630ce5c91.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-13 | @foo
-14 | export class D {
-   | ^^^^^^
-15 |     static s = 0;
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/0cf9beb630ce5c91.module.ts
 ✓ test/parser/suite/ts/pass/0cfb9f459d6f23fa.module.ts
 ✓ test/parser/suite/ts/pass/0d15a1d0471e006d.module.ts
 ✓ test/parser/suite/ts/pass/0d1cc2b7f5819e67.ts
@@ -795,17 +755,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/1343772e5b51e563.ts
 ✓ test/parser/suite/ts/pass/13456bf55e2f5173.ts
 ✓ test/parser/suite/ts/pass/1347b55986e976d9.ts
-✗ test/parser/suite/ts/pass/134937a8ec37776a.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found '!'
-   |
- 9 | 
-10 | { @x! class C {} }
-   |     ^
-11 | 
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/134937a8ec37776a.ts
 ✓ test/parser/suite/ts/pass/134c42b478e63ec5.ts
 ✓ test/parser/suite/ts/pass/134c4d64435f5bc3.ts
 ✓ test/parser/suite/ts/pass/13529724969a0d7e.ts
@@ -920,17 +870,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/16d936bea0253eb1.ts
 ✓ test/parser/suite/ts/pass/16e5cfb9fd5d30ae.ts
 ✓ test/parser/suite/ts/pass/16e7bf0fc1f394ae.ts
-✗ test/parser/suite/ts/pass/16e7f4e4ae55cb60.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-14 | @dec
-15 | export default class {
-   | ^^^^^^
-16 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/16e7f4e4ae55cb60.module.ts
 ✓ test/parser/suite/ts/pass/16ec3d452eb6e088.ts
 ✓ test/parser/suite/ts/pass/16eeec0a37feacfb.ts
 ✓ test/parser/suite/ts/pass/16fc8254a5e840b2.ts
@@ -1089,17 +1029,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/1ba1c4e1248a91af.ts
 ✓ test/parser/suite/ts/pass/1ba1f8ff7cd2e7d8.ts
 ✓ test/parser/suite/ts/pass/1ba7f2ffd232bbc0.ts
-✗ test/parser/suite/ts/pass/1bae045ca7fa2082.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
-14 |     constructor(
-15 |       @ParameterDecorator1 
-   |       ^
-16 |       @ParameterDecorator2(20) 
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/1bae045ca7fa2082.ts
 ✓ test/parser/suite/ts/pass/1bb19c44c1f7b1c6.ts
 ✓ test/parser/suite/ts/pass/1bb223d368214972.ts
 ✓ test/parser/suite/ts/pass/1bb4d074eb4c47cd.ts
@@ -1636,17 +1566,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/2a97e64dd043a822.ts
 ✓ test/parser/suite/ts/pass/2a9c91186279613c.module.ts
 ✓ test/parser/suite/ts/pass/2a9fd58093713af4.ts
-✗ test/parser/suite/ts/pass/2aa1ecf683ba8104.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
-18 | 
-19 |     y(@decorator((x: C2) => x.#x) p) {}
-   |       ^
-20 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/2aa1ecf683ba8104.ts
 ✓ test/parser/suite/ts/pass/2ab5c870f5d46d41.ts
 ✓ test/parser/suite/ts/pass/2ab795bad581094c.ts
 ✓ test/parser/suite/ts/pass/2ab8be46524a44b7.ts
@@ -1903,17 +1823,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/30aaca83b76cecd2.ts
 ✓ test/parser/suite/ts/pass/30b9c5d1df3f3b26.ts
 ✓ test/parser/suite/ts/pass/30bcd04fabbc9616.ts
-✗ test/parser/suite/ts/pass/30bcef9ec39df199.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 6 | @foo
- 7 | export default class C {
-   | ^^^^^^
- 8 |     static x() { return C.y; }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/30bcef9ec39df199.module.ts
 ✓ test/parser/suite/ts/pass/30bf63e994173e89.ts
 ✓ test/parser/suite/ts/pass/30bfd21f73703ca8.ts
 ✓ test/parser/suite/ts/pass/30bfff6fcb9f059b.ts
@@ -2075,17 +1985,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/34999eed1082c8da.ts
 ✓ test/parser/suite/ts/pass/349c98374b9d6e60.module.ts
 ✓ test/parser/suite/ts/pass/349d099b16d1de90.ts
-✗ test/parser/suite/ts/pass/34b59d47bc3117b7.ts (parse errors)
-error: Unexpected token '{' as class element key
-   |
- 5 | class C {
- 6 |     @dec ["1"]() { }
-   |                  ^
- 7 |     @dec ["b"]() { }
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/34b59d47bc3117b7.ts
 ✓ test/parser/suite/ts/pass/34c0e921ae71e348.ts
 ✓ test/parser/suite/ts/pass/34c262272b11f2f3.ts
 ✓ test/parser/suite/ts/pass/34c3737cc4ae80a5.ts
@@ -2295,17 +2195,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/39dc0c583bf3a752.ts
 ✓ test/parser/suite/ts/pass/39dc97346fb905ad.ts
 ✓ test/parser/suite/ts/pass/39e7243468cd6f47.ts
-✗ test/parser/suite/ts/pass/39e924bd47cc4e05.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
-30 | 
-31 |     constructor(@dec(() => C4) a: any) {}
-   |                 ^
-32 |     static method2(@dec(() => C4) a: any) {}
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/39e924bd47cc4e05.ts
 ✓ test/parser/suite/ts/pass/39f07b4dac39e9e0.ts
 ✓ test/parser/suite/ts/pass/39f2fa36d459d80d.ts
 ✓ test/parser/suite/ts/pass/39fcc7375de21c23.ts
@@ -2762,17 +2652,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/450849316531f32e.ts
 ✓ test/parser/suite/ts/pass/450dc03acf7221bf.ts
 ✓ test/parser/suite/ts/pass/4515ce1aa8cca813.ts
-✗ test/parser/suite/ts/pass/452a2f370caca9f1.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-13 | @foo
-14 | export class D {
-   | ^^^^^^
-15 |     static s = 0;
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/452a2f370caca9f1.module.ts
 ✓ test/parser/suite/ts/pass/4530f1256ec5ea3e.ts
 ✓ test/parser/suite/ts/pass/4549261b74f9f2b4.ts
 ✓ test/parser/suite/ts/pass/4557c2b75ff47dd6.ts
@@ -2891,17 +2771,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/47c41e45b93861f1.ts
 ✓ test/parser/suite/ts/pass/47cafcf877cac9e3.ts
 ✓ test/parser/suite/ts/pass/47d9bd9e4f9720c3.ts
-✗ test/parser/suite/ts/pass/47dae7153121ba91.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 5 | @dec
- 6 | export default class C {
-   | ^^^^^^
- 7 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/47dae7153121ba91.module.ts
 ✓ test/parser/suite/ts/pass/47e58cdcef546877.module.ts
 ✓ test/parser/suite/ts/pass/47ea6191407214de.ts
 ✓ test/parser/suite/ts/pass/47ef67cc838c3d4d.ts
@@ -2935,17 +2805,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/48d34de144bde641.tsx
 ✓ test/parser/suite/ts/pass/48d36d812075d46a.module.ts
 ✓ test/parser/suite/ts/pass/48d8bc490a5deaf0.ts
-✗ test/parser/suite/ts/pass/48e2f70d5165039c.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 6 | @deco
- 7 | export class Example {
-   | ^^^^^^
- 8 |     static foo() {}
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/48e2f70d5165039c.module.ts
 ✓ test/parser/suite/ts/pass/48e49630cbdb9b40.ts
 ✓ test/parser/suite/ts/pass/48eb3c8e9a93319e.ts
 ✓ test/parser/suite/ts/pass/48f8551f71118aeb.ts
@@ -3330,17 +3190,7 @@ error: Getter must have no parameters
 ✓ test/parser/suite/ts/pass/529c65d4774dee65.ts
 ✓ test/parser/suite/ts/pass/529f0e2c11fd3cf1.ts
 ✓ test/parser/suite/ts/pass/52aa016a3c5278ff.ts
-✗ test/parser/suite/ts/pass/52bb5504280a28cb.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-14 | @dec
-15 | export default class {
-   | ^^^^^^
-16 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/52bb5504280a28cb.module.ts
 ✓ test/parser/suite/ts/pass/52c4ff7d1dcf16d0.ts
 ✓ test/parser/suite/ts/pass/52cfa9f41fd884fe.ts
 ✓ test/parser/suite/ts/pass/52d8f89350759d2a.ts
@@ -3634,17 +3484,7 @@ error: 'const' declarations must be initialized
 
 ✓ test/parser/suite/ts/pass/5a348df48eba52f0.ts
 ✓ test/parser/suite/ts/pass/5a34b44fe108e536.ts
-✗ test/parser/suite/ts/pass/5a3b6351586d24f3.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-14 | @dec
-15 | export class C {
-   | ^^^^^^
-16 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/5a3b6351586d24f3.module.ts
 ✓ test/parser/suite/ts/pass/5a43de948a0bf5b1.module.ts
 ✓ test/parser/suite/ts/pass/5a5c024628c8c2e7.ts
 ✓ test/parser/suite/ts/pass/5a6d108c453fc3cb.ts
@@ -3679,17 +3519,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/5b3665e5328cc979.ts
 ✓ test/parser/suite/ts/pass/5b461b85bfc296a2.tsx
 ✓ test/parser/suite/ts/pass/5b494f4e1b36d54d.ts
-✗ test/parser/suite/ts/pass/5b504160c4b0865a.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-14 | @dec
-15 | export class C {
-   | ^^^^^^
-16 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/5b504160c4b0865a.module.ts
 ✓ test/parser/suite/ts/pass/5b5fbd5868482af8.ts
 ✓ test/parser/suite/ts/pass/5b61e8f54edb8e39.ts
 ✓ test/parser/suite/ts/pass/5b7346bde24d3e44.module.ts
@@ -4020,17 +3850,7 @@ error: Class declaration requires a name
 ✓ test/parser/suite/ts/pass/635db01e44cbc119.ts
 ✓ test/parser/suite/ts/pass/63606a4dc6601031.ts
 ✓ test/parser/suite/ts/pass/6363b8da34587148.ts
-✗ test/parser/suite/ts/pass/636db6a70cc53d53.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-14 | @dec
-15 | export default class C {
-   | ^^^^^^
-16 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/636db6a70cc53d53.module.ts
 ✓ test/parser/suite/ts/pass/637ac5d44c2fe14c.ts
 ✓ test/parser/suite/ts/pass/63a46adcc81e5825.ts
 ✓ test/parser/suite/ts/pass/63a81c0fe6b47d48.ts
@@ -4050,17 +3870,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/640b952a9dff8c03.ts
 ✓ test/parser/suite/ts/pass/6411ee491c1bc47f.ts
 ✓ test/parser/suite/ts/pass/6411f2ae8f2f3ec0.ts
-✗ test/parser/suite/ts/pass/64121ac9fff3b26e.ts (parse errors)
-error: Unexpected token '{' as class element key
-   |
- 5 | class C {
- 6 |     @dec ["method"]() {}
-   |                       ^
- 7 | }
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/64121ac9fff3b26e.ts
 ✓ test/parser/suite/ts/pass/64133390abcf96d6.ts
 ✓ test/parser/suite/ts/pass/641e67698a911839.ts
 ✓ test/parser/suite/ts/pass/642d679b8c62b71b.ts
@@ -4109,17 +3919,7 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/656b92fc0664c92e.ts
 ✓ test/parser/suite/ts/pass/6574ed50e947d83b.ts
 ✓ test/parser/suite/ts/pass/65a841a084637081.ts
-✗ test/parser/suite/ts/pass/65b2dbec0e6ab88b.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 5 | class C {
- 6 |     method(@dec p: number) {}
-   |            ^
- 7 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/65b2dbec0e6ab88b.ts
 ✓ test/parser/suite/ts/pass/65b413157802474d.ts
 ✓ test/parser/suite/ts/pass/65c2b3907421ccfd.ts
 ✓ test/parser/suite/ts/pass/65cc3b2b60bee699.ts
@@ -4425,17 +4225,7 @@ error: Unexpected token 'delete' in expression
 ✓ test/parser/suite/ts/pass/6e8d92108f94d0a8.ts
 ✓ test/parser/suite/ts/pass/6ea17209adc0c1ef.ts
 ✓ test/parser/suite/ts/pass/6eb581d59733dd95.ts
-✗ test/parser/suite/ts/pass/6eb64ab4927b682c.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-12 | @dec
-13 | export default class {
-   | ^^^^^^
-14 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/6eb64ab4927b682c.module.ts
 ✓ test/parser/suite/ts/pass/6ec14449e1b192d5.ts
 ✓ test/parser/suite/ts/pass/6ecd7935dff35bd4.ts
 ✓ test/parser/suite/ts/pass/6ed0ef2e46c44364.module.ts
@@ -4535,17 +4325,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/7151c55b741e8624.ts
 ✓ test/parser/suite/ts/pass/71529180f73222bb.ts
 ✓ test/parser/suite/ts/pass/7155cac4ad6f46a2.ts
-✗ test/parser/suite/ts/pass/7158bdad21ff9b6f.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 6 | @deco
- 7 | export class Example {
-   | ^^^^^^
- 8 |     static foo() {}
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/7158bdad21ff9b6f.module.ts
 ✓ test/parser/suite/ts/pass/715db718bb22ebdc.ts
 ✓ test/parser/suite/ts/pass/7166a553c5c03af7.ts
 ✓ test/parser/suite/ts/pass/71797d4a616aee1a.ts
@@ -4876,17 +4656,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/795e823c13d6a845.ts
 ✓ test/parser/suite/ts/pass/796072adb86256b1.ts
 ✓ test/parser/suite/ts/pass/796a0573af161abd.module.ts
-✗ test/parser/suite/ts/pass/796ae1b642246d04.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 5 | class C {
- 6 |     constructor(@dec p: number) {}
-   |                 ^
- 7 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/796ae1b642246d04.ts
 ✓ test/parser/suite/ts/pass/796b0e46539ad07a.ts
 ✓ test/parser/suite/ts/pass/796e3ef662dc95df.module.ts
 ✓ test/parser/suite/ts/pass/7972eb9667f04218.ts
@@ -4941,17 +4711,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/7ac9527e42f8130c.ts
 ✓ test/parser/suite/ts/pass/7acb7fe1006477e3.ts
 ✓ test/parser/suite/ts/pass/7ad4f5e93e0c6f39.ts
-✗ test/parser/suite/ts/pass/7ae50e2447f052e4.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 5 | @dec
- 6 | export class C {
-   | ^^^^^^
- 7 |     static x() { return C.y; }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/7ae50e2447f052e4.module.ts
 ✗ test/parser/suite/ts/pass/7ae8e80a4a4c1fa9.ts (parse errors)
 error: Expected ',' or '}' in object, but found '<'
    |
@@ -5196,17 +4956,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/80d59ed18ce3ce95.ts
 ✓ test/parser/suite/ts/pass/80d6a5fc976157d5.ts
 ✓ test/parser/suite/ts/pass/80d7076b64eda64b.ts
-✗ test/parser/suite/ts/pass/80d758d1db8ee92a.ts (parse errors)
-error: Unexpected token '{' as class element key
-   |
- 5 | class C {
- 6 |     @dec ["method"]() {}
-   |                       ^
- 7 | }
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/80d758d1db8ee92a.ts
 ✓ test/parser/suite/ts/pass/80e1a8921fbf5297.module.ts
 ✓ test/parser/suite/ts/pass/80e2adf09dbd8750.ts
 ✓ test/parser/suite/ts/pass/80e35cee3d8c8c7a.ts
@@ -5573,17 +5323,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8afea4b375fe8c05.ts
 ✓ test/parser/suite/ts/pass/8b02e6f07b8de3fc.ts
 ✓ test/parser/suite/ts/pass/8b02ea1b9e74884f.ts
-✗ test/parser/suite/ts/pass/8b0853d37670ce97.ts (parse errors)
-error: Unexpected token '{' as class element key
-   |
- 5 | class C {
- 6 |     @dec() ["method"]() {}
-   |                         ^
- 7 | }
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/8b0853d37670ce97.ts
 ✓ test/parser/suite/ts/pass/8b1a5cb409bcab36.ts
 ✓ test/parser/suite/ts/pass/8b1d4c35e3486c5f.ts
 ✓ test/parser/suite/ts/pass/8b22f2f7eba146ed.ts
@@ -5618,17 +5358,7 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/8c13746fc977bb6d.ts
 ✓ test/parser/suite/ts/pass/8c169b9984294dd6.ts
 ✓ test/parser/suite/ts/pass/8c26de6480a5ea5a.ts
-✗ test/parser/suite/ts/pass/8c2f40312c9b6425.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-12 | @dec
-13 | export class C {
-   | ^^^^^^
-14 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/8c2f40312c9b6425.module.ts
 ✓ test/parser/suite/ts/pass/8c312dea6ecbc2b6.ts
 ✓ test/parser/suite/ts/pass/8c372308321b57c3.ts
 ✓ test/parser/suite/ts/pass/8c390cc3dcdfd767.ts
@@ -5686,17 +5416,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/8df8941fb0baf747.ts
 ✓ test/parser/suite/ts/pass/8e0ad389a45468b0.ts
 ✓ test/parser/suite/ts/pass/8e0ce6584775abf5.ts
-✗ test/parser/suite/ts/pass/8e0d4ba5722f76c5.ts (parse errors)
-error: Unexpected token ':' as class element key
-   |
-11 | class A {
-12 |     @x ["property"]: any;
-   |                    ^
-13 |     @x [Symbol.toStringTag]: any;
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/8e0d4ba5722f76c5.ts
 ✓ test/parser/suite/ts/pass/8e181f4965a93989.ts
 ✓ test/parser/suite/ts/pass/8e230ed803bb9a9e.ts
 ✓ test/parser/suite/ts/pass/8e28fde078948770.ts
@@ -5754,17 +5474,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/8f1726c7ae4cf920.ts
 ✓ test/parser/suite/ts/pass/8f1cad1b2106f9e8.ts
 ✓ test/parser/suite/ts/pass/8f1f1a31bea24edc.ts
-✗ test/parser/suite/ts/pass/8f1f1e9c27dfbce2.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 7 | @foo
- 8 | export default class D {
-   | ^^^^^^
- 9 |     static s = 0;
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/8f1f1e9c27dfbce2.module.ts
 ✓ test/parser/suite/ts/pass/8f1fd5bd1c70f4b3.ts
 ✓ test/parser/suite/ts/pass/8f2d309f6e18686d.ts
 ✓ test/parser/suite/ts/pass/8f3120947f3cd21e.module.tsx
@@ -6601,17 +6311,7 @@ error: Expected a type, but found '"AB\r\nC"'
 ✓ test/parser/suite/ts/pass/a6cc919dc27a2a51.ts
 ✓ test/parser/suite/ts/pass/a6dc61a71e8a9f31.ts
 ✓ test/parser/suite/ts/pass/a6ddd64cdd41aeb2.ts
-✗ test/parser/suite/ts/pass/a6e1df79c027160b.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 5 | @dec
- 6 | export default class C {
-   | ^^^^^^
- 7 |     static x() { return C.y; }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/a6e1df79c027160b.module.ts
 ✓ test/parser/suite/ts/pass/a6e7dfbd02d8f80e.ts
 ✓ test/parser/suite/ts/pass/a6e80ed7240ff00e.module.ts
 ✓ test/parser/suite/ts/pass/a71690b53bf181a9.ts
@@ -6947,34 +6647,14 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/b0138a84c0d377e5.ts
 ✓ test/parser/suite/ts/pass/b016e71ecdceb61c.ts
 ✓ test/parser/suite/ts/pass/b01861b98401a4d4.ts
-✗ test/parser/suite/ts/pass/b01c3d5b372ad93f.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-12 | @dec
-13 | export class C {
-   | ^^^^^^
-14 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/b01c3d5b372ad93f.module.ts
 ✓ test/parser/suite/ts/pass/b025914ba1b738e4.ts
 ✓ test/parser/suite/ts/pass/b03b8e952fc4c96e.ts
 ✓ test/parser/suite/ts/pass/b0511888917d9e08.module.ts
 ✓ test/parser/suite/ts/pass/b05277d314d3c7ed.ts
 ✓ test/parser/suite/ts/pass/b059a8e31fb9bf46.ts
 ✓ test/parser/suite/ts/pass/b066490793694308.ts
-✗ test/parser/suite/ts/pass/b073ebe52e161efd.ts (parse errors)
-error: Unexpected token '=' as class element key
-   |
-11 |     @dec(1) field1 = 1;
-12 |     @dec(2) ["field2"] = 2;
-   |                        ^
-13 |     @dec(3) [field3] = 3;
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/b073ebe52e161efd.ts
 ✗ test/parser/suite/ts/pass/b075e41eec062945.ts (parse errors)
 error: Expected ')' to close a parenthesized type, but found ':'
    |
@@ -7115,17 +6795,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/b346f32501f8e259.ts
 ✓ test/parser/suite/ts/pass/b352dbf3395f3613.ts
 ✓ test/parser/suite/ts/pass/b3585557baaf0d86.ts
-✗ test/parser/suite/ts/pass/b367e4a273366509.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
-12 |     constructor(
-13 |         @IFoo private readonly _modeService: IFoo,
-   |         ^
-14 |     ) { }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/b367e4a273366509.ts
 ✓ test/parser/suite/ts/pass/b3723d4d77b9eaa1.ts
 ✓ test/parser/suite/ts/pass/b3766fc745081aa0.ts
 ✓ test/parser/suite/ts/pass/b3805ea2bf9c10d9.module.ts
@@ -7552,31 +7222,11 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/be229a1c6d5f5380.ts
 ✓ test/parser/suite/ts/pass/be2393b512f3231d.ts
 ✓ test/parser/suite/ts/pass/be37203a8518c4f6.ts
-✗ test/parser/suite/ts/pass/be3aa8e07773c053.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 7 | @foo
- 8 | export default class D {
-   | ^^^^^^
- 9 |     static s = 0;
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/be3aa8e07773c053.module.ts
 ✓ test/parser/suite/ts/pass/be3f4ba2c2f64175.ts
 ✓ test/parser/suite/ts/pass/be3ffa4647cd7a75.ts
 ✓ test/parser/suite/ts/pass/be42e965c0383c62.ts
-✗ test/parser/suite/ts/pass/be4ad351a930e0b8.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 5 | @dec
- 6 | export class C {
-   | ^^^^^^
- 7 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/be4ad351a930e0b8.module.ts
 ✓ test/parser/suite/ts/pass/be4ae04ea8a5ce8a.module.ts
 ✓ test/parser/suite/ts/pass/be4d59b031736e54.ts
 ✓ test/parser/suite/ts/pass/be4f80d852cefb42.ts
@@ -8118,17 +7768,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/cc758959a55440cc.ts
 ✓ test/parser/suite/ts/pass/cc7af4eb2d226159.module.ts
 ✓ test/parser/suite/ts/pass/cc7b04da234ac562.ts
-✗ test/parser/suite/ts/pass/cc8e054142f4000b.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
-25 | 
-26 |   greet2(@lambda(Enum.No) @deco(Enum.No) param) {
-   |          ^
-27 |     return "Hello, " + this.greeting;
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/cc8e054142f4000b.ts
 ✓ test/parser/suite/ts/pass/cc9a1acc693d89b7.ts
 ✓ test/parser/suite/ts/pass/cca7020b223951f5.ts
 ✓ test/parser/suite/ts/pass/cca705b75f616afa.ts
@@ -8139,34 +7779,14 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/ccd3fd543889d07c.ts
 ✓ test/parser/suite/ts/pass/ccd68cc1bc38e162.ts
 ✓ test/parser/suite/ts/pass/ccd6d7d996473bc4.ts
-✗ test/parser/suite/ts/pass/ccdfc1b8ad01d7a6.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 7 |   class Class {
- 8 |     async method(@dec(await value) arg: number) {}
-   |                  ^
- 9 |   }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/ccdfc1b8ad01d7a6.ts
 ✓ test/parser/suite/ts/pass/ccf01f663fbad84a.ts
 ✓ test/parser/suite/ts/pass/cd0463086aa812e5.ts
 ✓ test/parser/suite/ts/pass/cd073d163eb5c022.ts
 ✓ test/parser/suite/ts/pass/cd0f9cb6eeb9db19.ts
 ✓ test/parser/suite/ts/pass/cd12ce1441704d5b.ts
 ✓ test/parser/suite/ts/pass/cd231cb4a13b6b94.ts
-✗ test/parser/suite/ts/pass/cd286e3a15d46a73.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-12 | @dec
-13 | export default class {
-   | ^^^^^^
-14 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/cd286e3a15d46a73.module.ts
 ✓ test/parser/suite/ts/pass/cd2a771d9ac94789.module.ts
 ✓ test/parser/suite/ts/pass/cd34f2c76f6ad6e8.ts
 ✓ test/parser/suite/ts/pass/cd3584d3d80913ec.ts
@@ -8212,17 +7832,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/ce987bed00074256.ts
 ✓ test/parser/suite/ts/pass/cea49c35f35fc086.ts
 ✓ test/parser/suite/ts/pass/ceaeeae52fdb6efd.ts
-✗ test/parser/suite/ts/pass/ceb29e53552dcc65.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 5 | class C {
- 6 |     constructor(@((t, k, i) => {}) p: any) {}
-   |                 ^
- 7 | 
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/ceb29e53552dcc65.ts
 ✓ test/parser/suite/ts/pass/cebc2ad1cd336049.module.ts
 ✓ test/parser/suite/ts/pass/cec0ecc1e0019278.ts
 ✓ test/parser/suite/ts/pass/cec2755537e147ae.ts
@@ -8544,17 +8154,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/d6f6d208862a36f0.tsx
 ✓ test/parser/suite/ts/pass/d6fd643fcd4281a1.ts
 ✓ test/parser/suite/ts/pass/d700a20fe390f666.ts
-✗ test/parser/suite/ts/pass/d70e95e0ab69be9d.module.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 6 | export default class {
- 7 |     method(@dec p: number) {}
-   |            ^
- 8 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/d70e95e0ab69be9d.module.ts
 ✓ test/parser/suite/ts/pass/d70f1346a65a9ff1.module.ts
 ✓ test/parser/suite/ts/pass/d71cb015b81404f6.ts
 ✓ test/parser/suite/ts/pass/d72e3a004f63e694.ts
@@ -9182,17 +8782,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/e7fd42d058997be4.module.ts
 ✓ test/parser/suite/ts/pass/e8244c2a9585bd3a.ts
 ✓ test/parser/suite/ts/pass/e82c5e1175830184.ts
-✗ test/parser/suite/ts/pass/e82d9e64b4dd11a9.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 5 | @dec
- 6 | export default class {
-   | ^^^^^^
- 7 |     static y = 1;
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/e82d9e64b4dd11a9.module.ts
 ✓ test/parser/suite/ts/pass/e841ecf577ff6299.ts
 ✓ test/parser/suite/ts/pass/e84216ccbe3e9308.ts
 ✓ test/parser/suite/ts/pass/e85ac13f4833c222.ts
@@ -9249,33 +8839,13 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/e914bd602ddd1e81.ts
 ✓ test/parser/suite/ts/pass/e92276b99f0d0c66.ts
 ✓ test/parser/suite/ts/pass/e92bcca54a42d3c1.module.ts
-✗ test/parser/suite/ts/pass/e9436308db0d4832.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 6 | @dec
- 7 | export class C {
-   | ^^^^^^
- 8 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/e9436308db0d4832.module.ts
 ✓ test/parser/suite/ts/pass/e946bcd6ec87b417.ts
 ✓ test/parser/suite/ts/pass/e9487a0d7cf8fea2.ts
 ✓ test/parser/suite/ts/pass/e94f94f4e6d7ca42.ts
 ✓ test/parser/suite/ts/pass/e9530a1f78322ea5.ts
 ✓ test/parser/suite/ts/pass/e957a2ad75040d7c.ts
-✗ test/parser/suite/ts/pass/e95c68d10b0a9cd2.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-12 | @dec
-13 | export default class C {
-   | ^^^^^^
-14 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/e95c68d10b0a9cd2.module.ts
 ✓ test/parser/suite/ts/pass/e95db24644f78615.ts
 ✓ test/parser/suite/ts/pass/e965f7fa5cea8c1f.ts
 ✓ test/parser/suite/ts/pass/e973a4fb0f2e26b6.ts
@@ -9387,17 +8957,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/ebd7e9c8254c4173.ts
 ✓ test/parser/suite/ts/pass/ebdf0ebc8a8d46d9.ts
 ✓ test/parser/suite/ts/pass/ebe5ab7218a9d8e4.ts
-✗ test/parser/suite/ts/pass/ebe6cd3e2bbac23c.ts (parse errors)
-error: Unexpected token '{' as class element key
-   |
-10 |     @dec(1) method1() {}
-11 |     @dec(2) ["method2"]() {}
-   |                           ^
-12 |     @dec(3) [method3]() {}
-   |
-   = help: Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr].
-
-
+✓ test/parser/suite/ts/pass/ebe6cd3e2bbac23c.ts
 ✓ test/parser/suite/ts/pass/ebe7465c310f6bee.tsx
 ✓ test/parser/suite/ts/pass/ebed39feb1f46fe1.ts
 ✓ test/parser/suite/ts/pass/ebf4e8f558c41e20.ts
@@ -9418,17 +8978,7 @@ error: Unexpected token '{' as class element key
 ✓ test/parser/suite/ts/pass/ec7009723c5bb1bc.ts
 ✓ test/parser/suite/ts/pass/ec73d8617afbca21.module.ts
 ✓ test/parser/suite/ts/pass/ec74c21b4ff3e150.ts
-✗ test/parser/suite/ts/pass/ec755f36c7bacf2c.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
-12 | @dec
-13 | export default class C {
-   | ^^^^^^
-14 | }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/ec755f36c7bacf2c.module.ts
 ✓ test/parser/suite/ts/pass/ec88c5d50ec92bd3.ts
 ✓ test/parser/suite/ts/pass/ec8ba5429c1a1a45.ts
 ✓ test/parser/suite/ts/pass/ec8e76aec00f433b.module.ts
@@ -9484,17 +9034,7 @@ error: Expected a class declaration after decorators in declaration position, bu
 ✓ test/parser/suite/ts/pass/ee3fcd410321144a.ts
 ✓ test/parser/suite/ts/pass/ee4203825ca07155.ts
 ✓ test/parser/suite/ts/pass/ee463df5841dc4a2.ts
-✗ test/parser/suite/ts/pass/ee48b544d35b3b9e.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 7 | class C {
- 8 |     constructor(@dec x: any) {}
-   |                 ^
- 9 |     method(@dec x: any) {}
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/ee48b544d35b3b9e.ts
 ✓ test/parser/suite/ts/pass/ee4e2848376af43d.module.ts
 ✓ test/parser/suite/ts/pass/ee4f3c721f150cba.ts
 ✓ test/parser/suite/ts/pass/ee6340addb6b23bf.ts
@@ -9593,17 +9133,7 @@ error: Expected ',' or '}' in object, but found '<'
 ✓ test/parser/suite/ts/pass/f0880577404584c6.ts
 ✓ test/parser/suite/ts/pass/f08cf46d321a6560.ts
 ✓ test/parser/suite/ts/pass/f08d8f8f204815c7.ts
-✗ test/parser/suite/ts/pass/f0961db1efbd64c6.module.ts (parse errors)
-error: Expected a class declaration after decorators in declaration position, but found 'export'
-   |
- 6 | @foo
- 7 | export default class C {
-   | ^^^^^^
- 8 |     static x() { return C.y; }
-   |
-   = help: Use '@decorator class Foo {}', or remove the decorator.
-
-
+✓ test/parser/suite/ts/pass/f0961db1efbd64c6.module.ts
 ✓ test/parser/suite/ts/pass/f09fed04a16d83e4.ts
 ✓ test/parser/suite/ts/pass/f0a1e7e90a948d0e.ts
 ✓ test/parser/suite/ts/pass/f0a2ec5588b302f3.ts
@@ -9925,17 +9455,7 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/ts/pass/f8e0177b6565cc04.ts
 ✓ test/parser/suite/ts/pass/f8e44b1045b178bd.ts
 ✓ test/parser/suite/ts/pass/f8e4c02f859b8915.ts
-✗ test/parser/suite/ts/pass/f8ef266d896c5fdd.module.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 9 |     @dec x: any;
-10 |     constructor(@dec x: any) {}
-   |                 ^
-11 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/f8ef266d896c5fdd.module.ts
 ✓ test/parser/suite/ts/pass/f8f6021cbf517a35.ts
 ✓ test/parser/suite/ts/pass/f8fa167531071840.ts
 ✓ test/parser/suite/ts/pass/f9066a05f003af34.ts
@@ -9944,17 +9464,7 @@ error: Unexpected token '@' in binding pattern
 ✓ test/parser/suite/ts/pass/f9321784200fd3fd.ts
 ✓ test/parser/suite/ts/pass/f9329837dea7640a.ts
 ✓ test/parser/suite/ts/pass/f943113baf0e06aa.ts
-✗ test/parser/suite/ts/pass/f948e2f4fdbf827c.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 9 |     @y(null as T) // <-- y should resolve to the function declaration, not the parameter; T should resolve to the type parameter of the class
-10 |     method(@y x, y) {} // <-- decorator y should be resolved at the class declaration, not the parameter.
-   |            ^
-11 | }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/f948e2f4fdbf827c.ts
 ✓ test/parser/suite/ts/pass/f94d5ce1c5e2b080.ts
 ✗ test/parser/suite/ts/pass/f94e15038e9d0041.ts (parse errors)
 error: Expected ';' after for-loop init, but found ':'
@@ -10008,17 +9518,7 @@ error: Expected '{' to start function body, but found ':'
 ✓ test/parser/suite/ts/pass/fa8ca9fa44f44c66.ts
 ✓ test/parser/suite/ts/pass/fa93bfb02667ce48.ts
 ✓ test/parser/suite/ts/pass/fa9b079fc8bce874.ts
-✗ test/parser/suite/ts/pass/fa9ba3eff248c643.ts (parse errors)
-error: Unexpected token '@' in binding pattern
-   |
- 9 | class A {
-10 |     constructor(a: number, @decorator b: string) {
-   |                            ^
-11 |     }
-   |
-   = help: Expected an identifier, array pattern ([a, b]), or object pattern ({a, b}).
-
-
+✓ test/parser/suite/ts/pass/fa9ba3eff248c643.ts
 ✓ test/parser/suite/ts/pass/faa7934162f18f15.ts
 ✓ test/parser/suite/ts/pass/fab8aabafe54b2f5.ts
 ✓ test/parser/suite/ts/pass/fac186e4ec9b032c.ts

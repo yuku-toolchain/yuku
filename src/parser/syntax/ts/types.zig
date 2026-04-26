@@ -500,22 +500,53 @@ fn jsdocNodeData(inner: ast.NodeIndex, comptime kind: JSDocKind, postfix: bool) 
 fn isStartOfType(tag: TokenTag) bool {
     return switch (tag) {
         // keyword types (see `parseTypeKeyword`)
-        .any, .bigint, .boolean, .intrinsic, .never, .null_literal, .number,
-        .object, .string, .symbol, .this, .undefined, .unknown, .void,
+        .any,
+        .bigint,
+        .boolean,
+        .intrinsic,
+        .never,
+        .null_literal,
+        .number,
+        .object,
+        .string,
+        .symbol,
+        .this,
+        .undefined,
+        .unknown,
+        .void,
         // literal types (see `parseLiteralType`)
-        .true, .false, .string_literal, .numeric_literal, .hex_literal,
-        .octal_literal, .binary_literal, .bigint_literal,
-        .no_substitution_template, .template_head, .minus, .plus,
+        .true,
+        .false,
+        .string_literal,
+        .numeric_literal,
+        .hex_literal,
+        .octal_literal,
+        .binary_literal,
+        .bigint_literal,
+        .no_substitution_template,
+        .template_head,
+        .minus,
+        .plus,
         // compound type openers
-        .left_paren, .left_bracket, .left_brace, .less_than,
+        .left_paren,
+        .left_bracket,
+        .left_brace,
+        .less_than,
         // unary type operators
-        .keyof, .unique, .readonly, .infer, .typeof, .import,
+        .keyof,
+        .unique,
+        .readonly,
+        .infer,
+        .typeof,
+        .import,
         // function or constructor type leads
-        .new, .abstract,
+        .new,
+        .abstract,
         // predicate lead
         .asserts,
         // jsdoc prefix markers
-        .question, .logical_not,
+        .question,
+        .logical_not,
         // tuple rest
         .spread,
         => true,
@@ -1386,8 +1417,26 @@ pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, ann
     }
 }
 
+/// attaches `decorators` to the inner binding pattern in place
+pub fn applyDecoratorsToPattern(parser: *Parser, pattern: ast.NodeIndex, decorators: ast.IndexRange) void {
+    if (decorators.len == 0) return;
+
+    var data = parser.tree.getData(pattern);
+
+    switch (data) {
+        .binding_identifier => |*v| v.decorators = decorators,
+        .object_pattern => |*v| v.decorators = decorators,
+        .array_pattern => |*v| v.decorators = decorators,
+        .assignment_pattern => |*v| v.decorators = decorators,
+        .binding_rest_element => |*v| v.decorators = decorators,
+        else => return,
+    }
+
+    parser.tree.replaceData(pattern, data);
+}
+
 /// marks the inner binding pattern optional (`x?`, `[...]?`, `{...}?`)
-/// and extends its span to cover the trailing `?`. in place.
+/// and extends its span to cover the trailing `?`. in place
 pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) void {
     var data = parser.tree.getData(pattern);
 

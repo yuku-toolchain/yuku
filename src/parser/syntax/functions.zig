@@ -5,6 +5,7 @@ const TokenTag = @import("../token.zig").TokenTag;
 
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
+const extensions = @import("extensions.zig");
 const ts_types = @import("ts/types.zig");
 
 const ParseFunctionOpts = struct {
@@ -212,7 +213,15 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
     var rest: ast.NodeIndex = .null;
 
     while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
+        const param_start = parser.current_token.span.start;
+
+        const decorators: ast.IndexRange = if (parser.tree.isTs() and parser.current_token.tag == .at)
+            try extensions.parseDecorators(parser) orelse return null
+        else
+            ast.IndexRange.empty;
+
         if (parser.current_token.tag == .spread) {
+            // decorators on `...rest` are silently dropped
             rest = try patterns.parseBindingRestElement(parser) orelse .null;
 
             if (parser.current_token.tag == .comma and rest != .null) {
@@ -224,7 +233,7 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
                 return null;
             }
         } else {
-            const param = try parseFormalParameter(parser, allow_parameter_properties) orelse break;
+            const param = try parseFormalParameter(parser, allow_parameter_properties, decorators, param_start) orelse break;
             try parser.scratch_a.append(parser.allocator(), param);
         }
 
@@ -242,17 +251,17 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
     } }, .{ .start = start, .end = end });
 }
 
-pub fn parseFormalParameter(parser: *Parser, allow_parameter_properties: bool) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-
-    // `function f(this: T, ...)` and related signature forms. `this` is
-    // never a real binding, so it short-circuits the modifier, pattern,
-    // and default-value branches below.
+/// `decorators` and `start` are pre-collected by `parseFormalParameters`
+pub fn parseFormalParameter(
+    parser: *Parser,
+    allow_parameter_properties: bool,
+    decorators: ast.IndexRange,
+    start: u32,
+) Error!?ast.NodeIndex {
     if (parser.tree.isTs() and parser.current_token.tag == .this) {
         return try parseThisParameter(parser);
     }
 
-    // parameter-property modifiers, only accepted inside class constructors.
     var pp_accessibility: ast.Accessibility = .none;
     var pp_readonly = false;
     var pp_override = false;
@@ -278,14 +287,12 @@ pub fn parseFormalParameter(parser: *Parser, allow_parameter_properties: bool) E
 
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    // optional parameter marker `x?`.
     if (parser.tree.isTs() and parser.current_token.tag == .question) {
         const question_end = parser.current_token.span.end;
         try parser.advance() orelse return null;
         ts_types.markPatternOptional(parser, pattern, question_end);
     }
 
-    // type annotation `x: Type`.
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);
@@ -297,13 +304,15 @@ pub fn parseFormalParameter(parser: *Parser, allow_parameter_properties: bool) E
 
     if (has_pp_modifier) {
         return try parser.tree.createNode(.{ .ts_parameter_property = .{
-            .decorators = ast.IndexRange.empty,
+            .decorators = decorators,
             .parameter = pattern,
             .override = pp_override,
             .readonly = pp_readonly,
             .accessibility = pp_accessibility,
         } }, .{ .start = start, .end = parser.tree.getSpan(pattern).end });
     }
+
+    ts_types.applyDecoratorsToPattern(parser, pattern, decorators);
 
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
 }

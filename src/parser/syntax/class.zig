@@ -87,7 +87,7 @@ pub fn parseClassDecorated(
 
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
-        super_class = try expressions.parseLeftHandSideExpression(parser) orelse return null;
+        super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse return null;
         if (parser.tree.isTs() and parser.current_token.tag == .less_than) {
             super_type_arguments = try ts_types.parseTypeArguments(parser);
         }
@@ -691,7 +691,7 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 // validation
 //
 
-// `#constructor` is not allowed as a private field name.
+// `#constructor` is not allowed as a private field name
 fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: bool) Error!void {
     if (computed) return;
     const data = parser.tree.getData(key);
@@ -705,7 +705,7 @@ fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: boo
 }
 
 // detects an unqualified `constructor` name and promotes `kind` from
-// `.method` to `.constructor`. `static` and computed keys never count.
+// `.method` to `.constructor`. `static` and computed keys never count
 fn detectConstructorKind(parser: *Parser, key: ast.NodeIndex, mods: *Modifiers, computed: bool) Error!void {
     if (mods.is_static or computed) return;
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
@@ -746,7 +746,7 @@ fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, mods: Modifiers)
     }
 }
 
-// getters take zero parameters, setters take exactly one.
+// getters take zero parameters, setters take exactly one
 fn validateGetSetParams(parser: *Parser, kind: ast.MethodDefinitionKind, params: ast.NodeIndex) Error!void {
     const data = parser.tree.getData(params).formal_parameters;
     switch (kind) {
@@ -769,7 +769,7 @@ fn validateGetSetParams(parser: *Parser, kind: ast.MethodDefinitionKind, params:
 }
 
 // static members may not be named `prototype`, static fields may not be
-// named `constructor`.
+// named `constructor`
 fn validateStaticPrototypeOrConstructor(
     parser: *Parser,
     key: ast.NodeIndex,
@@ -787,7 +787,7 @@ fn validateStaticPrototypeOrConstructor(
     );
 }
 
-// non-static fields may not be named `constructor`.
+// non-static fields may not be named `constructor`
 fn validateFieldConstructor(parser: *Parser, key: ast.NodeIndex) Error!void {
     const prop = ecmascript.propName(&parser.tree, key) orelse return;
     if (!prop.eql("constructor")) return;
