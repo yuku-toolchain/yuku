@@ -10,8 +10,8 @@ const std = @import("std");
 
 pub const ParseVariableDeclarationOpts = struct {
     await_using: bool = false,
-    /// sets the `declare` flag on the resulting `VariableDeclaration`. ambient
-    /// policy is driven by `parser.context.in_ambient`.
+    /// sets the `declare` flag on the resulting `VariableDeclaration`.
+    /// ambient policy is driven by `parser.context.in_ambient`.
     is_declare: bool = false,
 };
 

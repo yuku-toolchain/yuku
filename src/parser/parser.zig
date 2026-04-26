@@ -45,8 +45,8 @@ const ParserContext = struct {
     /// consequent or case label.
     allow_arrow_return_type: bool = true,
     /// set inside any `declare`-prefixed typescript declaration so nested
-    /// declarations inherit ambient-context rules (e.g. body-less functions,
-    /// initializer-less `const`).
+    /// declarations inherit ambient-context rules (body-less functions,
+    /// initializer-less `const`, etc.).
     in_ambient: bool = false,
 };
 
