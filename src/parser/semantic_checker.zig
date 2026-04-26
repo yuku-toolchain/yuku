@@ -717,10 +717,19 @@ const SemanticVisit = struct {
         return if (eql(u8, name, keyword)) keyword else null;
     }
 
+    /// 14.7.5.1 ForBinding must contain exactly one BoundName, and (outside
+    /// Annex B 3.5) may not have an Initializer.
     fn checkForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
         if (ctx.tree.getData(left) != .variable_declaration) return;
         const decl = ctx.tree.getData(left).variable_declaration;
-        for (ctx.tree.getExtra(decl.declarators)) |child| {
+        const declarators = ctx.tree.getExtra(decl.declarators);
+
+        if (declarators.len > 1) {
+            try self.report(ctx.tree.getSpan(left), "Only a single variable declaration is allowed in a for-in/of statement", .{});
+            return;
+        }
+
+        for (declarators) |child| {
             const declarator = ctx.tree.getData(child).variable_declarator;
             if (declarator.init != .null) {
                 try self.report(ctx.tree.getSpan(child), "for-in/of loop variable declaration may not have an initializer", .{});

@@ -15,6 +15,19 @@ pub const ParseVariableDeclarationOpts = struct {
     is_declare: bool = false,
 };
 
+/// surrounding syntactic context of a `VariableDeclarator`. controls which
+/// initializer-presence rules apply.
+pub const DeclaratorCtx = enum {
+    /// regular `var`/`let`/`const`/`using` declaration statement.
+    normal,
+    /// inside an ambient `declare` declaration: `const`, destructuring, and
+    /// `using` may omit their initializer.
+    declare,
+    /// inside a for-loop init: the for-loop dispatcher emits loop-aware
+    /// diagnostics once the head shape (regular / for-in / for-of) is known.
+    for_loop,
+};
+
 pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationOpts, start_from_param: ?u32) Error!?ast.NodeIndex {
     const start = start_from_param orelse parser.current_token.span.start;
     const kind = try parseVariableKind(parser, opts.await_using) orelse return null;
@@ -22,7 +35,9 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    const first_declarator = try parseVariableDeclarator(parser, kind, opts.is_declare) orelse return null;
+    const ctx: DeclaratorCtx = if (opts.is_declare) .declare else .normal;
+
+    const first_declarator = try parseVariableDeclarator(parser, kind, ctx) orelse return null;
 
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
@@ -31,7 +46,7 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
     // additional declarators: let a, b, c;
     while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
-        const declarator = try parseVariableDeclarator(parser, kind, opts.is_declare) orelse return null;
+        const declarator = try parseVariableDeclarator(parser, kind, ctx) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
         end = parser.tree.getSpan(declarator).end;
     }
@@ -84,7 +99,7 @@ fn parseVariableKind(parser: *Parser, await_using: bool) Error!?ast.VariableKind
     };
 }
 
-fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, declare: bool) Error!?ast.NodeIndex {
+pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: DeclaratorCtx) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
     const id_span = parser.tree.getSpan(id);
@@ -101,8 +116,7 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, declare: boo
         try parser.advance() orelse return null;
     }
 
-    // `let x: Type = ...`
-    // annotation attaches to the inner binding pattern (`id`).
+    // `let x: Type = ...`, annotation attaches to the inner binding pattern.
     if (parser.tree.isTs() and parser.current_token.tag == .colon) {
         const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         ts_types.applyTypeAnnotationToPattern(parser, id, annotation);
@@ -115,39 +129,43 @@ fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, declare: boo
     const is_destructuring = patterns.isDestructuringPattern(parser, id);
 
     if (is_using and is_destructuring) {
-        try parser.report(
-            id_span,
-            "Using declaration cannot have destructuring patterns.",
-            .{},
-        );
+        try parser.report(id_span, "Using declaration cannot have destructuring patterns.", .{});
     }
 
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
 
-        init = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        // honor `allow_in` so for-loop init Annex B 3.5 (`for (var x = 0 in obj)`)
+        // stops at `in`. outside for-loop init, `allow_in` is true so this is a no-op.
+        init = try expressions.parseExpression(parser, Precedence.Assignment, .{ .respect_allow_in = true }) orelse return null;
 
         end = parser.tree.getSpan(init).end;
-    } else if (is_destructuring and !declare) {
-        try parser.report(
-            id_span,
-            "Destructuring declaration must have an initializer",
-            .{ .help = "Add '= value' to provide the object or array to destructure from." },
-        );
-    } else if (kind == .@"const" and !declare) {
-        // skipped under `declare` since ambient const declarations omit the
-        // initializer.
-        try parser.report(
-            id_span,
-            "'const' declarations must be initialized",
-            .{ .help = "Add '= value' to initialize the constant, or use 'let' if you need to assign it later." },
-        );
-    } else if (is_using) {
-        try parser.report(
-            id_span,
-            try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
-            .{ .help = "Disposable resources require an initial value that implements the dispose protocol." },
-        );
+    } else switch (ctx) {
+        // for-loop dispatcher emits loop-aware diagnostics once the head is known.
+        .for_loop => {},
+        // ambient bindings legally omit their initializer.
+        .declare => {},
+        .normal => {
+            if (is_destructuring) {
+                try parser.report(
+                    id_span,
+                    "Destructuring declaration must have an initializer",
+                    .{ .help = "Add '= value' to provide the object or array to destructure from." },
+                );
+            } else if (kind == .@"const") {
+                try parser.report(
+                    id_span,
+                    "'const' declarations must be initialized",
+                    .{ .help = "Add '= value' to initialize the constant, or use 'let' if you need to assign it later." },
+                );
+            } else if (is_using) {
+                try parser.report(
+                    id_span,
+                    try parser.fmt("'{s}' declarations must be initialized", .{kind.toString()}),
+                    .{ .help = "Disposable resources require an initial value that implements the dispose protocol." },
+                );
+            }
+        },
     }
 
     return try parser.tree.createNode(

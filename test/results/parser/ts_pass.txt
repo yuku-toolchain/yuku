@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8163/8261 (98.81%)
-Failed:       98
-AST mismatch: 0/8163
+Passed:       8185/8261 (99.08%)
+Failed:       76
+AST mismatch: 0/8185
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -186,15 +186,7 @@ error: Invalid character at start of identifier
 ✓ test/parser/suite/ts/pass/05296599e9fb6537.ts
 ✓ test/parser/suite/ts/pass/053778ba966afd25.module.ts
 ✓ test/parser/suite/ts/pass/054a64d3925a96d7.ts
-✗ test/parser/suite/ts/pass/0556245dd6080c76.ts (parse errors)
-error: Expected ';' after for-loop init, but found 'of'
-   |
- 1 | //@target: ES5, ES2015
- 2 | for (var a, b of X) {
-   |               ^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/0556245dd6080c76.ts
 ✓ test/parser/suite/ts/pass/055a4aa9582b9189.module.ts
 ✓ test/parser/suite/ts/pass/056d9f0cf405b5e4.ts
 ✓ test/parser/suite/ts/pass/0570cff658e86897.module.tsx
@@ -1327,15 +1319,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/2770ef90e9c8f4e0.ts
 ✓ test/parser/suite/ts/pass/277a72b3f4f37f3f.ts
 ✓ test/parser/suite/ts/pass/2780a698df394986.ts
-✗ test/parser/suite/ts/pass/2781638ea77a8ba5.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 3 | var expr: any;
- 4 | for (var a: number in expr) {
-   |           ^
- 5 | }
-   |
-
+✓ test/parser/suite/ts/pass/2781638ea77a8ba5.ts
 ✓ test/parser/suite/ts/pass/278be3f4e9cd85ff.ts
 ✓ test/parser/suite/ts/pass/279913189dbeaba8.ts
 ✓ test/parser/suite/ts/pass/27b486f8726fff6d.ts
@@ -1386,15 +1370,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/28c7fad93de551bd.module.ts
 ✓ test/parser/suite/ts/pass/28cc8f27952652b9.ts
 ✓ test/parser/suite/ts/pass/28cd03fcddb06025.ts
-✗ test/parser/suite/ts/pass/28d0908453c92c7b.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 1 | // @target: es2015
- 2 | for (var a: number = 1, b: string = "" in X) {
-   |           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/28d0908453c92c7b.ts
 ✓ test/parser/suite/ts/pass/28d222f2e05a9af0.module.ts
 ✓ test/parser/suite/ts/pass/28e29b09c474fc86.ts
 ✓ test/parser/suite/ts/pass/28e324f3683569ef.ts
@@ -1455,15 +1431,7 @@ error: Expected ';' after for-loop init, but found ':'
 ✓ test/parser/suite/ts/pass/2ab5c870f5d46d41.ts
 ✓ test/parser/suite/ts/pass/2ab795bad581094c.ts
 ✓ test/parser/suite/ts/pass/2ab8be46524a44b7.ts
-✗ test/parser/suite/ts/pass/2ab8ff972e204808.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 1 | //@target: ES6
- 2 | for (var a: number = 1, b: string = "" of X) {
-   |           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/2ab8ff972e204808.ts
 ✓ test/parser/suite/ts/pass/2ace3f442641c916.ts
 ✓ test/parser/suite/ts/pass/2ae13632e34da475.ts
 ✓ test/parser/suite/ts/pass/2ae51b4eb088e73a.ts
@@ -1520,15 +1488,7 @@ error: Unexpected token 'delete' in expression
 ✓ test/parser/suite/ts/pass/2c1193c26fdb25f4.ts
 ✓ test/parser/suite/ts/pass/2c20c18b57616c7b.module.ts
 ✓ test/parser/suite/ts/pass/2c23225b47ee43d9.ts
-✗ test/parser/suite/ts/pass/2c29007ce4b34945.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 5 |         this.a++; 
- 6 |         for (var i: T = this.a, j = 0; j < 10; i++) { 
-   |                   ^
- 7 |         }
-   |
-
+✓ test/parser/suite/ts/pass/2c29007ce4b34945.ts
 ✓ test/parser/suite/ts/pass/2c2e60b98d2351ad.ts
 ✓ test/parser/suite/ts/pass/2c2ebef2f85f7c41.ts
 ✓ test/parser/suite/ts/pass/2c32e5f7cb5abd32.ts
@@ -2167,17 +2127,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3da7958ebc111c86.ts
 ✓ test/parser/suite/ts/pass/3da8dbe5c3226c43.module.ts
 ✓ test/parser/suite/ts/pass/3db2bee635b6b997.module.ts
-✗ test/parser/suite/ts/pass/3dcf410716d8a859.ts (parse errors)
-error: 'const' declarations in for loop initializer must be initialized
-   |
- 1 | // @target: esnext
- 2 | for (const a, { [b]: c} of [1]) {
-   |            ^
- 3 | 
-   |
-   = help: Add '= value' to initialize the constant in the for loop.
-
-
+✓ test/parser/suite/ts/pass/3dcf410716d8a859.ts
 ✓ test/parser/suite/ts/pass/3dd37f0f7d45fbcd.ts
 ✓ test/parser/suite/ts/pass/3dd4ea92e6bdd094.ts
 ✓ test/parser/suite/ts/pass/3dd6345997adfee8.ts
@@ -2272,15 +2222,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/3fc21091d9adaa51.ts
 ✓ test/parser/suite/ts/pass/3fc31ea3949307a3.ts
 ✓ test/parser/suite/ts/pass/3fca705befbb6743.ts
-✗ test/parser/suite/ts/pass/3fd35eba4180a07d.ts (parse errors)
-error: Expected ';' after for-loop init, but found 'in'
-   |
- 1 | // @target: es2015
- 2 | for (var a, b in X) {
-   |               ^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/3fd35eba4180a07d.ts
 ✓ test/parser/suite/ts/pass/3fda8c593efd983d.ts
 ✓ test/parser/suite/ts/pass/3ff5bceefe8e2258.ts
 ✓ test/parser/suite/ts/pass/3ffd58c065b1c8aa.ts
@@ -2737,15 +2679,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/4c22e5c692f18594.ts
 ✓ test/parser/suite/ts/pass/4c2557c5eb111a93.ts
 ✓ test/parser/suite/ts/pass/4c25e01d12f072da.ts
-✗ test/parser/suite/ts/pass/4c2bf5e0551231f8.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 1 | // @target: es2015
- 2 | for (var a: number in X) {
-   |           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/4c2bf5e0551231f8.ts
 ✓ test/parser/suite/ts/pass/4c2c2b51e2962f0f.ts
 ✓ test/parser/suite/ts/pass/4c37b0b4f16790f5.ts
 ✓ test/parser/suite/ts/pass/4c38df362dcb8c14.ts
@@ -3327,15 +3261,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/5c1788645c3a78d6.ts
 ✓ test/parser/suite/ts/pass/5c22bd1fbf89f3da.tsx
 ✓ test/parser/suite/ts/pass/5c26d6f77d05655a.ts
-✗ test/parser/suite/ts/pass/5c283c131dbe5d58.ts (parse errors)
-error: Expected ';' after for-loop init, but found 'of'
-   |
- 1 | //@target: ES6
- 2 | for (var a, b of X) {
-   |               ^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/5c283c131dbe5d58.ts
 ✓ test/parser/suite/ts/pass/5c2b159e49eb2fc4.ts
 ✓ test/parser/suite/ts/pass/5c37ccb22e30ea35.ts
 ✓ test/parser/suite/ts/pass/5c3e63b88ea89ebe.ts
@@ -3536,15 +3462,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/61b593674ff21b9b.ts
 ✓ test/parser/suite/ts/pass/61b8ef9af8164226.ts
 ✓ test/parser/suite/ts/pass/61bcb9cf6e002b6f.ts
-✗ test/parser/suite/ts/pass/61cbe59ceb37440c.ts (parse errors)
-error: Expected ';' after for-loop init, but found 'of'
-   |
- 1 | //@target: ES6
- 2 | for (var a = 1, b = 2 of X) {
-   |                       ^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/61cbe59ceb37440c.ts
 ✓ test/parser/suite/ts/pass/61d37a78762ffab0.ts
 ✓ test/parser/suite/ts/pass/61d3b04405e16994.ts
 ✓ test/parser/suite/ts/pass/61de59f78cdb2f82.ts
@@ -3991,15 +3909,7 @@ error: Unexpected token 'delete' in expression
 ✓ test/parser/suite/ts/pass/6efeb17444acfa45.ts
 ✓ test/parser/suite/ts/pass/6f0109f089fa2af6.ts
 ✓ test/parser/suite/ts/pass/6f28e848a6cad0e8.ts
-✗ test/parser/suite/ts/pass/6f2d99d414548b03.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 5 | 
- 6 | for (var x: number; ;) { }
-   |           ^
- 7 | for (var x = 2; ;) { }
-   |
-
+✓ test/parser/suite/ts/pass/6f2d99d414548b03.ts
 ✓ test/parser/suite/ts/pass/6f54cb35d9fb8d05.ts
 ✓ test/parser/suite/ts/pass/6f56eacc61e38ce0.ts
 ✓ test/parser/suite/ts/pass/6f59a5dd59d61daa.ts
@@ -4306,15 +4216,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/77407685bf816494.ts
 ✓ test/parser/suite/ts/pass/77437781be2005e2.ts
 ✓ test/parser/suite/ts/pass/7746fa814c572c2d.ts
-✗ test/parser/suite/ts/pass/774902e282b4cd80.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 1 | //@target: ES5, ES2015
- 2 | for (var a: number of X) {
-   |           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/774902e282b4cd80.ts
 ✓ test/parser/suite/ts/pass/774f09ba11343420.module.ts
 ✓ test/parser/suite/ts/pass/7751c1cb950052e6.ts
 ✓ test/parser/suite/ts/pass/775581f7e385757c.ts
@@ -4365,15 +4267,7 @@ error: 'const' declarations must be initialized
 ✓ test/parser/suite/ts/pass/783c417e692a8a84.ts
 ✓ test/parser/suite/ts/pass/7843c8c0bdbc2dd4.ts
 ✓ test/parser/suite/ts/pass/78465a32eb0aa609.ts
-✗ test/parser/suite/ts/pass/7868b82c29a2a651.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
-11 | 
-12 | for (var idx : number in {}) { }
-   |              ^
-13 | 
-   |
-
+✓ test/parser/suite/ts/pass/7868b82c29a2a651.ts
 ✓ test/parser/suite/ts/pass/786eb5e692cc6c8b.ts
 ✓ test/parser/suite/ts/pass/787502fda4c30eff.ts
 ✓ test/parser/suite/ts/pass/7876b7a2932d39a8.ts
@@ -4558,14 +4452,7 @@ error: Expected ';' after class field, but found 'is'
    = help: Add a semicolon after the field declaration.
 
 
-✗ test/parser/suite/ts/pass/7d8c8a15bc77f080.ts (parse errors)
-error: Expected ';' after for-loop init, but found ')'
-   |
- 2 | //@target: ES5, ES2015
- 3 | for (var of = 0 in of) { }
-   |                      ^
-   |
-
+✓ test/parser/suite/ts/pass/7d8c8a15bc77f080.ts
 ✓ test/parser/suite/ts/pass/7d90abc813f234b5.ts
 ✓ test/parser/suite/ts/pass/7d9ac4dd02299d34.ts
 ✓ test/parser/suite/ts/pass/7d9ad189be53c3e5.ts
@@ -6079,15 +5966,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/a8d5c9fd10b14f49.module.ts
 ✓ test/parser/suite/ts/pass/a8ddce1358b050bc.ts
 ✓ test/parser/suite/ts/pass/a8e1451063a68f6a.ts
-✗ test/parser/suite/ts/pass/a8e560cc3cd981b3.ts (parse errors)
-error: Expected ';' after for-loop init, but found 'of'
-   |
- 1 | //@target: ES5, ES2015
- 2 | for (var a = 1, b = 2 of X) {
-   |                       ^^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/a8e560cc3cd981b3.ts
 ✓ test/parser/suite/ts/pass/a8f944ab7a197e7d.ts
 ✓ test/parser/suite/ts/pass/a8fd1727d73b68d0.ts
 ✓ test/parser/suite/ts/pass/a90a1e9f60ebee4f.ts
@@ -6191,15 +6070,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/aba0e45906806669.ts
 ✓ test/parser/suite/ts/pass/aba497638083f837.ts
 ✓ test/parser/suite/ts/pass/ababdf0d5686feac.ts
-✗ test/parser/suite/ts/pass/abad149ad298f072.ts (parse errors)
-error: Expected ';' after for-loop init, but found ')'
-   |
- 1 | // @target: es2015
- 2 | for (var a = 1, b = 2 in X) {
-   |                           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/abad149ad298f072.ts
 ✓ test/parser/suite/ts/pass/abaff7b1af319dd9.ts
 ✓ test/parser/suite/ts/pass/abb7dad83219f24b.ts
 ✓ test/parser/suite/ts/pass/abb81b5b9a6b809e.ts
@@ -6362,15 +6233,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/b0a4e1ba9fa614bb.module.ts
 ✓ test/parser/suite/ts/pass/b0a8c2f2e996f5cb.ts
 ✓ test/parser/suite/ts/pass/b0b4d13140dd27d3.module.ts
-✗ test/parser/suite/ts/pass/b0bdc13752b79510.ts (parse errors)
-error: Expected ';' after for-loop init, but found ')'
-   |
- 1 | // @target: es2015
- 2 | for (var a = 1 in X) {
-   |                    ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/b0bdc13752b79510.ts
 ✓ test/parser/suite/ts/pass/b0c4350754816deb.ts
 ✓ test/parser/suite/ts/pass/b0ce813691846eae.ts
 ✓ test/parser/suite/ts/pass/b0d43c056d581af6.ts
@@ -6386,15 +6249,7 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/ts/pass/b10b92ae199d9b3f.module.ts
 ✓ test/parser/suite/ts/pass/b10ca8a7bd414a3c.ts
 ✓ test/parser/suite/ts/pass/b111389fa6f8d169.ts
-✗ test/parser/suite/ts/pass/b112e10307ad3dfd.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 1 | //@target: ES6
- 2 | for (var a: number of X) {
-   |           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/b112e10307ad3dfd.ts
 ✓ test/parser/suite/ts/pass/b1146458367d5fd5.ts
 ✓ test/parser/suite/ts/pass/b11ea16e4e374c30.ts
 ✓ test/parser/suite/ts/pass/b11f9ce81fa5fd63.ts
@@ -6540,15 +6395,7 @@ error: Expected ')' to close a parenthesized type, but found '?'
 ✓ test/parser/suite/ts/pass/b4a04211d64fae89.ts
 ✓ test/parser/suite/ts/pass/b4a79f7e9fd3e07a.ts
 ✓ test/parser/suite/ts/pass/b4b7ff12288f1517.ts
-✗ test/parser/suite/ts/pass/b4b825fe64ed2e30.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 3 | var arr = null;
- 4 | for (var i:number in arr) { // error
-   |           ^
- 5 |     var x1 = arr[i];
-   |
-
+✓ test/parser/suite/ts/pass/b4b825fe64ed2e30.ts
 ✓ test/parser/suite/ts/pass/b4c5c61d86f91c78.ts
 ✓ test/parser/suite/ts/pass/b4d0a6c2efe1440f.module.ts
 ✓ test/parser/suite/ts/pass/b4dfb35acd704621.ts
@@ -7647,15 +7494,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/d36d0074b9d9fa9e.ts
 ✓ test/parser/suite/ts/pass/d370745922a3bd85.ts
 ✓ test/parser/suite/ts/pass/d3745cc892fdf073.ts
-✗ test/parser/suite/ts/pass/d385619b459a9685.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
- 1 | //@target: ES5, ES2015
- 2 | for (var a: number = 1, b: string = "" of X) {
-   |           ^
- 3 | }
-   |
-
+✓ test/parser/suite/ts/pass/d385619b459a9685.ts
 ✓ test/parser/suite/ts/pass/d3909833500497a2.ts
 ✓ test/parser/suite/ts/pass/d390d4701fb8f200.ts
 ✓ test/parser/suite/ts/pass/d3948b35f845caf1.ts
@@ -8800,14 +8639,7 @@ error: Expected a type, but found '"DE\nF"'
 ✓ test/parser/suite/ts/pass/f4c2569e0ba35703.ts
 ✓ test/parser/suite/ts/pass/f4cdc05a235a6389.ts
 ✓ test/parser/suite/ts/pass/f4d632af47b4429a.ts
-✗ test/parser/suite/ts/pass/f4df05868024e821.ts (parse errors)
-error: Expected ';' after for-loop init, but found ')'
-   |
- 2 | //@target: ES6
- 3 | for (var of = 0 in of) { }
-   |                      ^
-   |
-
+✓ test/parser/suite/ts/pass/f4df05868024e821.ts
 ✓ test/parser/suite/ts/pass/f4eda59e3ff1fb9d.ts
 ✓ test/parser/suite/ts/pass/f4f627472ac3e34e.ts
 ✓ test/parser/suite/ts/pass/f5032aa5029c3a96.ts
@@ -8963,15 +8795,7 @@ error: Expected ';' after for-loop init, but found ')'
 ✓ test/parser/suite/ts/pass/f943113baf0e06aa.ts
 ✓ test/parser/suite/ts/pass/f948e2f4fdbf827c.ts
 ✓ test/parser/suite/ts/pass/f94d5ce1c5e2b080.ts
-✗ test/parser/suite/ts/pass/f94e15038e9d0041.ts (parse errors)
-error: Expected ';' after for-loop init, but found ':'
-   |
-27 | 
-28 | for(var aNumber: number = 9.9;;){} 
-   |                ^
-29 | for(var aString: string = 'this is a string';;){}
-   |
-
+✓ test/parser/suite/ts/pass/f94e15038e9d0041.ts
 ✓ test/parser/suite/ts/pass/f9524dc286262803.ts
 ✓ test/parser/suite/ts/pass/f95b0b2cefd045a0.ts
 ✓ test/parser/suite/ts/pass/f95fac86adcf85bf.ts
