@@ -1150,10 +1150,9 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
 }
 
 pub const LhsContext = enum {
-    /// `<T>` reserved for `super_type_arguments`, `[k]` allowed
+    /// `[k]` is a computed member access
     extends_clause,
-    /// folds in ts postfix `!` and `<T>`, `[k]` reserved for the
-    /// following class element's key
+    /// `[k]` is the next class element's key
     decorator,
 };
 
@@ -1166,7 +1165,7 @@ pub fn parseLeftHandSideExpression(parser: *Parser, ctx: LhsContext) Error!?ast.
         else => try parsePrimaryExpression(parser, .{}) orelse return null,
     };
 
-    const consume_ts_postfix = ctx == .decorator and parser.tree.isTs();
+    const ts = parser.tree.isTs();
 
     while (true) {
         expr = switch (parser.current_token.tag) {
@@ -1178,11 +1177,11 @@ pub fn parseLeftHandSideExpression(parser: *Parser, ctx: LhsContext) Error!?ast.
             .left_paren => try parseCallExpression(parser, expr, false, .null) orelse return null,
             .template_head, .no_substitution_template => try parseTaggedTemplateExpression(parser, expr, .null) orelse return null,
             .optional_chaining => try parseOptionalChain(parser, expr) orelse return null,
-            .logical_not => if (consume_ts_postfix and !parser.current_token.hasLineTerminatorBefore())
+            .logical_not => if (ts and !parser.current_token.hasLineTerminatorBefore())
                 try ts_ops.parseNonNullExpression(parser, expr) orelse return null
             else
                 break,
-            .less_than => if (consume_ts_postfix)
+            .less_than => if (ts)
                 (try ts_ops.parseTypeArgumentedCallOrInstantiation(parser, expr)) orelse break
             else
                 break,

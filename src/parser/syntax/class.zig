@@ -81,16 +81,24 @@ pub fn parseClassDecorated(
     else
         .null;
 
-    // `extends expr` with optional ts `<T, U>` super-class type arguments.
+    // `extends expr <T>`, a trailing bare `<T>` rides the lhs as a
+    // `TSInstantiationExpression` (when committed) or sits at the cursor
+    // (when rewound on same-line `{`), both split into the class fields.
     var super_class: ast.NodeIndex = .null;
     var super_type_arguments: ast.NodeIndex = .null;
 
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
         super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse return null;
-        if (parser.tree.isTs() and parser.current_token.tag == .less_than) {
-            super_type_arguments = try ts_types.parseTypeArguments(parser);
-        }
+        if (parser.tree.isTs()) switch (parser.tree.getData(super_class)) {
+            .ts_instantiation_expression => |inst| {
+                super_class = inst.expression;
+                super_type_arguments = inst.type_arguments;
+            },
+            else => if (parser.current_token.tag == .less_than) {
+                super_type_arguments = try ts_types.parseTypeArguments(parser);
+            },
+        };
     }
 
     // `implements A, B.C<T>, ...`. may appear with or without a preceding

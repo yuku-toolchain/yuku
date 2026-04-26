@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8196/8261 (99.21%)
-Failed:       65
-AST mismatch: 0/8196
+Passed:       8206/8261 (99.33%)
+Failed:       55
+AST mismatch: 0/8206
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -1095,17 +1095,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/2196a135b40c8854.ts
 ✓ test/parser/suite/ts/pass/219e9cd70e902103.ts
 ✓ test/parser/suite/ts/pass/219f177defa3d5e9.ts
-✗ test/parser/suite/ts/pass/21a057f6762a0de4.module.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-31 | 
-32 | export class MyClass extends getLocalClass<LocalInterface>(undefined)<string, number> { // error LocalClass is inaccisible
-   |                                                           ^
-33 | }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/21a057f6762a0de4.module.ts
 ✓ test/parser/suite/ts/pass/21a6d2cbc9f7e813.ts
 ✓ test/parser/suite/ts/pass/21b5e01c14b97efc.ts
 ✓ test/parser/suite/ts/pass/21b75ae387becb99.ts
@@ -1917,17 +1907,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 ✓ test/parser/suite/ts/pass/37f14a5b2b3f4a8f.ts
 ✓ test/parser/suite/ts/pass/37f56667a4252f84.ts
-✗ test/parser/suite/ts/pass/37f6385d08935ba3.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-50 |   }
-51 | >() {}
-   |  ^
-52 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/37f6385d08935ba3.ts
 ✓ test/parser/suite/ts/pass/38071e9cac64c675.ts
 ✓ test/parser/suite/ts/pass/38139be8f58693d6.ts
 ✓ test/parser/suite/ts/pass/381bd8cd84427557.ts
@@ -2178,17 +2158,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3f60cd4a864a0e80.ts
 ✓ test/parser/suite/ts/pass/3f74b1178c3ce9d7.ts
 ✓ test/parser/suite/ts/pass/3f7a464ced1bd3b5.ts
-✗ test/parser/suite/ts/pass/3f7b425a41ce379c.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-12 | 
-13 |     export class Derived extends getClass<IFace>()
-   |                                                 ^
-14 |     {
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/3f7b425a41ce379c.ts
 ✓ test/parser/suite/ts/pass/3f7d4bc6a444cfb1.ts
 ✓ test/parser/suite/ts/pass/3f89410e6a5568ac.ts
 ✓ test/parser/suite/ts/pass/3f8f5a06274fd8ef.ts
@@ -2478,17 +2448,7 @@ error: Expected a type, but found '"\"ambientModule\""'
 10 | type GlobalOk1 = (typeof globalThis)["valueModule"]
    |
 
-✗ test/parser/suite/ts/pass/47ad01c63f128dc7.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-15 | // extends can call B
-16 | class K extends B1<number>() {
-   |                           ^
-17 |     namae: string;
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/47ad01c63f128dc7.ts
 ✓ test/parser/suite/ts/pass/47b2742fe3c7ae02.module.ts
 ✓ test/parser/suite/ts/pass/47b2f0724ca129e8.ts
 ✓ test/parser/suite/ts/pass/47b8c0c3ab7f5cdf.ts
@@ -3240,17 +3200,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/5cc2def3a748277e.ts
 ✓ test/parser/suite/ts/pass/5cc326d71b716d41.module.ts
 ✓ test/parser/suite/ts/pass/5cc35e0896b6e8f2.ts
-✗ test/parser/suite/ts/pass/5cc943c9605bb9a0.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-10 | 
-11 | class Gen<T> extends base<T>() {}  // Error, T not in scope
-   |                             ^
-12 | class Spec extends Gen<string> {}
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/5cc943c9605bb9a0.ts
 ✓ test/parser/suite/ts/pass/5cdcfc7519193298.ts
 ✓ test/parser/suite/ts/pass/5cf3fd3384b251f0.ts
 ✓ test/parser/suite/ts/pass/5cf7dfa281e4ac0f.ts
@@ -5049,17 +4999,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8fd6b5fdb48f41cf.ts
 ✓ test/parser/suite/ts/pass/8fdc2645fc64f9bd.ts
 ✓ test/parser/suite/ts/pass/8fe9b26a37cc8858.ts
-✗ test/parser/suite/ts/pass/8feab1f967df8b9a.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-23 | 
-24 | class C1 extends Constructor<I1>() { x: string }
-   |                                 ^
-25 | class C2 extends Constructor<I2>() { x: string }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/8feab1f967df8b9a.ts
 ✓ test/parser/suite/ts/pass/8ff2b1d2989bf4bb.ts
 ✓ test/parser/suite/ts/pass/8ff3b68a1dda87ca.ts
 ✓ test/parser/suite/ts/pass/900cb38f537a41a5.ts
@@ -5869,17 +5809,7 @@ error: Expected a type, but found '"AB\r\nC"'
 ✓ test/parser/suite/ts/pass/a85398e928ea14b6.ts
 ✓ test/parser/suite/ts/pass/a8631f33b91f2561.ts
 ✓ test/parser/suite/ts/pass/a86732ad6ecb784f.ts
-✗ test/parser/suite/ts/pass/a8701bebf5023b1d.module.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-36 | 
-37 | export class A extends Class<A>("A")(
-   |                                ^
-38 |   { a: string },
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/a8701bebf5023b1d.module.ts
 ✓ test/parser/suite/ts/pass/a88c9cb4ba99b084.ts
 ✓ test/parser/suite/ts/pass/a88f91fb7ee6f1dc.ts
 ✓ test/parser/suite/ts/pass/a89dc48255b992b5.ts
@@ -7730,17 +7660,7 @@ error: Expected '{' to start class body, but found 'number'
 ✓ test/parser/suite/ts/pass/dd7653e174eb5aab.module.ts
 ✓ test/parser/suite/ts/pass/dd816a1dea2d9028.ts
 ✓ test/parser/suite/ts/pass/dd8eaf5424fc3ed9.module.ts
-✗ test/parser/suite/ts/pass/dd8fa1eba3084caa.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-64 |   }
-65 | >() {}
-   |  ^
-66 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/dd8fa1eba3084caa.ts
 ✓ test/parser/suite/ts/pass/dda31c50167f75d3.ts
 ✓ test/parser/suite/ts/pass/ddc3937bbe1d3a47.ts
 ✓ test/parser/suite/ts/pass/ddc43fb9e8d48b9c.module.ts
@@ -7861,17 +7781,7 @@ error: Expected '{' to start class body, but found '('
 ✓ test/parser/suite/ts/pass/e14ab6e71e94d9d4.ts
 ✓ test/parser/suite/ts/pass/e15c1259b7c9ffb4.ts
 ✓ test/parser/suite/ts/pass/e1655029f8f0182e.module.ts
-✗ test/parser/suite/ts/pass/e169fbbbc0a6e3f5.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-19 | 
-20 | class C1 extends Constructor<T1>() { a: string }
-   |                                 ^
-21 | class C2 extends Constructor<T2>() { b: string }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/e169fbbbc0a6e3f5.ts
 ✓ test/parser/suite/ts/pass/e16bd3fcce61a2e8.ts
 ✓ test/parser/suite/ts/pass/e16c76b2df590ee4.ts
 ✓ test/parser/suite/ts/pass/e16e994a10c50387.ts
@@ -8026,17 +7936,7 @@ error: Expected ';', ',', or newline between type members, but found '('
 ✓ test/parser/suite/ts/pass/e5e02cf6dd8b0310.module.ts
 ✓ test/parser/suite/ts/pass/e5e46b950b5e962b.ts
 ✓ test/parser/suite/ts/pass/e5fddeecac827403.ts
-✗ test/parser/suite/ts/pass/e605cf70a364020c.ts (parse errors)
-error: Expected '{' to start class body, but found '('
-   |
-80 |   }
-81 | >() {}
-   |  ^
-82 | 
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/e605cf70a364020c.ts
 ✓ test/parser/suite/ts/pass/e60b94cc01287ceb.ts
 ✓ test/parser/suite/ts/pass/e60ef7a7dcc277db.ts
 ✓ test/parser/suite/ts/pass/e612db867d68cc52.ts
