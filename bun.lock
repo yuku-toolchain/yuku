@@ -25,7 +25,7 @@
     },
     "npm/yuku-parser": {
       "name": "yuku-parser",
-      "version": "0.4.0",
+      "version": "0.4.6",
       "optionalDependencies": {
         "@yuku-parser/binding-darwin-arm64": "0.0.0",
         "@yuku-parser/binding-darwin-x64": "0.0.0",
@@ -42,47 +42,47 @@
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-arm64": {
       "name": "@yuku-parser/binding-darwin-arm64",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-darwin-x64": {
       "name": "@yuku-parser/binding-darwin-x64",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-freebsd-x64": {
       "name": "@yuku-parser/binding-freebsd-x64",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-gnu": {
       "name": "@yuku-parser/binding-linux-arm-gnu",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm-musl": {
       "name": "@yuku-parser/binding-linux-arm-musl",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-gnu": {
       "name": "@yuku-parser/binding-linux-arm64-gnu",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-arm64-musl": {
       "name": "@yuku-parser/binding-linux-arm64-musl",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-gnu": {
       "name": "@yuku-parser/binding-linux-x64-gnu",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-linux-x64-musl": {
       "name": "@yuku-parser/binding-linux-x64-musl",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-arm64": {
       "name": "@yuku-parser/binding-win32-arm64",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
     "npm/yuku-parser/@yuku-parser/binding-win32-x64": {
       "name": "@yuku-parser/binding-win32-x64",
-      "version": "0.4.0",
+      "version": "0.4.6",
     },
   },
   "packages": {

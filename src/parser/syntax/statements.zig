@@ -14,6 +14,8 @@ const extensions = @import("extensions.zig");
 const grammar = @import("../grammar.zig");
 const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
+const ts_statements = @import("ts/statements.zig");
+const ts_types = @import("ts/types.zig");
 
 const ParseStatementOpts = struct {
     /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
@@ -28,15 +30,17 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
     parser.context.in_directive_prologue = parser.context.in_directive_prologue and parser.current_token.tag == .string_literal;
 
     return switch (parser.current_token.tag) {
-        .at => extensions.parseDecorated(parser, .{}),
+        .at => parseDecoratedStatement(parser),
         .await => parseAwaitUsingOrExpression(parser),
         .import => parseImportDeclarationOrExpression(parser),
         .async => parseAsyncFunctionOrExpression(parser),
-        .@"var", .@"const" => variables.parseVariableDeclaration(parser, false, null),
+        .@"var" => variables.parseVariableDeclaration(parser, .{}, null),
+        .@"const" => parseConstOrConstEnum(parser),
         .let => parseLet(parser),
         .using => parseUsingOrExpression(parser),
         .function => functions.parseFunction(parser, .{}, null),
         .class => class.parseClass(parser, .{}, null),
+        .type, .interface, .@"enum", .namespace, .module, .declare, .abstract => parseTsDeclarationOrExpression(parser),
         .@"export" => modules.parseExportDeclaration(parser),
         .@"if" => parseIfStatement(parser),
         .@"switch" => parseSwitchStatement(parser),
@@ -54,6 +58,18 @@ pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.Node
         .semicolon => parseEmptyStatement(parser),
         else => parseExpressionOrLabeledStatementOrDirective(parser),
     };
+}
+
+/// `@dec class C` or `@dec export [default] class C`.
+fn parseDecoratedStatement(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    const decorators = try extensions.parseDecorators(parser) orelse return null;
+
+    if (parser.current_token.tag == .@"export") {
+        return modules.parseExportDecorated(parser, decorators);
+    }
+
+    return class.parseClassDecorated(parser, .{}, start, decorators);
 }
 
 fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.NodeIndex {
@@ -115,7 +131,7 @@ fn parseLet(parser: *Parser) Error!?ast.NodeIndex {
 
     if (!is_identifier) {
         // parse as variable declaration: let x = 5;
-        return variables.parseVariableDeclaration(parser, false, null);
+        return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
     // otherwise, fall through to parse 'let' as an identifier in an expression statement.
@@ -128,7 +144,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
     if (!is_using_identifier) {
-        return variables.parseVariableDeclaration(parser, false, null);
+        return variables.parseVariableDeclaration(parser, .{}, null);
     }
 
     return parseExpressionStatement(parser);
@@ -136,7 +152,7 @@ fn parseUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 
 /// `await using` declaration, or fall through to expression statement.
 fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    const next = try parser.peekAhead() orelse return null;
 
     return switch (next.tag) {
         .using => {
@@ -147,7 +163,7 @@ fn parseAwaitUsingOrExpression(parser: *Parser) Error!?ast.NodeIndex {
             const is_using_identifier = try variables.isUsingIdentifier(parser) orelse return null;
 
             if (!is_using_identifier) {
-                return variables.parseVariableDeclaration(parser, true, start);
+                return variables.parseVariableDeclaration(parser, .{ .await_using = true }, start);
             }
 
             return parseAwaitExpressionStatement(parser, start);
@@ -164,7 +180,7 @@ fn parseAwaitExpressionStatement(parser: *Parser, start: u32) Error!?ast.NodeInd
 
 /// import declaration, or fall through to import expression statement (`import(` / `import.`).
 fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    const next = try parser.peekAhead() orelse return null;
 
     return switch (next.tag) {
         // `import(` and `import.` are expression forms (dynamic import / import.meta / phase imports)
@@ -173,9 +189,22 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
+fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
+    if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
+        return ts_statements.parseTsDeclaration(parser);
+    return parseExpressionOrLabeledStatementOrDirective(parser);
+}
+
+fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
+    if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
+        return ts_statements.parseTsDeclaration(parser);
+
+    return variables.parseVariableDeclaration(parser, .{}, null);
+}
+
 /// `async function` declaration, or fall through to expression statement.
 fn parseAsyncFunctionOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    const next = try parser.lookAhead() orelse return null;
+    const next = try parser.peekAhead() orelse return null;
 
     if (next.tag == .function and !next.hasLineTerminatorBefore()) {
         const start = parser.current_token.span.start;
@@ -311,14 +340,11 @@ fn parseCaseConsequent(parser: *Parser) Error!ast.IndexRange {
             // A using declaration can appear in the following contexts:
             //  - The top level of a Module anywhere a VariableStatement is allowed, as long as it is not
             //    immediately nested inside of a `CaseClause` or `DefaultClause`.
-            if(stmt_data == .variable_declaration) {
+            if (stmt_data == .variable_declaration) {
                 const kind = stmt_data.variable_declaration.kind;
 
-                if(kind == .using or kind == .await_using) {
-                    try parser.report(
-                        parser.tree.getSpan(stmt),
-                        "Using declaration cannot appear in the bare case statement.",
-                        .{ .help = "Wrap this declaration in a block statement" });
+                if (kind == .using or kind == .await_using) {
+                    try parser.report(parser.tree.getSpan(stmt), "Using declaration cannot appear in the bare case statement.", .{ .help = "Wrap this declaration in a block statement" });
                 }
             }
 
@@ -571,6 +597,12 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .left_paren) {
         try parser.advance() orelse return null; // consume '('
         param = try patterns.parseBindingPattern(parser) orelse return null;
+
+        if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+            ts_types.applyTypeAnnotationToPattern(parser, param, annotation);
+        }
+
         if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) return null;
     }
 

@@ -52,8 +52,10 @@ const SemanticVisit = struct {
     pub fn enter_binding_identifier(self: *Self, id: ast.BindingIdentifier, node_index: ast.NodeIndex, ctx: *SemanticCtx) AnalysisError!Action {
         const name = ctx.tree.getString(id.name);
 
+        const is_ambient = ctx.symbols.currentBindingIsAmbient();
+
         // https://tc39.es/ecma262/#sec-identifiers-static-semantics-early-errors
-        if (ctx.scope.isStrict()) {
+        if (ctx.scope.isStrict() and !is_ambient) {
             try self.checkStrictReserved(name, node_index, ctx, "a binding identifier");
 
             if (isEvalOrArguments(name))
@@ -72,8 +74,10 @@ const SemanticVisit = struct {
             const existing = ctx.symbols.getSymbol(sym);
 
             // Section 14.2.1, 14.12.1: block/switch lexical redeclaration.
-            if (existing.kind.isBlockScoped(target_scope_kind) or
-                current_kind.isBlockScoped(target_scope_kind))
+            const merging_with_ambient = is_ambient or existing.flags.is_ambient;
+            if (!merging_with_ambient and
+                (existing.kind.isBlockScoped(target_scope_kind) or
+                    current_kind.isBlockScoped(target_scope_kind)))
             {
                 try self.reportRedeclaration(id, node_index, existing, ctx);
                 return .proceed;
@@ -447,10 +451,16 @@ const SemanticVisit = struct {
         const exported_name = getModuleExportName(ctx.tree, spec.exported);
         try self.recordExportedName(exported_name, node_index, ctx);
 
-        // collect for unresolved check (only for local exports, not re-exports)
+        // collect for unresolved check (only for local exports, not re-exports).
+        // type-only exports refer to type bindings that live outside the value
+        // scope our checker tracks, so skip the check for both `export type { X }`
+        // (declaration level) and `export { type X }` (specifier level).
+        if (spec.export_kind == .type) return .proceed;
         if (ctx.path.parent()) |parent| {
-            if (ctx.tree.getData(parent) == .export_named_declaration and
-                ctx.tree.getData(parent).export_named_declaration.source == .null)
+            const parent_data = ctx.tree.getData(parent);
+            if (parent_data == .export_named_declaration and
+                parent_data.export_named_declaration.source == .null and
+                parent_data.export_named_declaration.export_kind != .type)
             {
                 try self.export_specifiers.append(self.allocator, .{
                     .local_name = getModuleExportName(ctx.tree, spec.local),
@@ -587,9 +597,13 @@ const SemanticVisit = struct {
         for (children, 0..) |child, j| {
             const child_data = ctx.tree.getData(child);
 
+            // a body-less method is a typescript overload signature,
+            // abstract member, or ambient method. it has no
+            // implementation, so it does not count toward the
+            // duplicate-constructor check.
             if (child_data == .method_definition) {
                 const md = child_data.method_definition;
-                if (md.kind == .constructor) {
+                if (md.kind == .constructor and ctx.tree.getData(md.value).function.body != .null) {
                     if (first_constructor) |first| {
                         try self.report(ctx.tree.getSpan(md.key), "A class can only have one constructor", .{
                             .labels = try self.labels(&.{
@@ -666,8 +680,7 @@ const SemanticVisit = struct {
     }
 
     /// 15.7.7 AllPrivateIdentifiersValid: walks ancestor ClassBody nodes,
-    /// collecting PrivateBoundIdentifiers at each level, mirrors the spec's
-    /// `newNames = list-concatenation of names and PrivateBoundIdentifiers of ClassBody`.
+    /// collecting PrivateBoundIdentifiers at each level.
     fn isPrivateNameDeclared(ctx: *SemanticCtx, name: []const u8) bool {
         var iter = ctx.path.ancestors();
         while (iter.next()) |i| {
@@ -704,10 +717,19 @@ const SemanticVisit = struct {
         return if (eql(u8, name, keyword)) keyword else null;
     }
 
+    /// 14.7.5.1 ForBinding must contain exactly one BoundName, and (outside
+    /// Annex B 3.5) may not have an Initializer.
     fn checkForInOfInitializer(self: *Self, ctx: *SemanticCtx, left: ast.NodeIndex) AnalysisError!void {
         if (ctx.tree.getData(left) != .variable_declaration) return;
         const decl = ctx.tree.getData(left).variable_declaration;
-        for (ctx.tree.getExtra(decl.declarators)) |child| {
+        const declarators = ctx.tree.getExtra(decl.declarators);
+
+        if (declarators.len > 1) {
+            try self.report(ctx.tree.getSpan(left), "Only a single variable declaration is allowed in a for-in/of statement", .{});
+            return;
+        }
+
+        for (declarators) |child| {
             const declarator = ctx.tree.getData(child).variable_declarator;
             if (declarator.init != .null) {
                 try self.report(ctx.tree.getSpan(child), "for-in/of loop variable declaration may not have an initializer", .{});

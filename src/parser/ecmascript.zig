@@ -39,7 +39,9 @@ pub fn findNonSimpleParameter(tree: *const ast.Tree, params: ast.FormalParameter
     for (tree.getExtra(params.items)) |param_idx| {
         const pattern = tree.getData(param_idx).formal_parameter.pattern;
         switch (tree.getData(pattern)) {
-            .binding_identifier => {},
+            // `this: T` is not a runtime parameter, erased at emit, so the
+            // ECMAScript "simple parameter list" rule does not apply to it.
+            .binding_identifier, .ts_this_parameter => {},
             else => return pattern,
         }
     }

@@ -7,6 +7,7 @@ const array = @import("array.zig");
 const object = @import("object.zig");
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
+const ts_types = @import("ts/types.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isIdentifierLike()) {
@@ -57,10 +58,19 @@ pub fn parseBindingRestElement(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume ...
 
     const argument = try parseBindingPattern(parser) orelse return null;
-    const end = parser.tree.getSpan(argument).end;
+    var end = parser.tree.getSpan(argument).end;
+
+    // `function f(...rest: Type[]) { ... }`
+    var type_annotation: ast.NodeIndex = .null;
+
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        type_annotation = annotation;
+        end = parser.tree.getSpan(annotation).end;
+    }
 
     return try parser.tree.createNode(
-        .{ .binding_rest_element = .{ .argument = argument } },
+        .{ .binding_rest_element = .{ .argument = argument, .type_annotation = type_annotation } },
         .{ .start = start, .end = end },
     );
 }

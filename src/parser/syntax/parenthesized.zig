@@ -193,76 +193,59 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
     );
 }
 
-/// convert cover to ArrowFunctionExpression parameters and body.
+/// converts the cover into `ArrowFunctionExpression` parameters and body.
+/// the cover path is js-only, since all ts arrows go through `parseArrow`,
+/// so no type parameters or return type need to thread through here.
 pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consume =>
-
-    const saved_await_is_keyword = parser.context.await_is_keyword;
-    const saved_yield_is_keyword = parser.context.yield_is_keyword;
-
-    parser.context.await_is_keyword = is_async;
-    parser.context.yield_is_keyword = false;
-
-    defer parser.context.await_is_keyword = saved_await_is_keyword;
-    defer parser.context.yield_is_keyword = saved_yield_is_keyword;
-
-    // convert elements to formal parameters
     const params = try convertToFormalParameters(parser, cover) orelse return null;
-
-    // arrow body (expression or block)
-    const body_result = try parseArrowBody(parser) orelse return null;
-
-    return try parser.tree.createNode(
-        .{ .arrow_function_expression = .{
-            .expression = body_result.is_expression,
-            .async = is_async,
-            .params = params,
-            .body = body_result.body,
-        } },
-        .{ .start = arrow_start, .end = parser.tree.getSpan(body_result.body).end },
-    );
+    return buildArrowFunction(parser, params, is_async, arrow_start, .null, .null);
 }
 
 /// convert a single identifier to arrow function (x => body case).
 pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: bool, start: u32) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consume =>
-
-    const saved_await_is_keyword = parser.context.await_is_keyword;
-    const saved_yield_is_keyword = parser.context.yield_is_keyword;
-
-    parser.context.await_is_keyword = is_async;
-    parser.context.yield_is_keyword = false;
-
-    defer parser.context.await_is_keyword = saved_await_is_keyword;
-    defer parser.context.yield_is_keyword = saved_yield_is_keyword;
-
-    // convert identifier_reference to binding_identifier
     try grammar.expressionToPattern(parser, id, .binding);
 
-    const param = try parser.tree.createNode(
-        .{ .formal_parameter = .{ .pattern = id } },
-        parser.tree.getSpan(id),
-    );
+    const id_span = parser.tree.getSpan(id);
 
-    // create formal_parameters with single param
-    const params_range = try parser.tree.createExtra(&[_]ast.NodeIndex{param});
-
+    const param = try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = id } }, id_span);
+    const items = try parser.tree.createExtra(&.{param});
     const params = try parser.tree.createNode(
-        .{ .formal_parameters = .{ .items = params_range, .rest = .null, .kind = .arrow_formal_parameters } },
-        parser.tree.getSpan(id),
+        .{ .formal_parameters = .{ .items = items, .rest = .null, .kind = .arrow_formal_parameters } },
+        id_span,
     );
 
-    // parse arrow body
-    const body_result = try parseArrowBody(parser) orelse return null;
+    return buildArrowFunction(parser, params, is_async, start, .null, .null);
+}
+
+pub fn buildArrowFunction(
+    parser: *Parser,
+    params: ast.NodeIndex,
+    is_async: bool,
+    arrow_start: u32,
+    type_parameters: ast.NodeIndex,
+    return_type: ast.NodeIndex,
+) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null; // consume =>
+
+    const saved_await = parser.context.await_is_keyword;
+    const saved_yield = parser.context.yield_is_keyword;
+    parser.context.await_is_keyword = is_async;
+    parser.context.yield_is_keyword = false;
+    defer parser.context.await_is_keyword = saved_await;
+    defer parser.context.yield_is_keyword = saved_yield;
+
+    const body = try parseArrowBody(parser) orelse return null;
 
     return try parser.tree.createNode(
         .{ .arrow_function_expression = .{
-            .expression = body_result.is_expression,
+            .expression = body.is_expression,
             .async = is_async,
             .params = params,
-            .body = body_result.body,
+            .body = body.body,
+            .type_parameters = type_parameters,
+            .return_type = return_type,
         } },
-        .{ .start = start, .end = parser.tree.getSpan(body_result.body).end },
+        .{ .start = arrow_start, .end = parser.tree.getSpan(body.body).end },
     );
 }
 
@@ -271,7 +254,7 @@ const ArrowBodyResult = struct {
     is_expression: bool,
 };
 
-fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
+pub fn parseArrowBody(parser: *Parser) Error!?ArrowBodyResult {
     if (parser.current_token.tag == .left_brace) {
         // block body: () => { ... }
         const body = try functions.parseFunctionBody(parser) orelse return null;

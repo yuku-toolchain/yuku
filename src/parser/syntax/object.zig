@@ -8,6 +8,7 @@ const Precedence = @import("../token.zig").Precedence;
 const literals = @import("literals.zig");
 const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
+const ts_types = @import("ts/types.zig");
 
 /// result from parsing object cover grammar: {a, b: c, ...d}
 pub const ObjectCover = struct {
@@ -173,8 +174,10 @@ fn parseCoverProperty(parser: *Parser) Error!?ast.NodeIndex {
 
     const key_span = parser.tree.getSpan(key);
 
-    // method definition, key followed by (
-    if (parser.current_token.tag == .left_paren) {
+    const is_method_start = parser.current_token.tag == .left_paren or
+        (parser.tree.isTs() and parser.current_token.tag == .less_than);
+
+    if (is_method_start) {
         return parseObjectMethodProperty(parser, prop_start, key, computed, kind, is_async, is_generator);
     }
 
@@ -325,42 +328,43 @@ fn parseObjectMethodProperty(
     }
 
     const func_start = parser.current_token.span.start;
-    if (!try parser.expect(.left_paren, "Expected '(' to start method parameters", null)) return null;
 
-    const params = try functions.parseFormalParamaters(parser, .unique_formal_parameters) orelse return null;
+    // `m<T, U extends V>(...)`
+    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+        try ts_types.parseTypeParameters(parser)
+    else
+        .null;
+
+    const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, false) orelse return null;
     const params_data = parser.tree.getData(params).formal_parameters;
 
-    // validate getter has no parameters
-    if (kind == .get) {
-        if (params_data.items.len != 0 or params_data.rest != .null) {
-            try parser.report(
-                parser.tree.getSpan(params),
-                "Getter must have no parameters",
-                .{ .help = "Remove all parameters from the getter." },
-            );
-            return null;
-        }
+    // getter takes zero parameters, setter takes exactly one
+    if (kind == .get and (params_data.items.len != 0 or params_data.rest != .null)) {
+        try parser.report(
+            parser.tree.getSpan(params),
+            "Getter must have no parameters",
+            .{ .help = "Remove all parameters from the getter." },
+        );
+        return null;
+    }
+    if (kind == .set and (params_data.items.len != 1 or params_data.rest != .null)) {
+        try parser.report(
+            parser.tree.getSpan(params),
+            "Setter must have exactly one parameter",
+            .{ .help = "Setters accept exactly one argument." },
+        );
+        return null;
     }
 
-    // validate setter has exactly one parameter
-    if (kind == .set) {
-        if (params_data.items.len != 1 or params_data.rest != .null) {
-            try parser.report(
-                parser.tree.getSpan(params),
-                "Setter must have exactly one parameter",
-                .{ .help = "Setters accept exactly one argument." },
-            );
-            return null;
-        }
+    // `: ReturnType`
+    var return_type: ast.NodeIndex = .null;
+    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
     }
 
-    if (!try parser.expect(.right_paren, "Expected ')' after method parameters", null)) return null;
-
-    // parse body
     const body = try functions.parseFunctionBody(parser) orelse return null;
     const body_end = parser.tree.getSpan(body).end;
 
-    // create function expression for the method value
     const func = try parser.tree.createNode(
         .{ .function = .{
             .type = .function_expression,
@@ -369,18 +373,18 @@ fn parseObjectMethodProperty(
             .async = is_async,
             .params = params,
             .body = body,
+            .type_parameters = type_parameters,
+            .return_type = return_type,
         } },
         .{ .start = func_start, .end = body_end },
     );
-
-    const is_method = kind == .init;
 
     return try parser.tree.createNode(
         .{ .object_property = .{
             .key = key,
             .value = func,
             .kind = kind,
-            .method = is_method,
+            .method = kind == .init,
             .shorthand = false,
             .computed = computed,
         } },

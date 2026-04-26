@@ -31,6 +31,15 @@ pub const Ctx = struct {
         };
     }
 
+    /// typescript types live in a separate namespace from javascript values
+    /// and are erased at runtime. the semantic traverser skips their subtrees
+    /// entirely so type-only identifiers never enter the js scope maps.
+    pub fn shouldWalk(_: *const Ctx, data: ast.NodeData) bool {
+        return switch (data) {
+            inline else => |_, tag| comptime !std.mem.startsWith(u8, @tagName(tag), "ts_"),
+        };
+    }
+
     pub fn enter(self: *Ctx, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         self.path.push(index);
         try self.scope.enter(index, data);

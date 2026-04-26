@@ -177,34 +177,40 @@ pub const SymbolTable = struct {
 
         if (ref_count == 0) return;
 
-        // phase 1: resolve every reference and count hits per symbol
+        // phase 1, resolve every reference
         const resolutions = try allocator.alloc(SymbolId, ref_count);
-        const counts = try allocator.alloc(u32, sym_count);
-        @memset(counts, 0);
-        var unresolved_count: u32 = 0;
 
         for (self.references, 0..) |ref, i| {
-            const resolved = self.resolve(ref.scope, self.getString(ref.name), scope_tree) orelse .none;
-            resolutions[i] = resolved;
-            if (resolved != .none) {
-                counts[@intFromEnum(resolved)] += 1;
-            } else {
-                unresolved_count += 1;
-            }
+            const name = self.getString(ref.name);
+            const pctx = PrehashCtx{ .h = std.hash.Wyhash.hash(0, name) };
+            resolutions[i] = blk: {
+                var it = scope_tree.ancestors(ref.scope);
+                while (it.next()) |ancestor| {
+                    const idx = @intFromEnum(ancestor);
+                    if (self.scope_maps[idx].getAdapted(name, pctx)) |id| break :blk id;
+                    if (self.hoisting_variables[idx].getAdapted(name, pctx)) |id| break :blk id;
+                }
+                break :blk .none;
+            };
         }
 
-        // phase 2: prefix sum to build per-symbol ranges
+        // phase 2, build reverse index using Range.len as both
+        // counter and scatter cursor
         const ranges = try allocator.alloc(Range, sym_count);
-        var offset: u32 = 0;
-        for (0..sym_count) |i| {
-            ranges[i] = .{ .start = offset, .len = counts[i] };
-            offset += counts[i];
+        for (ranges) |*r| r.* = .{ .start = 0, .len = 0 };
+        for (resolutions) |sym_id| {
+            if (sym_id != .none) ranges[@intFromEnum(sym_id)].len += 1;
         }
 
-        // phase 3: scatter reference ids into the grouped array
+        var offset: u32 = 0;
+        for (ranges) |*r| {
+            r.start = offset;
+            offset += r.len;
+            r.len = 0;
+        }
+
         const symbol_refs = try allocator.alloc(ReferenceId, offset);
-        const unresolved = try allocator.alloc(ReferenceId, unresolved_count);
-        @memset(counts, 0); // reuse as write cursors
+        const unresolved = try allocator.alloc(ReferenceId, ref_count - offset);
         var unresolved_cursor: u32 = 0;
 
         for (0..ref_count) |i| {
@@ -212,15 +218,13 @@ pub const SymbolTable = struct {
             const resolved = resolutions[i];
             if (resolved != .none) {
                 const sym_idx = @intFromEnum(resolved);
-                symbol_refs[ranges[sym_idx].start + counts[sym_idx]] = ref_id;
-                counts[sym_idx] += 1;
+                symbol_refs[ranges[sym_idx].start + ranges[sym_idx].len] = ref_id;
+                ranges[sym_idx].len += 1;
             } else {
                 unresolved[unresolved_cursor] = ref_id;
                 unresolved_cursor += 1;
             }
         }
-
-        allocator.free(counts);
 
         self.resolutions = resolutions;
         self.symbol_refs = symbol_refs;
@@ -253,6 +257,15 @@ pub const SymbolTable = struct {
     /// Returns all reference IDs that could not be resolved to any symbol.
     pub inline fn unresolvedReferences(self: SymbolTable) []const ReferenceId {
         return self.unresolved_refs;
+    }
+};
+
+/// Pre-computed hash context for string hash map lookups.
+const PrehashCtx = struct {
+    h: u64,
+    pub fn hash(self: @This(), _: []const u8) u64 { return self.h; }
+    pub fn eql(_: @This(), a: []const u8, b: []const u8) bool {
+        return std.mem.eql(u8, a, b);
     }
 };
 
@@ -297,6 +310,7 @@ pub const SymbolTracker = struct {
     // binding context, set by parent nodes, consumed by binding_identifier
     binding_kind: Symbol.Kind = .lexical,
     binding_is_const: bool = false,
+    binding_is_ambient: bool = false,
     target_scope: TargetScope = .current,
     is_export: bool = false,
     is_default_export: bool = false,
@@ -329,6 +343,10 @@ pub const SymbolTracker = struct {
                 self.is_default_export = true;
             },
             .variable_declaration => |decl| {
+                // var declarations only appear inside non-ambient bodies
+                // because ambient namespaces and declare-only forms are
+                // skipped by the traverser before they reach this point.
+                self.binding_is_ambient = false;
                 switch (decl.kind) {
                     .@"var" => {
                         self.binding_kind = .hoisted;
@@ -350,6 +368,12 @@ pub const SymbolTracker = struct {
             .function => |func| {
                 self.binding_kind = .function;
                 self.binding_is_const = false;
+                // typescript ambient context: `declare function`, top-level
+                // overload signatures, and body-less class methods (overloads,
+                // abstract members, ambient methods).
+                self.binding_is_ambient = func.declare or
+                    func.type == .ts_declare_function or
+                    func.type == .ts_empty_body_function_expression;
                 self.target_scope = switch (func.type) {
                     // declarations bind in the enclosing scope
                     .function_declaration, .ts_declare_function => .parent,
@@ -360,6 +384,7 @@ pub const SymbolTracker = struct {
             .class => |cls| {
                 self.binding_kind = .class;
                 self.binding_is_const = false;
+                self.binding_is_ambient = cls.declare;
                 self.target_scope = switch (cls.type) {
                     .class_declaration => .parent,
                     else => .name,
@@ -368,6 +393,8 @@ pub const SymbolTracker = struct {
             .formal_parameters => {
                 self.binding_kind = .parameter;
                 self.binding_is_const = false;
+                // ambient is inherited from the enclosing function, so leave
+                // `binding_is_ambient` untouched here.
                 self.target_scope = .current;
                 // parameters are never exported
                 self.is_export = false;
@@ -381,11 +408,13 @@ pub const SymbolTracker = struct {
             .import_declaration => {
                 self.binding_kind = .import;
                 self.binding_is_const = false;
+                self.binding_is_ambient = false;
                 self.target_scope = .current;
             },
             .catch_clause => {
                 self.binding_kind = .parameter;
                 self.binding_is_const = false;
+                self.binding_is_ambient = false;
                 self.target_scope = .current;
             },
             else => {},
@@ -469,6 +498,7 @@ pub const SymbolTracker = struct {
                 .exported = self.is_export,
                 .is_default = self.is_default_export,
                 .is_const = self.binding_is_const,
+                .is_ambient = self.binding_is_ambient,
             },
             .scope = target_scope,
             .node = node,
@@ -496,6 +526,12 @@ pub const SymbolTracker = struct {
     /// is a let, var, function name, import, etc.
     pub inline fn currentBindingKind(self: *const SymbolTracker) Symbol.Kind {
         return self.binding_kind;
+    }
+
+    /// True when the current binding context is a typescript ambient
+    /// declaration. See `setBindingContext` for what counts as ambient.
+    pub inline fn currentBindingIsAmbient(self: *const SymbolTracker) bool {
+        return self.binding_is_ambient;
     }
 
     /// Returns the symbol for the given ID.

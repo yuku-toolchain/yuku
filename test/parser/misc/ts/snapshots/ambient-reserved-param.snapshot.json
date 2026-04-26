@@ -1,0 +1,213 @@
+{
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 149,
+    "sourceType": "script",
+    "hashbang": null,
+    "body": [
+      {
+        "type": "ClassDeclaration",
+        "start": 0,
+        "end": 94,
+        "decorators": [],
+        "id": {
+          "type": "Identifier",
+          "start": 14,
+          "end": 21,
+          "name": "Ambient",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "superClass": null,
+        "body": {
+          "type": "ClassBody",
+          "start": 22,
+          "end": 94,
+          "body": [
+            {
+              "type": "MethodDefinition",
+              "start": 26,
+              "end": 57,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 26,
+                "end": 37,
+                "name": "constructor",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 37,
+                "end": 57,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 38,
+                    "end": 55,
+                    "name": "arguments",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 47,
+                      "end": 55,
+                      "typeAnnotation": {
+                        "type": "TSNumberKeyword",
+                        "start": 49,
+                        "end": 55
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": null,
+                "declare": false
+              },
+              "kind": "constructor",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            },
+            {
+              "type": "MethodDefinition",
+              "start": 60,
+              "end": 92,
+              "decorators": [],
+              "key": {
+                "type": "Identifier",
+                "start": 60,
+                "end": 66,
+                "name": "method",
+                "decorators": [],
+                "optional": false,
+                "typeAnnotation": null
+              },
+              "value": {
+                "type": "TSEmptyBodyFunctionExpression",
+                "start": 66,
+                "end": 92,
+                "id": null,
+                "generator": false,
+                "async": false,
+                "params": [
+                  {
+                    "type": "Identifier",
+                    "start": 67,
+                    "end": 84,
+                    "name": "arguments",
+                    "decorators": [],
+                    "typeAnnotation": {
+                      "type": "TSTypeAnnotation",
+                      "start": 76,
+                      "end": 84,
+                      "typeAnnotation": {
+                        "type": "TSStringKeyword",
+                        "start": 78,
+                        "end": 84
+                      }
+                    },
+                    "optional": false
+                  }
+                ],
+                "body": null,
+                "expression": false,
+                "typeParameters": null,
+                "returnType": {
+                  "type": "TSTypeAnnotation",
+                  "start": 85,
+                  "end": 91,
+                  "typeAnnotation": {
+                    "type": "TSVoidKeyword",
+                    "start": 87,
+                    "end": 91
+                  }
+                },
+                "declare": false
+              },
+              "kind": "method",
+              "computed": false,
+              "static": false,
+              "override": false,
+              "optional": false,
+              "accessibility": null
+            }
+          ]
+        },
+        "typeParameters": null,
+        "superTypeArguments": null,
+        "implements": [],
+        "abstract": false,
+        "declare": true
+      },
+      {
+        "type": "TSDeclareFunction",
+        "start": 96,
+        "end": 148,
+        "id": {
+          "type": "Identifier",
+          "start": 113,
+          "end": 119,
+          "name": "legacy",
+          "decorators": [],
+          "typeAnnotation": null,
+          "optional": false
+        },
+        "generator": false,
+        "async": false,
+        "params": [
+          {
+            "type": "Identifier",
+            "start": 120,
+            "end": 140,
+            "name": "arguments",
+            "decorators": [],
+            "typeAnnotation": {
+              "type": "TSTypeAnnotation",
+              "start": 129,
+              "end": 140,
+              "typeAnnotation": {
+                "type": "TSArrayType",
+                "start": 131,
+                "end": 140,
+                "elementType": {
+                  "type": "TSUnknownKeyword",
+                  "start": 131,
+                  "end": 138
+                }
+              }
+            },
+            "optional": false
+          }
+        ],
+        "body": null,
+        "expression": false,
+        "typeParameters": null,
+        "returnType": {
+          "type": "TSTypeAnnotation",
+          "start": 141,
+          "end": 147,
+          "typeAnnotation": {
+            "type": "TSVoidKeyword",
+            "start": 143,
+            "end": 147
+          }
+        },
+        "declare": true
+      }
+    ]
+  },
+  "comments": [],
+  "diagnostics": []
+}

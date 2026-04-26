@@ -39,6 +39,15 @@ const ParserContext = struct {
     in_single_statement_context: bool = false,
     // https://tc39.es/ecma262/#directive-prologue
     in_directive_prologue: bool = false,
+    /// when false, a speculatively parsed arrow with a return type must
+    /// be followed by an outer `:` to commit, otherwise we rewind. keeps
+    /// `(params): T => body` from eating the `:` of an enclosing ternary
+    /// consequent or case label.
+    allow_arrow_return_type: bool = true,
+    /// set inside any `declare`-prefixed typescript declaration so nested
+    /// declarations inherit ambient-context rules (body-less functions,
+    /// initializer-less `const`, etc.).
+    in_ambient: bool = false,
 };
 
 const ParserState = struct {
@@ -60,7 +69,13 @@ pub const Parser = struct {
     allow_return_outside_function: bool,
     lexer: lexer.Lexer,
     diagnostics: std.ArrayList(ast.Diagnostic) = .empty,
+
     current_token: Token,
+    /// end position of the most recently consumed token. useful for span
+    /// computations when a closing delimiter has been eaten but the parent
+    /// node's span must stop there (not at the next token, which may lie
+    /// past whitespace or newlines).
+    prev_token_end: u32 = 0,
 
     scratch_statements: ScratchBuffer = .{},
     scratch_cover: ScratchBuffer = .{},
@@ -98,7 +113,7 @@ pub const Parser = struct {
         try self.parseInner();
 
         if (!self.preserve_parens) {
-            stripParenthesizedExpressions(&self.tree);
+            stripParenthesizedNodes(&self.tree);
         }
 
         return self.tree;
@@ -155,11 +170,12 @@ pub const Parser = struct {
     const BodyKind = enum {
         program,
         function,
+        module_block,
         other,
     };
 
     pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
-        self.context.in_directive_prologue = kind == .program or kind == .function;
+        self.context.in_directive_prologue = kind == .program or kind == .function or kind == .module_block;
 
         defer self.context.in_directive_prologue = false;
 
@@ -233,9 +249,9 @@ pub const Parser = struct {
         self.lexer.mode = mode;
     }
 
-    pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, checkpoint: usize) Error!ast.IndexRange {
+    pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, scratch_checkpoint: usize) Error!ast.IndexRange {
         const start: u32 = @intCast(self.tree.extra.items.len);
-        const slice = scratch.items.items[checkpoint..scratch.items.items.len];
+        const slice = scratch.items.items[scratch_checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
@@ -274,11 +290,13 @@ pub const Parser = struct {
     /// is an escaped keyword being consumed in a keyword position.
     pub inline fn advance(self: *Parser) Error!?void {
         try self.checkEscapedKeyword();
+        self.prev_token_end = self.current_token.span.end;
         self.current_token = try self.nextToken() orelse return null;
     }
 
     /// advance without the escaped-keyword check.
     pub inline fn advanceWithoutEscapeCheck(self: *Parser) Error!?void {
+        self.prev_token_end = self.current_token.span.end;
         self.current_token = try self.nextToken() orelse return null;
     }
 
@@ -306,7 +324,63 @@ pub const Parser = struct {
         if (token.isEscaped()) try self.reportEscapedKeyword(token.span);
     }
 
-    pub fn lookAhead(self: *Parser) Error!?Token {
+    /// peeks the token immediately after `current_token` without advancing.
+    /// returns `null` if the lexer cannot produce another token (for example
+    /// after a lexical error).
+    pub inline fn peekAhead(self: *Parser) Error!?Token {
+        return (try self.peekAheadN(1))[0];
+    }
+
+    /// captures a full snapshot of parser state. pair with `rewind` to
+    /// commit or discard a speculative parse.
+    pub fn checkpoint(self: *const Parser) Checkpoint {
+        return .{
+            .lexer_cursor = self.lexer.cursor,
+            .lexer_state = self.lexer.state,
+            .lexer_mode = self.lexer.mode,
+            .lexer_comments_len = self.lexer.comments.items.len,
+            .current_token = self.current_token,
+            .prev_token_end = self.prev_token_end,
+            .nodes_len = self.tree.nodes.len,
+            .extra_len = self.tree.extra.items.len,
+            .diagnostics_len = self.diagnostics.items.len,
+            .scratch_statements_len = self.scratch_statements.items.items.len,
+            .scratch_cover_len = self.scratch_cover.items.items.len,
+            .scratch_decorators_len = self.scratch_decorators.items.items.len,
+            .scratch_a_len = self.scratch_a.items.items.len,
+            .scratch_b_len = self.scratch_b.items.items.len,
+            .context = self.context,
+            .state = self.state,
+        };
+    }
+
+    /// restores parser state captured by `checkpoint`.
+    pub fn rewind(self: *Parser, cp: Checkpoint) void {
+        self.lexer.cursor = cp.lexer_cursor;
+        self.lexer.state = cp.lexer_state;
+        self.lexer.mode = cp.lexer_mode;
+        self.lexer.comments.shrinkRetainingCapacity(cp.lexer_comments_len);
+        self.current_token = cp.current_token;
+        self.prev_token_end = cp.prev_token_end;
+        self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
+        self.tree.extra.shrinkRetainingCapacity(cp.extra_len);
+        self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
+        self.scratch_statements.items.shrinkRetainingCapacity(cp.scratch_statements_len);
+        self.scratch_cover.items.shrinkRetainingCapacity(cp.scratch_cover_len);
+        self.scratch_decorators.items.shrinkRetainingCapacity(cp.scratch_decorators_len);
+        self.scratch_a.items.shrinkRetainingCapacity(cp.scratch_a_len);
+        self.scratch_b.items.shrinkRetainingCapacity(cp.scratch_b_len);
+        self.context = cp.context;
+        self.state = cp.state;
+    }
+
+    /// peeks the next `n` tokens after `current_token` in a single forward
+    /// scan, returning them by position. index `0` is the immediately
+    /// following token, index `1` the one after that, and so on. slots past
+    /// the end of the token stream are `null`.
+    pub fn peekAheadN(self: *Parser, comptime n: usize) Error![n]?Token {
+        comptime std.debug.assert(n >= 1);
+
         const prev_state = self.lexer.state;
         const prev_cursor = self.lexer.cursor;
         const prev_comments_len = self.lexer.comments.items.len;
@@ -317,7 +391,11 @@ pub const Parser = struct {
             self.lexer.comments.shrinkRetainingCapacity(prev_comments_len);
         }
 
-        return try self.nextToken();
+        var tokens: [n]?Token = @splat(null);
+        inline for (0..n) |i| {
+            tokens[i] = try self.nextToken() orelse break;
+        }
+        return tokens;
     }
 
     /// sets current token from a re-scanned token and advances to the next token.
@@ -325,6 +403,12 @@ pub const Parser = struct {
     pub inline fn advanceWithRescannedToken(self: *Parser, token: Token) Error!?void {
         self.current_token = token;
         return self.advance();
+    }
+
+    /// re-tokenizes the current token in the current lexer mode.
+    pub inline fn reScanCurrent(self: *Parser) Error!?void {
+        self.lexer.rewindTo(self.current_token.span.start);
+        self.current_token = try self.nextToken() orelse return null;
     }
 
     pub fn expect(self: *Parser, comptime tag: TokenTag, message: []const u8, help: ?[]const u8) Error!bool {
@@ -377,16 +461,23 @@ pub const Parser = struct {
         return token.tag == .eof or token.hasLineTerminatorBefore() or token.tag == .right_brace;
     }
 
-    fn stripParenthesizedExpressions(tree: *ast.Tree) void {
+    fn stripParenthesizedNodes(tree: *ast.Tree) void {
         const datas = tree.nodes.items(.data);
         const spans = tree.nodes.items(.span);
         for (0..datas.len) |i| {
-            if (datas[i] != .parenthesized_expression) continue;
+            var inner: u32 = switch (datas[i]) {
+                .parenthesized_expression => |p| @intFromEnum(p.expression),
+                .ts_parenthesized_type => |p| @intFromEnum(p.type_annotation),
+                else => continue,
+            };
 
-            // resolve to the innermost non-paren expression
-            var inner = @intFromEnum(datas[i].parenthesized_expression.expression);
-            while (datas[inner] == .parenthesized_expression) {
-                inner = @intFromEnum(datas[inner].parenthesized_expression.expression);
+            // resolve to the innermost non-paren node
+            while (true) {
+                switch (datas[inner]) {
+                    .parenthesized_expression => |p| inner = @intFromEnum(p.expression),
+                    .ts_parenthesized_type => |p| inner = @intFromEnum(p.type_annotation),
+                    else => break,
+                }
             }
 
             datas[i] = datas[inner];
@@ -429,10 +520,6 @@ pub const Parser = struct {
 
     pub fn fmt(self: *Parser, comptime format: []const u8, args: anytype) Error![]u8 {
         return try std.fmt.allocPrint(self.allocator(), format, args);
-    }
-
-    pub fn withTsCode(_: *Parser, comptime code: []const u8, comptime message: []const u8) []const u8 {
-        return "TS(" ++ code ++ "): " ++ message;
     }
 
     fn recover(self: *Parser, terminator: ?TokenTag) Error!void {
@@ -497,6 +584,35 @@ pub const Parser = struct {
         try self.scratch_decorators.items.ensureTotalCapacity(alloc, 128);
         try self.tree.strings.ensureCapacity(alloc, 256, 16);
     }
+};
+
+
+pub const Checkpoint = struct {
+    // lexer state
+    lexer_cursor: u32,
+    lexer_state: lexer.LexerState,
+    lexer_mode: lexer.LexerMode,
+    lexer_comments_len: usize,
+
+    // parser token stream
+    current_token: Token,
+    prev_token_end: u32,
+
+    // tree-backed append-only storage
+    nodes_len: usize,
+    extra_len: usize,
+    diagnostics_len: usize,
+
+    // scratch buffers
+    scratch_statements_len: usize,
+    scratch_cover_len: usize,
+    scratch_decorators_len: usize,
+    scratch_a_len: usize,
+    scratch_b_len: usize,
+
+    // parser flags, small structs copied by value.
+    context: ParserContext,
+    state: ParserState,
 };
 
 const ScratchBuffer = struct {
