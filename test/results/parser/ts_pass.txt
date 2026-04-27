@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8234/8261 (99.67%)
-Failed:       27
-AST mismatch: 0/8234
+Passed:       8237/8261 (99.71%)
+Failed:       24
+AST mismatch: 0/8237
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -3243,17 +3243,7 @@ error: Getter must have no parameters
 ✓ test/parser/suite/ts/pass/61ec44abe3765b31.ts
 ✓ test/parser/suite/ts/pass/61ed84a2e3dc826b.ts
 ✓ test/parser/suite/ts/pass/61ef87bff4e5d426.ts
-✗ test/parser/suite/ts/pass/61f44855711d6039.module.ts (parse errors)
-error: Class declaration requires a name
-   |
- 2 | //@target: es2015
- 3 | export class {
-   |              ^
- 4 | }
-   |
-   = help: Add a name after 'class', e.g. 'class MyClass {}'.
-
-
+✓ test/parser/suite/ts/pass/61f44855711d6039.module.ts
 ✓ test/parser/suite/ts/pass/61fa2a02dff0f1e5.ts
 ✓ test/parser/suite/ts/pass/620a054dfc99b104.ts
 ✓ test/parser/suite/ts/pass/6216f45450590603.ts
@@ -4360,17 +4350,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/8294a267e70943da.ts
 ✓ test/parser/suite/ts/pass/829b40ee9f253c5e.ts
 ✓ test/parser/suite/ts/pass/829ddf487f4c34f3.ts
-✗ test/parser/suite/ts/pass/829f47fa1b07d2f8.ts (parse errors)
-error: Expected '{' to start class body, but found 'Foo'
-   |
- 5 | 
- 6 | let cls = class implements Foo {
-   |                            ^^^
- 7 |     doThing() { }
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/829f47fa1b07d2f8.ts
 ✓ test/parser/suite/ts/pass/82a149b6da68a228.ts
 ✓ test/parser/suite/ts/pass/82a7114a980b8a28.ts
 ✓ test/parser/suite/ts/pass/82a962a28dfb678f.ts
@@ -7271,17 +7251,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/d9e2d62803dbb360.ts
 ✓ test/parser/suite/ts/pass/d9ec1b5ce314cb89.ts
 ✓ test/parser/suite/ts/pass/d9f76e8a3051873e.ts
-✗ test/parser/suite/ts/pass/da1055b062575ca4.ts (parse errors)
-error: Expected '{' to start class body, but found 'number'
-   |
- 7 | 
- 8 | const C4 = class implements number {}
-   |                             ^^^^^^
- 9 | const C5 = class implements string {}
-   |
-   = help: Class body must be enclosed in braces: class Name { ... }
-
-
+✓ test/parser/suite/ts/pass/da1055b062575ca4.ts
 ✓ test/parser/suite/ts/pass/da19e7690271b1c2.module.ts
 ✓ test/parser/suite/ts/pass/da20148c21ef28dd.ts
 ✓ test/parser/suite/ts/pass/da20427af862d790.ts

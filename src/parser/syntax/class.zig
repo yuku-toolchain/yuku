@@ -60,13 +60,13 @@ pub fn parseClassDecorated(
         );
     }
 
-    // name. required for regular declarations, optional for class
-    // expressions and `export default class`.
     var id: ast.NodeIndex = .null;
-    if (parser.current_token.tag.isIdentifierLike() and parser.current_token.tag != .extends) {
+
+    if (try canStartClassName(parser)) {
         id = try literals.parseBindingIdentifier(parser) orelse .null;
     }
-    if (id == .null and !opts.is_expression and !opts.is_default_export) {
+
+    if (id == .null and !opts.is_expression and !opts.is_default_export and !parser.tree.isTs()) {
         try parser.report(
             parser.current_token.span,
             "Class declaration requires a name",
@@ -122,6 +122,16 @@ pub fn parseClassDecorated(
         .declare = opts.is_declare,
         .abstract = opts.is_abstract,
     } }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+}
+
+fn canStartClassName(parser: *Parser) Error!bool {
+    const tag = parser.current_token.tag;
+    if (!tag.isIdentifierLike() or tag == .extends) return false;
+    if (parser.tree.isTs() and tag == .implements) {
+        const next = (try parser.peekAhead()) orelse return true;
+        return !next.tag.isIdentifierLike();
+    }
+    return true;
 }
 
 fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
