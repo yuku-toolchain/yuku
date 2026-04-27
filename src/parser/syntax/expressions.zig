@@ -1200,20 +1200,26 @@ inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
     };
 }
 
-/// precedence of `token` as an infix operator. same as
-/// `tag.precedence()` except that a few tokens degrade to 0 when preceded
-/// by a line terminator, encoding the ecmascript "[no LineTerminator here]"
-/// restricted productions that would otherwise let the pratt loop fold two
-/// statements into one under ASI:
+/// precedence of `token` as an infix operator. the token mask records the
+/// infix precedence, pure-prefix tokens (`delete`, `void`, `typeof`, `~`)
+/// carry none and naturally return 0. a few infix-capable tokens degrade
+/// to 0 here to encode the ecmascript "[no LineTerminator here]"
+/// restricted productions that would otherwise let the pratt loop fold
+/// two statements into one under ASI:
 /// - `a [no LineTerminator here] ++` / `--` (postfix update).
 /// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
 /// - `a [no LineTerminator here] !` (ts non-null assertion).
+/// `!` is also infix only in TypeScript; in plain JS it is purely prefix.
 inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
-    if (token.hasLineTerminatorBefore()) switch (token.tag) {
-        .increment, .decrement, .as, .satisfies => return 0,
-        .logical_not => if (is_ts) return 0,
+    switch (token.tag) {
+        .increment, .decrement, .as, .satisfies => {
+            if (token.hasLineTerminatorBefore()) return 0;
+        },
+        .logical_not => {
+            if (!is_ts or token.hasLineTerminatorBefore()) return 0;
+        },
         else => {},
-    };
+    }
 
     return token.tag.precedence();
 }

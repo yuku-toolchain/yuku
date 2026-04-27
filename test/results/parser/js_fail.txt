@@ -19957,12 +19957,12 @@ error: Numeric separator cannot appear at the end of a numeric literal
 
 
 ✓ test/parser/suite/js/fail/91960d765c0bfa51.js
-error: Unexpected token 'void' in expression
+error: Expected a semicolon or an implicit semicolon after a statement, but found 'void'
    |
  1 | var x = await void 1;
    |               ^^^^
    |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
+   = help: Try inserting a semicolon here
 
 
 ✓ test/parser/suite/js/fail/91a2a358ab8c3a4b.js

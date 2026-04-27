@@ -9,6 +9,7 @@ const Precedence = @import("../../token.zig").Precedence;
 const literals = @import("../literals.zig");
 const functions = @import("../functions.zig");
 const expressions = @import("../expressions.zig");
+const patterns = @import("../patterns.zig");
 const signatures = @import("signatures.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
@@ -616,7 +617,7 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// classifies whether the current position starts a function or
-/// constructor type, by peeking up to three tokens.
+/// constructor type.
 fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
 
@@ -645,6 +646,10 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
             const t2 = peek[1] orelse return false;
             return t2.tag == .colon;
         },
+        // `({...}` or `([...]` could start either a function type with a
+        // destructuring parameter or a parenthesized type wrapping a type
+        // literal or tuple
+        .left_brace, .left_bracket => return isFunctionTypeAfterPattern(parser),
         else => {},
     }
 
@@ -657,6 +662,28 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
         .right_paren => blk: {
             const t3 = peek[2] orelse break :blk false;
             break :blk t3.tag == .arrow;
+        },
+        else => false,
+    };
+}
+
+/// speculatively parses `(BindingPattern` and returns true when the
+/// next token is one that disambiguates a function type from a
+/// parenthesized type. mirrors typescript-go's `skipParameterStart`
+/// branch of `isUnambiguouslyStartOfFunctionType`.
+fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
+    const cp = parser.checkpoint();
+    defer parser.rewind(cp);
+
+    try parser.advance() orelse return false; // consume '('
+
+    _ = try patterns.parseBindingPattern(parser) orelse return false;
+
+    return switch (parser.current_token.tag) {
+        .colon, .comma, .question, .assign => true,
+        .right_paren => blk: {
+            try parser.advance() orelse break :blk false;
+            break :blk parser.current_token.tag == .arrow;
         },
         else => false,
     };

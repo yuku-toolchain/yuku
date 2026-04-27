@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8206/8261 (99.33%)
-Failed:       55
-AST mismatch: 0/8206
+Passed:       8218/8261 (99.48%)
+Failed:       43
+AST mismatch: 0/8218
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -1426,17 +1426,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/2b9bb410ca24e328.ts
 ✓ test/parser/suite/ts/pass/2b9c28f392320e5b.ts
 ✓ test/parser/suite/ts/pass/2b9ce47f201fe83a.ts
-✗ test/parser/suite/ts/pass/2b9f317efb4f971e.ts (parse errors)
-error: Unexpected token 'delete' in expression
-   |
-28 | delete f.a
-29 | delete f.b
-   | ^^^^^^
-30 | delete f.c
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/2b9f317efb4f971e.ts
 ✓ test/parser/suite/ts/pass/2ba5ac31705f521b.ts
 ✓ test/parser/suite/ts/pass/2ba805bff37e24f4.ts
 ✓ test/parser/suite/ts/pass/2bb881c56e1381d5.ts
@@ -1766,17 +1756,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/341764f0d14ec0ec.ts
 ✓ test/parser/suite/ts/pass/342f92fcd267d9a2.ts
 ✓ test/parser/suite/ts/pass/3430132f1e76c27e.ts
-✗ test/parser/suite/ts/pass/343c11f6a5f686f7.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found ':'
-    |
- 99 | 
-100 | let notReferencedFnType: ({ name: alias }: Named) => void;
-    |                                          ^
-101 | let referencedInSignartureReturnTypeFnType: ({ name: alias }: Named) => typeof alias;
-    |
-    = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/343c11f6a5f686f7.ts
 ✓ test/parser/suite/ts/pass/34432f6734343a09.ts
 ✓ test/parser/suite/ts/pass/344a6cb93baaecbd.ts
 ✓ test/parser/suite/ts/pass/345127a718b460aa.module.ts
@@ -2532,17 +2512,7 @@ error: Expected a type, but found '"\"ambientModule\""'
 ✓ test/parser/suite/ts/pass/49f45756abbb0ffe.ts
 ✓ test/parser/suite/ts/pass/49f7d105c11fb8fc.module.tsx
 ✓ test/parser/suite/ts/pass/4a020edb9f17678c.ts
-✗ test/parser/suite/ts/pass/4a1cff0a12d24167.ts (parse errors)
-error: Expected ';', ',', or newline between type members, but found '='
-   |
- 1 | // @target: es2015
- 2 | type Foo = ({ first = 0 }: { first?: number }) => unknown;
-   |                     ^
- 3 | 
-   |
-   = help: Separate type members with ';', ',', or a newline, or close the block with '}'
-
-
+✓ test/parser/suite/ts/pass/4a1cff0a12d24167.ts
 ✓ test/parser/suite/ts/pass/4a3eb6f595442a8c.ts
 ✓ test/parser/suite/ts/pass/4a48dfcf1253bc8b.ts
 ✓ test/parser/suite/ts/pass/4a4eae99eeb87c6b.module.ts
@@ -2573,17 +2543,7 @@ error: Expected ';', ',', or newline between type members, but found '='
 ✓ test/parser/suite/ts/pass/4b54ce49cb342cea.ts
 ✓ test/parser/suite/ts/pass/4b58932db0513618.ts
 ✓ test/parser/suite/ts/pass/4b5a1b11e884dd19.ts
-✗ test/parser/suite/ts/pass/4b5d6e3182639ec7.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found ':'
-   |
-15 | 
-16 |     static field: ({}?: { x: string }) => void
-   |                       ^
-17 |     static field2: ({}?: { x: string }) => void
-   |
-   = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4b5d6e3182639ec7.ts
 ✓ test/parser/suite/ts/pass/4b73e27df25b8378.ts
 ✓ test/parser/suite/ts/pass/4b77e2b3f62c5af7.ts
 ✓ test/parser/suite/ts/pass/4b86ed153dadffc6.ts
@@ -2634,17 +2594,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/4ceb76a6009ef124.module.ts
 ✓ test/parser/suite/ts/pass/4cee0bffeb9b83eb.ts
 ✓ test/parser/suite/ts/pass/4cf90ef73e7d8bab.ts
-✗ test/parser/suite/ts/pass/4cfe4cbe3bcd5fe3.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found ':'
-   |
-17 | declare function forceMatch2<T>(matched: {
-18 |   [key in keyof T]: ({ key }: { key: key }) => void;
-   |                             ^
-19 | }): void;
-   |
-   = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/4cfe4cbe3bcd5fe3.ts
 ✓ test/parser/suite/ts/pass/4d093d81529d0aee.ts
 ✓ test/parser/suite/ts/pass/4d10874b0f3cd175.ts
 ✓ test/parser/suite/ts/pass/4d2a7c798b01624e.ts
@@ -3716,17 +3666,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/6c98431d9a5de5f3.ts
 ✓ test/parser/suite/ts/pass/6ca63f50595cc5cb.ts
 ✓ test/parser/suite/ts/pass/6cb226236ad0dd37.ts
-✗ test/parser/suite/ts/pass/6cb5121d394b62da.ts (parse errors)
-error: Unexpected token 'delete' in expression
-   |
-17 | 
-18 | delete rest.baz
-   | ^^^^^^
-19 | 
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/6cb5121d394b62da.ts
 ✓ test/parser/suite/ts/pass/6cb59c68101036cf.ts
 ✓ test/parser/suite/ts/pass/6cbb7933418ddcd4.ts
 ✓ test/parser/suite/ts/pass/6cbe1fcbff874155.ts
@@ -4730,17 +4670,7 @@ error: Expected '{' to start class body, but found 'Foo'
 ✓ test/parser/suite/ts/pass/8898dfe51838cf31.ts
 ✓ test/parser/suite/ts/pass/889c1b9812354b63.ts
 ✓ test/parser/suite/ts/pass/88a3d98fe6ced82a.ts
-✗ test/parser/suite/ts/pass/88a41aa6f97238c1.module.ts (parse errors)
-error: Unexpected token 'typeof' in expression
-   |
-11 | const { [itemId]: itemOk1 } = items
-12 | typeof itemOk1 // pass
-   | ^^^^^^
-13 | 
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/88a41aa6f97238c1.module.ts
 ✓ test/parser/suite/ts/pass/88a7139310b8be42.ts
 ✗ test/parser/suite/ts/pass/88b665a846b8fd5b.ts (parse errors)
 error: Expected a semicolon or an implicit semicolon after a statement, but found '<<'
@@ -5115,17 +5045,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/93f111f4ae972cd0.module.tsx
 ✓ test/parser/suite/ts/pass/93f22fb8a5319227.module.ts
 ✓ test/parser/suite/ts/pass/93f7166606144548.ts
-✗ test/parser/suite/ts/pass/94139bc421264c1e.module.ts (parse errors)
-error: Unexpected token 'void' in expression
-   |
-36 | let p1 = testRecFun({ one: '1' })
-37 | void p1.result.one;
-   | ^^^^
-38 | let p2 = p1.deeper({ two: '2' })
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/94139bc421264c1e.module.ts
 ✓ test/parser/suite/ts/pass/94157ecb9a694601.module.ts
 ✓ test/parser/suite/ts/pass/94255d180175c695.module.ts
 ✓ test/parser/suite/ts/pass/9434e80f3aed71ae.ts
@@ -6030,17 +5950,7 @@ error: Expected '?' in a conditional type, but found ','
 ✓ test/parser/suite/ts/pass/af19e5e68e97e91c.module.ts
 ✓ test/parser/suite/ts/pass/af345189c57af121.ts
 ✓ test/parser/suite/ts/pass/af369eb88f2611c4.ts
-✗ test/parser/suite/ts/pass/af44b354f11da7ea.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found ':'
-   |
- 7 | type F1 = (arg: number) => any; // OK
- 8 | type F2 = ({ a: string }: O) => any; // Error
-   |                         ^
- 9 | type F3 = ({ a: string, b, c }: O) => any; // Error
-   |
-   = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/af44b354f11da7ea.ts
 ✓ test/parser/suite/ts/pass/af49fc74afcbc4fe.ts
 ✓ test/parser/suite/ts/pass/af516278179422bb.ts
 ✓ test/parser/suite/ts/pass/af60cec5ca84720e.ts
@@ -6071,17 +5981,7 @@ error: Expected ')' to close a parenthesized type, but found ':'
 ✓ test/parser/suite/ts/pass/b059a8e31fb9bf46.ts
 ✓ test/parser/suite/ts/pass/b066490793694308.ts
 ✓ test/parser/suite/ts/pass/b073ebe52e161efd.ts
-✗ test/parser/suite/ts/pass/b075e41eec062945.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found ':'
-   |
- 4 | type O = Record<symbol, unknown>
- 5 | type F14 = ({ [sym]: string }: O) => void; // Error
-   |                              ^
- 6 | type G14 = new ({ [sym]: string }: O) => void; // Error
-   |
-   = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/b075e41eec062945.ts
 ✓ test/parser/suite/ts/pass/b07745d1f9bb883c.ts
 ✓ test/parser/suite/ts/pass/b077c02939705625.ts
 ✓ test/parser/suite/ts/pass/b077e2146881d8c1.ts
@@ -7085,17 +6985,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/cbcd3b8c5776ae22.module.ts
 ✓ test/parser/suite/ts/pass/cbd56edc072c2197.ts
 ✓ test/parser/suite/ts/pass/cbdad7d96c46a77c.ts
-✗ test/parser/suite/ts/pass/cbe8264c26c5c745.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '=>'
-   |
- 9 | type T1 = ([a, b, c]);
-10 | type F1 = ([a, b, c]) => void;
-   |                       ^^
-11 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/cbe8264c26c5c745.ts
 ✓ test/parser/suite/ts/pass/cbee0c7af23e42a3.ts
 ✓ test/parser/suite/ts/pass/cbf2cae548588b59.ts
 ✓ test/parser/suite/ts/pass/cbfb72707ac3012c.ts
@@ -8383,17 +8273,7 @@ error: Expected ';', ',', or newline between type members, but found '('
 ✓ test/parser/suite/ts/pass/f36d51847d1bc90a.ts
 ✓ test/parser/suite/ts/pass/f374331ea508a60c.ts
 ✓ test/parser/suite/ts/pass/f383e9860b7e371c.ts
-✗ test/parser/suite/ts/pass/f384f51244ac7e63.ts (parse errors)
-error: Unexpected token 'delete' in expression
-   |
-30 | delete f.a
-31 | delete f.b
-   | ^^^^^^
-32 | delete f.c
-   |
-   = help: This token cannot be used here. Expected an operator, semicolon, or end of expression.
-
-
+✓ test/parser/suite/ts/pass/f384f51244ac7e63.ts
 ✓ test/parser/suite/ts/pass/f389fa913c176813.ts
 ✓ test/parser/suite/ts/pass/f3acfab7c075d038.ts
 ✓ test/parser/suite/ts/pass/f3b2fae3e41dcaed.ts
