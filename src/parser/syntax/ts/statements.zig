@@ -13,7 +13,7 @@ const class = @import("../class.zig");
 const ts_types = @import("types.zig");
 const ts_signatures = @import("signatures.zig");
 
-/// `is_const` is only meaningful on enums.
+/// `is_const` only matters on enums.
 pub const Modifiers = struct {
     declare: bool = false,
     abstract: bool = false,
@@ -71,8 +71,8 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
             return name.tag.isIdentifierLike() or name.tag == .string_literal;
         },
         .global => {
-            // `declare global { ... }` augmentation only.
-            if (!has_declare) return false;
+            // `global { ... }` and `declare global { ... }`. a same-line
+            // `{` is the only thing that gates it.
             const next = peek[idx] orelse return null;
             return next.tag == .left_brace and !next.hasLineTerminatorBefore();
         },
@@ -192,7 +192,8 @@ pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
 
 const HeritageKind = enum { interface, class };
 
-/// `extends ...` (interface) or `implements ...` (class); empty when absent.
+/// `extends ...` for interfaces or `implements ...` for classes.
+/// returns an empty range when the keyword isn't there.
 fn parseHeritageClause(
     parser: *Parser,
     comptime keyword: TokenTag,
@@ -247,8 +248,8 @@ pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
     return parseHeritageClause(parser, .implements, .class);
 }
 
-/// `Foo.Bar.Baz` as left-associative `MemberExpression` chain. no calls,
-/// computed access, or optional chaining.
+/// `Foo.Bar.Baz` as a left-leaning `MemberExpression` chain. no calls,
+/// no computed access, no optional chaining.
 fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     var expression = try literals.parseIdentifier(parser) orelse return null;
 
@@ -449,7 +450,7 @@ pub fn parseModuleDeclaration(
     );
 }
 
-/// declare global { ... }
+/// `global { ... }` and `declare global { ... }` global augmentations.
 pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .global);
 
@@ -466,19 +467,18 @@ pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Erro
     );
 }
 
-/// `Foo` or `A.B.C` as a left-associative `TSQualifiedName` chain.
+/// `Foo` or `A.B.C` as a left-leaning `TSQualifiedName` chain.
 fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
     const head = try literals.parseBindingIdentifier(parser) orelse return null;
     return ts_types.extendQualifiedName(parser, head);
 }
 
-/// `.null` when no `{` follows (e.g. `declare module "foo"`).
+/// returns `.null` when no `{` follows, e.g. `declare module "foo"`.
 fn parseOptionalModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .left_brace) return .null;
     return parseModuleBlock(parser);
 }
 
-/// `{ <statements> }` body of a module, namespace, or global declaration.
 fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 

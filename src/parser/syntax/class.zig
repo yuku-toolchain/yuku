@@ -95,7 +95,7 @@ pub fn parseClassDecorated(
                 super_class = inst.expression;
                 super_type_arguments = inst.type_arguments;
             },
-            else => if (parser.current_token.tag == .less_than) {
+            else => if (ts_types.isAngleOpen(parser.current_token.tag)) {
                 super_type_arguments = try ts_types.parseTypeArguments(parser);
             },
         };
@@ -124,7 +124,7 @@ pub fn parseClassDecorated(
     } }, .{ .start = start, .end = parser.tree.getSpan(body).end });
 }
 
-fn canStartClassName(parser: *Parser) Error!bool {
+inline fn canStartClassName(parser: *Parser) Error!bool {
     const tag = parser.current_token.tag;
     if (!tag.isIdentifierLike() or tag == .extends) return false;
     if (parser.tree.isTs() and tag == .implements) {
@@ -552,7 +552,7 @@ fn parseMethodDefinition(
         .null;
 
     const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
-    try validateGetSetParams(parser, mods.kind, params);
+    _ = try functions.checkAccessorArity(parser, mods.kind, params);
     const params_end = parser.tree.getSpan(params).end;
 
     // optional `: ReturnType` annotation.
@@ -760,28 +760,6 @@ fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, mods: Modifiers)
         .set => try parser.report(span, "Setter cannot be a generator", .{
             .help = "Remove the '*' from the setter definition.",
         }),
-        else => {},
-    }
-}
-
-// getters take zero parameters, setters take exactly one
-fn validateGetSetParams(parser: *Parser, kind: ast.MethodDefinitionKind, params: ast.NodeIndex) Error!void {
-    const data = parser.tree.getData(params).formal_parameters;
-    switch (kind) {
-        .get => if (data.items.len != 0 or data.rest != .null) {
-            try parser.report(
-                parser.tree.getSpan(params),
-                "Getter must have no parameters",
-                .{ .help = "Remove all parameters from the getter." },
-            );
-        },
-        .set => if (data.items.len != 1 or data.rest != .null) {
-            try parser.report(
-                parser.tree.getSpan(params),
-                "Setter must have exactly one parameter",
-                .{ .help = "Setters accept exactly one argument." },
-            );
-        },
         else => {},
     }
 }

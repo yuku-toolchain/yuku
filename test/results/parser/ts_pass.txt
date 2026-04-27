@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8237/8261 (99.71%)
-Failed:       24
-AST mismatch: 0/8237
+Passed:       8246/8261 (99.82%)
+Failed:       15
+AST mismatch: 0/8246
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -1854,17 +1854,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/37d6c90a51416a71.ts
 ✓ test/parser/suite/ts/pass/37df90b8eb4efba0.ts
 ✓ test/parser/suite/ts/pass/37e4436172f6c235.ts
-✗ test/parser/suite/ts/pass/37ede12df0f1a6ad.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
-   |
- 2 | // @strict: false
- 3 | global {
-   |        ^
- 4 |     interface Array<T> { x }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/37ede12df0f1a6ad.ts
 ✓ test/parser/suite/ts/pass/37f14a5b2b3f4a8f.ts
 ✓ test/parser/suite/ts/pass/37f56667a4252f84.ts
 ✓ test/parser/suite/ts/pass/37f6385d08935ba3.ts
@@ -1946,17 +1936,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3adee1115ec8290b.ts
 ✓ test/parser/suite/ts/pass/3aeed6544bd22bd0.ts
 ✓ test/parser/suite/ts/pass/3af578faa798998a.ts
-✗ test/parser/suite/ts/pass/3b0bd6118f79fe37.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
-   |
- 4 | namespace A {
- 5 |     global {
-   |            ^
- 6 |         interface Array<T> { x }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/3b0bd6118f79fe37.module.ts
 ✓ test/parser/suite/ts/pass/3b130af7747836ac.ts
 ✓ test/parser/suite/ts/pass/3b13f30ac548db9c.module.ts
 ✓ test/parser/suite/ts/pass/3b1ac9f7db199ddb.ts
@@ -2708,17 +2688,7 @@ error: Expected a type, but found '"\"ambientModule\""'
 ✓ test/parser/suite/ts/pass/5169917994ffa37a.ts
 ✓ test/parser/suite/ts/pass/517632b3f35bae4c.ts
 ✓ test/parser/suite/ts/pass/51763f8d40d9c028.ts
-✗ test/parser/suite/ts/pass/517ae97b0e7a4520.ts (parse errors)
-error: Getter must have no parameters
-   |
-10 |     n: 12,
-11 |     get x(this: Foo): number { return this.n; },
-   |          ^^^^^^^^^^^
-12 |     set x(this: Foo, n: number) { this.n = n; }
-   |
-   = help: Remove all parameters from the getter.
-
-
+✓ test/parser/suite/ts/pass/517ae97b0e7a4520.ts
 ✓ test/parser/suite/ts/pass/517b6b50c4ca0fc7.ts
 ✓ test/parser/suite/ts/pass/5180988ef6d35c3c.module.tsx
 ✓ test/parser/suite/ts/pass/5185a30109492c67.ts
@@ -4180,17 +4150,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/7dcc13ffc7eead66.ts
 ✓ test/parser/suite/ts/pass/7dcd798891d58f26.ts
 ✓ test/parser/suite/ts/pass/7dce24b72bc634fb.ts
-✗ test/parser/suite/ts/pass/7dd8eddc38c5b003.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '{'
-   |
- 3 | namespace A {
- 4 |     global {
-   |            ^
- 5 |         interface Array<T> { x }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/7dd8eddc38c5b003.ts
 ✓ test/parser/suite/ts/pass/7de381525084ed7e.ts
 ✓ test/parser/suite/ts/pass/7de6a390d5508e37.ts
 ✓ test/parser/suite/ts/pass/7de8fbdeab1a530a.ts
@@ -4543,17 +4503,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/88a3d98fe6ced82a.ts
 ✓ test/parser/suite/ts/pass/88a41aa6f97238c1.module.ts
 ✓ test/parser/suite/ts/pass/88a7139310b8be42.ts
-✗ test/parser/suite/ts/pass/88b665a846b8fd5b.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '<<'
-   |
- 1 | // @target: es2015
- 2 | type Bar = ReturnType<<T>(x: T) => number>;
-   |                      ^^
- 3 | declare const a: Bar;
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/88b665a846b8fd5b.ts
 ✓ test/parser/suite/ts/pass/88bb43ac942b59d7.ts
 ✓ test/parser/suite/ts/pass/88bdd73abde03e8e.module.ts
 ✓ test/parser/suite/ts/pass/88bee05e1bcb6b54.ts
@@ -5407,16 +5357,7 @@ error: Expected '?' in a conditional type, but found ':'
 ✓ test/parser/suite/ts/pass/a31916d46ad3e8b8.ts
 ✓ test/parser/suite/ts/pass/a32acfc035c7d4e7.ts
 ✓ test/parser/suite/ts/pass/a32c014d92e166c9.ts
-✗ test/parser/suite/ts/pass/a337e33440a78900.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '<<'
-   |
- 1 | // @target: es2015
- 2 | export declare const fail1: import("module").Modifier<<T>(x: T) => T>; // shouldn't be a parse error
-   |                                                      ^^
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/a337e33440a78900.module.ts
 ✓ test/parser/suite/ts/pass/a33e07b5658159e2.ts
 ✓ test/parser/suite/ts/pass/a33f29969465f2ad.module.ts
 ✓ test/parser/suite/ts/pass/a344f4cf48181fe1.ts
@@ -5729,17 +5670,7 @@ error: Expected a type, but found '"AB\r\nC"'
 ✓ test/parser/suite/ts/pass/abe2cd1b21032fd4.ts
 ✓ test/parser/suite/ts/pass/abe4f363db1a9a3c.ts
 ✓ test/parser/suite/ts/pass/ac1586da7e837fc6.ts
-✗ test/parser/suite/ts/pass/ac2ceff911c46114.module.ts (parse errors)
-error: Expected '?' in a conditional type, but found ','
-   |
-79 |     ): DataLast & DataFirst
-80 |     <DataLast extends (...args: Array<any>) => any, DataFirst extends (...args: Array<any>) => any>(
-   |                                                   ^
-81 |         isDataFirst: (args: IArguments) => boolean,
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/ac2ceff911c46114.module.ts
 ✓ test/parser/suite/ts/pass/ac301af716e0ada5.ts
 ✓ test/parser/suite/ts/pass/ac3531063fe2a43c.ts
 ✓ test/parser/suite/ts/pass/ac375a0163d54380.ts
@@ -6568,17 +6499,7 @@ error: Expected a type, but found 'break'
 ✓ test/parser/suite/ts/pass/c4e99f8a81933f81.ts
 ✓ test/parser/suite/ts/pass/c4f72a923977fb23.ts
 ✓ test/parser/suite/ts/pass/c4f76f7ce4264c6b.ts
-✗ test/parser/suite/ts/pass/c4fab557112afbde.ts (parse errors)
-error: Getter must have no parameters
-   |
-12 |     n: 13,
-13 |     get x(this: Foo) { return this.n; },
-   |          ^^^^^^^^^^^
-14 |     set x(this: Bar, n) { this.wrong = "method"; }
-   |
-   = help: Remove all parameters from the getter.
-
-
+✓ test/parser/suite/ts/pass/c4fab557112afbde.ts
 ✓ test/parser/suite/ts/pass/c50533d3dc30e445.ts
 ✓ test/parser/suite/ts/pass/c5079fa8b8d15673.ts
 ✓ test/parser/suite/ts/pass/c5162f4a033b6a43.ts
@@ -7592,17 +7513,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/e4a8ac38abc733e8.module.ts
 ✓ test/parser/suite/ts/pass/e4a8c63933979d1a.ts
 ✓ test/parser/suite/ts/pass/e4ae952ee8622dc2.ts
-✗ test/parser/suite/ts/pass/e4ccf9bf028d7e4c.ts (parse errors)
-error: Expected ';', ',', or newline between type members, but found '('
-   |
- 4 |   
- 5 |     <T>(): void
-   |        ^
- 6 | }
-   |
-   = help: Separate type members with ';', ',', or a newline, or close the block with '}'
-
-
+✓ test/parser/suite/ts/pass/e4ccf9bf028d7e4c.ts
 ✓ test/parser/suite/ts/pass/e4cf2c6107812f9a.ts
 ✓ test/parser/suite/ts/pass/e4d3004aec0e5297.ts
 ✓ test/parser/suite/ts/pass/e4f6165868150239.ts

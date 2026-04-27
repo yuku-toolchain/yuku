@@ -9,7 +9,7 @@ const Precedence = @import("../../token.zig").Precedence;
 const expressions = @import("../expressions.zig");
 const types = @import("types.zig");
 
-/// `<Type>expr`. operand parses at unary precedence.
+/// `<Type>expr`. operand binds at unary precedence.
 pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
@@ -55,7 +55,8 @@ pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!
     return try parser.tree.createNode(data, .{ .start = start, .end = end });
 }
 
-/// `expr!` outside a chain; inside a chain `parseOptionalChain` handles it.
+/// `expr!` outside an optional chain. inside a chain
+/// `parseOptionalChain` owns the `!`.
 pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .logical_not);
 
@@ -68,8 +69,9 @@ pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.N
     );
 }
 
-/// `<...>` after a callee: absorbs into a call/tagged template, or yields
-/// `TSInstantiationExpression`; returns null if `<` stays relational.
+/// `<...>` after a callee. folds into a call or tagged template if one
+/// follows, otherwise builds `TSInstantiationExpression`. returns null
+/// when `<` stays relational.
 pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeIndex) Error!?ast.NodeIndex {
     const type_arguments = try tryParseTypeArgumentsInExpression(parser);
     if (type_arguments == .null) return null;
@@ -88,10 +90,12 @@ pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeI
     }
 }
 
-/// speculatively parses `<...>`; rewinds on failure so `<` stays relational.
+/// speculatively parses `<...>`. rewinds on failure so `<` stays
+/// relational. mirrors `tryParseTypeArgumentsInExpression` in
+/// typescript-go.
 pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     if (!parser.tree.isTs()) return .null;
-    if (parser.current_token.tag != .less_than) return .null;
+    if (!types.isAngleOpen(parser.current_token.tag)) return .null;
 
     const cp = parser.checkpoint();
 
@@ -109,7 +113,7 @@ fn canFollowTypeArgumentsInExpression(token: Token) bool {
     return switch (token.tag) {
         .left_paren, .no_substitution_template, .template_head => true,
 
-        // biased toward the relational reading for `a < b > -c`.
+        // bias toward the relational reading for `a < b > -c`.
         .less_than, .greater_than, .plus, .minus => false,
 
         else => token.hasLineTerminatorBefore() or

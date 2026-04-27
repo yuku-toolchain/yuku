@@ -27,8 +27,8 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     };
 }
 
-/// extends slot of `T extends U ? X : Y`; refuses to start a nested
-/// conditional so the outer `? :` survives.
+/// extends slot of `T extends U ? X : Y`. nested conditionals belong to
+/// the outer `? :`, so don't start one here.
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
         return try parseFunctionOrConstructorType(parser);
@@ -225,8 +225,8 @@ fn parseJSDocPostfix(parser: *Parser, inner: ast.NodeIndex, comptime kind: JSDoc
     );
 }
 
-/// true when a postfix `?` should be consumed; false when a type starts
-/// after it (the `?` belongs to an outer conditional).
+/// `?` is postfix when no type starts after it. otherwise it belongs to
+/// an outer conditional.
 fn isPostfixNullable(parser: *Parser) Error!bool {
     const next = (try parser.peekAhead()) orelse return false;
     return !isStartOfType(next.tag);
@@ -287,7 +287,7 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // `const` is allowed here for `as const`.
+    // `const` is the only reserved word allowed here, for `as const`.
     if ((token.tag.isIdentifierLike() and !token.tag.isUnconditionallyReserved()) or token.tag == .@"const") {
         return parseTypeReference(parser);
     }
@@ -391,7 +391,7 @@ fn parseTemplateLiteralType(parser: *Parser) Error!?ast.NodeIndex {
         const ty = try parseType(parser) orelse return null;
         try parser.scratch_b.append(parser.allocator(), ty);
 
-        // re-scan `}` as a template continuation so the following text is
+        // re-scan `}` as a template continuation so the trailing text is
         // lexed as template characters, not source.
         if (parser.current_token.tag != .right_brace) {
             try parser.reportExpected(
@@ -457,8 +457,7 @@ fn parseJSDocNullableOrUnknownType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// !T   (operand is a primary type, so `!T[]` groups as `(!T)[]`)
-/// ^^
+/// !T. operand is a primary type so `!T[]` groups as `(!T)[]`.
 fn parseJSDocNonNullableType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .logical_not);
 
@@ -513,6 +512,7 @@ fn isStartOfType(tag: TokenTag) bool {
         .left_bracket,
         .left_brace,
         .less_than,
+        .left_shift,
         .keyof,
         .unique,
         .readonly,
@@ -601,7 +601,7 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
         return next.tag == .new;
     }
 
-    if (tag == .less_than) return true;
+    if (isAngleOpen(tag)) return true;
 
     if (tag != .left_paren) return false;
 
@@ -619,8 +619,8 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
             const t2 = peek[1] orelse return false;
             return t2.tag == .colon;
         },
-        // `({...` or `([...` is ambiguous between a destructuring param
-        // and a parenthesized type literal / tuple.
+        // `({...` and `([...` could be a destructuring param or a
+        // parenthesized type literal/tuple. only the lookahead knows.
         .left_brace, .left_bracket => return isFunctionTypeAfterPattern(parser),
         else => {},
     }
@@ -639,8 +639,8 @@ fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
     };
 }
 
-/// speculatively parses `(BindingPattern` and checks the follow set to
-/// disambiguate a function type from a parenthesized type.
+/// speculatively parse `(BindingPattern` then peek the follow set to tell
+/// a function type from a parenthesized type.
 fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
     const cp = parser.checkpoint();
     defer parser.rewind(cp);
@@ -797,8 +797,8 @@ fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
     return parseTupleElementBody(parser);
 }
 
-/// rewrites a trailing postfix `T?` into `TSOptionalType` since
-/// `parseType` always consumes it as a `TSJSDocNullableType`.
+/// `parseType` always reads a trailing `?` as `TSJSDocNullableType`.
+/// in tuple position, rewrite it to `TSOptionalType`.
 fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
     if (try isNamedTupleElement(parser)) {
         return parseNamedTupleMember(parser);
@@ -865,7 +865,7 @@ fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
 
     const type_name = try parseEntityName(parser) orelse return null;
 
-    const type_arguments = try parseTypeArguments(parser);
+    const type_arguments = try parseTypeArgumentsAfterEntityName(parser);
 
     const end = if (type_arguments != .null)
         parser.tree.getSpan(type_arguments).end
@@ -894,12 +894,12 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
     else
         try parseEntityName(parser) orelse return null;
 
-    // `import("m").Foo<T>` absorbs its own type arguments; only an
-    // entity name still needs a top-level `<T>`.
+    // `import("m").Foo<T>` already swallowed its own `<T>` inside
+    // `parseImportType`. only entity names still need a `<T>` here.
     const type_arguments = if (parser.tree.getData(expr_name) == .ts_import_type)
         .null
     else
-        try parseTypeArguments(parser);
+        try parseTypeArgumentsAfterEntityName(parser);
 
     const end = if (type_arguments != .null)
         parser.tree.getSpan(type_arguments).end
@@ -974,14 +974,14 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// dotted name after `import("m").`; every segment is an `IdentifierName`.
+/// dotted name after `import("m").`. every segment is an `IdentifierName`.
 fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
     const head = try parseIdentifierNameHead(parser) orelse return null;
     return extendQualifiedName(parser, head);
 }
 
-/// `A.B.C`; head is `IdentifierReference` (or `ThisExpression`), each
-/// tail segment is `IdentifierName`.
+/// `A.B.C`. head is `IdentifierReference` or `ThisExpression`, tail
+/// segments are `IdentifierName`.
 fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
     const first_token = parser.current_token;
     if (!first_token.tag.isIdentifierLike()) {
@@ -1023,7 +1023,7 @@ fn parseIdentifierNameHead(parser: *Parser) Error!?ast.NodeIndex {
     return head;
 }
 
-/// extends `head` with `.Id` continuations, each wrapped in `TSQualifiedName`.
+/// folds `.Id` continuations into a left-leaning `TSQualifiedName` chain.
 pub fn extendQualifiedName(parser: *Parser, head: ast.NodeIndex) Error!?ast.NodeIndex {
     var name = head;
     while (parser.current_token.tag == .dot) {
@@ -1059,6 +1059,14 @@ pub fn parseTypeArguments(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .arguments);
 }
 
+/// `<...>` after the entity name in a `TSTypeReference` or `TSTypeQuery`.
+/// a newline before `<` ends the reference so `typeof a` and `<T>(): void`
+/// stay separate members.
+fn parseTypeArgumentsAfterEntityName(parser: *Parser) Error!ast.NodeIndex {
+    if (parser.current_token.hasLineTerminatorBefore()) return .null;
+    return parseTypeArguments(parser);
+}
+
 /// function f<T, U extends V>() {}
 ///           ^^^^^^^^^^^^^^^^
 pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
@@ -1067,12 +1075,9 @@ pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
 
 const AngleListKind = enum { arguments, parameters };
 
-/// `.null` when no leading `<`.
+/// returns `.null` when no leading `<`.
 fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeIndex {
-    if (parser.current_token.tag != .less_than) return .null;
-
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return .null; // consume '<'
+    const start = try consumeAngleOpen(parser) orelse return .null;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -1097,8 +1102,27 @@ fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeI
     return try parser.tree.createNode(data, .{ .start = start, .end = end });
 }
 
-/// re-scans a compound `>` token (`>>`, `>>=`, etc.) into a leading `>`
-/// so the remainder stays in the token stream.
+/// `<`, or `<<` fused for nested generics like `Foo<<T>(x: T) => R>`.
+pub inline fn isAngleOpen(tag: TokenTag) bool {
+    return tag == .less_than or tag == .left_shift;
+}
+
+/// returns the `<` start, or `null` when no `<`. peels `<<` if needed.
+fn consumeAngleOpen(parser: *Parser) Error!?u32 {
+    const start = parser.current_token.span.start;
+    switch (parser.current_token.tag) {
+        .less_than => try parser.advance() orelse return null,
+        .left_shift => {
+            const lt = parser.lexer.reScanLessThan(start);
+            try parser.advanceWithRescannedToken(lt) orelse return null;
+        },
+        else => return null,
+    }
+    return start;
+}
+
+/// returns the `>` end, or `null` after reporting a missing closer.
+/// peels the leading `>` off `>>`, `>>=`, etc.
 fn consumeAngleClose(parser: *Parser, comptime kind: AngleListKind) Error!?u32 {
     switch (parser.current_token.tag) {
         .greater_than => {
@@ -1134,9 +1158,9 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
     var start: u32 = parser.current_token.span.start;
     var start_set = false;
 
-    // contextual: treat as a modifier only when followed by an identifier
-    // (so `<out>` still names a parameter). order is `const in out`,
-    // each at most once.
+    // these are modifiers only when followed by an identifier, otherwise
+    // `<out>` is a parameter named `out`. order is `const in out`, each
+    // at most once.
     while (true) {
         const token = parser.current_token;
         const tag = token.tag;
@@ -1252,12 +1276,13 @@ pub fn parseReturnTypeAnnotation(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-// type predicates: three forms, one finalizer.
+// three forms, one finalizer.
 //   this is T          primary type
-//   asserts X [is T]   primary type, narrowing is optional
+//   asserts X [is T]   primary type, narrowing optional
 //   Id is T            return-type only, needs cover disambiguation
 
-/// return-type entry; `this is T` and `asserts ...` go through `parseType`.
+/// return-type entry. `this is T` and `asserts ...` go through `parseType`,
+/// only `Id is T` needs the lookahead here.
 pub fn parseTypeOrTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     if (!try isIdentifierPredicateStart(parser)) return parseType(parser);
 
@@ -1293,7 +1318,7 @@ fn parseAssertsTypePredicate(parser: *Parser) Error!?ast.NodeIndex {
     return finishTypePredicate(parser, start, parameter_name, true);
 }
 
-/// `TSThisType` for `this`, otherwise `IdentifierName`.
+/// `this` becomes `TSThisType`, anything else is `IdentifierName`.
 fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .this) return literals.parseIdentifierName(parser);
 
@@ -1302,7 +1327,7 @@ fn parsePredicateParameterName(parser: *Parser) Error!?ast.NodeIndex {
     return try parser.tree.createNode(.{ .ts_this_type = .{} }, token.span);
 }
 
-/// consumes the optional `is T` narrowing and builds the predicate node.
+/// optional `is T` narrowing, then builds the predicate node.
 fn finishTypePredicate(
     parser: *Parser,
     start: u32,
@@ -1342,7 +1367,8 @@ fn isAssertsPredicateStart(parser: *Parser) Error!bool {
     return next.tag == .this or next.tag.isIdentifierLike();
 }
 
-/// `Id is T` on the same line. excludes `this` (handled in `parsePrimaryType`).
+/// `Id is T` on the same line. `this is T` is already covered by
+/// `parsePrimaryType`.
 fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     const current = parser.current_token;
     if (current.isEscaped() or current.tag == .this or !current.tag.isIdentifierLike()) return false;
@@ -1351,7 +1377,7 @@ fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
-/// in place
+/// mutates `pattern` in place.
 pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, annotation: ast.NodeIndex) void {
     var data = parser.tree.getData(pattern);
 
@@ -1373,7 +1399,7 @@ pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, ann
     }
 }
 
-/// in place
+/// mutates `pattern` in place.
 pub fn applyDecoratorsToPattern(parser: *Parser, pattern: ast.NodeIndex, decorators: ast.IndexRange) void {
     if (decorators.len == 0) return;
 
@@ -1391,7 +1417,7 @@ pub fn applyDecoratorsToPattern(parser: *Parser, pattern: ast.NodeIndex, decorat
     parser.tree.replaceData(pattern, data);
 }
 
-/// marks `x?`, `[...]?`, `{...}?` optional in place; extends span to `end`.
+/// marks `x?`, `[...]?`, `{...}?` optional and stretches the span to `end`.
 pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) void {
     var data = parser.tree.getData(pattern);
 

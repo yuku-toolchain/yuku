@@ -25,6 +25,7 @@ const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
 const ts_arrows = @import("ts/arrows.zig");
 const ts_ops = @import("ts/operators.zig");
+const ts_types = @import("ts/types.zig");
 
 const ParseExpressionOpts = struct {
     /// whether we are parsing this expression in a cover context.
@@ -44,8 +45,8 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
     while (true) {
         const current_token = parser.current_token;
 
-        // `<` at call-level postfix precedence, dispatched before the
-        // binary precedence gate.
+        // `<` is dispatched before the binary precedence gate so it
+        // can act as a call-level postfix instead of relational.
         if (try tryConsumeTypeArgumentedPostfix(parser, left)) |node| {
             left = node;
             continue;
@@ -588,9 +589,8 @@ fn parseNewExpression(parser: *Parser) Error!?ast.NodeIndex {
         };
     }
 
-    // `new Foo<T>(...)` or `new Foo<T>`. speculatively parse `<T>` as
-    // type arguments. on commit, they fold directly into the
-    // `NewExpression`.
+    // `new Foo<T>(...)` or `new Foo<T>`. parse `<T>` speculatively. on
+    // commit, the args fold straight into the `NewExpression`.
     const type_arguments: ast.NodeIndex = if (parser.tree.isTs())
         try ts_ops.tryParseTypeArgumentsInExpression(parser)
     else
@@ -1089,19 +1089,18 @@ fn parseOptionalChain(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex
                     .{ .start = parser.tree.getSpan(expr).start, .end = bang_end },
                 );
             },
-            // `a?.b<T>(c)` keeps the generic call inside the chain. we
-            // only commit when `(` follows the type arguments. a bare
-            // `a?.b<T>` closes the chain so the outer pratt loop builds
-            // a surviving `TSInstantiationExpression`.
-            .less_than => {
+            // `a?.b<T>(c)` stays in the chain. we only commit when `(`
+            // follows the type args. a bare `a?.b<T>` closes the chain
+            // so the outer pratt loop builds a `TSInstantiationExpression`.
+            // `<<` covers nested generics like `a?.b<<T>(x: T) => R>(c)`.
+            .less_than, .left_shift => {
                 if (!parser.tree.isTs()) break;
                 const type_arguments = try ts_ops.tryParseTypeArgumentsInExpression(parser);
                 if (type_arguments == .null or parser.current_token.tag != .left_paren) break;
                 expr = try parseCallExpression(parser, expr, false, type_arguments) orelse return null;
             },
             .template_head, .no_substitution_template => {
-                // tagged template in optional chain not allowed
-
+                // tagged templates aren't allowed in an optional chain.
                 try parser.report(
                     parser.current_token.span,
                     "Tagged template expressions are not permitted in an optional chain",
@@ -1128,10 +1127,9 @@ fn parseOptionalChainElement(parser: *Parser, object_node: ast.NodeIndex, option
         return parseMemberProperty(parser, object_node, optional);
     }
 
-    // `a?.<T>(args)` generic call immediately after `?.`. the only
-    // grammatical shape is `<...>(...)`, tagged templates and bare
-    // instantiations are not valid here.
-    if (parser.tree.isTs() and tag == .less_than) {
+    // `a?.<T>(args)` generic call right after `?.`. only `<...>(...)`
+    // is valid here. tagged templates and bare instantiations aren't.
+    if (parser.tree.isTs() and ts_types.isAngleOpen(tag)) {
         const type_arguments = try ts_ops.tryParseTypeArgumentsInExpression(parser);
         if (type_arguments != .null and parser.current_token.tag == .left_paren) {
             return parseCallExpression(parser, object_node, optional, type_arguments);
@@ -1192,7 +1190,7 @@ pub fn parseLeftHandSideExpression(parser: *Parser, ctx: LhsContext) Error!?ast.
                 try ts_ops.parseNonNullExpression(parser, expr) orelse return null
             else
                 break,
-            .less_than => if (ts)
+            .less_than, .left_shift => if (ts)
                 (try ts_ops.parseTypeArgumentedCallOrInstantiation(parser, expr)) orelse break
             else
                 break,
@@ -1235,15 +1233,12 @@ inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
     return token.tag.precedence();
 }
 
-/// `<` after a `LeftHandSideExpression` opens call-level type arguments.
-/// the three shapes are a generic call `f<T>(x)`, a generic tagged
-/// template `` f<T>`x` ``, and a bare instantiation `f<T>`. this sits
-/// above the relational `<`, so the pratt loop must attempt it before
-/// the binary precedence gate would drop us to relational level in a
-/// recursive context.
+/// `<` at call level: `f<T>(x)`, `` f<T>`x` ``, or bare `f<T>`. tried
+/// before the relational `<` because the pratt precedence gate would
+/// otherwise drop us to relational level.
 inline fn tryConsumeTypeArgumentedPostfix(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
     if (!parser.tree.isTs()) return null;
-    if (parser.current_token.tag != .less_than) return null;
+    if (!ts_types.isAngleOpen(parser.current_token.tag)) return null;
     if (maxLeftPrecedence(parser.tree.getData(left)) < Precedence.Call) return null;
     return ts_ops.parseTypeArgumentedCallOrInstantiation(parser, left);
 }

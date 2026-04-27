@@ -336,25 +336,7 @@ fn parseObjectMethodProperty(
         .null;
 
     const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, false) orelse return null;
-    const params_data = parser.tree.getData(params).formal_parameters;
-
-    // getter takes zero parameters, setter takes exactly one
-    if (kind == .get and (params_data.items.len != 0 or params_data.rest != .null)) {
-        try parser.report(
-            parser.tree.getSpan(params),
-            "Getter must have no parameters",
-            .{ .help = "Remove all parameters from the getter." },
-        );
-        return null;
-    }
-    if (kind == .set and (params_data.items.len != 1 or params_data.rest != .null)) {
-        try parser.report(
-            parser.tree.getSpan(params),
-            "Setter must have exactly one parameter",
-            .{ .help = "Setters accept exactly one argument." },
-        );
-        return null;
-    }
+    if (!try functions.checkAccessorArity(parser, kind, params)) return null;
 
     // `: ReturnType`
     var return_type: ast.NodeIndex = .null;

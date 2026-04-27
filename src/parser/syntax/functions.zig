@@ -11,10 +11,11 @@ const ts_types = @import("ts/types.zig");
 const ParseFunctionOpts = struct {
     is_async: bool = false,
     is_expression: bool = false,
-    /// sets the `declare` flag on the resulting `Function` node. ambient
-    /// policy is driven by `parser.context.in_ambient`.
+    /// sets the `declare` flag on the resulting `Function`. ambient
+    /// policy comes from `parser.context.in_ambient`.
     is_declare: bool = false,
-    /// for export default function, allows optional name but produces FunctionDeclaration
+    /// `export default function`: name is optional but the result is
+    /// still a `FunctionDeclaration`.
     is_default_export: bool = false,
 };
 
@@ -44,21 +45,21 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         parser.context.await_is_keyword = outer_await_is_keyword;
     }
 
-    // names use different yield-keyword rules for declarations vs expressions.
-    // inside a generator body:
-    // - `function yield(){}` (declaration) is invalid.
-    // - `(function yield(){})` (expression) is ok.
-    // - `(function* yield(){})` is invalid.
+    // yield rules differ for declarations vs expressions. inside a
+    // generator body:
+    //   function yield(){}        declaration. invalid.
+    //   (function yield(){})      expression. ok.
+    //   (function* yield(){})     invalid.
     parser.context.yield_is_keyword = if (is_function_expression)
         is_generator
     else
         outer_yield_is_keyword;
 
-    // names use different await-keyword rules for declarations vs expressions.
-    // in script code:
-    // - `async function await(){}` (declaration) is valid.
-    // - `(async function await(){})` (expression) is invalid.
-    // declarations inherit outer Await context, while async expressions force Await for their name.
+    // await rules also differ. in script code:
+    //   async function await(){}     declaration. valid.
+    //   (async function await(){})   expression. invalid.
+    // declarations inherit the outer Await context. async expressions
+    // force Await for their own name.
     parser.context.await_is_keyword = if (is_function_expression)
         opts.is_async
     else
@@ -69,14 +70,13 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     else
         .null;
 
-    // params/body are validated in the function's generator context.
-    // example: `function* yield(){}` ok, but `function* f(yield){}` is not.
+    // params and body run under the function's own generator context.
+    // `function* yield(){}` is fine but `function* f(yield){}` is not.
     parser.context.yield_is_keyword = is_generator;
     parser.context.await_is_keyword = opts.is_async;
 
-    // name is required for regular function declarations, but optional for:
-    // - function expressions
-    // - export default function
+    // name is required for plain declarations. optional for function
+    // expressions and `export default function`.
     if (!opts.is_expression and !opts.is_default_export and id == .null) {
         try parser.report(
             parser.current_token.span,
@@ -320,6 +320,29 @@ pub fn parseFormalParameter(
     ts_types.applyDecoratorsToPattern(parser, pattern, decorators);
 
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
+}
+
+const AccessorSpec = struct { arity: u32, msg: []const u8, help: []const u8 };
+
+/// `true` when valid or `kind` is not `.get`/`.set`. a leading `this:`
+/// is a ts type-only parameter and never counts. `anytype` so class
+/// `MethodDefinitionKind` and object `PropertyKind` share one helper.
+pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex) Error!bool {
+    const spec: AccessorSpec = switch (kind) {
+        .get => .{ .arity = 0, .msg = "Getter must have no parameters", .help = "Remove all parameters from the getter." },
+        .set => .{ .arity = 1, .msg = "Setter must have exactly one parameter", .help = "Setters accept exactly one argument." },
+        else => return true,
+    };
+
+    const data = parser.tree.getData(params).formal_parameters;
+    const items = parser.tree.getExtra(data.items);
+    const has_this = items.len > 0 and
+        parser.tree.getData(parser.tree.getData(items[0]).formal_parameter.pattern) == .ts_this_parameter;
+    const arity = data.items.len - @intFromBool(has_this);
+    if (arity == spec.arity and data.rest == .null) return true;
+
+    try parser.report(parser.tree.getSpan(params), spec.msg, .{ .help = spec.help });
+    return false;
 }
 
 /// parses `this` or `this: Type` as a parameter. emitted inside the

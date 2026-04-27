@@ -1,12 +1,16 @@
 misc/ts
 =======
-Passed:       6/6 (100.00%)
+Passed:       10/10 (100.00%)
 Failed:       0
-AST mismatch: 0/6
+AST mismatch: 0/10
 
 ✓ test/parser/misc/ts/ambient-reserved-param.ts
 ✓ test/parser/misc/ts/catch-type-annotation.ts
 ✓ test/parser/misc/ts/constructor-overloads.ts
 ✓ test/parser/misc/ts/declare-function-overloads.ts
+✓ test/parser/misc/ts/extends-fused-angle-type-args.ts
 ✓ test/parser/misc/ts/extends-non-null-assertion.ts
 ✓ test/parser/misc/ts/function-overloads.ts
+✓ test/parser/misc/ts/jsx-fused-angle-type-args.tsx
+✓ test/parser/misc/ts/optional-chain-call-fused-angle.ts
+✓ test/parser/misc/ts/optional-chain-instantiation-fused-angle.ts

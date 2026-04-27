@@ -117,12 +117,7 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
 
     const name = try parseJsxElementName(parser) orelse return null;
 
-    // `<Comp<T> />`, `<Comp<T, U>>...</Comp>`
-    // only legal in tsx. type parsing runs in normal mode so keywords like
-    // `string` / `number` tokenize as type keywords instead of
-    // `jsx_identifier`. after the closing `>`, switch back and rescan so
-    // the next token (typically an attribute name) tokenizes under jsx.
-    const type_arguments = if (parser.tree.isTs() and parser.current_token.tag == .less_than) blk: {
+    const type_arguments = if (parser.tree.isTs() and ts_types.isAngleOpen(parser.current_token.tag)) blk: {
         exitJsxTag(parser);
         const args = try ts_types.parseTypeArguments(parser);
         enterJsxTag(parser);
