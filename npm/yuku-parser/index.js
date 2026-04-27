@@ -3,5 +3,24 @@ import { decode } from "./decode.js";
 
 export function parse(source, options) {
   const buffer = binding.parse(source, options ?? {});
-  return decode(buffer, source);
+  let decoded = null;
+
+  const getDecoded = () => {
+    if (decoded === null) {
+      decoded = decode(buffer, source);
+    }
+    return decoded;
+  };
+
+  return {
+    get program() {
+      return getDecoded().program;
+    },
+    get comments() {
+      return getDecoded().comments;
+    },
+    get diagnostics() {
+      return getDecoded().diagnostics;
+    },
+  };
 }
