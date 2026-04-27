@@ -526,6 +526,13 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     }, .{ .start = start, .end = end });
 }
 
+/// peek lookahead for `abstract class` after an `abstract` head, sharing the
+/// same-line rule used by `isStartOfTsDeclaration`.
+fn isAbstractClassNext(parser: *Parser) Error!bool {
+    const next = try parser.peekAhead() orelse return false;
+    return next.tag == .class and !next.hasLineTerminatorBefore();
+}
+
 /// export default declaration
 fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'default'
@@ -569,6 +576,21 @@ fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeInd
         const decorators_start = parser.current_token.span.start;
         const decorators = try extensions.parseDecorators(parser) orelse return null;
         declaration = try class.parseClassDecorated(parser, .{ .is_default_export = true }, decorators_start, decorators) orelse return null;
+        is_decl = true;
+    }
+    // export default abstract class [name] {}
+    else if (parser.tree.isTs() and parser.current_token.tag == .abstract and try isAbstractClassNext(parser)) {
+        const abstract_start = parser.current_token.span.start;
+        try parser.advance() orelse return null; // consume 'abstract'
+        declaration = try class.parseClass(parser, .{
+            .is_default_export = true,
+            .is_abstract = true,
+        }, abstract_start) orelse return null;
+        is_decl = true;
+    }
+    // export default interface Foo {}
+    else if (parser.tree.isTs() and parser.current_token.tag == .interface) {
+        declaration = try ts_statements.parseInterfaceDeclaration(parser, .{}, parser.current_token.span.start) orelse return null;
         is_decl = true;
     }
     // export default expression

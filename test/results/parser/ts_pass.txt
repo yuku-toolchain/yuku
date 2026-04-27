@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8218/8261 (99.48%)
-Failed:       43
-AST mismatch: 0/8218
+Passed:       8224/8261 (99.55%)
+Failed:       37
+AST mismatch: 0/8224
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -2121,17 +2121,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3f3298ad6eb36683.ts
 ✓ test/parser/suite/ts/pass/3f405333da283d70.ts
 ✓ test/parser/suite/ts/pass/3f4a3e37577fc76d.ts
-✗ test/parser/suite/ts/pass/3f57a8c7cfc712c0.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
-   |
- 5 | export default class Foo {}
- 6 | export default interface Foo {}
-   |                          ^^^
- 7 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/3f57a8c7cfc712c0.module.ts
 ✓ test/parser/suite/ts/pass/3f58a8154786cb1c.ts
 ✓ test/parser/suite/ts/pass/3f58dc5ea9a41e01.ts
 ✓ test/parser/suite/ts/pass/3f5d6ba3539d590a.ts
@@ -3842,17 +3832,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/71c0b3431d50d27a.ts
 ✓ test/parser/suite/ts/pass/71c1f2e16ed59c88.ts
 ✓ test/parser/suite/ts/pass/71c4df7382279713.ts
-✗ test/parser/suite/ts/pass/71d05669f25cfd1b.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'class'
-   |
- 6 | namespace ns_abstract_class {
- 7 |     export default abstract class {}
-   |                             ^^^^^
- 8 | }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/71d05669f25cfd1b.ts
 ✓ test/parser/suite/ts/pass/71d07d0e83de6cd1.ts
 ✓ test/parser/suite/ts/pass/71dd8ec5b9d16c79.ts
 ✓ test/parser/suite/ts/pass/71dec25562ba51e5.module.ts
@@ -4011,17 +3991,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/764bd435046446f7.ts
 ✓ test/parser/suite/ts/pass/764d8f0ed0b7585e.ts
 ✓ test/parser/suite/ts/pass/765441ad39f393dc.ts
-✗ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Foo'
-   |
- 7 | }
- 8 | export default interface Foo {}
-   |                          ^^^
- 9 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/7654b666a62fcfc5.module.ts
 ✓ test/parser/suite/ts/pass/765b801b4a0505da.ts
 ✓ test/parser/suite/ts/pass/765fccb87149bb20.ts
 ✓ test/parser/suite/ts/pass/76682aa58bfe7c68.ts
@@ -5768,17 +5738,7 @@ error: Expected a type, but found '"AB\r\nC"'
 ✓ test/parser/suite/ts/pass/a97450a63e171e7f.ts
 ✓ test/parser/suite/ts/pass/a98220084d38b299.ts
 ✓ test/parser/suite/ts/pass/a9848db412b47ed3.ts
-✗ test/parser/suite/ts/pass/a98d6aaeb4a1b036.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'Bar'
-   |
- 9 | export default Foo
-10 | export default interface Bar {}
-   |                          ^^^
-11 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/a98d6aaeb4a1b036.module.ts
 ✓ test/parser/suite/ts/pass/a98dc9fbb6ee8115.ts
 ✓ test/parser/suite/ts/pass/a98e315f2847477d.ts
 ✓ test/parser/suite/ts/pass/a98e3814f8cc7297.ts
@@ -6022,17 +5982,7 @@ error: Expected '?' in a conditional type, but found ','
 ✓ test/parser/suite/ts/pass/b1737d6dac5443b9.ts
 ✓ test/parser/suite/ts/pass/b1771e434b440783.module.ts
 ✓ test/parser/suite/ts/pass/b178f8990ade6f95.ts
-✗ test/parser/suite/ts/pass/b1794f4577729dee.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
-   |
- 2 | // @target: es2015
- 3 | export default interface A { a: string; }
-   |                          ^
- 4 | export default function() { return 1; }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/b1794f4577729dee.module.ts
 ✓ test/parser/suite/ts/pass/b180c8fc794cd920.module.ts
 ✓ test/parser/suite/ts/pass/b186717db2d7fe88.ts
 ✓ test/parser/suite/ts/pass/b18a64029083cb48.ts
@@ -6370,17 +6320,7 @@ error: Expected ')' to close a parenthesized type, but found '?'
 ✓ test/parser/suite/ts/pass/baec4d44eddfaba9.ts
 ✓ test/parser/suite/ts/pass/baf18ac8f67c7f7a.ts
 ✓ test/parser/suite/ts/pass/baf5e3e90455b6cb.ts
-✗ test/parser/suite/ts/pass/baf89d2fbe6a2d7b.module.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'A'
-   |
- 2 | // @target: es2015
- 3 | export default interface A {}
-   |                          ^
- 4 | interface B {}
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/baf89d2fbe6a2d7b.module.ts
 ✓ test/parser/suite/ts/pass/bb00380429c528ca.ts
 ✓ test/parser/suite/ts/pass/bb015bee627c9cec.ts
 ✓ test/parser/suite/ts/pass/bb07b3de69727d84.ts
