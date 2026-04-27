@@ -1,3 +1,4 @@
-declare namespace M {
-    const x: number;
-}
+(x) **= 5;
+(a.b) ||= y;
+((x as T)) **= 5;
+(x as any) = z;

@@ -756,15 +756,21 @@ fn parseSequenceExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex)
     );
 }
 
-fn parseAssignmentExpression(parser: *Parser, precedence: u8, left: ast.NodeIndex) Error!?ast.NodeIndex {
+fn parseAssignmentExpression(parser: *Parser, precedence: u8, left_in: ast.NodeIndex) Error!?ast.NodeIndex {
     const operator_token = parser.current_token;
     const operator = ast.AssignmentOperator.fromToken(operator_token.tag);
 
-    const left_span = parser.tree.getSpan(left);
+    const left_span = parser.tree.getSpan(left_in);
+    var left = left_in;
 
     if (operator == .assign) {
         try grammar.expressionToPattern(parser, left, .assignable);
-    } else if (!isSimpleAssignmentTarget(parser, left)) {
+    } else if (isSimpleAssignmentTarget(parser, left)) {
+        // mirror the paren-stripping that pattern conversion does for `=`,
+        // so `(x) **= y` and `((x as T)) **= y` produce the same shape as
+        // `x **= y` / `(x as T) **= y`.
+        left = parenthesized.unwrapParens(parser, left);
+    } else {
         @branchHint(.unlikely);
 
         try parser.report(
@@ -821,14 +827,19 @@ fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.Node
     );
 }
 
-/// SimpleAssignmentTarget: only identifier and member expressions (no destructuring)
+/// SimpleAssignmentTarget: identifier or member expression, optionally
+/// wrapped in parens or a transparent TS type modifier such as `as`,
+/// `satisfies`, `<T>`, or postfix `!`. These wrappers do not change the
+/// LHS-ness of the inner expression.
 pub fn isSimpleAssignmentTarget(parser: *Parser, index: ast.NodeIndex) bool {
     return switch (parser.tree.getData(index)) {
         .identifier_reference, .binding_identifier => true,
         .member_expression => |m| !m.optional, // optional chaining is not a valid assignment target
-        // `expr!` is a left-hand-side expression, so `x!++` and `x! = v`
-        // are well formed when the inner operand is a valid target.
+        .parenthesized_expression => |p| isSimpleAssignmentTarget(parser, p.expression),
         .ts_non_null_expression => |n| isSimpleAssignmentTarget(parser, n.expression),
+        .ts_as_expression => |a| isSimpleAssignmentTarget(parser, a.expression),
+        .ts_satisfies_expression => |s| isSimpleAssignmentTarget(parser, s.expression),
+        .ts_type_assertion => |t| isSimpleAssignmentTarget(parser, t.expression),
         else => false,
     };
 }

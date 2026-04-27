@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8224/8261 (99.55%)
-Failed:       37
-AST mismatch: 0/8224
+Passed:       8230/8261 (99.62%)
+Failed:       31
+AST mismatch: 0/8230
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -59,17 +59,7 @@ AST mismatch: 0/8224
 ✓ test/parser/suite/ts/pass/01c130e3ee5d0320.module.ts
 ✓ test/parser/suite/ts/pass/01c2b366131d2202.ts
 ✓ test/parser/suite/ts/pass/01cdfa4b1fce9ea4.ts
-✗ test/parser/suite/ts/pass/01d38d790206c93e.ts (parse errors)
-error: Parenthesized expression in assignment pattern must be a simple assignment target
-   |
-13 | const oldFoo = Foo;
-14 | (Foo as any) = null;
-   |  ^^^^^^^^^^
-15 | oldFoo.x();
-   |
-   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
-
-
+✓ test/parser/suite/ts/pass/01d38d790206c93e.ts
 ✓ test/parser/suite/ts/pass/01d440bc45b8e004.ts
 ✓ test/parser/suite/ts/pass/01f6b3697ad1d354.ts
 ✓ test/parser/suite/ts/pass/01f6d014f77b398c.module.ts
@@ -363,17 +353,7 @@ error: Invalid character at start of identifier
 ✓ test/parser/suite/ts/pass/0a8a28d9c85cef47.ts
 ✓ test/parser/suite/ts/pass/0a91ee9ce835fbde.ts
 ✓ test/parser/suite/ts/pass/0a922a7f1d515dec.ts
-✗ test/parser/suite/ts/pass/0a92578e2c4ebce4.ts (parse errors)
-error: Invalid assignment target
-   |
-18 | // parentheses, the contained expression is reference
-19 | (x1) **= value;
-   | ^^^^
-20 | 
-   |
-   = help: The left-hand side of a compound assignment must be a variable or property access
-
-
+✓ test/parser/suite/ts/pass/0a92578e2c4ebce4.ts
 ✓ test/parser/suite/ts/pass/0aa9baecf862fee7.ts
 ✓ test/parser/suite/ts/pass/0aac95e58cbd8cf0.ts
 ✓ test/parser/suite/ts/pass/0ab654e1465d02b6.ts
@@ -2990,17 +2970,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 
 
 ✓ test/parser/suite/ts/pass/5894e97b0bda2066.ts
-✗ test/parser/suite/ts/pass/58a671d8eb5f77e3.ts (parse errors)
-error: Invalid operand for increment/decrement operator
-   |
- 2 | let a = 10;
- 3 | --(a satisfies number);
-   |   ^^^^^^^^^^^^^^^^^^^^
- 4 | ++(a satisfies number);
-   |
-   = help: The '++' and '--' operators require a variable or property reference, not a literal or complex expression.
-
-
+✓ test/parser/suite/ts/pass/58a671d8eb5f77e3.ts
 ✓ test/parser/suite/ts/pass/58a776eca3ec96ca.ts
 ✓ test/parser/suite/ts/pass/58ae26cc97a6dc0b.ts
 ✓ test/parser/suite/ts/pass/58c07d3bd1fae702.module.ts
@@ -3016,17 +2986,7 @@ error: Invalid operand for increment/decrement operator
 ✓ test/parser/suite/ts/pass/59027b863b2543d3.ts
 ✓ test/parser/suite/ts/pass/590a3c9715ee7fb8.ts
 ✓ test/parser/suite/ts/pass/590c38ee94eead39.ts
-✗ test/parser/suite/ts/pass/5917c3707cd7b5c0.ts (parse errors)
-error: Invalid assignment target
-   |
-11 | 
-12 | (a.baz) &&= result.baz;
-   | ^^^^^^^
-13 | (b.baz) ||= result.baz;
-   |
-   = help: The left-hand side of a compound assignment must be a variable or property access
-
-
+✓ test/parser/suite/ts/pass/5917c3707cd7b5c0.ts
 ✓ test/parser/suite/ts/pass/5934625485a58d5d.ts
 ✓ test/parser/suite/ts/pass/5938347a550032d5.ts
 ✓ test/parser/suite/ts/pass/593cd0447b77bac2.ts
@@ -3268,17 +3228,7 @@ error: Invalid assignment target
 ✓ test/parser/suite/ts/pass/60e2f2c0e73b0b98.ts
 ✓ test/parser/suite/ts/pass/60e620d32bf7a4f9.ts
 ✓ test/parser/suite/ts/pass/60e70e729005101f.ts
-✗ test/parser/suite/ts/pass/60eae65e7a5d5dc0.ts (parse errors)
-error: Invalid assignment target
-   |
-23 | // parentheses, the contained expression is reference
-24 | (x1) *= value;
-   | ^^^^
-25 | (x1) += value;
-   |
-   = help: The left-hand side of a compound assignment must be a variable or property access
-
-
+✓ test/parser/suite/ts/pass/60eae65e7a5d5dc0.ts
 ✓ test/parser/suite/ts/pass/60f579cf26e96779.ts
 ✓ test/parser/suite/ts/pass/60fd11d3650e991c.ts
 ✓ test/parser/suite/ts/pass/610224f1e7cf6b80.ts
@@ -6641,17 +6591,7 @@ error: Expected ')' to close parameter list, but found 'is'
 ✓ test/parser/suite/ts/pass/c360a956f3972cda.ts
 ✓ test/parser/suite/ts/pass/c36444c0ba57eaf5.ts
 ✓ test/parser/suite/ts/pass/c367d7cd08a054ff.ts
-✗ test/parser/suite/ts/pass/c38b4c5ca3fa9dde.ts (parse errors)
-error: Parenthesized expression in assignment pattern must be a simple assignment target
-   |
-10 |     t1(p: number) {
-11 |         (this.#p as number) = p;
-   |          ^^^^^^^^^^^^^^^^^
-12 |     }
-   |
-   = help: Only identifiers or member expressions (without optional chaining) are allowed inside parentheses in assignment patterns.
-
-
+✓ test/parser/suite/ts/pass/c38b4c5ca3fa9dde.ts
 ✓ test/parser/suite/ts/pass/c38f75376a4db8e7.ts
 ✓ test/parser/suite/ts/pass/c39107c45fc0b2c3.ts
 ✓ test/parser/suite/ts/pass/c3927980fd3c3125.ts

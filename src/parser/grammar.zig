@@ -5,7 +5,6 @@ const ast = @import("ast.zig");
 const object = @import("syntax/object.zig");
 const expressions = @import("syntax/expressions.zig");
 const array = @import("syntax/array.zig");
-const parenthesized = @import("syntax/parenthesized.zig");
 
 /// parse an expression within a cover grammar context without validation.
 /// validation is deferred until the top-level context is known.
@@ -184,7 +183,7 @@ pub fn expressionToPattern(
                 return;
             }
 
-            if (!expressions.isSimpleAssignmentTarget(parser, parenthesized.unwrapParens(parser, paren.expression))) {
+            if (!expressions.isSimpleAssignmentTarget(parser, paren.expression)) {
                 try parser.report(
                     parser.tree.getSpan(paren.expression),
                     "Parenthesized expression in assignment pattern must be a simple assignment target",
@@ -194,8 +193,18 @@ pub fn expressionToPattern(
                 return;
             }
 
-            try expressionToPattern(parser, paren.expression, context);
+            // recurse for nested patterns (`(({a = 1}))`)
+            switch (parser.tree.getData(paren.expression)) {
+                .ts_as_expression,
+                .ts_satisfies_expression,
+                .ts_type_assertion,
+                .ts_non_null_expression,
+                => {},
+                else => try expressionToPattern(parser, paren.expression, context),
+            }
 
+            // strip the parenthesized wrapper, assignment targets don't
+            // preserve outer parens regardless of `preserveParens`
             parser.tree.replaceData(expr, parser.tree.getData(paren.expression));
             parser.tree.replaceSpan(expr, parser.tree.getSpan(paren.expression));
         },
