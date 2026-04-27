@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8230/8261 (99.62%)
-Failed:       31
-AST mismatch: 0/8230
+Passed:       8234/8261 (99.67%)
+Failed:       27
+AST mismatch: 0/8234
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -2195,17 +2195,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/4217fd3d4d47bcef.ts
 ✓ test/parser/suite/ts/pass/421800c402e83970.ts
 ✓ test/parser/suite/ts/pass/421d6e15f4f9ab45.ts
-✗ test/parser/suite/ts/pass/421dbabc67d1b9d5.ts (parse errors)
-error: Expected ';' after class field, but found 'is'
-   |
- 5 |     export class FileSystemObject {
- 6 |         isFSO: this is FileSystemObject;
-   |                     ^^
- 7 |         get isFile(): this is File {
-   |
-   = help: Add a semicolon after the field declaration.
-
-
+✓ test/parser/suite/ts/pass/421dbabc67d1b9d5.ts
 ✓ test/parser/suite/ts/pass/422de4fc68f142ce.ts
 ✓ test/parser/suite/ts/pass/4232b745cb30799c.ts
 ✓ test/parser/suite/ts/pass/4234c286b28a2ea4.ts
@@ -2959,16 +2949,7 @@ error: Getter must have no parameters
 ✓ test/parser/suite/ts/pass/587abc59f83fe1c8.ts
 ✓ test/parser/suite/ts/pass/58812738e2de4b61.ts
 ✓ test/parser/suite/ts/pass/58852f13ec17eaf5.ts
-✗ test/parser/suite/ts/pass/588915d0b0664cd7.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'is'
-   |
- 3 | 
- 4 | var x: this is string;
-   |             ^^
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/588915d0b0664cd7.ts
 ✓ test/parser/suite/ts/pass/5894e97b0bda2066.ts
 ✓ test/parser/suite/ts/pass/58a671d8eb5f77e3.ts
 ✓ test/parser/suite/ts/pass/58a776eca3ec96ca.ts
@@ -4191,17 +4172,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/7d465b80aa0990e9.module.ts
 ✓ test/parser/suite/ts/pass/7d509880adf87fe4.ts
 ✓ test/parser/suite/ts/pass/7d5b94b94e6108fe.ts
-✗ test/parser/suite/ts/pass/7d8acc505d2f22fd.ts (parse errors)
-error: Expected ';' after class field, but found 'is'
-   |
- 5 |     export class FileSystemObject {
- 6 |         isFSO: this is FileSystemObject;
-   |                     ^^
- 7 |         get isFile(): this is File {
-   |
-   = help: Add a semicolon after the field declaration.
-
-
+✓ test/parser/suite/ts/pass/7d8acc505d2f22fd.ts
 ✓ test/parser/suite/ts/pass/7d8c8a15bc77f080.ts
 ✓ test/parser/suite/ts/pass/7d90abc813f234b5.ts
 ✓ test/parser/suite/ts/pass/7d9ac4dd02299d34.ts
@@ -6551,15 +6522,7 @@ error: Expected a type, but found 'break'
 ✓ test/parser/suite/ts/pass/c2736029de069694.ts
 ✓ test/parser/suite/ts/pass/c27d702121c8985c.ts
 ✓ test/parser/suite/ts/pass/c2931b578130cf07.ts
-✗ test/parser/suite/ts/pass/c299fe3c93d366ee.ts (parse errors)
-error: Expected ')' to close parameter list, but found 'is'
-    |
-167 |     get p1(): this is string;
-168 |     set p1(x: this is string);
-    |                    ^^
-169 |     get p2(): asserts this is string;
-    |
-
+✓ test/parser/suite/ts/pass/c299fe3c93d366ee.ts
 ✓ test/parser/suite/ts/pass/c29f8fa19d187426.ts
 ✓ test/parser/suite/ts/pass/c2a2602f3ebf23bb.module.ts
 ✓ test/parser/suite/ts/pass/c2a559b01ac7896d.ts

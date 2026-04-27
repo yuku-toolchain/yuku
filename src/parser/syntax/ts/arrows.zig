@@ -20,9 +20,9 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
 
     switch (second.tag) {
         .spread => return .yes,
-        // overlaps with array/object expression.
+        // overlaps with array/object expression
         .left_bracket, .left_brace => return .maybe,
-        // `()` is an arrow only when followed by `=>` or `: returnType`.
+        // `()` only when `=>` or `: returnType` follows
         .right_paren => {
             const third = peek[1] orelse return .no;
             return switch (third.tag) {
@@ -30,7 +30,7 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
                 else => .no,
             };
         },
-        // `this` is a parameter only when annotated.
+        // `this` is a parameter only when annotated
         .this => {
             const third = peek[1] orelse return .no;
             return if (third.tag == .colon) .yes else .no;
@@ -40,7 +40,6 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
             const third = peek[1] orelse return .no;
             return switch (third.tag) {
                 .colon => .yes,
-                // `(a?` is an arrow only when `?` continues a param list.
                 .question => blk: {
                     const fourth = peek[2] orelse break :blk .no;
                     break :blk switch (fourth.tag) {
@@ -48,7 +47,7 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
                         else => .no,
                     };
                 },
-                // overlaps with paren or sequence expression.
+                // overlaps with paren or sequence expression
                 .comma, .assign, .right_paren => .maybe,
                 else => .no,
             };
@@ -77,11 +76,10 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
     return parenthesized.buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
 }
 
-// rewinds on failure so the caller can fall through to the cover
-// grammar, jsx, or a prefix type assertion. also rewinds when a
-// `(params): T => body` parsed under `!allow_arrow_return_type`
-// (ternary consequent, case label) isn't followed by a disambiguating
-// `:` — the trailing `:` belongs to the outer context.
+// rewinds on failure so the caller can fall through to the cover grammar,
+// jsx, or a prefix type assertion. also rewinds an `(p): T => body` that
+// was parsed under `!allow_arrow_return_type` (ternary consequent, case
+// label) when the `:` belongs to the outer context.
 pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     const cp = parser.checkpoint();
     if (try parseArrow(parser, is_async, arrow_start)) |arrow| {
@@ -96,8 +94,7 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
     return null;
 }
 
-// the one-token peek skips the checkpoint/rewind round-trip on the hot
-// jsx and type-assertion paths.
+// one-token peek skips the checkpoint/rewind on hot jsx / type-assertion paths.
 pub fn tryParseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
