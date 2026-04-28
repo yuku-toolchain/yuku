@@ -179,38 +179,46 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 /// `declare import x = Foo.Bar` and `declare import x = require("m")`.
-/// inline here because `modules.zig` already imports this file, and the
-/// shape is otherwise identical to the `import x = ...` declaration.
 fn parseDeclareImportEquals(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'import'
+    return parseImportEqualsBody(parser, start, .value);
+}
 
+/// shared body for `import x = ...` and `declare import x = ...`. assumes
+/// the leading `import` has already been consumed and parses
+/// `BindingIdentifier '=' ModuleReference ';'?`.
+pub fn parseImportEqualsBody(
+    parser: *Parser,
+    start: u32,
+    import_kind: ast.ImportOrExportKind,
+) Error!?ast.NodeIndex {
     const id = try literals.parseBindingIdentifier(parser) orelse return null;
 
     if (!try parser.expect(
         .assign,
-        "Expected '=' after 'declare import' name",
-        "A declare import equals declaration is written 'declare import x = Foo.Bar'",
+        "Expected '=' in import equals declaration",
+        "An import equals declaration is written 'import x = Foo.Bar' or 'import x = require(\"m\")'",
     )) return null;
 
-    const module_reference = try parseImportEqualsTarget(parser) orelse return null;
+    const module_reference = try parseModuleReference(parser) orelse return null;
     const end = try parser.eatSemicolon(parser.tree.getSpan(module_reference).end) orelse return null;
 
     return try parser.tree.createNode(.{
         .ts_import_equals_declaration = .{
             .id = id,
             .module_reference = module_reference,
-            .import_kind = .value,
+            .import_kind = import_kind,
         },
     }, .{ .start = start, .end = end });
 }
 
-/// `require("m")` or a dotted entity name on the RHS of `import x = ...`.
-fn parseImportEqualsTarget(parser: *Parser) Error!?ast.NodeIndex {
+/// `ModuleReference`: `require("m")` external form, or a dotted entity
+/// name on the RHS of `import x = ...`.
+fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .require) {
         const next = try parser.peekAhead() orelse return null;
         if (next.tag == .left_paren) return parseExternalModuleReference(parser);
     }
-
     const head = try literals.parseIdentifier(parser) orelse return null;
     return ts_types.extendQualifiedName(parser, head);
 }
@@ -271,7 +279,7 @@ pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
 
     const id = try literals.parseBindingIdentifier(parser) orelse return null;
     const type_parameters = try ts_types.parseTypeParameters(parser);
-    const extends = try parseInterfaceExtendsClause(parser) orelse return null;
+    const extends = try parseHeritageClause(parser, .extends, .interface) orelse return null;
     const body = try parseInterfaceBody(parser) orelse return null;
 
     return try parser.tree.createNode(
@@ -334,10 +342,6 @@ fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.N
     };
 
     return try parser.tree.createNode(data, .{ .start = start, .end = end });
-}
-
-inline fn parseInterfaceExtendsClause(parser: *Parser) Error!?ast.IndexRange {
-    return parseHeritageClause(parser, .extends, .interface);
 }
 
 pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {

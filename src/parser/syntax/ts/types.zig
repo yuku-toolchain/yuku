@@ -12,45 +12,34 @@ const expressions = @import("../expressions.zig");
 const patterns = @import("../patterns.zig");
 const signatures = @import("signatures.zig");
 
+/// every fresh type sub-context (mapped type body, tuple element, type
+/// argument, parenthesised type, parameter constraint, return type, ...)
+/// reaches the parser through `parseType`, so resetting
+/// `disallow_conditional_types` here lets every sub-context support
+/// nested conditionals. only `parseTypeNoConditional`, used for the
+/// `extends` body of a conditional, keeps the flag.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
-    // every fresh type sub-context (mapped type body, tuple element,
-    // type argument, parenthesised type, parameter constraint, return
-    // type, ...) reaches the parser through `parseType`, so resetting
-    // `disallow_conditional_types` here is the single point that lets
-    // every sub-context support nested conditionals. only the direct
-    // recursion into the `extends` body of a conditional type bypasses
-    // this entry point (`parseTypeNoConditional` keeps the flag).
-    return withAllowConditionalTypes(parser, parseTypeInner);
-}
-
-fn parseTypeInner(parser: *Parser) Error!?ast.NodeIndex {
-    if (try isStartOfFunctionOrConstructorType(parser)) {
-        return try parseFunctionOrConstructorType(parser);
-    }
-
-    return try parseConditionalType(parser) orelse {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected a type",
-            .{},
-        );
-        return null;
-    };
+    const saved = parser.context.disallow_conditional_types;
+    parser.context.disallow_conditional_types = false;
+    defer parser.context.disallow_conditional_types = saved;
+    return parseTypeWithBody(parser, parseConditionalType);
 }
 
 /// extends slot of `T extends U ? X : Y`. nested conditionals belong to
 /// the outer `? :`, so don't start one here.
 fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
+    return parseTypeWithBody(parser, parseUnionType);
+}
+
+inline fn parseTypeWithBody(
+    parser: *Parser,
+    comptime body: fn (*Parser) Error!?ast.NodeIndex,
+) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
         return try parseFunctionOrConstructorType(parser);
     }
-
-    return try parseUnionType(parser) orelse {
-        try parser.reportExpected(
-            parser.current_token.span,
-            "Expected a type",
-            .{},
-        );
+    return try body(parser) orelse {
+        try parser.reportExpected(parser.current_token.span, "Expected a type", .{});
         return null;
     };
 }
@@ -66,8 +55,11 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     // the extends body cannot itself contain a conditional type, and any
     // `infer T extends U` constraint inside it commits eagerly. nested
-    // parens reset this with `withConditionalTypes`
-    const extends_type = try withDisallowConditionalTypes(parser, parseTypeNoConditional) orelse return null;
+    // parens reset this in `parseType`.
+    const saved = parser.context.disallow_conditional_types;
+    parser.context.disallow_conditional_types = true;
+    const extends_type = try parseTypeNoConditional(parser) orelse return null;
+    parser.context.disallow_conditional_types = saved;
 
     if (!try parser.expect(
         .question,
@@ -99,93 +91,38 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// run `inner` with `disallow_conditional_types = true`. used for the
-/// `extends` body of a conditional type and for the constraint of an
-/// `infer T extends U` clause.
-inline fn withDisallowConditionalTypes(
-    parser: *Parser,
-    comptime inner: fn (*Parser) Error!?ast.NodeIndex,
-) Error!?ast.NodeIndex {
-    return withConditionalTypes(parser, true, inner);
-}
-
-/// run `inner` with `disallow_conditional_types = false`. used inside
-/// parenthesised types so `(T extends U ? X : Y)` is allowed even if
-/// the outer context is the `extends` body of an outer conditional.
-inline fn withAllowConditionalTypes(
-    parser: *Parser,
-    comptime inner: fn (*Parser) Error!?ast.NodeIndex,
-) Error!?ast.NodeIndex {
-    return withConditionalTypes(parser, false, inner);
-}
-
-inline fn withConditionalTypes(
-    parser: *Parser,
-    comptime disallow: bool,
-    comptime inner: fn (*Parser) Error!?ast.NodeIndex,
-) Error!?ast.NodeIndex {
-    const saved = parser.context.disallow_conditional_types;
-    parser.context.disallow_conditional_types = disallow;
-    defer parser.context.disallow_conditional_types = saved;
-    return inner(parser);
-}
-
 /// | A | B | C
 /// ^^^^^^^^^^^
 fn parseUnionType(parser: *Parser) Error!?ast.NodeIndex {
-    const leading_start: ?u32 = if (parser.current_token.tag == .bitwise_or)
-        parser.current_token.span.start
-    else
-        null;
-
-    if (leading_start != null) {
-        try parser.advance() orelse return null; // consume leading '|'
-    }
-
-    const first = try parseIntersectionType(parser) orelse return null;
-
-    if (leading_start == null and parser.current_token.tag != .bitwise_or) {
-        return first;
-    }
-
-    const checkpoint = parser.scratch_a.begin();
-    defer parser.scratch_a.reset(checkpoint);
-
-    try parser.scratch_a.append(parser.allocator(), first);
-
-    var last = first;
-    while (parser.current_token.tag == .bitwise_or) {
-        try parser.advance() orelse return null; // consume '|'
-        last = try parseIntersectionType(parser) orelse return null;
-        try parser.scratch_a.append(parser.allocator(), last);
-    }
-
-    const types = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
-    const start = leading_start orelse parser.tree.getSpan(first).start;
-    const end = parser.tree.getSpan(last).end;
-
-    return try parser.tree.createNode(
-        .{ .ts_union_type = .{ .types = types } },
-        .{ .start = start, .end = end },
-    );
+    return parseBinaryTypeChain(parser, .bitwise_or, parseIntersectionType, .union_type);
 }
 
 /// & A & B & C
 /// ^^^^^^^^^^^
 fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
-    const leading_start: ?u32 = if (parser.current_token.tag == .bitwise_and)
-        parser.current_token.span.start
-    else
-        null;
-    if (leading_start != null) {
-        try parser.advance() orelse return null; // consume leading '&'
-    }
+    return parseBinaryTypeChain(parser, .bitwise_and, parsePostfixType, .intersection_type);
+}
 
-    const first = try parsePostfixType(parser) orelse return null;
+const BinaryTypeKind = enum { union_type, intersection_type };
 
-    if (leading_start == null and parser.current_token.tag != .bitwise_and) {
-        return first;
-    }
+/// shared body for `parseUnionType` and `parseIntersectionType`. accepts
+/// an optional leading separator (`| A`, `& A`) and folds further
+/// separators into a flat list. when no separator is present at all,
+/// returns the single operand without wrapping it.
+fn parseBinaryTypeChain(
+    parser: *Parser,
+    comptime separator: TokenTag,
+    comptime parseOperand: fn (*Parser) Error!?ast.NodeIndex,
+    comptime kind: BinaryTypeKind,
+) Error!?ast.NodeIndex {
+    const leading_start: ?u32 = if (parser.current_token.tag == separator) blk: {
+        const start = parser.current_token.span.start;
+        try parser.advance() orelse return null;
+        break :blk start;
+    } else null;
+
+    const first = try parseOperand(parser) orelse return null;
+    if (leading_start == null and parser.current_token.tag != separator) return first;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -193,20 +130,22 @@ fn parseIntersectionType(parser: *Parser) Error!?ast.NodeIndex {
     try parser.scratch_a.append(parser.allocator(), first);
 
     var last = first;
-    while (parser.current_token.tag == .bitwise_and) {
-        try parser.advance() orelse return null; // consume '&'
-        last = try parsePostfixType(parser) orelse return null;
+    while (parser.current_token.tag == separator) {
+        try parser.advance() orelse return null;
+        last = try parseOperand(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), last);
     }
 
     const types = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
-    const start = leading_start orelse parser.tree.getSpan(first).start;
-    const end = parser.tree.getSpan(last).end;
-
-    return try parser.tree.createNode(
-        .{ .ts_intersection_type = .{ .types = types } },
-        .{ .start = start, .end = end },
-    );
+    const span: ast.Span = .{
+        .start = leading_start orelse parser.tree.getSpan(first).start,
+        .end = parser.tree.getSpan(last).end,
+    };
+    const data: ast.NodeData = switch (kind) {
+        .union_type => .{ .ts_union_type = .{ .types = types } },
+        .intersection_type => .{ .ts_intersection_type = .{ .types = types } },
+    };
+    return try parser.tree.createNode(data, span);
 }
 
 /// T[]   T[K]   T?   T!
@@ -1271,43 +1210,34 @@ fn consumeAngleClose(parser: *Parser, comptime kind: AngleListKind) Error!?u32 {
 /// const in out T extends U = V
 /// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
-    var is_const = false;
-    var is_in = false;
-    var is_out = false;
+    // canonical order is `const in out`. `step` advances through the
+    // sequence, so a modifier with a smaller step is out of order.
+    var flags: struct { @"const": bool = false, in: bool = false, out: bool = false } = .{};
+    var step: u8 = 0;
     var start: u32 = parser.current_token.span.start;
     var start_set = false;
 
-    // these are modifiers only when followed by an identifier, otherwise
-    // `<out>` is a parameter named `out`. order is `const in out`, each
-    // at most once.
+    // a modifier word is only a modifier when followed by an identifier,
+    // otherwise `<out>` is a parameter named `out`.
     while (true) {
         const token = parser.current_token;
-        const tag = token.tag;
-        if (tag != .in and tag != .out and tag != .@"const") break;
+        const this_step: u8, const seen_ptr: *bool = switch (token.tag) {
+            .@"const" => .{ 1, &flags.@"const" },
+            .in => .{ 2, &flags.in },
+            .out => .{ 3, &flags.out },
+            else => break,
+        };
 
         const next = (try parser.peekAhead()) orelse break;
         if (!next.tag.isIdentifierLike()) break;
 
-        const already_present = switch (tag) {
-            .@"const" => is_const,
-            .in => is_in,
-            .out => is_out,
-            else => unreachable,
-        };
-        const out_of_order = switch (tag) {
-            .@"const" => is_in or is_out,
-            .in => is_out,
-            .out => false,
-            else => unreachable,
-        };
-
-        if (already_present) {
+        if (seen_ptr.*) {
             try parser.report(
                 token.span,
-                try parser.fmt("Duplicate '{s}' modifier on type parameter", .{tag.toString().?}),
+                try parser.fmt("Duplicate '{s}' modifier on type parameter", .{token.tag.toString().?}),
                 .{},
             );
-        } else if (out_of_order) {
+        } else if (this_step < step) {
             try parser.report(
                 token.span,
                 "Type parameter modifiers must appear in the order 'const in out'",
@@ -1315,12 +1245,8 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
             );
         }
 
-        switch (tag) {
-            .@"const" => is_const = true,
-            .in => is_in = true,
-            .out => is_out = true,
-            else => unreachable,
-        }
+        seen_ptr.* = true;
+        step = @max(step, this_step);
 
         if (!start_set) {
             start = token.span.start;
@@ -1355,9 +1281,9 @@ fn parseTypeParameter(parser: *Parser) Error!?ast.NodeIndex {
             .name = name,
             .constraint = constraint,
             .default = default,
-            .in = is_in,
-            .out = is_out,
-            .@"const" = is_const,
+            .in = flags.in,
+            .out = flags.out,
+            .@"const" = flags.@"const",
         } },
         .{ .start = start, .end = end },
     );
@@ -1496,62 +1422,48 @@ fn isIdentifierPredicateStart(parser: *Parser) Error!bool {
     return next.tag == .is and !next.isEscaped() and !next.hasLineTerminatorBefore();
 }
 
-/// mutates `pattern` in place.
+/// attaches a type annotation to `pattern` in place and stretches the
+/// pattern's span to cover the annotation. silently ignores patterns
+/// without a `type_annotation` slot.
 pub fn applyTypeAnnotationToPattern(parser: *Parser, pattern: ast.NodeIndex, annotation: ast.NodeIndex) void {
     var data = parser.tree.getData(pattern);
-
     switch (data) {
-        .binding_identifier => |*v| v.type_annotation = annotation,
-        .object_pattern => |*v| v.type_annotation = annotation,
-        .array_pattern => |*v| v.type_annotation = annotation,
-        .assignment_pattern => |*v| v.type_annotation = annotation,
+        inline .binding_identifier, .object_pattern, .array_pattern, .assignment_pattern => |*v| v.type_annotation = annotation,
         else => return,
     }
-
     parser.tree.replaceData(pattern, data);
-
-    const pattern_span = parser.tree.getSpan(pattern);
-    const annotation_end = parser.tree.getSpan(annotation).end;
-
-    if (annotation_end > pattern_span.end) {
-        parser.tree.replaceSpan(pattern, .{ .start = pattern_span.start, .end = annotation_end });
-    }
+    extendSpanTo(parser, pattern, parser.tree.getSpan(annotation).end);
 }
 
-/// mutates `pattern` in place.
+/// attaches `decorators` to `pattern` in place. decorators sit before the
+/// pattern, so the span doesn't move. no-op when the range is empty.
 pub fn applyDecoratorsToPattern(parser: *Parser, pattern: ast.NodeIndex, decorators: ast.IndexRange) void {
     if (decorators.len == 0) return;
-
     var data = parser.tree.getData(pattern);
-
     switch (data) {
-        .binding_identifier => |*v| v.decorators = decorators,
-        .object_pattern => |*v| v.decorators = decorators,
-        .array_pattern => |*v| v.decorators = decorators,
-        .assignment_pattern => |*v| v.decorators = decorators,
-        .binding_rest_element => |*v| v.decorators = decorators,
+        inline .binding_identifier,
+        .object_pattern,
+        .array_pattern,
+        .assignment_pattern,
+        .binding_rest_element,
+        => |*v| v.decorators = decorators,
         else => return,
     }
-
     parser.tree.replaceData(pattern, data);
 }
 
 /// marks `x?`, `[...]?`, `{...}?` optional and stretches the span to `end`.
 pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) void {
     var data = parser.tree.getData(pattern);
-
     switch (data) {
-        .binding_identifier => |*v| v.optional = true,
-        .object_pattern => |*v| v.optional = true,
-        .array_pattern => |*v| v.optional = true,
-        .assignment_pattern => |*v| v.optional = true,
+        inline .binding_identifier, .object_pattern, .array_pattern, .assignment_pattern => |*v| v.optional = true,
         else => return,
     }
-
     parser.tree.replaceData(pattern, data);
+    extendSpanTo(parser, pattern, end);
+}
 
-    const pattern_span = parser.tree.getSpan(pattern);
-    if (end > pattern_span.end) {
-        parser.tree.replaceSpan(pattern, .{ .start = pattern_span.start, .end = end });
-    }
+inline fn extendSpanTo(parser: *Parser, node: ast.NodeIndex, end: u32) void {
+    const span = parser.tree.getSpan(node);
+    if (end > span.end) parser.tree.replaceSpan(node, .{ .start = span.start, .end = end });
 }

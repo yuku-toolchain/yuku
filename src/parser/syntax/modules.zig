@@ -60,7 +60,7 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     if (parser.tree.isTs() and parser.current_token.tag.isIdentifierLike()) {
         const after_id = try parser.peekAhead() orelse return null;
         if (after_id.tag == .assign) {
-            return parseImportEqualsDeclaration(parser, start, import_kind);
+            return ts_statements.parseImportEqualsBody(parser, start, import_kind);
         }
     }
 
@@ -105,86 +105,6 @@ fn isTypeImportModifier(after_type: Token, after_after: ?Token) bool {
         return a2.tag == .from or a2.tag == .assign;
     }
     return true;
-}
-
-/// `import x = <module reference>`
-fn parseImportEqualsDeclaration(
-    parser: *Parser,
-    start: u32,
-    import_kind: ast.ImportOrExportKind,
-) Error!?ast.NodeIndex {
-    const id = try literals.parseBindingIdentifier(parser) orelse return null;
-
-    if (!try parser.expect(
-        .assign,
-        "Expected '=' in import equals declaration",
-        "An import equals declaration is written 'import x = Foo.Bar' or 'import x = require(\"m\")'",
-    )) return null;
-
-    const module_reference = try parseModuleReference(parser) orelse return null;
-    const end = try parser.eatSemicolon(parser.tree.getSpan(module_reference).end) orelse return null;
-
-    return try parser.tree.createNode(.{
-        .ts_import_equals_declaration = .{
-            .id = id,
-            .module_reference = module_reference,
-            .import_kind = import_kind,
-        },
-    }, .{ .start = start, .end = end });
-}
-
-/// ModuleReference : TSExternalModuleReference or EntityName. `require("m")`
-/// is the external form, anything else is a dotted identifier chain.
-fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
-    if (parser.current_token.tag == .require) {
-        const next = try parser.peekAhead() orelse return null;
-        if (next.tag == .left_paren) return parseExternalModuleReference(parser);
-    }
-    return parseEntityName(parser);
-}
-
-/// `require("m")` on the right hand side of an `import x = ...` declaration.
-fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'require'
-
-    if (!try parser.expect(
-        .left_paren,
-        "Expected '(' after 'require' in import equals declaration",
-        "External module references are written 'require(\"module\")'",
-    )) return null;
-
-    const expression = try literals.parseStringLiteral(parser) orelse return null;
-
-    const end = parser.current_token.span.end;
-    if (!try parser.expect(
-        .right_paren,
-        "Expected ')' to close 'require' call in import equals declaration",
-        null,
-    )) return null;
-
-    return try parser.tree.createNode(.{
-        .ts_external_module_reference = .{ .expression = expression },
-    }, .{ .start = start, .end = end });
-}
-
-/// a dotted entity name used as the right hand side of an `import x = ...`
-/// declaration
-fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
-    var name = try literals.parseIdentifier(parser) orelse return null;
-
-    while (parser.current_token.tag == .dot) {
-        try parser.advance() orelse return null; // consume '.'
-        const right = try literals.parseIdentifierName(parser) orelse return null;
-        const left_start = parser.tree.getSpan(name).start;
-        const right_end = parser.tree.getSpan(right).end;
-        name = try parser.tree.createNode(
-            .{ .ts_qualified_name = .{ .left = name, .right = right } },
-            .{ .start = left_start, .end = right_end },
-        );
-    }
-
-    return name;
 }
 
 /// side-effect import: import 'module'
@@ -751,59 +671,36 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         }
     }
 
-    var declaration: ast.NodeIndex = undefined;
-
-    switch (parser.current_token.tag) {
-        .@"var", .@"const", .let => {
-            declaration = try variables.parseVariableDeclaration(parser, .{}, null) orelse return null;
-        },
-        .function => {
-            declaration = try functions.parseFunction(parser, .{}, null) orelse return null;
-        },
-        .async => {
+    const is_ts = parser.tree.isTs();
+    const declaration: ast.NodeIndex = switch (parser.current_token.tag) {
+        .@"var", .@"const", .let => try variables.parseVariableDeclaration(parser, .{}, null) orelse return null,
+        .function => try functions.parseFunction(parser, .{}, null) orelse return null,
+        .async => blk: {
             const async_start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume 'async'
-            declaration = try functions.parseFunction(parser, .{ .is_async = true }, async_start) orelse return null;
+            try parser.advance() orelse return null;
+            break :blk try functions.parseFunction(parser, .{ .is_async = true }, async_start) orelse return null;
         },
-        .class => {
-            declaration = try class.parseClass(parser, .{}, null) orelse return null;
-        },
+        .class => try class.parseClass(parser, .{}, null) orelse return null,
         // `export @dec class`: inner `ClassDeclaration` spans from the `@`.
-        .at => {
+        .at => blk: {
             const decorators_start = parser.current_token.span.start;
             const decorators = try extensions.parseDecorators(parser) orelse return null;
-            declaration = try class.parseClassDecorated(parser, .{}, decorators_start, decorators) orelse return null;
+            break :blk try class.parseClassDecorated(parser, .{}, decorators_start, decorators) orelse return null;
         },
         // `export import x = ...`
-        .import => if (parser.tree.isTs()) {
-            declaration = try parseImportDeclaration(parser) orelse return null;
-        } else {
-            try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
-                .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
-            });
-            return null;
-        },
+        .import => if (is_ts) try parseImportDeclaration(parser) orelse return null else return reportMissingExportDeclaration(parser),
         // legacy `export public/private/static import x = ...`. the
         // accessibility modifier carries no semantics on an import equals
         // declaration and is silently consumed; the inner declaration's
         // span starts at the modifier so the source range is preserved.
-        .public, .private, .static => if (parser.tree.isTs() and try isLegacyAccessibilityImport(parser)) {
+        .public, .private, .static => blk: {
+            if (!is_ts or !try isLegacyAccessibilityImport(parser)) return reportMissingExportDeclaration(parser);
             const modifier_start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume modifier
-            declaration = try parseImportDeclarationFrom(parser, modifier_start) orelse return null;
-        } else {
-            try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
-                .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
-            });
-            return null;
+            try parser.advance() orelse return null;
+            break :blk try parseImportDeclarationFrom(parser, modifier_start) orelse return null;
         },
-        else => {
-            try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
-                .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
-            });
-            return null;
-        },
-    }
+        else => return reportMissingExportDeclaration(parser),
+    };
 
     return try parser.tree.createNode(.{
         .export_named_declaration = .{
@@ -814,6 +711,13 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             .export_kind = .value,
         },
     }, .{ .start = start, .end = parser.tree.getSpan(declaration).end });
+}
+
+fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+    try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
+        .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
+    });
+    return null;
 }
 
 /// `@dec export [default] class C`. `decorators` were collected at
