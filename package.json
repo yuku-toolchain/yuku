@@ -10,7 +10,7 @@
     "test:tools": "zig build test-tools",
     "format": "zig fmt **/*.zig",
     "test": "bun load-files && bun build:npm && bun test/parser/run.ts",
-    "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite -b typescript",
+    "load-files": "bun profiler/load-parser-bench-files && bun test/parser/load test/parser/suite",
     "play": "bun build:npm && bun --console-depth=20 test/playground.ts",
     "release:npm": "napi bump",
     "debug:npm": "napi build",

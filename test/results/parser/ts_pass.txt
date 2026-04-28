@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8247/8259 (99.85%)
+Passed:       8248/8260 (99.85%)
 Failed:       12
-AST mismatch: 0/8247
+AST mismatch: 0/8248
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -3260,6 +3260,7 @@ error: Expected a type, but found '"\"ambientModule\""'
 ✓ test/parser/suite/ts/pass/63ea4d680673d372.module.ts
 ✓ test/parser/suite/ts/pass/63f6193620b8b522.ts
 ✓ test/parser/suite/ts/pass/640b952a9dff8c03.ts
+✓ test/parser/suite/ts/pass/640f13a8381ba699.ts
 ✓ test/parser/suite/ts/pass/6411ee491c1bc47f.ts
 ✓ test/parser/suite/ts/pass/6411f2ae8f2f3ec0.ts
 ✓ test/parser/suite/ts/pass/64121ac9fff3b26e.ts
