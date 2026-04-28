@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8246/8261 (99.82%)
-Failed:       15
-AST mismatch: 0/8246
+Passed:       8247/8259 (99.85%)
+Failed:       12
+AST mismatch: 0/8247
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -74,16 +74,6 @@ AST mismatch: 0/8246
 ✓ test/parser/suite/ts/pass/021a571b122f1b3a.ts
 ✓ test/parser/suite/ts/pass/021cc85fd6c791a0.module.ts
 ✓ test/parser/suite/ts/pass/021de327105a7f3c.ts
-✗ test/parser/suite/ts/pass/0227aa693580a91b.ts (parse errors)
-error: Invalid character at start of identifier
-   |
- 3 | // it should be treated like a space
- 4 | var v =0;
-   |        ^
-   |
-   = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
-
-
 ✓ test/parser/suite/ts/pass/0235bc6eb8d92eba.ts
 ✓ test/parser/suite/ts/pass/023b42710a0a267c.ts
 ✓ test/parser/suite/ts/pass/023b9edef5ffd0ea.ts
@@ -4947,17 +4937,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/96ab30efab1dff8c.ts
 ✓ test/parser/suite/ts/pass/96bee13d733a6e8b.ts
 ✓ test/parser/suite/ts/pass/96c2bde6ee94b825.module.ts
-✗ test/parser/suite/ts/pass/96c69fcdd6e92425.ts (parse errors)
-error: Expected '?' in a conditional type, but found ':'
-   |
- 7 |   a?: number
- 8 |   extends?: string | string[]
-   |           ^
- 9 | }
-   |
-   = help: A conditional type is written 'T extends U ? X : Y'
-
-
+✓ test/parser/suite/ts/pass/96c69fcdd6e92425.ts
 ✓ test/parser/suite/ts/pass/96cb1e331588bc21.ts
 ✓ test/parser/suite/ts/pass/96cd84a1731c858b.ts
 ✓ test/parser/suite/ts/pass/96da09ae13b4eb3b.ts
@@ -5382,17 +5362,6 @@ error: Expected '?' in a conditional type, but found ':'
 ✓ test/parser/suite/ts/pass/a3d03aca539b4e16.module.ts
 ✓ test/parser/suite/ts/pass/a3d3a0a87a457c12.ts
 ✓ test/parser/suite/ts/pass/a3d4d5afe5220ea0.ts
-✗ test/parser/suite/ts/pass/a3dd4f37b50f23e5.ts (parse errors)
-error: Invalid character at start of identifier
-   |
- 2 | // @sourcemap: true
- 3 | var endsWithlineSeparator = 10;  var endsWithParagraphSeparator = 10;  var endsWithNextLine = 1;var endsWithLineFeed = 1;
-   |                                                                                                 ^
- 4 | var endsWithCarriageReturnLineFeed = 1;
-   |
-   = help: Try starting the identifier here with a letter (a-z, A-Z), underscore (_), or dollar sign ($)
-
-
 ✓ test/parser/suite/ts/pass/a3e6021934419105.ts
 ✓ test/parser/suite/ts/pass/a3e8eb3007dd2145.ts
 ✓ test/parser/suite/ts/pass/a40b97d75c257445.module.ts

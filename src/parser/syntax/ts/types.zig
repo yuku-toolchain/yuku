@@ -49,7 +49,7 @@ fn parseTypeNoConditional(parser: *Parser) Error!?ast.NodeIndex {
 fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     const check_type = try parseUnionType(parser) orelse return null;
 
-    if (parser.current_token.tag != .extends) return check_type;
+    if (parser.current_token.tag != .extends or parser.current_token.hasLineTerminatorBefore()) return check_type;
 
     try parser.advance() orelse return null; // consume 'extends'
 
