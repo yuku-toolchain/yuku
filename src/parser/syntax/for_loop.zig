@@ -17,7 +17,7 @@ pub fn parseForStatement(parser: *Parser, is_for_await: bool) Error!?ast.NodeInd
     try parser.advance() orelse return null; // consume 'for'
 
     if (parser.current_token.tag == .await) {
-        if (!parser.context.await_is_keyword) {
+        if (!parser.context.@"await") {
             try parser.report(parser.current_token.span, "'for await' is only valid in async functions or modules", .{});
         }
 
@@ -106,9 +106,9 @@ fn parseForHead(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.Node
 
 /// for loop starting with `var`/`let`/`const`/`using`/`await using`
 fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind: ast.VariableKind, decl_start: u32) Error!?ast.NodeIndex {
-    const saved_allow_in = parser.context.allow_in;
-    parser.context.allow_in = false;
-    defer parser.context.allow_in = saved_allow_in;
+    const saved_allow_in = parser.context.in;
+    parser.context.in = false;
+    defer parser.context.in = saved_allow_in;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -158,15 +158,15 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
 
 /// for loop starting with an expression.
 fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error!?ast.NodeIndex {
-    const saved_allow_in = parser.context.allow_in;
-    parser.context.allow_in = false;
+    const saved_allow_in = parser.context.in;
+    parser.context.in = false;
 
     const expr = try expressions.parseExpression(parser, Precedence.Lowest, .{ .respect_allow_in = true }) orelse {
-        parser.context.allow_in = saved_allow_in;
+        parser.context.in = saved_allow_in;
         return null;
     };
 
-    parser.context.allow_in = saved_allow_in;
+    parser.context.in = saved_allow_in;
 
     if (parser.current_token.tag == .in) {
         try grammar.expressionToPattern(parser, expr, .assignable);

@@ -13,6 +13,17 @@ const patterns = @import("../patterns.zig");
 const signatures = @import("signatures.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
+    // every fresh type sub-context (mapped type body, tuple element,
+    // type argument, parenthesised type, parameter constraint, return
+    // type, ...) reaches the parser through `parseType`, so resetting
+    // `disallow_conditional_types` here is the single point that lets
+    // every sub-context support nested conditionals. only the direct
+    // recursion into the `extends` body of a conditional type bypasses
+    // this entry point (`parseTypeNoConditional` keeps the flag).
+    return withAllowConditionalTypes(parser, parseTypeInner);
+}
+
+fn parseTypeInner(parser: *Parser) Error!?ast.NodeIndex {
     if (try isStartOfFunctionOrConstructorType(parser)) {
         return try parseFunctionOrConstructorType(parser);
     }
@@ -53,7 +64,10 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advance() orelse return null; // consume 'extends'
 
-    const extends_type = try parseTypeNoConditional(parser) orelse return null;
+    // the extends body cannot itself contain a conditional type, and any
+    // `infer T extends U` constraint inside it commits eagerly. nested
+    // parens reset this with `withConditionalTypes`
+    const extends_type = try withDisallowConditionalTypes(parser, parseTypeNoConditional) orelse return null;
 
     if (!try parser.expect(
         .question,
@@ -83,6 +97,37 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
         } },
         .{ .start = start, .end = end },
     );
+}
+
+/// run `inner` with `disallow_conditional_types = true`. used for the
+/// `extends` body of a conditional type and for the constraint of an
+/// `infer T extends U` clause.
+inline fn withDisallowConditionalTypes(
+    parser: *Parser,
+    comptime inner: fn (*Parser) Error!?ast.NodeIndex,
+) Error!?ast.NodeIndex {
+    return withConditionalTypes(parser, true, inner);
+}
+
+/// run `inner` with `disallow_conditional_types = false`. used inside
+/// parenthesised types so `(T extends U ? X : Y)` is allowed even if
+/// the outer context is the `extends` body of an outer conditional.
+inline fn withAllowConditionalTypes(
+    parser: *Parser,
+    comptime inner: fn (*Parser) Error!?ast.NodeIndex,
+) Error!?ast.NodeIndex {
+    return withConditionalTypes(parser, false, inner);
+}
+
+inline fn withConditionalTypes(
+    parser: *Parser,
+    comptime disallow: bool,
+    comptime inner: fn (*Parser) Error!?ast.NodeIndex,
+) Error!?ast.NodeIndex {
+    const saved = parser.context.disallow_conditional_types;
+    parser.context.disallow_conditional_types = disallow;
+    defer parser.context.disallow_conditional_types = saved;
+    return inner(parser);
 }
 
 /// | A | B | C
@@ -237,12 +282,27 @@ fn isPostfixNullable(parser: *Parser) Error!bool {
 fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
 
+    switch (token.tag) {
+        .true,
+        .false,
+        .string_literal,
+        .numeric_literal,
+        .hex_literal,
+        .octal_literal,
+        .binary_literal,
+        .bigint_literal,
+        .no_substitution_template,
+        .minus,
+        .plus,
+        => return parseLiteralType(parser),
+        else => {},
+    }
+
     if (!token.isEscaped()) {
         switch (token.tag) {
             .any,
             .bigint,
             .boolean,
-            .intrinsic,
             .never,
             .null_literal,
             .number,
@@ -252,24 +312,12 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             .undefined,
             .unknown,
             .void,
-            => return parseTypeKeyword(parser),
+            => if (!try isQualifiedTypeContinuation(parser)) return parseTypeKeyword(parser),
             .this => return parseThisTypeOrPredicate(parser),
             .asserts => {
                 if (try isAssertsPredicateStart(parser)) return parseAssertsTypePredicate(parser);
                 return parseTypeReference(parser);
             },
-            .true,
-            .false,
-            .string_literal,
-            .numeric_literal,
-            .hex_literal,
-            .octal_literal,
-            .binary_literal,
-            .bigint_literal,
-            .no_substitution_template,
-            .minus,
-            .plus,
-            => return parseLiteralType(parser),
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
             .left_brace => return if (try signatures.isStartOfMappedType(parser))
@@ -295,6 +343,12 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
+/// `string.X`, `number.foo`, etc. a same-line `.`
+fn isQualifiedTypeContinuation(parser: *Parser) Error!bool {
+    const next = (try parser.peekAhead()) orelse return false;
+    return next.tag == .dot and !next.hasLineTerminatorBefore();
+}
+
 /// string   number   void
 /// ^^^^^^   ^^^^^^   ^^^^
 inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
@@ -304,7 +358,6 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
         .any => .{ .ts_any_keyword = .{} },
         .bigint => .{ .ts_bigint_keyword = .{} },
         .boolean => .{ .ts_boolean_keyword = .{} },
-        .intrinsic => .{ .ts_intrinsic_keyword = .{} },
         .never => .{ .ts_never_keyword = .{} },
         .null_literal => .{ .ts_null_keyword = .{} },
         .number => .{ .ts_number_keyword = .{} },
@@ -320,6 +373,39 @@ inline fn parseTypeKeyword(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null;
 
     return try parser.tree.createNode(data, token.span);
+}
+
+/// `type X = intrinsic` parses the bare body as `TSIntrinsicKeyword`.
+/// in every other position `intrinsic` is just an identifier, so it falls
+/// through to `parseType` which produces `TSTypeReference`.
+pub fn parseTypeAliasBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .intrinsic and !parser.current_token.isEscaped()) {
+        const next = (try parser.peekAhead()) orelse return null;
+        if (!continuesType(next.tag)) {
+            const span = parser.current_token.span;
+            try parser.advance() orelse return null;
+            return try parser.tree.createNode(.{ .ts_intrinsic_keyword = .{} }, span);
+        }
+    }
+    return parseType(parser);
+}
+
+/// tokens that, when following a primary type, extend it (qualified name,
+/// type arguments, indexed/array, union/intersection, conditional, jsdoc).
+fn continuesType(tag: TokenTag) bool {
+    return switch (tag) {
+        .dot,
+        .less_than,
+        .left_shift,
+        .left_bracket,
+        .bitwise_or,
+        .bitwise_and,
+        .extends,
+        .question,
+        .logical_not,
+        => true,
+        else => false,
+    };
 }
 
 /// 42   "foo"   true   -1
@@ -482,10 +568,11 @@ fn jsdocNodeData(inner: ast.NodeIndex, comptime kind: JSDocKind, postfix: bool) 
 
 fn isStartOfType(tag: TokenTag) bool {
     return switch (tag) {
+        // primitive type keywords. `intrinsic` falls through to the
+        // identifier-like branch since it is contextual.
         .any,
         .bigint,
         .boolean,
-        .intrinsic,
         .never,
         .null_literal,
         .number,
@@ -496,6 +583,7 @@ fn isStartOfType(tag: TokenTag) bool {
         .undefined,
         .unknown,
         .void,
+        // literal-type tokens.
         .true,
         .false,
         .string_literal,
@@ -508,11 +596,13 @@ fn isStartOfType(tag: TokenTag) bool {
         .template_head,
         .minus,
         .plus,
+        // grouping / compound type starters.
         .left_paren,
         .left_bracket,
         .left_brace,
         .less_than,
         .left_shift,
+        // type operators and prefixes.
         .keyof,
         .unique,
         .readonly,
@@ -568,14 +658,11 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     const name_token = parser.current_token;
     const name = try literals.parseBindingIdentifier(parser) orelse return null;
 
-    var constraint: ast.NodeIndex = .null;
-    var param_end: u32 = name_token.span.end;
-
-    if (parser.current_token.tag == .extends) {
-        try parser.advance() orelse return null; // consume 'extends'
-        constraint = try parseUnionType(parser) orelse return null;
-        param_end = parser.tree.getSpan(constraint).end;
-    }
+    const constraint = try parseInferConstraint(parser);
+    const param_end = if (constraint != .null)
+        parser.tree.getSpan(constraint).end
+    else
+        name_token.span.end;
 
     const type_parameter = try parser.tree.createNode(
         .{ .ts_type_parameter = .{
@@ -589,6 +676,38 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
         .{ .ts_infer_type = .{ .type_parameter = type_parameter } },
         .{ .start = start, .end = param_end },
     );
+}
+
+/// optional `extends T` constraint of an `infer T extends T` clause.
+///
+/// the constraint is parsed with `disallow_conditional_types = true`.
+/// after the parse, if the surrounding context allows conditional types
+/// AND the next token is `?`, the trailing `?` belongs to a new conditional
+/// where `infer T` is the check type, so the constraint is rewound and
+/// the outer parser handles the `extends T ? X : Y` shape
+///
+/// returns `.null` when there is no `extends` clause (or when the
+/// speculative parse rewinds).
+fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
+    if (parser.current_token.tag != .extends) return .null;
+
+    const cp = parser.checkpoint();
+
+    try parser.advance() orelse return .null; // consume 'extends'
+
+    parser.context.disallow_conditional_types = true;
+    const constraint = try parseUnionType(parser) orelse {
+        parser.rewind(cp);
+        return .null;
+    };
+    parser.context.disallow_conditional_types = cp.context.disallow_conditional_types;
+
+    if (cp.context.disallow_conditional_types or parser.current_token.tag != .question) {
+        return constraint;
+    }
+
+    parser.rewind(cp);
+    return .null;
 }
 
 fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {

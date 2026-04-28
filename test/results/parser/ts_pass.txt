@@ -1,8 +1,8 @@
 suite/ts/pass
 =============
-Passed:       8248/8260 (99.85%)
-Failed:       12
-AST mismatch: 0/8248
+Passed:       8259/8259 (100.00%)
+Failed:       0
+AST mismatch: 0/8259
 
 ✓ test/parser/suite/ts/pass/0001c20c6e10cdb8.ts
 ✓ test/parser/suite/ts/pass/0003972a26de5234.ts
@@ -1445,17 +1445,7 @@ AST mismatch: 0/8248
 ✓ test/parser/suite/ts/pass/2cf31c6908241199.ts
 ✓ test/parser/suite/ts/pass/2cf92621917018ad.ts
 ✓ test/parser/suite/ts/pass/2cffa5f18f397e1a.ts
-✗ test/parser/suite/ts/pass/2d11357ae867d700.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '.'
-   |
- 7 | string.foo("abc");
- 8 | var x: string.X;
-   |              ^
- 9 | 
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/2d11357ae867d700.ts
 ✓ test/parser/suite/ts/pass/2d18790e03bcdcff.module.ts
 ✓ test/parser/suite/ts/pass/2d1a5f3875320655.ts
 ✓ test/parser/suite/ts/pass/2d2ebc4e814d2a15.ts
@@ -1622,16 +1612,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/31a9ca50695fab45.ts
 ✓ test/parser/suite/ts/pass/31b277329df4917e.ts
 ✓ test/parser/suite/ts/pass/31b3a3c7ddd6f11a.ts
-✗ test/parser/suite/ts/pass/31bcaa1bf56ffd2a.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'import'
-   |
- 1 | // @target: es2015
- 2 | declare import a = b;
-   |         ^^^^^^
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/31bcaa1bf56ffd2a.ts
 ✓ test/parser/suite/ts/pass/31c75cf83fb196e7.ts
 ✓ test/parser/suite/ts/pass/31ca58d9889db21a.ts
 ✓ test/parser/suite/ts/pass/31ce2b738df7ff7b.ts
@@ -1661,16 +1642,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/3245c79817481300.ts
 ✓ test/parser/suite/ts/pass/32481b903f5ec4aa.ts
 ✓ test/parser/suite/ts/pass/32485aa2f09136e0.ts
-✗ test/parser/suite/ts/pass/324883691d2421c2.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'async'
-   |
- 2 | // @noEmitHelpers: true
- 3 | declare async function foo(): Promise<void>;
-   |         ^^^^^
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/324883691d2421c2.ts
 ✓ test/parser/suite/ts/pass/324b538fe241cd3c.ts
 ✓ test/parser/suite/ts/pass/32507e88841d8993.ts
 ✓ test/parser/suite/ts/pass/3251f60f70314360.module.ts
@@ -2349,15 +2321,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/478b7985c5f05019.ts
 ✓ test/parser/suite/ts/pass/479a66ec40936dcd.module.ts
 ✓ test/parser/suite/ts/pass/479de1e8386d71dc.ts
-✗ test/parser/suite/ts/pass/47aa69f562527085.ts (parse errors)
-error: Expected a type, but found '"\"ambientModule\""'
-   |
- 8 | // should error
- 9 | type GlobalBad1 = (typeof globalThis)["\"ambientModule\""]
-   |                                       ^^^^^^^^^^^^^^^^^^^
-10 | type GlobalOk1 = (typeof globalThis)["valueModule"]
-   |
-
+✓ test/parser/suite/ts/pass/47aa69f562527085.ts
 ✓ test/parser/suite/ts/pass/47ad01c63f128dc7.ts
 ✓ test/parser/suite/ts/pass/47b2742fe3c7ae02.module.ts
 ✓ test/parser/suite/ts/pass/47b2f0724ca129e8.ts
@@ -3417,17 +3381,7 @@ error: Expected a type, but found '"\"ambientModule\""'
 ✓ test/parser/suite/ts/pass/690239280dec0603.ts
 ✓ test/parser/suite/ts/pass/6913c2c6f45222fe.module.ts
 ✓ test/parser/suite/ts/pass/69168746c2201098.ts
-✗ test/parser/suite/ts/pass/69287822f05886fe.module.ts (parse errors)
-error: Expected declaration after 'export', but found 'public'
-   |
- 6 | }
- 7 | export public import a = x.c;
-   |        ^^^^^^
- 8 | export private import b = x.c;
-   |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
-
+✓ test/parser/suite/ts/pass/69287822f05886fe.module.ts
 ✓ test/parser/suite/ts/pass/692a6be530fce8a3.ts
 ✓ test/parser/suite/ts/pass/692b9a847c1149ab.ts
 ✓ test/parser/suite/ts/pass/6930a1cddc118f91.ts
@@ -4270,16 +4224,7 @@ error: Expected declaration after 'export', but found 'public'
 ✓ test/parser/suite/ts/pass/81b22f2e088ec46f.ts
 ✓ test/parser/suite/ts/pass/81bbecfe0f1b5e1d.ts
 ✓ test/parser/suite/ts/pass/81c3576093424064.ts
-✗ test/parser/suite/ts/pass/81e9363a78ccfa64.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found 'async'
-   |
- 3 | // @noEmitHelpers: true
- 4 | declare async function foo(): Promise<void>;
-   |         ^^^^^
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/81e9363a78ccfa64.ts
 ✓ test/parser/suite/ts/pass/81ea84a1517b1a5d.module.ts
 ✓ test/parser/suite/ts/pass/81edc1ea54e944ef.ts
 ✓ test/parser/suite/ts/pass/81ef742b26ffb5b7.ts
@@ -5441,15 +5386,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/a63105be9e60e57d.ts
 ✓ test/parser/suite/ts/pass/a631ff86af8e5bcb.module.ts
 ✓ test/parser/suite/ts/pass/a634b94b1833ec64.ts
-✗ test/parser/suite/ts/pass/a63e0feb4cb6274c.ts (parse errors)
-error: Expected a type, but found '"AB\r\nC"'
-   |
- 3 | 
- 4 | let abc: "AB\r\nC" = `AB
-   |          ^^^^^^^^^
- 5 | C`;
-   |
-
+✓ test/parser/suite/ts/pass/a63e0feb4cb6274c.ts
 ✓ test/parser/suite/ts/pass/a650c295ffb62e7b.ts
 ✓ test/parser/suite/ts/pass/a651494cf82bc0df.ts
 ✓ test/parser/suite/ts/pass/a6519178024969d7.ts
@@ -5875,17 +5812,7 @@ error: Expected a type, but found '"AB\r\nC"'
 ✓ test/parser/suite/ts/pass/b423856d93a1b745.ts
 ✓ test/parser/suite/ts/pass/b424fc44832f7f45.ts
 ✓ test/parser/suite/ts/pass/b429fd471354c451.ts
-✗ test/parser/suite/ts/pass/b435fe3432f7f494.ts (parse errors)
-error: Expected ')' to close a parenthesized type, but found '?'
-    |
- 98 | // Speculative lookahead for `infer T extends U ?`
- 99 | type X10<T> = T extends (infer U extends number ? 1 : 0) ? 1 : 0; // ok, parsed as conditional
-    |                                                 ^
-100 | type X10_Y1<T> = X10<T extends number ? 1 : 0>;
-    |
-    = help: Each '(' in a type must be matched by a ')'
-
-
+✓ test/parser/suite/ts/pass/b435fe3432f7f494.ts
 ✓ test/parser/suite/ts/pass/b43a5e1856fce1fc.ts
 ✓ test/parser/suite/ts/pass/b43be662ea1c8b9b.ts
 ✓ test/parser/suite/ts/pass/b446f3a52db610c6.ts
@@ -6357,15 +6284,6 @@ error: Expected ')' to close a parenthesized type, but found '?'
 ✓ test/parser/suite/ts/pass/c1b1101c92de56b3.module.ts
 ✓ test/parser/suite/ts/pass/c1b94493cf6fa38b.ts
 ✓ test/parser/suite/ts/pass/c1beafd94084c420.ts
-✗ test/parser/suite/ts/pass/c1beb18be3a69e39.ts (parse errors)
-error: Expected a type, but found 'break'
-   |
- 2 | class Foo {
- 3 |     public banana (x: break) { }
-   |                       ^^^^^
- 4 | }
-   |
-
 ✓ test/parser/suite/ts/pass/c1c2c3886d81ab66.module.ts
 ✓ test/parser/suite/ts/pass/c1cc3f39e6e91241.ts
 ✓ test/parser/suite/ts/pass/c1ce1ef6c942ca65.module.tsx
@@ -6551,17 +6469,7 @@ error: Expected a type, but found 'break'
 ✓ test/parser/suite/ts/pass/c757ce8e49fa71c8.ts
 ✓ test/parser/suite/ts/pass/c7690fd1598f3aef.ts
 ✓ test/parser/suite/ts/pass/c76c1b2f398c7dae.ts
-✗ test/parser/suite/ts/pass/c77303c61729d22b.ts (parse errors)
-error: Expected a semicolon or an implicit semicolon after a statement, but found '.'
-   |
-12 | function f1() {
-13 |     let intrinsic: intrinsic.intrinsic;
-   |                             ^
-14 | }
-   |
-   = help: Try inserting a semicolon here
-
-
+✓ test/parser/suite/ts/pass/c77303c61729d22b.ts
 ✓ test/parser/suite/ts/pass/c774ab7789d23248.ts
 ✓ test/parser/suite/ts/pass/c778b1cf5931d62a.module.tsx
 ✓ test/parser/suite/ts/pass/c77d479756c97733.ts
@@ -7049,14 +6957,7 @@ error: Expected a semicolon or an implicit semicolon after a statement, but foun
 ✓ test/parser/suite/ts/pass/d660d32125a5f4ff.ts
 ✓ test/parser/suite/ts/pass/d66ba1bb48973e38.ts
 ✓ test/parser/suite/ts/pass/d670b97bd3cdaa7b.ts
-✗ test/parser/suite/ts/pass/d67cb7c69d299a7e.ts (parse errors)
-error: 'in' is reserved and cannot be used as a binding identifier
-   |
- 3 | let module = 10;
- 4 | module in {}
-   |        ^^
-   |
-
+✓ test/parser/suite/ts/pass/d67cb7c69d299a7e.ts
 ✓ test/parser/suite/ts/pass/d68eda8fb7dc7685.ts
 ✓ test/parser/suite/ts/pass/d69acd059252447a.ts
 ✓ test/parser/suite/ts/pass/d6b3637d97696186.ts
@@ -7978,15 +7879,7 @@ error: 'in' is reserved and cannot be used as a binding identifier
 ✓ test/parser/suite/ts/pass/f3d972b1003b0f39.ts
 ✓ test/parser/suite/ts/pass/f3d9ea0a98e9bc7b.ts
 ✓ test/parser/suite/ts/pass/f3e90c8c1fc6f80a.ts
-✗ test/parser/suite/ts/pass/f3f17f46177ab3ad.ts (parse errors)
-error: Expected a type, but found '"DE\nF"'
-   |
- 4 | let ABC: "ABC" = `ABC`;
- 5 | let DE_NEWLINE_F: "DE\nF" = `DE
-   |                   ^^^^^^^
- 6 | F`;
-   |
-
+✓ test/parser/suite/ts/pass/f3f17f46177ab3ad.ts
 ✓ test/parser/suite/ts/pass/f3f8a06c332f6c46.ts
 ✓ test/parser/suite/ts/pass/f40ac5f1d15ebcfe.ts
 ✓ test/parser/suite/ts/pass/f40d8efb32549a82.ts

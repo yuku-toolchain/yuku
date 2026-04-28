@@ -11,7 +11,7 @@ const std = @import("std");
 pub const ParseVariableDeclarationOpts = struct {
     await_using: bool = false,
     /// sets the `declare` flag on the resulting `VariableDeclaration`.
-    /// ambient policy is driven by `parser.context.in_ambient`.
+    /// ambient policy is driven by `parser.context.ambient`.
     is_declare: bool = false,
 };
 
@@ -35,7 +35,7 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    const ctx: DeclaratorCtx = if (parser.context.in_ambient) .declare else .normal;
+    const ctx: DeclaratorCtx = if (parser.context.ambient) .declare else .normal;
 
     const first_declarator = try parseVariableDeclarator(parser, kind, ctx) orelse return null;
 
@@ -55,7 +55,7 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
 
     // lexical declarations are only allowed inside block statements
     if (
-        parser.context.in_single_statement_context and
+        parser.context.single_statement and
         (kind == .let or kind == .@"const" or kind == .using or kind == .await_using)
     )
     {
@@ -193,7 +193,7 @@ pub fn isLetIdentifier(parser: *Parser) Error!?bool {
 
     // in single-statement contexts (eg, if/while bodies), parse `let` as an identifier
     // when the next token cannot start a lexical binding.
-    if (parser.context.in_single_statement_context and !canStartBinding(next.tag)) return true;
+    if (parser.context.single_statement and !canStartBinding(next.tag)) return true;
 
     return false;
 }

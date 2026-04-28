@@ -51,7 +51,7 @@ pub fn parseClassDecorated(
     else
         .class_declaration;
 
-    if (class_type == .class_declaration and parser.context.in_single_statement_context) {
+    if (class_type == .class_declaration and parser.context.single_statement) {
         @branchHint(.unlikely);
         try parser.report(
             .{ .start = start, .end = parser.current_token.span.end },
@@ -534,13 +534,13 @@ fn parseMethodDefinition(
     if (mods.is_static and !computed) try validateStaticPrototypeOrConstructor(parser, key, .method);
     try validateMethodModifiers(parser, key, mods);
 
-    const saved_await = parser.context.await_is_keyword;
-    const saved_yield = parser.context.yield_is_keyword;
-    parser.context.await_is_keyword = mods.is_async;
-    parser.context.yield_is_keyword = mods.is_generator;
+    const saved_await = parser.context.@"await";
+    const saved_yield = parser.context.yield;
+    parser.context.@"await" = mods.is_async;
+    parser.context.yield = mods.is_generator;
     defer {
-        parser.context.await_is_keyword = saved_await;
-        parser.context.yield_is_keyword = saved_yield;
+        parser.context.@"await" = saved_await;
+        parser.context.yield = saved_yield;
     }
 
     const func_start = parser.current_token.span.start;
@@ -683,16 +683,16 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
 
     // ClassStaticBlockStatementList: StatementList[~Yield, +Await, ~Return]
-    const saved_await = parser.context.await_is_keyword;
-    const saved_yield = parser.context.yield_is_keyword;
-    const saved_return = parser.context.allow_return_statement;
-    parser.context.await_is_keyword = true;
-    parser.context.yield_is_keyword = false;
-    parser.context.allow_return_statement = false;
+    const saved_await = parser.context.@"await";
+    const saved_yield = parser.context.yield;
+    const saved_return = parser.context.@"return";
+    parser.context.@"await" = true;
+    parser.context.yield = false;
+    parser.context.@"return" = false;
     defer {
-        parser.context.await_is_keyword = saved_await;
-        parser.context.yield_is_keyword = saved_yield;
-        parser.context.allow_return_statement = saved_return;
+        parser.context.@"await" = saved_await;
+        parser.context.yield = saved_yield;
+        parser.context.@"return" = saved_return;
     }
 
     const body = try parser.parseBody(.right_brace, .other);

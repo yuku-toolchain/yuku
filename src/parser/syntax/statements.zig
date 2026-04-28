@@ -24,10 +24,10 @@ const ParseStatementOpts = struct {
 };
 
 pub fn parseStatement(parser: *Parser, opts: ParseStatementOpts) Error!?ast.NodeIndex {
-    parser.context.in_single_statement_context = opts.can_be_single_statement_context;
-    defer parser.context.in_single_statement_context = false;
+    parser.context.single_statement = opts.can_be_single_statement_context;
+    defer parser.context.single_statement = false;
 
-    parser.context.in_directive_prologue = parser.context.in_directive_prologue and parser.current_token.tag == .string_literal;
+    parser.context.directive_prologue = parser.context.directive_prologue and parser.current_token.tag == .string_literal;
 
     return switch (parser.current_token.tag) {
         .at => parseDecoratedStatement(parser),
@@ -76,7 +76,7 @@ fn parseExpressionOrLabeledStatementOrDirective(parser: *Parser) Error!?ast.Node
     const expression = try expressions.parseExpression(parser, Precedence.Lowest, .{}) orelse return null;
     const expression_data = parser.tree.getData(expression);
 
-    if (parser.context.in_directive_prologue and expression_data == .string_literal) {
+    if (parser.context.directive_prologue and expression_data == .string_literal) {
         return parseDirective(parser, expression);
     }
 
@@ -507,7 +507,7 @@ fn parseReturnStatement(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
 
-    if (!parser.context.allow_return_statement) {
+    if (!parser.context.@"return") {
         try parser.report(
             .{ .start = start, .end = end },
             "'return' statement is only valid inside a function",

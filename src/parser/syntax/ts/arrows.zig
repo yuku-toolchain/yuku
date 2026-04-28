@@ -56,9 +56,9 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
 }
 
 pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
-    const saved_await = parser.context.await_is_keyword;
-    if (is_async) parser.context.await_is_keyword = true;
-    defer parser.context.await_is_keyword = saved_await;
+    const saved_await = parser.context.@"await";
+    if (is_async) parser.context.@"await" = true;
+    defer parser.context.@"await" = saved_await;
 
     const type_parameters = try types.parseTypeParameters(parser);
 

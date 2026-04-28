@@ -316,15 +316,15 @@ fn parseObjectMethodProperty(
         }
     }
 
-    const saved_await_is_keyword = parser.context.await_is_keyword;
-    const saved_yield_is_keyword = parser.context.yield_is_keyword;
+    const saved_await_is_keyword = parser.context.@"await";
+    const saved_yield_is_keyword = parser.context.yield;
 
-    parser.context.await_is_keyword = is_async;
-    parser.context.yield_is_keyword = is_generator;
+    parser.context.@"await" = is_async;
+    parser.context.yield = is_generator;
 
     defer {
-        parser.context.await_is_keyword = saved_await_is_keyword;
-        parser.context.yield_is_keyword = saved_yield_is_keyword;
+        parser.context.@"await" = saved_await_is_keyword;
+        parser.context.yield = saved_yield_is_keyword;
     }
 
     const func_start = parser.current_token.span.start;

@@ -227,12 +227,12 @@ pub fn buildArrowFunction(
 ) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume =>
 
-    const saved_await = parser.context.await_is_keyword;
-    const saved_yield = parser.context.yield_is_keyword;
-    parser.context.await_is_keyword = is_async;
-    parser.context.yield_is_keyword = false;
-    defer parser.context.await_is_keyword = saved_await;
-    defer parser.context.yield_is_keyword = saved_yield;
+    const saved_await = parser.context.@"await";
+    const saved_yield = parser.context.yield;
+    parser.context.@"await" = is_async;
+    parser.context.yield = false;
+    defer parser.context.@"await" = saved_await;
+    defer parser.context.yield = saved_yield;
 
     const body = try parseArrowBody(parser) orelse return null;
 

@@ -62,7 +62,7 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
         // breaking here produces natural "expected semicolon" error
         if (infix_precedence > maxLeftPrecedence(parser.tree.getData(left))) break;
 
-        if (opts.respect_allow_in and current_token.tag == .in and !parser.context.allow_in) break;
+        if (opts.respect_allow_in and current_token.tag == .in and !parser.context.in) break;
 
         left = try parseInfix(parser, infix_precedence, left) orelse return null;
     }
@@ -97,13 +97,13 @@ fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error
         return parseParenthesizedOrArrowFunction(parser, null, precedence);
     }
 
-    if (tag == .await and parser.context.await_is_keyword) {
+    if (tag == .await and parser.context.@"await") {
         const await_start = parser.current_token.span.start;
         try parser.advance() orelse return null; // consume 'await'
         return parseAwaitExpression(parser, await_start);
     }
 
-    if (tag == .yield and parser.context.yield_is_keyword and precedence < Precedence.Additive) {
+    if (tag == .yield and parser.context.yield and precedence < Precedence.Additive) {
         return parseYieldExpression(parser);
     }
 
@@ -339,11 +339,11 @@ fn parseAsyncArrowFunctionOrCall(parser: *Parser, async_span: ast.Span, async_id
         .no => {},
     };
 
-    const saved_await_is_keyword = parser.context.await_is_keyword;
+    const saved_await_is_keyword = parser.context.@"await";
 
-    parser.context.await_is_keyword = true;
+    parser.context.@"await" = true;
 
-    defer parser.context.await_is_keyword = saved_await_is_keyword;
+    defer parser.context.@"await" = saved_await_is_keyword;
 
     const cover = try parenthesized.parseCover(parser) orelse return null;
 
@@ -799,14 +799,14 @@ fn parseConditionalExpression(parser: *Parser, precedence: u8, @"test": ast.Node
     // ConditionalExpression[?In]: ... ? AssignmentExpression[+In] : AssignmentExpression[?In]
     // consequent gets [+In]: `in` is always allowed, and ts arrows with a
     // return type must defer to the ternary `:` when they would eat it.
-    const saved_allow_in = parser.context.allow_in;
+    const saved_allow_in = parser.context.in;
     const saved_allow_arrow_return_type = parser.context.allow_arrow_return_type;
-    parser.context.allow_in = true;
+    parser.context.in = true;
     parser.context.allow_arrow_return_type = false;
 
     const consequent = try parseExpression(parser, precedence, .{}) orelse return null;
 
-    parser.context.allow_in = saved_allow_in;
+    parser.context.in = saved_allow_in;
     parser.context.allow_arrow_return_type = saved_allow_arrow_return_type;
 
     if (!try parser.expect(.colon, "Expected ':' after conditional expression consequent", "The ternary operator requires a colon (:) to separate the consequent and alternate expressions.")) return null;
@@ -929,13 +929,13 @@ fn parseComputedMemberExpression(parser: *Parser, object_node: ast.NodeIndex, op
     const open_bracket_span = parser.current_token.span;
     try parser.advance() orelse return null; // consume '['
 
-    const saved_allow_in = parser.context.allow_in;
-    parser.context.allow_in = true;
+    const saved_allow_in = parser.context.in;
+    parser.context.in = true;
     const property = try parseExpression(parser, Precedence.Lowest, .{}) orelse {
-        parser.context.allow_in = saved_allow_in;
+        parser.context.in = saved_allow_in;
         return null;
     };
-    parser.context.allow_in = saved_allow_in;
+    parser.context.in = saved_allow_in;
 
     const end = parser.current_token.span.end; // ']' position
     if (parser.current_token.tag != .right_bracket) {
@@ -999,8 +999,8 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    const saved_allow_in = parser.context.allow_in;
-    parser.context.allow_in = true;
+    const saved_allow_in = parser.context.in;
+    parser.context.in = true;
 
     while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
         const arg = if (parser.current_token.tag == .spread) blk: {
@@ -1009,7 +1009,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
             try parser.advance() orelse return null; // consume '...'
 
             const argument = try parseExpression(parser, Precedence.Assignment, .{}) orelse {
-                parser.context.allow_in = saved_allow_in;
+                parser.context.in = saved_allow_in;
                 return null;
             };
 
@@ -1019,7 +1019,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
                 .spread_element = .{ .argument = argument },
             }, .{ .start = spread_start, .end = arg_span.end });
         } else try parseExpression(parser, Precedence.Assignment, .{}) orelse {
-            parser.context.allow_in = saved_allow_in;
+            parser.context.in = saved_allow_in;
 
             return null;
         };
@@ -1033,7 +1033,7 @@ fn parseArguments(parser: *Parser) Error!?ast.IndexRange {
         }
     }
 
-    parser.context.allow_in = saved_allow_in;
+    parser.context.in = saved_allow_in;
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 

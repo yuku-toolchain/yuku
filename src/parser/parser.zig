@@ -23,31 +23,30 @@ pub const Options = struct {
     allow_return_outside_function: bool = false,
 };
 
-const ParserContext = struct {
-    /// When true, `await` is a keyword (allowed as an expression, disallowed as an identifier).
-    await_is_keyword: bool = false,
-    /// When true, `yield` is a keyword (allowed as an expression, disallowed as an identifier).
-    yield_is_keyword: bool = false,
-    allow_in: bool = true,
-    /// Whether `return` statements are allowed in the current statement list.
-    allow_return_statement: bool = false,
-    /// Whether we're parsing a single statement.
-    /// example:
-    /// if(test) 30;
-    ///          ~~
-    ///           ^ this is in a single statement context
-    in_single_statement_context: bool = false,
-    // https://tc39.es/ecma262/#directive-prologue
-    in_directive_prologue: bool = false,
-    /// when false, a speculatively parsed arrow with a return type must
-    /// be followed by an outer `:` to commit, otherwise we rewind. keeps
-    /// `(params): T => body` from eating the `:` of an enclosing ternary
-    /// consequent or case label.
+pub const Context = packed struct {
+    /// `[In]`
+    in: bool = true,
+    /// `[Yield]`
+    yield: bool = false,
+    /// `[Await]`
+    @"await": bool = false,
+    /// `[Return]`
+    @"return": bool = false,
+    /// inside any `declare`-prefixed declaration. nested declarations
+    /// inherit ambient-context rules (body-less functions, initializer-
+    /// less `const`, etc).
+    ambient: bool = false,
+    /// trailing `?` after a type does not start a new conditional.
+    disallow_conditional_types: bool = false,
+    /// body of `if`, `while`, `for`, `with`, or a labelled statement,
+    /// where lexical declarations (`let`, `const`) need a block.
+    single_statement: bool = false,
+    /// directive prologue at the start of a script, module, function,
+    /// or module-block body.
+    directive_prologue: bool = false,
+    /// a speculatively parsed arrow with a return type must be followed
+    /// by an outer `:` to commit.
     allow_arrow_return_type: bool = true,
-    /// set inside any `declare`-prefixed typescript declaration so nested
-    /// declarations inherit ambient-context rules (body-less functions,
-    /// initializer-less `const`, etc.).
-    in_ambient: bool = false,
 };
 
 const ParserState = struct {
@@ -86,7 +85,7 @@ pub const Parser = struct {
     scratch_b: ScratchBuffer = .{},
     //
 
-    context: ParserContext = .{},
+    context: Context = .{},
     state: ParserState = .{},
 
     pub fn init(child_allocator: std.mem.Allocator, source: []const u8, options: Options) Parser {
@@ -126,9 +125,9 @@ pub const Parser = struct {
 
         // ScriptBody: StatementList[~Yield, ~Await, ~Return]
         // ModuleItemList: ModuleItem[~Yield, +Await, ~Return]
-        self.context.yield_is_keyword = false;
-        self.context.await_is_keyword = self.tree.isModule();
-        self.context.allow_return_statement = self.allow_return_outside_function;
+        self.context.yield = false;
+        self.context.@"await" = self.tree.isModule();
+        self.context.@"return" = self.allow_return_outside_function;
 
         // let's begin
         try self.advance() orelse {
@@ -175,9 +174,9 @@ pub const Parser = struct {
     };
 
     pub fn parseBody(self: *Parser, terminator: ?TokenTag, kind: BodyKind) Error!ast.IndexRange {
-        self.context.in_directive_prologue = kind == .program or kind == .function or kind == .module_block;
+        self.context.directive_prologue = kind == .program or kind == .function or kind == .module_block;
 
-        defer self.context.in_directive_prologue = false;
+        defer self.context.directive_prologue = false;
 
         const statements_checkpoint = self.scratch_statements.begin();
         defer self.scratch_statements.reset(statements_checkpoint);
@@ -611,7 +610,7 @@ pub const Checkpoint = struct {
     scratch_b_len: usize,
 
     // parser flags, small structs copied by value.
-    context: ParserContext,
+    context: Context,
     state: ParserState,
 };
 

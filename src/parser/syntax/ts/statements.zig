@@ -61,14 +61,17 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
 
     switch (cur.tag) {
         .type, .interface, .@"enum", .namespace => {
+            // a reserved-word follower (e.g. `module in {}`) is not a
+            // valid declaration name, so the head falls through to
+            // expression parsing.
             const name = peek[idx] orelse return null;
-            return name.tag.isIdentifierLike() and !name.hasLineTerminatorBefore();
+            return isDeclarationName(name);
         },
         .module => {
             // identifier (namespace form) or string (ambient module).
             const name = peek[idx] orelse return null;
             if (name.hasLineTerminatorBefore()) return false;
-            return name.tag.isIdentifierLike() or name.tag == .string_literal;
+            return isDeclarationName(name) or name.tag == .string_literal;
         },
         .global => {
             // `global { ... }` and `declare global { ... }`. a same-line
@@ -83,8 +86,25 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
             if (name.hasLineTerminatorBefore()) return false;
             return switch (cur.tag) {
                 .@"var", .let => variables.canStartBinding(name.tag),
-                else => name.tag.isIdentifierLike(),
+                else => isDeclarationName(name),
             };
+        },
+        // `declare async function f()` only.
+        .async => {
+            if (!has_declare) return false;
+            const fn_token = peek[idx] orelse return null;
+            if (fn_token.tag != .function or fn_token.hasLineTerminatorBefore()) return false;
+            const name = peek[idx + 1] orelse return null;
+            return isDeclarationName(name);
+        },
+        // `declare import x = ...`. only the equals form is valid here;
+        // a regular `declare import x from "m"` is not a declaration head.
+        .import => {
+            if (!has_declare) return false;
+            const name = peek[idx] orelse return null;
+            if (!isDeclarationName(name)) return false;
+            const eq = peek[idx + 1] orelse return null;
+            return eq.tag == .assign and !eq.hasLineTerminatorBefore();
         },
         else => return false,
     }
@@ -92,6 +112,15 @@ pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
 
 fn isConstEnumHead(after_const: Token) bool {
     return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
+}
+
+/// the token following a TS declaration head must be a same-line, non-reserved
+/// identifier-like name. rejects `module in {}` and similar binding-name
+/// false-positives so they fall through to expression parsing.
+fn isDeclarationName(token: Token) bool {
+    return token.tag.isIdentifierLike() and
+        !token.tag.isUnconditionallyReserved() and
+        !token.hasLineTerminatorBefore();
 }
 
 pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
@@ -114,9 +143,9 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    const saved_ambient = parser.context.in_ambient;
-    defer parser.context.in_ambient = saved_ambient;
-    if (mods.declare) parser.context.in_ambient = true;
+    const saved_ambient = parser.context.ambient;
+    defer parser.context.ambient = saved_ambient;
+    if (mods.declare) parser.context.ambient = true;
 
     return switch (parser.current_token.tag) {
         .type => parseTypeAliasDeclaration(parser, mods, start),
@@ -131,13 +160,80 @@ pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
             start,
         ),
         .function => functions.parseFunction(parser, .{ .is_declare = mods.declare }, start),
+        .async => blk: {
+            try parser.advance() orelse break :blk null; // consume 'async'
+            break :blk functions.parseFunction(
+                parser,
+                .{ .is_declare = mods.declare, .is_async = true },
+                start,
+            );
+        },
         .class => class.parseClass(
             parser,
             .{ .is_declare = mods.declare, .is_abstract = mods.abstract },
             start,
         ),
+        .import => parseDeclareImportEquals(parser, start),
         else => unreachable,
     };
+}
+
+/// `declare import x = Foo.Bar` and `declare import x = require("m")`.
+/// inline here because `modules.zig` already imports this file, and the
+/// shape is otherwise identical to the `import x = ...` declaration.
+fn parseDeclareImportEquals(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null; // consume 'import'
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!try parser.expect(
+        .assign,
+        "Expected '=' after 'declare import' name",
+        "A declare import equals declaration is written 'declare import x = Foo.Bar'",
+    )) return null;
+
+    const module_reference = try parseImportEqualsTarget(parser) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.getSpan(module_reference).end) orelse return null;
+
+    return try parser.tree.createNode(.{
+        .ts_import_equals_declaration = .{
+            .id = id,
+            .module_reference = module_reference,
+            .import_kind = .value,
+        },
+    }, .{ .start = start, .end = end });
+}
+
+/// `require("m")` or a dotted entity name on the RHS of `import x = ...`.
+fn parseImportEqualsTarget(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .require) {
+        const next = try parser.peekAhead() orelse return null;
+        if (next.tag == .left_paren) return parseExternalModuleReference(parser);
+    }
+
+    const head = try literals.parseIdentifier(parser) orelse return null;
+    return ts_types.extendQualifiedName(parser, head);
+}
+
+/// `require("m")` on the RHS of an `import x = ...` declaration.
+fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null; // consume 'require'
+
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' after 'require'",
+        "External module references are written 'require(\"module\")'",
+    )) return null;
+
+    const expression = try literals.parseStringLiteral(parser) orelse return null;
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(.right_paren, "Expected ')' to close 'require'", null)) return null;
+
+    return try parser.tree.createNode(.{
+        .ts_external_module_reference = .{ .expression = expression },
+    }, .{ .start = start, .end = end });
 }
 
 /// type Foo<T> = Bar<T>
@@ -154,7 +250,7 @@ pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
         "A type alias is written 'type Foo = Bar'",
     )) return null;
 
-    const type_annotation = try ts_types.parseType(parser) orelse return null;
+    const type_annotation = try ts_types.parseTypeAliasBody(parser) orelse return null;
     const end = try parser.eatSemicolon(parser.tree.getSpan(type_annotation).end) orelse return null;
 
     return try parser.tree.createNode(

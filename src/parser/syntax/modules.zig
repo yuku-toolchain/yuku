@@ -16,7 +16,13 @@ const variables = @import("variables.zig");
 const ts_statements = @import("ts/statements.zig");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
+    return parseImportDeclarationFrom(parser, parser.current_token.span.start);
+}
+
+/// `parseImportDeclaration` with an explicit start position. used by
+/// `export <accessibility> import x = ...` so the inner declaration's
+/// span begins at the legacy modifier instead of at `import`.
+pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'import'
 
     // side-effect import: import 'module'
@@ -533,6 +539,14 @@ fn isAbstractClassNext(parser: *Parser) Error!bool {
     return next.tag == .class and !next.hasLineTerminatorBefore();
 }
 
+/// `export public import x = ...` and friends. legacy TS allows an
+/// accessibility-style modifier here; only the `import` form is valid,
+/// nothing else uses these tokens at export-position.
+fn isLegacyAccessibilityImport(parser: *Parser) Error!bool {
+    const next = try parser.peekAhead() orelse return false;
+    return next.tag == .import and !next.hasLineTerminatorBefore();
+}
+
 /// export default declaration
 fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'default'
@@ -763,6 +777,20 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
         // `export import x = ...`
         .import => if (parser.tree.isTs()) {
             declaration = try parseImportDeclaration(parser) orelse return null;
+        } else {
+            try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
+                .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
+            });
+            return null;
+        },
+        // legacy `export public/private/static import x = ...`. the
+        // accessibility modifier carries no semantics on an import equals
+        // declaration and is silently consumed; the inner declaration's
+        // span starts at the modifier so the source range is preserved.
+        .public, .private, .static => if (parser.tree.isTs() and try isLegacyAccessibilityImport(parser)) {
+            const modifier_start = parser.current_token.span.start;
+            try parser.advance() orelse return null; // consume modifier
+            declaration = try parseImportDeclarationFrom(parser, modifier_start) orelse return null;
         } else {
             try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
                 .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",

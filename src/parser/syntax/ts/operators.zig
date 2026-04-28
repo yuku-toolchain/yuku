@@ -91,8 +91,7 @@ pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeI
 }
 
 /// speculatively parses `<...>`. rewinds on failure so `<` stays
-/// relational. mirrors `tryParseTypeArgumentsInExpression` in
-/// typescript-go.
+/// relational
 pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
     if (!parser.tree.isTs()) return .null;
     if (!types.isAngleOpen(parser.current_token.tag)) return .null;

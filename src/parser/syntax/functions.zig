@@ -12,7 +12,7 @@ const ParseFunctionOpts = struct {
     is_async: bool = false,
     is_expression: bool = false,
     /// sets the `declare` flag on the resulting `Function`. ambient
-    /// policy comes from `parser.context.in_ambient`.
+    /// policy comes from `parser.context.ambient`.
     is_declare: bool = false,
     /// `export default function`: name is optional but the result is
     /// still a `FunctionDeclaration`.
@@ -37,12 +37,12 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         try parser.advance() orelse return null;
     }
 
-    const outer_yield_is_keyword = parser.context.yield_is_keyword;
-    const outer_await_is_keyword = parser.context.await_is_keyword;
+    const outer_yield_is_keyword = parser.context.yield;
+    const outer_await_is_keyword = parser.context.@"await";
 
     defer {
-        parser.context.yield_is_keyword = outer_yield_is_keyword;
-        parser.context.await_is_keyword = outer_await_is_keyword;
+        parser.context.yield = outer_yield_is_keyword;
+        parser.context.@"await" = outer_await_is_keyword;
     }
 
     // yield rules differ for declarations vs expressions. inside a
@@ -50,7 +50,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     //   function yield(){}        declaration. invalid.
     //   (function yield(){})      expression. ok.
     //   (function* yield(){})     invalid.
-    parser.context.yield_is_keyword = if (is_function_expression)
+    parser.context.yield = if (is_function_expression)
         is_generator
     else
         outer_yield_is_keyword;
@@ -60,7 +60,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     //   (async function await(){})   expression. invalid.
     // declarations inherit the outer Await context. async expressions
     // force Await for their own name.
-    parser.context.await_is_keyword = if (is_function_expression)
+    parser.context.@"await" = if (is_function_expression)
         opts.is_async
     else
         outer_await_is_keyword;
@@ -72,8 +72,8 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     // params and body run under the function's own generator context.
     // `function* yield(){}` is fine but `function* f(yield){}` is not.
-    parser.context.yield_is_keyword = is_generator;
-    parser.context.await_is_keyword = opts.is_async;
+    parser.context.yield = is_generator;
+    parser.context.@"await" = opts.is_async;
 
     // name is required for plain declarations. optional for function
     // expressions and `export default function`.
@@ -110,7 +110,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     var body: ast.NodeIndex = .null;
 
     // function expressions always carry a body, only declarations obey ambient rules.
-    const is_ambient_declaration = parser.context.in_ambient and !is_function_expression;
+    const is_ambient_declaration = parser.context.ambient and !is_function_expression;
 
     if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
         try parser.report(
@@ -141,7 +141,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     else
         .function_declaration;
 
-    if (parser.context.in_single_statement_context) {
+    if (parser.context.single_statement) {
         @branchHint(.unlikely);
 
         if (opts.is_async) {
@@ -184,12 +184,12 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Function bodies must be enclosed in braces: function name() { ... }",
     )) return null;
 
-    const saved_allow_return_statement = parser.context.allow_return_statement;
+    const saved_allow_return_statement = parser.context.@"return";
 
-    parser.context.allow_return_statement = true;
+    parser.context.@"return" = true;
 
     defer {
-        parser.context.allow_return_statement = saved_allow_return_statement;
+        parser.context.@"return" = saved_allow_return_statement;
     }
 
     const body = try parser.parseBody(.right_brace, .function);

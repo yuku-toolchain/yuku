@@ -258,7 +258,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         );
     }
 
-    if (token.tag == .yield and parser.context.yield_is_keyword) {
+    if (token.tag == .yield and parser.context.yield) {
         try parser.report(
             token.span,
             "'yield' is reserved in a generator context and cannot be used as " ++ as_what,
@@ -266,7 +266,7 @@ pub inline fn validateIdentifier(parser: *Parser, comptime as_what: []const u8, 
         );
     }
 
-    if (token.tag == .await and (parser.context.await_is_keyword or parser.tree.isModule())) {
+    if (token.tag == .await and (parser.context.@"await" or parser.tree.isModule())) {
         try parser.report(
             token.span,
             "'await' is reserved in an async/module context and cannot be used as " ++ as_what,
