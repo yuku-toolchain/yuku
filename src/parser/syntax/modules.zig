@@ -19,14 +19,12 @@ pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     return parseImportDeclarationFrom(parser, parser.current_token.span.start);
 }
 
-/// `parseImportDeclaration` with an explicit start position. used by
-/// `export <accessibility> import x = ...` so the inner declaration's
-/// span begins at the legacy modifier instead of at `import`.
+// explicit start for `export` wrapped import equals so span includes legacy modifier not only `import`
 pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
-    try parser.advance() orelse return null; // consume 'import'
+    try parser.advance() orelse return null;
 
-    // side-effect import: import 'module'
+    // import 'module' side effect only
     if (parser.current_token.tag == .string_literal) {
         return parseSideEffectImport(parser, start, null);
     }
@@ -37,27 +35,25 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     const peek = try parser.peekAheadN(2);
     const next = peek[0] orelse return null;
 
-    // import type ... (ts type-only import)
+    // ts `import type { }` etc not `import type from`
     if (is_ts and parser.current_token.tag == .type and
         isTypeImportModifier(next, peek[1]))
     {
         import_kind = .type;
-        try parser.advance() orelse return null; // consume 'type'
+        try parser.advance() orelse return null;
     }
-    // import source X from "X"
+    // import source x from
     else if (parser.current_token.tag == .source and next.tag.isIdentifierLike() and next.tag != .from) {
         phase = .source;
         try parser.advance() orelse return null;
     }
-    // import defer * as X from "X"
+    // import defer * as x from
     else if (parser.current_token.tag == .@"defer" and next.tag == .star) {
         phase = .@"defer";
         try parser.advance() orelse return null;
     }
 
-    // `import x = <module reference>`. the equals form takes over
-    // whenever an identifier head is followed by `=`, including the
-    // type-only `import type x = ...` shape.
+    // ts import x = rhs when id then assign, covers import type x = too
     if (is_ts and parser.current_token.tag.isIdentifierLike()) {
         const after_id = try parser.peekAhead() orelse return null;
         if (after_id.tag == .assign) {
@@ -65,7 +61,6 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
         }
     }
 
-    // regular import, parse import clause (specifiers)
     const specifiers = try parseImportClause(parser) orelse return null;
 
     if (parser.current_token.tag != .from) {
@@ -75,11 +70,10 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
         return null;
     }
 
-    try parser.advance() orelse return null; // consume 'from'
+    try parser.advance() orelse return null;
 
     const source = try parseModuleSpecifier(parser) orelse return null;
 
-    // parse optional 'with' clause
     const attributes = try parseWithClause(parser);
 
     const end = try parser.eatSemicolon(parser.tree.getSpan(source).end) orelse return null;
@@ -95,9 +89,7 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     }, .{ .start = start, .end = end });
 }
 
-/// decides whether a `type` token immediately after `import` is the type-only
-/// modifier (as in `import type { X } from "m"`) or the default import name
-/// (as in `import type from "m"`).
+// `import type` modifier vs default binding named type
 fn isTypeImportModifier(after_type: Token, after_after: ?Token) bool {
     if (after_type.tag == .left_brace or after_type.tag == .star) return true;
     if (!after_type.tag.isIdentifierLike()) return false;
@@ -108,7 +100,7 @@ fn isTypeImportModifier(after_type: Token, after_after: ?Token) bool {
     return true;
 }
 
-/// side-effect import: import 'module'
+// import 'm' only, no bindings
 fn parseSideEffectImport(parser: *Parser, start: u32, phase: ?ast.ImportPhase) Error!?ast.NodeIndex {
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
@@ -125,44 +117,34 @@ fn parseSideEffectImport(parser: *Parser, start: u32, phase: ?ast.ImportPhase) E
     }, .{ .start = start, .end = end });
 }
 
-/// ImportClause :
-///   ImportedDefaultBinding
-///   NameSpaceImport
-///   NamedImports
-///   ImportedDefaultBinding , NameSpaceImport
-///   ImportedDefaultBinding , NamedImports
+// ImportClause: default, * as, { }, default comma star, default comma braces
 fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
 
-    // namespace import: * as name
     if (parser.current_token.tag == .star) {
         const ns = try parseImportNamespaceSpecifier(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), ns);
         return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
     }
 
-    // named imports: { foo, bar }
     if (parser.current_token.tag == .left_brace) {
         return parseNamedImports(parser);
     }
 
-    // default import: import foo from 'module'
     const default_import = try parseImportDefaultSpecifier(parser) orelse return null;
 
     try parser.scratch_a.append(parser.allocator(), default_import);
 
-    //     import foo, * as bar from 'module'
-    // or: import foo, { bar } from 'module'
+    // import foo, * as bar / import foo, { bar }
     if (parser.current_token.tag == .comma) {
-        try parser.advance() orelse return null; // consume ','
+        try parser.advance() orelse return null;
 
         if (parser.current_token.tag == .star) {
             const ns = try parseImportNamespaceSpecifier(parser) orelse return null;
             try parser.scratch_a.append(parser.allocator(), ns);
         } else if (parser.current_token.tag == .left_brace) {
             const named = try parseNamedImports(parser) orelse return null;
-            // append all named imports
             for (parser.tree.getExtra(named)) |spec| {
                 try parser.scratch_a.append(parser.allocator(), spec);
             }
@@ -175,8 +157,8 @@ fn parseImportClause(parser: *Parser) Error!?ast.IndexRange {
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
-/// default import specifier: import foo from 'module'
-///                                  ~~~
+// import foo from 'm'
+//            ~~~
 fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -188,7 +170,7 @@ fn parseImportDefaultSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-/// namespace import: * as name
+// * as name
 fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
@@ -200,7 +182,7 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
         });
         return null;
     }
-    try parser.advance() orelse return null; // consume 'as'
+    try parser.advance() orelse return null;
 
     const local = try parseImportedBinding(parser) orelse return null;
     const end = parser.tree.getSpan(local).end;
@@ -210,7 +192,7 @@ fn parseImportNamespaceSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-/// named imports: { foo, bar as baz }
+// { foo, bar as baz }
 fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -233,19 +215,17 @@ fn parseNamedImports(parser: *Parser) Error!?ast.IndexRange {
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
-/// import specifier: foo or foo as bar or "string" as bar or type foo or type foo as bar
+// member: name, rename, string rename, ts type forms
 fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const parts = try parseSpecifierParts(parser) orelse return null;
 
-    // imported is the module-side name. when `as` or `type as as <name>` promoted a
-    // `propertyName`, use it, otherwise the single parsed name serves both roles.
+    // module export name is property_name slot when rename or type as as split it
     const imported = if (parts.property_name != .null) parts.property_name else parts.name;
 
     const name_data = parser.tree.getData(parts.name);
 
-    // string literal cannot be used as a local binding name
     if (name_data == .string_literal) {
         if (parts.property_name == .null) {
             try parser.report(parser.tree.getSpan(parts.name), "String literal imports require an 'as' clause", .{
@@ -274,41 +254,32 @@ fn parseImportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-/// shared parse result for import and export specifiers. `property_name` is
-/// the `imported` (for import) or `local` (for export) side when the specifier
-/// has an explicit `as` rename or `type as as <name>` disambiguation, otherwise
-/// `.null`, meaning the single `name` serves both roles. `kind` carries the
-/// `type` modifier resolved from the specifier-level disambiguation.
+// import: property_name is exported id when renamed. export: property_name is local when renamed
 const SpecifierParts = struct {
     property_name: ast.NodeIndex = .null,
     name: ast.NodeIndex,
-    /// the token whose tag governs `name` validation (reserved-word check etc.)
+    // token for reserved checks on `name`
     name_token: Token,
     kind: ast.ImportOrExportKind = .value,
 };
 
-/// parses one import or export specifier head, disambiguating the
-/// optional `type` modifier. the possibilities when the first token is
-/// `type` are:
-///
-/// ```
-/// { type }             -> kind=value, name=type
-/// { type as }          -> kind=type,  name=as
-/// { type as as }       -> kind=value, propertyName=type, name=as
-/// { type as as X }     -> kind=type,  propertyName=as,   name=X
-/// { type as X }        -> kind=value, propertyName=type, name=X
-/// { type X }           -> kind=type,                     name=X
-/// { type X as Y }      -> kind=type,  propertyName=X,    name=Y
-/// ```
+// head of import export specifier, ts `type` modifier tables:
+// ```
+// { type }             -> kind=value, name=type
+// { type as }          -> kind=type,  name=as
+// { type as as }       -> kind=value, propertyName=type, name=as
+// { type as as X }     -> kind=type,  propertyName=as,   name=X
+// { type as X }        -> kind=value, propertyName=type, name=X
+// { type X }           -> kind=type,                     name=X
+// { type X as Y }      -> kind=type,  propertyName=X,    name=Y
+// ```
 fn parseSpecifierParts(parser: *Parser) Error!?SpecifierParts {
     const first_token = parser.current_token;
     const first = try parseModuleExportName(parser) orelse return null;
 
     var parts: SpecifierParts = .{ .name = first, .name_token = first_token };
 
-    // ts `type` modifier disambiguation. when triggered, the helper may
-    // consume the trailing rename itself; in that case it returns
-    // `.consumed_rename` and the outer `as <name>` parse is skipped.
+    // parseTypeSpecifierTail may eat the rename, then skip outer as
     const tail = if (parser.tree.isTs() and
         first_token.tag == .type and
         parser.tree.getData(first) == .identifier_name)
@@ -317,7 +288,7 @@ fn parseSpecifierParts(parser: *Parser) Error!?SpecifierParts {
         TypeTailResult.no_type_modifier;
 
     if (tail != .consumed_rename and parser.current_token.tag == .as) {
-        try parser.advance() orelse return null; // consume 'as'
+        try parser.advance() orelse return null;
         parts.property_name = parts.name;
         parts.name_token = parser.current_token;
         parts.name = try parseModuleExportName(parser) orelse return null;
@@ -327,18 +298,14 @@ fn parseSpecifierParts(parser: *Parser) Error!?SpecifierParts {
 }
 
 const TypeTailResult = enum {
-    /// no leading `type` modifier (or the helper wasn't run at all).
     no_type_modifier,
-    /// the helper has already filled in the rename; skip the outer `as`.
+    // rename done inside helper
     consumed_rename,
-    /// the helper recognized the `type` modifier but the outer `as <name>`
-    /// rename is still applicable.
+    // still need outer as name if present
     keep_outer_rename,
 };
 
-/// the ts `type` modifier branch of `parseSpecifierParts`. fills
-/// `parts.kind`, `parts.property_name`, `parts.name`, `parts.name_token`
-/// in place.
+// ts only. mutates parts fields
 fn parseTypeSpecifierTail(
     parser: *Parser,
     parts: *SpecifierParts,
@@ -390,7 +357,7 @@ fn parseTypeSpecifierTail(
         return .keep_outer_rename;
     }
 
-    // bare `type` - shorthand with name=first
+    // bare type token as name
     return .keep_outer_rename;
 }
 
@@ -398,7 +365,7 @@ fn canStartModuleExportName(tag: TokenTag) bool {
     return tag.isIdentifierLike() or tag == .string_literal;
 }
 
-/// ImportedBinding: BindingIdentifier[~Yield, +Await]
+// local name in import clause, usual binding id rules
 fn parseImportedBinding(parser: *Parser) Error!?ast.NodeIndex {
     return literals.parseBindingIdentifier(parser);
 }
@@ -406,22 +373,20 @@ fn parseImportedBinding(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume 'export'
+    try parser.advance() orelse return null;
 
     if (is_ts) switch (parser.current_token.tag) {
-        // export = expression
         .assign => return parseTSExportAssignment(parser, start),
-        // export as namespace name
         .as => return parseTSNamespaceExportDeclaration(parser, start),
-        // export type { X } / export type * [as N] from "m"
+        // export type { } / export type *
         .type => {
             const next = try parser.peekAhead() orelse return null;
             if (next.tag == .left_brace) {
-                try parser.advance() orelse return null; // consume 'type'
+                try parser.advance() orelse return null;
                 return parseExportNamedFromClause(parser, start, .type);
             }
             if (next.tag == .star) {
-                try parser.advance() orelse return null; // consume 'type'
+                try parser.advance() orelse return null;
                 return parseExportAllDeclaration(parser, start, .type);
             }
         },
@@ -429,20 +394,16 @@ pub fn parseExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     };
 
     return switch (parser.current_token.tag) {
-        // export default ...
         .default => parseExportDefaultDeclaration(parser, start),
-        // export * [as name] from 'module'
         .star => parseExportAllDeclaration(parser, start, .value),
-        // export { foo, bar } [from 'module']
         .left_brace => parseExportNamedFromClause(parser, start, .value),
-        // export var/let/const/function/class/...
         else => parseExportWithDeclaration(parser, start),
     };
 }
 
-/// export = expression
+// export = expr
 fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consume '='
+    try parser.advance() orelse return null;
 
     const expression = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
@@ -453,16 +414,16 @@ fn parseTSExportAssignment(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-/// export as namespace name
+// export as namespace foo
 fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consume 'as'
+    try parser.advance() orelse return null;
 
     if (parser.current_token.tag != .namespace) {
         try parser.reportExpected(parser.current_token.span, "Expected 'namespace' after 'export as'", .{});
         return null;
     }
 
-    try parser.advance() orelse return null; // consume 'namespace'
+    try parser.advance() orelse return null;
 
     const id = try literals.parseIdentifierName(parser) orelse return null;
     const end = try parser.eatSemicolon(parser.tree.getSpan(id).end) orelse return null;
@@ -472,27 +433,23 @@ fn parseTSNamespaceExportDeclaration(parser: *Parser, start: u32) Error!?ast.Nod
     }, .{ .start = start, .end = end });
 }
 
-/// peek lookahead for `abstract class` after an `abstract` head, sharing the
-/// same-line rule used by `isStartOfTsDeclaration`.
+// abstract then class on same line, like ts decl probe
 fn isAbstractClassNext(parser: *Parser) Error!bool {
     const next = try parser.peekAhead() orelse return false;
     return next.tag == .class and !next.hasLineTerminatorBefore();
 }
 
-/// `export public import x = ...` and friends. legacy TS allows an
-/// accessibility-style modifier here; only the `import` form is valid,
-/// nothing else uses these tokens at export-position.
+// legacy `export public import x =`, only import after modifier matters here
 fn isLegacyAccessibilityImport(parser: *Parser) Error!bool {
     const next = try parser.peekAhead() orelse return false;
     return next.tag == .import and !next.hasLineTerminatorBefore();
 }
 
-/// export default declaration. returns the declaration node and whether
-/// the result needs a trailing semicolon (expressions do, declarations don't).
+// expr gets eaten semicolon after, decl does not
 const DefaultExportPart = struct { declaration: ast.NodeIndex, needs_semi: bool };
 
 fn parseExportDefaultDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consume 'default'
+    try parser.advance() orelse return null;
 
     const part = try parseExportDefaultPart(parser) orelse return null;
     const decl_span = parser.tree.getSpan(part.declaration);
@@ -511,21 +468,19 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
     const is_ts = parser.tree.isTs();
     const tag = parser.current_token.tag;
 
-    // export default function [name]() {}
     if (tag == .function) {
         const decl = try functions.parseFunction(parser, .{ .is_default_export = true }, null) orelse return null;
         return .{ .declaration = decl, .needs_semi = false };
     }
 
-    // export default async function [name]() {}
     if (tag == .async and !parser.current_token.hasLineTerminatorBefore()) {
         const async_start = parser.current_token.span.start;
-        try parser.advance() orelse return null; // consume 'async'
+        try parser.advance() orelse return null;
         if (parser.current_token.tag == .function) {
             const decl = try functions.parseFunction(parser, .{ .is_default_export = true, .is_async = true }, async_start) orelse return null;
             return .{ .declaration = decl, .needs_semi = false };
         }
-        // bare `export default async;` falls back to the identifier.
+        // export default async as identifier value
         const async_end = async_start + 5;
         const id = try parser.tree.createNode(
             .{ .identifier_reference = .{ .name = parser.tree.sourceSlice(async_start, async_end) } },
@@ -534,13 +489,11 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
         return .{ .declaration = id, .needs_semi = true };
     }
 
-    // export default class [name] {}
     if (tag == .class) {
         const decl = try class.parseClass(parser, .{ .is_default_export = true }, null) orelse return null;
         return .{ .declaration = decl, .needs_semi = false };
     }
 
-    // export default @decorator class
     if (tag == .at) {
         const decorators_start = parser.current_token.span.start;
         const decorators = try extensions.parseDecorators(parser) orelse return null;
@@ -549,10 +502,9 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
     }
 
     if (is_ts) {
-        // export default abstract class [name] {}
         if (tag == .abstract and try isAbstractClassNext(parser)) {
             const abstract_start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume 'abstract'
+            try parser.advance() orelse return null;
             const decl = try class.parseClass(parser, .{
                 .is_default_export = true,
                 .is_abstract = true,
@@ -560,38 +512,34 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
             return .{ .declaration = decl, .needs_semi = false };
         }
 
-        // export default interface Foo {}
         if (tag == .interface) {
             const decl = try ts_statements.parseInterfaceDeclaration(parser, .{}, parser.current_token.span.start) orelse return null;
             return .{ .declaration = decl, .needs_semi = false };
         }
     }
 
-    // export default expression
     const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
     return .{ .declaration = expr, .needs_semi = true };
 }
 
-/// export * from 'module' or export * as name from 'module'
+// export * from m, optional as export name
 fn parseExportAllDeclaration(parser: *Parser, start: u32, export_kind: ast.ImportOrExportKind) Error!?ast.NodeIndex {
-    try parser.advance() orelse return null; // consume '*'
+    try parser.advance() orelse return null;
 
     var exported: ast.NodeIndex = .null;
 
-    // export * as name from 'module'
     if (parser.current_token.tag == .as) {
-        try parser.advance() orelse return null; // consume 'as'
+        try parser.advance() orelse return null;
         exported = try parseModuleExportName(parser) orelse return null;
     }
 
-    // expect 'from'
     if (parser.current_token.tag != .from) {
         try parser.reportExpected(parser.current_token.span, "Expected 'from' after export *", .{
             .help = "Export all declarations require 'from': export * from 'module'",
         });
         return null;
     }
-    try parser.advance() orelse return null; // consume 'from'
+    try parser.advance() orelse return null;
 
     const source = try parseModuleSpecifier(parser) orelse return null;
     const attributes = try parseWithClause(parser);
@@ -607,8 +555,7 @@ fn parseExportAllDeclaration(parser: *Parser, start: u32, export_kind: ast.Impor
     }, .{ .start = start, .end = end });
 }
 
-/// export { foo, bar } or export { foo } from 'module', with optional leading
-/// `type` modifier consumed by the caller (`export_kind = .type`).
+// export { } or export { } from m. caller already ate export type if needed
 fn parseExportNamedFromClause(parser: *Parser, start: u32, export_kind: ast.ImportOrExportKind) Error!?ast.NodeIndex {
     const result = try parseExportSpecifiers(parser) orelse return null;
     const specifiers = result.specifiers;
@@ -617,11 +564,9 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32, export_kind: ast.Impo
     var attributes: ast.IndexRange = ast.IndexRange.empty;
     var end = parser.prev_token_end;
 
-    // re-export: export { foo } from 'module'. without `from`, the local
-    // names refer to in-scope bindings, so we validate them and rewrite
-    // each `IdentifierName` local into an `IdentifierReference`.
+    // from m reexports. no from means local names, rewrite id names to refs
     if (parser.current_token.tag == .from) {
-        try parser.advance() orelse return null; // consume 'from'
+        try parser.advance() orelse return null;
         source = try parseModuleSpecifier(parser) orelse return null;
         attributes = try parseWithClause(parser);
         end = parser.tree.getSpan(source).end;
@@ -642,7 +587,7 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32, export_kind: ast.Impo
     }, .{ .start = start, .end = end });
 }
 
-/// export var/let/const/function/class
+// export decl statement
 fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
 
@@ -668,18 +613,14 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
             break :blk try functions.parseFunction(parser, .{ .is_async = true }, async_start) orelse return null;
         },
         .class => try class.parseClass(parser, .{}, null) orelse return null,
-        // `export @dec class`: inner `ClassDeclaration` spans from the `@`.
+        // inner class span starts at @
         .at => blk: {
             const decorators_start = parser.current_token.span.start;
             const decorators = try extensions.parseDecorators(parser) orelse return null;
             break :blk try class.parseClassDecorated(parser, .{}, decorators_start, decorators) orelse return null;
         },
-        // `export import x = ...`
         .import => if (is_ts) try parseImportDeclaration(parser) orelse return null else return reportMissingExportDeclaration(parser),
-        // legacy `export public/private/static import x = ...`. the
-        // accessibility modifier carries no semantics on an import equals
-        // declaration and is silently consumed; the inner declaration's
-        // span starts at the modifier so the source range is preserved.
+        // export public import x =, modifier is noise span kept from modifier token
         .public, .private, .static => blk: {
             if (!is_ts or !try isLegacyAccessibilityImport(parser)) return reportMissingExportDeclaration(parser);
             const modifier_start = parser.current_token.span.start;
@@ -707,9 +648,7 @@ fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-/// `@dec export [default] class C`. `decorators` were collected at
-/// statement position by the caller, both the wrapping export and the
-/// inner `ClassDeclaration` exclude the leading `@`
+// precollection skips leading @ on both export wrapper and inner class
 pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null;
@@ -738,9 +677,7 @@ pub fn parseExportDecorated(parser: *Parser, decorators: ast.IndexRange) Error!?
     }, span);
 }
 
-/// `interface` and `type` are always type-only. everything else (enum,
-/// module, global, var/let/const, function, class) is type-only when the
-/// `declare` modifier is set on the declaration itself.
+// interface and type alias always type export kind. rest type only if declare
 fn exportKindForDeclaration(parser: *Parser, declaration: ast.NodeIndex) ast.ImportOrExportKind {
     const declared = switch (parser.tree.getData(declaration)) {
         .ts_interface_declaration, .ts_type_alias_declaration => return .type,
@@ -760,9 +697,7 @@ const ExportSpecifiersResult = struct {
     local_tags: ast.IndexRange,
 };
 
-/// validates each `export { ... }` specifier (no `from`) and rewrites the
-/// `IdentifierName` local into an `IdentifierReference` so it resolves
-/// against the enclosing scope.
+// export { } without from, locals become identifier refs in scope
 fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult) Error!void {
     const specs = parser.tree.getExtra(result.specifiers);
     const local_tags = parser.tree.getExtra(result.local_tags);
@@ -804,7 +739,7 @@ fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult)
     }
 }
 
-/// export specifiers: { foo, bar as baz }
+// { foo, bar as baz } plus parallel local tag list
 fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -837,15 +772,13 @@ fn parseExportSpecifiers(parser: *Parser) Error!?ExportSpecifiersResult {
     };
 }
 
-/// export specifier: foo, foo as bar, type foo, or type foo as bar
+// local before as, exported after, ts type split like import
 fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     const parts = try parseSpecifierParts(parser) orelse return null;
 
-    // local (module-local binding) is the name before `as`, exported (module
-    // public name) is the name after `as`. when there is no rename both roles
-    // share the single parsed `name` node.
+    // local is before as slot, exported after, one node if no rename
     const local = if (parts.property_name != .null) parts.property_name else parts.name;
     const exported = parts.name;
 
@@ -860,7 +793,7 @@ fn parseExportSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-/// ModuleExportName: IdentifierName or StringLiteral
+// string or id
 fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
@@ -878,7 +811,7 @@ fn parseModuleExportName(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-/// ModuleSpecifier: StringLiteral
+// module string
 fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag != .string_literal) {
         try parser.reportExpected(parser.current_token.span, "Expected module specifier", .{
@@ -890,17 +823,13 @@ fn parseModuleSpecifier(parser: *Parser) Error!?ast.NodeIndex {
     return literals.parseStringLiteral(parser);
 }
 
-/// WithClause / ImportAttributes
-/// WithClause :
-///   with { }
-///   with { WithEntries ,? }
+// import attributes with { } or legacy assert { }
 fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
-    // check for 'with' or 'assert' keyword
     if (parser.current_token.tag != .with and parser.current_token.tag != .assert) {
         return ast.IndexRange.empty;
     }
 
-    try parser.advance() orelse return ast.IndexRange.empty; // consume 'with' or 'assert'
+    try parser.advance() orelse return ast.IndexRange.empty;
 
     if (!try parser.expect(.left_brace, "Expected '{' after 'with' in import attributes", null)) {
         return ast.IndexRange.empty;
@@ -927,16 +856,14 @@ fn parseWithClause(parser: *Parser) Error!ast.IndexRange {
     return parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
-/// ImportAttribute: key : value
+// attr key string value
 fn parseImportAttribute(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    // IdentifierName or StringLiteral
     const key = try parseAttributeKey(parser) orelse return null;
 
     if (!try parser.expect(.colon, "Expected ':' in import attribute", null)) return null;
 
-    // value (must be StringLiteral)
     if (parser.current_token.tag != .string_literal) {
         try parser.report(parser.current_token.span, "Import attribute value must be a string literal", .{});
         return null;
@@ -952,7 +879,6 @@ fn parseImportAttribute(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = parser.tree.getSpan(value).end });
 }
 
-/// AttributeKey: IdentifierName or StringLiteral
 fn parseAttributeKey(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
     if (tag == .string_literal) return literals.parseStringLiteral(parser);
@@ -962,26 +888,23 @@ fn parseAttributeKey(parser: *Parser) Error!?ast.NodeIndex {
     return null;
 }
 
-/// dynamic import: import(source), import(source, options), import.source(source), import.defer(source)
+// import(), import(,opts), import.source, import.defer
 pub fn parseDynamicImport(parser: *Parser, import_keyword: ast.NodeIndex, phase: ?ast.ImportPhase) Error!?ast.NodeIndex {
     const start = parser.tree.getSpan(import_keyword).start;
 
     if (!try parser.expect(.left_paren, "Expected '(' after import", null)) return null;
 
-    // source expression
     const source = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
     var options: ast.NodeIndex = .null;
 
-    // check for options argument (only for regular imports, not phase imports)
+    // second arg only on plain import(), not import.source defer
     if (phase == null and parser.current_token.tag == .comma) {
-        // allow trailing comma
-        try parser.advance() orelse return null; // consume ','
+        try parser.advance() orelse return null;
 
         if (parser.current_token.tag != .right_paren) {
             options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
 
-            // allow trailing comma after options
             if (parser.current_token.tag == .comma) {
                 try parser.advance() orelse return null;
             }
