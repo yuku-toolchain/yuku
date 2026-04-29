@@ -8,7 +8,7 @@ const Precedence = @import("../token.zig").Precedence;
 const literals = @import("literals.zig");
 const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/types.zig");
 
 /// result from parsing object cover grammar: {a, b: c, ...d}
 pub const ObjectCover = struct {

@@ -10,7 +10,7 @@ const Token = @import("../token.zig").Token;
 const std = @import("std");
 const Precedence = @import("../token.zig").Precedence;
 
-const jsx = @import("jsx.zig");
+const jsx = @import("jsx/root.zig");
 const statements = @import("statements.zig");
 const variables = @import("variables.zig");
 const array = @import("array.zig");
@@ -23,7 +23,7 @@ const parenthesized = @import("parenthesized.zig");
 const patterns = @import("patterns.zig");
 const modules = @import("modules.zig");
 const grammar = @import("../grammar.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/types.zig");
 
 const ParseExpressionOpts = struct {
     /// whether we are parsing this expression in a cover context.

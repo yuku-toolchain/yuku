@@ -7,7 +7,7 @@ const array = @import("array.zig");
 const object = @import("object.zig");
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/types.zig");
 
 pub inline fn parseBindingPattern(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag.isIdentifierLike()) {

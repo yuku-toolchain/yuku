@@ -1,12 +1,12 @@
 const std = @import("std");
-const ast = @import("../ast.zig");
-const Precedence = @import("../token.zig").Precedence;
-const Parser = @import("../parser.zig").Parser;
-const Error = @import("../parser.zig").Error;
+const ast = @import("../../ast.zig");
+const Precedence = @import("../../token.zig").Precedence;
+const Parser = @import("../../parser.zig").Parser;
+const Error = @import("../../parser.zig").Error;
 
-const literals = @import("literals.zig");
-const expressions = @import("expressions.zig");
-const ts = @import("ts.zig");
+const literals = @import("../literals.zig");
+const expressions = @import("../expressions.zig");
+const ts = @import("../ts/types.zig");
 
 /// context for JSX element parsing, determines post-parse behavior
 const JsxElementContext = enum {

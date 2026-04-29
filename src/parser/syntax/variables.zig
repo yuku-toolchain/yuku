@@ -5,7 +5,7 @@ const Precedence = @import("../token.zig").Precedence;
 const TokenTag = @import("../token.zig").TokenTag;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/types.zig");
 const std = @import("std");
 
 pub const ParseVariableDeclarationOpts = struct {

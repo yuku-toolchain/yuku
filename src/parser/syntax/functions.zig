@@ -6,7 +6,7 @@ const TokenTag = @import("../token.zig").TokenTag;
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const extensions = @import("extensions.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/types.zig");
 
 const ParseFunctionOpts = struct {
     is_async: bool = false,

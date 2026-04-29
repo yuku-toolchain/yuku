@@ -13,7 +13,7 @@ const functions = @import("functions.zig");
 const class = @import("class.zig");
 const extensions = @import("extensions.zig");
 const variables = @import("variables.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/statements.zig");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     return parseImportDeclarationFrom(parser, parser.current_token.span.start);

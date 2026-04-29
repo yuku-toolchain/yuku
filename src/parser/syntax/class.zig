@@ -11,7 +11,8 @@ const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
-const ts = @import("ts.zig");
+const ts = @import("ts/types.zig");
+const ts_decl = @import("ts/statements.zig");
 const ecmascript = @import("../ecmascript.zig");
 
 //
@@ -101,7 +102,7 @@ pub fn parseClassDecorated(
     // `implements A, B.C<T>, ...`. may appear with or without a preceding
     // `extends` clause.
     const implements: ast.IndexRange = if (is_ts)
-        try ts.parseImplementsClause(parser) orelse return null
+        try ts_decl.parseImplementsClause(parser) orelse return null
     else
         .empty;
 
