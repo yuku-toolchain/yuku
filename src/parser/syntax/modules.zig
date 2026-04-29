@@ -713,6 +713,7 @@ fn resolveLocalExportSpecifiers(parser: *Parser, result: ExportSpecifiersResult)
         }
 
         const local_tag: TokenTag = @enumFromInt(@intFromEnum(local_tags[i]));
+
         if (local_tag.isReserved()) {
             const local_name = parser.tree.getString(local_data.identifier_name.name);
             try parser.report(
