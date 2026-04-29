@@ -166,10 +166,6 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
     }, .{ .start = start, .end = end });
 }
 
-//
-// class element: method, field, accessor, or static block
-//
-
 fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
     const elem_start = parser.current_token.span.start;
@@ -467,10 +463,6 @@ inline fn requiresSameLine(tag: TokenTag) bool {
     };
 }
 
-//
-// element key
-//
-
 const KeyResult = struct { key: ast.NodeIndex, computed: bool };
 
 fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
@@ -507,10 +499,6 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
     return .{ .key = key, .computed = false };
 }
 
-//
-// member definitions
-//
-
 // method, getter, setter, or constructor. in ts mode a missing body is
 // valid and produces a bodyless `TSEmptyBodyFunctionExpression`, which
 // covers overload signatures, ambient members, and abstract methods.
@@ -526,12 +514,12 @@ fn parseMethodDefinition(
     if (mods.is_static and !computed) try validateStaticPrototypeOrConstructor(parser, key, .method);
     try validateMethodModifiers(parser, key, mods);
 
-    const saved_await = parser.context.@"await";
+    const saved_await = parser.context.await;
     const saved_yield = parser.context.yield;
-    parser.context.@"await" = mods.is_async;
+    parser.context.await = mods.is_async;
     parser.context.yield = mods.is_generator;
     defer {
-        parser.context.@"await" = saved_await;
+        parser.context.await = saved_await;
         parser.context.yield = saved_yield;
     }
 
@@ -668,22 +656,18 @@ fn parsePropertyDefinition(
     } }, .{ .start = elem_start, .end = end });
 }
 
-//
-// static block
-//
-
 fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     if (!try parser.expect(.left_brace, "Expected '{' to start static block", null)) return null;
 
     // ClassStaticBlockStatementList: StatementList[~Yield, +Await, ~Return]
-    const saved_await = parser.context.@"await";
+    const saved_await = parser.context.await;
     const saved_yield = parser.context.yield;
     const saved_return = parser.context.@"return";
-    parser.context.@"await" = true;
+    parser.context.await = true;
     parser.context.yield = false;
     parser.context.@"return" = false;
     defer {
-        parser.context.@"await" = saved_await;
+        parser.context.await = saved_await;
         parser.context.yield = saved_yield;
         parser.context.@"return" = saved_return;
     }
@@ -697,10 +681,6 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
         .{ .start = start, .end = end },
     );
 }
-
-//
-// validation
-//
 
 // `#constructor` is not allowed as a private field name
 fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: bool) Error!void {

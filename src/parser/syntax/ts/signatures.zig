@@ -10,8 +10,8 @@ const functions = @import("../functions.zig");
 const expressions = @import("../expressions.zig");
 const types = @import("types.zig");
 
-/// { x: T; foo(): U; [k: string]: V }
-/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// { x: T; foo(): U; [k: string]: V }
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
@@ -24,11 +24,11 @@ pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// shared body parser for `TSTypeLiteral` and `TSInterfaceBody`.
+// shared member list for `TSTypeLiteral` and `TSInterfaceBody`
 pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
-    try parser.advance() orelse return null; // consume '{'
+    try parser.advance() orelse return null;
 
     const checkpoint = parser.scratch_a.begin();
     defer parser.scratch_a.reset(checkpoint);
@@ -48,9 +48,7 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
-/// `;` and `,` fold into the member's span; a newline separates without
-/// extending. anything else after a member is an error. returns `false`
-/// after reporting one.
+// comma or semicolon folds into span, newline ends member without span stretch, else error
 fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool {
     switch (parser.current_token.tag) {
         .semicolon, .comma => {
@@ -72,7 +70,7 @@ fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool
     return true;
 }
 
-/// tells `{ [K in T]: V }` apart from a computed-key type literal.
+// `{ [K in T]: V }` vs `{ [expr]: T }`
 pub fn isStartOfMappedType(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
@@ -102,13 +100,13 @@ pub fn isStartOfMappedType(parser: *Parser) Error!bool {
     return in_tok.tag == .in;
 }
 
-/// { [K in T]: V }   { readonly [K in T]?: V }   { -readonly [K in T as U]-?: V }
-/// ^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// { [K in T]: V }   { readonly [K in T]?: V }   { -readonly [K in T as U]-?: V }
+// ^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_brace);
 
     const start = parser.current_token.span.start;
-    try parser.advance() orelse return null; // consume '{'
+    try parser.advance() orelse return null;
 
     const readonly = try parseMappedModifier(parser, .readonly) orelse return null;
 
@@ -130,7 +128,7 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
 
     var name_type: ast.NodeIndex = .null;
     if (parser.current_token.tag == .as) {
-        try parser.advance() orelse return null; // consume 'as'
+        try parser.advance() orelse return null;
         name_type = try types.parseType(parser) orelse return null;
     }
 
@@ -144,7 +142,7 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
 
     var type_annotation: ast.NodeIndex = .null;
     if (parser.current_token.tag == .colon) {
-        try parser.advance() orelse return null; // consume ':'
+        try parser.advance() orelse return null;
         type_annotation = try types.parseType(parser) orelse return null;
     }
 
@@ -171,8 +169,7 @@ pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
-/// `terminator` is what the modifier decorates: `readonly` or `?`.
-/// a bare `+` or `-` must be followed by `terminator`.
+// optional explicit plus or minus before readonly or optional marker in mapped type
 fn parseMappedModifier(parser: *Parser, comptime terminator: TokenTag) Error!?ast.TSMappedTypeModifier {
     const tag = parser.current_token.tag;
 
@@ -198,8 +195,7 @@ fn parseMappedModifier(parser: *Parser, comptime terminator: TokenTag) Error!?as
     return sign;
 }
 
-/// one call, construct, index, property, method, getter, or setter
-/// signature.
+// one property method getter setter call construct index member
 fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
@@ -212,13 +208,12 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
         }
     }
 
-    // `readonly` is a modifier when a signature starter follows on the
-    // same line, otherwise it's the property name.
+    // readonly modifier only when same line token starts a real member
     if (tag == .readonly) {
         const next = (try parser.peekAhead()) orelse return null;
         if (!next.hasLineTerminatorBefore() and canFollowReadonlyModifier(next.tag)) {
             const readonly_start = parser.current_token.span.start;
-            try parser.advance() orelse return null; // consume 'readonly'
+            try parser.advance() orelse return null;
             if (parser.current_token.tag == .left_bracket and try isIndexSignatureStart(parser)) {
                 return parseIndexSignature(parser, readonly_start, .{ .readonly = true });
             }
@@ -235,7 +230,7 @@ fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
     return parsePropertyOrMethodSignature(parser, start, false);
 }
 
-/// tells `[k: T]: V` apart from `[expr]: T` computed keys.
+// `[k: T]: V` index vs `[expr]: T` computed prop
 pub fn isIndexSignatureStart(parser: *Parser) Error!bool {
     std.debug.assert(parser.current_token.tag == .left_bracket);
 
@@ -248,7 +243,7 @@ pub fn isIndexSignatureStart(parser: *Parser) Error!bool {
     return t2.tag == .colon or t2.tag == .comma;
 }
 
-/// tokens that can begin a property name.
+// property name starters
 inline fn canFollowAccessorKeyword(tag: TokenTag) bool {
     return tag == .left_bracket or
         tag.isIdentifierLike() or
@@ -256,8 +251,7 @@ inline fn canFollowAccessorKeyword(tag: TokenTag) bool {
         tag.isNumericLiteral();
 }
 
-/// superset of `canFollowAccessorKeyword`. `{` and `*` are accepted
-/// syntactically and rejected downstream.
+// like accessor follow set plus `{` `*` `...`, bad combos caught later
 inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
     return canFollowAccessorKeyword(tag) or
         tag == .left_brace or
@@ -265,14 +259,14 @@ inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
         tag == .spread;
 }
 
-/// (params): R    <T>(params): R    new (params): R    new <T>(params): R
-/// ^^^^^^^^^^^    ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
+// (params): R    <T>(params): R    new (params): R    new <T>(params): R
+// ^^^^^^^^^^^    ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
 fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
     if (is_construct) {
         std.debug.assert(parser.current_token.tag == .new);
-        try parser.advance() orelse return null; // consume 'new'
+        try parser.advance() orelse return null;
     }
 
     const type_parameters = try types.parseTypeParameters(parser);
@@ -307,13 +301,13 @@ pub const IndexSignatureModifiers = struct {
     static: bool = false,
 };
 
-/// [k: T]: V    readonly [k: T]: V
-/// ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
+// [k: T]: V    readonly [k: T]: V
+// ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
 pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModifiers) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .left_bracket);
-    try parser.advance() orelse return null; // consume '['
+    try parser.advance() orelse return null;
 
-    // TS1096: an index signature must have exactly one parameter.
+    // TS1096 diagnostic, exactly one index parameter
     const param = try parseIndexSignatureParameter(parser) orelse return null;
     if (parser.current_token.tag == .comma) {
         try parser.report(
@@ -370,7 +364,7 @@ fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
     return name;
 }
 
-/// optional `get` or `set`, key, optional `?`, then `(params): R` or `: T`.
+// optional accessor keyword, key, optional `?`, callish tail or `: T` field
 fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?ast.NodeIndex {
     var kind: ast.TSMethodSignatureKind = .method;
     const head_tag = parser.current_token.tag;
@@ -378,7 +372,7 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
         const next = (try parser.peekAhead()) orelse return null;
         if (canFollowAccessorKeyword(next.tag)) {
             kind = if (head_tag == .get) .get else .set;
-            try parser.advance() orelse return null; // consume 'get' / 'set'
+            try parser.advance() orelse return null;
         }
     }
 
@@ -392,11 +386,10 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
     if (parser.current_token.tag == .question) {
         is_optional = true;
         tail_end = parser.current_token.span.end;
-        try parser.advance() orelse return null; // consume '?'
+        try parser.advance() orelse return null;
     }
 
-    // accessors always go through the body parser so a missing `(` is
-    // reported there instead of silently falling through to a property.
+    // accessors need method path so bad `(` is an error not a prop
     if (kind != .method or parser.current_token.tag == .left_paren or parser.current_token.tag == .less_than) {
         return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
     }
@@ -419,7 +412,7 @@ fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool
     );
 }
 
-/// `<T>(params): R` tail shared by methods, getters, and setters.
+// shared `(params): R` part after method get set key
 fn parseMethodSignatureBody(
     parser: *Parser,
     start: u32,
@@ -465,12 +458,12 @@ const PropertyKeyResult = struct {
     computed: bool,
 };
 
-/// `IdentifierName`, literal, or computed `[expr]`.
+// key forms for signatures
 fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
     const tag = parser.current_token.tag;
 
     if (tag == .left_bracket) {
-        try parser.advance() orelse return null; // consume '['
+        try parser.advance() orelse return null;
         const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
         if (!try parser.expect(
             .right_bracket,

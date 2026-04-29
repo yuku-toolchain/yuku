@@ -20,9 +20,9 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
 
     switch (second.tag) {
         .spread => return .yes,
-        // overlaps with array or object expression.
+        // could be array or object expr
         .left_bracket, .left_brace => return .maybe,
-        // bare `()` is an arrow only when `=>` or `:` follows.
+        // bare `()` needs `=>` or `:` after
         .right_paren => {
             const third = peek[1] orelse return .no;
             return switch (third.tag) {
@@ -30,7 +30,7 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
                 else => .no,
             };
         },
-        // `this` is a parameter only when annotated.
+        // `this` param only when `:T` follows
         .this => {
             const third = peek[1] orelse return .no;
             return if (third.tag == .colon) .yes else .no;
@@ -47,7 +47,7 @@ fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
                         else => .no,
                     };
                 },
-                // overlaps with paren or sequence expression.
+                // could be paren expr or comma sequence
                 .comma, .assign, .right_paren => .maybe,
                 else => .no,
             };
@@ -78,10 +78,8 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
     return parenthesized.buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
 }
 
-// rewinds on failure so the caller falls through to the cover grammar,
-// jsx, or a prefix type assertion. also rewinds when `(p): T => body`
-// was parsed under `!allow_arrow_return_type` (ternary consequent, case
-// label) and the `:` actually belongs to the outer context.
+// rewind on fail so cover grammar jsx or `<T>` assertion wins. also when return type
+// parsed but `allow_arrow_return_type` is off and next `:` is outer ternary case label
 pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     const cp = parser.checkpoint();
 
@@ -90,8 +88,7 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
         return null;
     };
 
-    // an annotated arrow inside `disallow return-type` context yields the
-    // `:` to the surrounding ternary or case label.
+    // annotated arrow in no return type context give `:` to outer ternary case
     const return_type = parser.tree.getData(arrow).arrow_function_expression.return_type;
     if (!parser.context.allow_arrow_return_type and
         return_type != .null and
@@ -104,8 +101,7 @@ pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?a
     return arrow;
 }
 
-// one-token peek skips the checkpoint/rewind on hot jsx and
-// type-assertion paths.
+// fast path, skip checkpoint when jsx or type assertion likely
 pub fn tryParseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     std.debug.assert(parser.current_token.tag == .less_than);
 
