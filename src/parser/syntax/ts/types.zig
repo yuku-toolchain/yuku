@@ -12,12 +12,6 @@ const expressions = @import("../expressions.zig");
 const patterns = @import("../patterns.zig");
 const signatures = @import("signatures.zig");
 
-/// every fresh type sub-context (mapped type body, tuple element, type
-/// argument, parenthesised type, parameter constraint, return type, ...)
-/// reaches the parser through `parseType`, so resetting
-/// `disallow_conditional_types` here lets every sub-context support
-/// nested conditionals. only `parseTypeNoConditional`, used for the
-/// `extends` body of a conditional, keeps the flag.
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     const saved = parser.context.disallow_conditional_types;
     parser.context.disallow_conditional_types = false;
@@ -49,7 +43,9 @@ inline fn parseTypeWithBody(
 fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     const check_type = try parseUnionType(parser) orelse return null;
 
-    if (parser.current_token.tag != .extends or parser.current_token.hasLineTerminatorBefore()) return check_type;
+    if (parser.current_token.tag != .extends or parser.current_token.hasLineTerminatorBefore()) {
+        return check_type;
+    }
 
     try parser.advance() orelse return null; // consume 'extends'
 
@@ -58,8 +54,8 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
     // parens reset this in `parseType`.
     const saved = parser.context.disallow_conditional_types;
     parser.context.disallow_conditional_types = true;
+    defer parser.context.disallow_conditional_types = saved;
     const extends_type = try parseTypeNoConditional(parser) orelse return null;
-    parser.context.disallow_conditional_types = saved;
 
     if (!try parser.expect(
         .question,
@@ -77,9 +73,6 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
 
     const false_type = try parseType(parser) orelse return null;
 
-    const start = parser.tree.getSpan(check_type).start;
-    const end = parser.tree.getSpan(false_type).end;
-
     return try parser.tree.createNode(
         .{ .ts_conditional_type = .{
             .check_type = check_type,
@@ -87,7 +80,10 @@ fn parseConditionalType(parser: *Parser) Error!?ast.NodeIndex {
             .true_type = true_type,
             .false_type = false_type,
         } },
-        .{ .start = start, .end = end },
+        .{
+            .start = parser.tree.getSpan(check_type).start,
+            .end = parser.tree.getSpan(false_type).end,
+        },
     );
 }
 
@@ -356,38 +352,33 @@ fn parseLiteralType(parser: *Parser) Error!?ast.NodeIndex {
     const literal: ast.NodeIndex = switch (token.tag) {
         .true, .false => try literals.parseBooleanLiteral(parser) orelse return null,
         .string_literal => try literals.parseStringLiteral(parser) orelse return null,
-        .numeric_literal,
-        .hex_literal,
-        .octal_literal,
-        .binary_literal,
-        .bigint_literal,
-        => try literals.parseNumericLiteral(parser) orelse return null,
+        .numeric_literal, .hex_literal, .octal_literal, .binary_literal, .bigint_literal => try literals.parseNumericLiteral(parser) orelse return null,
         .no_substitution_template => try literals.parseNoSubstitutionTemplate(parser, false) orelse return null,
-        .minus, .plus => blk: {
-            const next = (try parser.peekAhead()) orelse return null;
-            if (!next.tag.isNumericLiteral()) return null;
-
-            try parser.advance() orelse return null; // consume '-' or '+'
-
-            const arg = try literals.parseNumericLiteral(parser) orelse return null;
-            const arg_end = parser.tree.getSpan(arg).end;
-
-            break :blk try parser.tree.createNode(
-                .{ .unary_expression = .{
-                    .argument = arg,
-                    .operator = if (token.tag == .minus) .negate else .positive,
-                } },
-                .{ .start = start, .end = arg_end },
-            );
-        },
+        .minus, .plus => try parseSignedNumericLiteralType(parser) orelse return null,
         else => unreachable,
     };
 
-    const end = parser.tree.getSpan(literal).end;
-
     return try parser.tree.createNode(
         .{ .ts_literal_type = .{ .literal = literal } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = parser.tree.getSpan(literal).end },
+    );
+}
+
+/// `-1` or `+1` in type position. wraps a numeric literal in a `UnaryExpression`.
+fn parseSignedNumericLiteralType(parser: *Parser) Error!?ast.NodeIndex {
+    const sign_token = parser.current_token;
+    const next = (try parser.peekAhead()) orelse return null;
+    if (!next.tag.isNumericLiteral()) return null;
+
+    try parser.advance() orelse return null; // consume '-' or '+'
+    const arg = try literals.parseNumericLiteral(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .unary_expression = .{
+            .argument = arg,
+            .operator = if (sign_token.tag == .minus) .negate else .positive,
+        } },
+        .{ .start = sign_token.span.start, .end = parser.tree.getSpan(arg).end },
     );
 }
 
@@ -562,10 +553,9 @@ fn isStartOfType(tag: TokenTag) bool {
 /// keyof T   unique symbol   readonly T[]
 /// ^^^^^^^   ^^^^^^^^^^^^^   ^^^^^^^^^^^^
 fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
-    const token = parser.current_token;
-    const start = token.span.start;
+    const start = parser.current_token.span.start;
 
-    const operator: ast.TSTypeOperatorKind = switch (token.tag) {
+    const operator: ast.TSTypeOperatorKind = switch (parser.current_token.tag) {
         .keyof => .keyof,
         .unique => .unique,
         .readonly => .readonly,
@@ -573,16 +563,14 @@ fn parseTypeOperator(parser: *Parser) Error!?ast.NodeIndex {
     };
 
     try parser.advance() orelse return null; // consume the operator keyword
-
     const inner = try parsePostfixType(parser) orelse return null;
-    const end = parser.tree.getSpan(inner).end;
 
     return try parser.tree.createNode(
         .{ .ts_type_operator = .{
             .operator = operator,
             .type_annotation = inner,
         } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = parser.tree.getSpan(inner).end },
     );
 }
 
@@ -594,21 +582,21 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'infer'
 
-    const name_token = parser.current_token;
+    const name_span = parser.current_token.span;
     const name = try literals.parseBindingIdentifier(parser) orelse return null;
 
     const constraint = try parseInferConstraint(parser);
     const param_end = if (constraint != .null)
         parser.tree.getSpan(constraint).end
     else
-        name_token.span.end;
+        name_span.end;
 
     const type_parameter = try parser.tree.createNode(
         .{ .ts_type_parameter = .{
             .name = name,
             .constraint = constraint,
         } },
-        .{ .start = name_token.span.start, .end = param_end },
+        .{ .start = name_span.start, .end = param_end },
     );
 
     return try parser.tree.createNode(
@@ -623,7 +611,7 @@ fn parseInferType(parser: *Parser) Error!?ast.NodeIndex {
 /// after the parse, if the surrounding context allows conditional types
 /// AND the next token is `?`, the trailing `?` belongs to a new conditional
 /// where `infer T` is the check type, so the constraint is rewound and
-/// the outer parser handles the `extends T ? X : Y` shape
+/// the outer parser handles the `extends T ? X : Y` shape.
 ///
 /// returns `.null` when there is no `extends` clause (or when the
 /// speculative parse rewinds).
@@ -631,7 +619,6 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     if (parser.current_token.tag != .extends) return .null;
 
     const cp = parser.checkpoint();
-
     try parser.advance() orelse return .null; // consume 'extends'
 
     parser.context.disallow_conditional_types = true;
@@ -641,12 +628,19 @@ fn parseInferConstraint(parser: *Parser) Error!ast.NodeIndex {
     };
     parser.context.disallow_conditional_types = cp.context.disallow_conditional_types;
 
-    if (cp.context.disallow_conditional_types or parser.current_token.tag != .question) {
-        return constraint;
+    // when the surrounding context allows conditional types and the
+    // tokens after the constraint look like a ternary, hand the
+    // constraint back so the outer parser can consume `? X : Y`.
+    const yields_to_conditional =
+        !cp.context.disallow_conditional_types and
+        parser.current_token.tag == .question;
+
+    if (yields_to_conditional) {
+        parser.rewind(cp);
+        return .null;
     }
 
-    parser.rewind(cp);
-    return .null;
+    return constraint;
 }
 
 fn isStartOfFunctionOrConstructorType(parser: *Parser) Error!bool {
@@ -722,20 +716,13 @@ fn isFunctionTypeAfterPattern(parser: *Parser) Error!bool {
 fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
 
-    var is_abstract = false;
-    if (parser.current_token.tag == .abstract) {
-        is_abstract = true;
-        try parser.advance() orelse return null; // consume 'abstract'
-    }
+    const is_abstract = parser.current_token.tag == .abstract;
+    if (is_abstract) try parser.advance() orelse return null;
 
-    var is_constructor = false;
-    if (parser.current_token.tag == .new) {
-        is_constructor = true;
-        try parser.advance() orelse return null; // consume 'new'
-    }
+    const is_constructor = parser.current_token.tag == .new;
+    if (is_constructor) try parser.advance() orelse return null;
 
     const type_parameters = try parseTypeParameters(parser);
-
     const params = try functions.parseFormalParameters(parser, .signature, false) orelse return null;
 
     if (parser.current_token.tag != .arrow) {
@@ -751,7 +738,6 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume '=>'
 
     const return_type_inner = try parseTypeOrTypePredicate(parser) orelse return null;
-
     const return_type_end = parser.tree.getSpan(return_type_inner).end;
 
     const return_type = try parser.tree.createNode(
@@ -759,26 +745,18 @@ fn parseFunctionOrConstructorType(parser: *Parser) Error!?ast.NodeIndex {
         .{ .start = arrow_start, .end = return_type_end },
     );
 
-    if (is_constructor) {
-        return try parser.tree.createNode(
-            .{ .ts_constructor_type = .{
-                .type_parameters = type_parameters,
-                .params = params,
-                .return_type = return_type,
-                .abstract = is_abstract,
-            } },
-            .{ .start = start, .end = return_type_end },
-        );
-    }
+    const data: ast.NodeData = if (is_constructor) .{ .ts_constructor_type = .{
+        .type_parameters = type_parameters,
+        .params = params,
+        .return_type = return_type,
+        .abstract = is_abstract,
+    } } else .{ .ts_function_type = .{
+        .type_parameters = type_parameters,
+        .params = params,
+        .return_type = return_type,
+    } };
 
-    return try parser.tree.createNode(
-        .{ .ts_function_type = .{
-            .type_parameters = type_parameters,
-            .params = params,
-            .return_type = return_type,
-        } },
-        .{ .start = start, .end = return_type_end },
-    );
+    return try parser.tree.createNode(data, .{ .start = start, .end = return_type_end });
 }
 
 /// (A | B)   (Foo)
@@ -858,9 +836,7 @@ fn parseTupleElement(parser: *Parser) Error!?ast.NodeIndex {
 /// `parseType` always reads a trailing `?` as `TSJSDocNullableType`.
 /// in tuple position, rewrite it to `TSOptionalType`.
 fn parseTupleElementBody(parser: *Parser) Error!?ast.NodeIndex {
-    if (try isNamedTupleElement(parser)) {
-        return parseNamedTupleMember(parser);
-    }
+    if (try isNamedTupleElement(parser)) return parseNamedTupleMember(parser);
 
     const ty = try parseType(parser) orelse return null;
 
@@ -892,19 +868,14 @@ fn isNamedTupleElement(parser: *Parser) Error!bool {
 /// ^^^^^^^^^^^     ^^^^^^^^^^^^
 fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
-
     const label = try literals.parseIdentifierName(parser) orelse return null;
 
-    var is_optional = false;
-    if (parser.current_token.tag == .question) {
-        is_optional = true;
-        try parser.advance() orelse return null; // consume '?'
-    }
+    const is_optional = parser.current_token.tag == .question;
+    if (is_optional) try parser.advance() orelse return null;
 
     if (!try parser.expect(.colon, "Expected ':' after named tuple element label", null)) return null;
 
     const element_type = try parseType(parser) orelse return null;
-    const end = parser.tree.getSpan(element_type).end;
 
     return try parser.tree.createNode(
         .{ .ts_named_tuple_member = .{
@@ -912,30 +883,25 @@ fn parseNamedTupleMember(parser: *Parser) Error!?ast.NodeIndex {
             .element_type = element_type,
             .optional = is_optional,
         } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = parser.tree.getSpan(element_type).end },
     );
 }
 
 /// Foo.Bar.Baz<T, U>
 /// ^^^^^^^^^^^^^^^^^
 fn parseTypeReference(parser: *Parser) Error!?ast.NodeIndex {
-    const start = parser.current_token.span.start;
-
     const type_name = try parseEntityName(parser) orelse return null;
-
     const type_arguments = try parseTypeArgumentsAfterEntityName(parser);
-
-    const end = if (type_arguments != .null)
-        parser.tree.getSpan(type_arguments).end
-    else
-        parser.tree.getSpan(type_name).end;
 
     return try parser.tree.createNode(
         .{ .ts_type_reference = .{
             .type_name = type_name,
             .type_arguments = type_arguments,
         } },
-        .{ .start = start, .end = end },
+        .{
+            .start = parser.tree.getSpan(type_name).start,
+            .end = endOfNameAndArgs(parser, type_name, type_arguments),
+        },
     );
 }
 
@@ -959,18 +925,18 @@ fn parseTypeQuery(parser: *Parser) Error!?ast.NodeIndex {
     else
         try parseTypeArgumentsAfterEntityName(parser);
 
-    const end = if (type_arguments != .null)
-        parser.tree.getSpan(type_arguments).end
-    else
-        parser.tree.getSpan(expr_name).end;
-
     return try parser.tree.createNode(
         .{ .ts_type_query = .{
             .expr_name = expr_name,
             .type_arguments = type_arguments,
         } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = endOfNameAndArgs(parser, expr_name, type_arguments) },
     );
+}
+
+/// end position for a name with optional `<...>` trailer.
+inline fn endOfNameAndArgs(parser: *Parser, name: ast.NodeIndex, type_arguments: ast.NodeIndex) u32 {
+    return parser.tree.getSpan(if (type_arguments != .null) type_arguments else name).end;
 }
 
 /// import("module")    import("module").Foo.Bar<T>    import("m", { with: ... })
@@ -988,17 +954,7 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
     )) return null;
 
     const source = try literals.parseStringLiteral(parser) orelse return null;
-
-    var options: ast.NodeIndex = .null;
-    if (parser.current_token.tag == .comma) {
-        try parser.advance() orelse return null; // consume ','
-        if (parser.current_token.tag != .right_paren) {
-            options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-            if (parser.current_token.tag == .comma) {
-                try parser.advance() orelse return null; // trailing comma after options
-            }
-        }
-    }
+    const options = try parseImportTypeOptions(parser) orelse return null;
 
     if (!try parser.expect(
         .right_paren,
@@ -1014,7 +970,7 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
 
     const type_arguments = try parseTypeArguments(parser);
 
-    const end = if (type_arguments != .null)
+    const end: u32 = if (type_arguments != .null)
         parser.tree.getSpan(type_arguments).end
     else if (qualifier != .null)
         parser.tree.getSpan(qualifier).end
@@ -1032,9 +988,31 @@ fn parseImportType(parser: *Parser) Error!?ast.NodeIndex {
     );
 }
 
+/// optional `, options` argument inside `import("m", options)`. returns
+/// `.null` when no options are present (no comma, or empty after a
+/// trailing comma), or the parsed expression. parse failures bubble up
+/// as `null` (the optional sentinel for the outer `Error!?` shape).
+fn parseImportTypeOptions(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .comma) return ast.NodeIndex.null;
+    try parser.advance() orelse return null; // consume ','
+
+    if (parser.current_token.tag == .right_paren) return ast.NodeIndex.null;
+
+    const options = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+
+    if (parser.current_token.tag == .comma) {
+        try parser.advance() orelse return null; // trailing comma after options
+    }
+    return options;
+}
+
 /// dotted name after `import("m").`. every segment is an `IdentifierName`.
 fn parseImportTypeQualifier(parser: *Parser) Error!?ast.NodeIndex {
-    const head = try parseIdentifierNameHead(parser) orelse return null;
+    const head = try parseQualifiedSegment(
+        parser,
+        "Expected an identifier",
+        "Each '.' in a qualified name must be followed by an identifier",
+    ) orelse return null;
     return extendQualifiedName(parser, head);
 }
 
@@ -1063,22 +1041,23 @@ fn parseEntityName(parser: *Parser) Error!?ast.NodeIndex {
     return extendQualifiedName(parser, head);
 }
 
-fn parseIdentifierNameHead(parser: *Parser) Error!?ast.NodeIndex {
+/// reads one `IdentifierName` segment of a qualified name and consumes it.
+fn parseQualifiedSegment(
+    parser: *Parser,
+    comptime message: []const u8,
+    comptime help: []const u8,
+) Error!?ast.NodeIndex {
     const token = parser.current_token;
     if (!token.tag.isIdentifierLike()) {
-        try parser.reportExpected(
-            token.span,
-            "Expected an identifier",
-            .{ .help = "Each '.' in a qualified name must be followed by an identifier" },
-        );
+        try parser.reportExpected(token.span, message, .{ .help = help });
         return null;
     }
-    const head = try parser.tree.createNode(
+    const node = try parser.tree.createNode(
         .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
         token.span,
     );
     try parser.advanceWithoutEscapeCheck() orelse return null;
-    return head;
+    return node;
 }
 
 /// folds `.Id` continuations into a left-leaning `TSQualifiedName` chain.
@@ -1086,26 +1065,14 @@ pub fn extendQualifiedName(parser: *Parser, head: ast.NodeIndex) Error!?ast.Node
     var name = head;
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null; // consume '.'
-
-        const right_token = parser.current_token;
-        if (!right_token.tag.isIdentifierLike()) {
-            try parser.reportExpected(
-                right_token.span,
-                "Expected an identifier after '.'",
-                .{ .help = "A qualified name must end with an identifier" },
-            );
-            return null;
-        }
-
-        const right = try parser.tree.createNode(
-            .{ .identifier_name = .{ .name = try parser.identifierName(right_token) } },
-            right_token.span,
-        );
-        try parser.advanceWithoutEscapeCheck() orelse return null;
-
+        const right = try parseQualifiedSegment(
+            parser,
+            "Expected an identifier after '.'",
+            "A qualified name must end with an identifier",
+        ) orelse return null;
         name = try parser.tree.createNode(
             .{ .ts_qualified_name = .{ .left = name, .right = right } },
-            .{ .start = parser.tree.getSpan(name).start, .end = right_token.span.end },
+            .{ .start = parser.tree.getSpan(name).start, .end = parser.tree.getSpan(right).end },
         );
     }
     return name;
@@ -1131,7 +1098,12 @@ pub fn parseTypeParameters(parser: *Parser) Error!ast.NodeIndex {
     return parseAngleList(parser, .parameters);
 }
 
-const AngleListKind = enum { arguments, parameters };
+const AngleListKind = enum {
+    /// `Foo<T, U>` call-site or type-reference instantiation.
+    arguments,
+    /// `<T, U extends V>` declaration-site parameter list.
+    parameters,
+};
 
 /// returns `.null` when no leading `<`.
 fn parseAngleList(parser: *Parser, comptime kind: AngleListKind) Error!ast.NodeIndex {

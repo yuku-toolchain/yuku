@@ -46,6 +46,7 @@ pub fn parseClassDecorated(
     const start = start_from_param orelse parser.current_token.span.start;
     if (!try parser.expect(.class, "Expected 'class' keyword", null)) return null;
 
+    const is_ts = parser.tree.isTs();
     const class_type: ast.ClassType = if (opts.is_expression and !opts.is_default_export)
         .class_expression
     else
@@ -60,13 +61,12 @@ pub fn parseClassDecorated(
         );
     }
 
-    var id: ast.NodeIndex = .null;
+    const id: ast.NodeIndex = if (try canStartClassName(parser))
+        try literals.parseBindingIdentifier(parser) orelse .null
+    else
+        .null;
 
-    if (try canStartClassName(parser)) {
-        id = try literals.parseBindingIdentifier(parser) orelse .null;
-    }
-
-    if (id == .null and !opts.is_expression and !opts.is_default_export and !parser.tree.isTs()) {
+    if (id == .null and !opts.is_expression and !opts.is_default_export and !is_ts) {
         try parser.report(
             parser.current_token.span,
             "Class declaration requires a name",
@@ -76,7 +76,7 @@ pub fn parseClassDecorated(
     }
 
     // `class Foo<T, U extends V> ...`
-    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+    const type_parameters: ast.NodeIndex = if (is_ts)
         try ts_types.parseTypeParameters(parser)
     else
         .null;
@@ -86,11 +86,10 @@ pub fn parseClassDecorated(
     // (when rewound on same-line `{`), both split into the class fields.
     var super_class: ast.NodeIndex = .null;
     var super_type_arguments: ast.NodeIndex = .null;
-
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
         super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse return null;
-        if (parser.tree.isTs()) switch (parser.tree.getData(super_class)) {
+        if (is_ts) switch (parser.tree.getData(super_class)) {
             .ts_instantiation_expression => |inst| {
                 super_class = inst.expression;
                 super_type_arguments = inst.type_arguments;
@@ -103,7 +102,7 @@ pub fn parseClassDecorated(
 
     // `implements A, B.C<T>, ...`. may appear with or without a preceding
     // `extends` clause.
-    const implements: ast.IndexRange = if (parser.tree.isTs())
+    const implements: ast.IndexRange = if (is_ts)
         try ts_statements.parseImplementsClause(parser) orelse return null
     else
         .empty;
@@ -172,6 +171,7 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
 //
 
 fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
+    const is_ts = parser.tree.isTs();
     const elem_start = parser.current_token.span.start;
     const decorators: ast.IndexRange = if (parser.current_token.tag == .at)
         try extensions.parseDecorators(parser) orelse return null
@@ -203,7 +203,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
 
     // `[k: T]: V` index signature shares the `[` opener with computed keys.
     if (key == .null and
-        parser.tree.isTs() and
+        is_ts and
         parser.current_token.tag == .left_bracket and
         try ts_signatures.isIndexSignatureStart(parser))
     {
@@ -221,7 +221,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // post-key markers `?` (optional) and `!` (definite assignment).
     var optional = false;
     var definite = false;
-    if (parser.tree.isTs()) switch (parser.current_token.tag) {
+    if (is_ts) switch (parser.current_token.tag) {
         .question => {
             optional = true;
             try parser.advance() orelse return null;
@@ -240,7 +240,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     // method parameter list. in ts a leading `<` is a generic method's
     // type parameter list, so dispatch there too.
     const is_method_start = parser.current_token.tag == .left_paren or
-        (parser.tree.isTs() and parser.current_token.tag == .less_than);
+        (is_ts and parser.current_token.tag == .less_than);
 
     if (is_method_start) {
         if (mods.is_accessor) {
@@ -338,6 +338,43 @@ const Modifiers = struct {
     override: bool = false,
     readonly: bool = false,
     accessibility: ast.Accessibility = .none,
+
+    // whether `tag` would apply a modifier already carried. duplicate
+    // modifiers are reinterpreted as the key name, not flagged as errors.
+    fn has(m: Modifiers, tag: TokenTag) bool {
+        return switch (tag) {
+            .static => m.is_static,
+            .async => m.is_async,
+            .accessor => m.is_accessor,
+            .get => m.kind == .get,
+            .set => m.kind == .set,
+            .declare => m.declare,
+            .abstract => m.abstract,
+            .override => m.override,
+            .readonly => m.readonly,
+            .public, .private, .protected => m.accessibility != .none,
+            else => unreachable,
+        };
+    }
+
+    // commits a modifier tag. pair with `has` and `isModifier`.
+    fn set(m: *Modifiers, tag: TokenTag) void {
+        switch (tag) {
+            .static => m.is_static = true,
+            .async => m.is_async = true,
+            .accessor => m.is_accessor = true,
+            .get => m.kind = .get,
+            .set => m.kind = .set,
+            .declare => m.declare = true,
+            .abstract => m.abstract = true,
+            .override => m.override = true,
+            .readonly => m.readonly = true,
+            .public => m.accessibility = .public,
+            .private => m.accessibility = .private,
+            .protected => m.accessibility = .protected,
+            else => unreachable,
+        }
+    }
 };
 
 const ModifierStep = union(enum) {
@@ -360,7 +397,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
     const is_modifier =
         canStartElementKey(next.tag) and
         !(requiresSameLine(token.tag) and next.hasLineTerminatorBefore()) and
-        !isSet(mods.*, token.tag);
+        !mods.has(token.tag);
 
     if (!is_modifier) {
         try parser.advanceWithoutEscapeCheck() orelse return .none;
@@ -373,7 +410,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
 
     try parser.reportIfEscapedKeyword(token);
     try parser.advanceWithoutEscapeCheck() orelse return .none;
-    apply(mods, token.tag);
+    mods.set(token.tag);
     return .consumed;
 }
 
@@ -430,43 +467,6 @@ inline fn requiresSameLine(tag: TokenTag) bool {
     };
 }
 
-// whether `tag` would apply a modifier that `m` already carries.
-// duplicate modifiers are reinterpreted as the key name.
-fn isSet(m: Modifiers, tag: TokenTag) bool {
-    return switch (tag) {
-        .static => m.is_static,
-        .async => m.is_async,
-        .accessor => m.is_accessor,
-        .get => m.kind == .get,
-        .set => m.kind == .set,
-        .declare => m.declare,
-        .abstract => m.abstract,
-        .override => m.override,
-        .readonly => m.readonly,
-        .public, .private, .protected => m.accessibility != .none,
-        else => unreachable,
-    };
-}
-
-// commits a modifier tag to `m`. pair with `isSet` and `isModifier`.
-fn apply(m: *Modifiers, tag: TokenTag) void {
-    switch (tag) {
-        .static => m.is_static = true,
-        .async => m.is_async = true,
-        .accessor => m.is_accessor = true,
-        .get => m.kind = .get,
-        .set => m.kind = .set,
-        .declare => m.declare = true,
-        .abstract => m.abstract = true,
-        .override => m.override = true,
-        .readonly => m.readonly = true,
-        .public => m.accessibility = .public,
-        .private => m.accessibility = .private,
-        .protected => m.accessibility = .protected,
-        else => unreachable,
-    }
-}
-
 //
 // element key
 //
@@ -483,36 +483,28 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         return .{ .key = key, .computed = true };
     }
 
-    if (token.tag == .private_identifier) {
-        const key = try literals.parsePrivateIdentifier(parser) orelse return null;
-        return .{ .key = key, .computed = false };
-    }
-
-    if (token.tag == .string_literal) {
-        const key = try literals.parseStringLiteral(parser) orelse return null;
-        return .{ .key = key, .computed = false };
-    }
-
-    if (token.tag.isNumericLiteral()) {
-        const key = try literals.parseNumericLiteral(parser) orelse return null;
-        return .{ .key = key, .computed = false };
-    }
-
-    if (token.tag.isIdentifierLike()) {
+    const key = if (token.tag == .private_identifier)
+        try literals.parsePrivateIdentifier(parser) orelse return null
+    else if (token.tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (token.tag.isNumericLiteral())
+        try literals.parseNumericLiteral(parser) orelse return null
+    else if (token.tag.isIdentifierLike()) blk: {
         try parser.advanceWithoutEscapeCheck() orelse return null;
-        const key = try parser.tree.createNode(
+        break :blk try parser.tree.createNode(
             .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
             token.span,
         );
-        return .{ .key = key, .computed = false };
-    }
+    } else {
+        try parser.report(
+            token.span,
+            try parser.fmt("Unexpected token '{s}' as class element key", .{parser.describeToken(token)}),
+            .{ .help = "Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr]." },
+        );
+        return null;
+    };
 
-    try parser.report(
-        token.span,
-        try parser.fmt("Unexpected token '{s}' as class element key", .{parser.describeToken(token)}),
-        .{ .help = "Class element keys must be identifiers, strings, numbers, private identifiers (#name), or computed expressions [expr]." },
-    );
-    return null;
+    return .{ .key = key, .computed = false };
 }
 
 //
@@ -543,22 +535,22 @@ fn parseMethodDefinition(
         parser.context.yield = saved_yield;
     }
 
+    const is_ts = parser.tree.isTs();
     const func_start = parser.current_token.span.start;
 
     // `m<T, U extends V>(...)`
-    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+    const type_parameters: ast.NodeIndex = if (is_ts)
         try ts_types.parseTypeParameters(parser)
     else
         .null;
 
     const params = try functions.parseFormalParameters(parser, .unique_formal_parameters, mods.kind == .constructor) orelse return null;
     _ = try functions.checkAccessorArity(parser, mods.kind, params);
-    const params_end = parser.tree.getSpan(params).end;
 
     // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
-    var return_type_end: u32 = params_end;
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+    var return_type_end: u32 = parser.tree.getSpan(params).end;
+    if (is_ts and parser.current_token.tag == .colon) {
         return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
         return_type_end = parser.tree.getSpan(return_type).end;
     }
@@ -572,7 +564,7 @@ fn parseMethodDefinition(
     if (parser.current_token.tag == .left_brace) {
         body = try functions.parseFunctionBody(parser) orelse return null;
         end = parser.tree.getSpan(body).end;
-    } else if (parser.tree.isTs()) {
+    } else if (is_ts) {
         function_type = .ts_empty_body_function_expression;
         end = try parser.eatSemicolon(return_type_end) orelse return null;
     } else {
@@ -626,8 +618,9 @@ fn parsePropertyDefinition(
     var end = parser.prev_token_end;
 
     // optional `: Type` annotation.
+    const is_ts = parser.tree.isTs();
     var type_annotation: ast.NodeIndex = .null;
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+    if (is_ts and parser.current_token.tag == .colon) {
         type_annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(type_annotation).end;
     }

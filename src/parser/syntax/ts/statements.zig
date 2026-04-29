@@ -324,12 +324,6 @@ fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.N
     const expression = try parseHeritageExpression(parser) orelse return null;
     const type_arguments = try ts_types.parseTypeArguments(parser);
 
-    const start = parser.tree.getSpan(expression).start;
-    const end = if (type_arguments != .null)
-        parser.tree.getSpan(type_arguments).end
-    else
-        parser.tree.getSpan(expression).end;
-
     const data: ast.NodeData = switch (kind) {
         .interface => .{ .ts_interface_heritage = .{
             .expression = expression,
@@ -341,7 +335,13 @@ fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.N
         } },
     };
 
-    return try parser.tree.createNode(data, .{ .start = start, .end = end });
+    const expr_span = parser.tree.getSpan(expression);
+    const end = if (type_arguments != .null)
+        parser.tree.getSpan(type_arguments).end
+    else
+        expr_span.end;
+
+    return try parser.tree.createNode(data, .{ .start = expr_span.start, .end = end });
 }
 
 pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
@@ -356,8 +356,6 @@ fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null; // consume '.'
         const property = try literals.parseIdentifierName(parser) orelse return null;
-        const object_start = parser.tree.getSpan(expression).start;
-        const property_end = parser.tree.getSpan(property).end;
         expression = try parser.tree.createNode(
             .{ .member_expression = .{
                 .object = expression,
@@ -365,7 +363,10 @@ fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
                 .computed = false,
                 .optional = false,
             } },
-            .{ .start = object_start, .end = property_end },
+            .{
+                .start = parser.tree.getSpan(expression).start,
+                .end = parser.tree.getSpan(property).end,
+            },
         );
     }
 
@@ -433,9 +434,9 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
 /// name [= initializer]
 fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
     const name = try parseEnumMemberName(parser) orelse return null;
-    const start = parser.tree.getSpan(name.id).start;
-    var end = parser.tree.getSpan(name.id).end;
-    if (name.computed) end = parser.prev_token_end;
+    const id_span = parser.tree.getSpan(name.id);
+    // computed keys span the inner expression; the `]` end is at `prev_token_end`.
+    var end = if (name.computed) parser.prev_token_end else id_span.end;
 
     var initializer: ast.NodeIndex = .null;
     if (parser.current_token.tag == .assign) {
@@ -450,7 +451,7 @@ fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
             .initializer = initializer,
             .computed = name.computed,
         } },
-        .{ .start = start, .end = end },
+        .{ .start = id_span.start, .end = end },
     );
 }
 
@@ -474,27 +475,22 @@ fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
         return .{ .id = inner, .computed = true };
     }
 
-    if (tag.isIdentifierLike()) {
-        const id = try literals.parseIdentifierName(parser) orelse return null;
-        return .{ .id = id, .computed = false };
-    }
+    const id = if (tag.isIdentifierLike())
+        try literals.parseIdentifierName(parser) orelse return null
+    else if (tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (tag == .no_substitution_template)
+        try literals.parseNoSubstitutionTemplate(parser, false) orelse return null
+    else {
+        try parser.report(
+            parser.current_token.span,
+            try parser.fmt("Unexpected token '{s}' as enum member name", .{parser.describeToken(parser.current_token)}),
+            .{ .help = "Enum member names must be identifiers, string literals, or computed expressions '[name]'." },
+        );
+        return null;
+    };
 
-    if (tag == .string_literal) {
-        const id = try literals.parseStringLiteral(parser) orelse return null;
-        return .{ .id = id, .computed = false };
-    }
-
-    if (tag == .no_substitution_template) {
-        const id = try literals.parseNoSubstitutionTemplate(parser, false) orelse return null;
-        return .{ .id = id, .computed = false };
-    }
-
-    try parser.report(
-        parser.current_token.span,
-        try parser.fmt("Unexpected token '{s}' as enum member name", .{parser.describeToken(parser.current_token)}),
-        .{ .help = "Enum member names must be identifiers, string literals, or computed expressions '[name]'." },
-    );
-    return null;
+    return .{ .id = id, .computed = false };
 }
 
 /// `{ ... }` body of an interface.
@@ -526,12 +522,10 @@ pub fn parseModuleDeclaration(
 ) Error!?ast.NodeIndex {
     try parser.advance() orelse return null; // consume 'namespace' or 'module'
 
-    const id: ast.NodeIndex = blk: {
-        if (kind == .module and parser.current_token.tag == .string_literal) {
-            break :blk try literals.parseStringLiteral(parser) orelse return null;
-        }
-        break :blk try parseModuleName(parser) orelse return null;
-    };
+    const id = if (kind == .module and parser.current_token.tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else
+        try parseModuleName(parser) orelse return null;
 
     const body = try parseOptionalModuleBlock(parser) orelse return null;
     const end = if (body == .null)

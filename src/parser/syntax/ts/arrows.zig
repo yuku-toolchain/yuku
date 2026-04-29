@@ -71,7 +71,9 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
     else
         .null;
 
-    if (parser.current_token.tag != .arrow or parser.current_token.hasLineTerminatorBefore()) return null;
+    if (parser.current_token.tag != .arrow or parser.current_token.hasLineTerminatorBefore()) {
+        return null;
+    }
 
     return parenthesized.buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
 }
@@ -82,16 +84,24 @@ pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.
 // label) and the `:` actually belongs to the outer context.
 pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
     const cp = parser.checkpoint();
-    if (try parseArrow(parser, is_async, arrow_start)) |arrow| {
-        const return_type = parser.tree.getData(arrow).arrow_function_expression.return_type;
-        if (!parser.context.allow_arrow_return_type and return_type != .null and parser.current_token.tag != .colon) {
-            parser.rewind(cp);
-            return null;
-        }
-        return arrow;
+
+    const arrow = (try parseArrow(parser, is_async, arrow_start)) orelse {
+        parser.rewind(cp);
+        return null;
+    };
+
+    // an annotated arrow inside `disallow return-type` context yields the
+    // `:` to the surrounding ternary or case label.
+    const return_type = parser.tree.getData(arrow).arrow_function_expression.return_type;
+    if (!parser.context.allow_arrow_return_type and
+        return_type != .null and
+        parser.current_token.tag != .colon)
+    {
+        parser.rewind(cp);
+        return null;
     }
-    parser.rewind(cp);
-    return null;
+
+    return arrow;
 }
 
 // one-token peek skips the checkpoint/rewind on hot jsx and

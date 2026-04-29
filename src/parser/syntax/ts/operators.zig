@@ -44,15 +44,15 @@ pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!
 
     const type_node = try types.parseType(parser) orelse return null;
 
-    const start = parser.tree.getSpan(left).start;
-    const end = parser.tree.getSpan(type_node).end;
-
     const data: ast.NodeData = if (keyword_tag == .as)
         .{ .ts_as_expression = .{ .expression = left, .type_annotation = type_node } }
     else
         .{ .ts_satisfies_expression = .{ .expression = left, .type_annotation = type_node } };
 
-    return try parser.tree.createNode(data, .{ .start = start, .end = end });
+    return try parser.tree.createNode(data, .{
+        .start = parser.tree.getSpan(left).start,
+        .end = parser.tree.getSpan(type_node).end,
+    });
 }
 
 /// `expr!` outside an optional chain. inside a chain
@@ -76,18 +76,17 @@ pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeI
     const type_arguments = try tryParseTypeArgumentsInExpression(parser);
     if (type_arguments == .null) return null;
 
-    switch (parser.current_token.tag) {
-        .left_paren => return try expressions.parseCallExpression(parser, callee, false, type_arguments),
-        .no_substitution_template, .template_head => return try expressions.parseTaggedTemplateExpression(parser, callee, type_arguments),
-        else => {
-            const callee_span = parser.tree.getSpan(callee);
-            const type_args_end = parser.tree.getSpan(type_arguments).end;
-            return try parser.tree.createNode(
-                .{ .ts_instantiation_expression = .{ .expression = callee, .type_arguments = type_arguments } },
-                .{ .start = callee_span.start, .end = type_args_end },
-            );
-        },
-    }
+    return switch (parser.current_token.tag) {
+        .left_paren => expressions.parseCallExpression(parser, callee, false, type_arguments),
+        .no_substitution_template, .template_head => expressions.parseTaggedTemplateExpression(parser, callee, type_arguments),
+        else => try parser.tree.createNode(
+            .{ .ts_instantiation_expression = .{ .expression = callee, .type_arguments = type_arguments } },
+            .{
+                .start = parser.tree.getSpan(callee).start,
+                .end = parser.tree.getSpan(type_arguments).end,
+            },
+        ),
+    };
 }
 
 /// speculatively parses `<...>`. rewinds on failure so `<` stays

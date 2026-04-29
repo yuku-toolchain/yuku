@@ -85,33 +85,31 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         );
     }
 
+    const is_ts = parser.tree.isTs();
+
     // `function f<T, U extends V>(...)`
-    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+    const type_parameters: ast.NodeIndex = if (is_ts)
         try ts_types.parseTypeParameters(parser)
     else
         .null;
 
-    const is_unique_formal_parameters = is_generator or opts.is_async;
-
-    const params = try parseFormalParameters(parser, if (is_unique_formal_parameters) .unique_formal_parameters else .formal_parameters, false) orelse return null;
-
+    const params_kind: ast.FormalParameterKind = if (is_generator or opts.is_async)
+        .unique_formal_parameters
+    else
+        .formal_parameters;
+    const params = try parseFormalParameters(parser, params_kind, false) orelse return null;
     const params_end = parser.tree.getSpan(params).end;
 
     // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
-
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        const annotation = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
-        return_type = annotation;
-        return_type_end = parser.tree.getSpan(annotation).end;
+    if (is_ts and parser.current_token.tag == .colon) {
+        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
+        return_type_end = parser.tree.getSpan(return_type).end;
     }
-
-    var body: ast.NodeIndex = .null;
 
     // function expressions always carry a body, only declarations obey ambient rules.
     const is_ambient_declaration = parser.context.ambient and !is_function_expression;
-
     if (is_ambient_declaration and parser.current_token.tag == .left_brace) {
         try parser.report(
             parser.current_token.span,
@@ -122,12 +120,12 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     }
 
     // ts ambient declarations and overload signatures are body-less.
-    const has_body = !is_ambient_declaration and (!parser.tree.isTs() or
-        is_function_expression or parser.current_token.tag == .left_brace);
-
-    if (has_body) {
-        body = try parseFunctionBody(parser) orelse .null;
-    }
+    const has_body = !is_ambient_declaration and
+        (!is_ts or is_function_expression or parser.current_token.tag == .left_brace);
+    const body: ast.NodeIndex = if (has_body)
+        try parseFunctionBody(parser) orelse .null
+    else
+        .null;
 
     const end = if (body != .null)
         parser.tree.getSpan(body).end
@@ -209,6 +207,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
 /// set only for class constructor parameters and enables ts parameter
 /// property shorthand (`constructor(public x: T)`).
 pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, allow_parameter_properties: bool) Error!?ast.NodeIndex {
+    const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     if (!try parser.expect(.left_paren, "Expected '(' to start parameter list", null)) return null;
 
@@ -220,7 +219,7 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
     while (parser.current_token.tag != .right_paren and parser.current_token.tag != .eof) {
         const param_start = parser.current_token.span.start;
 
-        const decorators: ast.IndexRange = if (parser.tree.isTs() and parser.current_token.tag == .at)
+        const decorators: ast.IndexRange = if (is_ts and parser.current_token.tag == .at)
             try extensions.parseDecorators(parser) orelse return null
         else
             ast.IndexRange.empty;
@@ -256,6 +255,16 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
     } }, .{ .start = start, .end = end });
 }
 
+/// ts-only parameter property prefix: `public`, `private`, `protected`,
+/// `readonly`, `override` in any combination. `present` records whether
+/// any modifier was consumed and triggers the `TSParameterProperty` wrap.
+const ParameterPropertyModifiers = struct {
+    accessibility: ast.Accessibility = .none,
+    readonly: bool = false,
+    override: bool = false,
+    present: bool = false,
+};
+
 /// `decorators` and `start` are pre-collected by `parseFormalParameters`
 pub fn parseFormalParameter(
     parser: *Parser,
@@ -263,63 +272,67 @@ pub fn parseFormalParameter(
     decorators: ast.IndexRange,
     start: u32,
 ) Error!?ast.NodeIndex {
-    if (parser.tree.isTs() and parser.current_token.tag == .this) {
-        return try parseThisParameter(parser);
+    const is_ts = parser.tree.isTs();
+
+    if (is_ts and parser.current_token.tag == .this) {
+        return parseThisParameter(parser);
     }
 
-    var pp_accessibility: ast.Accessibility = .none;
-    var pp_readonly = false;
-    var pp_override = false;
-    var has_pp_modifier = false;
-
-    if (allow_parameter_properties and parser.tree.isTs()) {
-        while (try isParameterPropertyModifierStart(parser)) {
-            const modifier_token = parser.current_token;
-            try parser.advanceWithoutEscapeCheck() orelse return null;
-            try parser.reportIfEscapedKeyword(modifier_token);
-
-            switch (modifier_token.tag) {
-                .public => pp_accessibility = .public,
-                .private => pp_accessibility = .private,
-                .protected => pp_accessibility = .protected,
-                .readonly => pp_readonly = true,
-                .override => pp_override = true,
-                else => unreachable,
-            }
-            has_pp_modifier = true;
-        }
-    }
+    const pp = if (is_ts and allow_parameter_properties)
+        try parseParameterPropertyModifiers(parser) orelse return null
+    else
+        ParameterPropertyModifiers{};
 
     var pattern = try patterns.parseBindingPattern(parser) orelse return null;
 
-    if (parser.tree.isTs() and parser.current_token.tag == .question) {
-        const question_end = parser.current_token.span.end;
-        try parser.advance() orelse return null;
-        ts_types.markPatternOptional(parser, pattern, question_end);
-    }
-
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
-        ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);
+    if (is_ts) {
+        if (parser.current_token.tag == .question) {
+            const question_end = parser.current_token.span.end;
+            try parser.advance() orelse return null;
+            ts_types.markPatternOptional(parser, pattern, question_end);
+        }
+        if (parser.current_token.tag == .colon) {
+            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+            ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);
+        }
     }
 
     if (parser.current_token.tag == .assign) {
         pattern = try patterns.parseAssignmentPattern(parser, pattern) orelse return null;
     }
 
-    if (has_pp_modifier) {
+    if (pp.present) {
         return try parser.tree.createNode(.{ .ts_parameter_property = .{
             .decorators = decorators,
             .parameter = pattern,
-            .override = pp_override,
-            .readonly = pp_readonly,
-            .accessibility = pp_accessibility,
+            .override = pp.override,
+            .readonly = pp.readonly,
+            .accessibility = pp.accessibility,
         } }, .{ .start = start, .end = parser.tree.getSpan(pattern).end });
     }
 
     ts_types.applyDecoratorsToPattern(parser, pattern, decorators);
 
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
+}
+
+fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModifiers {
+    var mods: ParameterPropertyModifiers = .{};
+    while (try isParameterPropertyModifierStart(parser)) {
+        const token = parser.current_token;
+        try parser.advanceWithoutEscapeCheck() orelse return null;
+        try parser.reportIfEscapedKeyword(token);
+        switch (token.tag) {
+            .public => mods.accessibility = .public,
+            .private => mods.accessibility = .private,
+            .protected => mods.accessibility = .protected,
+            .readonly => mods.readonly = true,
+            .override => mods.override = true,
+            else => unreachable,
+        }
+        mods.present = true;
+    }
+    return mods;
 }
 
 const AccessorSpec = struct { arity: u32, msg: []const u8, help: []const u8 };
@@ -353,25 +366,22 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
 fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     var end = parser.current_token.span.end;
-
     try parser.advance() orelse return null; // consume 'this'
 
     var type_annotation: ast.NodeIndex = .null;
-
     if (parser.current_token.tag == .colon) {
-        const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
-        type_annotation = annotation;
-        end = parser.tree.getSpan(annotation).end;
+        type_annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(type_annotation).end;
     }
 
+    const span: ast.Span = .{ .start = start, .end = end };
     const this_param = try parser.tree.createNode(
         .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
-        .{ .start = start, .end = end },
+        span,
     );
-
     return try parser.tree.createNode(
         .{ .formal_parameter = .{ .pattern = this_param } },
-        .{ .start = start, .end = end },
+        span,
     );
 }
 

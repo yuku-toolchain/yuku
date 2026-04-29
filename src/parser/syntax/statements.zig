@@ -591,9 +591,8 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     try parser.advance() orelse return null; // consume 'catch'
 
-    var param: ast.NodeIndex = .null;
-
     // optional catch binding: catch (param) or catch
+    var param: ast.NodeIndex = .null;
     if (parser.current_token.tag == .left_paren) {
         try parser.advance() orelse return null; // consume '('
         param = try patterns.parseBindingPattern(parser) orelse return null;
@@ -608,12 +607,10 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
 
     const body = try parseBlockStatement(parser) orelse return null;
 
-    return try parser.tree.createNode(.{
-        .catch_clause = .{
-            .param = param,
-            .body = body,
-        },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    return try parser.tree.createNode(
+        .{ .catch_clause = .{ .param = param, .body = body } },
+        .{ .start = start, .end = parser.tree.getSpan(body).end },
+    );
 }
 
 /// https://tc39.es/ecma262/#sec-debugger-statement

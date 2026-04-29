@@ -327,10 +327,11 @@ fn parseObjectMethodProperty(
         parser.context.yield = saved_yield_is_keyword;
     }
 
+    const is_ts = parser.tree.isTs();
     const func_start = parser.current_token.span.start;
 
     // `m<T, U extends V>(...)`
-    const type_parameters: ast.NodeIndex = if (parser.tree.isTs())
+    const type_parameters: ast.NodeIndex = if (is_ts)
         try ts_types.parseTypeParameters(parser)
     else
         .null;
@@ -340,7 +341,7 @@ fn parseObjectMethodProperty(
 
     // `: ReturnType`
     var return_type: ast.NodeIndex = .null;
-    if (parser.tree.isTs() and parser.current_token.tag == .colon) {
+    if (is_ts and parser.current_token.tag == .colon) {
         return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
     }
 

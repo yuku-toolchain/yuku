@@ -36,23 +36,7 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
     while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
         const member = try parseTypeMember(parser) orelse return null;
         try parser.scratch_a.append(parser.allocator(), member);
-
-        // explicit `;` or `,` folds into the member's span. a newline
-        // separates without extending the span.
-        const sep = parser.current_token.tag;
-        if (sep == .semicolon or sep == .comma) {
-            const sep_end = parser.current_token.span.end;
-            const member_span = parser.tree.getSpan(member);
-            parser.tree.replaceSpan(member, .{ .start = member_span.start, .end = sep_end });
-            try parser.advance() orelse return null;
-        } else if (sep != .right_brace and !parser.current_token.hasLineTerminatorBefore()) {
-            try parser.reportExpected(
-                parser.current_token.span,
-                "Expected ';', ',', or newline between type members",
-                .{ .help = "Separate type members with ';', ',', or a newline, or close the block with '}'" },
-            );
-            return null;
-        }
+        if (!try consumeTypeMemberSeparator(parser, member)) return null;
     }
 
     if (!try parser.expect(
@@ -62,6 +46,30 @@ pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
     )) return null;
 
     return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+}
+
+/// `;` and `,` fold into the member's span; a newline separates without
+/// extending. anything else after a member is an error. returns `false`
+/// after reporting one.
+fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool {
+    switch (parser.current_token.tag) {
+        .semicolon, .comma => {
+            const sep_end = parser.current_token.span.end;
+            const member_span = parser.tree.getSpan(member);
+            parser.tree.replaceSpan(member, .{ .start = member_span.start, .end = sep_end });
+            try parser.advance() orelse return false;
+        },
+        .right_brace => {},
+        else => if (!parser.current_token.hasLineTerminatorBefore()) {
+            try parser.reportExpected(
+                parser.current_token.span,
+                "Expected ';', ',', or newline between type members",
+                .{ .help = "Separate type members with ';', ',', or a newline, or close the block with '}'" },
+            );
+            return false;
+        },
+    }
+    return true;
 }
 
 /// tells `{ [K in T]: V }` apart from a computed-key type literal.
@@ -277,23 +285,20 @@ fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) E
         end = parser.tree.getSpan(return_type).end;
     }
 
-    const data: ast.NodeData = if (is_construct)
-        .{ .ts_construct_signature_declaration = .{
-            .type_parameters = type_parameters,
-            .params = params,
-            .return_type = return_type,
-        } }
-    else
-        .{ .ts_call_signature_declaration = .{
-            .type_parameters = type_parameters,
-            .params = params,
-            .return_type = return_type,
-        } };
+    const data: ast.NodeData = if (is_construct) .{ .ts_construct_signature_declaration = .{
+        .type_parameters = type_parameters,
+        .params = params,
+        .return_type = return_type,
+    } } else .{ .ts_call_signature_declaration = .{
+        .type_parameters = type_parameters,
+        .params = params,
+        .return_type = return_type,
+    } };
 
     return try parser.tree.createNode(data, .{ .start = start, .end = end });
 }
 
-fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
+inline fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
     return functions.parseFormalParameters(parser, .signature, false);
 }
 
@@ -308,7 +313,7 @@ pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModi
     std.debug.assert(parser.current_token.tag == .left_bracket);
     try parser.advance() orelse return null; // consume '['
 
-    // TS1096.
+    // TS1096: an index signature must have exactly one parameter.
     const param = try parseIndexSignatureParameter(parser) orelse return null;
     if (parser.current_token.tag == .comma) {
         try parser.report(
@@ -336,7 +341,6 @@ pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModi
     }
 
     const type_annotation = try types.parseTypeAnnotation(parser) orelse return null;
-    const end = parser.tree.getSpan(type_annotation).end;
 
     return try parser.tree.createNode(
         .{ .ts_index_signature = .{
@@ -345,7 +349,7 @@ pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModi
             .readonly = mods.readonly,
             .static = mods.static,
         } },
-        .{ .start = start, .end = end },
+        .{ .start = start, .end = parser.tree.getSpan(type_annotation).end },
     );
 }
 
@@ -476,25 +480,20 @@ fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
         return .{ .key = expr, .computed = true };
     }
 
-    if (tag.isIdentifierLike()) {
-        const key = try literals.parseIdentifierName(parser) orelse return null;
-        return .{ .key = key, .computed = false };
-    }
+    const key = if (tag.isIdentifierLike())
+        try literals.parseIdentifierName(parser) orelse return null
+    else if (tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (tag.isNumericLiteral())
+        try literals.parseNumericLiteral(parser) orelse return null
+    else {
+        try parser.report(
+            parser.current_token.span,
+            try parser.fmt("Unexpected token '{s}' as signature key", .{parser.describeToken(parser.current_token)}),
+            .{ .help = "Signature keys must be identifiers, strings, numbers, or computed expressions [expr]." },
+        );
+        return null;
+    };
 
-    if (tag == .string_literal) {
-        const key = try literals.parseStringLiteral(parser) orelse return null;
-        return .{ .key = key, .computed = false };
-    }
-
-    if (tag.isNumericLiteral()) {
-        const key = try literals.parseNumericLiteral(parser) orelse return null;
-        return .{ .key = key, .computed = false };
-    }
-
-    try parser.report(
-        parser.current_token.span,
-        try parser.fmt("Unexpected token '{s}' as signature key", .{parser.describeToken(parser.current_token)}),
-        .{ .help = "Signature keys must be identifiers, strings, numbers, or computed expressions [expr]." },
-    );
-    return null;
+    return .{ .key = key, .computed = false };
 }
