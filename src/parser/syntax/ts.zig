@@ -20,6 +20,7 @@ pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     const saved = parser.context.disallow_conditional_types;
     parser.context.disallow_conditional_types = false;
     defer parser.context.disallow_conditional_types = saved;
+
     return parseTypeWithBody(parser, parseConditionalType);
 }
 
