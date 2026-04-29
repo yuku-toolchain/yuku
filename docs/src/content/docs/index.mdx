@@ -34,7 +34,7 @@ Yuku is a JavaScript/TypeScript toolchain built from the ground up in Zig. It is
 
 ## Current Status
 
-Yuku currently provides a 100% spec-compliant, reliable, and fast JavaScript/JSX parser ready for use in Node.js and Zig, along with a [Traverser](/parser/traverse). TypeScript parsing support is actively in development.
+Yuku currently provides a 100% spec-compliant, reliable, and fast `.js(x)`/`.ts(x)` parser ready for use in Node.js and Zig, along with a [Traverser](/parser/traverse).
 
 More tooling is planned (a minifier, resolver, transpiler including `.d.ts` generation, and more), built incrementally, one component at a time. Contributions are welcome and will help accelerate development.
 
@@ -73,6 +73,12 @@ On the JavaScript side (npm), Yuku is **3-5x faster** than alternatives:
   Parsing speed for the `react.js` file (72 KB) via npm packages · macOS (ARM) | Apple M4 Pro ·
   [Source](https://github.com/yuku-toolchain/ecmascript-parser-benchmark-js)
 </span>
+
+</div>
+
+But does it scale? yes:
+
+<div align="center" style="margin: 1.5rem 0;">
 
 <BenchmarkTable variant="js" source="react" />
 
