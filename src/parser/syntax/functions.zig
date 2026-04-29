@@ -6,7 +6,7 @@ const TokenTag = @import("../token.zig").TokenTag;
 const literals = @import("literals.zig");
 const patterns = @import("patterns.zig");
 const extensions = @import("extensions.zig");
-const ts_types = @import("ts/types.zig");
+const ts = @import("ts.zig");
 
 const ParseFunctionOpts = struct {
     is_async: bool = false,
@@ -89,7 +89,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
 
     // `function f<T, U extends V>(...)`
     const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts_types.parseTypeParameters(parser)
+        try ts.parseTypeParameters(parser)
     else
         .null;
 
@@ -104,7 +104,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
     if (is_ts and parser.current_token.tag == .colon) {
-        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
+        return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
         return_type_end = parser.tree.getSpan(return_type).end;
     }
 
@@ -289,11 +289,11 @@ pub fn parseFormalParameter(
         if (parser.current_token.tag == .question) {
             const question_end = parser.current_token.span.end;
             try parser.advance() orelse return null;
-            ts_types.markPatternOptional(parser, pattern, question_end);
+            ts.markPatternOptional(parser, pattern, question_end);
         }
         if (parser.current_token.tag == .colon) {
-            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
-            ts_types.applyTypeAnnotationToPattern(parser, pattern, annotation);
+            const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
+            ts.applyTypeAnnotationToPattern(parser, pattern, annotation);
         }
     }
 
@@ -311,7 +311,7 @@ pub fn parseFormalParameter(
         } }, .{ .start = start, .end = parser.tree.getSpan(pattern).end });
     }
 
-    ts_types.applyDecoratorsToPattern(parser, pattern, decorators);
+    ts.applyDecoratorsToPattern(parser, pattern, decorators);
 
     return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
 }
@@ -370,7 +370,7 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
 
     var type_annotation: ast.NodeIndex = .null;
     if (parser.current_token.tag == .colon) {
-        type_annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(type_annotation).end;
     }
 

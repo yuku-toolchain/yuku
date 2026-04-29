@@ -14,8 +14,7 @@ const extensions = @import("extensions.zig");
 const grammar = @import("../grammar.zig");
 const for_loop = @import("for_loop.zig");
 const modules = @import("modules.zig");
-const ts_statements = @import("ts/statements.zig");
-const ts_types = @import("ts/types.zig");
+const ts = @import("ts.zig");
 
 const ParseStatementOpts = struct {
     /// true when parsing the body of `if`, `while`, `do`, `for`, `with`, or labeled statements,
@@ -190,14 +189,14 @@ fn parseImportDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
 }
 
 fn parseTsDeclarationOrExpression(parser: *Parser) Error!?ast.NodeIndex {
-    if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
-        return ts_statements.parseTsDeclaration(parser);
+    if ((try ts.isStartOfTsDeclaration(parser)) orelse return null)
+        return ts.parseTsDeclaration(parser);
     return parseExpressionOrLabeledStatementOrDirective(parser);
 }
 
 fn parseConstOrConstEnum(parser: *Parser) Error!?ast.NodeIndex {
-    if ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)
-        return ts_statements.parseTsDeclaration(parser);
+    if ((try ts.isStartOfTsDeclaration(parser)) orelse return null)
+        return ts.parseTsDeclaration(parser);
 
     return variables.parseVariableDeclaration(parser, .{}, null);
 }
@@ -598,8 +597,8 @@ fn parseCatchClause(parser: *Parser) Error!?ast.NodeIndex {
         param = try patterns.parseBindingPattern(parser) orelse return null;
 
         if (parser.tree.isTs() and parser.current_token.tag == .colon) {
-            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
-            ts_types.applyTypeAnnotationToPattern(parser, param, annotation);
+            const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
+            ts.applyTypeAnnotationToPattern(parser, param, annotation);
         }
 
         if (!try parser.expect(.right_paren, "Expected ')' after catch parameter", null)) return null;

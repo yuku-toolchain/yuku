@@ -5,7 +5,7 @@ const Precedence = @import("../token.zig").Precedence;
 const TokenTag = @import("../token.zig").TokenTag;
 const expressions = @import("expressions.zig");
 const patterns = @import("patterns.zig");
-const ts_types = @import("ts/types.zig");
+const ts = @import("ts.zig");
 const std = @import("std");
 
 pub const ParseVariableDeclarationOpts = struct {
@@ -120,8 +120,8 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
 
         // `let x: Type = ...`. annotation attaches to the inner binding pattern.
         if (parser.current_token.tag == .colon) {
-            const annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
-            ts_types.applyTypeAnnotationToPattern(parser, id, annotation);
+            const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
+            ts.applyTypeAnnotationToPattern(parser, id, annotation);
             end = parser.tree.getSpan(annotation).end;
         }
     }

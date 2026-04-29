@@ -13,7 +13,7 @@ const functions = @import("functions.zig");
 const class = @import("class.zig");
 const extensions = @import("extensions.zig");
 const variables = @import("variables.zig");
-const ts_statements = @import("ts/statements.zig");
+const ts = @import("ts.zig");
 
 pub fn parseImportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
     return parseImportDeclarationFrom(parser, parser.current_token.span.start);
@@ -57,7 +57,7 @@ pub fn parseImportDeclarationFrom(parser: *Parser, start: u32) Error!?ast.NodeIn
     if (is_ts and parser.current_token.tag.isIdentifierLike()) {
         const after_id = try parser.peekAhead() orelse return null;
         if (after_id.tag == .assign) {
-            return ts_statements.parseImportEqualsBody(parser, start, import_kind);
+            return ts.parseImportEqualsBody(parser, start, import_kind);
         }
     }
 
@@ -513,7 +513,7 @@ fn parseExportDefaultPart(parser: *Parser) Error!?DefaultExportPart {
         }
 
         if (tag == .interface) {
-            const decl = try ts_statements.parseInterfaceDeclaration(parser, .{}, parser.current_token.span.start) orelse return null;
+            const decl = try ts.parseInterfaceDeclaration(parser, .{}, parser.current_token.span.start) orelse return null;
             return .{ .declaration = decl, .needs_semi = false };
         }
     }
@@ -591,8 +591,8 @@ fn parseExportNamedFromClause(parser: *Parser, start: u32, export_kind: ast.Impo
 fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const is_ts = parser.tree.isTs();
 
-    if (is_ts and ((try ts_statements.isStartOfTsDeclaration(parser)) orelse return null)) {
-        const declaration = try ts_statements.parseTsDeclaration(parser) orelse return null;
+    if (is_ts and ((try ts.isStartOfTsDeclaration(parser)) orelse return null)) {
+        const declaration = try ts.parseTsDeclaration(parser) orelse return null;
         return try parser.tree.createNode(.{
             .export_named_declaration = .{
                 .declaration = declaration,

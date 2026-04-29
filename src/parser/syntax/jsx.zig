@@ -6,7 +6,7 @@ const Error = @import("../parser.zig").Error;
 
 const literals = @import("literals.zig");
 const expressions = @import("expressions.zig");
-const ts_types = @import("ts/types.zig");
+const ts = @import("ts.zig");
 
 /// context for JSX element parsing, determines post-parse behavior
 const JsxElementContext = enum {
@@ -117,9 +117,9 @@ fn parseJsxOpeningElement(parser: *Parser, comptime context: JsxElementContext) 
 
     const name = try parseJsxElementName(parser) orelse return null;
 
-    const type_arguments = if (parser.tree.isTs() and ts_types.isAngleOpen(parser.current_token.tag)) blk: {
+    const type_arguments = if (parser.tree.isTs() and ts.isAngleOpen(parser.current_token.tag)) blk: {
         exitJsxTag(parser);
-        const args = try ts_types.parseTypeArguments(parser);
+        const args = try ts.parseTypeArguments(parser);
         enterJsxTag(parser);
         try parser.reScanCurrent() orelse return null;
         break :blk args;

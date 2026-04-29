@@ -11,9 +11,7 @@ const functions = @import("functions.zig");
 const expressions = @import("expressions.zig");
 const statements = @import("statements.zig");
 const extensions = @import("extensions.zig");
-const ts_types = @import("ts/types.zig");
-const ts_statements = @import("ts/statements.zig");
-const ts_signatures = @import("ts/signatures.zig");
+const ts = @import("ts.zig");
 const ecmascript = @import("../ecmascript.zig");
 
 //
@@ -77,7 +75,7 @@ pub fn parseClassDecorated(
 
     // `class Foo<T, U extends V> ...`
     const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts_types.parseTypeParameters(parser)
+        try ts.parseTypeParameters(parser)
     else
         .null;
 
@@ -94,8 +92,8 @@ pub fn parseClassDecorated(
                 super_class = inst.expression;
                 super_type_arguments = inst.type_arguments;
             },
-            else => if (ts_types.isAngleOpen(parser.current_token.tag)) {
-                super_type_arguments = try ts_types.parseTypeArguments(parser);
+            else => if (ts.isAngleOpen(parser.current_token.tag)) {
+                super_type_arguments = try ts.parseTypeArguments(parser);
             },
         };
     }
@@ -103,7 +101,7 @@ pub fn parseClassDecorated(
     // `implements A, B.C<T>, ...`. may appear with or without a preceding
     // `extends` clause.
     const implements: ast.IndexRange = if (is_ts)
-        try ts_statements.parseImplementsClause(parser) orelse return null
+        try ts.parseImplementsClause(parser) orelse return null
     else
         .empty;
 
@@ -201,7 +199,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
     if (key == .null and
         is_ts and
         parser.current_token.tag == .left_bracket and
-        try ts_signatures.isIndexSignatureStart(parser))
+        try ts.isIndexSignatureStart(parser))
     {
         return parseIndexSignatureElement(parser, elem_start, decorators, mods);
     }
@@ -301,7 +299,7 @@ fn parseIndexSignatureElement(
         );
     }
 
-    const node = try ts_signatures.parseIndexSignature(parser, elem_start, .{
+    const node = try ts.parseIndexSignature(parser, elem_start, .{
         .readonly = mods.readonly,
         .static = mods.is_static,
     }) orelse return null;
@@ -528,7 +526,7 @@ fn parseMethodDefinition(
 
     // `m<T, U extends V>(...)`
     const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts_types.parseTypeParameters(parser)
+        try ts.parseTypeParameters(parser)
     else
         .null;
 
@@ -539,7 +537,7 @@ fn parseMethodDefinition(
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = parser.tree.getSpan(params).end;
     if (is_ts and parser.current_token.tag == .colon) {
-        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
+        return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
         return_type_end = parser.tree.getSpan(return_type).end;
     }
 
@@ -609,7 +607,7 @@ fn parsePropertyDefinition(
     const is_ts = parser.tree.isTs();
     var type_annotation: ast.NodeIndex = .null;
     if (is_ts and parser.current_token.tag == .colon) {
-        type_annotation = try ts_types.parseTypeAnnotation(parser) orelse return null;
+        type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
         end = parser.tree.getSpan(type_annotation).end;
     }
 

@@ -1,16 +1,20 @@
 const std = @import("std");
-const ast = @import("../../ast.zig");
-const lexer = @import("../../lexer.zig");
-const Parser = @import("../../parser.zig").Parser;
-const Error = @import("../../parser.zig").Error;
-const TokenTag = @import("../../token.zig").TokenTag;
-const Precedence = @import("../../token.zig").Precedence;
+const ast = @import("../ast.zig");
+const lexer = @import("../lexer.zig");
 
-const literals = @import("../literals.zig");
-const functions = @import("../functions.zig");
-const expressions = @import("../expressions.zig");
-const patterns = @import("../patterns.zig");
-const signatures = @import("signatures.zig");
+const Parser = @import("../parser.zig").Parser;
+const Error = @import("../parser.zig").Error;
+const TokenTag = @import("../token.zig").TokenTag;
+const Precedence = @import("../token.zig").Precedence;
+const Token = @import("../token.zig").Token;
+
+const literals = @import("literals.zig");
+const functions = @import("functions.zig");
+const expressions = @import("expressions.zig");
+const patterns = @import("patterns.zig");
+const parenthesized = @import("parenthesized.zig");
+const variables = @import("variables.zig");
+const class = @import("class.zig");
 
 pub fn parseType(parser: *Parser) Error!?ast.NodeIndex {
     const saved = parser.context.disallow_conditional_types;
@@ -248,10 +252,10 @@ fn parsePrimaryType(parser: *Parser) Error!?ast.NodeIndex {
             },
             .left_paren => return parseParenthesizedType(parser),
             .left_bracket => return parseTupleType(parser),
-            .left_brace => return if (try signatures.isStartOfMappedType(parser))
-                signatures.parseMappedType(parser)
+            .left_brace => return if (try isStartOfMappedType(parser))
+                parseMappedType(parser)
             else
-                signatures.parseTypeLiteral(parser),
+                parseTypeLiteral(parser),
             .keyof, .unique, .readonly => return parseTypeOperator(parser),
             .infer => return parseInferType(parser),
             .template_head => return parseTemplateLiteralType(parser),
@@ -1394,4 +1398,1301 @@ pub fn markPatternOptional(parser: *Parser, pattern: ast.NodeIndex, end: u32) vo
 inline fn extendSpanTo(parser: *Parser, node: ast.NodeIndex, end: u32) void {
     const span = parser.tree.getSpan(node);
     if (end > span.end) parser.tree.replaceSpan(node, .{ .start = span.start, .end = end });
+}
+
+// { x: T; foo(): U; [k: string]: V }
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pub fn parseTypeLiteral(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
+    const start = parser.current_token.span.start;
+    const members = try parseObjectTypeMembers(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_literal = .{ .members = members } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// shared member list for `TSTypeLiteral` and `TSInterfaceBody`
+pub fn parseObjectTypeMembers(parser: *Parser) Error!?ast.IndexRange {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
+    try parser.advance() orelse return null;
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
+        const member = try parseTypeMember(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), member);
+        if (!try consumeTypeMemberSeparator(parser, member)) return null;
+    }
+
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close an object-type body",
+        "Each '{' in a type must be matched by a '}'",
+    )) return null;
+
+    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+}
+
+// comma or semicolon folds into span, newline ends member without span stretch, else error
+fn consumeTypeMemberSeparator(parser: *Parser, member: ast.NodeIndex) Error!bool {
+    switch (parser.current_token.tag) {
+        .semicolon, .comma => {
+            const sep_end = parser.current_token.span.end;
+            const member_span = parser.tree.getSpan(member);
+            parser.tree.replaceSpan(member, .{ .start = member_span.start, .end = sep_end });
+            try parser.advance() orelse return false;
+        },
+        .right_brace => {},
+        else => if (!parser.current_token.hasLineTerminatorBefore()) {
+            try parser.reportExpected(
+                parser.current_token.span,
+                "Expected ';', ',', or newline between type members",
+                .{ .help = "Separate type members with ';', ',', or a newline, or close the block with '}'" },
+            );
+            return false;
+        },
+    }
+    return true;
+}
+
+// `{ [K in T]: V }` vs `{ [expr]: T }`
+pub fn isStartOfMappedType(parser: *Parser) Error!bool {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
+    const peek = try parser.peekAheadN(5);
+
+    var i: usize = 0;
+    const first = peek[i] orelse return false;
+
+    if (first.tag == .plus or first.tag == .minus) {
+        i += 1;
+        const ro = peek[i] orelse return false;
+        if (ro.tag != .readonly) return false;
+        i += 1;
+    } else if (first.tag == .readonly) {
+        i += 1;
+    }
+
+    const bracket = peek[i] orelse return false;
+    if (bracket.tag != .left_bracket) return false;
+    i += 1;
+
+    const name = peek[i] orelse return false;
+    if (!name.tag.isIdentifierLike()) return false;
+    i += 1;
+
+    const in_tok = peek[i] orelse return false;
+    return in_tok.tag == .in;
+}
+
+// { [K in T]: V }   { readonly [K in T]?: V }   { -readonly [K in T as U]-?: V }
+// ^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pub fn parseMappedType(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_brace);
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+
+    const readonly = try parseMappedModifier(parser, .readonly) orelse return null;
+
+    if (!try parser.expect(
+        .left_bracket,
+        "Expected '[' in a mapped type",
+        "A mapped type is written '{ [K in T]: V }'",
+    )) return null;
+
+    const key = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!try parser.expect(
+        .in,
+        "Expected 'in' after the mapped type parameter name",
+        "A mapped type iterates its key with '[K in ConstraintType]'",
+    )) return null;
+
+    const constraint = try parseType(parser) orelse return null;
+
+    var name_type: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .as) {
+        try parser.advance() orelse return null;
+        name_type = try parseType(parser) orelse return null;
+    }
+
+    if (!try parser.expect(
+        .right_bracket,
+        "Expected ']' to close a mapped type parameter",
+        "A mapped type parameter must be closed with ']'",
+    )) return null;
+
+    const optional = try parseMappedModifier(parser, .question) orelse return null;
+
+    var type_annotation: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .colon) {
+        try parser.advance() orelse return null;
+        type_annotation = try parseType(parser) orelse return null;
+    }
+
+    if (parser.current_token.tag == .semicolon or parser.current_token.tag == .comma) {
+        try parser.advance() orelse return null;
+    }
+
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close a mapped type",
+        "Each '{' in a mapped type must be matched by a '}'",
+    )) return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_mapped_type = .{
+            .key = key,
+            .constraint = constraint,
+            .name_type = name_type,
+            .type_annotation = type_annotation,
+            .optional = optional,
+            .readonly = readonly,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// optional explicit plus or minus before readonly or optional marker in mapped type
+fn parseMappedModifier(parser: *Parser, comptime terminator: TokenTag) Error!?ast.TSMappedTypeModifier {
+    const tag = parser.current_token.tag;
+
+    if (tag == terminator) {
+        try parser.advance() orelse return null;
+        return .true;
+    }
+
+    if (tag != .plus and tag != .minus) return .none;
+
+    const sign: ast.TSMappedTypeModifier = if (tag == .plus) .plus else .minus;
+    try parser.advance() orelse return null;
+
+    if (!try parser.expect(
+        terminator,
+        if (terminator == .readonly)
+            "Expected 'readonly' after '+' or '-' in a mapped type"
+        else
+            "Expected '?' after '+' or '-' in a mapped type",
+        "Mapped type '+' and '-' modifiers can only decorate 'readonly' or '?'",
+    )) return null;
+
+    return sign;
+}
+
+// one property method getter setter call construct index member
+fn parseTypeMember(parser: *Parser) Error!?ast.NodeIndex {
+    const tag = parser.current_token.tag;
+
+    if (tag == .left_paren or tag == .less_than) return parseCallOrConstructSignature(parser, false);
+
+    if (tag == .new) {
+        const next = (try parser.peekAhead()) orelse return null;
+        if (next.tag == .left_paren or next.tag == .less_than) {
+            return parseCallOrConstructSignature(parser, true);
+        }
+    }
+
+    // readonly modifier only when same line token starts a real member
+    if (tag == .readonly) {
+        const next = (try parser.peekAhead()) orelse return null;
+        if (!next.hasLineTerminatorBefore() and canFollowReadonlyModifier(next.tag)) {
+            const readonly_start = parser.current_token.span.start;
+            try parser.advance() orelse return null;
+            if (parser.current_token.tag == .left_bracket and try isIndexSignatureStart(parser)) {
+                return parseIndexSignature(parser, readonly_start, .{ .readonly = true });
+            }
+            return parsePropertyOrMethodSignature(parser, readonly_start, true);
+        }
+    }
+
+    if (tag == .left_bracket and try isIndexSignatureStart(parser)) {
+        const start = parser.current_token.span.start;
+        return parseIndexSignature(parser, start, .{});
+    }
+
+    const start = parser.current_token.span.start;
+    return parsePropertyOrMethodSignature(parser, start, false);
+}
+
+// `[k: T]: V` index vs `[expr]: T` computed prop
+pub fn isIndexSignatureStart(parser: *Parser) Error!bool {
+    std.debug.assert(parser.current_token.tag == .left_bracket);
+
+    const peek = try parser.peekAheadN(2);
+
+    const t1 = peek[0] orelse return false;
+    if (!t1.tag.isIdentifierLike()) return false;
+
+    const t2 = peek[1] orelse return false;
+    return t2.tag == .colon or t2.tag == .comma;
+}
+
+// property name starters
+inline fn canFollowAccessorKeyword(tag: TokenTag) bool {
+    return tag == .left_bracket or
+        tag.isIdentifierLike() or
+        tag == .string_literal or
+        tag.isNumericLiteral();
+}
+
+// like accessor follow set plus `{` `*` `...`, bad combos caught later
+inline fn canFollowReadonlyModifier(tag: TokenTag) bool {
+    return canFollowAccessorKeyword(tag) or
+        tag == .left_brace or
+        tag == .star or
+        tag == .spread;
+}
+
+// (params): R    <T>(params): R    new (params): R    new <T>(params): R
+// ^^^^^^^^^^^    ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
+fn parseCallOrConstructSignature(parser: *Parser, comptime is_construct: bool) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    if (is_construct) {
+        std.debug.assert(parser.current_token.tag == .new);
+        try parser.advance() orelse return null;
+    }
+
+    const type_parameters = try parseTypeParameters(parser);
+    const params = try parseSignatureParameters(parser) orelse return null;
+
+    var return_type: ast.NodeIndex = .null;
+    var end = parser.prev_token_end;
+    if (parser.current_token.tag == .colon) {
+        return_type = try parseReturnTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(return_type).end;
+    }
+
+    const data: ast.NodeData = if (is_construct) .{ .ts_construct_signature_declaration = .{
+        .type_parameters = type_parameters,
+        .params = params,
+        .return_type = return_type,
+    } } else .{ .ts_call_signature_declaration = .{
+        .type_parameters = type_parameters,
+        .params = params,
+        .return_type = return_type,
+    } };
+
+    return try parser.tree.createNode(data, .{ .start = start, .end = end });
+}
+
+inline fn parseSignatureParameters(parser: *Parser) Error!?ast.NodeIndex {
+    return functions.parseFormalParameters(parser, .signature, false);
+}
+
+pub const IndexSignatureModifiers = struct {
+    readonly: bool = false,
+    static: bool = false,
+};
+
+// [k: T]: V    readonly [k: T]: V
+// ^^^^^^^^^    ^^^^^^^^^^^^^^^^^^
+pub fn parseIndexSignature(parser: *Parser, start: u32, mods: IndexSignatureModifiers) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .left_bracket);
+    try parser.advance() orelse return null;
+
+    // TS1096 diagnostic, exactly one index parameter
+    const param = try parseIndexSignatureParameter(parser) orelse return null;
+    if (parser.current_token.tag == .comma) {
+        try parser.report(
+            parser.current_token.span,
+            "An index signature must have exactly one parameter",
+            .{ .help = "An index signature is written '[name: KeyType]: ValueType'." },
+        );
+        return null;
+    }
+    const parameters = try parser.tree.createExtra(&.{param});
+
+    if (!try parser.expect(
+        .right_bracket,
+        "Expected ']' to close an index signature parameter list",
+        "An index signature is written '[name: KeyType]: ValueType'",
+    )) return null;
+
+    if (parser.current_token.tag != .colon) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ':' after index signature parameters",
+            .{ .help = "An index signature requires a value type: '[k: string]: number'" },
+        );
+        return null;
+    }
+
+    const type_annotation = try parseTypeAnnotation(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_index_signature = .{
+            .parameters = parameters,
+            .type_annotation = type_annotation,
+            .readonly = mods.readonly,
+            .static = mods.static,
+        } },
+        .{ .start = start, .end = parser.tree.getSpan(type_annotation).end },
+    );
+}
+
+fn parseIndexSignatureParameter(parser: *Parser) Error!?ast.NodeIndex {
+    const name = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (parser.current_token.tag != .colon) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected ':' after index signature parameter name",
+            .{ .help = "Each index signature parameter requires a type: '[k: string]'" },
+        );
+        return null;
+    }
+
+    const annotation = try parseTypeAnnotation(parser) orelse return null;
+    applyTypeAnnotationToPattern(parser, name, annotation);
+    return name;
+}
+
+// optional accessor keyword, key, optional `?`, callish tail or `: T` field
+fn parsePropertyOrMethodSignature(parser: *Parser, start: u32, is_readonly: bool) Error!?ast.NodeIndex {
+    var kind: ast.TSMethodSignatureKind = .method;
+    const head_tag = parser.current_token.tag;
+    if (head_tag == .get or head_tag == .set) {
+        const next = (try parser.peekAhead()) orelse return null;
+        if (canFollowAccessorKeyword(next.tag)) {
+            kind = if (head_tag == .get) .get else .set;
+            try parser.advance() orelse return null;
+        }
+    }
+
+    const key_result = try parsePropertyKey(parser) orelse return null;
+    const key = key_result.key;
+    const computed = key_result.computed;
+
+    var is_optional = false;
+    var tail_end = if (computed) parser.prev_token_end else parser.tree.getSpan(key).end;
+
+    if (parser.current_token.tag == .question) {
+        is_optional = true;
+        tail_end = parser.current_token.span.end;
+        try parser.advance() orelse return null;
+    }
+
+    // accessors need method path so bad `(` is an error not a prop
+    if (kind != .method or parser.current_token.tag == .left_paren or parser.current_token.tag == .less_than) {
+        return parseMethodSignatureBody(parser, start, key, kind, computed, is_optional);
+    }
+
+    var type_annotation: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .colon) {
+        type_annotation = try parseTypeAnnotation(parser) orelse return null;
+        tail_end = parser.tree.getSpan(type_annotation).end;
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_property_signature = .{
+            .key = key,
+            .type_annotation = type_annotation,
+            .computed = computed,
+            .optional = is_optional,
+            .readonly = is_readonly,
+        } },
+        .{ .start = start, .end = tail_end },
+    );
+}
+
+// shared `(params): R` part after method get set key
+fn parseMethodSignatureBody(
+    parser: *Parser,
+    start: u32,
+    key: ast.NodeIndex,
+    kind: ast.TSMethodSignatureKind,
+    computed: bool,
+    is_optional: bool,
+) Error!?ast.NodeIndex {
+    const type_parameters = try parseTypeParameters(parser);
+    const params = try parseSignatureParameters(parser) orelse return null;
+
+    var return_type: ast.NodeIndex = .null;
+    var end = parser.prev_token_end;
+    if (parser.current_token.tag == .colon) {
+        return_type = try parseReturnTypeAnnotation(parser) orelse return null;
+        end = parser.tree.getSpan(return_type).end;
+
+        if (kind == .set) {
+            try parser.report(
+                parser.tree.getSpan(return_type),
+                "A 'set' accessor cannot have a return type annotation",
+                .{ .help = "Setters do not return a value; remove the ': T' annotation." },
+            );
+        }
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_method_signature = .{
+            .key = key,
+            .type_parameters = type_parameters,
+            .params = params,
+            .return_type = return_type,
+            .kind = kind,
+            .computed = computed,
+            .optional = is_optional,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+const PropertyKeyResult = struct {
+    key: ast.NodeIndex,
+    computed: bool,
+};
+
+// key forms for signatures
+fn parsePropertyKey(parser: *Parser) Error!?PropertyKeyResult {
+    const tag = parser.current_token.tag;
+
+    if (tag == .left_bracket) {
+        try parser.advance() orelse return null;
+        const expr = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        if (!try parser.expect(
+            .right_bracket,
+            "Expected ']' to close a computed property key",
+            "A computed property key is written '[expr]'",
+        )) return null;
+        return .{ .key = expr, .computed = true };
+    }
+
+    const key = if (tag.isIdentifierLike())
+        try literals.parseIdentifierName(parser) orelse return null
+    else if (tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (tag.isNumericLiteral())
+        try literals.parseNumericLiteral(parser) orelse return null
+    else {
+        try parser.report(
+            parser.current_token.span,
+            try parser.fmt("Unexpected token '{s}' as signature key", .{parser.describeToken(parser.current_token)}),
+            .{ .help = "Signature keys must be identifiers, strings, numbers, or computed expressions [expr]." },
+        );
+        return null;
+    };
+
+    return .{ .key = key, .computed = false };
+}
+
+pub const ArrowHead = enum { no, yes, maybe };
+
+pub fn classifyArrowHead(parser: *Parser) Error!ArrowHead {
+    if (parser.current_token.tag != .left_paren) return .no;
+    return classifyParenArrowHead(parser);
+}
+
+fn classifyParenArrowHead(parser: *Parser) Error!ArrowHead {
+    const peek = try parser.peekAheadN(3);
+    const second = peek[0] orelse return .no;
+
+    switch (second.tag) {
+        .spread => return .yes,
+        // could be array or object expr
+        .left_bracket, .left_brace => return .maybe,
+        // bare `()` needs `=>` or `:` after
+        .right_paren => {
+            const third = peek[1] orelse return .no;
+            return switch (third.tag) {
+                .arrow, .colon => .yes,
+                else => .no,
+            };
+        },
+        // `this` param only when `:T` follows
+        .this => {
+            const third = peek[1] orelse return .no;
+            return if (third.tag == .colon) .yes else .no;
+        },
+        else => {
+            if (!second.tag.isIdentifierLike()) return .no;
+            const third = peek[1] orelse return .no;
+            return switch (third.tag) {
+                .colon => .yes,
+                .question => blk: {
+                    const fourth = peek[2] orelse break :blk .no;
+                    break :blk switch (fourth.tag) {
+                        .colon, .comma, .assign, .right_paren => .yes,
+                        else => .no,
+                    };
+                },
+                // could be paren expr or comma sequence
+                .comma, .assign, .right_paren => .maybe,
+                else => .no,
+            };
+        },
+    }
+}
+
+pub fn parseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+    const saved_await = parser.context.await;
+    if (is_async) parser.context.await = true;
+    defer parser.context.await = saved_await;
+
+    const type_parameters = try parseTypeParameters(parser);
+
+    if (parser.current_token.tag != .left_paren) return null;
+
+    const params = try functions.parseFormalParameters(parser, .arrow_formal_parameters, false) orelse return null;
+
+    const return_type: ast.NodeIndex = if (parser.current_token.tag == .colon)
+        try parseReturnTypeAnnotation(parser) orelse return null
+    else
+        .null;
+
+    if (parser.current_token.tag != .arrow or parser.current_token.hasLineTerminatorBefore()) {
+        return null;
+    }
+
+    return parenthesized.buildArrowFunction(parser, params, is_async, arrow_start, type_parameters, return_type);
+}
+
+// rewind on fail so cover grammar jsx or `<T>` assertion wins. also when return type
+// parsed but `allow_arrow_return_type` is off and next `:` is outer ternary case label
+pub fn tryParseArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+    const cp = parser.checkpoint();
+
+    const arrow = (try parseArrow(parser, is_async, arrow_start)) orelse {
+        parser.rewind(cp);
+        return null;
+    };
+
+    // annotated arrow in no return type context give `:` to outer ternary case
+    const return_type = parser.tree.getData(arrow).arrow_function_expression.return_type;
+    if (!parser.context.allow_arrow_return_type and
+        return_type != .null and
+        parser.current_token.tag != .colon)
+    {
+        parser.rewind(cp);
+        return null;
+    }
+
+    return arrow;
+}
+
+// fast path, skip checkpoint when jsx or type assertion likely
+pub fn tryParseGenericArrow(parser: *Parser, is_async: bool, arrow_start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
+
+    const next = try parser.peekAhead() orelse return null;
+    if (!next.tag.isIdentifierLike() and next.tag != .@"const") return null;
+
+    return tryParseArrow(parser, is_async, arrow_start);
+}
+
+// `<Type>expr` unary precedence operand
+pub fn parseTypeAssertion(parser: *Parser) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .less_than);
+
+    const start = parser.current_token.span.start;
+
+    try parser.advance() orelse return null;
+
+    const type_node = try parseType(parser) orelse return null;
+
+    if (!try parser.expect(
+        .greater_than,
+        "Expected '>' to close a type assertion",
+        "A type assertion is written '<Type>expression'",
+    )) return null;
+
+    const expr = try expressions.parseExpression(parser, Precedence.Unary, .{}) orelse return null;
+
+    const end = parser.tree.getSpan(expr).end;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_assertion = .{ .type_annotation = type_node, .expression = expr } },
+        .{ .start = start, .end = end },
+    );
+}
+
+// `expr as T` / `expr satisfies T`
+pub fn parseAsOrSatisfiesExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    const keyword_tag = parser.current_token.tag;
+    std.debug.assert(keyword_tag == .as or keyword_tag == .satisfies);
+
+    try parser.advance() orelse return null;
+
+    const type_node = try parseType(parser) orelse return null;
+
+    const data: ast.NodeData = if (keyword_tag == .as)
+        .{ .ts_as_expression = .{ .expression = left, .type_annotation = type_node } }
+    else
+        .{ .ts_satisfies_expression = .{ .expression = left, .type_annotation = type_node } };
+
+    return try parser.tree.createNode(data, .{
+        .start = parser.tree.getSpan(left).start,
+        .end = parser.tree.getSpan(type_node).end,
+    });
+}
+
+// postfix `!` here, optional chain handles its own bang
+pub fn parseNonNullExpression(parser: *Parser, left: ast.NodeIndex) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .logical_not);
+
+    const bang_end = parser.current_token.span.end;
+    try parser.advance() orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_non_null_expression = .{ .expression = left } },
+        .{ .start = parser.tree.getSpan(left).start, .end = bang_end },
+    );
+}
+
+// `<>` after callee becomes call template tag or `InstantiationExpression`, else null if `<` is compare
+pub fn parseTypeArgumentedCallOrInstantiation(parser: *Parser, callee: ast.NodeIndex) Error!?ast.NodeIndex {
+    const type_arguments = try tryParseTypeArgumentsInExpression(parser);
+    if (type_arguments == .null) return null;
+
+    return switch (parser.current_token.tag) {
+        .left_paren => expressions.parseCallExpression(parser, callee, false, type_arguments),
+        .no_substitution_template, .template_head => expressions.parseTaggedTemplateExpression(parser, callee, type_arguments),
+        else => try parser.tree.createNode(
+            .{ .ts_instantiation_expression = .{ .expression = callee, .type_arguments = type_arguments } },
+            .{
+                .start = parser.tree.getSpan(callee).start,
+                .end = parser.tree.getSpan(type_arguments).end,
+            },
+        ),
+    };
+}
+
+// try `<>` args, rewind so `<` can stay relational compare
+pub fn tryParseTypeArgumentsInExpression(parser: *Parser) Error!ast.NodeIndex {
+    if (!parser.tree.isTs()) return .null;
+    if (!isAngleOpen(parser.current_token.tag)) return .null;
+
+    const cp = parser.checkpoint();
+
+    const args = try parseTypeArguments(parser);
+    if (args == .null or !canFollowTypeArgumentsInExpression(parser.current_token)) {
+        parser.rewind(cp);
+        return .null;
+    }
+
+    return args;
+}
+
+// after committed `<>` in expr position
+fn canFollowTypeArgumentsInExpression(token: Token) bool {
+    return switch (token.tag) {
+        .left_paren, .no_substitution_template, .template_head => true,
+
+        // favor relational parse for `a < b > -c`
+        .less_than, .greater_than, .plus, .minus => false,
+
+        else => token.hasLineTerminatorBefore() or
+            isBinaryOperatorLike(token.tag) or
+            !isStartOfExpression(token.tag),
+    };
+}
+
+fn isBinaryOperatorLike(tag: TokenTag) bool {
+    return tag.isBinaryOperator() or tag.isLogicalOperator() or
+        tag.isAssignmentOperator() or tag == .comma or tag == .question or
+        tag == .as or tag == .satisfies;
+}
+
+fn isStartOfExpression(tag: TokenTag) bool {
+    return switch (tag) {
+        .identifier,
+        .private_identifier,
+        .string_literal,
+        .no_substitution_template,
+        .template_head,
+        .regex_literal,
+        .left_paren,
+        .left_bracket,
+        .left_brace,
+        .plus,
+        .minus,
+        .logical_not,
+        .bitwise_not,
+        .increment,
+        .decrement,
+        .spread,
+        .at,
+        .slash,
+        .slash_assign,
+        => true,
+        else => tag.isIdentifierLike() or tag.isNumericLiteral(),
+    };
+}
+
+// `is_const` only matters on enums
+pub const Modifiers = struct {
+    declare: bool = false,
+    abstract: bool = false,
+    is_const: bool = false,
+};
+
+pub fn isStartOfTsDeclaration(parser: *Parser) Error!?bool {
+    if (!parser.tree.isTs()) return false;
+
+    const peek = try parser.peekAheadN(3);
+    var cur = parser.current_token;
+    var idx: usize = 0;
+    var has_declare = false;
+    var has_abstract = false;
+
+    if (cur.tag == .declare) {
+        cur = peek[idx] orelse return null;
+        if (cur.hasLineTerminatorBefore()) return false;
+        idx += 1;
+        has_declare = true;
+    }
+
+    // abstract only before class here
+    if (cur.tag == .abstract) {
+        const next = peek[idx] orelse return null;
+        if (next.hasLineTerminatorBefore()) return false;
+        if (next.tag != .class) return false;
+        cur = next;
+        idx += 1;
+        has_abstract = true;
+    }
+
+    // const enum, declare const enum, declare const binding
+    if (cur.tag == .@"const") {
+        const next = peek[idx] orelse return null;
+        if (isConstEnumHead(next)) {
+            cur = next;
+            idx += 1;
+        } else if (has_declare) {
+            return !next.hasLineTerminatorBefore() and variables.canStartBinding(next.tag);
+        } else {
+            return false;
+        }
+    }
+
+    switch (cur.tag) {
+        .type, .interface, .@"enum", .namespace => {
+            // reserved word after head is not a name, fall through to expr
+            const name = peek[idx] orelse return null;
+            return isDeclarationName(name);
+        },
+        .module => {
+            // id for namespace or string for ambient module
+            const name = peek[idx] orelse return null;
+            if (name.hasLineTerminatorBefore()) return false;
+            return isDeclarationName(name) or name.tag == .string_literal;
+        },
+        .global => {
+            // global block only if `{` on same line
+            const next = peek[idx] orelse return null;
+            return next.tag == .left_brace and !next.hasLineTerminatorBefore();
+        },
+        // declare var let function class, abstract class
+        .@"var", .let, .function, .class => {
+            if (!has_declare and !has_abstract) return false;
+            const name = peek[idx] orelse return null;
+            if (name.hasLineTerminatorBefore()) return false;
+            return switch (cur.tag) {
+                .@"var", .let => variables.canStartBinding(name.tag),
+                else => isDeclarationName(name),
+            };
+        },
+        // declare async function only
+        .async => {
+            if (!has_declare) return false;
+            const fn_token = peek[idx] orelse return null;
+            if (fn_token.tag != .function or fn_token.hasLineTerminatorBefore()) return false;
+            const name = peek[idx + 1] orelse return null;
+            return isDeclarationName(name);
+        },
+        // declare import needs `=` form, not from clause
+        .import => {
+            if (!has_declare) return false;
+            const name = peek[idx] orelse return null;
+            if (!isDeclarationName(name)) return false;
+            const eq = peek[idx + 1] orelse return null;
+            return eq.tag == .assign and !eq.hasLineTerminatorBefore();
+        },
+        else => return false,
+    }
+}
+
+fn isConstEnumHead(after_const: Token) bool {
+    return after_const.tag == .@"enum" and !after_const.hasLineTerminatorBefore();
+}
+
+// next token is same line binding name, not reserved, else expr path eats it
+fn isDeclarationName(token: Token) bool {
+    return token.tag.isIdentifierLike() and
+        !token.tag.isUnconditionallyReserved() and
+        !token.hasLineTerminatorBefore();
+}
+
+pub fn parseTsDeclaration(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    var mods: Modifiers = .{};
+
+    if (parser.current_token.tag == .declare) {
+        mods.declare = true;
+        try parser.advance() orelse return null;
+    }
+    if (parser.current_token.tag == .abstract) {
+        mods.abstract = true;
+        try parser.advance() orelse return null;
+    }
+    if (parser.current_token.tag == .@"const") {
+        const next = try parser.peekAhead() orelse return null;
+        if (isConstEnumHead(next)) {
+            mods.is_const = true;
+            try parser.advance() orelse return null;
+        }
+    }
+
+    const saved_ambient = parser.context.ambient;
+    defer parser.context.ambient = saved_ambient;
+    if (mods.declare) parser.context.ambient = true;
+
+    return switch (parser.current_token.tag) {
+        .type => parseTypeAliasDeclaration(parser, mods, start),
+        .interface => parseInterfaceDeclaration(parser, mods, start),
+        .@"enum" => parseEnumDeclaration(parser, mods, start),
+        .namespace => parseModuleDeclaration(parser, mods, start, .namespace),
+        .module => parseModuleDeclaration(parser, mods, start, .module),
+        .global => parseGlobalDeclaration(parser, mods, start),
+        .@"var", .let, .@"const" => variables.parseVariableDeclaration(
+            parser,
+            .{ .is_declare = mods.declare },
+            start,
+        ),
+        .function => functions.parseFunction(parser, .{ .is_declare = mods.declare }, start),
+        .async => blk: {
+            try parser.advance() orelse break :blk null;
+            break :blk functions.parseFunction(
+                parser,
+                .{ .is_declare = mods.declare, .is_async = true },
+                start,
+            );
+        },
+        .class => class.parseClass(
+            parser,
+            .{ .is_declare = mods.declare, .is_abstract = mods.abstract },
+            start,
+        ),
+        .import => parseDeclareImportEquals(parser, start),
+        else => unreachable,
+    };
+}
+
+// `declare import x = Foo.Bar` / `declare import x = require("m")`
+fn parseDeclareImportEquals(parser: *Parser, start: u32) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null;
+    return parseImportEqualsBody(parser, start, .value);
+}
+
+// after `import` already eaten. `BindingIdentifier '=' ModuleReference` then optional stmt end
+pub fn parseImportEqualsBody(
+    parser: *Parser,
+    start: u32,
+    import_kind: ast.ImportOrExportKind,
+) Error!?ast.NodeIndex {
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+
+    if (!try parser.expect(
+        .assign,
+        "Expected '=' in import equals declaration",
+        "An import equals declaration is written 'import x = Foo.Bar' or 'import x = require(\"m\")'",
+    )) return null;
+
+    const module_reference = try parseModuleReference(parser) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.getSpan(module_reference).end) orelse return null;
+
+    return try parser.tree.createNode(.{
+        .ts_import_equals_declaration = .{
+            .id = id,
+            .module_reference = module_reference,
+            .import_kind = import_kind,
+        },
+    }, .{ .start = start, .end = end });
+}
+
+// rhs of import equals, `require("m")` or dotted name
+fn parseModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag == .require) {
+        const next = try parser.peekAhead() orelse return null;
+        if (next.tag == .left_paren) return parseExternalModuleReference(parser);
+    }
+    const head = try literals.parseIdentifier(parser) orelse return null;
+    return extendQualifiedName(parser, head);
+}
+
+// `require("m")` in import equals
+fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+
+    if (!try parser.expect(
+        .left_paren,
+        "Expected '(' after 'require'",
+        "External module references are written 'require(\"module\")'",
+    )) return null;
+
+    const expression = try literals.parseStringLiteral(parser) orelse return null;
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(.right_paren, "Expected ')' to close 'require'", null)) return null;
+
+    return try parser.tree.createNode(.{
+        .ts_external_module_reference = .{ .expression = expression },
+    }, .{ .start = start, .end = end });
+}
+
+// type Foo<T> = Bar<T>
+pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .type);
+    try parser.advance() orelse return null;
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+    const type_parameters = try parseTypeParameters(parser);
+
+    if (!try parser.expect(
+        .assign,
+        "Expected '=' in type alias declaration",
+        "A type alias is written 'type Foo = Bar'",
+    )) return null;
+
+    const type_annotation = try parseTypeAliasBody(parser) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.getSpan(type_annotation).end) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_type_alias_declaration = .{
+            .id = id,
+            .type_parameters = type_parameters,
+            .type_annotation = type_annotation,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+// interface Foo<T> extends Bar, Baz<U> { ... }
+pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .interface);
+    try parser.advance() orelse return null;
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+    const type_parameters = try parseTypeParameters(parser);
+    const extends = try parseHeritageClause(parser, .extends, .interface) orelse return null;
+    const body = try parseInterfaceBody(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_interface_declaration = .{
+            .id = id,
+            .type_parameters = type_parameters,
+            .extends = extends,
+            .body = body,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+const HeritageKind = enum { interface, class };
+
+// optional extends or implements list, empty if keyword missing
+fn parseHeritageClause(
+    parser: *Parser,
+    comptime keyword: TokenTag,
+    comptime kind: HeritageKind,
+) Error!?ast.IndexRange {
+    if (parser.current_token.tag != keyword) return .empty;
+    try parser.advance() orelse return null;
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (true) {
+        const entry = try parseHeritageEntry(parser, kind) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), entry);
+        if (parser.current_token.tag != .comma) break;
+        try parser.advance() orelse return null;
+    }
+
+    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+}
+
+// Bar    Foo.Bar    Foo.Bar<U>
+fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.NodeIndex {
+    const expression = try parseHeritageExpression(parser) orelse return null;
+    const type_arguments = try parseTypeArguments(parser);
+
+    const data: ast.NodeData = switch (kind) {
+        .interface => .{ .ts_interface_heritage = .{
+            .expression = expression,
+            .type_arguments = type_arguments,
+        } },
+        .class => .{ .ts_class_implements = .{
+            .expression = expression,
+            .type_arguments = type_arguments,
+        } },
+    };
+
+    const expr_span = parser.tree.getSpan(expression);
+    const end = if (type_arguments != .null)
+        parser.tree.getSpan(type_arguments).end
+    else
+        expr_span.end;
+
+    return try parser.tree.createNode(data, .{ .start = expr_span.start, .end = end });
+}
+
+pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
+    return parseHeritageClause(parser, .implements, .class);
+}
+
+// dotted heritage name, plain `.prop` chain only
+fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
+    var expression = try literals.parseIdentifier(parser) orelse return null;
+
+    while (parser.current_token.tag == .dot) {
+        try parser.advance() orelse return null;
+        const property = try literals.parseIdentifierName(parser) orelse return null;
+        expression = try parser.tree.createNode(
+            .{ .member_expression = .{
+                .object = expression,
+                .property = property,
+                .computed = false,
+                .optional = false,
+            } },
+            .{
+                .start = parser.tree.getSpan(expression).start,
+                .end = parser.tree.getSpan(property).end,
+            },
+        );
+    }
+
+    return expression;
+}
+
+// enum Foo { A, B = 1 }
+pub fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .@"enum");
+    try parser.advance() orelse return null;
+
+    const id = try literals.parseBindingIdentifier(parser) orelse return null;
+    const body = try parseEnumBody(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_enum_declaration = .{
+            .id = id,
+            .body = body,
+            .is_const = mods.is_const,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// { A, B = 1, }
+fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '{' to start an enum body",
+            .{ .help = "An enum body is written '{ A, B = 1 }'" },
+        );
+        return null;
+    }
+
+    const start = parser.current_token.span.start;
+    try parser.advance() orelse return null;
+
+    const checkpoint = parser.scratch_a.begin();
+    defer parser.scratch_a.reset(checkpoint);
+
+    while (parser.current_token.tag != .right_brace and parser.current_token.tag != .eof) {
+        const member = try parseEnumMember(parser) orelse return null;
+        try parser.scratch_a.append(parser.allocator(), member);
+
+        if (parser.current_token.tag != .comma) break;
+        try parser.advance() orelse return null;
+    }
+
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close an enum body",
+        "Each '{' in an enum must be matched by a '}'",
+    )) return null;
+
+    const members = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+
+    return try parser.tree.createNode(
+        .{ .ts_enum_body = .{ .members = members } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// name [= initializer]
+fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
+    const name = try parseEnumMemberName(parser) orelse return null;
+    const id_span = parser.tree.getSpan(name.id);
+    // computed name ends at `]` in prev_token_end
+    var end = if (name.computed) parser.prev_token_end else id_span.end;
+
+    var initializer: ast.NodeIndex = .null;
+    if (parser.current_token.tag == .assign) {
+        try parser.advance() orelse return null;
+        initializer = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        end = parser.tree.getSpan(initializer).end;
+    }
+
+    return try parser.tree.createNode(
+        .{ .ts_enum_member = .{
+            .id = name.id,
+            .initializer = initializer,
+            .computed = name.computed,
+        } },
+        .{ .start = id_span.start, .end = end },
+    );
+}
+
+const EnumMemberName = struct {
+    id: ast.NodeIndex,
+    computed: bool,
+};
+
+// identifier, string, template, or `[expr]`.
+fn parseEnumMemberName(parser: *Parser) Error!?EnumMemberName {
+    const tag = parser.current_token.tag;
+
+    if (tag == .left_bracket) {
+        try parser.advance() orelse return null;
+        const inner = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
+        if (!try parser.expect(
+            .right_bracket,
+            "Expected ']' to close a computed enum member name",
+            "A computed enum member name is written '[\"name\"]'",
+        )) return null;
+        return .{ .id = inner, .computed = true };
+    }
+
+    const id = if (tag.isIdentifierLike())
+        try literals.parseIdentifierName(parser) orelse return null
+    else if (tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else if (tag == .no_substitution_template)
+        try literals.parseNoSubstitutionTemplate(parser, false) orelse return null
+    else {
+        try parser.report(
+            parser.current_token.span,
+            try parser.fmt("Unexpected token '{s}' as enum member name", .{parser.describeToken(parser.current_token)}),
+            .{ .help = "Enum member names must be identifiers, string literals, or computed expressions '[name]'." },
+        );
+        return null;
+    };
+
+    return .{ .id = id, .computed = false };
+}
+
+// `{ ... }` interface members
+fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) {
+        try parser.reportExpected(
+            parser.current_token.span,
+            "Expected '{' to start an interface body",
+            .{ .help = "An interface body is written '{ member1; member2 }'" },
+        );
+        return null;
+    }
+
+    const start = parser.current_token.span.start;
+    const members = try parseObjectTypeMembers(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_interface_body = .{ .body = members } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// namespace Foo { ... }    namespace A.B.C { ... }    module "./m" { ... }
+pub fn parseModuleDeclaration(
+    parser: *Parser,
+    mods: Modifiers,
+    start: u32,
+    kind: ast.TSModuleDeclarationKind,
+) Error!?ast.NodeIndex {
+    try parser.advance() orelse return null;
+
+    const id = if (kind == .module and parser.current_token.tag == .string_literal)
+        try literals.parseStringLiteral(parser) orelse return null
+    else
+        try parseModuleName(parser) orelse return null;
+
+    const body = try parseOptionalModuleBlock(parser) orelse return null;
+    const end = if (body == .null)
+        try parser.eatSemicolon(parser.tree.getSpan(id).end) orelse return null
+    else
+        parser.prev_token_end;
+
+    return try parser.tree.createNode(
+        .{ .ts_module_declaration = .{
+            .id = id,
+            .body = body,
+            .kind = kind,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = end },
+    );
+}
+
+// global block augmentation `declare global` etc
+pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!?ast.NodeIndex {
+    std.debug.assert(parser.current_token.tag == .global);
+
+    const id = try literals.parseIdentifierName(parser) orelse return null;
+    const body = try parseModuleBlock(parser) orelse return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_global_declaration = .{
+            .id = id,
+            .body = body,
+            .declare = mods.declare,
+        } },
+        .{ .start = start, .end = parser.prev_token_end },
+    );
+}
+
+// `A.B.C` qualified name from head id
+fn parseModuleName(parser: *Parser) Error!?ast.NodeIndex {
+    const head = try literals.parseBindingIdentifier(parser) orelse return null;
+    return extendQualifiedName(parser, head);
+}
+
+// null when no braced body eg ambient `declare module "m"`
+fn parseOptionalModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
+    if (parser.current_token.tag != .left_brace) return .null;
+    return parseModuleBlock(parser);
+}
+
+fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
+    const start = parser.current_token.span.start;
+
+    if (!try parser.expect(
+        .left_brace,
+        "Expected '{' to start a module body",
+        "A module body is written '{ <statements> }'",
+    )) return null;
+
+    const body = try parser.parseBody(.right_brace, .module_block);
+
+    const end = parser.current_token.span.end;
+    if (!try parser.expect(
+        .right_brace,
+        "Expected '}' to close a module body",
+        "Each '{' in a module must be matched by a '}'",
+    )) return null;
+
+    return try parser.tree.createNode(
+        .{ .ts_module_block = .{ .body = body } },
+        .{ .start = start, .end = end },
+    );
 }

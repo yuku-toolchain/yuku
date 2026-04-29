@@ -8,7 +8,7 @@ const Precedence = @import("../token.zig").Precedence;
 const literals = @import("literals.zig");
 const grammar = @import("../grammar.zig");
 const functions = @import("functions.zig");
-const ts_types = @import("ts/types.zig");
+const ts = @import("ts.zig");
 
 /// result from parsing object cover grammar: {a, b: c, ...d}
 pub const ObjectCover = struct {
@@ -332,7 +332,7 @@ fn parseObjectMethodProperty(
 
     // `m<T, U extends V>(...)`
     const type_parameters: ast.NodeIndex = if (is_ts)
-        try ts_types.parseTypeParameters(parser)
+        try ts.parseTypeParameters(parser)
     else
         .null;
 
@@ -342,7 +342,7 @@ fn parseObjectMethodProperty(
     // `: ReturnType`
     var return_type: ast.NodeIndex = .null;
     if (is_ts and parser.current_token.tag == .colon) {
-        return_type = try ts_types.parseReturnTypeAnnotation(parser) orelse return null;
+        return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
     }
 
     const body = try functions.parseFunctionBody(parser) orelse return null;
