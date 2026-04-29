@@ -3702,8 +3702,6 @@ error: Expected declaration after 'export', but found '3'
  1 | export 3
    |        ^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/1b2e164ac5015a12.js
 error: Member expression is not allowed in binding pattern
@@ -9595,8 +9593,6 @@ error: Expected declaration after 'export', but found '/'
  1 | export / from a
    |        ^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/46002170b2d14628.js
 error: Expected ',' or '}' in object, but found '++'
@@ -17555,8 +17551,6 @@ error: Expected declaration after 'export', but found 'end of file'
  1 | export 
    |        ^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/8151f62dd1da6bbe.js
 error: Unexpected token ')'
@@ -20853,8 +20847,6 @@ error: Expected declaration after 'export', but found ';'
  1 | export;
    |       ^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/98f5714a70195f28.module.js
 error: 'function' is reserved and cannot be used as an imported binding
@@ -24963,8 +24955,6 @@ error: Expected declaration after 'export', but found '"*"'
  1 | export "*" as "\uD83D" from "./export-expname_FIXTURE.js";
    |        ^^^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/b7c09fd1b5974afb.js
 error: 'switch' is reserved and cannot be used as a binding identifier
@@ -25863,8 +25853,6 @@ error: Expected declaration after 'export', but found 'defer'
  1 | export defer * as ns from "./dep_FIXTURE.js";
    |        ^^^^^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/beead77994cf5733.js
 error: Invalid character at start of identifier
@@ -28571,8 +28559,6 @@ error: Expected declaration after 'export', but found 'end of file'
  1 | export
    |       ^
    |
-   = help: Use 'export var', 'export let', 'export const', 'export function', or 'export class'
-
 
 ✓ test/parser/suite/js/fail/d4753205081a4557.js
 error: Unexpected token ']'

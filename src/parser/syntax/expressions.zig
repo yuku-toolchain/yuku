@@ -75,6 +75,31 @@ pub fn parseExpression(parser: *Parser, min_precedence: u8, opts: ParseExpressio
     return left;
 }
 
+/// precedence of `token` as an infix operator. the token mask records the
+/// infix precedence. a few infix-capable tokens degrade
+/// to 0 here to encode the ecmascript "[no LineTerminator here]"
+/// restricted productions that would otherwise let the pratt loop fold
+/// two statements into one under ASI:
+///
+/// - `a [no LineTerminator here] ++` / `--` (postfix update).
+/// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
+/// - `a [no LineTerminator here] !` (ts non-null assertion).
+/// `!` is also infix only in TypeScript, in plain JS it is purely prefix.
+///
+inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
+    switch (token.tag) {
+        .increment, .decrement, .as, .satisfies => {
+            if (token.hasLineTerminatorBefore()) return 0;
+        },
+        .logical_not => {
+            if (!is_ts or token.hasLineTerminatorBefore()) return 0;
+        },
+        else => {},
+    }
+
+    return token.tag.precedence();
+}
+
 fn parsePrefix(parser: *Parser, opts: ParseExpressionOpts, precedence: u8) Error!?ast.NodeIndex {
     const tag = parser.current_token.tag;
 
@@ -766,9 +791,7 @@ fn parseAssignmentExpression(parser: *Parser, precedence: u8, left_in: ast.NodeI
     if (operator == .assign) {
         try grammar.expressionToPattern(parser, left, .assignable);
     } else if (isSimpleAssignmentTarget(parser, left)) {
-        // mirror the paren-stripping that pattern conversion does for `=`,
-        // so `(x) **= y` and `((x as T)) **= y` produce the same shape as
-        // `x **= y` / `(x as T) **= y`.
+        // mirror the paren-stripping that pattern conversion does for `=`
         left = parenthesized.unwrapParens(parser, left);
     } else {
         @branchHint(.unlikely);
@@ -1207,28 +1230,4 @@ inline fn maxLeftPrecedence(data: ast.NodeData) u8 {
         .update_expression, .unary_expression, .await_expression, .binary_expression, .logical_expression, .conditional_expression, .assignment_expression, .sequence_expression => Precedence.Unary,
         else => std.math.maxInt(u8),
     };
-}
-
-/// precedence of `token` as an infix operator. the token mask records the
-/// infix precedence, pure-prefix tokens (`delete`, `void`, `typeof`, `~`)
-/// carry none and naturally return 0. a few infix-capable tokens degrade
-/// to 0 here to encode the ecmascript "[no LineTerminator here]"
-/// restricted productions that would otherwise let the pratt loop fold
-/// two statements into one under ASI:
-/// - `a [no LineTerminator here] ++` / `--` (postfix update).
-/// - `a [no LineTerminator here] as T` / `satisfies T` (ts narrowing).
-/// - `a [no LineTerminator here] !` (ts non-null assertion).
-/// `!` is also infix only in TypeScript; in plain JS it is purely prefix.
-inline fn infixPrecedence(token: Token, is_ts: bool) u8 {
-    switch (token.tag) {
-        .increment, .decrement, .as, .satisfies => {
-            if (token.hasLineTerminatorBefore()) return 0;
-        },
-        .logical_not => {
-            if (!is_ts or token.hasLineTerminatorBefore()) return 0;
-        },
-        else => {},
-    }
-
-    return token.tag.precedence();
 }

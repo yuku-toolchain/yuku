@@ -642,9 +642,7 @@ fn parseExportWithDeclaration(parser: *Parser, start: u32) Error!?ast.NodeIndex 
 }
 
 fn reportMissingExportDeclaration(parser: *Parser) Error!?ast.NodeIndex {
-    try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{
-        .help = "Use 'export var', 'export let', 'export const', 'export function', or 'export class'",
-    });
+    try parser.reportExpected(parser.current_token.span, "Expected declaration after 'export'", .{});
     return null;
 }
 
