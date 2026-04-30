@@ -5,7 +5,7 @@ description: The flat, data-oriented AST returned by Yuku's parser, with the ful
 
 The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
 
-The same tree, when serialized to JSON or exposed through Node.js bindings, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs):
+The same tree, when exposed through the [`yuku-parser`](https://www.npmjs.com/package/yuku-parser) npm package, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs):
 
 - **JavaScript / JSX**: fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
 - **TypeScript**: conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
