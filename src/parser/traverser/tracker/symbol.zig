@@ -115,7 +115,7 @@ pub const SymbolTable = struct {
     const Range = struct { start: u32, len: u32 };
 
     /// Returns the string content for a `String`.
-    pub inline fn getString(self: SymbolTable, id: String) []const u8 {
+    pub inline fn string(self: SymbolTable, id: String) []const u8 {
         return self.strings.get(id);
     }
 
@@ -131,12 +131,12 @@ pub const SymbolTable = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: SymbolTable, sym: Symbol) []const u8 {
-        return self.getString(sym.name);
+        return self.string(sym.name);
     }
 
     /// Returns the source name of a reference as a string slice.
     pub inline fn getRefName(self: SymbolTable, ref: Reference) []const u8 {
-        return self.getString(ref.name);
+        return self.string(ref.name);
     }
 
     /// Returns an iterator over all symbol IDs declared in the given scope.
@@ -181,7 +181,7 @@ pub const SymbolTable = struct {
         const resolutions = try allocator.alloc(SymbolId, ref_count);
 
         for (self.references, 0..) |ref, i| {
-            const name = self.getString(ref.name);
+            const name = self.string(ref.name);
             const pctx = PrehashCtx{ .h = std.hash.Wyhash.hash(0, name) };
             resolutions[i] = blk: {
                 var it = scope_tree.ancestors(ref.scope);
@@ -440,7 +440,7 @@ pub const SymbolTracker = struct {
                     var iter = scope.ancestors(scope.currentScopeId());
                     while (iter.next()) |s| {
                         if (s == target) break;
-                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, self.tree.getString(id.name));
+                        const gop = try self.hoisting_variables.items[@intFromEnum(s)].getOrPut(self.allocator, self.tree.string(id.name));
                         if (!gop.found_existing) {
                             gop.value_ptr.* = sym_id;
                         }
@@ -504,7 +504,7 @@ pub const SymbolTracker = struct {
             .node = node,
         });
 
-        try self.scope_maps.items[@intFromEnum(target_scope)].put(self.allocator, self.tree.getString(name), id);
+        try self.scope_maps.items[@intFromEnum(target_scope)].put(self.allocator, self.tree.string(name), id);
 
         return id;
     }
@@ -541,7 +541,7 @@ pub const SymbolTracker = struct {
 
     /// Returns the source name of a symbol as a string slice.
     pub inline fn getName(self: *const SymbolTracker, sym: Symbol) []const u8 {
-        return self.tree.getString(sym.name);
+        return self.tree.string(sym.name);
     }
 
     /// Returns an iterator over all symbol IDs declared in the given scope.

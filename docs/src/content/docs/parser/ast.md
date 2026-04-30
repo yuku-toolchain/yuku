@@ -19,7 +19,7 @@ The AST is not a graph of heap-allocated structs. All nodes live in a single fla
 ```
 Tree
  nodes   NodeList        flat array of all nodes (data + span, struct-of-arrays)
- extra   []NodeIndex     variable-length child lists (IndexRange points here)
+ extras  []NodeIndex     variable-length child lists (IndexRange points here)
  strings StringPool      all string content (source refs + interned extras)
 ```
 
@@ -33,9 +33,9 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everythi
 
 | Field         | Type                    | Description                             |
 | ------------- | ----------------------- | --------------------------------------- |
-| `program`     | `NodeIndex`             | Root node (always a `program`)          |
+| `root`        | `NodeIndex`             | Index of the root node (a `program`)    |
 | `nodes`       | `NodeList`              | All AST nodes                           |
-| `extra`       | `ArrayList(NodeIndex)`  | Variable-length child index lists       |
+| `extras`      | `ArrayList(NodeIndex)`  | Variable-length child index lists       |
 | `diagnostics` | `ArrayList(Diagnostic)` | Parse errors, warnings, hints           |
 | `comments`    | `[]const Comment`       | All comments found in source            |
 | `source`      | `[]const u8`            | Original source text                    |
@@ -45,10 +45,10 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everythi
 Key read methods:
 
 ```zig
-tree.getData(index)           // NodeData for a node
-tree.getSpan(index)           // Span (source byte range) for a node
-tree.getExtra(range)          // []const NodeIndex for an IndexRange
-tree.getString(handle)        // []const u8 from a String handle
+tree.data(index)           // NodeData for a node
+tree.span(index)           // Span (source byte range) for a node
+tree.extra(range)          // []const NodeIndex for an IndexRange
+tree.string(handle)        // []const u8 from a String handle
 
 tree.hasErrors()              // true if any diagnostic has severity .error
 tree.isTs()                   // true for .ts, .tsx, .dts
@@ -71,7 +71,7 @@ Every node is identified by its position in `Tree.nodes`. Optional child fields 
 ```zig
 // if_statement.alternate is .null when there is no else branch
 if (node.alternate != .null) {
-    const else_data = tree.getData(node.alternate);
+    const else_data = tree.data(node.alternate);
 }
 ```
 
@@ -81,12 +81,12 @@ if (node.alternate != .null) {
 pub const IndexRange = struct { start: u32, len: u32 };
 ```
 
-Nodes with a variable number of children store them as a contiguous slice in `Tree.extra`. An `IndexRange` is a `(start, len)` window into that array.
+Nodes with a variable number of children store them as a contiguous slice in `Tree.extras`. An `IndexRange` is a `(start, len)` window into that array.
 
 ```zig
-const children = tree.getExtra(node.body); // []const NodeIndex
+const children = tree.extra(node.body); // []const NodeIndex
 for (children) |child_index| {
-    const child_data = tree.getData(child_index);
+    const child_data = tree.data(child_index);
 }
 ```
 
@@ -103,10 +103,10 @@ A `String` is a lightweight handle to string content. It points into one of two 
 - **Source slice (zero-copy)**: most identifiers and string literals parsed from source. The bytes live inside the original `source` slice.
 - **Pool entry**: programmatically added strings (`tree.addString()`), transformed names, or escaped identifiers. These live in the string pool's extra buffer.
 
-`tree.getString(handle)` resolves both cases transparently:
+`tree.string(handle)` resolves both cases transparently:
 
 ```zig
-const name = tree.getString(node.name); // always returns []const u8
+const name = tree.string(node.name); // always returns []const u8
 ```
 
 ### Span
@@ -118,30 +118,30 @@ pub const Span = struct { start: u32, end: u32 };
 Byte offsets into the source text. `start` is inclusive, `end` is exclusive:
 
 ```zig
-const span = tree.getSpan(index);
+const span = tree.span(index);
 const source_text = tree.source[span.start..span.end];
 ```
 
 ## NodeData
 
-`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.getData(index)` returns one. Switch on the tag to determine the type and unpack its fields:
+`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(index)` returns one. Switch on the tag to determine the type and unpack its fields:
 
 ```zig
-const data = tree.getData(index);
+const data = tree.data(index);
 switch (data) {
     .binary_expression => |expr| {
-        // expr.left and expr.right are NodeIndex (recurse with getData)
+        // expr.left and expr.right are NodeIndex (recurse with data)
         // expr.operator is a BinaryOperator enum
-        const left_data = tree.getData(expr.left);
+        const left_data = tree.data(expr.left);
     },
     .variable_declaration => |decl| {
         // decl.kind is VariableKind (.var, .let, .const, .using, .await_using)
-        // decl.declarators is IndexRange (read with getExtra)
-        const declarators = tree.getExtra(decl.declarators);
+        // decl.declarators is IndexRange (read with extra)
+        const declarators = tree.extra(decl.declarators);
     },
     .identifier_reference => |id| {
-        // id.name is a String (resolve with getString)
-        const name = tree.getString(id.name);
+        // id.name is a String (resolve with string)
+        const name = tree.string(id.name);
     },
     else => {},
 }
@@ -151,7 +151,7 @@ The same snake_case names are used for visitor hooks: a method named `enter_bina
 
 ## Predicates
 
-Beyond `getData`, `getSpan`, and friends, there are seven predicate methods on `NodeData`. That's the entire helper surface. Everything else is a `switch` away.
+Beyond `data`, `span`, and friends, there are seven predicate methods on `NodeData`. That's the entire helper surface. Everything else is a `switch` away.
 
 These methods collapse a family of tags into a single boolean. Useful when you want to say "is this any kind of expression?" without enumerating thirty tags.
 
@@ -168,7 +168,7 @@ These methods collapse a family of tags into a single boolean. Useful when you w
 For `function` and `class` (which are dual-purpose nodes), the predicates consult the `type` field internally so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
 
 ```zig
-const data = tree.getData(idx);
+const data = tree.data(idx);
 
 if (data.isExpression()) {
     // any value-producing node
@@ -190,15 +190,15 @@ switch (data) {
 }
 ```
 
-For walking children of a node, read the field directly. `NodeIndex` fields point to a single child; `IndexRange` fields are resolved with `tree.getExtra(range)`:
+For walking children of a node, read the field directly. `NodeIndex` fields point to a single child; `IndexRange` fields are resolved with `tree.extra(range)`:
 
 ```zig
 switch (data) {
     .function => |func| {
         // single child
-        const body_data = tree.getData(func.body);
+        const body_data = tree.data(func.body);
         // child list
-        for (tree.getExtra(tree.getData(func.params).formal_parameters.items)) |param| {
+        for (tree.extra(tree.data(func.params).formal_parameters.items)) |param| {
             // ...
         }
     },
@@ -210,7 +210,7 @@ For generic tree walks that don't care about field names, use the [traverser](/p
 
 ## Node reference
 
-Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.getData()` switches and visitor hooks (`enter_<tag>`).
+Every entry in `NodeData` is a distinct node tag. The tag name is the exact name used in `tree.data()` switches and visitor hooks (`enter_<tag>`).
 
 Optional child fields are noted with `.null`. Optional child lists are noted with `.empty`.
 
@@ -218,7 +218,7 @@ Optional child fields are noted with `.null`. Optional child lists are noted wit
 
 ### Program
 
-The root of every tree. There is always exactly one `program` node at `tree.program`.
+The root of every tree. There is always exactly one `program` node at `tree.root`.
 
 ```zig
 pub const Program = struct {

@@ -88,7 +88,7 @@ pub fn parseClassDecorated(
     if (parser.current_token.tag == .extends) {
         try parser.advance() orelse return null;
         super_class = try expressions.parseLeftHandSideExpression(parser, .extends_clause) orelse return null;
-        if (is_ts) switch (parser.tree.getData(super_class)) {
+        if (is_ts) switch (parser.tree.data(super_class)) {
             .ts_instantiation_expression => |inst| {
                 super_class = inst.expression;
                 super_type_arguments = inst.type_arguments;
@@ -108,7 +108,7 @@ pub fn parseClassDecorated(
 
     const body = try parseClassBody(parser) orelse return null;
 
-    return try parser.tree.createNode(.{ .class = .{
+    return try parser.tree.addNode(.{ .class = .{
         .type = class_type,
         .decorators = decorators,
         .id = id,
@@ -119,7 +119,7 @@ pub fn parseClassDecorated(
         .implements = implements,
         .declare = opts.is_declare,
         .abstract = opts.is_abstract,
-    } }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    } }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
 inline fn canStartClassName(parser: *Parser) Error!bool {
@@ -160,8 +160,8 @@ fn parseClassBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the class, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.tree.createNode(.{
-        .class_body = .{ .body = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint) },
+    return try parser.tree.addNode(.{
+        .class_body = .{ .body = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint) },
     }, .{ .start = start, .end = end });
 }
 
@@ -247,7 +247,7 @@ fn parseClassElement(parser: *Parser) Error!?ast.NodeIndex {
             return null;
         }
         if (definite) try parser.report(
-            parser.tree.getSpan(key),
+            parser.tree.span(key),
             "Method cannot have a definite assignment assertion",
             .{ .help = "Remove the '!' or declare a property instead." },
         );
@@ -282,9 +282,9 @@ fn parseIndexSignatureElement(
     mods: Modifiers,
 ) Error!?ast.NodeIndex {
     if (decorators.len != 0) {
-        const first = parser.tree.getExtra(decorators)[0];
+        const first = parser.tree.extra(decorators)[0];
         try parser.report(
-            parser.tree.getSpan(first),
+            parser.tree.span(first),
             "Decorators cannot be applied to an index signature",
             .{},
         );
@@ -307,8 +307,8 @@ fn parseIndexSignatureElement(
 
     // fold the trailing `;` into the span
     if (parser.current_token.tag == .semicolon) {
-        const span = parser.tree.getSpan(node);
-        parser.tree.replaceSpan(node, .{ .start = span.start, .end = parser.current_token.span.end });
+        const span = parser.tree.span(node);
+        parser.tree.setSpan(node, .{ .start = span.start, .end = parser.current_token.span.end });
         try parser.advance() orelse return null;
     }
 
@@ -396,7 +396,7 @@ fn consumeModifier(parser: *Parser, mods: *Modifiers) Error!ModifierStep {
 
     if (!is_modifier) {
         try parser.advanceWithoutEscapeCheck() orelse return .none;
-        const key = try parser.tree.createNode(
+        const key = try parser.tree.addNode(
             .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
             token.span,
         );
@@ -418,9 +418,9 @@ fn tryStaticBlock(parser: *Parser, decorators: ast.IndexRange) Error!?ast.NodeIn
 
     const static_token = parser.current_token;
     if (decorators.len != 0) {
-        const first = parser.tree.getExtra(decorators)[0];
+        const first = parser.tree.extra(decorators)[0];
         try parser.report(
-            parser.tree.getSpan(first),
+            parser.tree.span(first),
             "Decorators cannot be applied to static blocks",
             .{ .help = "Remove the decorator or apply it to a method or field instead." },
         );
@@ -482,7 +482,7 @@ fn parseClassElementKey(parser: *Parser) Error!?KeyResult {
         try literals.parseNumericLiteral(parser) orelse return null
     else if (token.tag.isIdentifierLike()) blk: {
         try parser.advanceWithoutEscapeCheck() orelse return null;
-        break :blk try parser.tree.createNode(
+        break :blk try parser.tree.addNode(
             .{ .identifier_name = .{ .name = try parser.identifierName(token) } },
             token.span,
         );
@@ -536,10 +536,10 @@ fn parseMethodDefinition(
 
     // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
-    var return_type_end: u32 = parser.tree.getSpan(params).end;
+    var return_type_end: u32 = parser.tree.span(params).end;
     if (is_ts and parser.current_token.tag == .colon) {
         return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
-        return_type_end = parser.tree.getSpan(return_type).end;
+        return_type_end = parser.tree.span(return_type).end;
     }
 
     // body. required in js. in ts a missing body folds into a bodyless
@@ -550,7 +550,7 @@ fn parseMethodDefinition(
 
     if (parser.current_token.tag == .left_brace) {
         body = try functions.parseFunctionBody(parser) orelse return null;
-        end = parser.tree.getSpan(body).end;
+        end = parser.tree.span(body).end;
     } else if (is_ts) {
         function_type = .ts_empty_body_function_expression;
         end = try parser.eatSemicolon(return_type_end) orelse return null;
@@ -559,7 +559,7 @@ fn parseMethodDefinition(
         return null;
     }
 
-    const func = try parser.tree.createNode(.{ .function = .{
+    const func = try parser.tree.addNode(.{ .function = .{
         .type = function_type,
         .id = .null,
         .generator = mods.is_generator,
@@ -570,7 +570,7 @@ fn parseMethodDefinition(
         .return_type = return_type,
     } }, .{ .start = func_start, .end = end });
 
-    return try parser.tree.createNode(.{ .method_definition = .{
+    return try parser.tree.addNode(.{ .method_definition = .{
         .decorators = decorators,
         .key = key,
         .value = func,
@@ -609,7 +609,7 @@ fn parsePropertyDefinition(
     var type_annotation: ast.NodeIndex = .null;
     if (is_ts and parser.current_token.tag == .colon) {
         type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
-        end = parser.tree.getSpan(type_annotation).end;
+        end = parser.tree.span(type_annotation).end;
     }
 
     // `= initializer`
@@ -617,7 +617,7 @@ fn parsePropertyDefinition(
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         value = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        end = parser.tree.getSpan(value).end;
+        end = parser.tree.span(value).end;
     }
 
     // terminator
@@ -637,7 +637,7 @@ fn parsePropertyDefinition(
         },
     }
 
-    return try parser.tree.createNode(.{ .property_definition = .{
+    return try parser.tree.addNode(.{ .property_definition = .{
         .decorators = decorators,
         .key = key,
         .value = value,
@@ -675,7 +675,7 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(.right_brace, "Expected '}' to close static block", null)) return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .static_block = .{ .body = body } },
         .{ .start = start, .end = end },
     );
@@ -684,11 +684,11 @@ fn parseStaticBlock(parser: *Parser, start: u32) Error!?ast.NodeIndex {
 // `#constructor` is not allowed as a private field name
 fn validatePrivateConstructor(parser: *Parser, key: ast.NodeIndex, computed: bool) Error!void {
     if (computed) return;
-    const data = parser.tree.getData(key);
+    const data = parser.tree.data(key);
     if (data != .private_identifier) return;
-    if (!std.mem.eql(u8, parser.tree.getString(data.private_identifier.name), "constructor")) return;
+    if (!std.mem.eql(u8, parser.tree.string(data.private_identifier.name), "constructor")) return;
     try parser.report(
-        parser.tree.getSpan(key),
+        parser.tree.span(key),
         "Classes can't have a private field named '#constructor'",
         .{ .help = "Use a different name for this private member." },
     );
@@ -714,7 +714,7 @@ fn detectConstructorKind(parser: *Parser, key: ast.NodeIndex, mods: *Modifiers, 
 
 // forbids `async` / `*` on constructors and `*` on getters / setters.
 fn validateMethodModifiers(parser: *Parser, key: ast.NodeIndex, mods: Modifiers) Error!void {
-    const span = parser.tree.getSpan(key);
+    const span = parser.tree.span(key);
     if (mods.kind == .constructor) {
         if (mods.is_async) try parser.report(span, "Constructor cannot be async", .{
             .help = "Remove the 'async' modifier from the constructor.",

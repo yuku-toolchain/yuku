@@ -9,7 +9,7 @@ const expressions = @import("expressions.zig");
 pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .string_literal = .{
             .value = try parser.stringValue(token),
         },
@@ -19,7 +19,7 @@ pub fn parseStringLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .boolean_literal = .{ .value = token.tag == .true },
     }, token.span);
 }
@@ -27,7 +27,7 @@ pub fn parseBooleanLiteral(parser: *Parser) Error!?ast.NodeIndex {
 pub fn parseNullLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
-    return try parser.tree.createNode(.{ .null_literal = .{} }, token.span);
+    return try parser.tree.addNode(.{ .null_literal = .{} }, token.span);
 }
 
 pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
@@ -36,14 +36,14 @@ pub fn parseNumericLiteral(parser: *Parser) Error!?ast.NodeIndex {
 
     // bigint literal is a separate node
     if (token.tag == .bigint_literal) {
-        return try parser.tree.createNode(.{
+        return try parser.tree.addNode(.{
             .bigint_literal = .{
                 .raw = parser.tree.sourceSlice(token.span.start, token.span.end - 1),
             },
         }, token.span);
     }
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .numeric_literal = .{
             .kind = ast.NumericLiteral.Kind.fromToken(token.tag),
             .raw = parser.tree.sourceSlice(token.span.start, token.span.end),
@@ -66,7 +66,7 @@ pub fn parseRegExpLiteral(parser: *Parser) Error!?ast.NodeIndex {
     const flags_start = regex.span.end - @as(u32, @intCast(regex.flags.len));
     const flags_end = regex.span.end;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .regexp_literal = .{
             .pattern = parser.tree.sourceSlice(pattern_start, pattern_end),
             .flags = parser.tree.sourceSlice(flags_start, flags_end),
@@ -81,9 +81,9 @@ pub fn parseNoSubstitutionTemplate(parser: *Parser, tagged: bool) Error!?ast.Nod
 
     try parser.advance() orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .template_literal = .{
-            .quasis = try parser.tree.createExtra(&[_]ast.NodeIndex{element}),
+            .quasis = try parser.tree.addExtra(&[_]ast.NodeIndex{element}),
             .expressions = ast.IndexRange.empty,
         },
     }, token.span);
@@ -142,10 +142,10 @@ pub fn parseTemplateLiteral(parser: *Parser, tagged: bool) Error!?ast.NodeIndex 
         if (is_tail) break;
     }
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .template_literal = .{
-            .quasis = try parser.createExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
-            .expressions = try parser.createExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
+            .quasis = try parser.addExtraFromScratch(&parser.scratch_a, quasis_checkpoint),
+            .expressions = try parser.addExtraFromScratch(&parser.scratch_b, exprs_checkpoint),
         },
     }, .{ .start = start, .end = end });
 }
@@ -164,7 +164,7 @@ pub inline fn addTemplateElement(parser: *Parser, token: Token, tail: bool, tagg
     else
         try parser.templateElementValue(token, span);
 
-    return parser.tree.createNode(.{
+    return parser.tree.addNode(.{
         .template_element = .{
             .cooked = cooked,
             .tail = tail,
@@ -194,7 +194,7 @@ pub inline fn parseIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .identifier_reference = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
@@ -206,7 +206,7 @@ pub inline fn parseBindingIdentifier(parser: *Parser) Error!?ast.NodeIndex {
 
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .binding_identifier = .{ .name = try parser.identifierName(current) } },
         current.span,
     );
@@ -216,7 +216,7 @@ pub inline fn parsePrivateIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advance() orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .private_identifier = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
@@ -225,7 +225,7 @@ pub fn parseIdentifierName(parser: *Parser) Error!?ast.NodeIndex {
     const token = parser.current_token;
     try parser.advanceWithoutEscapeCheck() orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .identifier_name = .{ .name = try parser.identifierName(token) },
     }, token.span);
 }
@@ -236,7 +236,7 @@ pub fn parseLabelIdentifier(parser: *Parser) Error!?ast.NodeIndex {
     const current = parser.current_token;
     try parser.advance() orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .label_identifier = .{ .name = try parser.identifierName(current) },
     }, current.span);
 }

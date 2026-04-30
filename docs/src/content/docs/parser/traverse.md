@@ -97,16 +97,16 @@ pub fn enter_binary_expression(
 }
 ```
 
-When you need to inspect a child node eagerly without waiting for the traverser to visit it, switch on `ctx.tree.getData`:
+When you need to inspect a child node eagerly without waiting for the traverser to visit it, switch on `ctx.tree.data`:
 
 ```zig
 pub fn enter_call_expression(self: *V, call: ast.CallExpression, index: ast.NodeIndex, ctx: *Ctx) traverser.Action {
-    switch (ctx.tree.getData(call.callee)) {
+    switch (ctx.tree.data(call.callee)) {
         .member_expression => |mem| {
             // callee is obj.method
         },
         .identifier_reference => |id| {
-            const name = ctx.tree.getString(id.name);
+            const name = ctx.tree.string(id.name);
             // callee is a plain identifier
         },
         else => {},
@@ -145,13 +145,13 @@ pub fn enter_node(self: *V, data: ast.NodeData, index: ast.NodeIndex, ctx: *basi
     // Walk from current node up to root
     var it = ctx.path.ancestors();
     while (it.next()) |ancestor_index| {
-        const ancestor_data = ctx.tree.getData(ancestor_index);
+        const ancestor_data = ctx.tree.data(ancestor_index);
         // ...
     }
 
     // Navigate sideways or down (the full tree is always accessible)
     if (ctx.path.parent()) |p| {
-        const parent_data = ctx.tree.getData(p);
+        const parent_data = ctx.tree.data(p);
         // inspect siblings via parent's children, or descend into any subtree
     }
 
@@ -292,7 +292,7 @@ pub fn enter_binding_identifier(
     const target = ctx.symbols.resolveTargetScope(&ctx.scope);
 
     // Is there already a symbol with this name in that scope?
-    const name = ctx.tree.getString(id.name);
+    const name = ctx.tree.string(id.name);
     if (ctx.symbols.findInScope(target, name)) |existing_id| {
         const existing = ctx.symbols.getSymbol(existing_id);
         // Handle duplicate...
@@ -397,7 +397,7 @@ pub fn enter_binary_expression(
     ctx: *transform.Ctx,
 ) traverser.Action {
     if (expr.operator == .add) {
-        ctx.tree.replaceData(index, .{ .binary_expression = .{
+        ctx.tree.setData(index, .{ .binary_expression = .{
             .left = expr.left,
             .right = expr.right,
             .operator = .multiply,
@@ -409,17 +409,17 @@ pub fn enter_binary_expression(
 
 ### Creating New Nodes
 
-Use `createNode` to append a new node and `createExtra` to allocate child lists:
+Use `addNode` to append a new node and `addExtra` to allocate child lists:
 
 ```zig
 // Create a new node
-const new_node = try ctx.tree.createNode(
+const new_node = try ctx.tree.addNode(
     .{ .numeric_literal = .{ .raw = "42" } },
     .none,
 );
 
 // Create a child list for nodes with IndexRange fields
-const children = try ctx.tree.createExtra(&.{ child1, child2, child3 });
+const children = try ctx.tree.addExtra(&.{ child1, child2, child3 });
 ```
 
 ### Wrapping Nodes
@@ -427,16 +427,16 @@ const children = try ctx.tree.createExtra(&.{ child1, child2, child3 });
 A common pattern is wrapping a node: copy the original to a new node, then replace the current node with a wrapper:
 
 ```zig
-const span = ctx.tree.getSpan(index);
+const span = ctx.tree.span(index);
 
 // Move original data to a new node
-const inner = try ctx.tree.createNode(
+const inner = try ctx.tree.addNode(
     .{ .binary_expression = expr },
     span,
 );
 
 // Replace current node with wrapper
-ctx.tree.replaceData(index, .{ .parenthesized_expression = .{
+ctx.tree.setData(index, .{ .parenthesized_expression = .{
     .expression = inner,
 } });
 
@@ -452,12 +452,12 @@ Never point a node's child back to its own index. The walker re-reads node data 
 
 ```zig
 // WRONG: creates a cycle
-const wrapper = try ctx.tree.createNode(.{ .parenthesized_expression = .{ .expression = index } }, span);
-ctx.tree.replaceData(index, ctx.tree.getData(wrapper));
+const wrapper = try ctx.tree.addNode(.{ .parenthesized_expression = .{ .expression = index } }, span);
+ctx.tree.setData(index, ctx.tree.data(wrapper));
 
 // RIGHT: move original to new node, point wrapper to it
-const inner = try ctx.tree.createNode(original_data, span);
-ctx.tree.replaceData(index, .{ .parenthesized_expression = .{ .expression = inner } });
+const inner = try ctx.tree.addNode(original_data, span);
+ctx.tree.setData(index, .{ .parenthesized_expression = .{ .expression = inner } });
 ```
 
 ## Building ASTs from Scratch
@@ -474,22 +474,22 @@ defer out.deinit();
 
 // Create a string literal node: "hello"
 const hello_str = try out.addString("hello");
-const hello = try out.createNode(
+const hello = try out.addNode(
     .{ .string_literal = .{ .value = hello_str } },
     .none,
 );
 
 // Create an expression statement wrapping the literal
-const stmt = try out.createNode(
+const stmt = try out.addNode(
     .{ .expression_statement = .{ .expression = hello } },
     .none,
 );
 
 // Build the program body (list of statements)
-const body = try out.createExtra(&.{stmt});
+const body = try out.addExtra(&.{stmt});
 
 // Create the root program node
-out.program = try out.createNode(
+out.root = try out.addNode(
     .{ .program = .{ .source_type = .module, .body = body } },
     .none,
 );
@@ -513,11 +513,11 @@ const Transpiler = struct {
     ) !traverser.Action {
         // Full context from the source tree:
         const is_strict = ctx.scope.isStrict();
-        const source_span = ctx.tree.getSpan(index);
+        const source_span = ctx.tree.span(index);
 
         // Build nodes in the output tree:
         const name_str = try self.out.addString("transpiledFn");
-        const name_node = try self.out.createNode(
+        const name_node = try self.out.addNode(
             .{ .binding_identifier = .{ .name = name_str } },
             source_span,
         );

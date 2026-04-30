@@ -116,7 +116,7 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
     const first = try variables.parseVariableDeclarator(parser, kind, .for_loop) orelse return null;
     try parser.scratch_a.append(parser.allocator(), first);
 
-    var end = parser.tree.getSpan(first).end;
+    var end = parser.tree.span(first).end;
 
     while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
@@ -124,12 +124,12 @@ fn parseForWithDeclaration(parser: *Parser, start: u32, is_for_await: bool, kind
         const declarator = try variables.parseVariableDeclarator(parser, kind, .for_loop) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
 
-        end = parser.tree.getSpan(declarator).end;
+        end = parser.tree.span(declarator).end;
     }
 
-    const declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+    const declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
 
-    const decl = try parser.tree.createNode(.{
+    const decl = try parser.tree.addNode(.{
         .variable_declaration = .{
             .declarators = declarators,
             .kind = kind,
@@ -177,7 +177,7 @@ fn parseForWithExpression(parser: *Parser, start: u32, is_for_await: bool) Error
     if (parser.current_token.tag == .of) {
         // for ( [lookahead ∉ { async of }] LeftHandSideExpression of AssignmentExpression )
         if (!is_for_await and isAsyncIdentifier(parser, expr)) {
-            try parser.report(parser.tree.getSpan(expr), "'for (async of ...)' is not allowed, it is ambiguous with 'for await'", .{
+            try parser.report(parser.tree.span(expr), "'for (async of ...)' is not allowed, it is ambiguous with 'for await'", .{
                 .help = "Use a different variable name or add parentheses: 'for ((async) of ...)'",
             });
         }
@@ -215,14 +215,14 @@ fn parseForStatementRest(parser: *Parser, start: u32, init: ast.NodeIndex, is_fo
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .for_statement = .{
             .init = init,
             .@"test" = test_expr,
             .update = update,
             .body = body,
         },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
 /// for(left in right) body
@@ -238,13 +238,13 @@ fn parseForInStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .for_in_statement = .{
             .left = left,
             .right = right,
             .body = body,
         },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
 /// for(left of right) body
@@ -257,32 +257,32 @@ fn parseForOfStatementRest(parser: *Parser, start: u32, left: ast.NodeIndex, is_
 
     const body = try statements.parseStatement(parser, .{ .can_be_single_statement_context = true }) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .for_of_statement = .{
             .left = left,
             .right = right,
             .body = body,
             .await = is_for_await,
         },
-    }, .{ .start = start, .end = parser.tree.getSpan(body).end });
+    }, .{ .start = start, .end = parser.tree.span(body).end });
 }
 
 fn isAsyncIdentifier(parser: *Parser, expr: ast.NodeIndex) bool {
-    if (parser.tree.getData(expr) != .identifier_reference) return false;
+    if (parser.tree.data(expr) != .identifier_reference) return false;
 
     // compare raw source text, escaped `\u0061sync` should not match
-    const span = parser.tree.getSpan(expr);
+    const span = parser.tree.span(expr);
     return std.mem.eql(u8, parser.source[span.start..span.end], "async");
 }
 
 fn validateRegularForDeclarators(parser: *Parser, declarators: ast.IndexRange, kind: ast.VariableKind) Error!bool {
-    for (parser.tree.getExtra(declarators)) |declarator| {
-        const data = parser.tree.getData(declarator).variable_declarator;
+    for (parser.tree.extra(declarators)) |declarator| {
+        const data = parser.tree.data(declarator).variable_declarator;
         if (data.init != .null) continue;
 
-        const id_span = parser.tree.getSpan(data.id);
+        const id_span = parser.tree.span(data.id);
 
-        if (parser.tree.getData(data.id) != .binding_identifier) {
+        if (parser.tree.data(data.id) != .binding_identifier) {
             try parser.report(id_span, "Destructuring declaration in for loop initializer must be initialized", .{
                 .help = "Add '= value' to provide the object or array to destructure from.",
             });

@@ -142,7 +142,7 @@ pub const Parser = struct {
 
         const end = self.current_token.span.end;
 
-        self.tree.program = try self.tree.createNode(
+        self.tree.root = try self.tree.addNode(
             .{
                 .program = .{
                     .source_type = if (self.source_type == .module) .module else .script,
@@ -189,7 +189,7 @@ pub const Parser = struct {
             }
         }
 
-        return self.createExtraFromScratch(&self.scratch_statements, statements_checkpoint);
+        return self.addExtraFromScratch(&self.scratch_statements, statements_checkpoint);
     }
 
     inline fn isAtBodyEnd(self: *Parser, terminator: ?TokenTag) bool {
@@ -248,16 +248,16 @@ pub const Parser = struct {
         self.lexer.mode = mode;
     }
 
-    pub fn createExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, scratch_checkpoint: usize) Error!ast.IndexRange {
-        const start: u32 = @intCast(self.tree.extra.items.len);
+    pub fn addExtraFromScratch(self: *Parser, scratch: *ScratchBuffer, scratch_checkpoint: usize) Error!ast.IndexRange {
+        const start: u32 = @intCast(self.tree.extras.items.len);
         const slice = scratch.items.items[scratch_checkpoint..scratch.items.items.len];
         const len: u32 = @intCast(slice.len);
 
         if (slice.len > 0) {
-            if (self.tree.extra.items.len + slice.len <= self.tree.extra.capacity) {
-                self.tree.extra.appendSliceAssumeCapacity(slice);
+            if (self.tree.extras.items.len + slice.len <= self.tree.extras.capacity) {
+                self.tree.extras.appendSliceAssumeCapacity(slice);
             } else {
-                try self.tree.extra.appendSlice(self.allocator(), slice);
+                try self.tree.extras.appendSlice(self.allocator(), slice);
             }
         }
 
@@ -265,7 +265,7 @@ pub const Parser = struct {
     }
 
 
-    pub inline fn getSpanText(self: *const Parser, span: ast.Span) []const u8 {
+    pub inline fn spanText(self: *const Parser, span: ast.Span) []const u8 {
         return self.source[span.start..span.end];
     }
 
@@ -341,7 +341,7 @@ pub const Parser = struct {
             .current_token = self.current_token,
             .prev_token_end = self.prev_token_end,
             .nodes_len = self.tree.nodes.len,
-            .extra_len = self.tree.extra.items.len,
+            .extra_len = self.tree.extras.items.len,
             .diagnostics_len = self.diagnostics.items.len,
             .scratch_statements_len = self.scratch_statements.items.items.len,
             .scratch_cover_len = self.scratch_cover.items.items.len,
@@ -362,7 +362,7 @@ pub const Parser = struct {
         self.current_token = cp.current_token;
         self.prev_token_end = cp.prev_token_end;
         self.tree.nodes.shrinkRetainingCapacity(cp.nodes_len);
-        self.tree.extra.shrinkRetainingCapacity(cp.extra_len);
+        self.tree.extras.shrinkRetainingCapacity(cp.extra_len);
         self.diagnostics.shrinkRetainingCapacity(cp.diagnostics_len);
         self.scratch_statements.items.shrinkRetainingCapacity(cp.scratch_statements_len);
         self.scratch_cover.items.shrinkRetainingCapacity(cp.scratch_cover_len);
@@ -574,7 +574,7 @@ pub const Parser = struct {
             estimated_nodes / 3;
 
         try self.tree.nodes.ensureTotalCapacity(alloc, estimated_nodes);
-        try self.tree.extra.ensureTotalCapacity(alloc, estimated_extra);
+        try self.tree.extras.ensureTotalCapacity(alloc, estimated_extra);
         try self.diagnostics.ensureTotalCapacity(alloc, 32);
         try self.scratch_cover.items.ensureTotalCapacity(alloc, 256);
         try self.scratch_statements.items.ensureTotalCapacity(alloc, 256);

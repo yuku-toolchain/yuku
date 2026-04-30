@@ -14,7 +14,7 @@ pub fn parseDecorators(parser: *Parser) Error!?ast.IndexRange {
         try parser.scratch_decorators.append(parser.allocator(), decorator);
     }
 
-    return try parser.createExtraFromScratch(&parser.scratch_decorators, checkpoint);
+    return try parser.addExtraFromScratch(&parser.scratch_decorators, checkpoint);
 }
 
 pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
@@ -23,7 +23,7 @@ pub fn parseDecorator(parser: *Parser) Error!?ast.NodeIndex {
 
     const expression = try expressions.parseLeftHandSideExpression(parser, .decorator) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .decorator = .{ .expression = expression },
-    }, .{ .start = start, .end = parser.tree.getSpan(expression).end });
+    }, .{ .start = start, .end = parser.tree.span(expression).end });
 }

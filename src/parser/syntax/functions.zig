@@ -98,14 +98,14 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
     else
         .formal_parameters;
     const params = try parseFormalParameters(parser, params_kind, false) orelse return null;
-    const params_end = parser.tree.getSpan(params).end;
+    const params_end = parser.tree.span(params).end;
 
     // optional `: ReturnType` annotation.
     var return_type: ast.NodeIndex = .null;
     var return_type_end: u32 = params_end;
     if (is_ts and parser.current_token.tag == .colon) {
         return_type = try ts.parseReturnTypeAnnotation(parser) orelse return null;
-        return_type_end = parser.tree.getSpan(return_type).end;
+        return_type_end = parser.tree.span(return_type).end;
     }
 
     // function expressions always carry a body, only declarations obey ambient rules.
@@ -128,7 +128,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         .null;
 
     const end = if (body != .null)
-        parser.tree.getSpan(body).end
+        parser.tree.span(body).end
     else
         try parser.eatSemicolon(return_type_end) orelse return null;
 
@@ -155,7 +155,7 @@ pub fn parseFunction(parser: *Parser, opts: ParseFunctionOpts, start_from_param:
         }
     }
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .function = .{
             .type = function_type,
             .id = id,
@@ -200,7 +200,7 @@ pub fn parseFunctionBody(parser: *Parser) Error!?ast.NodeIndex {
         "Add a closing brace '}' to complete the function, or check for unbalanced braces inside.",
     )) return null;
 
-    return try parser.tree.createNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
+    return try parser.tree.addNode(.{ .function_body = .{ .body = body } }, .{ .start = start, .end = end });
 }
 
 /// parses a parenthesised parameter list. `allow_parameter_properties` is
@@ -230,7 +230,7 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
 
             if (parser.current_token.tag == .comma and rest != .null) {
                 try parser.report(
-                    .{ .start = parser.tree.getSpan(rest).start, .end = parser.current_token.span.end },
+                    .{ .start = parser.tree.span(rest).start, .end = parser.current_token.span.end },
                     "Rest parameter must be the last parameter",
                     .{ .help = "Move the '...rest' parameter to the end of the parameter list, or remove trailing parameters." },
                 );
@@ -248,8 +248,8 @@ pub fn parseFormalParameters(parser: *Parser, kind: ast.FormalParameterKind, all
     const end = parser.current_token.span.end;
     if (!try parser.expect(.right_paren, "Expected ')' to close parameter list", null)) return null;
 
-    return try parser.tree.createNode(.{ .formal_parameters = .{
-        .items = try parser.createExtraFromScratch(&parser.scratch_a, params_checkpoint),
+    return try parser.tree.addNode(.{ .formal_parameters = .{
+        .items = try parser.addExtraFromScratch(&parser.scratch_a, params_checkpoint),
         .rest = rest,
         .kind = kind,
     } }, .{ .start = start, .end = end });
@@ -302,18 +302,18 @@ pub fn parseFormalParameter(
     }
 
     if (pp.present) {
-        return try parser.tree.createNode(.{ .ts_parameter_property = .{
+        return try parser.tree.addNode(.{ .ts_parameter_property = .{
             .decorators = decorators,
             .parameter = pattern,
             .override = pp.override,
             .readonly = pp.readonly,
             .accessibility = pp.accessibility,
-        } }, .{ .start = start, .end = parser.tree.getSpan(pattern).end });
+        } }, .{ .start = start, .end = parser.tree.span(pattern).end });
     }
 
     ts.applyDecoratorsToPattern(parser, pattern, decorators);
 
-    return try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.getSpan(pattern));
+    return try parser.tree.addNode(.{ .formal_parameter = .{ .pattern = pattern } }, parser.tree.span(pattern));
 }
 
 fn parseParameterPropertyModifiers(parser: *Parser) Error!?ParameterPropertyModifiers {
@@ -347,14 +347,14 @@ pub fn checkAccessorArity(parser: *Parser, kind: anytype, params: ast.NodeIndex)
         else => return true,
     };
 
-    const data = parser.tree.getData(params).formal_parameters;
-    const items = parser.tree.getExtra(data.items);
+    const data = parser.tree.data(params).formal_parameters;
+    const items = parser.tree.extra(data.items);
     const has_this = items.len > 0 and
-        parser.tree.getData(parser.tree.getData(items[0]).formal_parameter.pattern) == .ts_this_parameter;
+        parser.tree.data(parser.tree.data(items[0]).formal_parameter.pattern) == .ts_this_parameter;
     const arity = data.items.len - @intFromBool(has_this);
     if (arity == spec.arity and data.rest == .null) return true;
 
-    try parser.report(parser.tree.getSpan(params), spec.msg, .{ .help = spec.help });
+    try parser.report(parser.tree.span(params), spec.msg, .{ .help = spec.help });
     return false;
 }
 
@@ -371,15 +371,15 @@ fn parseThisParameter(parser: *Parser) Error!?ast.NodeIndex {
     var type_annotation: ast.NodeIndex = .null;
     if (parser.current_token.tag == .colon) {
         type_annotation = try ts.parseTypeAnnotation(parser) orelse return null;
-        end = parser.tree.getSpan(type_annotation).end;
+        end = parser.tree.span(type_annotation).end;
     }
 
     const span: ast.Span = .{ .start = start, .end = end };
-    const this_param = try parser.tree.createNode(
+    const this_param = try parser.tree.addNode(
         .{ .ts_this_parameter = .{ .type_annotation = type_annotation } },
         span,
     );
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .formal_parameter = .{ .pattern = this_param } },
         span,
     );

@@ -135,12 +135,13 @@ pub const Comment = struct {
 /// allocations go into the tree's arena, and `deinit()` frees
 /// everything at once.
 pub const Tree = struct {
-    /// Root node of the AST (always a Program node).
-    program: NodeIndex = undefined,
+    /// Index of the root node (always a `program` node).
+    root: NodeIndex = undefined,
     /// All nodes in the AST.
     nodes: NodeList = .empty,
-    /// Extra data storage for variadic node children.
-    extra: std.ArrayList(NodeIndex) = .empty,
+    /// Extra data storage for variadic node children. Resolved through
+    /// `tree.extra(range)`.
+    extras: std.ArrayList(NodeIndex) = .empty,
     /// Diagnostics (errors, warnings, etc.) collected during parsing and analysis.
     diagnostics: std.ArrayList(Diagnostic) = .empty,
     /// Comments found in the source code.
@@ -209,53 +210,53 @@ pub const Tree = struct {
     }
 
     /// Appends a diagnostic to the tree.
-    pub fn appendDiagnostic(self: *Tree, diag: Diagnostic) error{OutOfMemory}!void {
+    pub fn addDiagnostic(self: *Tree, diag: Diagnostic) error{OutOfMemory}!void {
         try self.diagnostics.append(self.arena.allocator(), diag);
     }
 
     /// Returns the data for the node at the given index.
-    pub inline fn getData(self: *const Tree, index: NodeIndex) NodeData {
+    pub inline fn data(self: *const Tree, index: NodeIndex) NodeData {
         return self.nodes.items(.data)[@intFromEnum(index)];
     }
 
     /// Returns the span for the node at the given index.
-    pub inline fn getSpan(self: *const Tree, index: NodeIndex) Span {
+    pub inline fn span(self: *const Tree, index: NodeIndex) Span {
         return self.nodes.items(.span)[@intFromEnum(index)];
     }
 
     /// Returns the extra node indices for the given range.
-    pub inline fn getExtra(self: *const Tree, range: IndexRange) []const NodeIndex {
-        return self.extra.items[range.start..][0..range.len];
+    pub inline fn extra(self: *const Tree, range: IndexRange) []const NodeIndex {
+        return self.extras.items[range.start..][0..range.len];
     }
 
     /// Replaces an existing node's data in-place.
-    pub inline fn replaceData(self: *Tree, index: NodeIndex, data: NodeData) void {
-        self.nodes.items(.data)[@intFromEnum(index)] = data;
+    pub inline fn setData(self: *Tree, index: NodeIndex, new_data: NodeData) void {
+        self.nodes.items(.data)[@intFromEnum(index)] = new_data;
     }
 
     /// Replaces an existing node's span in-place.
-    pub inline fn replaceSpan(self: *Tree, index: NodeIndex, span: Span) void {
-        self.nodes.items(.span)[@intFromEnum(index)] = span;
+    pub inline fn setSpan(self: *Tree, index: NodeIndex, new_span: Span) void {
+        self.nodes.items(.span)[@intFromEnum(index)] = new_span;
     }
 
     /// Creates a new node. Returns its index.
-    pub inline fn createNode(self: *Tree, data: NodeData, span: Span) error{OutOfMemory}!NodeIndex {
+    pub inline fn addNode(self: *Tree, node_data: NodeData, node_span: Span) error{OutOfMemory}!NodeIndex {
         const index: NodeIndex = @enumFromInt(@as(u32, @intCast(self.nodes.len)));
         if (self.nodes.len < self.nodes.capacity) {
-            self.nodes.appendAssumeCapacity(.{ .data = data, .span = span });
+            self.nodes.appendAssumeCapacity(.{ .data = node_data, .span = node_span });
         } else {
-            try self.nodes.append(self.arena.allocator(), .{ .data = data, .span = span });
+            try self.nodes.append(self.arena.allocator(), .{ .data = node_data, .span = node_span });
         }
         return index;
     }
 
     /// Creates a new child list. Returns its range.
-    pub inline fn createExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
-        const start: u32 = @intCast(self.extra.items.len);
-        if (self.extra.items.len + children.len <= self.extra.capacity) {
-            self.extra.appendSliceAssumeCapacity(children);
+    pub inline fn addExtra(self: *Tree, children: []const NodeIndex) error{OutOfMemory}!IndexRange {
+        const start: u32 = @intCast(self.extras.items.len);
+        if (self.extras.items.len + children.len <= self.extras.capacity) {
+            self.extras.appendSliceAssumeCapacity(children);
         } else {
-            try self.extra.appendSlice(self.arena.allocator(), children);
+            try self.extras.appendSlice(self.arena.allocator(), children);
         }
         return .{ .start = start, .len = @intCast(children.len) };
     }
@@ -278,7 +279,7 @@ pub const Tree = struct {
     }
 
     /// Returns the string content for a `String`.
-    pub inline fn getString(self: *const Tree, id: String) []const u8 {
+    pub inline fn string(self: *const Tree, id: String) []const u8 {
         return self.strings.get(id);
     }
 };
@@ -1303,7 +1304,7 @@ pub const NumericLiteral = struct {
 
     /// Computes the IEEE 754 double value.
     pub fn value(self: NumericLiteral, tree: *const Tree) f64 {
-        const raw = tree.getString(self.raw);
+        const raw = tree.string(self.raw);
         if (raw.len == 0) return 0;
         // strip numeric separators
         var buf: [128]u8 = undefined;

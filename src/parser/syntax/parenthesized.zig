@@ -37,7 +37,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
     if (parser.current_token.tag == .right_paren) {
         end = parser.current_token.span.end;
         try parser.advance() orelse return null;
-        const elements = try parser.createExtraFromScratch(&parser.scratch_cover, checkpoint);
+        const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
         return .{
             .elements = elements,
             .start = start,
@@ -54,10 +54,10 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
             const argument = try grammar.parseExpressionInCover(parser, Precedence.Assignment) orelse return null;
 
-            const spread_end = parser.tree.getSpan(argument).end;
+            const spread_end = parser.tree.span(argument).end;
 
             // for now, store as spread_element; will convert to rest param for arrow functions
-            const rest = try parser.tree.createNode(
+            const rest = try parser.tree.addNode(
                 .{ .spread_element = .{ .argument = argument } },
                 .{ .start = spread_start, .end = spread_end },
             );
@@ -79,7 +79,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
         try parser.scratch_cover.append(parser.allocator(), element);
 
-        end = parser.tree.getSpan(element).end;
+        end = parser.tree.span(element).end;
 
         // comma or end
         if (parser.current_token.tag == .comma) {
@@ -111,7 +111,7 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
     try parser.advance() orelse return null; // consume )
 
-    const elements = try parser.createExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const elements = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
 
     return .{
         .elements = elements,
@@ -123,21 +123,21 @@ pub fn parseCover(parser: *Parser) Error!?ParenthesizedCover {
 
 /// convert cover to CallExpression.
 pub fn coverToCallExpression(parser: *Parser, cover: ParenthesizedCover, callee: ast.NodeIndex) Error!?ast.NodeIndex {
-    const elements = parser.tree.getExtra(cover.elements);
+    const elements = parser.tree.extra(cover.elements);
     // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
         try grammar.validateNoCoverInitializedSyntax(parser, elem);
     }
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .call_expression = .{ .callee = callee, .arguments = cover.elements, .optional = false } },
-        .{ .start = parser.tree.getSpan(callee).start, .end = cover.end },
+        .{ .start = parser.tree.span(callee).start, .end = cover.end },
     );
 }
 
 /// convert cover to ParenthesizedExpression.
 pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover) Error!?ast.NodeIndex {
-    const elements = parser.tree.getExtra(cover.elements);
+    const elements = parser.tree.extra(cover.elements);
     // empty parens () without arrow is invalid
     if (elements.len == 0) {
         try parser.report(
@@ -159,9 +159,9 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
 
     // validate no CoverInitializedName in nested objects
     for (elements) |elem| {
-        if (parser.tree.getData(elem) == .spread_element) {
+        if (parser.tree.data(elem) == .spread_element) {
             try parser.report(
-                parser.tree.getSpan(elem),
+                parser.tree.span(elem),
                 "Rest element is not allowed in parenthesized expression",
                 .{ .help = "Spread in parentheses is only valid for arrow function parameters." },
             );
@@ -173,21 +173,21 @@ pub fn coverToParenthesizedExpression(parser: *Parser, cover: ParenthesizedCover
     }
 
     if (elements.len == 1) {
-        return try parser.tree.createNode(
+        return try parser.tree.addNode(
             .{ .parenthesized_expression = .{ .expression = elements[0] } },
             .{ .start = cover.start, .end = cover.end },
         );
     }
 
-    const first_span = parser.tree.getSpan(elements[0]);
-    const last_span = parser.tree.getSpan(elements[elements.len - 1]);
+    const first_span = parser.tree.span(elements[0]);
+    const last_span = parser.tree.span(elements[elements.len - 1]);
 
-    const seq_expr = try parser.tree.createNode(
+    const seq_expr = try parser.tree.addNode(
         .{ .sequence_expression = .{ .expressions = cover.elements } },
         .{ .start = first_span.start, .end = last_span.end },
     );
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .parenthesized_expression = .{ .expression = seq_expr } },
         .{ .start = cover.start, .end = cover.end },
     );
@@ -205,11 +205,11 @@ pub fn coverToArrowFunction(parser: *Parser, cover: ParenthesizedCover, is_async
 pub fn identifierToArrowFunction(parser: *Parser, id: ast.NodeIndex, is_async: bool, start: u32) Error!?ast.NodeIndex {
     try grammar.expressionToPattern(parser, id, .binding);
 
-    const id_span = parser.tree.getSpan(id);
+    const id_span = parser.tree.span(id);
 
-    const param = try parser.tree.createNode(.{ .formal_parameter = .{ .pattern = id } }, id_span);
-    const items = try parser.tree.createExtra(&.{param});
-    const params = try parser.tree.createNode(
+    const param = try parser.tree.addNode(.{ .formal_parameter = .{ .pattern = id } }, id_span);
+    const items = try parser.tree.addExtra(&.{param});
+    const params = try parser.tree.addNode(
         .{ .formal_parameters = .{ .items = items, .rest = .null, .kind = .arrow_formal_parameters } },
         id_span,
     );
@@ -236,7 +236,7 @@ pub fn buildArrowFunction(
 
     const body = try parseArrowBody(parser) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .arrow_function_expression = .{
             .expression = body.is_expression,
             .async = is_async,
@@ -245,7 +245,7 @@ pub fn buildArrowFunction(
             .type_parameters = type_parameters,
             .return_type = return_type,
         } },
-        .{ .start = arrow_start, .end = parser.tree.getSpan(body.body).end },
+        .{ .start = arrow_start, .end = parser.tree.span(body.body).end },
     );
 }
 
@@ -274,11 +274,11 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
 
     var rest: ast.NodeIndex = .null;
 
-    const elements = parser.tree.getExtra(cover.elements);
+    const elements = parser.tree.extra(cover.elements);
     for (elements) |elem| {
         if (rest != .null) {
             try parser.report(
-                parser.tree.getSpan(rest),
+                parser.tree.span(rest),
                 "Rest parameter must be last formal parameter",
                 .{ .help = "Move the rest parameter to the end of the parameter list" },
             );
@@ -286,14 +286,14 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
             return null;
         }
 
-        if (parser.tree.getData(elem) == .spread_element) {
+        if (parser.tree.data(elem) == .spread_element) {
             // spread_element to binding_rest_element
             try grammar.expressionToPattern(parser, elem, .binding);
             rest = elem;
 
             if (cover.has_trailing_comma) {
                 try parser.report(
-                    parser.tree.getSpan(elem),
+                    parser.tree.span(elem),
                     "Rest parameter must be last formal parameter",
                     .{ .help = "Remove the trailing comma after the rest parameter" },
                 );
@@ -308,9 +308,9 @@ fn convertToFormalParameters(parser: *Parser, cover: ParenthesizedCover) Error!?
         try parser.scratch_cover.append(parser.allocator(), param);
     }
 
-    const items = try parser.createExtraFromScratch(&parser.scratch_cover, checkpoint);
+    const items = try parser.addExtraFromScratch(&parser.scratch_cover, checkpoint);
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .formal_parameters = .{ .items = items, .rest = rest, .kind = .arrow_formal_parameters } },
         .{ .start = cover.start, .end = cover.end },
     );
@@ -322,14 +322,14 @@ fn convertToFormalParameter(parser: *Parser, expr: ast.NodeIndex) Error!?ast.Nod
 
     // expr is now pattern
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .formal_parameter = .{ .pattern = expr } },
-        parser.tree.getSpan(expr),
+        parser.tree.span(expr),
     );
 }
 
 pub fn unwrapParens(parser: *Parser, node: ast.NodeIndex) ast.NodeIndex {
-    const data = parser.tree.getData(node);
+    const data = parser.tree.data(node);
 
     if (data == .parenthesized_expression) {
         return unwrapParens(parser, data.parenthesized_expression.expression);

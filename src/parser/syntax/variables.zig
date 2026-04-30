@@ -41,14 +41,14 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
 
     try parser.scratch_a.append(parser.allocator(), first_declarator);
 
-    var end = parser.tree.getSpan(first_declarator).end;
+    var end = parser.tree.span(first_declarator).end;
 
     // additional declarators: let a, b, c;
     while (parser.current_token.tag == .comma) {
         try parser.advance() orelse return null;
         const declarator = try parseVariableDeclarator(parser, kind, ctx) orelse return null;
         try parser.scratch_a.append(parser.allocator(), declarator);
-        end = parser.tree.getSpan(declarator).end;
+        end = parser.tree.span(declarator).end;
     }
 
     const span: ast.Span = .{ .start = start, .end = try parser.eatSemicolon(end) orelse return null };
@@ -68,10 +68,10 @@ pub fn parseVariableDeclaration(parser: *Parser, opts: ParseVariableDeclarationO
         );
     }
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{
             .variable_declaration = .{
-                .declarators = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint),
+                .declarators = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint),
                 .kind = kind,
                 .declare = opts.is_declare,
             },
@@ -103,7 +103,7 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
     const is_ts = parser.tree.isTs();
     const start = parser.current_token.span.start;
     const id = try patterns.parseBindingPattern(parser) orelse return null;
-    const id_span = parser.tree.getSpan(id);
+    const id_span = parser.tree.span(id);
 
     var definite = false;
     var end = id_span.end;
@@ -122,7 +122,7 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
         if (parser.current_token.tag == .colon) {
             const annotation = try ts.parseTypeAnnotation(parser) orelse return null;
             ts.applyTypeAnnotationToPattern(parser, id, annotation);
-            end = parser.tree.getSpan(annotation).end;
+            end = parser.tree.span(annotation).end;
         }
     }
 
@@ -142,7 +142,7 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
         // stops at `in`. outside for-loop init, `allow_in` is true so this is a no-op.
         init = try expressions.parseExpression(parser, Precedence.Assignment, .{ .respect_allow_in = true }) orelse return null;
 
-        end = parser.tree.getSpan(init).end;
+        end = parser.tree.span(init).end;
     } else switch (ctx) {
         // for-loop dispatcher emits loop-aware diagnostics once the head is known.
         .for_loop => {},
@@ -171,7 +171,7 @@ pub fn parseVariableDeclarator(parser: *Parser, kind: ast.VariableKind, ctx: Dec
         },
     }
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .variable_declarator = .{ .id = id, .init = init, .definite = definite } },
         .{ .start = start, .end = end },
     );

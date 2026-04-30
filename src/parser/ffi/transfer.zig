@@ -262,7 +262,7 @@ pub fn bufferSize(tree: *const ast.Tree) usize {
 
     var size: usize = HEADER_SIZE +
         tree.nodes.len * NODE_SIZE +
-        tree.extra.items.len * 4 +
+        tree.extras.items.len * 4 +
         tree.strings.extra.items.len +
         tree.comments.len * COMMENT_SIZE;
 
@@ -282,12 +282,12 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     // header
     const hdr = Header{
         .node_count = @intCast(tree.nodes.len),
-        .extra_count = @intCast(tree.extra.items.len),
+        .extra_count = @intCast(tree.extras.items.len),
         .string_pool_len = string_pool_len,
         .source_len = @intCast(tree.source.len),
         .comment_count = @intCast(tree.comments.len),
         .diag_count = @intCast(tree.diagnostics.items.len),
-        .program_index = @intFromEnum(tree.program),
+        .program_index = @intFromEnum(tree.root),
         .flags = hdr_flags,
     };
     @memcpy(buf[0..HEADER_SIZE], std.mem.asBytes(&hdr));
@@ -303,7 +303,7 @@ pub fn serializeInto(tree: *const ast.Tree, buf: []u8) usize {
     }
 
     // extra
-    const extra_bytes = std.mem.sliceAsBytes(tree.extra.items);
+    const extra_bytes = std.mem.sliceAsBytes(tree.extras.items);
     @memcpy(buf[pos..][0..extra_bytes.len], extra_bytes);
     pos += extra_bytes.len;
 

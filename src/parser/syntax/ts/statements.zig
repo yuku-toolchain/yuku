@@ -195,9 +195,9 @@ pub fn parseImportEqualsBody(
     )) return null;
 
     const module_reference = try parseModuleReference(parser) orelse return null;
-    const end = try parser.eatSemicolon(parser.tree.getSpan(module_reference).end) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.span(module_reference).end) orelse return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .ts_import_equals_declaration = .{
             .id = id,
             .module_reference = module_reference,
@@ -232,7 +232,7 @@ fn parseExternalModuleReference(parser: *Parser) Error!?ast.NodeIndex {
     const end = parser.current_token.span.end;
     if (!try parser.expect(.right_paren, "Expected ')' to close 'require'", null)) return null;
 
-    return try parser.tree.createNode(.{
+    return try parser.tree.addNode(.{
         .ts_external_module_reference = .{ .expression = expression },
     }, .{ .start = start, .end = end });
 }
@@ -252,9 +252,9 @@ pub fn parseTypeAliasDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
     )) return null;
 
     const type_annotation = try types.parseTypeAliasBody(parser) orelse return null;
-    const end = try parser.eatSemicolon(parser.tree.getSpan(type_annotation).end) orelse return null;
+    const end = try parser.eatSemicolon(parser.tree.span(type_annotation).end) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_type_alias_declaration = .{
             .id = id,
             .type_parameters = type_parameters,
@@ -275,7 +275,7 @@ pub fn parseInterfaceDeclaration(parser: *Parser, mods: Modifiers, start: u32) E
     const extends = try parseHeritageClause(parser, .extends, .interface) orelse return null;
     const body = try parseInterfaceBody(parser) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_interface_declaration = .{
             .id = id,
             .type_parameters = type_parameters,
@@ -308,7 +308,7 @@ fn parseHeritageClause(
         try parser.advance() orelse return null;
     }
 
-    return try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+    return try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
 }
 
 // Bar    Foo.Bar    Foo.Bar<U>
@@ -327,13 +327,13 @@ fn parseHeritageEntry(parser: *Parser, comptime kind: HeritageKind) Error!?ast.N
         } },
     };
 
-    const expr_span = parser.tree.getSpan(expression);
+    const expr_span = parser.tree.span(expression);
     const end = if (type_arguments != .null)
-        parser.tree.getSpan(type_arguments).end
+        parser.tree.span(type_arguments).end
     else
         expr_span.end;
 
-    return try parser.tree.createNode(data, .{ .start = expr_span.start, .end = end });
+    return try parser.tree.addNode(data, .{ .start = expr_span.start, .end = end });
 }
 
 pub inline fn parseImplementsClause(parser: *Parser) Error!?ast.IndexRange {
@@ -347,7 +347,7 @@ fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
     while (parser.current_token.tag == .dot) {
         try parser.advance() orelse return null;
         const property = try literals.parseIdentifierName(parser) orelse return null;
-        expression = try parser.tree.createNode(
+        expression = try parser.tree.addNode(
             .{ .member_expression = .{
                 .object = expression,
                 .property = property,
@@ -355,8 +355,8 @@ fn parseHeritageExpression(parser: *Parser) Error!?ast.NodeIndex {
                 .optional = false,
             } },
             .{
-                .start = parser.tree.getSpan(expression).start,
-                .end = parser.tree.getSpan(property).end,
+                .start = parser.tree.span(expression).start,
+                .end = parser.tree.span(property).end,
             },
         );
     }
@@ -372,7 +372,7 @@ pub fn parseEnumDeclaration(parser: *Parser, mods: Modifiers, start: u32) Error!
     const id = try literals.parseBindingIdentifier(parser) orelse return null;
     const body = try parseEnumBody(parser) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_enum_declaration = .{
             .id = id,
             .body = body,
@@ -414,9 +414,9 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
         "Each '{' in an enum must be matched by a '}'",
     )) return null;
 
-    const members = try parser.createExtraFromScratch(&parser.scratch_a, checkpoint);
+    const members = try parser.addExtraFromScratch(&parser.scratch_a, checkpoint);
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_enum_body = .{ .members = members } },
         .{ .start = start, .end = parser.prev_token_end },
     );
@@ -425,7 +425,7 @@ fn parseEnumBody(parser: *Parser) Error!?ast.NodeIndex {
 // name [= initializer]
 fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
     const name = try parseEnumMemberName(parser) orelse return null;
-    const id_span = parser.tree.getSpan(name.id);
+    const id_span = parser.tree.span(name.id);
     // computed name ends at `]` in prev_token_end
     var end = if (name.computed) parser.prev_token_end else id_span.end;
 
@@ -433,10 +433,10 @@ fn parseEnumMember(parser: *Parser) Error!?ast.NodeIndex {
     if (parser.current_token.tag == .assign) {
         try parser.advance() orelse return null;
         initializer = try expressions.parseExpression(parser, Precedence.Assignment, .{}) orelse return null;
-        end = parser.tree.getSpan(initializer).end;
+        end = parser.tree.span(initializer).end;
     }
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_enum_member = .{
             .id = name.id,
             .initializer = initializer,
@@ -498,7 +498,7 @@ fn parseInterfaceBody(parser: *Parser) Error!?ast.NodeIndex {
     const start = parser.current_token.span.start;
     const members = try types.parseObjectTypeMembers(parser) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_interface_body = .{ .body = members } },
         .{ .start = start, .end = parser.prev_token_end },
     );
@@ -520,11 +520,11 @@ pub fn parseModuleDeclaration(
 
     const body = try parseOptionalModuleBlock(parser) orelse return null;
     const end = if (body == .null)
-        try parser.eatSemicolon(parser.tree.getSpan(id).end) orelse return null
+        try parser.eatSemicolon(parser.tree.span(id).end) orelse return null
     else
         parser.prev_token_end;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_module_declaration = .{
             .id = id,
             .body = body,
@@ -542,7 +542,7 @@ pub fn parseGlobalDeclaration(parser: *Parser, mods: Modifiers, start: u32) Erro
     const id = try literals.parseIdentifierName(parser) orelse return null;
     const body = try parseModuleBlock(parser) orelse return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_global_declaration = .{
             .id = id,
             .body = body,
@@ -582,7 +582,7 @@ fn parseModuleBlock(parser: *Parser) Error!?ast.NodeIndex {
         "Each '{' in a module must be matched by a '}'",
     )) return null;
 
-    return try parser.tree.createNode(
+    return try parser.tree.addNode(
         .{ .ts_module_block = .{ .body = body } },
         .{ .start = start, .end = end },
     );

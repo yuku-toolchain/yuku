@@ -139,7 +139,7 @@ pub const ScopeTracker = struct {
 
     fn pushRoot(self: *ScopeTracker) void {
         self.scopes.appendAssumeCapacity(.{
-            .node = self.tree.program,
+            .node = self.tree.root,
             .parent = .none,
             .hoist_target = .root,
             .kind = .global,
@@ -150,7 +150,7 @@ pub const ScopeTracker = struct {
 
         if (self.tree.source_type == .module) {
             self.scopes.appendAssumeCapacity(.{
-                .node = self.tree.program,
+                .node = self.tree.root,
                 .parent = .root,
                 .hoist_target = .module,
                 .kind = .module,
@@ -181,7 +181,7 @@ pub const ScopeTracker = struct {
     pub fn enter(self: *ScopeTracker, index: ast.NodeIndex, data: ast.NodeData) Allocator.Error!void {
         switch (data) {
             .directive => |d| {
-                if (std.mem.eql(u8, self.tree.getString(d.value), "use strict")) {
+                if (std.mem.eql(u8, self.tree.string(d.value), "use strict")) {
                     self.currentScopeMut().flags.strict = true;
                 }
             },
@@ -213,7 +213,7 @@ pub const ScopeTracker = struct {
                 // and the Block body. The body block reuses the catch scope
                 // so that findInScopeOrHoisted naturally detects conflicts
                 // required by Section 14.15.1 early errors.
-                const current = self.tree.getData(self.currentScope().node);
+                const current = self.tree.data(self.currentScope().node);
                 if (current != .catch_clause or current.catch_clause.body != index)
                     try self.pushScope(.block, index, self.inheritStrictFlag());
             },
@@ -258,18 +258,18 @@ pub const ScopeTracker = struct {
     fn hasRetroActiveUseStrict(self: *const ScopeTracker, body_index: ast.NodeIndex) bool {
         if (body_index == .null) return false;
 
-        const body = self.tree.getData(body_index);
+        const body = self.tree.data(body_index);
 
         if (body != .function_body) return false;
 
         const function_body = body.function_body;
 
-        for (self.tree.getExtra(function_body.body)) |s| {
-            const d = self.tree.getData(s);
+        for (self.tree.extra(function_body.body)) |s| {
+            const d = self.tree.data(s);
 
             if (d != .directive) break;
 
-            if (std.mem.eql(u8, self.tree.getString(d.directive.value), "use strict")) {
+            if (std.mem.eql(u8, self.tree.string(d.directive.value), "use strict")) {
                 return true;
             }
         }
@@ -298,7 +298,7 @@ pub const ScopeTracker = struct {
             => self.scope_stack.pop(),
             .block_statement => {
                 // catch body blocks share the catch scope (Section 14.15.2)
-                if (self.tree.getData(self.currentScope().node) != .catch_clause)
+                if (self.tree.data(self.currentScope().node) != .catch_clause)
                     self.scope_stack.pop();
             },
             .class => |cls| {
