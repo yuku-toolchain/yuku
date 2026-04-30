@@ -1,31 +1,33 @@
 ---
 title: AST
-description: Internal AST structure, node types, and the data model for Yuku's parser.
+description: The flat, data-oriented AST returned by Yuku's parser, with the full node reference.
 ---
 
-Yuku's internal AST is a flat, arena-allocated structure optimized for sequential access. When serialized to JSON or exposed through Node.js bindings, it is converted to an [ESTree](https://github.com/estree/estree)-compatible format matching [Oxc](https://oxc.rs):
+The AST that comes out of `parser.parse()` is a flat array of nodes that reference each other by integer index. Reading and walking it is fast, predictable, and explicit. There are no boxed structs, no virtual dispatch, no surprise allocations. Every operation is a tagged-union switch and a slice index away.
 
-- **JavaScript / JSX**: Fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
-- **TypeScript**: Conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
+The same tree, when serialized to JSON or exposed through Node.js bindings, becomes [ESTree](https://github.com/estree/estree)-compatible output matching [Oxc](https://oxc.rs):
 
-Extensions beyond the base specs: Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`.
+- **JavaScript / JSX**: fully conformant with [ESTree](https://github.com/estree/estree), identical to [Acorn](https://www.npmjs.com/package/acorn).
+- **TypeScript**: conforms to [TS-ESTree](https://www.npmjs.com/package/@typescript-eslint/typescript-estree) used by `@typescript-eslint`.
 
-This page covers the internal Zig AST, its memory model, core types, and the complete node reference.
+Beyond the base specs the AST also carries Stage 3 [decorators](https://github.com/tc39/proposal-decorators), [import defer](https://github.com/tc39/proposal-defer-import-eval), [import source](https://github.com/tc39/proposal-source-phase-imports), and a `hashbang` field on `program`.
 
-## Memory Model
+In practice almost everything you build on top of this AST goes through the [traverser](/parser/traverse): visitor hooks, scopes, symbols, and transforms all live there. This page is the reference for **what the traverser walks**: the node types, their fields, and how to read them directly when you need to.
 
-The AST is not a graph of heap-allocated structs. All nodes live in a single flat array (`Tree.nodes`), and children reference each other by integer index. This gives linear memory layout and predictable cache behavior during traversal.
+## Memory model
+
+The AST is not a graph of heap-allocated structs. Every node lives in a single flat array (`Tree.nodes`), and child references are indices into that array. Variable-length child lists live in a second flat array (`Tree.extras`), and string content lives in a string pool. Three arrays, one arena.
 
 ```
 Tree
- nodes   NodeList        flat array of all nodes (data + span, struct-of-arrays)
- extras  []NodeIndex     variable-length child lists (IndexRange points here)
- strings StringPool      all string content (source refs + interned extras)
+ nodes    NodeList         flat array of all nodes (data + span, struct-of-arrays)
+ extras   []NodeIndex      variable-length child lists (IndexRange points here)
+ strings  StringPool       all string content (source refs + interned extras)
 ```
 
-`NodeList` is a `MultiArrayList(Node)`, meaning `data` and `span` are stored in separate parallel arrays. Reading only spans, or only data, stays within a single array.
+`NodeList` is a `MultiArrayList(Node)`, so `data` and `span` are stored in two separate parallel arrays. Code that only reads spans, or only reads data, touches one array.
 
-All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everything at once.
+All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees the entire tree at once.
 
 ## The Tree
 
@@ -42,23 +44,21 @@ All memory is owned by a single `ArenaAllocator`. `tree.deinit()` frees everythi
 | `source_type` | `SourceType`            | `.script` or `.module`                  |
 | `lang`        | `Lang`                  | `.js`, `.ts`, `.jsx`, `.tsx`, or `.dts` |
 
-Key read methods:
-
 ```zig
-tree.data(index)           // NodeData for a node
-tree.span(index)           // Span (source byte range) for a node
-tree.extra(range)          // []const NodeIndex for an IndexRange
-tree.string(handle)        // []const u8 from a String handle
+tree.data(idx)           // NodeData for the node at idx
+tree.span(idx)           // Span (source byte range) for the node at idx
+tree.extra(range)        // []const NodeIndex for an IndexRange
+tree.string(handle)      // []const u8 for a String handle
 
-tree.hasErrors()              // true if any diagnostic has severity .error
-tree.isTs()                   // true for .ts, .tsx, .dts
-tree.isJsx()                  // true for .jsx, .tsx
-tree.isModule()               // true for source_type .module
+tree.isTs()              // language is .ts, .tsx, or .dts
+tree.isJsx()             // language is .jsx or .tsx
+tree.isModule()          // source_type is .module
+tree.hasErrors()         // any diagnostic with severity .error
 ```
 
-## Core Types
+## Core types
 
-Four types appear in nearly every node definition.
+Four small types carry every reference inside the AST.
 
 ### NodeIndex
 
@@ -66,7 +66,7 @@ Four types appear in nearly every node definition.
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 ```
 
-Every node is identified by its position in `Tree.nodes`. Optional child fields use `.null` to indicate absence:
+Every node is identified by its position in `Tree.nodes`. Optional child slots use `.null` to signal absence.
 
 ```zig
 // if_statement.alternate is .null when there is no else branch
@@ -81,16 +81,16 @@ if (node.alternate != .null) {
 pub const IndexRange = struct { start: u32, len: u32 };
 ```
 
-Nodes with a variable number of children store them as a contiguous slice in `Tree.extras`. An `IndexRange` is a `(start, len)` window into that array.
+Variable-length children are stored as a contiguous slice in `Tree.extras`. An `IndexRange` is a `(start, len)` window into that array. Resolve it with `tree.extra(range)`:
 
 ```zig
 const children = tree.extra(node.body); // []const NodeIndex
-for (children) |child_index| {
-    const child_data = tree.data(child_index);
+for (children) |child| {
+    const child_data = tree.data(child);
 }
 ```
 
-`IndexRange.empty` (`{ .start = 0, .len = 0 }`) represents an empty list.
+`IndexRange.empty` is the zero-length range.
 
 ### String
 
@@ -98,15 +98,15 @@ for (children) |child_index| {
 pub const String = struct { start: u32, end: u32 };
 ```
 
-A `String` is a lightweight handle to string content. It points into one of two backing stores:
+`String` is a lightweight handle to text. It points into one of two backing stores:
 
-- **Source slice (zero-copy)**: most identifiers and string literals parsed from source. The bytes live inside the original `source` slice.
-- **Pool entry**: programmatically added strings (`tree.addString()`), transformed names, or escaped identifiers. These live in the string pool's extra buffer.
+- **Source slice (zero-copy)**: most identifiers and string literals parsed from input. The bytes live inside `tree.source` directly.
+- **Pool entry**: interned strings such as escaped identifiers and names produced by transforms. These live in the string pool's extra buffer.
 
-`tree.string(handle)` resolves both cases transparently:
+`tree.string(handle)` resolves both transparently and always returns `[]const u8`:
 
 ```zig
-const name = tree.string(node.name); // always returns []const u8
+const name = tree.string(node.name);
 ```
 
 ### Span
@@ -115,57 +115,77 @@ const name = tree.string(node.name); // always returns []const u8
 pub const Span = struct { start: u32, end: u32 };
 ```
 
-Byte offsets into the source text. `start` is inclusive, `end` is exclusive:
+Byte offsets into the source text. `start` is inclusive, `end` is exclusive.
 
 ```zig
-const span = tree.span(index);
-const source_text = tree.source[span.start..span.end];
+const span = tree.span(idx);
+const text = tree.source[span.start..span.end];
 ```
 
-## NodeData
+## Reading a node
 
-`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(index)` returns one. Switch on the tag to determine the type and unpack its fields:
+`NodeData` is a tagged union with one variant per node type. The variant tags are snake_case (`binary_expression`, `if_statement`, `ts_type_alias_declaration`, ...). `tree.data(idx)` returns one. `switch` on the tag and unpack:
 
 ```zig
-const data = tree.data(index);
-switch (data) {
+switch (tree.data(idx)) {
     .binary_expression => |expr| {
         // expr.left and expr.right are NodeIndex (recurse with data)
         // expr.operator is a BinaryOperator enum
-        const left_data = tree.data(expr.left);
+        const left = tree.data(expr.left);
     },
     .variable_declaration => |decl| {
         // decl.kind is VariableKind (.var, .let, .const, .using, .await_using)
         // decl.declarators is IndexRange (read with extra)
-        const declarators = tree.extra(decl.declarators);
+        for (tree.extra(decl.declarators)) |d| { /* ... */ }
     },
     .identifier_reference => |id| {
         // id.name is a String (resolve with string)
-        const name = tree.string(id.name);
+        const text = tree.string(id.name);
     },
     else => {},
 }
 ```
 
-The same snake_case names are used for visitor hooks: a method named `enter_binary_expression` on your visitor struct fires when the traverser enters that node kind.
+The same snake_case tag names are used as visitor hook names: a method called `enter_binary_expression` on your visitor struct fires when the [traverser](/parser/traverse) enters that node kind.
+
+### Reading children
+
+A node's children sit in two kinds of fields:
+
+- **Single child**: `NodeIndex`. Either a real index, or `.null` for an absent optional slot. Read with `tree.data(field)`.
+- **Variadic children**: `IndexRange`. Resolve with `tree.extra(range)` to get `[]const NodeIndex`, then iterate.
+
+```zig
+switch (tree.data(idx)) {
+    .function => |func| {
+        // single child
+        const body = tree.data(func.body);
+
+        // variadic children: function params -> formal_parameters -> items
+        const params = tree.data(func.params).formal_parameters;
+        for (tree.extra(params.items)) |param| { /* ... */ }
+    },
+    else => {},
+}
+```
+
+For tree-wide walks, use the [traverser](/parser/traverse) instead of writing recursion by hand. It handles every node kind correctly without per-tag bookkeeping.
 
 ## Predicates
 
-Beyond `data`, `span`, and friends, there are seven predicate methods on `NodeData`. That's the entire helper surface. Everything else is a `switch` away.
+Seven methods on `NodeData` answer the categorical questions linters and analyzers ask most often. They collapse a family of tags into a single boolean.
 
-These methods collapse a family of tags into a single boolean. Useful when you want to say "is this any kind of expression?" without enumerating thirty tags.
+| Method            | True for                                                                                                                                                                                                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isExpression()`  | Any node that produces a value at runtime: literals, identifier references, operator expressions, member access, calls, function and class expression forms, JSX elements, and the TypeScript value-position wrappers.                                                                                  |
+| `isStatement()`   | Any node valid at statement position: control flow, structural statements, declarations, imports, exports, and TypeScript top-level declarations. Function and class declaration forms are included; expression forms are not.                                                                          |
+| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                            |
+| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Excludes `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                       |
+| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                            |
+| `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`. |
+| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                         |
 
-| Method            | True for                                                                                                                                                                                                                                                                                                                                                       |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isExpression()`  | Any node that produces a value at runtime. Includes literals, identifier references, operator expressions, member access, calls, function and class **expression** forms, JSX elements, and the TypeScript value-position wrappers.                                                                                                                          |
-| `isStatement()`   | Any node valid at statement position. Includes control flow, structural statements, declarations, imports and exports, and TypeScript top-level declarations. Function and class **declaration** forms are included; expression forms are not.                                                                                                                |
-| `isLiteral()`     | `string_literal`, `numeric_literal`, `bigint_literal`, `boolean_literal`, `null_literal`, `regexp_literal`, `template_literal`.                                                                                                                                                                                                                                |
-| `isCallable()`    | `function` (any form) and `arrow_function_expression`. Does not include `method_definition`, which wraps a `function` in its `value` field.                                                                                                                                                                                                                    |
-| `isPattern()`     | `binding_identifier`, `array_pattern`, `object_pattern`, `assignment_pattern`.                                                                                                                                                                                                                                                                                 |
-| `isDeclaration()` | `variable_declaration`, function and class declaration forms, `import_declaration`, `export_named_declaration`, `export_default_declaration`, `export_all_declaration`, `ts_type_alias_declaration`, `ts_interface_declaration`, `ts_enum_declaration`, `ts_module_declaration`, `ts_global_declaration`, `ts_import_equals_declaration`.                      |
-| `isIteration()`   | `for_statement`, `for_in_statement`, `for_of_statement`, `while_statement`, `do_while_statement`. Useful for `break` and `continue` scope checks.                                                                                                                                                                                                              |
-
-For `function` and `class` (which are dual-purpose nodes), the predicates consult the `type` field internally so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
+For dual-purpose nodes (`function` and `class`) the predicates consult the `type` field internally, so `isExpression()` returns true only for the expression forms and `isStatement()` / `isDeclaration()` only for the declaration forms.
 
 ```zig
 const data = tree.data(idx);
@@ -181,7 +201,7 @@ if (data.isCallable()) {
 }
 ```
 
-That's the entire predicate surface. For anything narrower, switch directly:
+For anything narrower than these seven, `switch` directly:
 
 ```zig
 switch (data) {
@@ -189,24 +209,6 @@ switch (data) {
     else => {},
 }
 ```
-
-For walking children of a node, read the field directly. `NodeIndex` fields point to a single child; `IndexRange` fields are resolved with `tree.extra(range)`:
-
-```zig
-switch (data) {
-    .function => |func| {
-        // single child
-        const body_data = tree.data(func.body);
-        // child list
-        for (tree.extra(tree.data(func.params).formal_parameters.items)) |param| {
-            // ...
-        }
-    },
-    else => {},
-}
-```
-
-For generic tree walks that don't care about field names, use the [traverser](/parser/traverse), which provides visitor hooks plus scopes and symbol tracking.
 
 ## Node reference
 
@@ -334,9 +336,9 @@ class_expression                    // const x = class {}
 
 ### Identifiers
 
-Five distinct identifier tags, all carrying a single `name: String` field. They look identical structurally but are used in different positions and are typically resolved differently.
+Five tags, all carrying a single `name: String` field. They are structurally identical but appear in different syntactic positions and resolve differently.
 
-| Tag                    | Used For                                                                                                                   |
+| Tag                    | Used for                                                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `identifier_reference` | A name used as a value: `x`, `console`, `Math`                                                                             |
 | `binding_identifier`   | A name being declared: `const x`, `function foo`, `import { x }`                                                           |
@@ -461,9 +463,9 @@ JSX nodes are only present in `.jsx` and `.tsx` trees.
 | `jsx_text`                 | text content between tags   | A span of raw text inside a JSX element or fragment.                              |
 | `jsx_spread_child`         | `{...children}`             | A spread child inside a JSX element.                                              |
 
-JSX tag names (the `name` field on `jsx_opening_element`, `jsx_closing_element`, and one form of `jsx_attribute`) are one of `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`.
+A JSX tag name (the `name` field on `jsx_opening_element`, `jsx_closing_element`, and one form of `jsx_attribute`) is one of `jsx_identifier`, `jsx_namespaced_name`, or `jsx_member_expression`.
 
-JSX children (entries in the `children` list on `jsx_element` and `jsx_fragment`) are one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
+A JSX child (entries in the `children` list on `jsx_element` and `jsx_fragment`) is one of `jsx_text`, `jsx_expression_container`, `jsx_spread_child`, `jsx_element`, or `jsx_fragment`.
 
 ---
 

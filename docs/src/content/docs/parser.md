@@ -78,36 +78,39 @@ Both fields can be inferred from a file path:
 
 ```zig
 const tree = try parser.parse(allocator, source, .{
-    .source_type = parser.ast.SourceType.fromPath("app.cjs"), // .script
-    .lang = parser.ast.Lang.fromPath("app.tsx"),               // .tsx
+    .source_type = .fromPath("app.cjs"), // .script
+    .lang = .fromPath("app.tsx"),               // .tsx
 });
 ```
 
 ## The Tree
 
-`parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. The allocator passed to `parse` is used as the backing allocator for the tree's internal arena. All memory is owned by this arena, and `tree.deinit()` frees everything at once.
+`parse` returns a `Tree` containing the full AST, diagnostics, and source metadata. The allocator passed to `parse` is used as the backing allocator for the tree's internal arena, so `tree.deinit()` frees everything at once.
+
+The AST is a flat array of nodes referenced by integer index. `tree.root` is always a `program` node, so unpack it directly. Everything below it is a tagged union you `switch` on:
 
 ```zig
 var tree = try parser.parse(allocator, source, .{});
 defer tree.deinit();
 
-// read the root program node
-const program = tree.getData(tree.program);
+const program = tree.data(tree.root).program;
 
-// read a node's source location
-const span = tree.getSpan(tree.program);
-
-// read string content from a node
-const name = tree.getString(some_identifier.name);
-
-// iterate variable-length children (e.g. program body)
-for (tree.getExtra(program.program.body)) |child_index| {
-    const child = tree.getData(child_index);
-    // ...
+for (tree.extra(program.body)) |child_idx| {
+    switch (tree.data(child_idx)) {
+        .variable_declaration => |decl| {
+            for (tree.extra(decl.declarators)) |d| {
+                _ = d;
+            }
+        },
+        .function => |func| {
+            _ = func;
+        },
+        else => {},
+    }
 }
 ```
 
-See the [AST reference](/parser/ast) for the full node type catalog and memory model.
+The four read primitives are `tree.data(idx)` for a node's typed payload, `tree.span(idx)` for its source range, `tree.extra(range)` for a variadic child list, and `tree.string(handle)` for string content. See the [AST reference](/parser/ast) for the full node catalog, the field conventions, and the seven categorical predicates on `NodeData`.
 
 ## Diagnostics
 
