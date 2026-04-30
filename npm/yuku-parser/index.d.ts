@@ -1,7 +1,6 @@
 /** How the source code should be parsed. */
 type SourceType = "script" | "module";
 
-/** Alias of {@link SourceType} for users coming from Oxc. */
 type ModuleKind = SourceType;
 
 /** Language variant of the source code. */
@@ -108,7 +107,6 @@ interface BaseNode {
   end: number;
 }
 
-/** Alias of {@link BaseNode} for users coming from Oxc. */
 type Span = BaseNode;
 
 type BinaryOperator =
@@ -159,59 +157,40 @@ type AssignmentOperator =
   | "&&="
   | "??=";
 
-/** Variable declaration kind, the keyword that introduced the binding. */
 type VariableDeclarationKind = "var" | "let" | "const" | "using" | "await using";
 
-/** Object property kind. `init` for plain entries, `get`/`set` for accessors. */
 type PropertyKind = "init" | "get" | "set";
 
-/** Class method definition kind. */
 type MethodDefinitionKind = "constructor" | "method" | "get" | "set";
 
-/** TypeScript class member accessibility modifier. */
 type TSAccessibility = "public" | "private" | "protected";
 
-/** TypeScript method signature kind. */
 type TSMethodSignatureKind = "method" | "get" | "set";
 
-/** TypeScript prefix type operator keyword. */
 type TSTypeOperatorOperator = "keyof" | "unique" | "readonly";
 
-/** Keyword that introduced a {@link TSModuleDeclaration}. */
 type TSModuleDeclarationKind = "module" | "namespace" | "global";
 
-/** The `+` / `-` / `true` mapped-type modifier marker for the `?` and `readonly` slots. */
 type TSMappedTypeModifierOperator = true | "+" | "-";
 
-/** Stage 3 import phase modifier, populated for `import source` and `import defer`. */
 type ImportPhase = "source" | "defer";
 
-/** `value` vs `type` discriminator on an import or export specifier. */
 type ImportOrExportKind = "value" | "type";
 
-/** `type` discriminator on a {@link Function} node. */
 type FunctionType =
   | "FunctionDeclaration"
   | "FunctionExpression"
   | "TSDeclareFunction"
   | "TSEmptyBodyFunctionExpression";
 
-/** `type` discriminator on a {@link Class} node. */
 type ClassType = "ClassDeclaration" | "ClassExpression";
 
-/** `type` discriminator on a method definition node. */
 type MethodDefinitionType = "MethodDefinition" | "TSAbstractMethodDefinition";
 
-/** `type` discriminator on a property definition node. */
 type PropertyDefinitionType = "PropertyDefinition" | "TSAbstractPropertyDefinition";
 
-/** `type` discriminator on an accessor property node. */
 type AccessorPropertyType = "AccessorProperty" | "TSAbstractAccessorProperty";
 
-/**
- * An identifier used as a property key, meta property name, or any other
- * non-binding context where the lexical role is "name", not "reference".
- */
 interface IdentifierName extends BaseNode {
   type: "Identifier";
   name: string;
@@ -220,7 +199,6 @@ interface IdentifierName extends BaseNode {
   typeAnnotation?: null;
 }
 
-/** An identifier used as an expression that resolves to a value at runtime. */
 interface IdentifierReference extends BaseNode {
   type: "Identifier";
   name: string;
@@ -229,11 +207,6 @@ interface IdentifierReference extends BaseNode {
   typeAnnotation?: null;
 }
 
-/**
- * An identifier that introduces a new binding. Carries TypeScript-only
- * decorators, an `optional` marker, and a type annotation when it appears
- * in a parameter position.
- */
 interface BindingIdentifier extends BaseNode {
   type: "Identifier";
   name: string;
@@ -242,7 +215,6 @@ interface BindingIdentifier extends BaseNode {
   typeAnnotation?: TSTypeAnnotation | null;
 }
 
-/** An identifier used as a statement label or as the target of `break`/`continue`. */
 interface LabelIdentifier extends BaseNode {
   type: "Identifier";
   name: string;
@@ -251,7 +223,6 @@ interface LabelIdentifier extends BaseNode {
   typeAnnotation?: null;
 }
 
-/** Any of the four identifier shapes — for consumers that don't care which. */
 type Identifier = IdentifierName | IdentifierReference | BindingIdentifier | LabelIdentifier;
 
 interface PrivateIdentifier extends BaseNode {
@@ -370,7 +341,6 @@ interface BindingProperty extends BaseNode {
 
 type Property = ObjectProperty | BindingProperty;
 
-/** Anything that can appear as a property/method/field key. */
 type PropertyKey = IdentifierName | PrivateIdentifier | Expression;
 
 interface SequenceExpression extends BaseNode {
@@ -1079,7 +1049,6 @@ interface JSXSpreadChild extends BaseNode {
 
 type JSXElementName = JSXIdentifier | JSXNamespacedName | JSXMemberExpression;
 
-/** Alias of {@link JSXElementName} for users coming from Oxc. */
 type JSXTagName = JSXElementName;
 
 type JSXChild = JSXText | JSXElement | JSXFragment | JSXExpressionContainer | JSXSpreadChild;
