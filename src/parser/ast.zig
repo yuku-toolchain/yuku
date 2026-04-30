@@ -283,6 +283,9 @@ pub const Tree = struct {
     }
 };
 
+/// Index into the AST node array.
+///
+/// See [AST reference](https://yuku.fyi/parser/ast).
 pub const NodeIndex = enum(u32) { null = std.math.maxInt(u32), _ };
 
 /// Range of indices into the extra array for storing variadic node lists.
@@ -2874,11 +2877,6 @@ pub const TSUnionType = struct {
 
 /// An intersection type. Combines two or more types with `&`, representing
 /// a value that satisfies every constituent simultaneously.
-///
-/// Binds tighter than `ts_union_type`, so `A | B & C` parses as `A | (B & C)`.
-/// A leading `&` before the first operand is allowed and is preserved in
-/// the span. `type A = & X` yields a single-operand `ts_intersection_type`
-/// whose span starts at the leading `&` rather than at the first operand.
 ///
 /// ## Example
 /// ```ts
