@@ -2034,7 +2034,7 @@ pub const ImportExpression = struct {
 /// //       ^^^^^^^^^^ specifiers[0]
 /// //                         ^^^ source
 /// ```
-/// `import_kind = .type` for `import type { ... }`; `phase` is set for the
+/// `import_kind = .type` for `import type { ... }`, `phase` is set for the
 /// `import source` / `import defer` forms; `attributes` holds a trailing
 /// `with { ... }` clause.
 pub const ImportDeclaration = struct {

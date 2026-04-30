@@ -1,5 +1,5 @@
-// generates decode.js, a decoder that reads the binary ast buffer produced
-// by zig and constructs an estree js object. uses the same comptime layout
+// generates decode.js, a decoder that reads the binary ast buffer passed
+// from zig and constructs an estree js object. uses the same comptime layout
 // helpers as the serializer in transfer.zig, so the decoder can never drift
 // from the format.
 
@@ -354,9 +354,11 @@ fn writeSpecialCase(w: *Writer, comptime name: []const u8, comptime tag: usize) 
     } else if (comptime eql(u8, name, "program")) {
         const sb = comptime slotOf(ast.Program, "body");
         const hs = comptime slotOf(ast.Program, "hashbang");
+        // hashbang span includes the leading `#!`. value.start points to the
+        // first byte after `#!`, so the node's start is value.start - 2.
         try emit(w,
-            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? str(f{d}, f{d}) : null, body: nodeArr(f{d}, f0) }};
-        , .{ tag, comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, sb });
+            \\    case {d}: return {{ type: "Program", start, end, sourceType: (flags & 1) ? "module" : "script", hashbang: (flags & {d}) ? {{ type: "Hashbang", start: _p(f{d} - 2), end: _p(f{d}), value: str(f{d}, f{d}) }} : null, body: nodeArr(f{d}, f0) }};
+        , .{ tag, comptime flagMask(ast.Program, "hashbang"), hs, hs + 1, hs, hs + 1, sb });
     } else if (comptime eql(u8, name, "directive")) {
         const se = comptime slotOf(ast.Directive, "expression");
         const sv = comptime slotOf(ast.Directive, "value");
